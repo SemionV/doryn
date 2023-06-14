@@ -1,12 +1,15 @@
 binDir=bin/
-helloDir=hello/
-objDir="${helloDir}obj/"
-helloBuildFiles=(`find ${helloDir} -name "*.cpp"`)
-echo ${helloBuildFiles[*]}
+project="${1}"
+projectDir="${project}/"
+outputFile=${2}
+objDir="${projectDir}obj/"
+sourceFiles=(`find ${projectDir} -name "*.cpp"`)
+
+echo "Build project: ${project}"
 
 #compilation
 mkdir "$objDir" -p
-files=${helloBuildFiles[*]}
+files=${sourceFiles[*]}
 echo "files to compile: ${files}"
 for i in ${files}; do \
     echo "compiling: $i"; \
@@ -16,4 +19,4 @@ for i in ${files}; do \
 done;
 
 #linking
-g++ -o "${binDir}hello.exe" "${objDir}**.o" -L. -l:"math_lib.a"
+g++ -o "${binDir}${outputFile}" "${objDir}**.o" -L. -l:"math_lib.a"
