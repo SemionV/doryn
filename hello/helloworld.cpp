@@ -1,7 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "test.h"
+#include "test/test.h"
+#include "test/test2/test2.h"
 #include "../mathLibrary/math.h"
 
 using namespace std;
@@ -17,6 +18,7 @@ int main()
     cout << endl;
 
     test();
+    test2();
 
     cout << "sum 2+2:" << sum(2, 2);
 
