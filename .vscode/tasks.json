@@ -10,8 +10,7 @@
                 "build-hello"
             ],
             "options": {
-                "cwd": "${workspaceFolder}",
-                "shell": ""
+                "cwd": "${workspaceFolder}"
             },
             "problemMatcher": [
                 "$gcc"
