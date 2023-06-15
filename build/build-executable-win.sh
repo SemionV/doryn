@@ -3,14 +3,14 @@ project="${1}"
 projectDir="${project}/"
 outputFile=${2}
 objDir="${projectDir}obj/"
-sourceFiles=(`find ${projectDir} -name "*.cpp"`)
+moduleFiles=(`find ${projectDir} -name "*.cpp"`)
 
 echo "Build project: ${project}"
 
 #compilation
 mkdir "$objDir" -p
-files=${sourceFiles[*]}
-echo "files to compile: ${files}"
+files=${moduleFiles[*]}
+echo "Modules to compile: ${files}"
 for i in ${files}; do \
     echo "compiling: $i"; \
     fileName=$(basename -- $i)
