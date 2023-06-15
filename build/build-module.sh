@@ -82,7 +82,7 @@ function compileProject()
 
         if [ $module -nt $objFile ]; then
             echo "Compile: $module";
-            g++ ${compilerGenerateDebugSymbols} -c $module -o $objFile ${macroOptions[*]};
+            g++ -fdiagnostics-color=always ${compilerGenerateDebugSymbols} -c $module -o $objFile ${macroOptions[*]};
         else
             echo "Skip: $module";
         fi

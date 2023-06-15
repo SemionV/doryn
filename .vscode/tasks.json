@@ -1,18 +1,17 @@
 {
     "tasks": [
         {
-            "type": "cppbuild",
-            "label": "Build doryn with g++",
-            "command": "C:\\msys64\\mingw64\\bin\\g++.exe",
+            "type": "shell",
+            "label": "Build hello project with dependencies",
+            "command": "make",
             "args": [
-                "-fdiagnostics-color=always",
-                "-g",
-                "${workspaceFolder}\\**.cpp",
-                "-o",
-                "${workspaceFolder}\\bin\\doryn.exe"
+                "-f",
+                "build/makefile",
+                "build-hello"
             ],
             "options": {
-                "cwd": "${fileDirname}"
+                "cwd": "${workspaceFolder}",
+                "shell": ""
             },
             "problemMatcher": [
                 "$gcc"

@@ -1,5 +1,4 @@
 targetDir := bin/
-
 buildDir := build/
 
 build-hello: build-math
