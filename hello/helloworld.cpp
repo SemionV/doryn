@@ -17,8 +17,13 @@ int main()
     }
     cout << endl;
 
+#ifdef TEST
     test();
+#endif
+
+#ifdef TEST2
     test2();
+#endif
 
     cout << "sum 2+2:" << sum(2, 2);
 

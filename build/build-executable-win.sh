@@ -1,22 +1,12 @@
-binDir=bin/
 project="${1}"
 projectDir="${project}/"
 outputFile=${2}
+binDir=${3}
 objDir="${projectDir}obj/"
-moduleFiles=(`find ${projectDir} -name "*.cpp"`)
+buildDir="$(dirname "$0")/"
 
-echo "Build project: ${project}"
+echo "Compile project: ${project}"
+sh ${buildDir}compile-project.sh $project $outputFile $binDir "TEST TEST2"
 
-#compilation
-mkdir "$objDir" -p
-files=${moduleFiles[*]}
-echo "Modules to compile: ${files}"
-for i in ${files}; do \
-    echo "compiling: $i"; \
-    fileName=$(basename -- $i)
-    fileNameWithoutExtension=${fileName%.*}
-    g++ -c $i -o "${objDir}${fileNameWithoutExtension}.o"; \
-done;
-
-#linking
+echo "Link project: ${project}"
 g++ -o "${binDir}${outputFile}" "${objDir}**.o" -L. -l:"math_lib.a"
