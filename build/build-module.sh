@@ -1,10 +1,12 @@
 project="${1}"
 outputFile=${2}
+targetDir=${3}
 
 projectDir="${project}/"
 buildDir="$(dirname "$0")/"
-binDir="${projectDir}bin/"
+targetDir="${targetDir:-${projectDir}bin/}"
 objDir="${projectDir}obj/"
+moduleFileExtensions=("cpp")
 
 #read named arguments of the script
 while [ $# -gt 0 ]; do
@@ -31,7 +33,7 @@ function compileProject()
         macroOptions+=("-D${macro}")
     done;
 
-    local modules=(`find ${projectDir} -name "*.cpp"`)
+    local modules=(`find ${projectDir} -name "*.${moduleFileExtensions[0]}"`)
 
     mkdir "$objDir" -p
     #rm -f ${objDir}*
@@ -41,7 +43,7 @@ function compileProject()
     echo "Modules to compile: ${modules[*]}"
     echo "Compile with the following macroses defined: ${macroses[*]}"
     for module in ${modules[*]}; do 
-        local regex="^${projectDir}(.*)\.cpp" #regex to extract path to the module file relative to the project directory
+        local regex="^${projectDir}(.*)\.${moduleFileExtensions[0]}" #regex to extract path to the module file relative to the project directory
         [[ $module =~ $regex ]] #execute regex
         local objFile=${BASH_REMATCH[1]} #get matched group
         objFile=${objFile////.} #replace / symbols with .
@@ -62,5 +64,5 @@ echo "Compile project: ${project}"
 compileProject
 
 echo "Link project: ${project}"
-mkdir "$binDir" -p
-g++ -o "${binDir}${outputFile}" "${objFiles[@]}" -L. -l:"math_lib.a"
+mkdir "$targetDir" -p
+g++ -o "${targetDir}${outputFile}" "${objFiles[@]}" -L. -l:"math_lib.a"
