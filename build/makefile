@@ -8,7 +8,7 @@ helloBuildFiles := $(shell find $(helloDir) -name "hello*.cpp")
 buildDir := build/
 
 build-hello:
-	sh $(buildDir)build-module.sh hello hello.exe bin/ --macroses "TEST TEST2"
+	sh $(buildDir)build-module.sh hello hello.exe bin/ --macroses "TEST TEST2" --config "debug"
 
 build-math:
 	g++ -c -DMATHLIBRARY_EXPORTS "$(mathLibraryDir)**.cpp"
