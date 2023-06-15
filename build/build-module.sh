@@ -13,12 +13,23 @@ while [ $# -gt 0 ]; do
         declare "macroses"="$2"
         shift
     elif
-        [[ $1 == "--linker-mode" ]]; then
-        declare "linkerMode"="$2"
+        [[ $1 == "--module-type" ]]; then
+        declare "moduleType"="$2"
+        shift
+    elif
+        [[ $1 == "--out-lib" ]]; then
+        declare "outputImportLibrary"="$2"
         shift
     elif
         [[ $1 == "--config" ]]; then
         declare "config"="$2"
+        shift
+    elif
+        [[ $1 == "--lib-dirs" ]]; then
+        declare "libDirs"="$2"
+        shift
+    elif [[ $1 == "--link-libs" ]]; then
+        declare "linkLibraries"="$2"
         shift
     fi
     shift
@@ -26,6 +37,19 @@ done
 
 config="${config:-release}"
 objDir="${projectDir}obj-${config}/"
+
+if [[ $config == "debug" ]]; then
+    compilerGenerateDebugSymbols="-g"
+fi
+
+if [[ $moduleType == "shared" ]]; then
+    linkerSharedModule="-shared" #build DLL, otherwise EXE
+fi
+
+if [[ ! -z "$outputImportLibrary" ]]; then
+    linkerOutputImportLib="--out-implib,${outputImportLibrary}"
+fi
+
 
 #validate script arguments
 #
@@ -56,22 +80,38 @@ function compileProject()
 
         objFiles+=($objFile) #collect names of all obj files in order to link them. this is a protection form linking deleted modules, as we do not clean up obj folder in order to save time for compilation
 
-        if [[ $config == "debug" ]]; then
-            compilerOptions="-g"
-        fi
-
         if [ $module -nt $objFile ]; then
             echo "Compile: $module";
-            g++ ${compilerOptions} -c $module -o $objFile ${macroOptions[*]};
+            g++ ${compilerGenerateDebugSymbols} -c $module -o $objFile ${macroOptions[*]};
         else
             echo "Skip: $module";
         fi
     done;
 }
 
+function linkProject()
+{
+    mkdir "$targetDir" -p
+
+    local linkLibrariesOptions=()
+    for lib in ${linkLibraries[*]}; do 
+        linkLibrariesOptions+=("-l:${lib}")
+    done;
+
+    local libDirectoriesOptions=()
+    for libDir in ${libDirs[*]}; do 
+        libDirectoriesOptions+=("-L${libDir}")
+    done;
+
+    if [[ ! -z "$linkerOutputImportLib" ]]; then
+        linkerOptions="-Wl,${linkerOutputImportLib}"
+    fi
+
+    g++ ${linkerSharedModule} -o "${targetDir}${outputFile}" "${objFiles[@]}" ${libDirectoriesOptions[*]} ${linkerOptions} ${linkLibrariesOptions[*]}
+}
+
 echo "Compile project: ${project}. Using config: ${config}"
 compileProject
 
 echo "Link project: ${project}"
-mkdir "$targetDir" -p
-g++ -o "${targetDir}${outputFile}" "${objFiles[@]}" -L. -l:"math_lib.a"
+linkProject
