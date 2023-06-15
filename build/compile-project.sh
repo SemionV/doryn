@@ -5,7 +5,15 @@ binDir=${3}
 objDir="${projectDir}obj/"
 modules=(`find ${projectDir} -name "*.cpp"`)
 
-macroses=($4)
+while [ $# -gt 0 ]; do
+    if [[ $1 == "--macroses" ]]; then
+        declare "macroses"="$2"
+        shift
+    fi
+    shift
+done
+
+
 macroOptions=()
 for macro in ${macroses[*]}; do 
     macroOptions+=("-D${macro}")
@@ -18,7 +26,11 @@ echo "Compile with the following macroses defined: ${macroses[*]}"
 for module in ${modules[*]}; do 
     fileName=$(basename -- $module)
     fileNameWithoutExtension=${fileName%.*}
-    objFile="${objDir}${fileNameWithoutExtension}.o"
+    regex="^${projectDir}(.*)\.cpp"
+    [[ $module =~ $regex ]]
+    objFile=${BASH_REMATCH[1]}
+    objFile=${objFile////.}
+    objFile="${objDir}${objFile}.o"
 
     if [ $module -nt $objFile ]; then
         echo "Compile: $module";
