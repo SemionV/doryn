@@ -20,7 +20,7 @@
             "ignoreFailures": true
           }
         ],
-        "preLaunchTask": "Build hello project with dependencies"
+        "preLaunchTask": "Build hello project with dependencies(debug)"
       }
     ]
   }

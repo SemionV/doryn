@@ -2,12 +2,13 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "Build hello project with dependencies",
+            "label": "Build hello project with dependencies(debug)",
             "command": "make",
             "args": [
                 "-f",
                 "build/makefile",
-                "build-hello"
+                "build-hello",
+                "config=debug"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
