@@ -10,11 +10,13 @@ namespace dory
     class DORY_API Engine
     {
         private:
-            std::vector<Controller*> controllers;
+            DataContext& dataContext;
+            std::vector<Controller*> controllers;      
 
         public:
-            Engine();
+            Engine(DataContext& context);
             ~Engine();
             void addController(Controller* controller);
+            bool update(const std::chrono::microseconds timeStep);
     };
 }

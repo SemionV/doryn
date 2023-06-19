@@ -2,7 +2,8 @@
 
 namespace dory
 {
-    Engine::Engine():
+    Engine::Engine(DataContext& context):
+        dataContext(context),
         controllers()
     {
     }
@@ -14,5 +15,18 @@ namespace dory
     void Engine::addController(Controller* controller)
     {
         controllers.push_back(controller);
+    }
+
+    bool Engine::update(const std::chrono::microseconds timeStep)
+    {
+        std::vector<Controller*>::iterator it = controllers.begin();
+        std::vector<Controller*>::iterator end = controllers.end();
+
+        for(; it != end; ++it)
+        {
+            (*it)->update(timeStep, dataContext);
+        }
+
+        return dataContext.isStop;
     }
 }

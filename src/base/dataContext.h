@@ -2,8 +2,8 @@
 
 namespace dory
 {
-    struct DataContext
+    struct DORY_API DataContext
     {
-
+        bool isStop;
     };
 }
