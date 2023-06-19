@@ -17,7 +17,7 @@ namespace dory
         controllers.push_back(controller);
     }
 
-    bool Engine::update(const std::chrono::microseconds timeStep)
+    bool Engine::update(const TimeStep& timeStep)
     {
         std::vector<Controller*>::iterator it = controllers.begin();
         std::vector<Controller*>::iterator end = controllers.end();

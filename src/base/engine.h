@@ -2,7 +2,6 @@
 
 #include <vector>
 
-#include "doryExport.h"
 #include "controller.h"
 
 namespace dory
@@ -17,6 +16,6 @@ namespace dory
             Engine(DataContext& context);
             ~Engine();
             void addController(Controller* controller);
-            bool update(const std::chrono::microseconds timeStep);
+            bool update(const TimeStep& timeStep);
     };
 }

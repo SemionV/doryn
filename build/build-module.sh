@@ -66,7 +66,6 @@ function compileProject()
     local modules=(`find ${projectDir} -name "*.${moduleFileExtensions[0]}"`)
 
     mkdir "$objDir" -p
-    #rm -f ${objDir}*
 
     objFiles=()
 

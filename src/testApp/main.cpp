@@ -7,6 +7,20 @@ using namespace std;
 
 class TestController: public dory::Controller
 {
+    private:
+        int counter;
+        const int frameCount;
+        long timeSteps[60];
+
+    public:
+
+    TestController():
+        counter(0),
+        frameCount(60)
+    {
+
+    }
+
     void initialize(dory::DataContext& context) override
     {
     }
@@ -15,12 +29,21 @@ class TestController: public dory::Controller
     {
     }
 
-    void update(const std::chrono::microseconds timeStep, dory::DataContext& context) override
+    void update(const dory::TimeStep& timeStep, dory::DataContext& context) override
     {
-        cout << "test controller update" << endl;
-        cout << "timeStep: " << timeStep.count() << " microseconds" << endl;
+        timeSteps[counter] = timeStep.duration;
 
-        context.isStop = true;
+        if(counter >= frameCount)
+        {
+            context.isStop = true;
+
+            for(int i = 0; i < frameCount; i++)
+            {
+                cout << "timeStep: " << timeSteps[i] << " ns" << endl;
+            }
+        }
+
+        counter++;
     }
 };
 
@@ -34,14 +57,18 @@ class FrameService: public dory::FrameService
     void startLoop(dory::Engine& engine) override
     {
         isStop = false;
+        dory::TimeStep timeStep;
 
         std::chrono::steady_clock::time_point lastTimestamp = std::chrono::steady_clock::now();
         std::chrono::steady_clock::time_point currentTimestamp;
+        std::chrono::nanoseconds duration;
 
         while(!isStop)
         {
             currentTimestamp = std::chrono::steady_clock::now();
-            std::chrono::microseconds timeStep = std::chrono::duration_cast<std::chrono::microseconds>(currentTimestamp - lastTimestamp);
+            duration = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTimestamp - lastTimestamp);
+
+            timeStep.duration = duration.count();
 
             isStop = engine.update(timeStep);
 
@@ -63,8 +90,6 @@ int main()
     dory::Engine engine(context);
     TestController controller;
     engine.addController(&controller);
-
-    //engine.update(std::chrono::microseconds::zero());
 
     FrameService frameService;
     frameService.startLoop(engine);

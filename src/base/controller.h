@@ -4,6 +4,7 @@
 
 #include "doryExport.h"
 #include "dataContext.h"
+#include "types.h"
 
 namespace dory
 {
@@ -15,6 +16,6 @@ namespace dory
 
             virtual void initialize(DataContext& context) = 0;
             virtual void stop(DataContext& context) = 0;
-            virtual void update(const std::chrono::microseconds timeStep, DataContext& context) = 0;
+            virtual void update(const TimeStep& timeStep, DataContext& context) = 0;
     };
 }
