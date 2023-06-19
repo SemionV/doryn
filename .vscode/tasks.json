@@ -2,12 +2,12 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "Build hello project with dependencies(debug)",
+            "label": "Build testApp project with dependencies(debug)",
             "command": "make",
             "args": [
                 "-f",
                 "build/makefile",
-                "build-hello",
+                "build-test-app",
                 "config=debug"
             ],
             "options": {
@@ -20,7 +20,7 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "detail": "Genral build of the project"
+            "detail": "General build of the project"
         }
     ],
     "version": "2.0.0"

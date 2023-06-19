@@ -36,11 +36,17 @@ build-hello: build-math build-message build-project-hello
 build-project-hello build-project-math build-project-message:
 	sh $(buildDir)build-module.sh $(project) "$(outputFile)" "$(targetDir)" $(moduleType) --macroses "$(macroses)" --config $(config) $(outLib) --lib-dirs "$(libDirectories)" $(linkLibraries)
 
-build-project-test-app: project := $(srcDir)test-app
-build-project-test-app: outputFile := test-app.exe
-#build-project-hello: macroses := TEST TEST2
-#build-project-hello: linkLibraries := --link-libs "lib/math_lib.a lib/message_lib.a"
-build-test-app: build-project-test-app
+build-project-test-app: project := $(srcDir)testApp
+build-project-test-app: outputFile := testApp.exe
+build-project-test-app: linkLibraries := --link-libs "lib/doryBase_lib.a"
+build-test-app: build-base build-project-test-app
 
-build-project-test-app:
+build-project-base: project := $(srcDir)base
+build-project-base: outputFile := doryBase.dll
+build-project-base: macroses := DORY_EXPORT
+build-project-base: outLib := --out-lib "lib/doryBase_lib.a"
+build-project-base: moduleType := --module-type "shared"
+build-base: build-project-base
+
+build-project-base build-project-test-app:
 	sh $(buildDir)build-module.sh $(project) "$(outputFile)" "$(targetDir)" $(moduleType) --macroses "$(macroses)" --config $(config) $(outLib) --lib-dirs "$(libDirectories)" $(linkLibraries)

@@ -5,7 +5,7 @@
         "name": "Debug doryn with g++",
         "type": "cppdbg",
         "request": "launch",
-        "program": "${workspaceFolder}\\bin\\hello.exe",
+        "program": "${workspaceFolder}\\bin\\testApp.exe",
         "args": [],
         "stopAtEntry": false,
         "cwd": "${workspaceFolder}\\bin",
@@ -20,7 +20,7 @@
             "ignoreFailures": true
           }
         ],
-        "preLaunchTask": "Build hello project with dependencies(debug)"
+        "preLaunchTask": "Build testApp project with dependencies(debug)"
       }
     ]
   }
