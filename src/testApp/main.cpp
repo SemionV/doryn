@@ -6,11 +6,11 @@ using namespace std;
 
 class TestController: public dory::Controller
 {
-    void initialize(const dory::DataContext& context) override
+    void initialize(dory::DataContext& context) override
     {
     }
 
-    void stop(const dory::DataContext& context) override
+    void stop(dory::DataContext& context) override
     {
     }
 
