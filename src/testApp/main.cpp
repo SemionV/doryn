@@ -57,7 +57,7 @@ class FrameService: public dory::FrameService
     void startLoop(dory::Engine& engine) override
     {
         isStop = false;
-        dory::TimeSpan timeStep(dory::TimeUnit::Nanosecond);
+        dory::TimeSpan timeStep(dory::UnitInverseDevider::Nano);
 
         std::chrono::steady_clock::time_point lastTimestamp = std::chrono::steady_clock::now();
         std::chrono::steady_clock::time_point currentTimestamp;

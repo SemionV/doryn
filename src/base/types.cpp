@@ -4,11 +4,11 @@ namespace dory
 {
     TimeSpan::TimeSpan():
             duration(0),
-            unitsPerSecond(TimeUnit::Millisecond)
+            unitsPerSecond(UnitInverseDevider::Milli)
     {
     }
 
-    TimeSpan::TimeSpan(TimeUnit unitsPerSecond):
+    TimeSpan::TimeSpan(UnitInverseDevider unitsPerSecond):
             duration(0),
             unitsPerSecond(unitsPerSecond)
     {
@@ -16,6 +16,6 @@ namespace dory
 
     inline double TimeConverter::ToMilliseconds(TimeSpan timeSpan)
     {
-        return (timeSpan.duration / (double)timeSpan.unitsPerSecond) * TimeUnit::Millisecond;
+        return (timeSpan.duration / (double)timeSpan.unitsPerSecond) * UnitInverseDevider::Milli;
     }
 }
