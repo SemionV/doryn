@@ -5,7 +5,9 @@ targetDir=${3}
 projectDir="${project}/"
 buildDir="$(dirname "$0")/"
 targetDir="${targetDir:-${projectDir}bin/}"
+targetFile="${targetDir}${outputFile}"
 moduleFileExtensions=("cpp")
+headerFileExtensions=("h")
 
 #read named arguments of the script
 while [ $# -gt 0 ]; do
@@ -64,6 +66,15 @@ function compileProject()
     done;
 
     local modules=(`find ${projectDir} -name "*.${moduleFileExtensions[0]}"`)
+    local headers=(`find ${projectDir} -name "*.${headerFileExtensions[0]}"`)
+
+    for header in ${headers[*]}; do 
+        if [ $header -nt $targetFile ]; then
+            headersTouched="true"
+            echo "Header file ${header} was modified. All modules will be recompiled.";
+            break
+        fi
+    done;
 
     mkdir "$objDir" -p
 
@@ -79,7 +90,7 @@ function compileProject()
 
         objFiles+=($objFile) #collect names of all obj files in order to link them. this is a protection form linking deleted modules, as we do not clean up obj folder in order to save time for compilation
 
-        if [ $module -nt $objFile ]; then
+        if [ $module -nt $objFile ] || [ ! -z "${headersTouched}" ]; then
             echo "Compile: $module";
             g++ -fdiagnostics-color=always ${compilerGenerateDebugSymbols} -c $module -o $objFile ${macroOptions[*]};
         else
@@ -106,7 +117,7 @@ function linkProject()
         linkerOptions="-Wl,${linkerOutputImportLib}"
     fi
 
-    g++ ${linkerSharedModule} -o "${targetDir}${outputFile}" "${objFiles[@]}" ${libDirectoriesOptions[*]} ${linkerOptions} ${linkLibrariesOptions[*]}
+    g++ ${linkerSharedModule} -o "${targetFile}" "${objFiles[@]}" ${libDirectoriesOptions[*]} ${linkerOptions} ${linkLibrariesOptions[*]}
 }
 
 echo "Compile project: ${project}. Using config: ${config}"
