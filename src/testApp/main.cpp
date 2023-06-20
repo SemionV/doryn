@@ -1,9 +1,10 @@
 #include <iostream>
 
 #include "../base/frameService.h"
-#include "../base/basicFrameService.h"
+//#include "../base/basicFrameService.h"
 #include "../base/engine.h"
 #include "../testDomain/testController.h"
+#include "../testDomain/stepFrameService.h"
 
 using namespace std;
 
@@ -16,7 +17,7 @@ int main()
     test::TestController controller;
     engine.addController(&controller);
 
-    dory::BasicFrameService frameService;
+    test::StepFrameService frameService;
     frameService.startLoop(engine);
 
     return 0;

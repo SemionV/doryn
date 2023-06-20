@@ -12,10 +12,8 @@ namespace test
     class DORY_API TestController: public dory::Controller
     {
         private:
-            static const int frameCount = 10;
-
             int counter;
-            dory::TimeSpan timeSteps[frameCount];
+
 
         public:
 

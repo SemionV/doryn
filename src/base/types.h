@@ -4,21 +4,21 @@
 
 namespace dory
 {
-    enum UnitInverseDevider
+    enum UnitScale
     {
         Identity = 1,
         Milli = 1000,
-        Micros = 1000000,
+        Micro = 1000000,
         Nano = 1000000000
     };
 
     struct DORY_API TimeSpan
     {
         long duration;
-        UnitInverseDevider unitsPerSecond;
+        UnitScale unitsPerSecond;
 
         TimeSpan();
-        TimeSpan(UnitInverseDevider unitsPerSecond);
+        TimeSpan(UnitScale unitsPerSecond);
     };
 
     class DORY_API TimeConverter

@@ -1,11 +1,17 @@
+#include <chrono>
 #include "basicFrameService.h"
 
 namespace dory
 {
+    BasicFrameService::BasicFrameService():
+        isStop(false)
+    {
+    }
+
     void BasicFrameService::startLoop(Engine& engine)
     {
         isStop = false;
-        TimeSpan timeStep(UnitInverseDevider::Nano);
+        TimeSpan timeStep(UnitScale::Nano);
 
         std::chrono::steady_clock::time_point lastTimestamp = std::chrono::steady_clock::now();
         std::chrono::steady_clock::time_point currentTimestamp;

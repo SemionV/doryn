@@ -11,6 +11,8 @@ namespace dory
 
         public:
 
+        BasicFrameService();
+
         void startLoop(Engine& engine);
         
         void endLoop();
