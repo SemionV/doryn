@@ -29,7 +29,7 @@ class TestController: public dory::Controller
     {
     }
 
-    void update(const dory::TimeStep& timeStep, dory::DataContext& context) override
+    void update(const dory::TimeSpan& timeStep, dory::DataContext& context) override
     {
         timeSteps[counter] = timeStep.duration;
 
@@ -57,7 +57,7 @@ class FrameService: public dory::FrameService
     void startLoop(dory::Engine& engine) override
     {
         isStop = false;
-        dory::TimeStep timeStep;
+        dory::TimeSpan timeStep(dory::TimeFractionOfSecond::Nanosecond);
 
         std::chrono::steady_clock::time_point lastTimestamp = std::chrono::steady_clock::now();
         std::chrono::steady_clock::time_point currentTimestamp;
@@ -84,7 +84,7 @@ class FrameService: public dory::FrameService
 
 int main()
 {
-    cout << "doryn test application" << endl;
+    cout << "dory:native test application" << endl;
 
     dory::DataContext context;
     dory::Engine engine(context);

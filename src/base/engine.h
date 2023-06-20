@@ -16,6 +16,6 @@ namespace dory
             Engine(DataContext& context);
             ~Engine();
             void addController(Controller* controller);
-            bool update(const TimeStep& timeStep);
+            bool update(const TimeSpan& timeStep);
     };
 }

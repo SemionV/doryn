@@ -16,6 +16,6 @@ namespace dory
 
             virtual void initialize(DataContext& context) = 0;
             virtual void stop(DataContext& context) = 0;
-            virtual void update(const TimeStep& timeStep, DataContext& context) = 0;
+            virtual void update(const TimeSpan& timeStep, DataContext& context) = 0;
     };
 }
