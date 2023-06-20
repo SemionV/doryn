@@ -1,4 +1,5 @@
 #include <iostream>
+#include <conio.h>
 #include "stepFrameService.h"
 
 namespace test
@@ -16,7 +17,7 @@ namespace test
         dory::TimeSpan timeStep(dory::UnitScale::Micro);
         char key(' ');
 
-        std::cout << "Press any key to process next frame or ESC to exit" << std::endl;
+        std::cout << "Press any key to process to next frame OR ESC to exit" << std::endl;
 
         while(!isStop)
         {
@@ -24,7 +25,7 @@ namespace test
 
             isStop = engine.update(timeStep);
 
-            key = std::cin.get();
+            key = getch();
             if(key == 27)
             {
                 isStop = true;
