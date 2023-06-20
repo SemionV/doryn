@@ -2,7 +2,6 @@
 
 #include <chrono>
 
-#include "doryExport.h"
 #include "dataContext.h"
 #include "types.h"
 

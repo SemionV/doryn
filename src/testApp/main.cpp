@@ -8,15 +8,15 @@ using namespace std;
 class TestController: public dory::Controller
 {
     private:
+        static const int frameCount = 10;
+
         int counter;
-        const int frameCount;
-        long timeSteps[60];
+        dory::TimeSpan timeSteps[frameCount];
 
     public:
 
     TestController():
-        counter(0),
-        frameCount(60)
+        counter(0)
     {
 
     }
@@ -31,7 +31,7 @@ class TestController: public dory::Controller
 
     void update(const dory::TimeSpan& timeStep, dory::DataContext& context) override
     {
-        timeSteps[counter] = timeStep.duration;
+        timeSteps[counter] = timeStep;
 
         if(counter >= frameCount)
         {
@@ -39,7 +39,7 @@ class TestController: public dory::Controller
 
             for(int i = 0; i < frameCount; i++)
             {
-                cout << "timeStep: " << timeSteps[i] << " ns" << endl;
+                cout << "timeStep: " << dory::TimeConverter::ToMilliseconds(timeSteps[i]) << " ms" << endl;
             }
         }
 
@@ -57,7 +57,7 @@ class FrameService: public dory::FrameService
     void startLoop(dory::Engine& engine) override
     {
         isStop = false;
-        dory::TimeSpan timeStep(dory::TimeFractionOfSecond::Nanosecond);
+        dory::TimeSpan timeStep(dory::TimeUnit::Nanosecond);
 
         std::chrono::steady_clock::time_point lastTimestamp = std::chrono::steady_clock::now();
         std::chrono::steady_clock::time_point currentTimestamp;

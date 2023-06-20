@@ -1,8 +1,10 @@
 #pragma once
 
+#include "doryExport.h"
+
 namespace dory
 {
-    enum TimeFractionOfSecond
+    enum TimeUnit
     {
         Second = 1,
         Millisecond = 1000,
@@ -10,15 +12,18 @@ namespace dory
         Nanosecond = 1000000000
     };
 
-    struct TimeSpan
+    struct DORY_API TimeSpan
     {
         long duration;
-        TimeFractionOfSecond unitsPerSecond;
+        TimeUnit unitsPerSecond;
 
-        TimeSpan(TimeFractionOfSecond unitsPerSecond):
-            duration(0),
-            unitsPerSecond(unitsPerSecond)
-        {
-        }
+        TimeSpan();
+        TimeSpan(TimeUnit unitsPerSecond);
+    };
+
+    class DORY_API TimeConverter
+    {
+        public:
+            static double ToMilliseconds(TimeSpan timeSpan);
     };
 }
