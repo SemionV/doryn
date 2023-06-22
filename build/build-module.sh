@@ -8,6 +8,7 @@ targetDir="${targetDir:-${projectDir}bin/}"
 targetFile="${targetDir}${outputFile}"
 moduleFileExtensions=("cpp")
 headerFileExtensions=("h")
+precompiledHeaderFileExtension="gch"
 
 #read named arguments of the script
 while [ $# -gt 0 ]; do
@@ -33,12 +34,29 @@ while [ $# -gt 0 ]; do
     elif [[ $1 == "--link-libs" ]]; then
         declare "linkLibraries"="$2"
         shift
+    elif [[ $1 == "--precompiled-headers" ]]; then
+        declare "usePrecompiledHeaders"="$2"
+        shift
+    elif [[ $1 == "--force-recompile-headers" ]]; then
+        declare "forceRecompileHeaders"="$2"
+        shift
+    elif [[ $1 == "--dependencies-header" ]]; then
+        declare "dependenciesHeader"="$2"
+        shift
+    fi
+    elif [[ $1 == "--dependencies" ]]; then
+        declare "dependencies"=($2)
+        shift
     fi
     shift
 done
 
+dependencies="${dependencies:-()}"
 config="${config:-release}"
+dependenciesHeader="${dependenciesHeader:-dependencies/dependencies.h}"
 objDir="${projectDir}obj-${config}/"
+precompiledHeaderDir="${projectDir}"
+dependenciesHeader="${projectDir}${dependenciesHeader}"
 
 if [[ $config == "debug" ]]; then
     compilerGenerateDebugSymbols="-g"
@@ -68,19 +86,36 @@ function compileProject()
     local modules=(`find ${projectDir} -name "*.${moduleFileExtensions[0]}"`)
     local headers=(`find ${projectDir} -name "*.${headerFileExtensions[0]}"`)
 
+    mkdir "$objDir" -p
+    if [ ! -z "${usePrecompiledHeaders}" ] && [ -f "$dependenciesHeader" ]; then
+        mkdir "$precompiledHeaderDir" -p
+
+        local outputPchFile="${dependenciesHeader}.${precompiledHeaderFileExtension}"
+
+        if [ "${dependenciesHeader}" -nt "${outputPchFile}" ] || [ ! -z "${forceRecompileHeaders}" ]; then
+            echo "Compile $dependenciesHeader with the following macroses defined: ${macroses[*]}";
+            g++ -Wall -fdiagnostics-color=always ${compilerGenerateDebugSymbols} -c "${dependenciesHeader}" -o ${outputPchFile} ${macroOptions[*]};
+            headersPrecompiled="true"
+        fi
+    fi
+
     for header in ${headers[*]}; do 
-        if [ $header -nt $targetFile ]; then
+        if [ $header -nt "$targetFile" ]; then
             headersTouched="true"
             echo "Header file ${header} was modified. All modules will be recompiled.";
             break
         fi
     done;
 
-    mkdir "$objDir" -p
+    if [ ! -z "${headersPrecompiled}" ]; then
+        headersTouched="true"
+        echo "Header files were recompiled. All module files will be recompiled.";
+        break
+    fi
 
     objFiles=()
 
-    echo "Compile with the following macroses defined: ${macroses[*]}"
+    echo "Compile modules with the following macroses defined: ${macroses[*]}"
     for module in ${modules[*]}; do 
         local regex="^${projectDir}(.*)\.${moduleFileExtensions[0]}" #regex to extract path to the module file relative to the project directory
         [[ $module =~ $regex ]] #execute regex
@@ -90,9 +125,9 @@ function compileProject()
 
         objFiles+=($objFile) #collect names of all obj files in order to link them. this is a protection form linking deleted modules, as we do not clean up obj folder in order to save time for compilation
 
-        if [ $module -nt $objFile ] || [ ! -z "${headersTouched}" ]; then
+        if [ $module -nt "$objFile" ] || [ ! -z "${headersTouched}" ]; then
             echo "Compile: $module";
-            g++ -fdiagnostics-color=always ${compilerGenerateDebugSymbols} -c $module -o $objFile ${macroOptions[*]};
+            g++ -H -Wall -fdiagnostics-color=always ${compilerGenerateDebugSymbols} -c $module -o $objFile ${macroOptions[*]};
         else
             echo "Skip: $module";
         fi

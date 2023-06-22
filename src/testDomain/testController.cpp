@@ -1,3 +1,4 @@
+#include "dependencies/dependencies.h"
 #include "testController.h"
 
 namespace test

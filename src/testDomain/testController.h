@@ -1,11 +1,6 @@
 #pragma once
 
-#include <iostream>
-
 using namespace std;
-
-#include "../base/doryExport.h"
-#include "../base/controller.h"
 
 namespace test
 {

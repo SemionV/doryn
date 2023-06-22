@@ -29,4 +29,4 @@ build-project-test-domain: moduleType := --module-type "shared"
 build-test-domain: build-project-test-domain
 
 build-project-base build-project-test-domain build-project-test-app:
-	sh $(buildDir)build-module.sh $(project) "$(outputFile)" "$(targetDir)" $(moduleType) --macroses "$(macroses)" --config $(config) $(outLib) --lib-dirs "$(libDirectories)" $(linkLibraries)
+	sh $(buildDir)build-module.sh $(project) "$(outputFile)" "$(targetDir)" $(moduleType) --macroses "$(macroses)" --config $(config) $(outLib) --lib-dirs "$(libDirectories)" --precompiled-headers "true" $(linkLibraries) --force-recompile-headers $(forceRecompileHeaders)

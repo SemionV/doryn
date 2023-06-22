@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef BASE_ENGINE_H_INC_DETECTOR
+#define BASE_ENGINE_H_INC_DETECTOR
 #include <vector>
 
 #include "controller.h"
@@ -19,3 +19,5 @@ namespace dory
             bool update(const TimeSpan& timeStep);
     };
 }
+
+#endif
