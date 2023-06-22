@@ -1,3 +1,4 @@
+#include "stepFrameService.ext.h"
 #include "stepFrameService.h"
 
 namespace test

@@ -1,3 +1,4 @@
+#include "testController.ext.h"
 #include "testController.h"
 
 namespace test
