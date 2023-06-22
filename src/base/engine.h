@@ -1,7 +1,6 @@
-#ifndef BASE_ENGINE_H_INC_DETECTOR
-#define BASE_ENGINE_H_INC_DETECTOR
-#include <vector>
+#pragma once
 
+#include "dependencies.ext.h"
 #include "controller.h"
 
 namespace dory
@@ -19,5 +18,3 @@ namespace dory
             bool update(const TimeSpan& timeStep);
     };
 }
-
-#endif

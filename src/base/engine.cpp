@@ -1,3 +1,4 @@
+#include "dependencies.ext.h"
 #include "engine.h"
 
 namespace dory

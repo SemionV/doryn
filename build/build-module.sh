@@ -116,33 +116,17 @@ function compileProject()
     done;
 
     local modules=(`find ${projectDir} -name "*.${moduleFileExtensions[0]}"`)
+    local externalHeaders=(`find ${projectDir} -name "*.ext.${headerFileExtensions[0]}"`)
 
     #compile headers
     if [ ! -z "${usePrecompiledHeaders}" ]; then
-        for module in ${modules[*]}; do 
-            local moduleWithoutExtension="${module%.*}"
-            local moduleHeader="${moduleWithoutExtension}.ext.${headerFileExtensions[0]}"
+        for header in ${externalHeaders[*]}; do 
+            local outputPchFile="${header}.${precompiledHeaderFileExtension}"
 
-            if [ -f "${moduleHeader}" ]; then
-                local outputPchFile="${moduleHeader}.${precompiledHeaderFileExtension}"
-
-                if [ $moduleHeader -nt "$outputPchFile" ]; then
-                    echo "new than the gch"
-                fi
-
-                if [ ! -z "${forceRecompileHeaders}" ]; then
-                    echo "force recompile"
-                fi
-
-                if [ ! -z "${dependenciesModified}" ]; then
-                    echo "dependency modified"
-                fi
-
-                if [ $moduleHeader -nt "$outputPchFile" ] || [ ! -z "${forceRecompileHeaders}" ] || [ ! -z "${dependenciesModified}" ]; then
-                    echo "Compile: $moduleHeader";
-                    headersTouched="true"
-                    g++ -Wall -fdiagnostics-color=always ${compilerGenerateDebugSymbols} -c "$moduleHeader" -o $outputPchFile ${macroOptions[*]};
-                fi
+            if [ $header -nt "$outputPchFile" ] || [ ! -z "${forceRecompileHeaders}" ] || [ ! -z "${dependenciesModified}" ]; then
+                echo "Compile: $header";
+                headersTouched="true"
+                g++ -Wall -fdiagnostics-color=always ${compilerGenerateDebugSymbols} -c "$header" -o $outputPchFile ${macroOptions[*]};
             fi
         done;
     fi
@@ -160,7 +144,7 @@ function compileProject()
 
         objFiles+=($objFile) #collect names of all obj files in order to link them. this is a protection form linking deleted modules, as we do not clean up obj folder in order to save time for compilation
 
-        if [ $module -nt "$objFile" ] || [ ! -z "${headersTouched}" ]; then
+        if [ $module -nt "$objFile" ] || [ ! -z "${headersTouched}" ] || [ ! -z "${dependenciesModified}" ]; then
             echo "Compile: $module";
             g++ -H -Wall -fdiagnostics-color=always ${compilerGenerateDebugSymbols} -c "$module" -o "$objFile" ${macroOptions[*]};
         else

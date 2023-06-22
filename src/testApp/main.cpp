@@ -1,10 +1,4 @@
-#include <iostream>
-
-#include "../base/frameService.h"
-//#include "../base/basicFrameService.h"
-#include "../testDomain/stepFrameService.h"
-#include "../base/engine.h"
-#include "../testDomain/testController.h"
+#include "dependencies.ext.h"
 
 using namespace std;
 

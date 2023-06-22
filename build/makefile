@@ -12,6 +12,8 @@ projectTestApp := $(srcDir)testApp
 build-project-test-app: project := $(projectTestApp)
 build-project-test-app: outputFile := testApp.exe
 build-project-test-app: linkLibraries := --link-libs "lib/doryBase_lib.a lib/testDomain_lib.a"
+build-project-test-app: dependencies := "$(projectBase) $(projectTestDomain)"
+build-project-test-app: precompiledHeaders := --precompiled-headers true
 build-test-app: build-base build-test-domain build-project-test-app
 
 projectBase := $(srcDir)base
@@ -20,6 +22,8 @@ build-project-base: outputFile := doryBase.dll
 build-project-base: macroses := $(moduleExportMacros)
 build-project-base: outLib := --out-lib "lib/doryBase_lib.a"
 build-project-base: moduleType := --module-type "shared"
+build-project-base: precompiledHeaders := --precompiled-headers true
+build-project-base: dependencies := ""
 build-base: build-project-base
 
 projectTestDomain:= $(srcDir)testDomain
