@@ -7,13 +7,14 @@ ifndef config
 override config := release
 endif
 moduleExportMacros := DORY_EXPORT
+usePrecompiledHeaders := --precompiled-headers true
 
 projectTestApp := $(srcDir)testApp
 build-project-test-app: project := $(projectTestApp)
 build-project-test-app: outputFile := testApp.exe
 build-project-test-app: linkLibraries := --link-libs "lib/doryBase_lib.a lib/testDomain_lib.a"
 build-project-test-app: dependencies := "$(projectBase) $(projectTestDomain)"
-build-project-test-app: precompiledHeaders := --precompiled-headers true
+build-project-test-app: precompiledHeaders := $(usePrecompiledHeaders)
 build-test-app: build-base build-test-domain build-project-test-app
 
 projectBase := $(srcDir)base
@@ -22,7 +23,7 @@ build-project-base: outputFile := doryBase.dll
 build-project-base: macroses := $(moduleExportMacros)
 build-project-base: outLib := --out-lib "lib/doryBase_lib.a"
 build-project-base: moduleType := --module-type "shared"
-build-project-base: precompiledHeaders := --precompiled-headers true
+build-project-base: precompiledHeaders := $(usePrecompiledHeaders)
 build-project-base: dependencies := ""
 build-base: build-project-base
 
@@ -34,7 +35,7 @@ build-project-test-domain: outLib := --out-lib "lib/testDomain_lib.a"
 build-project-test-domain: linkLibraries := --link-libs "lib/doryBase_lib.a"
 build-project-test-domain: moduleType := --module-type "shared"
 build-project-test-domain: dependencies := "$(projectBase)"
-build-project-test-domain: precompiledHeaders := --precompiled-headers true
+build-project-test-domain: precompiledHeaders := $(usePrecompiledHeaders)
 #build-project-test-domain: forceRecompileHeaders := --force-recompile-headers true
 build-test-domain: build-project-test-domain
 
