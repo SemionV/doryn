@@ -2,6 +2,8 @@ project="${1}"
 outputFile=${2}
 targetDir=${3}
 
+
+dependencies=("src/base/")
 projectDir="${project}/"
 buildDir="$(dirname "$0")/"
 targetDir="${targetDir:-${projectDir}bin/}"
@@ -43,19 +45,16 @@ while [ $# -gt 0 ]; do
     elif [[ $1 == "--dependencies-header" ]]; then
         declare "dependenciesHeader"="$2"
         shift
-    fi
     elif [[ $1 == "--dependencies" ]]; then
-        declare "dependencies"=($2)
+        dependencies=($2)
         shift
     fi
     shift
 done
 
-dependencies="${dependencies:-()}"
 config="${config:-release}"
 dependenciesHeader="${dependenciesHeader:-dependencies/dependencies.h}"
 objDir="${projectDir}obj-${config}/"
-precompiledHeaderDir="${projectDir}"
 dependenciesHeader="${projectDir}${dependenciesHeader}"
 
 if [[ $config == "debug" ]]; then
@@ -76,44 +75,102 @@ fi
 # TODO
 #
 
+function compileFile()
+{
+    local compilerGenerateDebugSymbols=${1}
+    local module=${2}
+    local outputFile=${3}
+    local options=($4)
+    local macroOptions=($5)
+
+    echo "g++ ${options} ${compilerGenerateDebugSymbols} -c "${module}" -o "${outputFile}" ${macroOptions[*]};"
+    g++ ${options} ${compilerGenerateDebugSymbols} -c "${module}" -o "${outputFile}" ${macroOptions[*]};
+}
+
+function areProjectHeadersModified()
+{
+    local projectDir="${1}";
+    local headers=(`find ${projectDir} -name "*.${headerFileExtensions[0]}"`)
+    local headersTouched="";
+
+    for header in ${headers[*]}; do 
+        if [ $header -nt "$targetFile" ]; then
+            headersTouched="true"
+            break
+        fi
+    done;
+
+    echo $headersTouched;
+}
+
+function compileHeader()
+{
+    local header=$1;
+    local macroOptions=($2);
+    local headersTouched="";
+    local outputPchFile="${header}.${precompiledHeaderFileExtension}"
+
+    if [ $header -nt "$outputPchFile" ] || [ ! -z "${forceRecompileHeaders}" ]; then
+        headersTouched="true"
+        compileFile ${compilerGenerateDebugSymbols} "${header}" "${outputPchFile}" "-Wall -fdiagnostics-color=always" "${macroOptions[*]}"
+    fi
+
+    echo $headersTouched;
+
+    # if [ ! -z "${usePrecompiledHeaders}" ] && [ -f "$dependenciesHeader" ]; then
+    #     local outputPchFile="${dependenciesHeader}.${precompiledHeaderFileExtension}"
+
+    #     if [ "${dependenciesHeader}" -nt "${outputPchFile}" ] || [ ! -z "${forceRecompileHeaders}" ]; then
+    #         echo "Compile $dependenciesHeader with the following macroses defined: ${macroses[*]}";
+    #         g++ -Wall -fdiagnostics-color=always ${compilerGenerateDebugSymbols} -c "${dependenciesHeader}" -o ${outputPchFile} ${macroOptions[*]};
+    #         headersPrecompiled="true"
+    #     fi
+    # fi
+}
+
 function compileProject()
 {
+    #check if any header file in the project or dependency project was modified
+    local projectsToCheck=($dependencies);
+    projectsToCheck+=("${projectDir}");
+    echo "Dependency projects: ${projectsToCheck[@]}"
+    for project in ${projectsToCheck[*]}; do
+        local isDependencyModified=$(areProjectHeadersModified "${project}")
+
+        if [ ! -z $isDependencyModified ]; then
+            echo "One of headers in project ${project} was modified, it will trigger recompilation."
+            headersTouched="true"
+            break
+        fi
+    done;
+
     local macroOptions=()
     for macro in ${macroses[*]}; do 
         macroOptions+=("-D${macro}")
     done;
 
     local modules=(`find ${projectDir} -name "*.${moduleFileExtensions[0]}"`)
-    local headers=(`find ${projectDir} -name "*.${headerFileExtensions[0]}"`)
 
-    mkdir "$objDir" -p
-    if [ ! -z "${usePrecompiledHeaders}" ] && [ -f "$dependenciesHeader" ]; then
-        mkdir "$precompiledHeaderDir" -p
+    #compile headers
+    if [ ! -z "${usePrecompiledHeaders}" ]; then
+        for module in ${modules[*]}; do 
+            local moduleWithoutExtension="${module%.*}"
+            local moduleHeader="${moduleWithoutExtension}.${headerFileExtensions[0]}"
 
-        local outputPchFile="${dependenciesHeader}.${precompiledHeaderFileExtension}"
+            if [ -f "${moduleHeader}" ]; then
+                local outputPchFile="${moduleHeader}.${precompiledHeaderFileExtension}"
 
-        if [ "${dependenciesHeader}" -nt "${outputPchFile}" ] || [ ! -z "${forceRecompileHeaders}" ]; then
-            echo "Compile $dependenciesHeader with the following macroses defined: ${macroses[*]}";
-            g++ -Wall -fdiagnostics-color=always ${compilerGenerateDebugSymbols} -c "${dependenciesHeader}" -o ${outputPchFile} ${macroOptions[*]};
-            headersPrecompiled="true"
-        fi
-    fi
-
-    for header in ${headers[*]}; do 
-        if [ $header -nt "$targetFile" ]; then
-            headersTouched="true"
-            echo "Header file ${header} was modified. All modules will be recompiled.";
-            break
-        fi
-    done;
-
-    if [ ! -z "${headersPrecompiled}" ]; then
-        headersTouched="true"
-        echo "Header files were recompiled. All module files will be recompiled.";
-        break
+                if [ $moduleHeader -nt "$outputPchFile" ] || [ ! -z "${forceRecompileHeaders}" ] || [ ! -z "${headersTouched}" ]; then
+                    echo "Compile: $moduleHeader";
+                    g++ -Wall -fdiagnostics-color=always ${compilerGenerateDebugSymbols} -c "$moduleHeader" -o $outputPchFile ${macroOptions[*]};
+                    #compileFile ${compilerGenerateDebugSymbols} "${moduleHeader}" "${outputPchFile}" "-Wall -fdiagnostics-color=always" "${macroOptions[*]}"
+                fi
+            fi
+        done;
     fi
 
     objFiles=()
+    mkdir "$objDir" -p
 
     echo "Compile modules with the following macroses defined: ${macroses[*]}"
     for module in ${modules[*]}; do 
@@ -127,7 +184,7 @@ function compileProject()
 
         if [ $module -nt "$objFile" ] || [ ! -z "${headersTouched}" ]; then
             echo "Compile: $module";
-            g++ -H -Wall -fdiagnostics-color=always ${compilerGenerateDebugSymbols} -c $module -o $objFile ${macroOptions[*]};
+            g++ -H -Wall -fdiagnostics-color=always ${compilerGenerateDebugSymbols} -c "$module" -o "$objFile" ${macroOptions[*]};
         else
             echo "Skip: $module";
         fi
