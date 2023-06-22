@@ -9,15 +9,17 @@ endif
 moduleExportMacros := DORY_EXPORT
 usePrecompiledHeaders := --precompiled-headers true
 
+projectBase := $(srcDir)base
+projectTestDomain:= $(srcDir)testDomain
 projectTestApp := $(srcDir)testApp
+
 build-project-test-app: project := $(projectTestApp)
 build-project-test-app: outputFile := testApp.exe
 build-project-test-app: linkLibraries := --link-libs "lib/doryBase_lib.a lib/testDomain_lib.a"
 build-project-test-app: dependencies := "$(projectBase) $(projectTestDomain)"
 build-project-test-app: precompiledHeaders := $(usePrecompiledHeaders)
-build-test-app: build-base build-test-domain build-project-test-app
+build-test-app: build-project-base build-project-test-domain build-project-test-app
 
-projectBase := $(srcDir)base
 build-project-base: project := $(projectBase)
 build-project-base: outputFile := doryBase.dll
 build-project-base: macroses := $(moduleExportMacros)
@@ -27,7 +29,6 @@ build-project-base: precompiledHeaders := $(usePrecompiledHeaders)
 build-project-base: dependencies := ""
 build-base: build-project-base
 
-projectTestDomain:= $(srcDir)testDomain
 build-project-test-domain: project := $(projectTestDomain)
 build-project-test-domain: outputFile := testDomain.dll
 build-project-test-domain: macroses := $(moduleExportMacros)
