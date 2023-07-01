@@ -9,3 +9,5 @@ add_library(base SHARED basicFrameService.cpp
                         types.cpp)
 target_compile_definitions(base PRIVATE DORY_EXPORT)
 target_precompile_headers(base PRIVATE dependencies.h)
+
+install(TARGETS base COMPONENT Engine)

@@ -9,3 +9,5 @@ target_include_directories(testDomain PRIVATE "${CMAKE_SOURCE_DIR}")
 target_precompile_headers(testDomain PRIVATE dependencies.h)
 
 target_link_libraries(testDomain base)
+
+install(TARGETS testDomain COMPONENT Example)

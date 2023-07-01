@@ -3,4 +3,5 @@ obj-release/
 lib/
 bin/
 build-cmake/
+install/
 *.gch
