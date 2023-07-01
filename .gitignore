@@ -2,4 +2,5 @@ obj-debug/
 obj-release/
 lib/
 bin/
+build-cmake/
 *.gch
