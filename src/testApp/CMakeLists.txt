@@ -8,4 +8,4 @@ target_precompile_headers(testApp PRIVATE dependencies.h)
 
 target_link_libraries(testApp base testDomain)
 
-install(TARGETS testApp COMPONENT Example)
+install(TARGETS testApp DESTINATION . COMPONENT Example)
