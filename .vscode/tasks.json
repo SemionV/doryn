@@ -3,12 +3,9 @@
         {
             "type": "shell",
             "label": "Build testApp project with dependencies(debug)",
-            "command": "make",
+            "command": "sh",
             "args": [
-                "-f",
-                "build/makefile",
-                "build-test-app",
-                "config=debug"
+                "build/build-local-dev-cmake.sh"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

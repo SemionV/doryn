@@ -16,7 +16,7 @@ target_precompile_headers(testDomain PRIVATE dependencies.h)
 
 target_link_libraries(testDomain base)
 
- install(TARGETS testDomain
-         RUNTIME DESTINATION . COMPONENT Example
-         LIBRARY DESTINATION . COMPONENT Example
-         ARCHIVE DESTINATION lib COMPONENT ExampleDevelopment)
+install(TARGETS testDomain
+        RUNTIME DESTINATION . COMPONENT Example
+        LIBRARY DESTINATION . COMPONENT Example
+        ARCHIVE DESTINATION lib COMPONENT ExampleDevelopment)
