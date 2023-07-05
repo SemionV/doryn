@@ -29,12 +29,14 @@ namespace test
         {
             key = getch();
 
-            timeStep.duration = 16666;
-            isStop = engine.update(timeStep);
-
             if(key == 27)
             {
                 isStop = true;
+            }
+            else
+            {
+                timeStep.duration = 16666;
+                isStop = engine.update(timeStep);
             }
 
             frameCounter++;

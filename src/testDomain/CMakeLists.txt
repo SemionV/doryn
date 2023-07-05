@@ -14,8 +14,8 @@ target_compile_definitions(testDomain PRIVATE DORY_EXPORT)
 target_include_directories(testDomain PRIVATE "${CMAKE_SOURCE_DIR}")
 target_precompile_headers(testDomain PRIVATE dependencies.h)
 
-find_package(Curses)
-target_link_libraries(testDomain ${CURSES_LIBRARIES})
+#find_package(Curses)
+#target_link_libraries(testDomain ${CURSES_LIBRARIES})
 
 target_link_libraries(testDomain base)
 
