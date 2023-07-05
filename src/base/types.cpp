@@ -14,6 +14,11 @@ namespace dory
     {
     }
 
+    double TimeSpan::ToMilliseconds() const
+    {
+        return (duration / (double)unitsPerSecond) * UnitScale::Milli;
+    }
+
     inline double TimeConverter::ToMilliseconds(TimeSpan timeSpan)
     {
         return (timeSpan.duration / (double)timeSpan.unitsPerSecond) * UnitScale::Milli;

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.22)
 
 project(dory-testDomain)
 
@@ -14,9 +14,12 @@ target_compile_definitions(testDomain PRIVATE DORY_EXPORT)
 target_include_directories(testDomain PRIVATE "${CMAKE_SOURCE_DIR}")
 target_precompile_headers(testDomain PRIVATE dependencies.h)
 
+find_package(Curses)
+target_link_libraries(testDomain ${CURSES_LIBRARIES})
+
 target_link_libraries(testDomain base)
 
 install(TARGETS testDomain
-        RUNTIME DESTINATION . COMPONENT Example
-        LIBRARY DESTINATION . COMPONENT Example
+        RUNTIME DESTINATION ${INSTALL_LIBRARIES_DESTINATION} COMPONENT Example
+        LIBRARY DESTINATION ${INSTALL_LIBRARIES_DESTINATION} COMPONENT Example
         ARCHIVE DESTINATION lib COMPONENT ExampleDevelopment)

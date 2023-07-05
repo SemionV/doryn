@@ -18,7 +18,7 @@ namespace test
 
     void TestController::update(const dory::TimeSpan& timeStep, dory::DataContext& context)
     {
-        cout << counter << ": timeStep: " << dory::TimeConverter::ToMilliseconds(timeStep) << " ms" << endl;
+        cout << counter << ": timeStep: " << timeStep.ToMilliseconds() << " ms\r" << endl;
 
         counter++;
     }

@@ -16,15 +16,22 @@ namespace test
         dory::TimeSpan timeStep(dory::UnitScale::Micro);
         char key(' ');
 
-        std::cout << "Press any key to process to next frame OR ESC to exit" << std::endl;
+#ifdef __unix__
+        initscr();
+        cbreak();
+        keypad(stdscr, TRUE);
+        noecho();
+#endif
+
+        std::cout << "Press any key to process to render frame OR ESC to exit\r" << std::endl;
 
         while(!isStop)
         {
-            timeStep.duration = 16666;
+            key = getch();
 
+            timeStep.duration = 16666;
             isStop = engine.update(timeStep);
 
-            key = getch();
             if(key == 27)
             {
                 isStop = true;
@@ -32,6 +39,10 @@ namespace test
 
             frameCounter++;
         }
+
+#ifdef __unix__
+        endwin();
+#endif
     }
     
     void StepFrameService::endLoop()

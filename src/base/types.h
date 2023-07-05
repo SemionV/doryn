@@ -19,6 +19,8 @@ namespace dory
 
         TimeSpan();
         TimeSpan(UnitScale unitsPerSecond);
+
+        double ToMilliseconds() const;
     };
 
     class DORY_API TimeConverter

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.22)
 
 project(dory-base)
 
@@ -17,6 +17,6 @@ target_compile_definitions(base PRIVATE DORY_EXPORT)
 target_precompile_headers(base PRIVATE dependencies.h)
 
 install(TARGETS base
-        RUNTIME DESTINATION . COMPONENT Engine
-        LIBRARY DESTINATION . COMPONENT Engine
+        RUNTIME DESTINATION ${INSTALL_LIBRARIES_DESTINATION} COMPONENT Engine
+        LIBRARY DESTINATION ${INSTALL_LIBRARIES_DESTINATION} COMPONENT Engine
         ARCHIVE DESTINATION lib COMPONENT EngineDevelopment)
