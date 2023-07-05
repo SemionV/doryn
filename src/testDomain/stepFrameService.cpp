@@ -14,7 +14,7 @@ namespace test
     {
         isStop = false;
         dory::TimeSpan timeStep(dory::UnitScale::Micro);
-        char key(' ');
+        char key;
 
 #ifdef __unix__
         initscr();
