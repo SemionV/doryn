@@ -6,7 +6,9 @@ add_library(base SHARED basicFrameService.cpp
                         controller.cpp
                         engine.cpp
                         frameService.cpp
-                        types.cpp)
+                        types.cpp
+                        controllers/inputController.cpp
+                        devices/systemConsole.cpp)
 
 set_target_properties(base PROPERTIES PREFIX ""
                                     IMPORT_PREFIX ""
@@ -14,6 +16,7 @@ set_target_properties(base PROPERTIES PREFIX ""
                                     OUTPUT_NAME "base")
 
 target_compile_definitions(base PRIVATE DORY_EXPORT)
+target_include_directories(base PRIVATE "${CMAKE_SOURCE_DIR}")
 target_precompile_headers(base PRIVATE dependencies.h)
 
 install(TARGETS base

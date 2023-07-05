@@ -30,4 +30,15 @@ namespace dory
 
         return dataContext.isStop;
     }
+
+    void Engine::initialize(DataContext& context)
+    {
+        std::vector<Controller*>::iterator it = controllers.begin();
+        std::vector<Controller*>::iterator end = controllers.end();
+
+        for(; it != end; ++it)
+        {
+            (*it)->initialize(context);
+        }
+    }
 }

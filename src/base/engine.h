@@ -1,6 +1,5 @@
 #pragma once
 
-//#include "dependencies.ext.h"
 #include "controller.h"
 
 namespace dory
@@ -16,5 +15,6 @@ namespace dory
             ~Engine();
             void addController(Controller* controller);
             bool update(const TimeSpan& timeStep);
+            void initialize(DataContext& context);
     };
 }
