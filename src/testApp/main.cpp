@@ -1,5 +1,7 @@
 #include "dependencies.h"
 
+#include <windows.h>
+
 void checkMessage(dory::Message& message)
 {
     auto pMouseMessage = dynamic_cast<dory::MouseMessage*>(&message);
@@ -16,11 +18,8 @@ void checkMessage(dory::Message& message)
     }
 }
 
-int main()
+int runDory()
 {
-    std::cout << "dory:native test application" << std::endl;
-    std::cout << "Press any key to process to render frame OR ESC to exit\r" << std::endl;
-
     dory::MouseMessage mouseMessage(1);
     dory::ConsoleMessage consoleMessage(2, -1, -1);
 
@@ -30,18 +29,23 @@ int main()
     dory::MessagePool inputMessagePool;
     dory::DataContext context;
     dory::Engine engine(context);
+
+    dory::InputController inputController(inputMessagePool);
+    engine.addController(&inputController);
+
+    dory::SystemConsole systemConsole;
+    inputController.addDevice(&systemConsole);
     
+    dory::SystemWindow systemWindow;
+    inputController.addDevice(&systemWindow);
+
     test::TestController controller(inputMessagePool);
     engine.addController(&controller);
 
-    dory::SystemConsole systemConsole;
-    dory::SystemWindow systemWindow;
-    dory::InputController inputController(inputMessagePool);
-    inputController.addDevice(&systemConsole);
-    inputController.addDevice(&systemWindow);
-    engine.addController(&inputController);
-
     engine.initialize(context);
+
+    std::cout << "dory:native test application" << std::endl;
+    std::cout << "Press any key to process to render frame OR ESC to exit\r" << std::endl;
 
     dory::BasicFrameService frameService;
     frameService.startLoop(engine);
@@ -49,4 +53,14 @@ int main()
     std::cout << "Session is over." << std::endl;
 
     return 0;
+}
+
+/*int main()
+{
+    return runDory();
+}*/
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
+{
+    return runDory();
 }

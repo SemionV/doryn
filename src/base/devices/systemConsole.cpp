@@ -13,6 +13,11 @@ namespace dory
     {
         isStop = false;
 
+        if(AllocConsole())
+        {
+            bindStdHandlesToConsole();
+        }
+
         std::cout << "SystemConsole.connect()" << std::endl;
 
         workingThread = std::thread(&monitorSystemConsole, this);
@@ -27,6 +32,36 @@ namespace dory
         {
             inputKey = getch();//consider thread safety of this operation
         }
+    }
+
+    void SystemConsole::bindStdHandlesToConsole()
+    {
+        //TODO: Add Error checking.
+        
+        // Redirect the CRT standard input, output, and error handles to the console
+        freopen("CONIN$", "r", stdin);
+        freopen("CONOUT$", "w", stderr);
+        freopen("CONOUT$", "w", stdout);
+        
+        // Note that there is no CONERR$ file
+        HANDLE hStdout = CreateFile("CONOUT$",  GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                    NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        HANDLE hStdin = CreateFile("CONIN$",  GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                    NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        
+        SetStdHandle(STD_OUTPUT_HANDLE,hStdout);
+        SetStdHandle(STD_ERROR_HANDLE,hStdout);
+        SetStdHandle(STD_INPUT_HANDLE,hStdin);
+
+        //Clear the error state for each of the C++ standard stream objects. 
+        std::wclog.clear();
+        std::clog.clear();
+        std::wcout.clear();
+        std::cout.clear();
+        std::wcerr.clear();
+        std::cerr.clear();
+        std::wcin.clear();
+        std::cin.clear();
     }
 
     void SystemConsole::disconnect()

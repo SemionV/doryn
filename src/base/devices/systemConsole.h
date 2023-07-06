@@ -23,5 +23,6 @@ namespace dory
         
         private:
             void monitorSystemConsole();
+            void bindStdHandlesToConsole();
     };
 }
