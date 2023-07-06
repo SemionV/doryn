@@ -9,8 +9,10 @@ namespace dory
     {
         public:
             char keyPressed;
+            int clickX;
+            int clickY;
 
         public:
-            ConsoleMessage(char keyPressed);
+            ConsoleMessage(char keyPressed, int clickX, int clickY);
     };
 }

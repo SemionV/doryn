@@ -38,7 +38,7 @@ namespace dory
     {
         if(inputKey)
         {
-            ConsoleMessage message(inputKey);
+            ConsoleMessage message(inputKey, -1, -1);
             messagePool.addMessage(message);
             inputKey = 0;
         }

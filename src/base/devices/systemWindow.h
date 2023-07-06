@@ -21,5 +21,6 @@ namespace dory
         
         private:
             void monitorSystemWindow();
+            int createWindow();
     };
 }

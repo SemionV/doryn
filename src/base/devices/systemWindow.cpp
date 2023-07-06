@@ -3,6 +3,56 @@
 
 namespace dory
 {
+    int clickX(-1);
+    int clickY(-1);
+
+    SystemWindow::SystemWindow():
+        isStop(false)
+    {        
+    }
+
+    bool SystemWindow::connect()
+    {
+        isStop = false;
+
+        std::cout << "SystemWindow.connect()" << std::endl;
+
+        workingThread = std::thread(&monitorSystemWindow, this);
+        workingThread.detach();
+
+        return true;
+    }
+
+    void SystemWindow::monitorSystemWindow()
+    {
+        createWindow();
+
+        MSG msg;
+
+        while(GetMessage(&msg, NULL, 0, 0) != 0 && !isStop)
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+    }
+
+    void SystemWindow::disconnect()
+    {
+        isStop = true;
+    }
+    
+    void SystemWindow::readUpdates(MessagePool& messagePool)
+    {
+        if(clickX >= 0)
+        {
+            ConsoleMessage message(0, clickX, clickY);
+            messagePool.addMessage(message);
+
+            clickX = -1;
+            clickY = -1;
+        }
+    }
+
     LRESULT WINAPI windowMessageHandler(HWND hWnd, UINT WindowsMessage, WPARAM wParam, LPARAM lParam)
     {
         switch( WindowsMessage )
@@ -22,6 +72,10 @@ namespace dory
 
             case WM_LBUTTONDOWN:
             {
+                POINT pp;
+                GetCursorPos(&pp);
+                clickX = pp.x;
+                clickY = pp.y;
                 break;
             }
 
@@ -82,7 +136,7 @@ namespace dory
         return(0);	
     }
 
-    int createWindow()
+    int SystemWindow::createWindow()
     {
         // Register the window class.
         //const char_t CLASS_NAME[]  = "Sample Window Class";
@@ -122,45 +176,5 @@ namespace dory
         ShowWindow(hwnd, SW_NORMAL);
 
         return 1;
-    }
-
-    SystemWindow::SystemWindow():
-    isStop(false)
-    {        
-    }
-
-    bool SystemWindow::connect()
-    {
-        isStop = false;
-
-        std::cout << "SystemWindow.connect()" << std::endl;
-
-        workingThread = std::thread(&monitorSystemWindow, this);
-        workingThread.detach();
-
-        return true;
-    }
-
-    void SystemWindow::monitorSystemWindow()
-    {
-        dory::createWindow();
-
-        MSG msg;
-
-        while(GetMessage(&msg, NULL, 0, 0) != 0 && !isStop)
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-    }
-
-    void SystemWindow::disconnect()
-    {
-        isStop = true;
-    }
-    
-    void SystemWindow::readUpdates(MessagePool& messagePool)
-    {
-        
     }
 }

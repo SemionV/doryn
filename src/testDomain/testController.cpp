@@ -1,8 +1,6 @@
 #include "dependencies.h"
 #include "testController.h"
 
-#include <windows.h>
-
 namespace test
 {
     TestController::TestController(dory::MessagePool& messagePool):
@@ -29,9 +27,13 @@ namespace test
                 context.isStop = true;
                 std::cout << "ESC";
             }
-            else
+            else if(message.keyPressed != 0)
             {
                 std::cout << message.keyPressed;
+            }
+            else
+            {
+                std::cout << "click: " << message.clickX << ", " << message.clickY;
             }
 
             std::cout << std::endl;

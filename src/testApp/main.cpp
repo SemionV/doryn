@@ -22,7 +22,7 @@ int main()
     std::cout << "Press any key to process to render frame OR ESC to exit\r" << std::endl;
 
     dory::MouseMessage mouseMessage(1);
-    dory::ConsoleMessage consoleMessage(2);
+    dory::ConsoleMessage consoleMessage(2, -1, -1);
 
     checkMessage(mouseMessage);
     checkMessage(consoleMessage);
