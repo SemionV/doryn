@@ -1,7 +1,7 @@
 #pragma once
 
 #include "base/doryExport.h"
-#include "base/messagePool.h"
+#include "base/messaging/messagePool.h"
 
 namespace dory
 {

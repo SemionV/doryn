@@ -3,8 +3,9 @@
 
 namespace test
 {
-    TestController::TestController():
-            counter(0)
+    TestController::TestController(dory::MessagePool& messagePool):
+            counter(0),
+            messagePool(messagePool)
     {
     }
 
@@ -18,8 +19,22 @@ namespace test
 
     void TestController::update(const dory::TimeSpan& timeStep, dory::DataContext& context)
     {
-        cout << counter << ": timeStep: " << timeStep.ToMilliseconds() << " ms\r" << endl;
+        messagePool.iterate([&](dory::ConsoleMessage message)
+        {
+            std::cout << "TestController::key pressed: ";
+            if(message.keyPressed == 27)
+            {
+                context.isStop = true;
+                std::cout << "ESC";
+            }
+            else
+            {
+                std::cout << message.keyPressed;
+            }
 
-        counter++;
+            std::cout << std::endl;
+        });
+
+        messagePool.clean();
     }
 }

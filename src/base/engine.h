@@ -8,7 +8,7 @@ namespace dory
     {
         private:
             DataContext& dataContext;
-            std::vector<Controller*> controllers;      
+            std::vector<Controller*> controllers;
 
         public:
             Engine(DataContext& context);

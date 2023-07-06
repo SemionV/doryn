@@ -5,3 +5,12 @@
 #include <thread>
 
 #include <iostream>
+#include <functional>
+
+#ifdef _WIN32
+#include <conio.h>
+#endif
+
+#ifdef __unix__
+#include <curses.h>
+#endif

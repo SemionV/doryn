@@ -1,18 +1,17 @@
 #include "dependencies.h"
 
-using namespace std;
-
 int main()
 {
-    cout << "dory:native test application" << endl;
+    std::cout << "dory:native test application" << std::endl;
+    std::cout << "Press any key to process to render frame OR ESC to exit\r" << std::endl;
 
+    dory::MessagePool inputMessagePool;
     dory::DataContext context;
     dory::Engine engine(context);
     
-    test::TestController controller;
+    test::TestController controller(inputMessagePool);
     engine.addController(&controller);
 
-    dory::MessagePool inputMessagePool;
     dory::SystemConsole systemConsole;
     dory::InputController inputController(inputMessagePool);
     inputController.addDevice(&systemConsole);
@@ -20,8 +19,10 @@ int main()
 
     engine.initialize(context);
 
-    test::StepFrameService frameService;
+    dory::BasicFrameService frameService;
     frameService.startLoop(engine);
+
+    std::cout << "Session is over." << std::endl;
 
     return 0;
 }

@@ -2,7 +2,7 @@
 
 #include "base/controller.h"
 #include "base/devices/device.h"
-#include "base/messagePool.h"
+#include "base/messaging/messagePool.h"
 
 namespace dory
 {

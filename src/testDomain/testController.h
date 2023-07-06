@@ -1,18 +1,16 @@
 #pragma once
 
-using namespace std;
-
 namespace test
 {
     class DORY_API TestController: public dory::Controller
     {
         private:
             int counter;
-
+            dory::MessagePool& messagePool;
 
         public:
 
-        TestController();
+        TestController(dory::MessagePool& messagePool);
 
         void initialize(dory::DataContext& context);
 

@@ -8,7 +8,9 @@ add_library(base SHARED basicFrameService.cpp
                         frameService.cpp
                         types.cpp
                         controllers/inputController.cpp
-                        devices/systemConsole.cpp)
+                        devices/systemConsole.cpp
+                        messaging/messagePool.cpp
+                        messaging/messages/consoleMessage.cpp)
 
 set_target_properties(base PROPERTIES PREFIX ""
                                     IMPORT_PREFIX ""
