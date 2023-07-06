@@ -4,8 +4,9 @@
 
 namespace dory
 {
-    struct DORY_API Message
+    class DORY_API Message
     {
-
+        public:
+            virtual ~Message(){};
     };
 }

@@ -9,6 +9,7 @@
 
 #ifdef _WIN32
 #include <conio.h>
+#include <windows.h>
 #endif
 
 #ifdef __unix__

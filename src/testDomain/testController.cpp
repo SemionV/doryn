@@ -1,6 +1,8 @@
 #include "dependencies.h"
 #include "testController.h"
 
+#include <windows.h>
+
 namespace test
 {
     TestController::TestController(dory::MessagePool& messagePool):

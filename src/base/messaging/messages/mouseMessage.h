@@ -5,12 +5,12 @@
 
 namespace dory
 {
-    class DORY_API ConsoleMessage: public Message
+    class DORY_API MouseMessage: public Message
     {
         public:
-            char keyPressed;
+            char buttonPressed;
 
         public:
-            ConsoleMessage(char keyPressed);
+            MouseMessage(char buttonPressed);
     };
 }
