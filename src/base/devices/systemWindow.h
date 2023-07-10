@@ -9,8 +9,7 @@ namespace dory
     class DORY_API SystemWindow: public Device
     {
         private:
-            bool isStop;
-            std::thread workingThread;
+            int clickX, clickY;
 
         public:
             SystemWindow();
@@ -18,9 +17,9 @@ namespace dory
             bool connect();
             void disconnect();
             void readUpdates(MessagePool& messagePool);
-        
+            void addClickMessage(int clickX, int clickY);
+
         private:
-            void monitorSystemWindow();
             int createWindow();
     };
 }

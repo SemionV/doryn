@@ -3,18 +3,16 @@
 
 namespace dory
 {
-    int clickX(-1);
-    int clickY(-1);
+    LRESULT WINAPI windowProcedure(HWND hWnd, UINT WindowsMessage, WPARAM wParam, LPARAM lParam);
 
     SystemWindow::SystemWindow():
-        isStop(false)
+        clickX(-1),
+        clickY(-1)
     {        
     }
 
     bool SystemWindow::connect()
     {
-        isStop = false;
-
         std::cout << "SystemWindow.connect()" << std::endl;
 
         createWindow();
@@ -24,7 +22,6 @@ namespace dory
 
     void SystemWindow::disconnect()
     {
-        isStop = true;
     }
     
     void SystemWindow::readUpdates(MessagePool& messagePool)
@@ -50,7 +47,57 @@ namespace dory
         }
     }
 
-    LRESULT WINAPI windowMessageHandler(HWND hWnd, UINT WindowsMessage, WPARAM wParam, LPARAM lParam)
+    void SystemWindow::addClickMessage(int clickX, int clickY)
+    {
+        this->clickX = clickX;
+        this->clickY = clickY;
+    }
+
+    int SystemWindow::createWindow()
+    {
+        HINSTANCE hInstance = GetModuleHandle(NULL);
+
+        WNDCLASS wc = { };
+
+        auto windowClassName = _T("Sample Window Class");
+
+        wc.lpfnWndProc   = windowProcedure;
+        wc.hInstance     = hInstance;
+        wc.lpszClassName = windowClassName;
+        wc.cbWndExtra = sizeof(LONG_PTR);
+
+        RegisterClass(&wc); 
+
+        // Create the window.
+
+        HWND hwnd = CreateWindowEx(
+            0,                              // Optional window styles.
+            windowClassName,                     // Window class
+            _T("dory"),    // Window text
+            WS_OVERLAPPEDWINDOW,            // Window style
+
+            // Size and position
+            CW_USEDEFAULT, CW_USEDEFAULT, 500, 500,
+
+            NULL,       // Parent window    
+            NULL,       // Menu
+            hInstance,  // Instance handle
+            NULL        // Additional application data
+            );
+
+        if (hwnd == NULL)
+        {
+            return 0;
+        }
+
+        SetWindowLongPtr(hwnd, 0, (LONG_PTR)this);
+
+        ShowWindow(hwnd, SW_NORMAL);
+
+        return 1;
+    }
+
+    LRESULT WINAPI windowProcedure(HWND hWnd, UINT WindowsMessage, WPARAM wParam, LPARAM lParam)
     {
         switch( WindowsMessage )
         {
@@ -71,8 +118,11 @@ namespace dory
             {
                 POINT pp;
                 GetCursorPos(&pp);
-                clickX = pp.x;
-                clickY = pp.y;
+                SystemWindow* window = (SystemWindow*)GetWindowLongPtr(hWnd, 0);
+                if(window)
+                {
+                    window->addClickMessage(pp.x, pp.y);
+                }
                 break;
             }
 
@@ -134,47 +184,5 @@ namespace dory
         };
 
         return(0);	
-    }
-
-    int SystemWindow::createWindow()
-    {
-        // Register the window class.
-        //const char_t CLASS_NAME[]  = "Sample Window Class";
-
-        HINSTANCE hInstance = GetModuleHandle(NULL);
-
-        WNDCLASS wc = { };
-
-        wc.lpfnWndProc   = windowMessageHandler;
-        wc.hInstance     = hInstance;
-        wc.lpszClassName = "Sample Window Class";
-
-        RegisterClass(&wc);
-
-        // Create the window.
-
-        HWND hwnd = CreateWindowEx(
-            0,                              // Optional window styles.
-            "Sample Window Class",                     // Window class
-            "Learn to Program Windows",    // Window text
-            WS_OVERLAPPEDWINDOW,            // Window style
-
-            // Size and position
-            CW_USEDEFAULT, CW_USEDEFAULT, 500, 500,
-
-            NULL,       // Parent window    
-            NULL,       // Menu
-            hInstance,  // Instance handle
-            NULL        // Additional application data
-            );
-
-        if (hwnd == NULL)
-        {
-            return 0;
-        }
-
-        ShowWindow(hwnd, SW_NORMAL);
-
-        return 1;
     }
 }
