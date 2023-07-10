@@ -17,23 +17,9 @@ namespace dory
 
         std::cout << "SystemWindow.connect()" << std::endl;
 
-        workingThread = std::thread(&monitorSystemWindow, this);
-        workingThread.detach();
-
-        return true;
-    }
-
-    void SystemWindow::monitorSystemWindow()
-    {
         createWindow();
 
-        MSG msg;
-
-        while(GetMessage(&msg, NULL, 0, 0) != 0 && !isStop)
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
+        return true;
     }
 
     void SystemWindow::disconnect()
@@ -43,6 +29,17 @@ namespace dory
     
     void SystemWindow::readUpdates(MessagePool& messagePool)
     {
+        MSG msg;
+
+        while(PeekMessage(&msg,NULL,0,0,PM_NOREMOVE)) 
+		{
+			if(GetMessage(&msg,NULL,0,0))
+			{ 
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}		
+		}
+
         if(clickX >= 0)
         {
             ConsoleMessage message(0, clickX, clickY);
@@ -129,7 +126,10 @@ namespace dory
                 break;
             }
 
-            default : return DefWindowProc(hWnd,WindowsMessage,wParam,lParam);
+            default: 
+            {
+                return DefWindowProc(hWnd,WindowsMessage,wParam,lParam);
+            }
 
         };
 

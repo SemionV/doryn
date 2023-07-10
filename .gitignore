@@ -2,5 +2,6 @@ obj-debug/
 obj-release/
 lib/
 bin/
+.idea/
 build/cmake-artifacts/
 *.gch
