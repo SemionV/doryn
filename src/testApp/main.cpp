@@ -161,6 +161,7 @@ class SystemThread
         {
             while(!isStop)
             {
+                mutex.lock();
                 std::size_t count = irregularTasks.size();
                 for(std::size_t i = 0; i < count; i++)
                 {
@@ -176,14 +177,24 @@ class SystemThread
                     
                     task->setDone(true);
                 }
+                mutex.unlock();
 
                 if(regularTask)
                 {
-                    regularTask->operator()();
-                }
+                    regularTask->setDone(false);
+                    regularTask->setError(false);
 
-                //const std::chrono::milliseconds threadMainSleepInterval = std::chrono::milliseconds(5);
-                //std::this_thread::sleep_for(threadMainSleepInterval);
+                    try
+                    {
+                        regularTask->operator()();
+                    }
+                    catch(const std::exception& e)
+                    {
+                        regularTask->setError(true);
+                    }
+
+                    regularTask->setDone(true);
+                }
             }
         }
 };
@@ -222,6 +233,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     std::cout << std::this_thread::get_id() << ": main thread: schedule a task" << std::endl;
     systemThread.invokeTask(&testTask);
     std::cout << std::this_thread::get_id() << ": main thread: task should be invoked" << std::endl;
+
+    systemThread.stop();
 
     return runDory();
 }
