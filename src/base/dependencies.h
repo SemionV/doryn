@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <queue>
 #include <chrono>
 #include <thread>
 #include <iostream>

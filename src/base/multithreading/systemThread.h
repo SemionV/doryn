@@ -8,7 +8,7 @@ namespace dory
     {
         private:
             Task* regularTask;
-            std::vector<Task*> irregularTasks;
+            std::queue<Task*> irregularTasks;
             std::mutex mutex;
             bool isStop;
 

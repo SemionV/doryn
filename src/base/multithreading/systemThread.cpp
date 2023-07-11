@@ -24,26 +24,15 @@ namespace dory
 
     void SystemThread::invokeTask(Task* task)
     {
-        task->setDone(false);
-        task->setError(false);
-
-        mutex.lock();
-        irregularTasks.push_back(task);
-        mutex.unlock();
-
-        while(!task->getDone());
-
-        mutex.lock();
-        std::size_t count = irregularTasks.size();
-        for(std::size_t i = 0; i < count; i++)
         {
-            if(irregularTasks[i] == task)
-            {
-                irregularTasks.erase(irregularTasks.begin() + i);
-                break;
-            }
+            task->setDone(false);
+            task->setError(false);
+
+            const std::lock_guard<std::mutex> lock(mutex);
+            irregularTasks.push(task);
         }
-        mutex.unlock();
+
+        while(!task->getDone() || !task->getError());
     }
 
     void SystemThread::stop()
@@ -61,14 +50,16 @@ namespace dory
     {
         while(!isStop)
         {
-            mutex.lock();
-            std::size_t count = irregularTasks.size();
-            for(std::size_t i = 0; i < count; i++)
             {
-                Task* task = irregularTasks[i];
-                invokeTaskSafe(task);
+                const std::lock_guard<std::mutex> lock(mutex);
+
+                while(irregularTasks.size() > 0)
+                {
+                    Task* task = irregularTasks.front();
+                    invokeTaskSafe(task);
+                    irregularTasks.pop();
+                }
             }
-            mutex.unlock();
 
             if(regularTask)
             {
@@ -82,15 +73,17 @@ namespace dory
 
     void SystemThread::invokeTaskSafe(Task* task)
     {
-        try
+        if(task)
         {
-            task->operator()();
+            try
+            {
+                task->operator()();
+                task->setDone(true);
+            }
+            catch(...)
+            {
+                task->setError(true);
+            }
         }
-        catch(const std::exception& e)
-        {
-            task->setError(true);
-        }
-
-        task->setDone(true);
     }
 }
