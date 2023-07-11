@@ -5,6 +5,7 @@
 #include "base/messaging/messages/consoleMessage.h"
 #include "deviceListener.h"
 #include "base/multithreading/systemThread.h"
+#include "base/multithreading/lambdaTask.h"
 #include "readConsoleInputTask.h"
 
 namespace dory
@@ -16,7 +17,7 @@ namespace dory
         private:
             char inputKey;
             SystemThread* systemThread;
-            ReadConsoleInputTask* readInputTask;
+            LambdaTask* readInputTask;
 
         public:
             SystemConsole();

@@ -6,14 +6,19 @@ namespace dory
     SystemConsole::SystemConsole():
         inputKey(0)
     {
-        readInputTask = new ReadConsoleInputTask(this);
+        readInputTask = new LambdaTask([this]() 
+            {  
+                int inputKey = getch();
+                this->onInput(inputKey);
+            });
+
         systemThread = new SystemThread(readInputTask);
     }
 
     SystemConsole::~SystemConsole()
     {
-        delete readInputTask;
         delete systemThread;
+        delete readInputTask;
     }
 
     bool SystemConsole::connect()

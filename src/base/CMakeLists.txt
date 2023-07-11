@@ -15,6 +15,7 @@ add_library(base SHARED basicFrameService.cpp
                         messaging/messages/consoleMessage.cpp
                         messaging/messages/mouseMessage.cpp
                         multithreading/task.cpp
+                        multithreading/lambdaTask.cpp
                         multithreading/systemThread.cpp)
 
 set_target_properties(base PROPERTIES PREFIX ""
