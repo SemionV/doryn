@@ -6,19 +6,13 @@ namespace dory
     SystemConsole::SystemConsole():
         inputKey(0)
     {
-        readInputTask = new LambdaTask([this]() 
+        auto readInputTask = std::make_shared<LambdaTask>([this]() 
         {  
             int inputKey = getch();
             this->onInput(inputKey);
         });
 
-        systemThread = new SystemThread(readInputTask);
-    }
-
-    SystemConsole::~SystemConsole()
-    {
-        delete systemThread;
-        delete readInputTask;
+        individualThread = std::make_shared<IndividualProcessThread>(readInputTask);
     }
 
     bool SystemConsole::connect()
@@ -30,7 +24,7 @@ namespace dory
 
         std::cout << "SystemConsole.connect()" << std::endl;
 
-        systemThread->run();
+        individualThread->run();
 
         return true;
     }
@@ -73,7 +67,7 @@ namespace dory
 
     void SystemConsole::disconnect()
     {
-        systemThread->stop();
+        individualThread->stop();
     }
     
     void SystemConsole::readUpdates(MessagePool& messagePool)

@@ -9,7 +9,7 @@ namespace dory
         clickX(-1),
         clickY(-1)
     {
-        pumpMessagesTask = new LambdaTask([]() 
+        /*auto pumpMessagesTask = std::make_shared<LambdaTask>([]() 
         {
             MSG msg;
 
@@ -26,28 +26,24 @@ namespace dory
             std::this_thread::sleep_for(threadMainSleepInterval);
         });
 
-        systemThread = new SystemThread(pumpMessagesTask);
-    }
+        processThread = std::make_shared<IndividualProcessThread>(pumpMessagesTask);*/
 
-    SystemWindow::~SystemWindow()
-    {
-        delete systemThread;
-        delete pumpMessagesTask;
+        processThread = std::make_shared<CurrentProcessThread>();
     }
 
     bool SystemWindow::connect()
     {
         std::cout << "SystemWindow.connect()" << std::endl;
 
-        systemThread->run();
+        processThread->run();
 
-        auto createWindowTask = new LambdaTask([this]() 
+        auto createWindowTask = std::make_shared<LambdaTask>([this]() 
         {
             std::cout << std::this_thread::get_id() << ": create a system window" << std::endl;
             this->createWindow();
         });
 
-        systemThread->invokeTask(createWindowTask);
+        processThread->invokeTask(createWindowTask);
 
         return true;
     }
@@ -58,6 +54,17 @@ namespace dory
     
     void SystemWindow::readUpdates(MessagePool& messagePool)
     {
+        MSG msg;
+
+        while(PeekMessage(&msg,NULL,0,0,PM_NOREMOVE)) 
+        {
+            if(GetMessage(&msg,NULL,0,0))
+            { 
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }		
+        }
+
         if(clickX >= 0)
         {
             ConsoleMessage message(0, clickX, clickY);

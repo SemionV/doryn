@@ -8,4 +8,4 @@
 #include "messaging/messagePool.h"
 #include "messaging/messages/consoleMessage.h"
 #include "messaging/messages/mouseMessage.h"
-#include "multithreading/systemThread.h"
+#include "multithreading/individualProcessThread.h"

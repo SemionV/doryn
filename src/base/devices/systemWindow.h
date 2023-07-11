@@ -3,7 +3,8 @@
 #include "base/doryExport.h"
 #include "base/messaging/messagePool.h"
 #include "deviceListener.h"
-#include "base/multithreading/systemThread.h"
+#include "base/multithreading/individualProcessThread.h"
+#include "base/multithreading/currentProcessThread.h"
 #include "base/multithreading/lambdaTask.h"
 
 namespace dory
@@ -12,13 +13,11 @@ namespace dory
     {
         private:
             int clickX, clickY;
-            SystemThread* systemThread;
-            LambdaTask* pumpMessagesTask;
+            std::shared_ptr<ProcessThread> processThread;
             std::mutex mutex;
 
         public:
             SystemWindow();
-            ~SystemWindow();
 
             bool connect();
             void disconnect();

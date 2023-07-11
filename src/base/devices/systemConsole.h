@@ -4,23 +4,19 @@
 #include "base/messaging/messagePool.h"
 #include "base/messaging/messages/consoleMessage.h"
 #include "deviceListener.h"
-#include "base/multithreading/systemThread.h"
+#include "base/multithreading/individualProcessThread.h"
 #include "base/multithreading/lambdaTask.h"
 
 namespace dory
 {
-    class ReadConsoleInputTask;
-
     class DORY_API SystemConsole: public DeviceListener
     {
         private:
             char inputKey;
-            SystemThread* systemThread;
-            LambdaTask* readInputTask;
+            std::shared_ptr<IndividualProcessThread> individualThread;
 
         public:
             SystemConsole();
-            ~SystemConsole();
 
             bool connect();
             void disconnect();

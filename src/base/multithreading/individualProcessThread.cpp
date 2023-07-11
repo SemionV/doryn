@@ -1,28 +1,28 @@
 #include "base/dependencies.h"
-#include "systemThread.h"
+#include "individualProcessThread.h"
 
 namespace dory
 {
-    SystemThread::SystemThread(Task* regularTask):
+    IndividualProcessThread::IndividualProcessThread(std::shared_ptr<Task> regularTask):
         regularTask(regularTask),
         irregularTasks(),
         isStop(false)
     {
     }
 
-    SystemThread::SystemThread():
+    IndividualProcessThread::IndividualProcessThread():
         regularTask(nullptr),
         irregularTasks(),
         isStop(false)
     {
     }
 
-    SystemThread::~SystemThread()
+    IndividualProcessThread::~IndividualProcessThread()
     {
         isStop = true;
     }
 
-    void SystemThread::invokeTask(Task* task)
+    void IndividualProcessThread::invokeTask(std::shared_ptr<Task> task)
     {
         {
             task->setDone(false);
@@ -35,18 +35,18 @@ namespace dory
         while(!task->getDone() && !task->getError());
     }
 
-    void SystemThread::stop()
+    void IndividualProcessThread::stop()
     {
         isStop = true;
     }
 
-    void SystemThread::run()
+    void IndividualProcessThread::run()
     {
         std::thread workingThread = std::thread(&threadMain, this);
         workingThread.detach();
     }
 
-    void SystemThread::threadMain()
+    void IndividualProcessThread::threadMain()
     {
         while(!isStop)
         {
@@ -55,7 +55,7 @@ namespace dory
 
                 while(irregularTasks.size() > 0)
                 {
-                    Task* task = irregularTasks.front();
+                    std::shared_ptr<Task> task = irregularTasks.front();
                     invokeTaskSafe(task);
                     irregularTasks.pop();
                 }
@@ -67,22 +67,6 @@ namespace dory
                 regularTask->setError(false);
 
                 invokeTaskSafe(regularTask);
-            }
-        }
-    }
-
-    void SystemThread::invokeTaskSafe(Task* task)
-    {
-        if(task)
-        {
-            try
-            {
-                task->operator()();
-                task->setDone(true);
-            }
-            catch(...)
-            {
-                task->setError(true);
             }
         }
     }

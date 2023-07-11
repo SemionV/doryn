@@ -15,7 +15,9 @@ add_library(base SHARED basicFrameService.cpp
                         messaging/messages/mouseMessage.cpp
                         multithreading/task.cpp
                         multithreading/lambdaTask.cpp
-                        multithreading/systemThread.cpp)
+                        multithreading/processThread.cpp
+                        multithreading/currentProcessThread.cpp
+                        multithreading/individualProcessThread.cpp)
 
 set_target_properties(base PROPERTIES PREFIX ""
                                     IMPORT_PREFIX ""

@@ -4,6 +4,7 @@
 #include <queue>
 #include <chrono>
 #include <thread>
+#include <memory>
 #include <iostream>
 #include <functional>
 #include <mutex>
