@@ -32,7 +32,7 @@ namespace dory
             irregularTasks.push(task);
         }
 
-        while(!task->getDone() || !task->getError());
+        while(!task->getDone() && !task->getError());
     }
 
     void SystemThread::stop()
