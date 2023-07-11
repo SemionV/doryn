@@ -29,6 +29,12 @@ namespace dory
         systemThread = new SystemThread(pumpMessagesTask);
     }
 
+    SystemWindow::~SystemWindow()
+    {
+        delete systemThread;
+        delete pumpMessagesTask;
+    }
+
     bool SystemWindow::connect()
     {
         std::cout << "SystemWindow.connect()" << std::endl;

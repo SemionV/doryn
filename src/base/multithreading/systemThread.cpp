@@ -17,6 +17,11 @@ namespace dory
     {
     }
 
+    SystemThread::~SystemThread()
+    {
+        isStop = true;
+    }
+
     void SystemThread::invokeTask(Task* task)
     {
         task->setDone(false);

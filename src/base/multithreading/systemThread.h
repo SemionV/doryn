@@ -15,6 +15,7 @@ namespace dory
         public:
             explicit SystemThread(Task* regularTask);
             explicit SystemThread();
+            ~SystemThread();
             virtual void invokeTask(Task* task);
             virtual void stop();
             virtual void run();

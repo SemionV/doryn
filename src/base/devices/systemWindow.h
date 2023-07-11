@@ -18,6 +18,7 @@ namespace dory
 
         public:
             SystemWindow();
+            ~SystemWindow();
 
             bool connect();
             void disconnect();
