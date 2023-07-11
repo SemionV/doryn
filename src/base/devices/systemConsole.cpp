@@ -69,6 +69,11 @@ namespace dory
     {
         individualThread->stop();
     }
+
+    void SystemConsole::handleMessage(std::shared_ptr<DeviceMessage> message)
+    {
+
+    }
     
     void SystemConsole::readUpdates(MessagePool& messagePool)
     {

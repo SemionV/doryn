@@ -51,6 +51,11 @@ namespace dory
     void SystemWindow::disconnect()
     {
     }
+
+    void SystemWindow::handleMessage(std::shared_ptr<DeviceMessage> message)
+    {
+
+    }
     
     void SystemWindow::readUpdates(MessagePool& messagePool)
     {

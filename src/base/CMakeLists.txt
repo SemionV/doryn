@@ -8,6 +8,7 @@ add_library(base SHARED basicFrameService.cpp
                         frameService.cpp
                         types.cpp
                         controllers/inputController.cpp
+                        devices/device.cpp
                         devices/systemConsole.cpp
                         devices/systemWindow.cpp
                         messaging/messagePool.cpp

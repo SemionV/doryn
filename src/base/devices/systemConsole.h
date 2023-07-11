@@ -21,6 +21,7 @@ namespace dory
             bool connect();
             void disconnect();
             void readUpdates(MessagePool& messagePool);
+            void handleMessage(std::shared_ptr<DeviceMessage> message);
             void onInput(int key);
         
         private:

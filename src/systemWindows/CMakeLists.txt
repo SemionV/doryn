@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 
 project(dory-systemWindows)
 
-add_library(systemWindows SHARED systemThread.cpp)
+add_library(systemWindows SHARED windowSystem.cpp)
 
 set_target_properties(systemWindows PROPERTIES PREFIX ""
                                             IMPORT_PREFIX ""
