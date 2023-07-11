@@ -1,7 +1,7 @@
 #pragma once
 
 #include "base/controller.h"
-#include "base/devices/device.h"
+#include "base/devices/deviceListener.h"
 #include "base/messaging/messagePool.h"
 
 namespace dory
@@ -9,7 +9,7 @@ namespace dory
     class DORY_API InputController: public dory::Controller
     {
         private:
-            std::vector<Device*> devices;
+            std::vector<DeviceListener*> devices;
             MessagePool& messagePool;
 
         public:
@@ -22,6 +22,6 @@ namespace dory
 
         void update(const dory::TimeSpan& timeStep, dory::DataContext& context);
 
-        void addDevice(Device* device);
+        void addDevice(DeviceListener* device);
     };
 }

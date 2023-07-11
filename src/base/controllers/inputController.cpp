@@ -11,8 +11,8 @@ namespace dory
 
     void InputController::initialize(dory::DataContext& context)
     {
-        std::vector<Device*>::iterator it = devices.begin();
-        std::vector<Device*>::iterator end = devices.end();
+        std::vector<DeviceListener*>::iterator it = devices.begin();
+        std::vector<DeviceListener*>::iterator end = devices.end();
 
         for(; it != end; ++it)
         {
@@ -22,8 +22,8 @@ namespace dory
 
     void InputController::stop(dory::DataContext& context)
     {
-        std::vector<Device*>::iterator it = devices.begin();
-        std::vector<Device*>::iterator end = devices.end();
+        std::vector<DeviceListener*>::iterator it = devices.begin();
+        std::vector<DeviceListener*>::iterator end = devices.end();
 
         for(; it != end; ++it)
         {
@@ -33,8 +33,8 @@ namespace dory
 
     void InputController::update(const dory::TimeSpan& timeStep, dory::DataContext& context)
     {
-        std::vector<Device*>::iterator it = devices.begin();
-        std::vector<Device*>::iterator end = devices.end();
+        std::vector<DeviceListener*>::iterator it = devices.begin();
+        std::vector<DeviceListener*>::iterator end = devices.end();
 
         for(; it != end; ++it)
         {
@@ -42,7 +42,7 @@ namespace dory
         }
     }
 
-    void InputController::addDevice(Device* device)
+    void InputController::addDevice(DeviceListener* device)
     {
         devices.push_back(device);
     }

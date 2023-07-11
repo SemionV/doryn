@@ -2,11 +2,11 @@
 
 #include "base/doryExport.h"
 #include "base/messaging/messagePool.h"
-#include "device.h"
+#include "deviceListener.h"
 
 namespace dory
 {
-    class DORY_API SystemWindow: public Device
+    class DORY_API SystemWindow: public DeviceListener
     {
         private:
             int clickX, clickY;

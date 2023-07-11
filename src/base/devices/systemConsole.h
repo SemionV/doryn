@@ -3,11 +3,11 @@
 #include "base/doryExport.h"
 #include "base/messaging/messagePool.h"
 #include "base/messaging/messages/consoleMessage.h"
-#include "device.h"
+#include "deviceListener.h"
 
 namespace dory
 {
-    class DORY_API SystemConsole: public Device
+    class DORY_API SystemConsole: public DeviceListener
     {
         private:
             bool isStop;
