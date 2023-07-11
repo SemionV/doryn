@@ -8,14 +8,40 @@ namespace dory
     SystemWindow::SystemWindow():
         clickX(-1),
         clickY(-1)
-    {        
+    {
+        pumpMessagesTask = new LambdaTask([]() 
+        {
+            MSG msg;
+
+            while(PeekMessage(&msg,NULL,0,0,PM_NOREMOVE)) 
+            {
+                if(GetMessage(&msg,NULL,0,0))
+                { 
+                    TranslateMessage(&msg);
+                    DispatchMessage(&msg);
+                }		
+            }
+
+            const std::chrono::milliseconds threadMainSleepInterval = std::chrono::milliseconds(10);
+            std::this_thread::sleep_for(threadMainSleepInterval);
+        });
+
+        systemThread = new SystemThread(pumpMessagesTask);
     }
 
     bool SystemWindow::connect()
     {
         std::cout << "SystemWindow.connect()" << std::endl;
 
-        createWindow();
+        systemThread->run();
+
+        auto createWindowTask = new LambdaTask([this]() 
+        {
+            std::cout << std::this_thread::get_id() << ": create a system window" << std::endl;
+            this->createWindow();
+        });
+
+        systemThread->invokeTask(createWindowTask);
 
         return true;
     }
@@ -26,17 +52,6 @@ namespace dory
     
     void SystemWindow::readUpdates(MessagePool& messagePool)
     {
-        MSG msg;
-
-        while(PeekMessage(&msg,NULL,0,0,PM_NOREMOVE)) 
-		{
-			if(GetMessage(&msg,NULL,0,0))
-			{ 
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}		
-		}
-
         if(clickX >= 0)
         {
             ConsoleMessage message(0, clickX, clickY);
@@ -49,6 +64,8 @@ namespace dory
 
     void SystemWindow::addClickMessage(int clickX, int clickY)
     {
+        std::cout << std::this_thread::get_id() << ": add click message (" << clickX << ", " << clickY << ")" << std::endl;
+        const std::lock_guard<std::mutex> lock(mutex);
         this->clickX = clickX;
         this->clickY = clickY;
     }

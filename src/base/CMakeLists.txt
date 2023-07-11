@@ -10,7 +10,6 @@ add_library(base SHARED basicFrameService.cpp
                         controllers/inputController.cpp
                         devices/systemConsole.cpp
                         devices/systemWindow.cpp
-                        devices/readConsoleInputTask.cpp
                         messaging/messagePool.cpp
                         messaging/messages/consoleMessage.cpp
                         messaging/messages/mouseMessage.cpp

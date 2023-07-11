@@ -21,22 +21,19 @@ namespace test
     {
         messagePool.iterate([&](dory::ConsoleMessage message)
         {
-            std::cout << "TestController::key pressed: ";
             if(message.keyPressed == 27)
             {
                 context.isStop = true;
-                std::cout << "ESC";
+                std::cout << std::this_thread::get_id() << ": ESC" << std::endl;
             }
             else if(message.keyPressed != 0)
             {
-                std::cout << message.keyPressed;
+                std::cout << std::this_thread::get_id() << ": key pressed: " << message.keyPressed << std::endl;
             }
             else
             {
-                std::cout << "click: " << message.clickX << ", " << message.clickY;
+                std::cout << std::this_thread::get_id() << ": click: " << message.clickX << ", " << message.clickY << std::endl;
             }
-
-            std::cout << std::endl;
         });
 
         messagePool.clean();

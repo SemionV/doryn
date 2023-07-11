@@ -6,7 +6,6 @@
 #include "deviceListener.h"
 #include "base/multithreading/systemThread.h"
 #include "base/multithreading/lambdaTask.h"
-#include "readConsoleInputTask.h"
 
 namespace dory
 {

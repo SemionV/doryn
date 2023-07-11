@@ -7,10 +7,10 @@ namespace dory
         inputKey(0)
     {
         readInputTask = new LambdaTask([this]() 
-            {  
-                int inputKey = getch();
-                this->onInput(inputKey);
-            });
+        {  
+            int inputKey = getch();
+            this->onInput(inputKey);
+        });
 
         systemThread = new SystemThread(readInputTask);
     }
@@ -37,6 +37,7 @@ namespace dory
 
     void SystemConsole::onInput(int key)
     {
+        std::cout << std::this_thread::get_id() << ": add key pressed message: " << key << std::endl;
         inputKey = key;
     }
 

@@ -43,42 +43,7 @@ int runDory()
     return runDory();
 }*/
 
-class TestTask: public dory::Task
-{
-    public:
-        void operator()() override
-        {
-            std::cout << std::this_thread::get_id() << ": Irregular test task" << std::endl;
-        }
-};
-
-class SleepThreadTask: public dory::Task
-{
-    public:
-        void operator()() override
-        {
-            std::cout << std::this_thread::get_id() << ": Regular test task: sleep for 1 second" << std::endl;
-            const std::chrono::milliseconds threadMainSleepInterval = std::chrono::milliseconds(1000);
-            std::this_thread::sleep_for(threadMainSleepInterval);
-        }
-};
-
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 {
-    /*TestTask testTask;
-    SleepThreadTask threadTask;
-    dory::SystemThread systemThread(&threadTask);
-
-    systemThread.run();
-
-    const std::chrono::milliseconds threadMainSleepInterval = std::chrono::milliseconds(3000);
-    std::this_thread::sleep_for(threadMainSleepInterval);
-
-    std::cout << std::this_thread::get_id() << ": main thread: schedule a task" << std::endl;
-    systemThread.invokeTask(&testTask);
-    std::cout << std::this_thread::get_id() << ": main thread: task should be invoked" << std::endl;
-
-    systemThread.stop();*/
-
     return runDory();
 }
