@@ -4,15 +4,20 @@
 namespace dory
 {
     SystemConsole::SystemConsole():
-    inputKey(0),
-    isStop(false)
-    {        
+        inputKey(0)
+    {
+        readInputTask = new ReadConsoleInputTask(this);
+        systemThread = new SystemThread(readInputTask);
+    }
+
+    SystemConsole::~SystemConsole()
+    {
+        delete readInputTask;
+        delete systemThread;
     }
 
     bool SystemConsole::connect()
     {
-        isStop = false;
-
         if(AllocConsole())
         {
             bindStdHandlesToConsole();
@@ -20,18 +25,14 @@ namespace dory
 
         std::cout << "SystemConsole.connect()" << std::endl;
 
-        workingThread = std::thread(&monitorSystemConsole, this);
-        workingThread.detach();
+        systemThread->run();
 
         return true;
     }
 
-    void SystemConsole::monitorSystemConsole()
+    void SystemConsole::onInput(int key)
     {
-        while(!isStop)
-        {
-            inputKey = getch();//consider thread safety of this operation
-        }
+        inputKey = key;
     }
 
     void SystemConsole::bindStdHandlesToConsole()
@@ -66,7 +67,7 @@ namespace dory
 
     void SystemConsole::disconnect()
     {
-        isStop = true;
+        systemThread->stop();
     }
     
     void SystemConsole::readUpdates(MessagePool& messagePool)

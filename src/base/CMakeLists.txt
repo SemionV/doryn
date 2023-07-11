@@ -10,9 +10,12 @@ add_library(base SHARED basicFrameService.cpp
                         controllers/inputController.cpp
                         devices/systemConsole.cpp
                         devices/systemWindow.cpp
+                        devices/readConsoleInputTask.cpp
                         messaging/messagePool.cpp
                         messaging/messages/consoleMessage.cpp
-                        messaging/messages/mouseMessage.cpp)
+                        messaging/messages/mouseMessage.cpp
+                        multithreading/task.cpp
+                        multithreading/systemThread.cpp)
 
 set_target_properties(base PROPERTIES PREFIX ""
                                     IMPORT_PREFIX ""
