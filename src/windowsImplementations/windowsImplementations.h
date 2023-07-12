@@ -1,6 +1,5 @@
+#pragma once
+
 #include "dependencies.h"
 #include "windowSystem.h"
-
-namespace doryWindows
-{
-}
+#include "windowParameters.h"

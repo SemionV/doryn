@@ -2,6 +2,7 @@
 
 #include "base/controller.h"
 #include "base/devices/deviceListener.h"
+#include "base/devices/device.h"
 #include "base/messaging/messagePool.h"
 
 namespace dory
@@ -9,7 +10,8 @@ namespace dory
     class DORY_API InputController: public dory::Controller
     {
         private:
-            std::vector<DeviceListener*> devices;
+            std::vector<DeviceListener*> deviceListeners;
+            std::vector<std::shared_ptr<Device>> devices;
             MessagePool& messagePool;
 
         public:
@@ -23,5 +25,6 @@ namespace dory
         void update(const dory::TimeSpan& timeStep, dory::DataContext& context);
 
         void addDevice(DeviceListener* device);
+        void addDevice(std::shared_ptr<Device> device);
     };
 }

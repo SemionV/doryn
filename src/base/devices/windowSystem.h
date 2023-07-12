@@ -9,6 +9,6 @@ namespace dory
     class DORY_API WindowSystem: public Device
     {
         public:
-            virtual Window createWindow(TWindowParameters parameters) = 0;
+            virtual std::shared_ptr<Window> createWindow(const TWindowParameters& parameters) = 0;
     };
 }

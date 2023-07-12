@@ -9,6 +9,6 @@ if (UNIX)
 endif (UNIX)
 
 add_subdirectory(base)
-add_subdirectory(systemWindows)
+add_subdirectory(windowsImplementations)
 add_subdirectory(testDomain)
 add_subdirectory(testApp)

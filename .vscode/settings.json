@@ -68,6 +68,9 @@
         "unordered_map": "cpp",
         "xhash": "cpp",
         "deque": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "array": "cpp",
+        "condition_variable": "cpp",
+        "shared_mutex": "cpp"
     }
 }

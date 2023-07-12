@@ -19,8 +19,13 @@ int runDory()
     dory::SystemConsole systemConsole;
     inputController.addDevice(&systemConsole);
     
-    dory::SystemWindow systemWindow;
-    inputController.addDevice(&systemWindow);
+    /*dory::SystemWindow systemWindow;
+    inputController.addDevice(&systemWindow);*/
+
+    std::shared_ptr<doryWindows::WindowSystem> windowsSystem = std::make_shared<doryWindows::WindowSystem>();
+    const doryWindows::WindowParameters windowParameters;
+    windowsSystem->createWindow(windowParameters);
+    inputController.addDevice(windowsSystem);
 
     test::TestController controller(inputMessagePool);
     engine.addController(&controller);
