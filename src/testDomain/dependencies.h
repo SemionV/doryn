@@ -4,6 +4,7 @@
 
 #ifdef _WIN32
 #include <conio.h>
+#include <tchar.h>
 #endif
 
 #ifdef __unix__
