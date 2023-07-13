@@ -11,9 +11,13 @@ add_library(base SHARED basicFrameService.cpp
                         devices/device.cpp
                         devices/systemConsole.cpp
                         devices/systemWindow.cpp
+                        devices/deviceListener.cpp
+                        messaging/message.cpp
+                        messaging/deviceMessage.cpp
                         messaging/messagePool.cpp
                         messaging/messages/consoleMessage.cpp
                         messaging/messages/mouseMessage.cpp
+                        messaging/messages/windowMessage.cpp
                         multithreading/task.cpp
                         multithreading/lambdaTask.cpp
                         multithreading/processThread.cpp

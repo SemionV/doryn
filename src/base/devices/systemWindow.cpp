@@ -72,7 +72,7 @@ namespace dory
 
         if(clickX >= 0)
         {
-            ConsoleMessage message(0, clickX, clickY);
+            std::shared_ptr<Message> message = std::make_shared<ConsoleMessage>(0, clickX, clickY);
             messagePool.addMessage(message);
 
             clickX = -1;

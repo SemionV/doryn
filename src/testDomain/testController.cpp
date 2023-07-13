@@ -19,20 +19,30 @@ namespace test
 
     void TestController::update(const dory::TimeSpan& timeStep, dory::DataContext& context)
     {
-        messagePool.iterate([&](dory::ConsoleMessage message)
+        messagePool.iterate([&](std::shared_ptr<dory::Message> message)
         {
-            if(message.keyPressed == 27)
+            if(message->messageType == dory::MessageType::ConsoleTestMessage)
             {
-                context.isStop = true;
-                std::cout << std::this_thread::get_id() << ": ESC" << std::endl;
+                std::shared_ptr<dory::ConsoleMessage> consoleMessage = std::static_pointer_cast<dory::ConsoleMessage>(message);
+
+                if(consoleMessage->keyPressed == 27)
+                {
+                    context.isStop = true;
+                    std::cout << std::this_thread::get_id() << ": ESC" << std::endl;
+                }
+                else if(consoleMessage->keyPressed != 0)
+                {
+                    std::cout << std::this_thread::get_id() << ": key pressed: " << consoleMessage->keyPressed << std::endl;
+                }
+                else
+                {
+                    std::cout << std::this_thread::get_id() << ": click: " << consoleMessage->clickX << ", " << consoleMessage->clickY << std::endl;
+                }
             }
-            else if(message.keyPressed != 0)
+            else if(message->messageType == dory::MessageType::MouseTestMessage)
             {
-                std::cout << std::this_thread::get_id() << ": key pressed: " << message.keyPressed << std::endl;
-            }
-            else
-            {
-                std::cout << std::this_thread::get_id() << ": click: " << message.clickX << ", " << message.clickY << std::endl;
+                std::shared_ptr<dory::WindowMessage> windowMessage = std::static_pointer_cast<dory::WindowMessage>(message);
+                std::cout << std::this_thread::get_id() << ": click: " << windowMessage->x << ", " << windowMessage->y << std::endl;
             }
         });
 

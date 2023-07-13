@@ -15,5 +15,8 @@ namespace dory
             virtual void disconnect() = 0;
             virtual void update() = 0;
             virtual void attachListener(std::shared_ptr<DeviceListener> listener);
+        
+        protected:
+            virtual void propagateMessage(std::shared_ptr<DeviceMessage> message);
     };
 }

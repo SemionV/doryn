@@ -72,7 +72,37 @@ namespace doryWindows
 
         ShowWindow(hwnd, SW_NORMAL);
 
-        return std::make_shared<dory::Window>();
+        std::shared_ptr<Window> window =  std::make_shared<Window>(hwnd);
+        registerWindow(window);
+
+        return window;
+    }
+
+    std::shared_ptr<Window> WindowSystem::getWindow(HWND hWnd)
+    {
+        std::size_t size = windows.size();
+        for(std::size_t i = 0; i < size; i++)
+        {
+            std::shared_ptr<Window> window = std::static_pointer_cast<Window>(windows[i]);
+            if(window->hWnd == hWnd)
+            {
+                return window;
+            }
+        }
+
+        return nullptr;
+    }
+
+    void WindowSystem::onClick(HWND hWnd, int x, int y)
+    {
+        std::shared_ptr<Window> window = getWindow(hWnd);
+        if(window)
+        {
+            std::shared_ptr<dory::WindowMessage> message = std::make_shared<dory::WindowMessage>(dory::MessageType::MouseTestMessage, window);
+            message->x = x;
+            message->y = y;
+            propagateMessage(message);
+        }
     }
 
     LRESULT WINAPI windowProcedure(HWND hWnd, UINT WindowsMessage, WPARAM wParam, LPARAM lParam)
@@ -96,11 +126,11 @@ namespace doryWindows
             {
                 POINT pp;
                 GetCursorPos(&pp);
-                /*SystemWindow* window = (SystemWindow*)GetWindowLongPtr(hWnd, 0);
-                if(window)
+                WindowSystem* windowSystem = (WindowSystem*)GetWindowLongPtr(hWnd, 0);
+                if(windowSystem)
                 {
-                    window->addClickMessage(pp.x, pp.y);
-                }*/
+                    windowSystem->onClick(hWnd, pp.x, pp.y);
+                }
                 break;
             }
 

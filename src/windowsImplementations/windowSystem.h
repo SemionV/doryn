@@ -1,6 +1,7 @@
 #pragma once
 
 #include "windowParameters.h"
+#include "window.h"
 
 namespace doryWindows
 {
@@ -13,8 +14,11 @@ namespace doryWindows
             virtual void disconnect() override;
             virtual void update() override;
             virtual std::shared_ptr<dory::Window> createWindow(const WindowParameters& parameters) override;
+            
+            virtual void onClick(HWND hWnd, int x, int y);
 
         protected:
             virtual void pumpSystemMessages();
+            std::shared_ptr<Window> getWindow(HWND hWnd);
     };
 }

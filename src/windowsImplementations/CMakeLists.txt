@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.22)
 
 project(dory-windowsImplementations)
 
-add_library(windowsImplementations SHARED windowSystem.cpp)
+add_library(windowsImplementations SHARED windowSystem.cpp
+                                        window.cpp)
 
 set_target_properties(windowsImplementations PROPERTIES PREFIX ""
                                             IMPORT_PREFIX ""

@@ -79,7 +79,7 @@ namespace dory
     {
         if(inputKey)
         {
-            ConsoleMessage message(inputKey, -1, -1);
+            std::shared_ptr<Message> message = std::make_shared<ConsoleMessage>(inputKey, -1, -1);
             messagePool.addMessage(message);
             inputKey = 0;
         }

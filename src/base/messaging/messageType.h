@@ -6,12 +6,7 @@ namespace dory
 {
     enum DORY_API MessageType
     {
-
-    };
-
-    struct DORY_API DeviceMessage
-    {
-        public:
-            MessageType messageType;
+        ConsoleTestMessage,
+        MouseTestMessage
     };
 }

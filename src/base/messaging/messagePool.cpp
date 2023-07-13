@@ -8,7 +8,7 @@ namespace dory
     {
     }
 
-    void MessagePool::addMessage(ConsoleMessage& message)
+    void MessagePool::addMessage(std::shared_ptr<Message> message)
     {
         messages.push_back(message);
     }
@@ -18,7 +18,7 @@ namespace dory
         messages.clear();
     }
 
-    void MessagePool::iterate(std::function<void(ConsoleMessage)> lambda)
+    void MessagePool::iterate(std::function<void(std::shared_ptr<Message>)> lambda)
     {
         size_t count = messages.size();
 

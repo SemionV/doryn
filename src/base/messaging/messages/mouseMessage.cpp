@@ -4,6 +4,7 @@
 namespace dory
 {
     MouseMessage::MouseMessage(char buttonPressed):
+        Message(MessageType::MouseTestMessage),
         buttonPressed(buttonPressed)
     {
     }

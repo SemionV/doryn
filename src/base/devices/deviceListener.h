@@ -2,17 +2,21 @@
 
 #include "base/doryExport.h"
 #include "base/messaging/messagePool.h"
-#include "deviceMessage.h"
+#include "base/messaging/deviceMessage.h"
 
 namespace dory
 {
     class DORY_API DeviceListener
     {
-        public:
-            virtual void handleMessage(std::shared_ptr<DeviceMessage> message) = 0;
-            virtual void readUpdates(MessagePool& messagePool) = 0;
+        private:
+            std::queue<std::shared_ptr<DeviceMessage>> messageBuffer;
+            std::mutex mutex;
 
-            virtual bool connect() = 0;
-            virtual void disconnect() = 0;
+        public:
+            virtual void handleMessage(std::shared_ptr<DeviceMessage> message);
+            virtual void readUpdates(MessagePool& messagePool);
+
+            virtual bool connect();
+            virtual void disconnect();
     };
 }

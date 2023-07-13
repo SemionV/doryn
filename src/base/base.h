@@ -12,3 +12,4 @@
 
 #include "devices/systemConsole.h"
 #include "devices/systemWindow.h"
+#include "messaging/messages/windowMessage.h"

@@ -9,12 +9,12 @@ namespace dory
     class DORY_API MessagePool
     {
         private: 
-            std::vector<ConsoleMessage> messages;
+            std::vector<std::shared_ptr<Message>> messages;
         
         public:
             MessagePool();
-            void addMessage(ConsoleMessage& message);
+            void addMessage(std::shared_ptr<Message> message);
             void clean();
-            void iterate(std::function<void(ConsoleMessage)> lambda);
+            void iterate(std::function<void(std::shared_ptr<Message>)> lambda);
     };
 }

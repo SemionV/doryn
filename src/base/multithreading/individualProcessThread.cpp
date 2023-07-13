@@ -53,7 +53,7 @@ namespace dory
             {
                 const std::lock_guard<std::mutex> lock(mutex);
 
-                while(irregularTasks.size() > 0)
+                while(!irregularTasks.empty())
                 {
                     std::shared_ptr<Task> task = irregularTasks.front();
                     invokeTaskSafe(task);
