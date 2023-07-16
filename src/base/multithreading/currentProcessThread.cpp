@@ -5,10 +5,8 @@ namespace dory
 {
     void CurrentProcessThread::invokeTask(std::shared_ptr<Task> task)
     {
-        task->setDone(false);
-        task->setError(false);
-
-        invokeTaskSafe(task);
+        task->reset();
+        task->operator()();
     }
 
     void CurrentProcessThread::stop()

@@ -8,6 +8,7 @@
 #include <iostream>
 #include <functional>
 #include <mutex>
+#include <tuple>
 
 #ifdef _WIN32
 #include <conio.h>

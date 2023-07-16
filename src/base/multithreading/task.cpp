@@ -1,16 +1,21 @@
+#include "base/dependencies.h"
 #include "task.h"
 
 namespace dory
 {
+    void Task::setDone(bool isDone)
+    {
+        isDoneFlag = isDone;
+    }
+
+    void Task::setError(bool isError)
+    {
+        isErrorFlag = isError;
+    }
     Task::Task():
         isDoneFlag(false),
         isErrorFlag(false)
     {                
-    }
-
-    void Task::setDone(bool isDone)
-    {
-        isDoneFlag = isDone;
     }
 
     bool Task::getDone()
@@ -18,13 +23,27 @@ namespace dory
         return isDoneFlag;
     }
 
-    void Task::setError(bool isError)
-    {
-        isErrorFlag = isError;
-    }
-
     bool Task::getError()
     {
         return isErrorFlag;
+    }
+
+    void Task::reset()
+    {
+        setError(false);
+        setDone(false);
+    }
+
+    void Task::operator()()
+    {
+        try
+        {
+            invoke();
+            setDone(true);
+        }
+        catch(...)
+        {
+            setError(true);
+        }
     }
 }

@@ -10,7 +10,6 @@ add_library(base SHARED basicFrameService.cpp
                         controllers/inputController.cpp
                         devices/device.cpp
                         devices/systemConsole.cpp
-                        devices/systemWindow.cpp
                         devices/deviceListener.cpp
                         messaging/message.cpp
                         messaging/deviceMessage.cpp
@@ -20,7 +19,6 @@ add_library(base SHARED basicFrameService.cpp
                         messaging/messages/windowMessage.cpp
                         multithreading/task.cpp
                         multithreading/lambdaTask.cpp
-                        multithreading/processThread.cpp
                         multithreading/currentProcessThread.cpp
                         multithreading/individualProcessThread.cpp)
 

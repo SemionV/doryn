@@ -3,7 +3,7 @@
 
 namespace dory
 {
-    void LambdaTask::operator()()
+    void LambdaTask::invoke()
     {
         lambda();
     }

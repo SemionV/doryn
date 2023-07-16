@@ -43,13 +43,13 @@ namespace test
             }
             else if(message->messageType == dory::MessageType::MouseTestMessage)
             {
-                char DllPath[MAX_PATH] = {0};
+                /*char DllPath[MAX_PATH] = {0};
                 GetModuleFileName((HINSTANCE)&__ImageBase, _T(DllPath), _countof(DllPath));
                 std::string path(DllPath);
-                std::string base_filename = path.substr(path.find_last_of("/\\") + 1);
+                std::string base_filename = path.substr(path.find_last_of("/\\") + 1);*/
 
                 std::shared_ptr<dory::WindowMessage> windowMessage = std::static_pointer_cast<dory::WindowMessage>(message);
-                std::cout << base_filename << "(" << std::this_thread::get_id() << "): click: " << windowMessage->x << ", " << windowMessage->y << std::endl;
+                std::cout /*<< base_filename*/ << "(" << std::this_thread::get_id() << "): click: " << windowMessage->x << ", " << windowMessage->y << std::endl;
             }
         });
 

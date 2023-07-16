@@ -33,6 +33,14 @@ namespace doryWindows
 
     std::shared_ptr<dory::Window> WindowSystem::createWindow(const WindowParameters& parameters)
     {
+        /*auto createWindowTask = std::make_shared<LambdaTask>([this]() 
+        {
+            std::cout << std::this_thread::get_id() << ": create a system window" << std::endl;
+            this->createWindow();
+        });
+
+        processThread->invokeTask(createWindowTask);*/
+
         HINSTANCE hInstance = GetModuleHandle(NULL);
 
         WNDCLASS wc = { };
@@ -98,7 +106,7 @@ namespace doryWindows
         std::shared_ptr<Window> window = getWindow(hWnd);
         if(window)
         {
-            std::shared_ptr<dory::WindowMessage> message = std::make_shared<dory::WindowMessage>(dory::MessageType::MouseTestMessage, window);
+            auto message = std::make_shared<dory::WindowMessage>(dory::MessageType::MouseTestMessage, window);
             message->x = x;
             message->y = y;
             propagateMessage(message);

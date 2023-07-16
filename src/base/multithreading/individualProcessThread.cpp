@@ -25,8 +25,7 @@ namespace dory
     void IndividualProcessThread::invokeTask(std::shared_ptr<Task> task)
     {
         {
-            task->setDone(false);
-            task->setError(false);
+            task->reset();
 
             const std::lock_guard<std::mutex> lock(mutex);
             irregularTasks.push(task);
@@ -56,17 +55,16 @@ namespace dory
                 while(!irregularTasks.empty())
                 {
                     std::shared_ptr<Task> task = irregularTasks.front();
-                    invokeTaskSafe(task);
+                    task->operator()();
                     irregularTasks.pop();
                 }
             }
 
             if(regularTask)
             {
-                regularTask->setDone(false);
-                regularTask->setError(false);
+                regularTask->reset();
 
-                invokeTaskSafe(regularTask);
+                regularTask->operator()();
             }
         }
     }

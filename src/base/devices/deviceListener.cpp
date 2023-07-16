@@ -21,7 +21,8 @@ namespace dory
     }
 
     bool DeviceListener::connect()
-    {        
+    {
+        return true;
     }
 
     void DeviceListener::disconnect()

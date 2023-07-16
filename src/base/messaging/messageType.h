@@ -4,7 +4,7 @@
 
 namespace dory
 {
-    enum DORY_API MessageType
+    enum class DORY_API MessageType
     {
         ConsoleTestMessage,
         MouseTestMessage

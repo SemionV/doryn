@@ -7,7 +7,7 @@ namespace doryWindows
 {
     LRESULT WINAPI windowProcedure(HWND hWnd, UINT WindowsMessage, WPARAM wParam, LPARAM lParam);
 
-    class WindowSystem: public dory::WindowSystem<WindowParameters>
+    class DORY_API WindowSystem: public dory::WindowSystem<WindowParameters>
     {
         public:
             virtual bool connect() override;

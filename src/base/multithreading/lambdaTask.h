@@ -12,6 +12,6 @@ namespace dory
         public:
             LambdaTask(std::function<void()> lambda);
 
-            void operator()() override;
+            virtual void invoke() override;
     };
 }
