@@ -22,6 +22,11 @@ namespace dory
         isStop = true;
     }
 
+    void IndividualProcessThread::setRegularTask(std::shared_ptr<Task> task)
+    {
+        regularTask = task;
+    }
+
     void IndividualProcessThread::invokeTask(std::shared_ptr<Task> task)
     {
         {

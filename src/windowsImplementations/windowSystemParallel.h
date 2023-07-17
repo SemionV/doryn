@@ -7,7 +7,7 @@ namespace doryWindows
     class DORY_API WindowSystemParallel: public WindowSystem
     {
         private:
-            std::shared_ptr<dory::ProcessThread> processThread;
+            dory::IndividualProcessThread processThread;
 
         public:
             virtual bool connect() override;

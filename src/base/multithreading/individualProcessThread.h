@@ -18,6 +18,7 @@ namespace dory
             explicit IndividualProcessThread();
             ~IndividualProcessThread();
             void invokeTask(std::shared_ptr<Task> task) override;
+            void setRegularTask(std::shared_ptr<Task> task);
             void stop() override;
             void run() override;
 

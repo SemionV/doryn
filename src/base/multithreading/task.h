@@ -24,98 +24,79 @@ namespace dory
             virtual void operator()();
     };
 
-    template<class TResult, typename... Args>
-    class DORY_API TaskFunction: Task
+    /*
+    * For details see https://stackoverflow.com/questions/16868129/how-to-store-variadic-template-arguments
+    */
+    template <typename... Ts>
+    class ActionTask: public Task
     {
         private:
-            TResult result;
-            std::tuple<Args...> args;
+            std::function<void (Ts...)> function;
+            std::tuple<Ts...> arguments;
 
         protected:
             virtual void invoke() override
-            {                
+            {    
+                std::apply(function, arguments);            
             }
 
-            virtual TResult invoke(Args... args) = 0;
+        public:
+            template <typename F>
+            ActionTask(F&& function, Ts&&... arguments):
+                function(std::forward<F>(function)),
+                arguments(std::forward<Ts>(arguments)...)
+            {
+            }
+    };
+
+    template <typename TResult = void, typename... Ts>
+    class FunctionTask: public Task
+    {
+        private:
+            std::function<TResult (Ts...)> function;
+            std::tuple<Ts...> arguments;
+            TResult result;
+
+        protected:
+            virtual void invoke() override
+            {          
+                result = std::apply(function, arguments);
+            }
 
         public:
-            TaskFunction(Args&&... args):
-                args(std::forward<Args>(args)...)
+            template <typename F>
+            FunctionTask(F&& function, Ts&&... arguments):
+                function(std::forward<F>(function)),
+                arguments(std::forward<Ts>(arguments)...)
             {
-
             }
 
             TResult getResult(){
                 return result;
             }
-
-            virtual void operator()() override
-            {
-                try
-                {
-                    result = invoke(args);
-                    setDone(true);
-                }
-                catch(...)
-                {
-                    setError(true);
-                }
-            }
     };
 
-    namespace helper
-    {
-        template <std::size_t... Ts>
-        struct index 
-        {
-            enum { count = sizeof...(Ts) };
-            std::size_t values[count] = {Ts...};
-            const std::size_t valuesCount = count;
-        };
-    
-        template <std::size_t N, std::size_t... Ts>
-        struct gen_seq : gen_seq<N - 1, N - 1, Ts...> {};
-    
-        template <std::size_t... Ts>
-        struct gen_seq<0, Ts...> : index<Ts...> {};
-    }
-    
-    template <class TResult, typename... Ts>
-    class Action_impl
-    {
-        private:
-            std::function<TResult (Ts...)> f;
-            std::tuple<Ts...> args;
-        public:
-            TResult result;
-
-            template <typename F>
-            Action_impl(F&& func, Ts&&... args)
-                : f(std::forward<F>(func)),
-                args(std::forward<Ts>(args)...)
-            {}
-    
-            template <typename... Args, std::size_t... Is>
-            TResult func(std::tuple<Args...>& tup, helper::index<Is...>)
-            {
-                return f(std::get<Is>(tup)...);
-            }
-    
-            template <typename... Args>
-            TResult func(std::tuple<Args...>& tup)
-            {
-                return func(tup, helper::gen_seq<sizeof...(Args)>{});
-            }
-    
-            void act()
-            {
-                result = func(args);
-            }
-    };
-    
     template <class TResult, typename F, typename... Args>
-    Action_impl<TResult, Args...> make_action(F&& f, Args&&... args)
+    FunctionTask<TResult, Args...> makeFunctionTask(F&& f, Args&&... args)
     {
-        return Action_impl<TResult, Args...>(std::forward<F>(f), std::forward<Args>(args)...);
+        return FunctionTask<TResult, Args...>(std::forward<F>(f), std::forward<Args>(args)...);
+    }
+
+    template <class TResult, typename F, typename... Args>
+    std::shared_ptr<FunctionTask<TResult, Args...>> allocateFunctionTask(F&& f, Args&&... args)
+    {
+        return std::make_shared<FunctionTask<TResult, Args...>>(std::forward<F>(f), std::forward<Args>(args)...);
+    }
+
+    template <typename F, typename... Args>
+    ActionTask<Args...> makeActionTask(F&& f, Args&&... args)
+    {
+        return ActionTask<Args...>(std::forward<F>(f), std::forward<Args>(args)...);
+    }
+
+    template <typename F, typename... Args>
+    std::shared_ptr<ActionTask<Args...>> allocateActionTask(F&& f, Args&&... args)
+    {
+        return std::make_shared<ActionTask<Args...>>(std::forward<F>(f), std::forward<Args>(args)...);
     }
 }

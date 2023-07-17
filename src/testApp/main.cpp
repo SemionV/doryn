@@ -12,7 +12,7 @@ int runDory()
     dory::MessagePool inputMessagePool;
     dory::DataContext context;
     dory::Engine engine(context);
-    auto windowSystem = std::make_shared<doryWindows::WindowSystem>();
+    auto windowSystem = std::make_shared<doryWindows::WindowSystemParallel>();
     auto windowSystemListener = std::make_shared<dory::DeviceListener>();
     windowSystem->attachListener(windowSystemListener);
 
@@ -74,10 +74,29 @@ struct is_true: std::false_type{};
 template<>
 struct is_true<true>: std::true_type{};
 
+namespace helper
+{
+    template <std::size_t... Ts>
+    struct index 
+    {
+        enum { count = sizeof...(Ts) };
+        std::size_t values[count] = {Ts...};
+        const std::size_t valuesCount = count;
+    };
+
+    template <std::size_t N, std::size_t... Ts>
+    struct gen_seq : gen_seq<N - 1, N - 1, Ts...> {};
+
+    template <std::size_t... Ts>
+    struct gen_seq<0, Ts...> : index<Ts...> {};
+}
+    
+
+
 template <typename... Args>
 void variadicFunction(Args...)
 {
-    auto index = dory::helper::gen_seq<sizeof...(Args)>{};
+    auto index = helper::gen_seq<sizeof...(Args)>{};
 
     for(std::size_t i = 0; i < index.valuesCount; i++)
     {
@@ -95,10 +114,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     int a = 2;
     int b = 3;
 
-    auto add = dory::make_action<int>([] (int a, int b) { int c = a + b; return c;}, a, b);
-    add.act();
+    auto addFunction = dory::makeFunctionTask<int>([] (int a, int b) { int c = a + b; return c;}, a, b);
+    addFunction();
 
-    std::cout << "add action: " << add.result << std::endl;
+    auto addAction = dory::makeActionTask([] (int a, int b) { int c = a + b; std::cout << c << std::endl;}, a, b);
+    addAction();
+
+    std::cout << "add action: " << addFunction.getResult() << std::endl;
 
     //variadicFunction(1, "value", 0.4f);
 

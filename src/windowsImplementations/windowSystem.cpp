@@ -33,13 +33,7 @@ namespace doryWindows
 
     std::shared_ptr<dory::Window> WindowSystem::createWindow(const WindowParameters& parameters)
     {
-        /*auto createWindowTask = std::make_shared<LambdaTask>([this]() 
-        {
-            std::cout << std::this_thread::get_id() << ": create a system window" << std::endl;
-            this->createWindow();
-        });
-
-        processThread->invokeTask(createWindowTask);*/
+        std::cout << std::this_thread::get_id() << ": create a system window" << std::endl;
 
         HINSTANCE hInstance = GetModuleHandle(NULL);
 
@@ -103,6 +97,8 @@ namespace doryWindows
 
     void WindowSystem::onClick(HWND hWnd, int x, int y)
     {
+        std::cout << std::this_thread::get_id() << ": add click message: (" << x << ", " << y << ")" << std::endl;
+
         std::shared_ptr<Window> window = getWindow(hWnd);
         if(window)
         {

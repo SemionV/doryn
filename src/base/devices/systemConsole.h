@@ -27,4 +27,9 @@ namespace dory
         private:
             void bindStdHandlesToConsole();
     };
+
+    /*class DORY_API SystemConsole: public Device
+    {
+
+    };*/
 }

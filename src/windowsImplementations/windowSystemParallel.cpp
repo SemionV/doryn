@@ -5,7 +5,7 @@ namespace doryWindows
 {
     bool WindowSystemParallel::connect()
     {
-        auto pumpMessagesTask = std::make_shared<dory::LambdaTask>([this]() 
+        auto pumpMessagesTask = dory::allocateActionTask([this]() 
         {
             pumpSystemMessages();
 
@@ -13,45 +13,31 @@ namespace doryWindows
             std::this_thread::sleep_for(threadMainSleepInterval);
         });
 
-        processThread = std::make_shared<dory::IndividualProcessThread>(pumpMessagesTask);
-        processThread->run();
+        processThread.setRegularTask(pumpMessagesTask);
+
+        processThread.run();
 
         return true;
     }
 
     void WindowSystemParallel::disconnect()
     {
-        if(processThread)
-        {
-            processThread->stop();
-        }
+        processThread.stop();
     }
 
     void WindowSystemParallel::update()
     {
     }
 
-    class CreateWindowTask: public dory::TaskFunction<std::shared_ptr<dory::Window>, const WindowParameters&>
-    {
-        public:
-            std::shared_ptr<dory::Window> invoke(const WindowParameters& windowParameters) override
-            {
-                return nullptr;
-            }
-    };
-
     std::shared_ptr<dory::Window> WindowSystemParallel::createWindow(const WindowParameters& parameters)
     {
-        std::shared_ptr<dory::Window> window;
-        auto createWindowTask = std::make_shared<dory::LambdaTask>([=]() 
+        auto createWindowTask = dory::allocateFunctionTask<std::shared_ptr<dory::Window>>([this](const WindowParameters& parameters) 
         {
-            std::cout << std::this_thread::get_id() << ": create a system window" << std::endl;
-            //window = WindowSystem::createWindow(parameters);
-            WindowSystem::createWindow(parameters);
-        });
+            return WindowSystem::createWindow(parameters);
+        }, parameters);
 
-        processThread->invokeTask(createWindowTask);
+        processThread.invokeTask(createWindowTask);
 
-        return window;
+        return createWindowTask->getResult();
     }
 }
