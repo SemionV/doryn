@@ -3,11 +3,9 @@
 
 namespace dory
 {
-    ConsoleMessage::ConsoleMessage(char keyPressed, int clickX, int clickY):
-        Message(MessageType::ConsoleTestMessage),
-        keyPressed(keyPressed),
-        clickX(clickX),
-        clickY(clickY)
+    ConsoleMessage::ConsoleMessage(char keyPressed):
+        DeviceMessage(MessageType::ConsoleTestMessage),
+        keyPressed(keyPressed)
     {
     }
 }

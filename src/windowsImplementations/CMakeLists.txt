@@ -4,7 +4,8 @@ project(dory-windowsImplementations)
 
 add_library(windowsImplementations SHARED windowSystem.cpp
                                         window.cpp
-                                        windowSystemParallel.cpp)
+                                        windowSystemParallel.cpp
+                                        consoleSystem.cpp)
 
 set_target_properties(windowsImplementations PROPERTIES PREFIX ""
                                             IMPORT_PREFIX ""

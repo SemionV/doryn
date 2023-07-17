@@ -1,8 +1,6 @@
 #include "dependencies.h"
 #include "testController.h"
 
-EXTERN_C IMAGE_DOS_HEADER __ImageBase;
-
 namespace test
 {
     TestController::TestController(dory::MessagePool& messagePool):
@@ -36,14 +34,12 @@ namespace test
                 {
                     std::cout << std::this_thread::get_id() << ": key pressed: " << consoleMessage->keyPressed << std::endl;
                 }
-                else
-                {
-                    std::cout << std::this_thread::get_id() << ": click: " << consoleMessage->clickX << ", " << consoleMessage->clickY << std::endl;
-                }
             }
             else if(message->messageType == dory::MessageType::MouseTestMessage)
             {
-                /*char DllPath[MAX_PATH] = {0};
+                /*
+                EXTERN_C IMAGE_DOS_HEADER __ImageBase;
+                char DllPath[MAX_PATH] = {0};
                 GetModuleFileName((HINSTANCE)&__ImageBase, _T(DllPath), _countof(DllPath));
                 std::string path(DllPath);
                 std::string base_filename = path.substr(path.find_last_of("/\\") + 1);*/

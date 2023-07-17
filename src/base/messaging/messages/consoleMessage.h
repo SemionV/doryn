@@ -1,18 +1,16 @@
 #pragma once
 
 #include "base/doryExport.h"
-#include "base/messaging/message.h"
+#include "base/messaging/deviceMessage.h"
 
 namespace dory
 {
-    class DORY_API ConsoleMessage: public Message
+    class DORY_API ConsoleMessage: public DeviceMessage
     {
         public:
             char keyPressed;
-            int clickX;
-            int clickY;
 
         public:
-            ConsoleMessage(char keyPressed, int clickX, int clickY);
+            ConsoleMessage(char keyPressed);
     };
 }

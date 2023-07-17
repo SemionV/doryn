@@ -16,11 +16,15 @@ int runDory()
     auto windowSystemListener = std::make_shared<dory::DeviceListener>();
     windowSystem->attachListener(windowSystemListener);
 
+    auto consoleSystem = std::make_shared<doryWindows::ConsoleSystem>();
+    auto consoleSystemListener = std::make_shared<dory::DeviceListener>();
+    consoleSystem->attachListener(consoleSystemListener);
+
     dory::InputController inputController(inputMessagePool);
     engine.addController(&inputController);
 
-    dory::SystemConsole systemConsole;
-    inputController.addDeviceListener(&systemConsole);
+    inputController.addDevice(consoleSystem);
+    inputController.addDeviceListener(consoleSystemListener);
 
     inputController.addDevice(windowSystem);
     inputController.addDeviceListener(windowSystemListener);

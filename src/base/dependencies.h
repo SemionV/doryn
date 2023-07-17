@@ -10,13 +10,3 @@
 #include <mutex>
 #include <tuple>
 #include <utility>
-
-#ifdef _WIN32
-#include <conio.h>
-#include <windows.h>
-#include <tchar.h>
-#endif
-
-#ifdef __unix__
-#include <curses.h>
-#endif

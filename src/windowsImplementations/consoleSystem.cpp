@@ -1,21 +1,9 @@
-#include "base/dependencies.h"
-#include "systemConsole.h"
+#include "dependencies.h"
+#include "consoleSystem.h"
 
-namespace dory
+namespace doryWindows
 {
-    SystemConsole::SystemConsole():
-        inputKey(0)
-    {
-        auto readInputTask = std::make_shared<LambdaTask>([this]() 
-        {  
-            int inputKey = getch();
-            this->onInput(inputKey);
-        });
-
-        individualThread = std::make_shared<IndividualProcessThread>(readInputTask);
-    }
-
-    bool SystemConsole::connect()
+    bool ConsoleSystem::connect()
     {
         if(AllocConsole())
         {
@@ -24,18 +12,36 @@ namespace dory
 
         std::cout << "SystemConsole.connect()" << std::endl;
 
-        individualThread->run();
+        auto readInputTask = dory::allocateActionTask([this]() 
+        {  
+            int inputKey = getch();
+            onKeyPressed(inputKey);
+        });
+        processThread.setRegularTask(readInputTask);
+
+        processThread.run();
 
         return true;
     }
 
-    void SystemConsole::onInput(int key)
+    void ConsoleSystem::disconnect()
     {
-        std::cout << std::this_thread::get_id() << ": add key pressed message: " << key << std::endl;
-        inputKey = key;
+        processThread.stop();
     }
 
-    void SystemConsole::bindStdHandlesToConsole()
+    void ConsoleSystem::update()
+    {
+    }
+
+    void ConsoleSystem::onKeyPressed(int key)
+    {
+        std::cout << std::this_thread::get_id() << ": add key pressed message: " << key << std::endl;
+
+        auto message = std::make_shared<dory::ConsoleMessage>(key);
+        propagateMessage(message);
+    }
+
+    void ConsoleSystem::bindStdHandlesToConsole()
     {
         //TODO: Add Error checking.
         
@@ -63,25 +69,5 @@ namespace dory
         std::cerr.clear();
         std::wcin.clear();
         std::cin.clear();
-    }
-
-    void SystemConsole::disconnect()
-    {
-        individualThread->stop();
-    }
-
-    void SystemConsole::handleMessage(std::shared_ptr<DeviceMessage> message)
-    {
-
-    }
-    
-    void SystemConsole::readUpdates(MessagePool& messagePool)
-    {
-        if(inputKey)
-        {
-            std::shared_ptr<Message> message = std::make_shared<ConsoleMessage>(inputKey, -1, -1);
-            messagePool.addMessage(message);
-            inputKey = 0;
-        }
     }
 }
