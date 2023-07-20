@@ -128,5 +128,28 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 
     //variadicFunction(1, "value", 0.4f);
 
+    dory::Message* deletedMessage;
+    auto deleter = [&](dory::Message* message)
+    {
+        std::cout << "delete Message " << message << std::endl;
+        deletedMessage = message;
+        delete message;
+    };
+
+    {
+        dory::Message* message = new dory::Message(dory::MessageType::MouseTestMessage);
+        std::unique_ptr<dory::Message, decltype(deleter)> messagePtr(message, deleter);
+        //std::shared_ptr<dory::Message> messagePtrCopy(messagePtr.get());
+        dory::Message messageCopy = *messagePtr;
+    }
+
+    dory::Event<int, int> event;
+    event += [](int a, int b)
+    {
+        std::cout << "event: " << a + b << std::endl;
+    };
+
+    event(3, 4);
+
     return runDory();
 }

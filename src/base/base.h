@@ -10,3 +10,4 @@
 #include "devices/windowSystem.h"
 #include "devices/windowParameters.h"
 #include "messaging/messages/windowMessage.h"
+#include "messaging/event.h"
