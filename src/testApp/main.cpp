@@ -53,81 +53,20 @@ int runDory()
     return runDory();
 }*/
 
-template<int n> struct funStruct
+class TestClass
 {
-    enum { val = 2*funStruct<n-1>::val };
+    private:
+        int testMember = 4;
+
+    public:
+        void eventHandler(int a, int b)
+        {
+            std::cout << "event 3: " << a + b + testMember<< std::endl;
+        }
 };
- 
-template<> struct funStruct<0>
-{
-    enum { val = 1 };
-};
-
-template<typename...>
-using try_to_instantiate = void;
-
-template<typename T, typename Attempt = void>
-struct is_incrementable: std::false_type{};
-
-template<typename T>
-struct is_incrementable<T, try_to_instantiate<decltype(++std::declval<T&>())>>: std::true_type{};
-
-template<bool Tv, typename Attempt = void>
-struct is_true: std::false_type{};
-
-template<>
-struct is_true<true>: std::true_type{};
-
-namespace helper
-{
-    template <std::size_t... Ts>
-    struct index 
-    {
-        enum { count = sizeof...(Ts) };
-        std::size_t values[count] = {Ts...};
-        const std::size_t valuesCount = count;
-    };
-
-    template <std::size_t N, std::size_t... Ts>
-    struct gen_seq : gen_seq<N - 1, N - 1, Ts...> {};
-
-    template <std::size_t... Ts>
-    struct gen_seq<0, Ts...> : index<Ts...> {};
-}
-    
-
-
-template <typename... Args>
-void variadicFunction(Args...)
-{
-    auto index = helper::gen_seq<sizeof...(Args)>{};
-
-    for(std::size_t i = 0; i < index.valuesCount; i++)
-    {
-        std::cout << index.values[i] << std::endl;
-    }
-}
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 {
-    /*std::cout << funStruct<8>::val << std::endl;
-
-    std::cout << is_incrementable<int>::value << std::endl;
-    std::cout << is_incrementable<dory::Engine>::value << std::endl;*/
-
-    int a = 2;
-    int b = 3;
-
-    auto addFunction = dory::makeFunctionTask<int>([] (int a, int b) { int c = a + b; return c;}, a, b);
-    addFunction();
-
-    auto addAction = dory::makeActionTask([] (int a, int b) { int c = a + b; std::cout << c << std::endl;}, a, b);
-    addAction();
-
-    std::cout << "add action: " << addFunction.getResult() << std::endl;
-
-    //variadicFunction(1, "value", 0.4f);
-
     dory::Message* deletedMessage;
     auto deleter = [&](dory::Message* message)
     {
@@ -144,10 +83,27 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     }
 
     dory::Event<int, int> event;
-    event += [](int a, int b)
+    auto handler1 = event.attachHandler([](int a, int b)
     {
-        std::cout << "event: " << a + b << std::endl;
-    };
+        std::cout << "event 1: " << a + b << std::endl;
+    });
+
+    auto handler2 = event.attachHandler([](int a, int b)
+    {
+        std::cout << "event 2: " << a + b << std::endl;
+    });
+
+    TestClass testObject;
+    std::function<void(int, int)> f = std::bind(&TestClass::eventHandler, &testObject, std::placeholders::_1, std::placeholders::_2);
+    auto handler3 = event.attachHandler(f);
+
+    event(3, 4);
+
+    event.detachHandler(handler2);
+
+    event(3, 4);
+
+    event.detachHandler(handler1);
 
     event(3, 4);
 

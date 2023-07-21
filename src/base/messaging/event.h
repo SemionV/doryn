@@ -8,23 +8,52 @@ namespace dory
     class DORY_API Event
     {
         private:
-            std::vector<std::function<void (Ts...)>> eventHandlers;
+            std::map<int, std::function<void(Ts...)>> handlers;
+            int idCounter;
 
         public:
-            template <typename F>
-            void operator+=(F&& function)
+            Event():
+                idCounter(0)
+            {                
+            }
+
+            template<typename F>
+            int attachHandler(F&& function)
             {
-                eventHandlers.push_back(std::forward<F>(function));               
+                auto functor = std::forward<F>(function);
+                return attachFunction(std::move(functor));
+            }
+
+            int attachHandler(std::function<void(Ts...)>&& functor)
+            {
+                return attachFunction(std::forward<std::function<void(Ts...)>>(functor));
             }
 
             void operator()(Ts... arguments)
             {
-                std::size_t size = eventHandlers.size();
-                for(std::size_t i = 0; i < size; i++)
+                for (const auto& [key, handler]: handlers)
                 {
-                    auto handler = eventHandlers[i];
                     std::invoke(handler, arguments...);
-                }         
+                }
+            }
+
+            void detachHandler(int handlerKey)
+            {
+                handlers.erase(handlerKey);
+            }
+
+        private:
+            int attachFunction(std::function<void(Ts...)>&& functor)
+            {
+                int key = getNewKey();
+                handlers.emplace(key, std::forward<std::function<void(Ts...)>>(functor));
+
+                return key;
+            }
+
+            int getNewKey()
+            {
+                return idCounter++;
             }
     };
 }
