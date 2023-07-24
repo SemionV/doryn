@@ -16,6 +16,7 @@ add_library(base SHARED basicFrameService.cpp
                         messaging/messagePool.cpp
                         messaging/messages/consoleMessage.cpp
                         messaging/messages/windowMessage.cpp
+                        repositories/resourceScopeRepository.cpp
                         multithreading/task.cpp
                         multithreading/currentProcessThread.cpp
                         multithreading/individualProcessThread.cpp)

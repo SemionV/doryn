@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base/dependencies.h"
+#include "base/doryExport.h"
 
 namespace dory
 {
@@ -8,8 +9,10 @@ namespace dory
     class DORY_API Event
     {
         private:
-            std::map<int, std::function<void(Ts...)>> handlers;
             int idCounter;
+
+        protected:
+            std::map<int, std::function<void(Ts...)>> handlers;
 
         public:
             Event():
@@ -29,14 +32,6 @@ namespace dory
                 return attachFunction(std::forward<std::function<void(Ts...)>>(functor));
             }
 
-            void operator()(Ts... arguments)
-            {
-                for (const auto& [key, handler]: handlers)
-                {
-                    std::invoke(handler, arguments...);
-                }
-            }
-
             void detachHandler(int handlerKey)
             {
                 handlers.erase(handlerKey);
@@ -54,6 +49,19 @@ namespace dory
             int getNewKey()
             {
                 return idCounter++;
+            }
+    };
+
+    template<class... Ts>
+    class DORY_API EventDispatcher: public Event<Ts...>
+    {
+        public:
+            void operator()(Ts... arguments)
+            {
+                for (const auto& [key, handler]: this->handlers)
+                {
+                    std::invoke(handler, arguments...);
+                }
             }
     };
 }

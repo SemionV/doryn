@@ -11,7 +11,8 @@ int runDory()
 {
     dory::MessagePool inputMessagePool;
     dory::DataContext context;
-    dory::Engine engine(context);
+    auto resourceScopeRepository = std::make_shared<dory::ResourceScopeRepository>();
+    dory::Engine engine(context, resourceScopeRepository);
     auto windowSystem = std::make_shared<doryWindows::WindowSystemParallel>();
     auto windowSystemListener = std::make_shared<dory::DeviceListener>();
     windowSystem->attachListener(windowSystemListener);
@@ -82,7 +83,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
         dory::Message messageCopy = *messagePtr;
     }
 
-    dory::Event<int, int> event;
+    dory::EventDispatcher<int, int> event;
     auto handler1 = event.attachHandler([](int a, int b)
     {
         std::cout << "event 1: " << a + b << std::endl;
