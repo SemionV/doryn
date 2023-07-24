@@ -11,8 +11,10 @@ int runDory()
 {
     dory::MessagePool inputMessagePool;
     dory::DataContext context;
-    auto resourceScopeRepository = std::make_shared<dory::ResourceScopeRepository>();
-    dory::Engine engine(context, resourceScopeRepository);
+    auto resourceScopeFactory = std::make_shared<dory::ResourceScopeFactory>();
+    auto resourceScopeDispatcher = std::make_shared<dory::ResourceScopeDispatcher>();
+    dory::ResourceScope updateControllersScope = resourceScopeFactory->createScope();
+    dory::Engine engine(context, resourceScopeDispatcher, updateControllersScope);
     auto windowSystem = std::make_shared<doryWindows::WindowSystemParallel>();
     auto windowSystemListener = std::make_shared<dory::DeviceListener>();
     windowSystem->attachListener(windowSystemListener);

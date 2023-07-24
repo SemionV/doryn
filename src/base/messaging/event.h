@@ -37,6 +37,8 @@ namespace dory
                 handlers.erase(handlerKey);
             }
 
+            virtual void operator()(Ts... arguments) = 0;
+
         private:
             int attachFunction(std::function<void(Ts...)>&& functor)
             {
@@ -56,7 +58,7 @@ namespace dory
     class DORY_API EventDispatcher: public Event<Ts...>
     {
         public:
-            void operator()(Ts... arguments)
+            void operator()(Ts... arguments) override
             {
                 for (const auto& [key, handler]: this->handlers)
                 {
