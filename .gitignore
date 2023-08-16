@@ -5,3 +5,4 @@ bin/
 .idea/
 build/cmake-artifacts/
 *.gch
+src/lib/
