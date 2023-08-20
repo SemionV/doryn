@@ -15,8 +15,5 @@ namespace dory
         public:
             virtual void handleMessage(std::shared_ptr<DeviceMessage> message);
             virtual void readUpdates(MessagePool& messagePool);
-
-            virtual bool connect();
-            virtual void disconnect();
     };
 }

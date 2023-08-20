@@ -15,22 +15,19 @@ int runDory()
     auto resourceScopeDispatcher = std::make_shared<dory::ResourceScopeDispatcher>();
     dory::ResourceScope updateControllersScope = resourceScopeFactory->createScope();
     dory::Engine engine(context, resourceScopeDispatcher, updateControllersScope);
+    auto deviceListener = std::make_shared<dory::DeviceListener>();
     auto windowSystem = std::make_shared<doryWindows::WindowSystemParallel>();
-    auto windowSystemListener = std::make_shared<dory::DeviceListener>();
-    windowSystem->attachListener(windowSystemListener);
+    windowSystem->attachListener(deviceListener);
 
     auto consoleSystem = std::make_shared<doryWindows::ConsoleSystem>();
-    auto consoleSystemListener = std::make_shared<dory::DeviceListener>();
-    consoleSystem->attachListener(consoleSystemListener);
+    consoleSystem->attachListener(deviceListener);
 
     dory::InputController inputController(inputMessagePool);
     engine.addController(&inputController);
 
     inputController.addDevice(consoleSystem);
-    inputController.addDeviceListener(consoleSystemListener);
-
     inputController.addDevice(windowSystem);
-    inputController.addDeviceListener(windowSystemListener);
+    inputController.addDeviceListener(deviceListener);
 
     test::TestController controller(inputMessagePool);
     engine.addController(&controller);
@@ -56,18 +53,6 @@ int runDory()
     return runDory();
 }*/
 
-class TestClass
-{
-    private:
-        int testMember = 4;
-
-    public:
-        void eventHandler(int a, int b)
-        {
-            std::cout << "event 3: " << a + b + testMember<< std::endl;
-        }
-};
-
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 {
     dory::Message* deletedMessage;
@@ -84,31 +69,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
         //std::shared_ptr<dory::Message> messagePtrCopy(messagePtr.get());
         dory::Message messageCopy = *messagePtr;
     }
-
-    dory::EventDispatcher<int, int> event;
-    auto handler1 = event.attachHandler([](int a, int b)
-    {
-        std::cout << "event 1: " << a + b << std::endl;
-    });
-
-    auto handler2 = event.attachHandler([](int a, int b)
-    {
-        std::cout << "event 2: " << a + b << std::endl;
-    });
-
-    TestClass testObject;
-    std::function<void(int, int)> f = std::bind(&TestClass::eventHandler, &testObject, std::placeholders::_1, std::placeholders::_2);
-    auto handler3 = event.attachHandler(f);
-
-    event(3, 4);
-
-    event.detachHandler(handler2);
-
-    event(3, 4);
-
-    event.detachHandler(handler1);
-
-    event(3, 4);
 
     return runDory();
 }

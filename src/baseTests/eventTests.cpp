@@ -1,14 +1,68 @@
 #include "dependencies.h"
 
-#include <cstdint>
+TEST_CASE( "Emit event", "[events]" ) {
+    bool handle1 = false;
+    bool handle2 = false;
+    int ap = 3, bp = 4;
 
-uint32_t factorial( uint32_t number ) {
-    return number <= 1 ? number : factorial(number-1) * number;
+    dory::EventDispatcher<int, int> event;
+
+    event.attachHandler([&](int a, int b)
+    {
+        REQUIRE(a == ap);
+        REQUIRE(b == bp);
+        handle1 = true;
+    });
+
+    event.attachHandler([&](int a, int b)
+    {
+        REQUIRE(a == ap);
+        REQUIRE(b == bp);
+        handle2 = true;
+    });
+
+    event(ap, bp);
+
+    REQUIRE(handle1);
+    REQUIRE(handle2);
 }
 
-TEST_CASE( "Factorials are computed", "[factorial]" ) {
-    REQUIRE( factorial( 1) == 1 );
-    REQUIRE( factorial( 2) == 2 );
-    REQUIRE( factorial( 3) == 6 );
-    REQUIRE( factorial(10) == 3'628'800 );
+TEST_CASE( "Detach event handler", "[events]" ) {
+    bool handle = false;
+
+    dory::EventDispatcher<int, int> event;
+
+    auto handler = event.attachHandler([&](int a, int b)
+    {
+        handle = true;
+    });
+
+    event.detachHandler(handler);
+
+    event(3, 4);
+
+    REQUIRE(!handle);
+}
+
+class TestClass
+{
+    public:
+        void eventHandler(bool& handle)
+        {
+            handle = true;
+        }
+};
+
+TEST_CASE( "Member function as handler", "[events]" ) {
+    bool handle = false;
+
+    dory::EventDispatcher<bool&> event;
+
+    TestClass testObject;
+    std::function<void(bool&)> f = std::bind(&TestClass::eventHandler, &testObject, std::placeholders::_1);
+    event.attachHandler(f);
+
+    event(handle);
+
+    REQUIRE(handle);
 }

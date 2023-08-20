@@ -5,6 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "C:/Program Files (x86)/**",
+                "C:/Program Files (x86)/Catch2/include/catch2",
                 "C:/Program Files/**"
             ],
             "defines": [

@@ -71,6 +71,29 @@
         "queue": "cpp",
         "array": "cpp",
         "condition_variable": "cpp",
-        "shared_mutex": "cpp"
-    }
+        "shared_mutex": "cpp",
+        "*.tcc": "cpp",
+        "bitset": "cpp",
+        "codecvt": "cpp",
+        "cstdarg": "cpp",
+        "cwctype": "cpp",
+        "fstream": "cpp",
+        "future": "cpp",
+        "coroutine": "cpp",
+        "resumable": "cpp",
+        "unordered_set": "cpp",
+        "memory_resource": "cpp",
+        "numbers": "cpp",
+        "numeric": "cpp",
+        "random": "cpp",
+        "regex": "cpp",
+        "semaphore": "cpp",
+        "set": "cpp",
+        "stack": "cpp",
+        "variant": "cpp",
+        "string_view": "cpp",
+        "cfenv": "cpp",
+        "cinttypes": "cpp"
+    },
+    "cmake.configureOnOpen": true
 }

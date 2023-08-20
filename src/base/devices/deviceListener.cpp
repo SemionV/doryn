@@ -19,13 +19,4 @@ namespace dory
             messageBuffer.pop();
         }
     }
-
-    bool DeviceListener::connect()
-    {
-        return true;
-    }
-
-    void DeviceListener::disconnect()
-    {        
-    }
 }
