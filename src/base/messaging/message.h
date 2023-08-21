@@ -8,9 +8,11 @@ namespace dory
     class DORY_API Message
     {
         public:
+            friend class MessageFactory;
+
             const MessageType messageType;
 
-        public:
+        protected:
             Message(MessageType messageType);
     };
 }

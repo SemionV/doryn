@@ -7,7 +7,7 @@ namespace dory
 {
     struct DORY_API DeviceMessage: public Message
     {
-        public:
+        protected:
             DeviceMessage(MessageType messageType);
     };
 }

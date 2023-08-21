@@ -8,6 +8,8 @@ namespace dory
     class DORY_API WindowMessage: public DeviceMessage
     {
         public:
+            friend class MessageFactory;
+
             const std::shared_ptr<Window> window;
 
             int x;
