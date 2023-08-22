@@ -27,6 +27,12 @@ namespace dory
                 return attachFunction(std::move(functor));
             }
 
+            template<typename F>
+            int operator+=(F&& function)
+            {
+                return attachHandler(function);
+            }
+
             int attachHandler(std::function<void(Ts...)>&& functor)
             {
                 return attachFunction(std::forward<std::function<void(Ts...)>>(functor));

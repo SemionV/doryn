@@ -78,16 +78,16 @@ TEST_CASE( "Event Hub", "[messages]" )
     WindowEventsHubDispatcher eventHub;
     std::vector<WindowClick> clicks;
 
-    eventHub.onClick().attachHandler([&](WindowClick& click)
+    eventHub.onClick() += [&](WindowClick& click)
     {
         clicks.push_back(click);
-    });
+    };
 
     std::vector<WindowClick> clicks2;
-    eventHub.onClick().attachHandler([&](WindowClick& click)
+    eventHub.onClick() += [&](WindowClick& click)
     {
         clicks2.push_back(click);
-    });
+    };
 
     WindowClick click(nullptr, 2, 4);
     eventHub.onClickDispatcher().addCase(std::forward<WindowClick>(click));
