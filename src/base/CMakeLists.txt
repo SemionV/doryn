@@ -10,7 +10,6 @@ add_library(base SHARED basicFrameService.cpp
                         controllers/inputController.cpp
                         devices/device.cpp
                         devices/deviceListener.cpp
-                        messaging/eventHub.cpp
                         messaging/message.cpp
                         messaging/deviceMessage.cpp
                         messaging/messagePool.cpp

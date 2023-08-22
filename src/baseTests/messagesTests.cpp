@@ -31,42 +31,81 @@ TEST_CASE( "Create a simple Message", "[messages]" )
     REQUIRE(dataMessagePtr->messageType == dory::MessageType::MouseTestMessage);
 }
 
+struct WindowClick
+{
+    public:
+        const std::shared_ptr<dory::Window> window;
+        const int x;
+        const int y;
+
+    public:
+        WindowClick(std::shared_ptr<dory::Window> window, int x, int y):
+            window(window),
+            x(x),
+            y(y)
+        {
+        }
+};
+
+class WindowEventsHub
+{
+    protected:
+        dory::EventHubDispatcher<WindowClick> clickEventHub;
+
+    public:
+        dory::Event<WindowClick&>& onClick()
+        {
+            return clickEventHub.getEvent();
+        }
+};
+
+class WindowEventsHubDispatcher: public WindowEventsHub, public dory::EventsHubDispatcher
+{
+    public:
+        dory::EventHubDispatcher<WindowClick>& onClickDispatcher()
+        {
+            return clickEventHub;
+        }
+
+        void submit() override
+        {
+            clickEventHub.submitCases();
+        }
+};
+
 TEST_CASE( "Event Hub", "[messages]" )
 {
-    dory::WindowEventHubDispatcher eventHub;
+    WindowEventsHubDispatcher eventHub;
+    std::vector<WindowClick> clicks;
 
-    bool clickHandle = false;
-    int x = 0, y = 0;
-
-    eventHub.getWindowClick().attachHandler([&](dory::WindowClick& click)
+    eventHub.onClick().attachHandler([&](WindowClick& click)
     {
-        clickHandle = true;
-        x = click.x;
-        y = click.y;
+        clicks.push_back(click);
     });
 
-    bool clickHandle2 = false;
-    int x2 = 0, y2 = 0;
-    eventHub.getWindowClick().attachHandler([&](dory::WindowClick& click)
+    std::vector<WindowClick> clicks2;
+    eventHub.onClick().attachHandler([&](WindowClick& click)
     {
-        clickHandle2 = true;
-        x2 = click.x;
-        y2 = click.y;
+        clicks2.push_back(click);
     });
 
-    dory::WindowClick click(nullptr, 2, 4);
-    eventHub.onWindowClick(std::forward<dory::WindowClick>(click));
+    WindowClick click(nullptr, 2, 4);
+    eventHub.onClickDispatcher().addCase(std::forward<WindowClick>(click));
 
-    dory::WindowClick click2(nullptr, 3, 5);
-    eventHub.onWindowClick(std::forward<dory::WindowClick>(click2));
+    WindowClick click2(nullptr, 3, 5);
+    eventHub.onClickDispatcher().addCase(std::forward<WindowClick>(click2));
 
     eventHub.submit();
 
-    REQUIRE(clickHandle);
-    REQUIRE(x == 3);
-    REQUIRE(y == 5);
+    REQUIRE(clicks.size() == 2);
+    REQUIRE(clicks[0].x == 2);
+    REQUIRE(clicks[0].y == 4);
+    REQUIRE(clicks[1].x == 3);
+    REQUIRE(clicks[1].y == 5);
 
-    REQUIRE(clickHandle2);
-    REQUIRE(x2 == 3);
-    REQUIRE(y2 == 5);
+    REQUIRE(clicks2.size() == 2);
+    REQUIRE(clicks2[0].x == 2);
+    REQUIRE(clicks2[0].y == 4);
+    REQUIRE(clicks2[1].x == 3);
+    REQUIRE(clicks2[1].y == 5);
 }

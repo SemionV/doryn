@@ -1,63 +1,60 @@
 #pragma once
 
-#include "base/doryExport.h"
 #include "event.h"
-#include "base/devices/window.h"
 
 namespace dory
 {
-    class EventHubDispatcher
+    class EventsHubDispatcher
     {
         public:
             virtual void submit() = 0;
     };
-
-    struct WindowClick
-    {
-        public:
-            const std::shared_ptr<Window> window;
-            const int x;
-            const int y;
-
-        public:
-            WindowClick(std::shared_ptr<Window> window, int x, int y):
-                window(window),
-                x(x),
-                y(y)
-            {
-            }
-    };
     
-
-    class WindowEventHub
+    template<typename TEventData>
+    class EventHub
     {
         private:
-            EventDispatcher<WindowClick&> windowClick;
+            EventDispatcher<TEventData&> event;
 
         public:
-            Event<WindowClick&>& getWindowClick()
+            Event<TEventData&>& getEvent()
             {
-                return windowClick;
+                return event;
             }
 
         protected:
-            EventDispatcher<WindowClick&>& getWindowClickDispatcher()
+            EventDispatcher<TEventData&>& getDispatcher()
             {
-                return windowClick;
+                return event;
             }
     };
 
-    class WindowEventHubDispatcher: public WindowEventHub, public EventHubDispatcher
+    template<typename TEventData>
+    class EventHubDispatcher: public EventHub<TEventData>
     {
         private:
-            std::vector<WindowClick> windowClicks;
+            std::vector<TEventData> eventCases;
 
         public:
-            void onWindowClick(WindowClick&& windowClick)
+            void addCase(TEventData&& eventData)
             {
-                windowClicks.emplace_back(std::forward<WindowClick>(windowClick));
+                eventCases.emplace_back(std::forward<TEventData>(eventData));
             }
 
-            void submit() override;
+            void submitCases()
+            {
+                EventDispatcher<TEventData&>& eventDispatcher = this->getDispatcher();
+                for(std::size_t i = 0; i < eventCases.size(); ++i)
+                {
+                    try
+                    {
+                        eventDispatcher(eventCases[i]);
+                    }
+                    catch(const std::exception& e)
+                    {                
+                    }
+                }
+                eventCases.clear();
+            }
     };
 }
