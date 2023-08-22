@@ -34,7 +34,7 @@ int runDory()
 
     engine.initialize(context);
 
-    std::cout << "dory:native test application" << std::endl;
+    std::cout << "dory:native demo application" << std::endl;
     std::cout << "Press any key to process to render frame OR ESC to exit\r" << std::endl;
 
     const doryWindows::WindowParameters windowParameters;

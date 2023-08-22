@@ -11,6 +11,7 @@
 #include "devices/windowParameters.h"
 #include "messaging/messages/windowMessage.h"
 #include "messaging/event.h"
+#include "messaging/eventHub.h"
 #include "messaging/messageFactory.h"
 #include "repositories/resourceScopeDispatcher.h"
 #include "repositories/resourceScopeFactory.h"

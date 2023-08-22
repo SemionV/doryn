@@ -1,6 +1,7 @@
 #include "dependencies.h"
 
-TEST_CASE( "Emit event", "[events]" ) {
+TEST_CASE( "Emit event", "[events]" ) 
+{
     bool handle1 = false;
     bool handle2 = false;
     int ap = 3, bp = 4;
@@ -27,7 +28,8 @@ TEST_CASE( "Emit event", "[events]" ) {
     REQUIRE(handle2);
 }
 
-TEST_CASE( "Detach event handler", "[events]" ) {
+TEST_CASE( "Detach event handler", "[events]" )
+{
     bool handle = false;
 
     dory::EventDispatcher<int, int> event;
@@ -53,7 +55,8 @@ class TestClass
         }
 };
 
-TEST_CASE( "Member function as handler", "[events]" ) {
+TEST_CASE( "Member function as handler", "[events]" ) 
+{
     bool handle = false;
 
     dory::EventDispatcher<bool&> event;
