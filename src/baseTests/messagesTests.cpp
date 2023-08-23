@@ -59,14 +59,11 @@ struct KeyPressed
         }
 };
 
-class WindowEventHub: public dory::EventHub
+class WindowEventHub
 {
     private:
         dory::EventDispatcher<WindowClick&> clickEvent;
-        dory::EventBuffer<WindowClick> clickEventBuffer;
-
         dory::EventDispatcher<KeyPressed&> keyPressedEvent;
-        dory::EventBuffer<KeyPressed> keyPressedEventBuffer;
 
     public:
         dory::Event<WindowClick&>& onClick()
@@ -74,14 +71,33 @@ class WindowEventHub: public dory::EventHub
             return clickEvent;
         }
 
-        void addCase(WindowClick&& clickData)
-        {
-            clickEventBuffer.addCase(std::forward<WindowClick>(clickData));
-        }
-
         dory::Event<KeyPressed&>& onKeyPressed()
         {
             return keyPressedEvent;
+        }
+
+    protected:
+        dory::EventDispatcher<WindowClick&>& onClickDispatcher()
+        {
+            return clickEvent;
+        }
+
+        dory::EventDispatcher<KeyPressed&>& onKeyPressedDispatcher()
+        {
+            return keyPressedEvent;
+        }
+};
+
+class WindowEventHubDispatcher: public WindowEventHub, public dory::EventHubDispatcher
+{
+    private:
+        dory::EventBuffer<KeyPressed> keyPressedEventBuffer;
+        dory::EventBuffer<WindowClick> clickEventBuffer;
+
+    public:
+        void addCase(WindowClick&& clickData)
+        {
+            clickEventBuffer.addCase(std::forward<WindowClick>(clickData));
         }
 
         void addCase(KeyPressed&& clickData)
@@ -91,14 +107,14 @@ class WindowEventHub: public dory::EventHub
 
         void submit() override
         {
-            clickEventBuffer.submitCases(clickEvent);
-            keyPressedEventBuffer.submitCases(keyPressedEvent);
+            clickEventBuffer.submitCases(onClickDispatcher());
+            keyPressedEventBuffer.submitCases(onKeyPressedDispatcher());
         }
 };
 
 TEST_CASE( "Event Hub", "[messages]" )
 {
-    WindowEventHub eventHub;
+    WindowEventHubDispatcher eventHub;
     std::vector<WindowClick> clicks;
 
     eventHub.onClick() += [&](WindowClick& click)

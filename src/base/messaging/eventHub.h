@@ -4,7 +4,7 @@
 
 namespace dory
 {
-    class EventHub
+    class EventHubDispatcher
     {
         public:
             virtual void submit() = 0;
