@@ -47,35 +47,58 @@ struct WindowClick
         }
 };
 
-class WindowEventsHub
+struct KeyPressed
 {
-    protected:
-        dory::EventHubDispatcher<WindowClick> clickEventHub;
+    public:
+        const char key;
+
+    public:
+        KeyPressed(char key):
+            key(key)
+        {
+        }
+};
+
+class WindowEventHub: public dory::EventHub
+{
+    private:
+        dory::EventDispatcher<WindowClick&> clickEvent;
+        dory::EventBuffer<WindowClick> clickEventBuffer;
+
+        dory::EventDispatcher<KeyPressed&> keyPressedEvent;
+        dory::EventBuffer<KeyPressed> keyPressedEventBuffer;
 
     public:
         dory::Event<WindowClick&>& onClick()
         {
-            return clickEventHub.getEvent();
+            return clickEvent;
         }
-};
 
-class WindowEventsHubDispatcher: public WindowEventsHub, public dory::EventsHubDispatcher
-{
-    public:
-        dory::EventHubDispatcher<WindowClick>& onClickDispatcher()
+        void addCase(WindowClick&& clickData)
         {
-            return clickEventHub;
+            clickEventBuffer.addCase(std::forward<WindowClick>(clickData));
+        }
+
+        dory::Event<KeyPressed&>& onKeyPressed()
+        {
+            return keyPressedEvent;
+        }
+
+        void addCase(KeyPressed&& clickData)
+        {
+            keyPressedEventBuffer.addCase(std::forward<KeyPressed>(clickData));
         }
 
         void submit() override
         {
-            clickEventHub.submitCases();
+            clickEventBuffer.submitCases(clickEvent);
+            keyPressedEventBuffer.submitCases(keyPressedEvent);
         }
 };
 
 TEST_CASE( "Event Hub", "[messages]" )
 {
-    WindowEventsHubDispatcher eventHub;
+    WindowEventHub eventHub;
     std::vector<WindowClick> clicks;
 
     eventHub.onClick() += [&](WindowClick& click)
@@ -89,13 +112,23 @@ TEST_CASE( "Event Hub", "[messages]" )
         clicks2.push_back(click);
     };
 
+    std::vector<KeyPressed> keysPressed;
+    eventHub.onKeyPressed() += [&](KeyPressed& keyPressed)
+    {
+        keysPressed.push_back(keyPressed);
+    };
+
     WindowClick click(nullptr, 2, 4);
-    eventHub.onClickDispatcher().addCase(std::forward<WindowClick>(click));
+    eventHub.addCase(std::forward<WindowClick>(click));
 
     WindowClick click2(nullptr, 3, 5);
-    eventHub.onClickDispatcher().addCase(std::forward<WindowClick>(click2));
+    eventHub.addCase(std::forward<WindowClick>(click2));
+
+    KeyPressed keyPressed(3);
+    eventHub.addCase(std::forward<KeyPressed>(keyPressed));
 
     eventHub.submit();
+    eventHub.submit();//submit second time to make sure that the buffers are clean
 
     REQUIRE(clicks.size() == 2);
     REQUIRE(clicks[0].x == 2);
@@ -108,4 +141,7 @@ TEST_CASE( "Event Hub", "[messages]" )
     REQUIRE(clicks2[0].y == 4);
     REQUIRE(clicks2[1].x == 3);
     REQUIRE(clicks2[1].y == 5);
+
+    REQUIRE(keysPressed.size() == 1);
+    REQUIRE(keysPressed[0].key == 3);
 }

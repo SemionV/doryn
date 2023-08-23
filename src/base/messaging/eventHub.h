@@ -4,33 +4,14 @@
 
 namespace dory
 {
-    class EventsHubDispatcher
+    class EventHub
     {
         public:
             virtual void submit() = 0;
     };
-    
-    template<typename TEventData>
-    class EventHub
-    {
-        private:
-            EventDispatcher<TEventData&> event;
-
-        public:
-            Event<TEventData&>& getEvent()
-            {
-                return event;
-            }
-
-        protected:
-            EventDispatcher<TEventData&>& getDispatcher()
-            {
-                return event;
-            }
-    };
 
     template<typename TEventData>
-    class EventHubDispatcher: public EventHub<TEventData>
+    class EventBuffer
     {
         private:
             std::vector<TEventData> eventCases;
@@ -41,9 +22,8 @@ namespace dory
                 eventCases.emplace_back(std::forward<TEventData>(eventData));
             }
 
-            void submitCases()
+            void submitCases(EventDispatcher<TEventData&>& eventDispatcher)
             {
-                EventDispatcher<TEventData&>& eventDispatcher = this->getDispatcher();
                 for(std::size_t i = 0; i < eventCases.size(); ++i)
                 {
                     try
