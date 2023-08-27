@@ -3,10 +3,10 @@
 
 namespace dory
 {
-    InputController::InputController(MessagePool& messagePool, std::shared_ptr<SystemConsoleEventHubDispatcher> consoleEventHub):
-        deviceListeners(),
-        messagePool(messagePool),
-        consoleEventHub(consoleEventHub)
+    InputController::InputController(std::shared_ptr<SystemConsoleEventHubDispatcher> consoleEventHub,
+        std::shared_ptr<SystemWindowEventHubDispatcher> windowEventHub):
+        consoleEventHub(consoleEventHub),
+        windowEventHub(windowEventHub)
     {
     }
 
@@ -43,19 +43,7 @@ namespace dory
         }
 
         consoleEventHub->submit(context);
-
-        std::size_t size = deviceListeners.size();
-        for(std::size_t i = 0; i < size; i++)
-        {
-            std::shared_ptr<DeviceListener> deviceListener = deviceListeners[i];
-
-            deviceListener->readUpdates(messagePool);
-        }
-    }
-
-    void InputController::addDeviceListener(std::shared_ptr<DeviceListener> deviceListener)
-    {
-        deviceListeners.push_back(deviceListener);
+        windowEventHub->submit(context);
     }
 
     void InputController::addDevice(std::shared_ptr<Device> device)

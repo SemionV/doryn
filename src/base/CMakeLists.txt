@@ -8,15 +8,6 @@ add_library(base SHARED basicFrameService.cpp
                         frameService.cpp
                         types.cpp
                         controllers/inputController.cpp
-                        devices/device.cpp
-                        devices/deviceListener.cpp
-                        messaging/message.cpp
-                        messaging/deviceMessage.cpp
-                        messaging/messagePool.cpp
-                        messaging/messages/consoleMessage.cpp
-                        messaging/messages/windowMessage.cpp
-                        repositories/resourceScopeDispatcher.cpp
-                        repositories/resourceScopeFactory.cpp
                         multithreading/task.cpp
                         multithreading/currentProcessThread.cpp
                         multithreading/individualProcessThread.cpp)

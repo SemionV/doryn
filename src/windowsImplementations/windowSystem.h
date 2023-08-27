@@ -9,7 +9,15 @@ namespace doryWindows
 
     class DORY_API WindowSystem: public dory::WindowSystem<WindowParameters>
     {
+        private:
+            std::shared_ptr<dory::SystemWindowEventHubDispatcher> eventHub;
+
         public:
+            WindowSystem(std::shared_ptr<dory::SystemWindowEventHubDispatcher> eventHub):
+                eventHub(eventHub)
+            {
+            }
+
             virtual bool connect() override;
             virtual void disconnect() override;
             virtual void update() override;

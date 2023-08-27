@@ -5,32 +5,6 @@ struct MessageData
     std::string message;
 };
 
-TEST_CASE( "Create a simple Message", "[messages]" )
-{
-    dory::MessageFactory messageFactory;
-
-    std::shared_ptr<dory::Message> message = messageFactory.createMessage(dory::MessageType::MouseTestMessage);
-
-    REQUIRE(message);
-    REQUIRE(message->messageType == dory::MessageType::MouseTestMessage);
-    
-    auto windowMessage = messageFactory.createMessage<dory::WindowMessage>(dory::MessageType::MouseTestMessage, nullptr);
-
-    MessageData messageData;
-    messageData.message = "Test data";
-    
-    auto dataMessage = messageFactory.createMessage<dory::DataMessage<MessageData>>(dory::MessageType::MouseTestMessage, std::forward<MessageData>(messageData));
-
-    REQUIRE(dataMessage);
-    REQUIRE(dataMessage->messageType == dory::MessageType::MouseTestMessage);
-    REQUIRE(dataMessage->data.message == "Test data");
-
-    std::shared_ptr<dory::Message> dataMessagePtr = messageFactory.createMessage<dory::DataMessage<MessageData>>(dory::MessageType::MouseTestMessage, std::forward<MessageData>(messageData));
-
-    REQUIRE(dataMessagePtr);
-    REQUIRE(dataMessagePtr->messageType == dory::MessageType::MouseTestMessage);
-}
-
 struct WindowClick
 {
     public:

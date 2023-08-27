@@ -102,10 +102,8 @@ namespace doryWindows
         std::shared_ptr<Window> window = getWindow(hWnd);
         if(window)
         {
-            auto message = std::make_shared<dory::WindowMessage>(dory::MessageType::MouseTestMessage, window);
-            message->x = x;
-            message->y = y;
-            propagateMessage(message);
+            dory::MouseClickEventData eventData(window, x, y);
+            eventHub->addCase(std::forward<dory::MouseClickEventData>(eventData));
         }
     }
 

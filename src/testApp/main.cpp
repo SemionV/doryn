@@ -9,31 +9,21 @@
 
 int runDory()
 {
-    dory::MessagePool inputMessagePool;
     dory::DataContext context;
-    auto resourceScopeFactory = std::make_shared<dory::ResourceScopeFactory>();
-    auto resourceScopeDispatcher = std::make_shared<dory::ResourceScopeDispatcher>();
-    dory::ResourceScope updateControllersScope = resourceScopeFactory->createScope();
-    dory::Engine engine(context, resourceScopeDispatcher, updateControllersScope);
-    auto deviceListener = std::make_shared<dory::DeviceListener>();
-    auto windowSystem = std::make_shared<doryWindows::WindowSystemParallel>();
-    windowSystem->attachListener(deviceListener);
+    dory::Engine engine(context);
+    
+    auto windowEventHub = std::make_shared<dory::SystemWindowEventHubDispatcher>();
+    auto windowSystem = std::make_shared<doryWindows::WindowSystemParallel>(windowEventHub);
 
     auto consoleEventHub = std::make_shared<dory::SystemConsoleEventHubDispatcher>();
     auto consoleSystem = std::make_shared<doryWindows::ConsoleSystem>(consoleEventHub);
-    consoleSystem->attachListener(deviceListener);
 
-    dory::InputController inputController(inputMessagePool, consoleEventHub);
+    dory::InputController inputController(consoleEventHub, windowEventHub);
     engine.addController(&inputController);
-
-    test::TestLogic logic(consoleEventHub);
-
     inputController.addDevice(consoleSystem);
     inputController.addDevice(windowSystem);
-    inputController.addDeviceListener(deviceListener);
 
-    test::TestController controller(inputMessagePool);
-    engine.addController(&controller);
+    test::TestLogic logic(consoleEventHub, windowEventHub);
 
     engine.initialize(context);
 

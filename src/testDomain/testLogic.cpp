@@ -3,8 +3,10 @@
 
 namespace test
 {
-    TestLogic::TestLogic(std::shared_ptr<dory::SystemConsoleEventHub> consoleEventHub):
-        consoleEventHub(consoleEventHub)
+    TestLogic::TestLogic(std::shared_ptr<dory::SystemConsoleEventHub> consoleEventHub,
+        std::shared_ptr<dory::SystemWindowEventHub> windowEventHub):
+        consoleEventHub(consoleEventHub),
+        windowEventHub(windowEventHub)
     {
         consoleEventHub->onKeyPressed() += [] (dory::DataContext& context, dory::KeyPressedEventData& keyPressedEventData)
         {
@@ -17,6 +19,11 @@ namespace test
             {
                 std::cout << std::this_thread::get_id() << ": key pressed: " << keyPressedEventData.keyPressed << std::endl;
             }
+        };
+
+        windowEventHub->onMouseClick() += [] (dory::DataContext& context, dory::MouseClickEventData& mouseClickEventData)
+        {
+            std::cout << std::this_thread::get_id() << ": click: " << mouseClickEventData.x << ", " << mouseClickEventData.y << std::endl;
         };
     }
 }

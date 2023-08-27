@@ -10,6 +10,11 @@ namespace doryWindows
             dory::IndividualProcessThread processThread;
 
         public:
+            WindowSystemParallel(std::shared_ptr<dory::SystemWindowEventHubDispatcher> eventHub):
+                WindowSystem(eventHub)
+            {
+            }
+
             virtual bool connect() override;
             virtual void disconnect() override;
             virtual void update() override;

@@ -3,11 +3,9 @@
 
 namespace dory
 {
-    Engine::Engine(DataContext& context, std::shared_ptr<ResourceScopeDispatcher> resourceScopeDispatcher, ResourceScope updateControllersScope):
+    Engine::Engine(DataContext& context):
         dataContext(context),
-        controllers(),
-        resourceScopeDispatcher(resourceScopeDispatcher),
-        updateControllersScope(updateControllersScope)
+        controllers()
     {
     }
 
@@ -22,8 +20,6 @@ namespace dory
 
     bool Engine::update(const TimeSpan& timeStep)
     {
-        resourceScopeDispatcher->startScope(updateControllersScope);
-
         std::vector<Controller*>::iterator it = controllers.begin();
         std::vector<Controller*>::iterator end = controllers.end();
 
@@ -31,8 +27,6 @@ namespace dory
         {
             (*it)->update(timeStep, dataContext);
         }
-
-        resourceScopeDispatcher->finishScope(updateControllersScope);
 
         return dataContext.isStop;
     }
