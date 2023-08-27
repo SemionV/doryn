@@ -6,6 +6,5 @@ namespace dory
 {
     class ConsoleSystem: public Device
     {
-
     };
 }

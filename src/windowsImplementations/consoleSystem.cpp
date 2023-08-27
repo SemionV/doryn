@@ -37,8 +37,10 @@ namespace doryWindows
     {
         std::cout << std::this_thread::get_id() << ": add key pressed message: " << key << std::endl;
 
-        auto message = std::make_shared<dory::ConsoleMessage>(key);
-        propagateMessage(message);
+        /*auto message = std::make_shared<dory::ConsoleMessage>(key);
+        propagateMessage(message);*/
+        dory::KeyPressedEventData eventData(key);
+        eventHub->addCase(std::forward<dory::KeyPressedEventData>(eventData));
     }
 
     void ConsoleSystem::bindStdHandlesToConsole()

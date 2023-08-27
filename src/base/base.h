@@ -15,3 +15,4 @@
 #include "messaging/messageFactory.h"
 #include "repositories/resourceScopeDispatcher.h"
 #include "repositories/resourceScopeFactory.h"
+#include "messaging/events/systemConsole/systemConsoleEventHub.h"

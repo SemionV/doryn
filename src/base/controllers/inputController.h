@@ -4,6 +4,7 @@
 #include "base/devices/deviceListener.h"
 #include "base/devices/device.h"
 #include "base/messaging/messagePool.h"
+#include "base/messaging/events/systemConsole/systemConsoleEventHub.h"
 
 namespace dory
 {
@@ -13,10 +14,11 @@ namespace dory
             std::vector<std::shared_ptr<DeviceListener>> deviceListeners;
             std::vector<std::shared_ptr<Device>> devices;
             MessagePool& messagePool;
+            std::shared_ptr<SystemConsoleEventHubDispatcher> consoleEventHub;
 
         public:
 
-        InputController(MessagePool& messagePool);
+        InputController(MessagePool& messagePool, std::shared_ptr<SystemConsoleEventHubDispatcher> consoleEventHub);
 
         void initialize(dory::DataContext& context);
         void stop(dory::DataContext& context);

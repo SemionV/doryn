@@ -3,9 +3,10 @@
 
 namespace dory
 {
-    InputController::InputController(MessagePool& messagePool):
+    InputController::InputController(MessagePool& messagePool, std::shared_ptr<SystemConsoleEventHubDispatcher> consoleEventHub):
         deviceListeners(),
-        messagePool(messagePool)
+        messagePool(messagePool),
+        consoleEventHub(consoleEventHub)
     {
     }
 
@@ -40,6 +41,8 @@ namespace dory
         {
             (*it)->update();
         }
+
+        consoleEventHub->submit(context);
 
         std::size_t size = deviceListeners.size();
         for(std::size_t i = 0; i < size; i++)

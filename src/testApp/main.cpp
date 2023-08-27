@@ -19,11 +19,14 @@ int runDory()
     auto windowSystem = std::make_shared<doryWindows::WindowSystemParallel>();
     windowSystem->attachListener(deviceListener);
 
-    auto consoleSystem = std::make_shared<doryWindows::ConsoleSystem>();
+    auto consoleEventHub = std::make_shared<dory::SystemConsoleEventHubDispatcher>();
+    auto consoleSystem = std::make_shared<doryWindows::ConsoleSystem>(consoleEventHub);
     consoleSystem->attachListener(deviceListener);
 
-    dory::InputController inputController(inputMessagePool);
+    dory::InputController inputController(inputMessagePool, consoleEventHub);
     engine.addController(&inputController);
+
+    test::TestLogic logic(consoleEventHub);
 
     inputController.addDevice(consoleSystem);
     inputController.addDevice(windowSystem);

@@ -62,27 +62,27 @@ struct KeyPressed
 class WindowEventHub
 {
     private:
-        dory::EventDispatcher<WindowClick&> clickEvent;
-        dory::EventDispatcher<KeyPressed&> keyPressedEvent;
+        dory::EventDispatcher<dory::DataContext&, WindowClick&> clickEvent;
+        dory::EventDispatcher<dory::DataContext&, KeyPressed&> keyPressedEvent;
 
     public:
-        dory::Event<WindowClick&>& onClick()
+        dory::Event<dory::DataContext&, WindowClick&>& onClick()
         {
             return clickEvent;
         }
 
-        dory::Event<KeyPressed&>& onKeyPressed()
+        dory::Event<dory::DataContext&, KeyPressed&>& onKeyPressed()
         {
             return keyPressedEvent;
         }
 
     protected:
-        dory::EventDispatcher<WindowClick&>& onClickDispatcher()
+        dory::EventDispatcher<dory::DataContext&, WindowClick&>& onClickDispatcher()
         {
             return clickEvent;
         }
 
-        dory::EventDispatcher<KeyPressed&>& onKeyPressedDispatcher()
+        dory::EventDispatcher<dory::DataContext&, KeyPressed&>& onKeyPressedDispatcher()
         {
             return keyPressedEvent;
         }
@@ -105,10 +105,10 @@ class WindowEventHubDispatcher: public WindowEventHub, public dory::EventHubDisp
             keyPressedEventBuffer.addCase(std::forward<KeyPressed>(clickData));
         }
 
-        void submit() override
+        void submit(dory::DataContext& dataContext) override
         {
-            clickEventBuffer.submitCases(onClickDispatcher());
-            keyPressedEventBuffer.submitCases(onKeyPressedDispatcher());
+            clickEventBuffer.submitCases(onClickDispatcher(), dataContext);
+            keyPressedEventBuffer.submitCases(onKeyPressedDispatcher(), dataContext);
         }
 };
 
@@ -116,20 +116,21 @@ TEST_CASE( "Event Hub", "[messages]" )
 {
     WindowEventHubDispatcher eventHub;
     std::vector<WindowClick> clicks;
+    dory::DataContext dataContext;
 
-    eventHub.onClick() += [&](WindowClick& click)
+    eventHub.onClick() += [&](dory::DataContext& context, WindowClick& click)
     {
         clicks.push_back(click);
     };
 
     std::vector<WindowClick> clicks2;
-    eventHub.onClick() += [&](WindowClick& click)
+    eventHub.onClick() += [&](dory::DataContext& context, WindowClick& click)
     {
         clicks2.push_back(click);
     };
 
     std::vector<KeyPressed> keysPressed;
-    eventHub.onKeyPressed() += [&](KeyPressed& keyPressed)
+    eventHub.onKeyPressed() += [&](dory::DataContext& context, KeyPressed& keyPressed)
     {
         keysPressed.push_back(keyPressed);
     };
@@ -143,8 +144,8 @@ TEST_CASE( "Event Hub", "[messages]" )
     KeyPressed keyPressed(3);
     eventHub.addCase(std::forward<KeyPressed>(keyPressed));
 
-    eventHub.submit();
-    eventHub.submit();//submit second time to make sure that the buffers are clean
+    eventHub.submit(dataContext);
+    eventHub.submit(dataContext);//submit second time to make sure that the buffers are clean
 
     REQUIRE(clicks.size() == 2);
     REQUIRE(clicks[0].x == 2);

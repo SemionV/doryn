@@ -3,7 +3,8 @@ cmake_minimum_required(VERSION 3.22)
 project(dory-testDomain)
 
 add_library(testDomain SHARED stepFrameService.cpp
-                                testController.cpp)
+                                testController.cpp
+                                testLogic.cpp)
 
 set_target_properties(testDomain PROPERTIES PREFIX ""
                                             IMPORT_PREFIX ""

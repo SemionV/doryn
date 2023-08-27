@@ -6,8 +6,14 @@ namespace doryWindows
     {
         private:
             dory::IndividualProcessThread processThread;
+            std::shared_ptr<dory::SystemConsoleEventHubDispatcher> eventHub;
 
         public:
+            ConsoleSystem(std::shared_ptr<dory::SystemConsoleEventHubDispatcher> eventHub):
+                eventHub(eventHub)
+            {
+            }
+
             virtual bool connect() override;
             virtual void disconnect() override;
             virtual void update() override;
