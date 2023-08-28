@@ -1,7 +1,7 @@
 #pragma once
 
 #include "device.h"
-#include "window.h"
+#include "base/domain/window.h"
 
 namespace dory
 {

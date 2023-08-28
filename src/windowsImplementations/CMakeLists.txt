@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.22)
 project(dory-windowsImplementations)
 
 add_library(windowsImplementations SHARED windowSystem.cpp
-                                        window.cpp
                                         windowSystemParallel.cpp
                                         consoleSystem.cpp)
 

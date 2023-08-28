@@ -8,6 +8,9 @@ namespace doryWindows
             const HWND hWnd;
         
         public:
-            Window(HWND hWnd);
+            Window(HWND hWnd):
+                hWnd(hWnd)
+            {        
+            }
     };
 }

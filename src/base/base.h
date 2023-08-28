@@ -11,3 +11,6 @@
 #include "messaging/eventHub.h"
 #include "messaging/events/systemConsole/systemConsoleEventHub.h"
 #include "messaging/events/systemWindow/systemWindowEventHub.h"
+#include "domain/view.h"
+#include "domain/geometry/transformation.h"
+#include "domain/geometry/transformationFactory.h"

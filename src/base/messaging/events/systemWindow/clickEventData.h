@@ -1,7 +1,7 @@
 #pragma once
 
 #include "base/dependencies.h"
-#include "base/devices/window.h"
+#include "base/domain/window.h"
 
 namespace dory
 {
