@@ -2,6 +2,7 @@
 
 #include "base/dependencies.h"
 #include "point.h"
+#include "matrix.h"
 
 namespace dory
 {
