@@ -10,7 +10,8 @@ add_library(base SHARED basicFrameService.cpp
                         controllers/inputController.cpp
                         multithreading/task.cpp
                         multithreading/currentProcessThread.cpp
-                        multithreading/individualProcessThread.cpp)
+                        multithreading/individualProcessThread.cpp
+                        domain/geometry/matrixCalculator.cpp)
 
 set_target_properties(base PROPERTIES PREFIX ""
                                     IMPORT_PREFIX ""

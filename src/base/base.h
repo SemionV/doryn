@@ -14,3 +14,4 @@
 #include "domain/view.h"
 #include "domain/geometry/transformation.h"
 #include "domain/geometry/transformationFactory.h"
+#include "domain/geometry/matrixCalculator.h"

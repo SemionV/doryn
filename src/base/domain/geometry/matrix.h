@@ -7,10 +7,10 @@ namespace dory
         float entries[16];
 
         Matrix4x4():
-            entries{1, 0, 0, 0,
-                    0, 1, 0, 0,
-                    0, 0, 1, 0,
-                    0, 0, 0, 1}
+            entries{1.f, 0.f, 0.f, 0.f,
+                    0.f, 1.f, 0.f, 0.f,
+                    0.f, 0.f, 1.f, 0.f,
+                    0.f, 0.f, 0.f, 1.f}
         {            
         }
     };
