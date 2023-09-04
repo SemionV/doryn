@@ -18,7 +18,7 @@ namespace dory
     {
         float z;
 
-        Point3d(float x, float y):
+        Point3d(float x, float y, float z):
             Point2d(x, y),
             z(z)
         {            
