@@ -30,11 +30,18 @@ namespace dory
         float x = (vector->x * entries[0]) + (vector->y * entries[1]) + (vector->z * entries[2]) + entries[3];
         float y = (vector->x * entries[4]) + (vector->y * entries[5]) + (vector->z * entries[6]) + entries[7];
         float z = (vector->x * entries[8]) + (vector->y * entries[9]) + (vector->z * entries[10]) + entries[11];
-        float w = (vector->x * entries[12]) + (vector->y * entries[13]) + (vector->z * entries[14]) + 1;
 
-        resultVector->x = x / w;
-        resultVector->y = y / w;
-        resultVector->z = z / w;
+        resultVector->x = x;
+        resultVector->y = y;
+        resultVector->z = z;
+    }
+
+    void MatrixCalculator::multiply(const Matrix4x4* matrix, const Point3d* vector, Point3d* resultVector, float& wResult)
+    {
+        multiply(matrix, vector, resultVector);
+
+        const float* entries = matrix->entries;
+        wResult = (vector->x * entries[12]) + (vector->y * entries[13]) + (vector->z * entries[14]) + entries[15];
     }
 
     void MatrixCalculator::multiply(const Matrix4x4* matrixLeftSide, const Matrix4x4* matrixRightSide, Matrix4x4* resultMatrix)
@@ -125,28 +132,64 @@ namespace dory
         }
     }
 
-    void MatrixCalculator::translate(Matrix4x4* matrix, float x, float y, float z)
+    void MatrixCalculator::toIdentity(Matrix4x4* matrix)
     {
-        
+        Matrix4x4::setEntries(matrix, Matrix4x4::EntriesArray {
+            1.f, 0.f, 0.f, 0.f,
+            0.f, 1.f, 0.f, 0.f,
+            0.f, 0.f, 1.f, 0.f,
+            0.f, 0.f, 0.f, 1.f
+        });
+    }
+
+    void MatrixCalculator::translate(Matrix4x4* matrix, float dx, float dy, float dz)
+    {
+        matrix->entries[3] = dx;
+        matrix->entries[7] = dy;
+        matrix->entries[11] = dz;
     }
 
     void MatrixCalculator::scale(Matrix4x4* matrix, float x, float y, float z)
     {
-        
+        matrix->entries[0] = x;
+        matrix->entries[5] = y;
+        matrix->entries[10] = z;
     }
 
     void MatrixCalculator::rotateX(Matrix4x4* matrix, float radians)
     {
-        
+        matrix->entries[5] = std::cos(radians);
+        matrix->entries[6] = -std::sin(radians);
+        matrix->entries[9] = std::sin(radians);
+        matrix->entries[10] = std::cos(radians);
     }
 
     void MatrixCalculator::rotateY(Matrix4x4* matrix, float radians)
     {
-        
+        matrix->entries[0] = std::cos(radians);
+        matrix->entries[2] = std::sin(radians);
+        matrix->entries[8] = -std::sin(radians);
+        matrix->entries[10] = std::cos(radians);
     }
 
     void MatrixCalculator::rotateZ(Matrix4x4* matrix, float radians)
     {
-        
+        matrix->entries[0] = std::cos(radians);
+        matrix->entries[1] = -std::sin(radians);
+        matrix->entries[4] = std::sin(radians);
+        matrix->entries[5] = std::cos(radians);
+    }
+
+    bool MatrixCalculator::isEqual(Matrix4x4* matrixA, Matrix4x4* matrixB)
+    {
+        for(int i = 0; i < Matrix4x4::size; ++i)
+        {
+            if(matrixA->entries[i] != matrixB->entries[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

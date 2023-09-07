@@ -13,3 +13,4 @@
 #include <utility>
 #include <type_traits>
 #include <array>
+#include <cmath>

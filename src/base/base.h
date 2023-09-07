@@ -15,3 +15,4 @@
 #include "domain/geometry/transformation.h"
 #include "domain/geometry/matrixCalculator.h"
 #include "domain/geometry/transformationCalculator.h"
+#include "domain/geometry/mathFunctions.h"

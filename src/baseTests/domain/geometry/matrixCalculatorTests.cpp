@@ -167,11 +167,12 @@ TEST_CASE("multiply vector by matrix", "[matricies]")
     std::shared_ptr<dory::Point3d> vector = std::make_shared<dory::Point3d>(3, 4, 7);
     std::shared_ptr<dory::Point3d> resultVector = std::make_shared<dory::Point3d>(0, 0, 0);
 
-    calculator->multiply(matrix.get(), vector.get(), resultVector.get());
+    float w = 0;
+    calculator->multiply(matrix.get(), vector.get(), resultVector.get(), w);
 
-    REQUIRE(std::floor(resultVector->x * 100) == 38);
-    REQUIRE(std::floor(resultVector->y * 100) == 74);
-    REQUIRE(std::floor(resultVector->z * 100) == 61);
+    REQUIRE(std::floor((resultVector->x / w) * 100) == 38);
+    REQUIRE(std::floor((resultVector->y / w) * 100) == 74);
+    REQUIRE(std::floor((resultVector->z / w)  * 100) == 61);
 }
 
 TEST_CASE("multiply matrix by matrix", "[matricies]")
@@ -207,7 +208,7 @@ TEST_CASE("multiply matrix by matrix", "[matricies]")
         25, 49, 52, 91
     });
 
-   REQUIRE(dory::Matrix4x4::isEqual(matrixRequire.get(), resultMatrix.get()));
+   REQUIRE(calculator->isEqual(matrixRequire.get(), resultMatrix.get()));
 }
 
 TEST_CASE("inverse matrix", "[matricies]")
@@ -234,4 +235,109 @@ TEST_CASE("inverse matrix", "[matricies]")
     {
         REQUIRE(std::floor(resultMatrix->entries[i] * 1000) == matrixRequire->entries[i]);
     }
+}
+
+TEST_CASE("build translate matrix", "[matricies]")
+{
+    std::shared_ptr<dory::IMatrixCalculator> calculator = std::make_shared<dory::MatrixCalculator>();
+    std::shared_ptr<dory::Matrix4x4> matrix = std::make_shared<dory::Matrix4x4>(dory::Matrix4x4::EntriesArray {
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
+    });
+
+    calculator->translate(matrix.get(), 1, 1, 1);
+
+    std::shared_ptr<dory::Point3d> resultPoint = std::make_shared<dory::Point3d>(0, 0, 0);
+    std::shared_ptr<dory::Point3d> point = std::make_shared<dory::Point3d>(1, 1, 1);
+    calculator->multiply(matrix.get(), point.get(), resultPoint.get());
+
+    REQUIRE(resultPoint->x == 2);
+    REQUIRE(resultPoint->y == 2);
+    REQUIRE(resultPoint->z == 2);
+}
+
+TEST_CASE("build scale matrix", "[matricies]")
+{
+    std::shared_ptr<dory::IMatrixCalculator> calculator = std::make_shared<dory::MatrixCalculator>();
+    std::shared_ptr<dory::Matrix4x4> matrix = std::make_shared<dory::Matrix4x4>(dory::Matrix4x4::EntriesArray {
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
+    });
+
+    calculator->scale(matrix.get(), 2, 2, 2);
+
+    std::shared_ptr<dory::Point3d> resultPoint = std::make_shared<dory::Point3d>(0, 0, 0);
+    std::shared_ptr<dory::Point3d> point = std::make_shared<dory::Point3d>(1, 1, 1);
+    calculator->multiply(matrix.get(), point.get(), resultPoint.get());
+
+    REQUIRE(resultPoint->x == 2);
+    REQUIRE(resultPoint->y == 2);
+    REQUIRE(resultPoint->z == 2);
+}
+
+TEST_CASE("build rotate X matrix", "[matricies]")
+{
+    std::shared_ptr<dory::IMatrixCalculator> calculator = std::make_shared<dory::MatrixCalculator>();
+    std::shared_ptr<dory::Matrix4x4> matrix = std::make_shared<dory::Matrix4x4>(dory::Matrix4x4::EntriesArray {
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
+    });
+
+    calculator->rotateX(matrix.get(), dory::MathFunctions::getRadians(90.f));
+
+    std::shared_ptr<dory::Point3d> resultPoint = std::make_shared<dory::Point3d>(0, 0, 0);
+    std::shared_ptr<dory::Point3d> point = std::make_shared<dory::Point3d>(0, 1, 0);
+    calculator->multiply(matrix.get(), point.get(), resultPoint.get());
+
+    REQUIRE((int)resultPoint->x == 0);
+    REQUIRE((int)resultPoint->y == 0);
+    REQUIRE((int)resultPoint->z == 1);
+}
+
+TEST_CASE("build rotate Y matrix", "[matricies]")
+{
+    std::shared_ptr<dory::IMatrixCalculator> calculator = std::make_shared<dory::MatrixCalculator>();
+    std::shared_ptr<dory::Matrix4x4> matrix = std::make_shared<dory::Matrix4x4>(dory::Matrix4x4::EntriesArray {
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
+    });
+
+    calculator->rotateY(matrix.get(), dory::MathFunctions::getRadians(90.f));
+
+    std::shared_ptr<dory::Point3d> resultPoint = std::make_shared<dory::Point3d>(0, 0, 0);
+    std::shared_ptr<dory::Point3d> point = std::make_shared<dory::Point3d>(1, 0, 0);
+    calculator->multiply(matrix.get(), point.get(), resultPoint.get());
+
+    REQUIRE((int)resultPoint->x == 0);
+    REQUIRE((int)resultPoint->y == 0);
+    REQUIRE((int)resultPoint->z == -1);
+}
+
+TEST_CASE("build rotate Z matrix", "[matricies]")
+{
+    std::shared_ptr<dory::IMatrixCalculator> calculator = std::make_shared<dory::MatrixCalculator>();
+    std::shared_ptr<dory::Matrix4x4> matrix = std::make_shared<dory::Matrix4x4>(dory::Matrix4x4::EntriesArray {
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
+    });
+
+    calculator->rotateZ(matrix.get(), dory::MathFunctions::getRadians(90.f));
+
+    std::shared_ptr<dory::Point3d> resultPoint = std::make_shared<dory::Point3d>(0, 0, 0);
+    std::shared_ptr<dory::Point3d> point = std::make_shared<dory::Point3d>(1, 0, 0);
+    calculator->multiply(matrix.get(), point.get(), resultPoint.get());
+
+    REQUIRE((int)resultPoint->x == 0);
+    REQUIRE((int)resultPoint->y == 1);
+    REQUIRE((int)resultPoint->z == 0);
 }

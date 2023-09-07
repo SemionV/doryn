@@ -58,28 +58,5 @@ namespace dory
                 matrix->entries[i] = entries[i];
             }
         }
-
-        static const bool isEqual(Matrix4x4* matrixA, Matrix4x4* matrixB)
-        {
-            for(int i = 0; i < size; ++i)
-            {
-                if(matrixA->entries[i] != matrixB->entries[i])
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        static void toIdentity(Matrix4x4* matrix)
-        {
-            setEntries(matrix, EntriesArray {
-                1.f, 0.f, 0.f, 0.f,
-                0.f, 1.f, 0.f, 0.f,
-                0.f, 0.f, 1.f, 0.f,
-                0.f, 0.f, 0.f, 1.f
-            });
-        }
     };
 }
