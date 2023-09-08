@@ -6,3 +6,4 @@ bin/
 build/cmake-artifacts/
 *.gch
 src/lib/
+src/vendor/
