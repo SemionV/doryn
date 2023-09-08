@@ -12,6 +12,12 @@ namespace dory
             y(y)
         {            
         }
+
+        Point2d():
+            x(0), 
+            y(0)
+        {            
+        }
     };
 
     struct Point3d: public Point2d
@@ -21,6 +27,11 @@ namespace dory
         Point3d(float x, float y, float z):
             Point2d(x, y),
             z(z)
+        {            
+        }
+
+        Point3d():
+            z(0)
         {            
         }
     };

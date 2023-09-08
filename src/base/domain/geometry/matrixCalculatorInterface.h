@@ -10,8 +10,8 @@ namespace dory
         public:
             virtual void setToIdentity(Matrix4x4* matrix) = 0;
             virtual void copyEntriesTo(const Matrix4x4* sourceMatrix, Matrix4x4* destinationMatrix) = 0;
-            virtual void multiply(const Matrix4x4* matrix, const Point3d* vector, Point3d* resultVector) = 0;
             virtual void multiply(const Matrix4x4* matrixLeftSide, const Matrix4x4* matrixRightSide, Matrix4x4* resultMatrix) = 0;
+            virtual void multiply(const Matrix4x4* matrix, const Point3d* vector, Point3d* resultVector) = 0;
             virtual void multiply(const Matrix4x4* matrix, const Point3d* vector, Point3d* resultVector, float& wValueResult) = 0;
             virtual void invert(const Matrix4x4* matrix, Matrix4x4* resultMatrix) = 0;
             virtual void toIdentity(Matrix4x4* matrix) = 0;

@@ -9,8 +9,8 @@ namespace dory
         public:
             void setToIdentity(Matrix4x4* matrix) override;
             void copyEntriesTo(const Matrix4x4* sourceMatrix, Matrix4x4* destinationMatrix) override;
-            void multiply(const Matrix4x4* matrix, const Point3d* vector, Point3d* resultVector) override;
             void multiply(const Matrix4x4* matrixLeftSide, const Matrix4x4* matrixRightSide, Matrix4x4* resultMatrix) override;
+            void multiply(const Matrix4x4* matrix, const Point3d* vector, Point3d* resultVector) override;
             void multiply(const Matrix4x4* matrix, const Point3d* vector, Point3d* resultVector, float& wValueResult) override;
             void invert(const Matrix4x4* matrix, Matrix4x4* resultMatrix) override;
             void toIdentity(Matrix4x4* matrix) override;

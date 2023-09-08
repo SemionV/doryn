@@ -3,7 +3,7 @@
 
 namespace dory
 {
-    TransformationCalculator::TransformationCalculator(std::shared_ptr<MatrixCalculator> matrixCalculator):
+    TransformationCalculator::TransformationCalculator(std::shared_ptr<IMatrixCalculator> matrixCalculator):
         matrixCalculator(matrixCalculator)
     {
     }
