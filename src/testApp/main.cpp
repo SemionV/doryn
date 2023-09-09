@@ -14,14 +14,27 @@ int runDory()
     
     auto windowEventHub = std::make_shared<dory::SystemWindowEventHubDispatcher>();
     auto windowSystem = std::make_shared<doryWindows::WindowSystemParallel>(windowEventHub);
+    windowSystem->connect();
 
     auto consoleEventHub = std::make_shared<dory::SystemConsoleEventHubDispatcher>();
     auto consoleSystem = std::make_shared<doryWindows::ConsoleSystem>(consoleEventHub);
+    consoleSystem->connect();
 
-    dory::InputController inputController(consoleEventHub, windowEventHub);
-    engine.addController(&inputController);
-    inputController.addDevice(consoleSystem);
-    inputController.addDevice(windowSystem);
+    auto inputController = std::make_shared<dory::InputController>(consoleEventHub, windowEventHub);
+    engine.addController(inputController);
+    inputController->addDevice(consoleSystem);
+    inputController->addDevice(windowSystem);
+    inputController->initialize(context);
+
+    const doryWindows::WindowParameters windowParameters;
+    auto window = windowSystem->createWindow(windowParameters);
+    auto viewport = std::make_shared<dory::Viewport>(0, 0, 0, 0);
+    auto camera = std::make_shared<dory::Camera>();
+    auto view = std::make_shared<dory::View>(window, viewport, camera);
+
+    auto viewController = std::make_shared<dory::ViewController>(view);
+    engine.addController(viewController);
+    viewController->initialize(context);
 
     test::TestLogic logic(consoleEventHub, windowEventHub);
 
@@ -29,9 +42,6 @@ int runDory()
 
     std::cout << "dory:native demo application" << std::endl;
     std::cout << "Press any key to process to render frame OR ESC to exit\r" << std::endl;
-
-    const doryWindows::WindowParameters windowParameters;
-    windowSystem->createWindow(windowParameters);
 
     dory::BasicFrameService frameService;
     frameService.startLoop(engine);

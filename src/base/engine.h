@@ -8,12 +8,12 @@ namespace dory
     {
         private:
             DataContext& dataContext;
-            std::vector<Controller*> controllers;
+            std::vector<std::shared_ptr<Controller>> controllers;
 
         public:
             Engine(DataContext& context);
             ~Engine();
-            void addController(Controller* controller);
+            void addController(std::shared_ptr<Controller> controller);
             bool update(const TimeSpan& timeStep);
             void initialize(DataContext& context);
     };

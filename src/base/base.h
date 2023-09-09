@@ -3,6 +3,7 @@
 #include "dependencies.h"
 #include "basicFrameService.h"
 #include "controllers/inputController.h"
+#include "controllers/viewController.h"
 #include "multithreading/individualProcessThread.h"
 #include "devices/consoleSystem.h"
 #include "devices/windowSystem.h"

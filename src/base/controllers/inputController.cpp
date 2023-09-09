@@ -12,24 +12,10 @@ namespace dory
 
     void InputController::initialize(dory::DataContext& context)
     {
-        std::vector<std::shared_ptr<Device>>::iterator it = devices.begin();
-        std::vector<std::shared_ptr<Device>>::iterator end = devices.end();
-
-        for(; it != end; ++it)
-        {
-            (*it)->connect();
-        }
     }
 
     void InputController::stop(dory::DataContext& context)
     {
-        std::vector<std::shared_ptr<Device>>::iterator it = devices.begin();
-        std::vector<std::shared_ptr<Device>>::iterator end = devices.end();
-
-        for(; it != end; ++it)
-        {
-            (*it)->disconnect();
-        }
     }
 
     void InputController::update(const dory::TimeSpan& timeStep, dory::DataContext& context)

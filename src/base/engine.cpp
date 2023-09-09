@@ -13,15 +13,15 @@ namespace dory
     {
     }
 
-    void Engine::addController(Controller* controller)
+    void Engine::addController(std::shared_ptr<Controller> controller)
     {
         controllers.push_back(controller);
     }
 
     bool Engine::update(const TimeSpan& timeStep)
     {
-        std::vector<Controller*>::iterator it = controllers.begin();
-        std::vector<Controller*>::iterator end = controllers.end();
+        auto it = controllers.begin();
+        auto end = controllers.end();
 
         for(; it != end; ++it)
         {
@@ -33,12 +33,5 @@ namespace dory
 
     void Engine::initialize(DataContext& context)
     {
-        std::vector<Controller*>::iterator it = controllers.begin();
-        std::vector<Controller*>::iterator end = controllers.end();
-
-        for(; it != end; ++it)
-        {
-            (*it)->initialize(context);
-        }
     }
 }

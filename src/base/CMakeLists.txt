@@ -8,6 +8,7 @@ add_library(base SHARED basicFrameService.cpp
                         frameService.cpp
                         types.cpp
                         controllers/inputController.cpp
+                        controllers/viewController.cpp
                         multithreading/task.cpp
                         multithreading/currentProcessThread.cpp
                         multithreading/individualProcessThread.cpp

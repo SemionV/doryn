@@ -2,15 +2,13 @@
 
 namespace doryWindows
 {
-    class Window: public dory::Window
+    struct Window: public dory::Window
     {
-        public:
-            const HWND hWnd;
-        
-        public:
-            Window(HWND hWnd):
-                hWnd(hWnd)
-            {        
-            }
+        const HWND hWnd;
+
+        Window(HWND hWnd):
+            hWnd(hWnd)
+        {        
+        }
     };
 }

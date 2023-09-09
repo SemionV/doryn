@@ -7,7 +7,7 @@
 
 namespace dory
 {
-    class DORY_API InputController: public dory::Controller
+    class DORY_API InputController: public Controller
     {
         private:
             std::vector<std::shared_ptr<Device>> devices;
@@ -19,9 +19,9 @@ namespace dory
         InputController(std::shared_ptr<SystemConsoleEventHubDispatcher> consoleEventHub,
             std::shared_ptr<SystemWindowEventHubDispatcher> windowEventHub);
 
-        void initialize(dory::DataContext& context);
-        void stop(dory::DataContext& context);
-        void update(const dory::TimeSpan& timeStep, dory::DataContext& context);
+        void initialize(dory::DataContext& context) override;
+        void stop(dory::DataContext& context) override;
+        void update(const dory::TimeSpan& timeStep, dory::DataContext& context) override;
 
         void addDevice(std::shared_ptr<Device> device);
     };
