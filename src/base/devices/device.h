@@ -4,7 +4,7 @@
 
 namespace dory
 {
-    class DORY_API Device
+    class DORY_API IDevice
     {
         public:
             virtual bool connect() = 0;

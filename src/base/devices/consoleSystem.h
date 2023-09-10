@@ -4,7 +4,7 @@
 
 namespace dory
 {
-    class ConsoleSystem: public Device
+    class ConsoleSystem: public IDevice
     {
     };
 }

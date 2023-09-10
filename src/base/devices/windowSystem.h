@@ -6,7 +6,7 @@
 namespace dory
 {
     template<typename TWindowParameters>
-    class DORY_API WindowSystem: public Device
+    class DORY_API WindowSystem: public IDevice
     {
         protected:
             std::vector<std::shared_ptr<Window>> windows;

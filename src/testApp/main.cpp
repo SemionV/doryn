@@ -16,6 +16,9 @@ int runDory()
     auto windowSystem = std::make_shared<doryWindows::WindowSystemParallel>(windowEventHub);
     windowSystem->connect();
 
+    auto glfwWindowSystem = std::make_shared<doryOpenGL::GlfwWindowSystem>(windowEventHub);
+    glfwWindowSystem->connect();
+
     auto consoleEventHub = std::make_shared<dory::SystemConsoleEventHubDispatcher>();
     auto consoleSystem = std::make_shared<doryWindows::ConsoleSystem>(consoleEventHub);
     consoleSystem->connect();
@@ -24,13 +27,17 @@ int runDory()
     engine.addController(inputController);
     inputController->addDevice(consoleSystem);
     inputController->addDevice(windowSystem);
+    inputController->addDevice(glfwWindowSystem);
     inputController->initialize(context);
 
     const doryWindows::WindowParameters windowParameters;
     auto window = windowSystem->createWindow(windowParameters);
+
+    const doryOpenGL::GlfwWindowParameters glfwWindowParameters;
+    auto glfwWindow = glfwWindowSystem->createWindow(glfwWindowParameters);
     auto viewport = std::make_shared<dory::Viewport>(0, 0, 0, 0);
     auto camera = std::make_shared<dory::Camera>();
-    auto view = std::make_shared<dory::View>(window, viewport, camera);
+    auto view = std::make_shared<dory::View>(glfwWindow, viewport, camera);
 
     auto viewController = std::make_shared<doryOpenGL::ViewControllerOpenGL>(view);
     engine.addController(viewController);

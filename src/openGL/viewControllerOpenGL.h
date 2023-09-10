@@ -1,5 +1,7 @@
 #pragma once
 
+#include "glfwWindow.h"
+
 namespace doryOpenGL
 {
     class ViewControllerOpenGL: public dory::ViewController

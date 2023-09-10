@@ -20,8 +20,8 @@ namespace dory
 
     void InputController::update(const dory::TimeSpan& timeStep, dory::DataContext& context)
     {
-        std::vector<std::shared_ptr<Device>>::iterator it = devices.begin();
-        std::vector<std::shared_ptr<Device>>::iterator end = devices.end();
+        std::vector<std::shared_ptr<IDevice>>::iterator it = devices.begin();
+        std::vector<std::shared_ptr<IDevice>>::iterator end = devices.end();
 
         for(; it != end; ++it)
         {
@@ -32,7 +32,7 @@ namespace dory
         windowEventHub->submit(context);
     }
 
-    void InputController::addDevice(std::shared_ptr<Device> device)
+    void InputController::addDevice(std::shared_ptr<IDevice> device)
     {
         devices.push_back(device);
     }

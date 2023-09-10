@@ -7,7 +7,7 @@ namespace dory
 {
     class ViewController: public Controller
     {
-        private:
+        protected:
             std::shared_ptr<View> view;
 
         public:
