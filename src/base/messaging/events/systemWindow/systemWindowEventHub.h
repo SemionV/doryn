@@ -2,7 +2,6 @@
 
 #include "base/dependencies.h"
 #include "clickEventData.h"
-#include "createWindowEventData.h"
 #include "base/messaging/event.h"
 #include "base/messaging/eventHub.h"
 
@@ -12,7 +11,6 @@ namespace dory
     {
         private:
             EventDispatcher<DataContext&, MouseClickEventData&> mouseClickEvent;
-            EventDispatcher<DataContext&, CreateWindowEventData&> createWindowEvent;
 
         protected:
             EventDispatcher<DataContext&, MouseClickEventData&>& onMouseClickDispatcher()
@@ -20,20 +18,10 @@ namespace dory
                 return mouseClickEvent;
             }
 
-            EventDispatcher<DataContext&, CreateWindowEventData&>& onCreateWindowDispatcher()
-            {
-                return createWindowEvent;
-            }
-
         public:
             Event<DataContext&, MouseClickEventData&>& onMouseClick()
             {
                 return mouseClickEvent;
-            }
-
-            Event<DataContext&, CreateWindowEventData&>& onCreateWindowClick()
-            {
-                return createWindowEvent;
             }
     };
 
@@ -41,7 +29,6 @@ namespace dory
     {
         private:
             EventBuffer<MouseClickEventData> mouseClickEventBuffer;
-            EventBuffer<CreateWindowEventData> createWindowEventBuffer;
 
         public:
             void addCase(MouseClickEventData&& mouseClickData)
@@ -49,15 +36,9 @@ namespace dory
                 mouseClickEventBuffer.addCase(std::forward<MouseClickEventData>(mouseClickData));
             }
 
-            void addCase(CreateWindowEventData&& createWindowData)
-            {
-                createWindowEventBuffer.addCase(std::forward<CreateWindowEventData>(createWindowData));
-            }
-
             void submit(DataContext& context) override
             {
                 mouseClickEventBuffer.submitCases(onMouseClickDispatcher(), context);
-                createWindowEventBuffer.submitCases(onCreateWindowDispatcher(), context);
             }
     };
 }

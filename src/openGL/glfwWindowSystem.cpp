@@ -23,7 +23,6 @@ namespace doryOpenGL
         auto window = std::make_shared<GlfwWindow>();
 
         window->handler = glfwCreateWindow(640, 480, "dory - glfw window", NULL, NULL);
-        eventHub->addCase(dory::CreateWindowEventData(window, window->handler));
 
         return window;
     }
