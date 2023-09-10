@@ -32,7 +32,7 @@ int runDory()
     auto camera = std::make_shared<dory::Camera>();
     auto view = std::make_shared<dory::View>(window, viewport, camera);
 
-    auto viewController = std::make_shared<dory::ViewController>(view);
+    auto viewController = std::make_shared<doryOpenGL::ViewControllerOpenGL>(view);
     engine.addController(viewController);
     viewController->initialize(context);
 
