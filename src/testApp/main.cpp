@@ -15,8 +15,6 @@ int runDory()
     dory::Engine engine(context);
     
     auto windowEventHub = std::make_shared<dory::SystemWindowEventHubDispatcher>();
-    auto windowSystem = std::make_shared<doryWindows::WindowSystemParallel>(windowEventHub);
-    windowSystem->connect();
 
     auto glfwWindowSystem = std::make_shared<doryOpenGL::GlfwWindowSystem>(windowEventHub);
     glfwWindowSystem->connect();
@@ -28,12 +26,8 @@ int runDory()
     auto inputController = std::make_shared<dory::InputController>(consoleEventHub, windowEventHub);
     engine.addController(inputController);
     inputController->addDevice(consoleSystem);
-    inputController->addDevice(windowSystem);
     inputController->addDevice(glfwWindowSystem);
     inputController->initialize(context);
-
-    const doryWindows::WindowParameters windowParameters;
-    auto window = windowSystem->createWindow(windowParameters);
 
     const doryOpenGL::GlfwWindowParameters glfwWindowParameters;
     auto glfwWindow = glfwWindowSystem->createWindow(glfwWindowParameters);

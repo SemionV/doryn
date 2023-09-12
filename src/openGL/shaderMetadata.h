@@ -1,4 +1,4 @@
-#pragma once;
+#pragma once
 
 #include "dependencies.h"
 #include "olgDependencies.h"
