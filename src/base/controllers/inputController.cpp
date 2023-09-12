@@ -10,8 +10,9 @@ namespace dory
     {
     }
 
-    void InputController::initialize(dory::DataContext& context)
+    bool InputController::initialize(dory::DataContext& context)
     {
+        return true;
     }
 
     void InputController::stop(dory::DataContext& context)

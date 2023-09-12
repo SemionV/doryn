@@ -11,7 +11,7 @@ namespace dory
             Controller();
             virtual ~Controller();
 
-            virtual void initialize(DataContext& context) = 0;
+            virtual bool initialize(DataContext& context) = 0;
             virtual void stop(DataContext& context) = 0;
             virtual void update(const TimeSpan& timeStep, DataContext& context) = 0;
     };

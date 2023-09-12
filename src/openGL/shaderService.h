@@ -10,7 +10,7 @@ namespace doryOpenGL
     class ShaderService
     {
         public:
-            static GLuint buildProgram(const std::vector<ShaderMetadata>& shadersMetadata, std::function<bool(ShaderServiceError)> errorHandler = 0)
+            static GLuint buildProgram(const std::vector<ShaderMetadata>& shadersMetadata, std::function<bool(ShaderServiceError&)> errorHandler = 0)
             {
                 GLuint programId = glCreateProgram();
 
@@ -38,7 +38,7 @@ namespace doryOpenGL
                         if(errorHandler)
                         {
                             ShaderServiceError shaderServiceError;
-                            shaderServiceError.shaderCompilationError = std::make_shared<ShaderCompilationError>(logString);
+                            shaderServiceError.shaderCompilationError = std::make_shared<ShaderCompilationError>(shaderMetadata.identifier, logString);
 
                             if(errorHandler(shaderServiceError))
                             {

@@ -9,9 +9,11 @@ namespace dory
     {        
     }
 
-    void ViewController::initialize(dory::DataContext& context)
+    bool ViewController::initialize(dory::DataContext& context)
     {
         std::cout << "initialize: Basic Scene Renderer" << std::endl;
+
+        return true;
     }
 
     void ViewController::stop(dory::DataContext& context)
@@ -20,6 +22,5 @@ namespace dory
 
     void ViewController::update(const dory::TimeSpan& timeStep, dory::DataContext& context)
     {
-
     }
 }

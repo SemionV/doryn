@@ -1,14 +1,17 @@
 #pragma once
 
 #include "dependencies.h"
+#include "shaderMetadata.h"
 
 namespace doryOpenGL
 {
     struct ShaderCompilationError
     {
         std::string compilationLog;
+        std::string shaderIdentifier;
 
-        ShaderCompilationError(std::string compilationLog):
+        ShaderCompilationError(std::string shaderIdentifier, std::string compilationLog):
+            shaderIdentifier(shaderIdentifier),
             compilationLog(compilationLog)
         {};
     };

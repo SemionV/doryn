@@ -19,7 +19,7 @@ namespace dory
         InputController(std::shared_ptr<SystemConsoleEventHubDispatcher> consoleEventHub,
             std::shared_ptr<SystemWindowEventHubDispatcher> windowEventHub);
 
-        void initialize(dory::DataContext& context) override;
+        bool initialize(dory::DataContext& context) override;
         void stop(dory::DataContext& context) override;
         void update(const dory::TimeSpan& timeStep, dory::DataContext& context) override;
 

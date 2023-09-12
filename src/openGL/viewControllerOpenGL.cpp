@@ -8,7 +8,7 @@ namespace doryOpenGL
     {
     }
 
-    void ViewControllerOpenGL::initialize(dory::DataContext& context)
+    bool ViewControllerOpenGL::initialize(dory::DataContext& context)
     {
         ViewController::initialize(context);
 
@@ -43,11 +43,25 @@ namespace doryOpenGL
 
         std::vector<ShaderMetadata> shadersMetadata = {verticiesShader, fragmentShader};
 
-        GLuint programId = ShaderService::buildProgram(shadersMetadata);
+        GLuint programId = ShaderService::buildProgram(shadersMetadata, [](ShaderServiceError& error)
+            {
+                if(error.shaderCompilationError)
+                {
+                    std::cerr << "Shader compilation error(" << error.shaderCompilationError->shaderIdentifier << "): " << error.shaderCompilationError->compilationLog << std::endl;
+                }
+                else if(error.shaderProgramLinkingError)
+                {
+                    std::cerr << "Shader program linking error: " << error.shaderProgramLinkingError->linkingLog << std::endl;
+                }
+
+                return false;
+            });
         glUseProgram(programId);
 
         glVertexAttribPointer( vPosition, 2, GL_FLOAT, GL_FALSE, 0, (void*)(0) );
         glEnableVertexAttribArray( vPosition );
+
+        return true;
     }
 
     void ViewControllerOpenGL::stop(dory::DataContext& context)
