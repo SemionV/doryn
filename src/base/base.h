@@ -1,6 +1,8 @@
 #pragma once
 
 #include "dependencies.h"
+#include "configuration/configuration.h"
+#include "configuration/fileSystemBasedConfiguration.h"
 #include "basicFrameService.h"
 #include "controllers/inputController.h"
 #include "controllers/viewController.h"

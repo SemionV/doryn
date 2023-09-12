@@ -9,6 +9,8 @@
 
 int runDory()
 {
+    auto configuration = std::make_shared<dory::FileSystemBasedConfiguration>("configuration");
+
     dory::DataContext context;
     dory::Engine engine(context);
     
@@ -39,7 +41,7 @@ int runDory()
     auto camera = std::make_shared<dory::Camera>();
     auto view = std::make_shared<dory::View>(glfwWindow, viewport, camera);
 
-    auto viewController = std::make_shared<doryOpenGL::ViewControllerOpenGL>(view);
+    auto viewController = std::make_shared<doryOpenGL::ViewControllerOpenGL>(configuration, view);
     engine.addController(viewController);
     viewController->initialize(context);
 

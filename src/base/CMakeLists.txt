@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.22)
 
 project(dory-base)
 
-add_library(base SHARED basicFrameService.cpp
+add_library(base SHARED configuration/fileSystemBasedConfiguration.cpp
+                        basicFrameService.cpp
                         controller.cpp
                         engine.cpp
                         frameService.cpp

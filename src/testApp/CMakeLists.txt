@@ -9,3 +9,4 @@ target_precompile_headers(testApp PRIVATE dependencies.h)
 target_link_libraries(testApp testDomain windowsImplementations dory-openGL base)
 
 install(TARGETS testApp DESTINATION . COMPONENT Example)
+install(DIRECTORY configuration DESTINATION . COMPONENT Example)

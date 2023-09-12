@@ -93,7 +93,9 @@
         "variant": "cpp",
         "string_view": "cpp",
         "cfenv": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "glcorearb.h": "c",
+        "filesystem": "cpp"
     },
     "cmake.configureOnOpen": true
 }

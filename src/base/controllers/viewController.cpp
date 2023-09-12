@@ -3,7 +3,8 @@
 
 namespace dory
 {
-    ViewController::ViewController(std::shared_ptr<View> view):
+    ViewController::ViewController(std::shared_ptr<IConfiguration> configuration, std::shared_ptr<View> view):
+        configuration(configuration),
         view(view)
     {        
     }

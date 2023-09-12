@@ -7,8 +7,11 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED
             PATHS ../vendor/glfw NO_DEFAULT_PATH)
 
-add_library(dory-openGL SHARED viewControllerOpenGL.cpp
-                          glfwWindowSystem.cpp)
+set_source_files_properties(gl/gl3w.c PROPERTIES LANGUAGE CXX )
+
+add_library(dory-openGL SHARED gl/gl3w.c
+                                viewControllerOpenGL.cpp
+                                glfwWindowSystem.cpp)
 
 set_target_properties(dory-openGL PROPERTIES PREFIX ""
                                             IMPORT_PREFIX ""
