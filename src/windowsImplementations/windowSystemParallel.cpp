@@ -29,9 +29,9 @@ namespace doryWindows
     {
     }
 
-    std::shared_ptr<dory::Window> WindowSystemParallel::createWindow(const WindowParameters& parameters)
+    std::shared_ptr<Win32Window> WindowSystemParallel::createWindow(const WindowParameters& parameters)
     {
-        auto createWindowTask = dory::allocateFunctionTask<std::shared_ptr<dory::Window>>([this](const WindowParameters& parameters) 
+        auto createWindowTask = dory::allocateFunctionTask<std::shared_ptr<Win32Window>>([this](const WindowParameters& parameters) 
         {
             return WindowSystem::createWindow(parameters);
         }, parameters);

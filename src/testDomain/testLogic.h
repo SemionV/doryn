@@ -6,10 +6,10 @@ namespace test
     {
         private:
             std::shared_ptr<dory::SystemConsoleEventHub> consoleEventHub;
-            std::shared_ptr<dory::SystemWindowEventHub> windowEventHub;
+            std::shared_ptr<doryOpenGL::GlfwWindowEventHub> windowEventHub;
 
         public:
             TestLogic(std::shared_ptr<dory::SystemConsoleEventHub> consoleEventHub,
-                std::shared_ptr<dory::SystemWindowEventHub> windowEventHub);
+                std::shared_ptr<doryOpenGL::GlfwWindowEventHub> windowEventHub);
     };
 }

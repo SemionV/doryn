@@ -33,6 +33,11 @@ namespace doryWindows
     {
     }
 
+    void ConsoleSystem::submitEvents(dory::DataContext& context)
+    {
+        eventHub->submit(context);
+    }
+
     void ConsoleSystem::onKeyPressed(int key)
     {
         std::cout << std::this_thread::get_id() << ": add key pressed message: " << key << std::endl;

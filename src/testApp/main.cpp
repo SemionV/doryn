@@ -14,16 +14,22 @@ int runDory()
     dory::DataContext context;
     dory::Engine engine(context);
     
-    auto windowEventHub = std::make_shared<dory::SystemWindowEventHubDispatcher>();
-
-    auto glfwWindowSystem = std::make_shared<doryOpenGL::GlfwWindowSystem>(windowEventHub);
+    auto glfwWindowEventHub = std::make_shared<doryOpenGL::GlfwWindowEventHubDispatcher>();
+    auto glfwWindowSystem = std::make_shared<doryOpenGL::GlfwWindowSystem>(glfwWindowEventHub);
     glfwWindowSystem->connect();
+
+    glfwWindowEventHub->onCloseWindow() += [&glfwWindowSystem](dory::DataContext& dataContext, doryOpenGL::CloseWindowEventData& eventData)
+    {
+        dataContext.isStop = true;
+        std::cout << "Close app because the main window was closed." << std::endl;
+        glfwWindowSystem->closeWindow(eventData.window);
+    };
 
     auto consoleEventHub = std::make_shared<dory::SystemConsoleEventHubDispatcher>();
     auto consoleSystem = std::make_shared<doryWindows::ConsoleSystem>(consoleEventHub);
     consoleSystem->connect();
 
-    auto inputController = std::make_shared<dory::InputController>(consoleEventHub, windowEventHub);
+    auto inputController = std::make_shared<dory::InputController>();
     engine.addController(inputController);
     inputController->addDevice(consoleSystem);
     inputController->addDevice(glfwWindowSystem);
@@ -33,13 +39,13 @@ int runDory()
     auto glfwWindow = glfwWindowSystem->createWindow(glfwWindowParameters);
     auto viewport = std::make_shared<dory::Viewport>(0, 0, 0, 0);
     auto camera = std::make_shared<dory::Camera>();
-    auto view = std::make_shared<dory::View>(glfwWindow, viewport, camera);
+    auto view = std::make_shared<dory::View<doryOpenGL::GlfwWindow>>(glfwWindow, viewport, camera);
 
     auto viewController = std::make_shared<doryOpenGL::ViewControllerOpenGL>(configuration, view);
     engine.addController(viewController);
     viewController->initialize(context);
 
-    test::TestLogic logic(consoleEventHub, windowEventHub);
+    test::TestLogic logic(consoleEventHub, glfwWindowEventHub);
 
     engine.initialize(context);
 

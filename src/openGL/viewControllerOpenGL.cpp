@@ -3,15 +3,13 @@
 
 namespace doryOpenGL
 {
-    ViewControllerOpenGL::ViewControllerOpenGL(std::shared_ptr<dory::IConfiguration> configuration, std::shared_ptr<dory::View> view):
+    ViewControllerOpenGL::ViewControllerOpenGL(std::shared_ptr<dory::IConfiguration> configuration, std::shared_ptr<dory::View<GlfwWindow>> view):
         ViewController(configuration, view)
     {
     }
 
     bool ViewControllerOpenGL::initialize(dory::DataContext& context)
     {
-        ViewController::initialize(context);
-
         std::cout << "initialize: OpenGL Basic View" << std::endl;
 
         auto glfwWindow = std::static_pointer_cast<GlfwWindow>(view->window);
@@ -66,29 +64,20 @@ namespace doryOpenGL
 
     void ViewControllerOpenGL::stop(dory::DataContext& context)
     {
-        auto glfwWindow = std::static_pointer_cast<GlfwWindow>(view->window);
-        glfwDestroyWindow(glfwWindow->handler);
     }
 
     void ViewControllerOpenGL::update(const dory::TimeSpan& timeStep, dory::DataContext& context)
     {
-        auto glfwWindow = std::static_pointer_cast<GlfwWindow>(view->window);
-        glfwMakeContextCurrent(glfwWindow->handler);
+        auto window = view->window;
+        glfwMakeContextCurrent(window->handler);
 
-        if(!glfwWindowShouldClose(glfwWindow->handler))
-        {
-            static const float black[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        static const float black[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-            glClearBufferfv(GL_COLOR, 0, black);
+        glClearBufferfv(GL_COLOR, 0, black);
 
-            glBindVertexArray( VAOs[Triangles] );
-            glDrawArrays( GL_TRIANGLES, 0, NumVertices );
+        glBindVertexArray( VAOs[Triangles] );
+        glDrawArrays( GL_TRIANGLES, 0, NumVertices );
 
-            glfwSwapBuffers(glfwWindow->handler);
-        }
-        else
-        {
-            context.isStop = true;
-        }
+        glfwSwapBuffers(window->handler);
     }
 }

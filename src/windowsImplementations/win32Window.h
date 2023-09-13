@@ -2,11 +2,11 @@
 
 namespace doryWindows
 {
-    struct Window: public dory::Window
+    struct Win32Window: public dory::Window
     {
         const HWND hWnd;
 
-        Window(HWND hWnd):
+        Win32Window(HWND hWnd):
             hWnd(hWnd)
         {        
         }

@@ -18,6 +18,6 @@ namespace doryWindows
             virtual bool connect() override;
             virtual void disconnect() override;
             virtual void update() override;
-            virtual std::shared_ptr<dory::Window> createWindow(const WindowParameters& parameters) override;
+            virtual std::shared_ptr<Win32Window> createWindow(const WindowParameters& parameters) override;
     };
 }

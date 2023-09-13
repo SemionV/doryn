@@ -4,7 +4,7 @@
 namespace test
 {
     TestLogic::TestLogic(std::shared_ptr<dory::SystemConsoleEventHub> consoleEventHub,
-        std::shared_ptr<dory::SystemWindowEventHub> windowEventHub):
+        std::shared_ptr<doryOpenGL::GlfwWindowEventHub> windowEventHub):
         consoleEventHub(consoleEventHub),
         windowEventHub(windowEventHub)
     {
@@ -21,9 +21,9 @@ namespace test
             }
         };
 
-        windowEventHub->onMouseClick() += [] (dory::DataContext& context, dory::MouseClickEventData& mouseClickEventData)
+        /*windowEventHub->onMouseClick() += [] (dory::DataContext& context, dory::MouseClickEventData& mouseClickEventData)
         {
             std::cout << std::this_thread::get_id() << ": click: " << mouseClickEventData.x << ", " << mouseClickEventData.y << std::endl;
-        };
+        };*/
     }
 }

@@ -10,5 +10,6 @@ namespace dory
             virtual bool connect() = 0;
             virtual void disconnect() = 0;
             virtual void update() = 0;
+            virtual void submitEvents(DataContext& context) = 0;
     };
 }

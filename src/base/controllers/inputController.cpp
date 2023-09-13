@@ -3,13 +3,6 @@
 
 namespace dory
 {
-    InputController::InputController(std::shared_ptr<SystemConsoleEventHubDispatcher> consoleEventHub,
-        std::shared_ptr<SystemWindowEventHubDispatcher> windowEventHub):
-        consoleEventHub(consoleEventHub),
-        windowEventHub(windowEventHub)
-    {
-    }
-
     bool InputController::initialize(dory::DataContext& context)
     {
         return true;
@@ -21,16 +14,14 @@ namespace dory
 
     void InputController::update(const dory::TimeSpan& timeStep, dory::DataContext& context)
     {
-        std::vector<std::shared_ptr<IDevice>>::iterator it = devices.begin();
-        std::vector<std::shared_ptr<IDevice>>::iterator end = devices.end();
+        auto it = devices.begin();
+        auto end = devices.end();
 
         for(; it != end; ++it)
         {
             (*it)->update();
+            (*it)->submitEvents(context);
         }
-
-        consoleEventHub->submit(context);
-        windowEventHub->submit(context);
     }
 
     void InputController::addDevice(std::shared_ptr<IDevice> device)

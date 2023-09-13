@@ -17,6 +17,7 @@ namespace doryWindows
             virtual bool connect() override;
             virtual void disconnect() override;
             virtual void update() override;
+            void submitEvents(dory::DataContext& context) override;
 
         protected:
             virtual void onKeyPressed(int key);

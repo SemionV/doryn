@@ -17,6 +17,11 @@ namespace doryWindows
         pumpSystemMessages();
     }
 
+    void WindowSystem::submitEvents(dory::DataContext& context)
+    {
+        eventHub->submit(context);
+    }
+
     void WindowSystem::pumpSystemMessages()
     {
         MSG msg;
@@ -31,7 +36,7 @@ namespace doryWindows
         }
     }
 
-    std::shared_ptr<dory::Window> WindowSystem::createWindow(const WindowParameters& parameters)
+    std::shared_ptr<Win32Window> WindowSystem::createWindow(const WindowParameters& parameters)
     {
         std::cout << std::this_thread::get_id() << ": create a system window" << std::endl;
 
@@ -74,18 +79,24 @@ namespace doryWindows
 
         ShowWindow(hwnd, SW_NORMAL);
 
-        std::shared_ptr<Window> window =  std::make_shared<Window>(hwnd);
+        std::shared_ptr<Win32Window> window =  std::make_shared<Win32Window>(hwnd);
         registerWindow(window);
 
         return window;
     }
 
-    std::shared_ptr<Window> WindowSystem::getWindow(HWND hWnd)
+    void WindowSystem::closeWindow(std::shared_ptr<Win32Window> window)
+    {
+        CloseWindow(window->hWnd);
+        unregisterWindow(window);
+    }
+
+    std::shared_ptr<Win32Window> WindowSystem::getWindow(HWND hWnd)
     {
         std::size_t size = windows.size();
         for(std::size_t i = 0; i < size; i++)
         {
-            std::shared_ptr<Window> window = std::static_pointer_cast<Window>(windows[i]);
+            auto window = windows[i];
             if(window->hWnd == hWnd)
             {
                 return window;
@@ -99,7 +110,7 @@ namespace doryWindows
     {
         std::cout << std::this_thread::get_id() << ": add click message: (" << x << ", " << y << ")" << std::endl;
 
-        std::shared_ptr<Window> window = getWindow(hWnd);
+        std::shared_ptr<Win32Window> window = getWindow(hWnd);
         if(window)
         {
             dory::MouseClickEventData eventData(window, x, y);

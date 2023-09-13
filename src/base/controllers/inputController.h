@@ -11,14 +11,8 @@ namespace dory
     {
         private:
             std::vector<std::shared_ptr<IDevice>> devices;
-            std::shared_ptr<SystemConsoleEventHubDispatcher> consoleEventHub;
-            std::shared_ptr<SystemWindowEventHubDispatcher> windowEventHub;
 
         public:
-
-        InputController(std::shared_ptr<SystemConsoleEventHubDispatcher> consoleEventHub,
-            std::shared_ptr<SystemWindowEventHubDispatcher> windowEventHub);
-
         bool initialize(dory::DataContext& context) override;
         void stop(dory::DataContext& context) override;
         void update(const dory::TimeSpan& timeStep, dory::DataContext& context) override;

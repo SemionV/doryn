@@ -3,16 +3,17 @@
 #include "vendor/glfw/include/GLFW/glfw3.h"
 #include "glfwWindowParameters.h"
 #include "glfwWindow.h"
+#include "events/glfwWindowEventHub.h"
 
 namespace doryOpenGL
 {
-    class DORY_API GlfwWindowSystem: public dory::WindowSystem<GlfwWindowParameters>
+    class DORY_API GlfwWindowSystem: public dory::WindowSystem<GlfwWindowParameters, GlfwWindow>
     {
         private:
-            std::shared_ptr<dory::SystemWindowEventHubDispatcher> eventHub;
+            std::shared_ptr<GlfwWindowEventHubDispatcher> eventHub;
 
         public:
-            GlfwWindowSystem(std::shared_ptr<dory::SystemWindowEventHubDispatcher> eventHub):
+            GlfwWindowSystem(std::shared_ptr<GlfwWindowEventHubDispatcher> eventHub):
                 eventHub(eventHub)
             {
             }
@@ -20,6 +21,9 @@ namespace doryOpenGL
             virtual bool connect() override;
             virtual void disconnect() override;
             virtual void update() override;
-            virtual std::shared_ptr<dory::Window> createWindow(const GlfwWindowParameters& parameters) override;
+            void submitEvents(dory::DataContext& context) override;
+            
+            virtual std::shared_ptr<GlfwWindow> createWindow(const GlfwWindowParameters& parameters) override;
+            virtual void closeWindow(std::shared_ptr<GlfwWindow> window) override;
     };
 }

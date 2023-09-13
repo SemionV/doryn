@@ -9,7 +9,6 @@ add_library(base SHARED configuration/fileSystemBasedConfiguration.cpp
                         frameService.cpp
                         types.cpp
                         controllers/inputController.cpp
-                        controllers/viewController.cpp
                         multithreading/task.cpp
                         multithreading/currentProcessThread.cpp
                         multithreading/individualProcessThread.cpp
