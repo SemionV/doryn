@@ -20,7 +20,7 @@ namespace dory
                 return window;
             }
             
-            virtual TWindow& getWindow(int id)
+            virtual std::optional<TWindow> getWindow(int id)
             {
                 std::size_t size = windows.size();
                 for(std::size_t i = 0; i < size; ++i)
@@ -31,6 +31,8 @@ namespace dory
                         return window;
                     }
                 }
+
+                return std::nullopt;
             }
 
             virtual void removeWindow(int id)
