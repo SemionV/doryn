@@ -18,13 +18,6 @@ int runDory()
     auto glfwWindowSystem = std::make_shared<doryOpenGL::GlfwWindowSystem>(glfwWindowEventHub);
     glfwWindowSystem->connect();
 
-    glfwWindowEventHub->onCloseWindow() += [&glfwWindowSystem](dory::DataContext& dataContext, doryOpenGL::CloseWindowEventData& eventData)
-    {
-        dataContext.isStop = true;
-        std::cout << "Close app because the main window was closed." << std::endl;
-        glfwWindowSystem->closeWindow(eventData.window);
-    };
-
     auto consoleEventHub = std::make_shared<dory::SystemConsoleEventHubDispatcher>();
     auto consoleSystem = std::make_shared<doryWindows::ConsoleSystem>(consoleEventHub);
     consoleSystem->connect();
@@ -46,6 +39,14 @@ int runDory()
     viewController->initialize(context);
 
     test::TestLogic logic(consoleEventHub, glfwWindowEventHub);
+
+    glfwWindowEventHub->onCloseWindow() += [&glfwWindowSystem, &viewController, &engine](dory::DataContext& context, doryOpenGL::CloseWindowEventData& eventData)
+    {
+        context.isStop = true;
+        std::cout << "Close main window" << std::endl;
+        engine.removeController(viewController);
+        glfwWindowSystem->closeWindow(eventData.window);
+    };
 
     engine.initialize(context);
 
