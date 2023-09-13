@@ -79,7 +79,7 @@ namespace doryWindows
 
         ShowWindow(hwnd, SW_NORMAL);
 
-        std::shared_ptr<Win32Window> window =  std::make_shared<Win32Window>(hwnd);
+        std::shared_ptr<Win32Window> window =  std::make_shared<Win32Window>(getNewWindowId(), hwnd);
         registerWindow(window);
 
         return window;

@@ -3,7 +3,7 @@
 #include "openGL/dependencies.h"
 #include "closeWindowEventData.h"
 
-namespace doryOpenGL
+namespace dory::openGL
 {
     class GlfwWindowEventHub
     {

@@ -1,7 +1,7 @@
 #include "dependencies.h"
 #include "glfwWindowSystem.h"
 
-namespace doryOpenGL
+namespace dory::openGL
 {
     bool GlfwWindowSystem::connect()
     {
@@ -36,9 +36,8 @@ namespace doryOpenGL
 
     std::shared_ptr<GlfwWindow> GlfwWindowSystem::createWindow(const GlfwWindowParameters& parameters)
     {
-        auto window = std::make_shared<GlfwWindow>();
-
-        window->handler = glfwCreateWindow(800, 600, "dory - glfw window", NULL, NULL);
+        auto handler = glfwCreateWindow(800, 600, "dory - glfw window", NULL, NULL);
+        auto window = std::make_shared<GlfwWindow>(getNewWindowId(), handler);
         registerWindow(window);
 
         return window;

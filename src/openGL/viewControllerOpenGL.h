@@ -4,7 +4,7 @@
 #include "glfwWindow.h"
 #include "shaderService.h"
 
-namespace doryOpenGL
+namespace dory::openGL
 {
     class ViewControllerOpenGL: public dory::ViewController<GlfwWindow>
     {

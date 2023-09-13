@@ -3,7 +3,7 @@
 #include "openGL/dependencies.h"
 #include "openGL/glfwWindow.h"
 
-namespace doryOpenGL
+namespace dory::openGL
 {
     struct CloseWindowEventData
     {

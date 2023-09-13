@@ -5,7 +5,7 @@
 #include "shaderServiceError.h"
 #include "shaderMetadata.h"
 
-namespace doryOpenGL
+namespace dory::openGL
 {
     class ShaderService
     {

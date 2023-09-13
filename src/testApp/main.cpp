@@ -14,8 +14,8 @@ int runDory()
     dory::DataContext context;
     dory::Engine engine(context);
     
-    auto glfwWindowEventHub = std::make_shared<doryOpenGL::GlfwWindowEventHubDispatcher>();
-    auto glfwWindowSystem = std::make_shared<doryOpenGL::GlfwWindowSystem>(glfwWindowEventHub);
+    auto glfwWindowEventHub = std::make_shared<dory::openGL::GlfwWindowEventHubDispatcher>();
+    auto glfwWindowSystem = std::make_shared<dory::openGL::GlfwWindowSystem>(glfwWindowEventHub);
     glfwWindowSystem->connect();
 
     auto consoleEventHub = std::make_shared<dory::SystemConsoleEventHubDispatcher>();
@@ -28,25 +28,28 @@ int runDory()
     inputController->addDevice(glfwWindowSystem);
     inputController->initialize(context);
 
-    const doryOpenGL::GlfwWindowParameters glfwWindowParameters;
+    const dory::openGL::GlfwWindowParameters glfwWindowParameters;
     auto glfwWindow = glfwWindowSystem->createWindow(glfwWindowParameters);
     auto viewport = std::make_shared<dory::Viewport>(0, 0, 0, 0);
     auto camera = std::make_shared<dory::Camera>();
-    auto view = std::make_shared<dory::View<doryOpenGL::GlfwWindow>>(glfwWindow, viewport, camera);
+    auto view = std::make_shared<dory::View<dory::openGL::GlfwWindow>>(glfwWindow, viewport, camera);
 
-    auto viewController = std::make_shared<doryOpenGL::ViewControllerOpenGL>(configuration, view);
+    auto viewController = std::make_shared<dory::openGL::ViewControllerOpenGL>(configuration, view);
     engine.addController(viewController);
     viewController->initialize(context);
 
     test::TestLogic logic(consoleEventHub, glfwWindowEventHub);
 
-    glfwWindowEventHub->onCloseWindow() += [&glfwWindowSystem, &viewController, &engine](dory::DataContext& context, doryOpenGL::CloseWindowEventData& eventData)
+    glfwWindowEventHub->onCloseWindow() += [&glfwWindowSystem, &viewController, &engine](dory::DataContext& context, dory::openGL::CloseWindowEventData& eventData)
     {
         context.isStop = true;
         std::cout << "Close main window" << std::endl;
         engine.removeController(viewController);
         glfwWindowSystem->closeWindow(eventData.window);
     };
+
+    dory::openGL::GlfwWindowRegistry glfwWindowRegistry;
+    dory::openGL::GlfwWindow& window = glfwWindowRegistry.createWindow(glfwWindowParameters);
 
     engine.initialize(context);
 

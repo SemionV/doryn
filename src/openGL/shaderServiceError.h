@@ -3,7 +3,7 @@
 #include "dependencies.h"
 #include "shaderMetadata.h"
 
-namespace doryOpenGL
+namespace dory::openGL
 {
     struct ShaderCompilationError
     {

@@ -6,7 +6,8 @@ namespace doryWindows
     {
         const HWND hWnd;
 
-        Win32Window(HWND hWnd):
+        Win32Window(int id, HWND hWnd):
+            dory::Window(id),
             hWnd(hWnd)
         {        
         }

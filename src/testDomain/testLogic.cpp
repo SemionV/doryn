@@ -4,7 +4,7 @@
 namespace test
 {
     TestLogic::TestLogic(std::shared_ptr<dory::SystemConsoleEventHub> consoleEventHub,
-        std::shared_ptr<doryOpenGL::GlfwWindowEventHub> windowEventHub):
+        std::shared_ptr<dory::openGL::GlfwWindowEventHub> windowEventHub):
         consoleEventHub(consoleEventHub),
         windowEventHub(windowEventHub)
     {

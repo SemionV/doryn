@@ -35,5 +35,10 @@ namespace dory
                     }
                 }
             }
+
+            int getNewWindowId()
+            {
+                return windows.size() + 1;
+            }
     };
 }

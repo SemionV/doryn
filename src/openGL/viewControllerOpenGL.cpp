@@ -1,7 +1,7 @@
 #include "dependencies.h"
 #include "viewControllerOpenGL.h"
 
-namespace doryOpenGL
+namespace dory::openGL
 {
     ViewControllerOpenGL::ViewControllerOpenGL(std::shared_ptr<dory::IConfiguration> configuration, std::shared_ptr<dory::View<GlfwWindow>> view):
         ViewController(configuration, view)

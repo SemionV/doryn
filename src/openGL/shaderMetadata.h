@@ -3,7 +3,7 @@
 #include "dependencies.h"
 #include "olgDependencies.h"
 
-namespace doryOpenGL
+namespace dory::openGL
 {
     struct ShaderMetadata
     {

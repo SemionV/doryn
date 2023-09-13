@@ -5,7 +5,7 @@
 #include "glfwWindow.h"
 #include "events/glfwWindowEventHub.h"
 
-namespace doryOpenGL
+namespace dory::openGL
 {
     class DORY_API GlfwWindowSystem: public dory::WindowSystem<GlfwWindowParameters, GlfwWindow>
     {

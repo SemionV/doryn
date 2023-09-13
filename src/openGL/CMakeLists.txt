@@ -11,7 +11,8 @@ set_source_files_properties(gl/gl3w.c PROPERTIES LANGUAGE CXX )
 
 add_library(dory-openGL SHARED gl/gl3w.c
                                 viewControllerOpenGL.cpp
-                                glfwWindowSystem.cpp)
+                                glfwWindowSystem.cpp
+                                glfwWindowRegistry.cpp)
 
 set_target_properties(dory-openGL PROPERTIES PREFIX ""
                                             IMPORT_PREFIX ""
