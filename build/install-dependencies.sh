@@ -1,5 +1,6 @@
 LIB_DIR=src/lib/
-mkdir -p src/vendor
+VENDOR_DIR=src/vendor/
+mkdir -p $VENDOR_DIR
 
 #install Catch2 - unit testing framework
 CATCH2_DIR=${LIB_DIR}Catch2/
@@ -21,7 +22,7 @@ cmake --install build
 cd -
 
 #install GLFW - (Graphics Library Framework) utility framework for OpenGL
-GLFW_DIR=${LIB_DIR}glfw
+GLFW_DIR=${LIB_DIR}glfw/
 mkdir -p $GLFW_DIR
 git clone https://github.com/glfw/glfw.git $GLFW_DIR
 cd $GLFW_DIR
@@ -29,3 +30,15 @@ cmake -S . -B build -DCMAKE_INSTALL_PREFIX=../../vendor/glfw/
 cmake --build build
 cmake --install build
 cd -
+
+#install gl3w - OpenGL functions binder library
+GL3W_DIR=${LIB_DIR}gl3w/
+mkdir -p $GL3W_DIR
+git clone https://github.com/skaslev/gl3w.git $GL3W_DIR
+cd $GL3W_DIR
+python gl3w_gen.py
+cd -
+mkdir -p ${VENDOR_DIR}GL
+cp ${GL3W_DIR}include/GL/gl3w.h ${VENDOR_DIR}GL/gl3w.h
+cp ${GL3W_DIR}include/GL/glcorearb.h ${VENDOR_DIR}GL/glcorearb.h
+cp ${GL3W_DIR}src/gl3w.c ${VENDOR_DIR}GL/gl3w.c
