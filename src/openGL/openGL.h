@@ -4,4 +4,4 @@
 #include "viewControllerOpenGL.h"
 #include "glfwWindowSystem.h"
 #include "events/glfwWindowEventHub.h"
-#include "glfwWindowRegistry.h"
+#include "glfwWindowFactory.h"

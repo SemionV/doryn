@@ -10,9 +10,5 @@ namespace dory::openGL
             dory::Window(id),
             handler(handler)
         {}
-
-        GlfwWindow(int id):
-            dory::Window(id)
-        {}
     };
 }

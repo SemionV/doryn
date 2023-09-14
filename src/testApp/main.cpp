@@ -48,8 +48,18 @@ int runDory()
         glfwWindowSystem->closeWindow(eventData.window);
     };
 
-    dory::openGL::GlfwWindowRegistry glfwWindowRegistry;
-    dory::openGL::GlfwWindow& window = glfwWindowRegistry.createWindow(glfwWindowParameters);
+    dory::EntityRepository<dory::openGL::GlfwWindow> windowRespository;
+    dory::EntityRepository<dory::CameraNi> cameraRepository;
+    dory::EntityRepository<dory::ViewNi> viewRepository;
+
+    auto glfwWindowHandler = dory::openGL::GlfwWindowFactory::createWindow(glfwWindowParameters);
+    auto windowN = windowRespository.store(glfwWindowHandler);
+
+    auto cameraN = cameraRepository.store();
+    dory::ViewportNi viewportN(0, 0, 0, 0);
+
+    auto viewN = viewRepository.store(windowN.id, cameraN.id, viewportN);
+    auto viewN2 = viewRepository.store(windowN.id, cameraN.id, viewportN);
 
     engine.initialize(context);
 

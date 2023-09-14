@@ -21,4 +21,50 @@ namespace dory
         {            
         }
     };
+
+    struct Entity
+    {
+        int id;
+
+        Entity(int id):
+            id(id)
+        {}
+    };
+
+    struct CameraNi: public Entity
+    {
+        CameraNi(int id):
+            Entity(id)
+        {}
+    };
+
+    struct ViewportNi
+    {
+        int x;
+        int y;
+        int width;
+        int height;
+
+        ViewportNi(int x, int y, int width, int height):
+            x(x),
+            y(y),
+            width(width),
+            height(height)
+        {            
+        }
+    };
+
+    struct ViewNi: public Entity
+    {
+        int windowId;
+        int cameraId;
+        ViewportNi viewport;
+
+        ViewNi(int id, int windowId, int cameraId, ViewportNi viewport):
+            Entity(id),
+            windowId(windowId),
+            cameraId(cameraId),
+            viewport(viewport)
+        {}
+    };
 }
