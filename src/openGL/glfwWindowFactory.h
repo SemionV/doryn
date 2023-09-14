@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vendor/glfw/include/GLFW/glfw3.h"
+#include "dependencies.h"
 #include "glfwWindowParameters.h"
 
 namespace dory::openGL

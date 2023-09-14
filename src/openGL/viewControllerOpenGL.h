@@ -1,6 +1,5 @@
 #pragma once
 
-#include "olgDependencies.h"
 #include "glfwWindow.h"
 #include "shaderService.h"
 

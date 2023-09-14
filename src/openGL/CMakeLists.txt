@@ -20,6 +20,7 @@ set_target_properties(dory-openGL PROPERTIES PREFIX ""
 
 target_compile_definitions(dory-openGL PRIVATE DORY_EXPORT)
 target_include_directories(dory-openGL PRIVATE "${CMAKE_SOURCE_DIR}")
+target_include_directories(dory-openGL PRIVATE "${CMAKE_SOURCE_DIR}/vendor")
 target_precompile_headers(dory-openGL PRIVATE dependencies.h)
 
 target_link_libraries(dory-openGL base glfw ${OPENGL_LIBRARIES})

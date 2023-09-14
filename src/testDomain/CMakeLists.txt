@@ -12,6 +12,7 @@ set_target_properties(testDomain PROPERTIES PREFIX ""
 
 target_compile_definitions(testDomain PRIVATE DORY_EXPORT)
 target_include_directories(testDomain PRIVATE "${CMAKE_SOURCE_DIR}")
+target_include_directories(testDomain PRIVATE "${CMAKE_SOURCE_DIR}/vendor")
 target_precompile_headers(testDomain PRIVATE dependencies.h)
 
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "dependencies.h"
-#include "olgDependencies.h"
 #include "shaderServiceError.h"
 #include "shaderMetadata.h"
 
