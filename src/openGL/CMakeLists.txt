@@ -7,9 +7,9 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED
             PATHS ../vendor/glfw NO_DEFAULT_PATH)
 
-set_source_files_properties(gl/gl3w.c PROPERTIES LANGUAGE CXX )
+set_source_files_properties(${CMAKE_SOURCE_DIR}/vendor/gl3w/gl3w.c PROPERTIES LANGUAGE CXX )
 
-add_library(dory-openGL SHARED gl/gl3w.c
+add_library(dory-openGL SHARED ${CMAKE_SOURCE_DIR}/vendor/gl3w/gl3w.c
                                 viewControllerOpenGL.cpp
                                 glfwWindowSystem.cpp)
 
