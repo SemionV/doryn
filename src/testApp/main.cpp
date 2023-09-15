@@ -52,7 +52,7 @@ int runDory()
     auto windowController = std::make_shared<dory::openGL::GlfwWindowController>(windowRespository, glfwWindowEventHub);
     engine.addController(windowController);
 
-    auto viewController = std::make_shared<dory::openGL::ViewControllerOpenGL>(configuration, view);
+    auto viewController = std::make_shared<dory::openGL::ViewControllerOpenGL>(viewN.id, viewRepository, configuration, windowRespository);
     engine.addController(viewController);
     viewController->initialize(context);
 

@@ -3,6 +3,7 @@
 #include "base/controller.h"
 #include "base/configuration/configuration.h"
 #include "base/domain/view.h"
+#include "base/domain/repositories/viewEntityRepository.h"
 
 namespace dory
 {
@@ -10,13 +11,15 @@ namespace dory
     class ViewController: public Controller
     {
         protected:
-            std::shared_ptr<View<TWindow>> view;
+            int viewId;
+            std::shared_ptr<ViewEntityRepository> viewRepository;
             std::shared_ptr<IConfiguration> configuration;
 
         public:
-            ViewController(std::shared_ptr<IConfiguration> configuration, std::shared_ptr<View<TWindow>> view):
-                configuration(configuration),
-                view(view)
+            ViewController(int viewId, std::shared_ptr<ViewEntityRepository> viewRepository, std::shared_ptr<IConfiguration> configuration):
+                viewId(viewId),
+                viewRepository(viewRepository),
+                configuration(configuration)
             {        
             }
     };
