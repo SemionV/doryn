@@ -1,29 +1,29 @@
 #include "dependencies.h"
-#include "win32WindowController.h"
+#include "windowController.h"
 
 namespace dory::win32
 {
-    bool Win32WindowController::initialize(DataContext& context)
+    bool WindowController::initialize(DataContext& context)
     {
         return true;
     }
 
-    void Win32WindowController::stop(DataContext& context)
+    void WindowController::stop(DataContext& context)
     {
     }
 
-    void Win32WindowController::update(const TimeSpan& timeStep, DataContext& context)
+    void WindowController::update(const TimeSpan& timeStep, DataContext& context)
     {
         pumpSystemMessages();     
         submitEvents(context);   
     }
 
-    void Win32WindowController::submitEvents(DataContext& context)
+    void WindowController::submitEvents(DataContext& context)
     {
         eventHub->submit(context);
     }
 
-    void Win32WindowController::pumpSystemMessages()
+    void WindowController::pumpSystemMessages()
     {
         MSG msg;
 

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "dependencies.h"
-#include "win32WindowController.h"
-#include "win32WindowControllerParallel.h"
-#include "win32WindowParameters.h"
-#include "win32ConsoleController.h"
-#include "win32WindowFactory.h"
+#include "windowController.h"
+#include "windowControllerParallel.h"
+#include "windowParameters.h"
+#include "consoleController.h"
+#include "windowFactory.h"

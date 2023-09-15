@@ -18,7 +18,7 @@ int runDory()
     dory::Engine engine(context);
 
     auto consoleEventHub = std::make_shared<dory::SystemConsoleEventHubDispatcher>();
-    auto consoleController = std::make_shared<dory::win32::Win32ConsoleController>(consoleEventHub);
+    auto consoleController = std::make_shared<dory::win32::ConsoleController>(consoleEventHub);
     consoleController->initialize(context);
     engine.addController(consoleController);
 
@@ -29,17 +29,17 @@ int runDory()
 
     //win32
     auto windowsThread = std::make_shared<dory::IndividualProcessThread>();
-    auto windowRespositoryWin32 = std::make_shared<dory::win32::Win32WindowRespository>();
-    auto messageBufferWin32 = std::make_shared<dory::win32::Win32MessageBuffer>();
+    auto windowRespositoryWin32 = std::make_shared<dory::win32::WindowRespository>();
+    auto messageBufferWin32 = std::make_shared<dory::win32::MessageBuffer>();
     auto win32WindowEventHub = std::make_shared<dory::WindowEventHubDispatcher>();
-    auto windowControllerWin32 = std::make_shared<dory::win32::Win32WindowControllerParallel>(windowsThread, win32WindowEventHub, messageBufferWin32, windowRespositoryWin32);
+    auto windowControllerWin32 = std::make_shared<dory::win32::WindowControllerParallel>(windowsThread, win32WindowEventHub, messageBufferWin32, windowRespositoryWin32);
     windowControllerWin32->initialize(context);
     engine.addController(windowControllerWin32);
 
     windowsThread->run();
 
-    dory::win32::Win32WindowParameters win32WindowParameters;
-    auto hWnd = dory::win32::Win32WindowFactory::createWindow(win32WindowParameters, messageBufferWin32.get(), windowsThread);
+    dory::win32::WindowParameters win32WindowParameters;
+    auto hWnd = dory::win32::WindowFactory::createWindow(win32WindowParameters, messageBufferWin32.get(), windowsThread);
     auto win32Window = windowRespositoryWin32->store(hWnd);
 
     win32WindowEventHub->onCloseWindow() += [&windowRespositoryWin32, &windowsThread](dory::DataContext& context, dory::CloseWindowEventData& eventData)
@@ -55,7 +55,7 @@ int runDory()
                 std::cout << "Close window(id " << windowId << ")" << std::endl;
 
                 windowRespositoryWin32->remove(windowId);
-                dory::win32::Win32WindowFactory::closeWindow(hWnd, windowsThread);
+                dory::win32::WindowFactory::closeWindow(hWnd, windowsThread);
             }
         };
 

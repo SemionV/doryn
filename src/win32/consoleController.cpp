@@ -1,9 +1,9 @@
 #include "dependencies.h"
-#include "win32ConsoleController.h"
+#include "consoleController.h"
 
 namespace dory::win32
 {
-    bool Win32ConsoleController::initialize(DataContext& context)
+    bool ConsoleController::initialize(DataContext& context)
     {
         if(AllocConsole())
         {
@@ -24,17 +24,17 @@ namespace dory::win32
         return true;
     }
 
-    void Win32ConsoleController::stop(DataContext& context)
+    void ConsoleController::stop(DataContext& context)
     {
         processThread.stop();
     }
 
-    void Win32ConsoleController::update(const TimeSpan& timeStep, DataContext& context)
+    void ConsoleController::update(const TimeSpan& timeStep, DataContext& context)
     {
         eventHub->submit(context);
     }
 
-    void Win32ConsoleController::onKeyPressed(int key)
+    void ConsoleController::onKeyPressed(int key)
     {
         std::cout << std::this_thread::get_id() << ": add key pressed message: " << key << std::endl;
 
@@ -42,7 +42,7 @@ namespace dory::win32
         eventHub->addCase(std::forward<dory::KeyPressedEventData>(eventData));
     }
 
-    void Win32ConsoleController::bindStdHandlesToConsole()
+    void ConsoleController::bindStdHandlesToConsole()
     {
         //TODO: Add Error checking.
         

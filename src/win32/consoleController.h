@@ -2,14 +2,14 @@
 
 namespace dory::win32
 {
-    class DORY_API Win32ConsoleController: public dory::Controller
+    class DORY_API ConsoleController: public dory::Controller
     {
         private:
             dory::IndividualProcessThread processThread;
             std::shared_ptr<dory::SystemConsoleEventHubDispatcher> eventHub;
 
         public:
-            Win32ConsoleController(std::shared_ptr<dory::SystemConsoleEventHubDispatcher> eventHub):
+            ConsoleController(std::shared_ptr<dory::SystemConsoleEventHubDispatcher> eventHub):
                 eventHub(eventHub)
             {
             }

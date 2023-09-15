@@ -1,23 +1,23 @@
 #pragma once
 
-#include "win32WindowParameters.h"
-#include "win32Window.h"
-#include "win32MessageBuffer.h"
-#include "win32WindowRepository.h"
+#include "windowParameters.h"
+#include "window.h"
+#include "messageBuffer.h"
+#include "windowRepository.h"
 
 namespace dory::win32
 {
-        class DORY_API Win32WindowController: public Controller
+        class DORY_API WindowController: public Controller
     {
         private:
             std::shared_ptr<dory::WindowEventHubDispatcher> eventHub;
-            std::shared_ptr<Win32MessageBuffer> messageBuffer;
-            std::shared_ptr<Win32WindowRespository> windowRepository;
+            std::shared_ptr<MessageBuffer> messageBuffer;
+            std::shared_ptr<WindowRespository> windowRepository;
 
         public:
-            Win32WindowController(std::shared_ptr<dory::WindowEventHubDispatcher> eventHub,
-                std::shared_ptr<Win32MessageBuffer> messageBuffer,
-                std::shared_ptr<Win32WindowRespository> windowRepository):
+            WindowController(std::shared_ptr<dory::WindowEventHubDispatcher> eventHub,
+                std::shared_ptr<MessageBuffer> messageBuffer,
+                std::shared_ptr<WindowRespository> windowRepository):
                 eventHub(eventHub),
                 messageBuffer(messageBuffer),
                 windowRepository(windowRepository)

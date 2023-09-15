@@ -2,11 +2,11 @@
 
 namespace dory::win32
 {
-    struct Win32Window: public dory::Window
+    struct Window: public dory::Window
     {
         HWND hWnd;
 
-        Win32Window(int id, HWND hWnd):
+        Window(int id, HWND hWnd):
             dory::Window(id),
             hWnd(hWnd)
         {        

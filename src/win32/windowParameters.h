@@ -2,7 +2,7 @@
 
 namespace dory::win32
 {
-    class Win32WindowParameters
+    class WindowParameters
     {
 
     };

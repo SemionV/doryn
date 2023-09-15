@@ -1,18 +1,18 @@
 #pragma once
 
 #include "dependencies.h"
-#include "win32WindowParameters.h"
-#include "win32Window.h"
-#include "win32MessageBuffer.h"
+#include "windowParameters.h"
+#include "window.h"
+#include "messageBuffer.h"
 
 namespace dory::win32
 {
     LRESULT WINAPI windowProcedure(HWND hWnd, UINT WindowsMessage, WPARAM wParam, LPARAM lParam);
 
-    class Win32WindowFactory
+    class WindowFactory
     {
         public:
-            static HWND createWindow(Win32WindowParameters windowParameters, Win32MessageBuffer* messageBuffer)
+            static HWND createWindow(WindowParameters windowParameters, MessageBuffer* messageBuffer)
             {
                 std::cout << std::this_thread::get_id() << ": create a system window" << std::endl;
 
@@ -58,11 +58,11 @@ namespace dory::win32
                 return hwnd;
             }
 
-            static HWND createWindow(Win32WindowParameters windowParameters, Win32MessageBuffer* messageBuffer, std::shared_ptr<dory::IndividualProcessThread> windowsThread)
+            static HWND createWindow(WindowParameters windowParameters, MessageBuffer* messageBuffer, std::shared_ptr<dory::IndividualProcessThread> windowsThread)
             {
-                auto createWindowTask = dory::allocateFunctionTask<HWND>([](Win32WindowParameters windowParameters, Win32MessageBuffer* messageBuffer) 
+                auto createWindowTask = dory::allocateFunctionTask<HWND>([](WindowParameters windowParameters, MessageBuffer* messageBuffer) 
                 {
-                    return Win32WindowFactory::createWindow(windowParameters, messageBuffer);
+                    return WindowFactory::createWindow(windowParameters, messageBuffer);
                 }, windowParameters, messageBuffer);
 
                 windowsThread->invokeTask(createWindowTask);
@@ -79,7 +79,7 @@ namespace dory::win32
             {
                 auto createWindowTask = dory::allocateActionTask([](HWND hWnd) 
                 {
-                    Win32WindowFactory::closeWindow(hWnd);
+                    WindowFactory::closeWindow(hWnd);
                 }, hWnd);
 
                 windowsThread->invokeTask(createWindowTask);
@@ -92,7 +92,7 @@ namespace dory::win32
         {
             case WM_CLOSE:
             {
-                Win32MessageBuffer* messageBuffer = (Win32MessageBuffer*)GetWindowLongPtr(hWnd, 0);
+                MessageBuffer* messageBuffer = (MessageBuffer*)GetWindowLongPtr(hWnd, 0);
                 if(messageBuffer)
                 {
                     messageBuffer->onClose(WM_CLOSE, hWnd);
@@ -114,7 +114,7 @@ namespace dory::win32
             {
                 auto x = (int)LOWORD(GetMessagePos());
                 auto y = (int)HIWORD(GetMessagePos());
-                Win32MessageBuffer* messageBuffer = (Win32MessageBuffer*)GetWindowLongPtr(hWnd, 0);
+                MessageBuffer* messageBuffer = (MessageBuffer*)GetWindowLongPtr(hWnd, 0);
                 if(messageBuffer)
                 {
                     messageBuffer->onClick(WM_LBUTTONDOWN, hWnd, x, y);

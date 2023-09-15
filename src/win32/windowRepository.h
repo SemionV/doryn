@@ -1,17 +1,17 @@
 #pragma once
 
 #include "dependencies.h"
-#include "win32Window.h"
+#include "window.h"
 
 namespace dory::win32
 {
-    class Win32WindowRespository: public EntityRepository<Win32Window>
+    class WindowRespository: public EntityRepository<Window>
     {
         public:
-            Win32Window* getByHWND(HWND hWnd)
+            Window* getByHWND(HWND hWnd)
             {
                 int count = getEntitiesCount();
-                Win32Window* entity = getEntities();
+                Window* entity = getEntities();
                 for(int i = 0; i < count; ++i)
                 {
                     if(entity->hWnd == hWnd)

@@ -1,20 +1,20 @@
 #pragma once
 
-#include "win32WindowController.h"
+#include "windowController.h"
 
 namespace dory::win32
 {
-    class DORY_API Win32WindowControllerParallel: public Win32WindowController
+    class DORY_API WindowControllerParallel: public WindowController
     {
         private:
             std::shared_ptr<dory::IndividualProcessThread> windowsThread;
 
         public:
-            Win32WindowControllerParallel(std::shared_ptr<dory::IndividualProcessThread> windowsThread,
+            WindowControllerParallel(std::shared_ptr<dory::IndividualProcessThread> windowsThread,
                 std::shared_ptr<dory::WindowEventHubDispatcher> eventHub,
-                std::shared_ptr<Win32MessageBuffer> messageBuffer,
-                std::shared_ptr<Win32WindowRespository> windowRepository):
-                Win32WindowController(eventHub, messageBuffer, windowRepository),
+                std::shared_ptr<MessageBuffer> messageBuffer,
+                std::shared_ptr<WindowRespository> windowRepository):
+                WindowController(eventHub, messageBuffer, windowRepository),
                 windowsThread(windowsThread)
             {
             }

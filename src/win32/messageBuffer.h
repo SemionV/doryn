@@ -4,43 +4,43 @@
 
 namespace dory::win32
 {
-    struct Win32Message
+    struct Message
     {
         const UINT messageId;
         const HWND hWnd;
 
-        Win32Message(HWND hWnd, UINT messageId):
+        Message(HWND hWnd, UINT messageId):
             hWnd(hWnd),
             messageId(messageId)
         {}
     };
 
-    struct Win32MessageClick: public Win32Message
+    struct MessageClick: public Message
     {
         const int x;
         const int y;
 
-        Win32MessageClick(HWND hWnd, UINT messageId, int x, int y):
-            Win32Message(hWnd, messageId),
+        MessageClick(HWND hWnd, UINT messageId, int x, int y):
+            Message(hWnd, messageId),
             x(x),
             y(y)
         {}
     };
 
-    class Win32MessageBuffer
+    class MessageBuffer
     {
         public:
-            std::vector<std::shared_ptr<Win32Message>> messages;
+            std::vector<std::shared_ptr<Message>> messages;
 
             void onClick(UINT messageId, HWND hWnd, int x, int y)
             {
-                auto message = std::make_shared<Win32MessageClick>(hWnd, messageId, x, y);                
-                messages.emplace_back(std::static_pointer_cast<Win32Message>(message));
+                auto message = std::make_shared<MessageClick>(hWnd, messageId, x, y);                
+                messages.emplace_back(std::static_pointer_cast<Message>(message));
             }
 
             void onClose(UINT messageId, HWND hWnd)
             {
-                auto message = std::make_shared<Win32Message>(hWnd, messageId);    
+                auto message = std::make_shared<Message>(hWnd, messageId);    
                 messages.emplace_back(message);
             }
 
