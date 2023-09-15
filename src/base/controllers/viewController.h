@@ -2,7 +2,6 @@
 
 #include "base/controller.h"
 #include "base/configuration/configuration.h"
-#include "base/domain/view.h"
 #include "base/domain/repositories/viewEntityRepository.h"
 
 namespace dory

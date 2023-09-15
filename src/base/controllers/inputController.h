@@ -3,7 +3,6 @@
 #include "base/controller.h"
 #include "base/devices/device.h"
 #include "base/messaging/events/systemConsole/systemConsoleEventHub.h"
-#include "base/messaging/events/systemWindow/systemWindowEventHub.h"
 
 namespace dory
 {

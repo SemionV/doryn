@@ -35,5 +35,7 @@ namespace dory::openGL
 
             entity++;
         }
+
+        eventHub->submit(context);
     }
 }

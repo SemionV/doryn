@@ -1,17 +1,17 @@
 #pragma once
 
 #include "base/domain/entityRepository.h"
-#include "base/domain/view.h"
+#include "base/domain/entity.h"
 
 namespace dory
 {
-    class ViewEntityRepository: public EntityRepository<ViewNi>
+    class ViewEntityRepository: public EntityRepository<View>
     {
         public:
-            void getList(int windowId, std::list<ViewNi*>& list)
+            void getList(int windowId, std::list<View*>& list)
             {
                 int count = getEntitiesCount();
-                ViewNi* entity = getEntities();
+                View* entity = getEntities();
                 for(int i = 0; i < count; ++i)
                 {
                     if(entity->windowId == windowId)

@@ -2,7 +2,7 @@
 
 namespace dory::openGL
 {
-    class GlfwWindowParameters: public dory::WindowParameters
+    class GlfwWindowParameters
     {
 
     };

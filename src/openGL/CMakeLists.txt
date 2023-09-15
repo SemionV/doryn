@@ -11,7 +11,6 @@ set_source_files_properties(${CMAKE_SOURCE_DIR}/vendor/GL/gl3w.c PROPERTIES LANG
 
 add_library(dory-openGL SHARED ${CMAKE_SOURCE_DIR}/vendor/GL/gl3w.c
                                 viewControllerOpenGL.cpp
-                                glfwWindowSystem.cpp
                                 glfwWindowController.cpp)
 
 set_target_properties(dory-openGL PROPERTIES PREFIX ""
