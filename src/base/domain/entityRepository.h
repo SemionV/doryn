@@ -22,7 +22,7 @@ namespace dory
                 return items.emplace_back(TEntity(getNewItemId(), std::forward<Ts>(constructorArguments)...));
             }
             
-            virtual std::optional<TEntity> get(int id)
+            std::optional<TEntity> get(int id)
             {
                 std::size_t size = items.size();
                 for(std::size_t i = 0; i < size; ++i)
@@ -37,7 +37,17 @@ namespace dory
                 return std::nullopt;
             }
 
-            virtual void remove(int id)
+            int getEntitiesCount()
+            {
+                return items.size();
+            }
+
+            TEntity* getEntities()
+            {
+                items.data();
+            }
+
+            void remove(int id)
             {
                 auto it = items.begin();
                 auto end = items.end();
@@ -53,7 +63,7 @@ namespace dory
             }
 
         protected:
-            virtual int getNewItemId()
+            int getNewItemId()
             {
                 return ++idCounter;
             }

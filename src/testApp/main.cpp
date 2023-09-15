@@ -34,32 +34,51 @@ int runDory()
     auto camera = std::make_shared<dory::Camera>();
     auto view = std::make_shared<dory::View<dory::openGL::GlfwWindow>>(glfwWindow, viewport, camera);
 
+    test::TestLogic logic(consoleEventHub, glfwWindowEventHub);
+
+    auto windowRespository = std::make_shared<dory::EntityRepository<dory::openGL::GlfwWindow>>();
+    auto cameraRepository = std::make_shared<dory::EntityRepository<dory::CameraNi>>();
+    auto viewRepository = std::make_shared<dory::EntityRepository<dory::ViewNi>>();
+
+    auto glfwWindowHandler = dory::openGL::GlfwWindowFactory::createWindow(glfwWindowParameters);
+    auto windowN = windowRespository->store(glfwWindowHandler);
+
+    auto cameraN = cameraRepository->store();
+    dory::ViewportNi viewportN(0, 0, 0, 0);
+
+    auto viewN = viewRepository->store(windowN.id, cameraN.id, viewportN);
+    auto viewN2 = viewRepository->store(windowN.id, cameraN.id, viewportN);
+
+    auto windowController = std::make_shared<dory::openGL::GlfwWindowController>(windowRespository, glfwWindowEventHub);
+    engine.addController(windowController);
+
     auto viewController = std::make_shared<dory::openGL::ViewControllerOpenGL>(configuration, view);
     engine.addController(viewController);
     viewController->initialize(context);
 
-    test::TestLogic logic(consoleEventHub, glfwWindowEventHub);
-
     glfwWindowEventHub->onCloseWindow() += [&glfwWindowSystem, &viewController, &engine](dory::DataContext& context, dory::openGL::CloseWindowEventData& eventData)
-    {
-        context.isStop = true;
-        std::cout << "Close main window" << std::endl;
-        engine.removeController(viewController);
-        glfwWindowSystem->closeWindow(eventData.window);
-    };
+        {
+            if(!eventData.pWindow)
+            {
+                context.isStop = true;
+                std::cout << "Close main window" << std::endl;
+                engine.removeController(viewController);
+                glfwWindowSystem->closeWindow(eventData.window);
+            }
+        };
 
-    dory::EntityRepository<dory::openGL::GlfwWindow> windowRespository;
-    dory::EntityRepository<dory::CameraNi> cameraRepository;
-    dory::EntityRepository<dory::ViewNi> viewRepository;
+    glfwWindowEventHub->onCloseWindow() += [&windowRespository](dory::DataContext& context, dory::openGL::CloseWindowEventData& eventData)
+        {
+            if(eventData.pWindow)
+            {
+                //context.isStop = true;
+                std::cout << "Close window(id " << eventData.pWindow->id << ")" << std::endl;
 
-    auto glfwWindowHandler = dory::openGL::GlfwWindowFactory::createWindow(glfwWindowParameters);
-    auto windowN = windowRespository.store(glfwWindowHandler);
-
-    auto cameraN = cameraRepository.store();
-    dory::ViewportNi viewportN(0, 0, 0, 0);
-
-    auto viewN = viewRepository.store(windowN.id, cameraN.id, viewportN);
-    auto viewN2 = viewRepository.store(windowN.id, cameraN.id, viewportN);
+                windowRespository->remove(eventData.pWindow->id);
+                //TODO:: delete Window and all View entities attached to eventData.pWindow
+                dory::openGL::GlfwWindowFactory::closeWindow(eventData.pWindow);
+            }
+        };
 
     engine.initialize(context);
 

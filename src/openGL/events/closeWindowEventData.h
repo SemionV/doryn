@@ -9,10 +9,17 @@ namespace dory::openGL
     {
         public:
             const std::shared_ptr<GlfwWindow> window;
+            GlfwWindow * const pWindow;
 
         public:
             CloseWindowEventData(std::shared_ptr<GlfwWindow> window):
-                window(window)
+                window(window),
+                pWindow(nullptr)
+            {
+            }
+
+            CloseWindowEventData(GlfwWindow* const window):
+                pWindow(window)
             {                
             }
     };

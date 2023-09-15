@@ -12,5 +12,11 @@ namespace dory::openGL
             {
                 return glfwCreateWindow(800, 600, "dory - glfw window", NULL, NULL);
             }
+
+            static void closeWindow(GlfwWindow* const window)
+            {
+                glfwDestroyWindow(window->handler);
+                window->handler = nullptr;
+            }
     };
 }
