@@ -19,4 +19,4 @@
 #include "domain/geometry/matrixCalculator.h"
 #include "domain/geometry/transformationCalculator.h"
 #include "domain/geometry/mathFunctions.h"
-#include "domain/entityRepository.h"
+#include "domain/repositories/viewEntityRepository.h"

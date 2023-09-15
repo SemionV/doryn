@@ -1,7 +1,6 @@
 # Development log
 
 Tasks:
-* Delete Window and View entities attached to GlfwWindow when iut is closed
 * Use new View structure in ViewController for OpenGL
 * Clean up the old WindowSystem code(remove)
 * Add Groups of Controllers to Engine
@@ -10,6 +9,7 @@ Tasks:
 
 **15.09.23**
 * Task done: Develop WindowController instead of WindowSystem
+* Task done: Delete Window and View entities attached to GlfwWindow when iut is closed
 
 **14.09.23**
 * Task done: Instal gl3w library with build/install-dependencies.sh

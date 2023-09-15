@@ -24,16 +24,16 @@ namespace dory::openGL
         glfwPollEvents();
 
         int count = windowRepository->getEntitiesCount();
-        GlfwWindow* entities = windowRepository->getEntities();
-        GlfwWindow* window = nullptr;
+        GlfwWindow* entity = windowRepository->getEntities();
         for(int i = 0; i < count; ++i)
         {
-            window = entities++;
-            if(glfwWindowShouldClose(window->handler))
+            if(glfwWindowShouldClose(entity->handler))
             {
-                eventHub->addCase(CloseWindowEventData(window));
-                glfwSetWindowShouldClose(window->handler, 0);
+                eventHub->addCase(CloseWindowEventData(entity));
+                glfwSetWindowShouldClose(entity->handler, 0);
             }
+
+            entity++;
         }
     }
 }

@@ -38,7 +38,7 @@ int runDory()
 
     auto windowRespository = std::make_shared<dory::EntityRepository<dory::openGL::GlfwWindow>>();
     auto cameraRepository = std::make_shared<dory::EntityRepository<dory::CameraNi>>();
-    auto viewRepository = std::make_shared<dory::EntityRepository<dory::ViewNi>>();
+    auto viewRepository = std::make_shared<dory::ViewEntityRepository>();
 
     auto glfwWindowHandler = dory::openGL::GlfwWindowFactory::createWindow(glfwWindowParameters);
     auto windowN = windowRespository->store(glfwWindowHandler);
@@ -67,15 +67,28 @@ int runDory()
             }
         };
 
-    glfwWindowEventHub->onCloseWindow() += [&windowRespository](dory::DataContext& context, dory::openGL::CloseWindowEventData& eventData)
+    glfwWindowEventHub->onCloseWindow() += [&windowRespository, &viewRepository](dory::DataContext& context, dory::openGL::CloseWindowEventData& eventData)
         {
             if(eventData.pWindow)
             {
-                //context.isStop = true;
-                std::cout << "Close window(id " << eventData.pWindow->id << ")" << std::endl;
+                int windowId = eventData.pWindow->id;
 
-                windowRespository->remove(eventData.pWindow->id);
-                //TODO:: delete Window and all View entities attached to eventData.pWindow
+                //context.isStop = true;
+                std::cout << "Close window(id " << windowId << ")" << std::endl;
+
+                windowRespository->remove(windowId);
+
+                std::list<dory::ViewNi*> attachedViews;
+                viewRepository->getList(windowId, attachedViews);
+                auto end = attachedViews.end();
+                auto i = attachedViews.begin();
+                while(i != end)
+                {
+                    std::cout << "remove view(id " << (*i)->id << ")" << std::endl;
+                    viewRepository->remove((*i)->id);
+                    ++i;
+                }
+
                 dory::openGL::GlfwWindowFactory::closeWindow(eventData.pWindow);
             }
         };

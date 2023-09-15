@@ -44,7 +44,7 @@ namespace dory
 
             TEntity* getEntities()
             {
-                items.data();
+                return items.data();
             }
 
             void remove(int id)
