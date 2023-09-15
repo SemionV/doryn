@@ -17,19 +17,49 @@ int runDory()
     dory::DataContext context;
     dory::Engine engine(context);
 
-    /*auto consoleEventHub = std::make_shared<dory::SystemConsoleEventHubDispatcher>();
-    auto consoleSystem = std::make_shared<doryWindows::ConsoleSystem>(consoleEventHub);
-    consoleSystem->connect();*/
+    auto consoleEventHub = std::make_shared<dory::SystemConsoleEventHubDispatcher>();
+    auto consoleController = std::make_shared<dory::win32::Win32ConsoleController>(consoleEventHub);
+    consoleController->initialize(context);
+    engine.addController(consoleController);
 
-    /*auto inputController = std::make_shared<dory::InputController>();
-    engine.addController(inputController);
-    inputController->addDevice(consoleSystem);
-    inputController->initialize(context);*/
-
-    auto glfwWindowEventHub = std::make_shared<dory::openGL::GlfwWindowEventHubDispatcher>();
+    auto glfwWindowEventHub = std::make_shared<dory::WindowEventHubDispatcher>();
     auto windowController = std::make_shared<dory::openGL::GlfwWindowController>(windowRespository, glfwWindowEventHub);
     windowController->initialize(context);
     engine.addController(windowController);
+
+    //win32
+    auto windowsThread = std::make_shared<dory::IndividualProcessThread>();
+    auto windowRespositoryWin32 = std::make_shared<dory::win32::Win32WindowRespository>();
+    auto messageBufferWin32 = std::make_shared<dory::win32::Win32MessageBuffer>();
+    auto win32WindowEventHub = std::make_shared<dory::WindowEventHubDispatcher>();
+    auto windowControllerWin32 = std::make_shared<dory::win32::Win32WindowControllerParallel>(windowsThread, win32WindowEventHub, messageBufferWin32, windowRespositoryWin32);
+    windowControllerWin32->initialize(context);
+    engine.addController(windowControllerWin32);
+
+    windowsThread->run();
+
+    dory::win32::Win32WindowParameters win32WindowParameters;
+    auto hWnd = dory::win32::Win32WindowFactory::createWindow(win32WindowParameters, messageBufferWin32.get(), windowsThread);
+    auto win32Window = windowRespositoryWin32->store(hWnd);
+
+    win32WindowEventHub->onCloseWindow() += [&windowRespositoryWin32, &windowsThread](dory::DataContext& context, dory::CloseWindowEventData& eventData)
+        {
+            int windowId = eventData.windowId;
+            auto window = windowRespositoryWin32->get(windowId);
+
+            if(window.has_value())
+            {
+                auto hWnd = window.value().hWnd;
+
+                context.isStop = true;
+                std::cout << "Close window(id " << windowId << ")" << std::endl;
+
+                windowRespositoryWin32->remove(windowId);
+                dory::win32::Win32WindowFactory::closeWindow(hWnd, windowsThread);
+            }
+        };
+
+    //~win32
 
     dory::openGL::GlfwWindowParameters glfwWindowParameters;
     auto glfwWindowHandler = dory::openGL::GlfwWindowFactory::createWindow(glfwWindowParameters);
@@ -44,11 +74,14 @@ int runDory()
     engine.addController(viewController);
     viewController->initialize(context);
 
-    glfwWindowEventHub->onCloseWindow() += [&windowRespository, &viewRepository](dory::DataContext& context, dory::openGL::CloseWindowEventData& eventData)
+    glfwWindowEventHub->onCloseWindow() += [&windowRespository, &viewRepository](dory::DataContext& context, dory::CloseWindowEventData& eventData)
         {
-            if(eventData.pWindow)
+            int windowId = eventData.windowId;
+            auto window = windowRespository->get(windowId);
+
+            if(window.has_value())
             {
-                int windowId = eventData.pWindow->id;
+                auto windowHandler = window.value().handler;
 
                 context.isStop = true;
                 std::cout << "Close window(id " << windowId << ")" << std::endl;
@@ -66,11 +99,11 @@ int runDory()
                     ++i;
                 }
 
-                dory::openGL::GlfwWindowFactory::closeWindow(eventData.pWindow);
+                dory::openGL::GlfwWindowFactory::closeWindow(windowHandler);
             }
         };
 
-    //test::TestLogic logic(consoleEventHub, glfwWindowEventHub);
+    test::TestLogic logic(consoleEventHub, glfwWindowEventHub);
 
     engine.initialize(context);
 

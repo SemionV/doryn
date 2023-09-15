@@ -1,11 +1,20 @@
 #pragma once
 
-#include "openGL/dependencies.h"
-#include "closeWindowEventData.h"
-
-namespace dory::openGL
+namespace dory
 {
-    class GlfwWindowEventHub
+    struct CloseWindowEventData
+    {
+        public:
+            const int windowId;
+
+        public:
+            CloseWindowEventData(int windowId):
+                windowId(windowId)
+            {                
+            }
+    };
+
+    class WindowEventHub
     {
         private:
             dory::EventDispatcher<dory::DataContext&, CloseWindowEventData&> closeWindowEvent;
@@ -23,7 +32,7 @@ namespace dory::openGL
             }
     };
 
-    class GlfwWindowEventHubDispatcher: public dory::EventHubDispatcher, public GlfwWindowEventHub
+    class WindowEventHubDispatcher: public dory::EventHubDispatcher, public WindowEventHub
     {
         private:
             dory::EventBuffer<CloseWindowEventData> closeWindowEventBuffer;

@@ -4,11 +4,9 @@ project(dory-base)
 
 add_library(base SHARED configuration/fileSystemBasedConfiguration.cpp
                         basicFrameService.cpp
-                        controller.cpp
                         engine.cpp
                         frameService.cpp
                         types.cpp
-                        controllers/inputController.cpp
                         multithreading/task.cpp
                         multithreading/currentProcessThread.cpp
                         multithreading/individualProcessThread.cpp

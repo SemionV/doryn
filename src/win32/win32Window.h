@@ -1,10 +1,10 @@
 #pragma once
 
-namespace doryWindows
+namespace dory::win32
 {
     struct Win32Window: public dory::Window
     {
-        const HWND hWnd;
+        HWND hWnd;
 
         Win32Window(int id, HWND hWnd):
             dory::Window(id),

@@ -7,6 +7,7 @@ Tasks:
 * Introduce logic level Service to manage complex data like Winow and View(in order to delete window and views properly)
 * Implement dynamic window open/close with views
 * Add Groups of Controllers to Engine
+* Group all the engine components, repositories, factories, etc in the DataContext object
 * Move src/lib and scr/vendor dirs out of project folder(in order to make vs code intellisence work properly and light)
 * Integrate some scripting engine
 

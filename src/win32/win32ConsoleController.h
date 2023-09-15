@@ -1,23 +1,22 @@
 #pragma once
 
-namespace doryWindows
+namespace dory::win32
 {
-    class DORY_API ConsoleSystem: public dory::ConsoleSystem
+    class DORY_API Win32ConsoleController: public dory::Controller
     {
         private:
             dory::IndividualProcessThread processThread;
             std::shared_ptr<dory::SystemConsoleEventHubDispatcher> eventHub;
 
         public:
-            ConsoleSystem(std::shared_ptr<dory::SystemConsoleEventHubDispatcher> eventHub):
+            Win32ConsoleController(std::shared_ptr<dory::SystemConsoleEventHubDispatcher> eventHub):
                 eventHub(eventHub)
             {
             }
 
-            virtual bool connect() override;
-            virtual void disconnect() override;
-            virtual void update() override;
-            void submitEvents(dory::DataContext& context) override;
+            bool initialize(DataContext& context) override;
+            void stop(DataContext& context) override;
+            void update(const TimeSpan& timeStep, DataContext& context) override;
 
         protected:
             virtual void onKeyPressed(int key);

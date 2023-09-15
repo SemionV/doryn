@@ -1,8 +1,6 @@
 #pragma once
 
 #include "glfwWindow.h"
-#include "events/glfwWindowEventHub.h"
-#include "events/closeWindowEventData.h"
 
 namespace dory::openGL
 {
@@ -10,11 +8,11 @@ namespace dory::openGL
     {
         private:
             std::shared_ptr<EntityRepository<GlfwWindow>> windowRepository;
-            std::shared_ptr<GlfwWindowEventHubDispatcher> eventHub;
+            std::shared_ptr<WindowEventHubDispatcher> eventHub;
 
         public:
             GlfwWindowController(std::shared_ptr<EntityRepository<GlfwWindow>> windowRepository,
-                std::shared_ptr<GlfwWindowEventHubDispatcher> eventHub);
+                std::shared_ptr<WindowEventHubDispatcher> eventHub);
 
             bool initialize(DataContext& context) override;
             void stop(DataContext& context) override;

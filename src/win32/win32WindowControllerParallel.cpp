@@ -1,9 +1,9 @@
 #include "dependencies.h"
-#include "windowSystemParallel.h"
+#include "win32WindowControllerParallel.h"
 
-namespace doryWindows
+namespace dory::win32
 {
-    bool WindowSystemParallel::connect()
+    bool Win32WindowControllerParallel::initialize(DataContext& context)
     {
         auto pumpMessagesTask = dory::allocateActionTask([this]() 
         {
@@ -13,23 +13,22 @@ namespace doryWindows
             std::this_thread::sleep_for(threadMainSleepInterval);
         });
 
-        processThread.setRegularTask(pumpMessagesTask);
-
-        processThread.run();
+        windowsThread->setRegularTask(pumpMessagesTask);
 
         return true;
     }
 
-    void WindowSystemParallel::disconnect()
+    void Win32WindowControllerParallel::stop(DataContext& context)
     {
-        processThread.stop();
+
     }
 
-    void WindowSystemParallel::update()
+    void Win32WindowControllerParallel::update(const TimeSpan& timeStep, DataContext& context)
     {
+        submitEvents(context);
     }
 
-    std::shared_ptr<Win32Window> WindowSystemParallel::createWindow(const WindowParameters& parameters)
+    /*std::shared_ptr<Win32Window> WindowSystemParallel::createWindow(const WindowParameters& parameters)
     {
         auto createWindowTask = dory::allocateFunctionTask<std::shared_ptr<Win32Window>>([this](const WindowParameters& parameters) 
         {
@@ -39,5 +38,5 @@ namespace doryWindows
         processThread.invokeTask(createWindowTask);
 
         return createWindowTask->getResult();
-    }
+    }*/
 }
