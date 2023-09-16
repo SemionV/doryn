@@ -4,57 +4,53 @@
 
 namespace dory
 {
+    
     template<class TEntity>
-    class EntityRepository
+    class IEntityRepository
+    {
+        public:
+            virtual int getEntitiesCount() = 0;
+            virtual TEntity* getEntities() = 0;
+            virtual TEntity& store(TEntity&& entity) = 0;
+            virtual void remove(TEntity* entity) = 0;
+    };
+
+    template<class TEntity, typename TId>
+    class EntityRepository: public IEntityRepository<TEntity>
     {
         private:
             std::vector<TEntity> items;
-            int idCounter;
+            TId idCounter;
 
         public:
             EntityRepository():
                 idCounter(0)
             {}
 
-            template<typename... Ts>
-            TEntity& store(Ts&&... constructorArguments)
+            TEntity& store(TEntity&& entity) override
             {
-                return items.emplace_back(TEntity(getNewItemId(), std::forward<Ts>(constructorArguments)...));
-            }
-            
-            std::optional<TEntity> get(int id)
-            {
-                std::size_t size = items.size();
-                for(std::size_t i = 0; i < size; ++i)
-                {
-                    auto item = items[i];
-                    if(item.id == id)
-                    {
-                        return item;
-                    }
-                }
-
-                return std::nullopt;
+                entity.id = getNewItemId();
+                return items.emplace_back(std::forward<TEntity>(entity));
             }
 
-            int getEntitiesCount()
+            int getEntitiesCount() override
             {
                 return items.size();
             }
 
-            TEntity* getEntities()
+            TEntity* getEntities() override
             {
                 return items.data();
             }
 
-            void remove(int id)
+            void remove(TEntity* entity) override
             {
                 auto it = items.begin();
                 auto end = items.end();
 
                 for(; it != end; ++it)
                 {
-                    if((*it).id == id)
+                    if((*it).id == entity->id)
                     {
                         items.erase(it);
                         break;
@@ -63,9 +59,83 @@ namespace dory
             }
 
         protected:
-            int getNewItemId()
+            TId getNewItemId()
             {
                 return ++idCounter;
+            }
+    };
+
+    template<class TEntity>
+    class EntityAccessor
+    {
+        private:
+            std::shared_ptr<IEntityRepository<TEntity>> repository;
+
+        public:
+            EntityAccessor(std::shared_ptr<IEntityRepository<TEntity>> repository):
+                repository(repository)
+            {}
+
+            int getEntitiesCount()
+            {
+                return repository->getEntitiesCount();
+            }
+
+            TEntity* getEntities()
+            {
+                return repository->getEntities();
+            }
+
+            template<class TId>
+            TEntity* get(TId id)
+            {
+                int count = repository->getEntitiesCount();
+                TEntity* entity = repository->getEntities();
+                for(int i = 0; i < count; ++i)
+                {
+                    if(entity->id == id)
+                    {
+                        return entity;
+                    }
+
+                    entity++;
+                }
+
+                return nullptr;
+            }
+
+            template<typename TField, typename F>
+            TEntity* get(TField searchValue, F expression)
+            {
+                int count = repository->getEntitiesCount();
+                TEntity* entity = repository->getEntities();
+                for(int i = 0; i < count; ++i)
+                {
+                    if(expression(entity, searchValue))
+                    {
+                        return entity;
+                    }
+
+                    entity++;
+                }
+
+                return nullptr;
+            }
+
+            template<typename TField, typename F>
+            void list(TField searchValue, F expression, std::list<TEntity*>& list)
+            {
+                int count = repository->getEntitiesCount();
+                TEntity* entity = repository->getEntities();
+                for(int i = 0; i < count; ++i)
+                {
+                    if(expression(entity, searchValue))
+                    {
+                        list.emplace_back(entity);
+                    }
+
+                    entity++;
+                }
             }
     };
 }

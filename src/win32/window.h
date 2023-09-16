@@ -6,10 +6,8 @@ namespace dory::win32
     {
         HWND hWnd;
 
-        Window(int id, HWND hWnd):
-            dory::Window(id),
+        Window(HWND hWnd):
             hWnd(hWnd)
-        {        
-        }
+        {}
     };
 }

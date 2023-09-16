@@ -3,7 +3,6 @@
 #include "windowParameters.h"
 #include "window.h"
 #include "messageBuffer.h"
-#include "windowRepository.h"
 
 namespace dory::win32
 {
@@ -12,12 +11,14 @@ namespace dory::win32
         private:
             std::shared_ptr<dory::WindowEventHubDispatcher> eventHub;
             std::shared_ptr<MessageBuffer> messageBuffer;
-            std::shared_ptr<WindowRespository> windowRepository;
+            std::shared_ptr<EntityAccessor<Window>> windowRepository;
+
+            static bool compareHandles(Window* window, HWND hWnd);
 
         public:
             WindowController(std::shared_ptr<dory::WindowEventHubDispatcher> eventHub,
                 std::shared_ptr<MessageBuffer> messageBuffer,
-                std::shared_ptr<WindowRespository> windowRepository):
+                std::shared_ptr<EntityAccessor<Window>> windowRepository):
                 eventHub(eventHub),
                 messageBuffer(messageBuffer),
                 windowRepository(windowRepository)

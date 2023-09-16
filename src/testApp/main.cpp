@@ -10,9 +10,14 @@
 int runDory()
 {
     auto configuration = std::make_shared<dory::FileSystemBasedConfiguration>("configuration");
-    auto windowRespository = std::make_shared<dory::EntityRepository<dory::openGL::GlfwWindow>>();
-    auto cameraRepository = std::make_shared<dory::EntityRepository<dory::Camera>>();
-    auto viewRepository = std::make_shared<dory::ViewEntityRepository>();
+    
+    auto windowRespository = std::make_shared<dory::EntityRepository<dory::openGL::GlfwWindow, int>>();
+    auto cameraRepository = std::make_shared<dory::EntityRepository<dory::Camera, int>>();
+    auto viewRepository = std::make_shared<dory::EntityRepository<dory::View, int>>();
+
+    auto windowAccessor = std::make_shared<dory::EntityAccessor<dory::openGL::GlfwWindow>>(windowRespository);
+    auto cameraAccessor = std::make_shared<dory::EntityAccessor<dory::Camera>>(cameraRepository);
+    auto viewAccessor = std::make_shared<dory::EntityAccessor<dory::View>>(viewRepository);
 
     dory::DataContext context;
     dory::Engine engine(context);
@@ -23,16 +28,17 @@ int runDory()
     engine.addController(consoleController);
 
     auto glfwWindowEventHub = std::make_shared<dory::WindowEventHubDispatcher>();
-    auto windowController = std::make_shared<dory::openGL::GlfwWindowController>(windowRespository, glfwWindowEventHub);
+    auto windowController = std::make_shared<dory::openGL::GlfwWindowController>(windowAccessor, glfwWindowEventHub);
     windowController->initialize(context);
     engine.addController(windowController);
 
     //win32
     auto windowsThread = std::make_shared<dory::IndividualProcessThread>();
-    auto windowRespositoryWin32 = std::make_shared<dory::win32::WindowRespository>();
+    auto windowRespositoryWin32 = std::make_shared<dory::EntityRepository<dory::win32::Window, int>>();
+    auto windowAccessorWin32 = std::make_shared<dory::EntityAccessor<dory::win32::Window>>(windowRespositoryWin32);
     auto messageBufferWin32 = std::make_shared<dory::win32::MessageBuffer>();
     auto win32WindowEventHub = std::make_shared<dory::WindowEventHubDispatcher>();
-    auto windowControllerWin32 = std::make_shared<dory::win32::WindowControllerParallel>(windowsThread, win32WindowEventHub, messageBufferWin32, windowRespositoryWin32);
+    auto windowControllerWin32 = std::make_shared<dory::win32::WindowControllerParallel>(windowsThread, win32WindowEventHub, messageBufferWin32, windowAccessorWin32);
     windowControllerWin32->initialize(context);
     engine.addController(windowControllerWin32);
 
@@ -40,22 +46,22 @@ int runDory()
 
     dory::win32::WindowParameters win32WindowParameters;
     auto hWnd = dory::win32::WindowFactory::createWindow(win32WindowParameters, messageBufferWin32.get(), windowsThread);
-    auto win32Window = windowRespositoryWin32->store(hWnd);
+    auto win32Window = windowRespositoryWin32->store(dory::win32::Window(hWnd));
 
-    win32WindowEventHub->onCloseWindow() += [&windowRespositoryWin32, &windowsThread](dory::DataContext& context, dory::CloseWindowEventData& eventData)
+    win32WindowEventHub->onCloseWindow() += [&windowRespositoryWin32, &windowAccessorWin32, &windowsThread](dory::DataContext& context, dory::CloseWindowEventData& eventData)
         {
             int windowId = eventData.windowId;
-            auto window = windowRespositoryWin32->get(windowId);
+            auto window = windowAccessorWin32->get(windowId);
 
-            if(window.has_value())
+            if(window)
             {
-                auto hWnd = window.value().hWnd;
+                auto hWnd = window->hWnd;
 
                 context.isStop = true;
                 std::cout << "Close window(id " << windowId << ")" << std::endl;
 
-                windowRespositoryWin32->remove(windowId);
                 dory::win32::WindowFactory::closeWindow(hWnd, windowsThread);
+                windowRespositoryWin32->remove(window);
             }
         };
 
@@ -63,43 +69,46 @@ int runDory()
 
     dory::openGL::GlfwWindowParameters glfwWindowParameters;
     auto glfwWindowHandler = dory::openGL::GlfwWindowFactory::createWindow(glfwWindowParameters);
-    auto window = windowRespository->store(glfwWindowHandler);
+    auto window = windowRespository->store(dory::openGL::GlfwWindow(glfwWindowHandler));
 
-    auto camera = cameraRepository->store();
+    auto camera = cameraRepository->store(dory::Camera());
     dory::Viewport viewport(0, 0, 0, 0);
 
-    auto view = viewRepository->store(window.id, camera.id, viewport);
+    auto view = viewRepository->store(dory::View(window.id, camera.id, viewport));
 
-    auto viewController = std::make_shared<dory::openGL::ViewControllerOpenGL>(view.id, viewRepository, configuration, windowRespository);
+    auto viewController = std::make_shared<dory::openGL::ViewControllerOpenGL>(view.id, viewAccessor, configuration, windowAccessor);
     engine.addController(viewController);
     viewController->initialize(context);
 
-    glfwWindowEventHub->onCloseWindow() += [&windowRespository, &viewRepository](dory::DataContext& context, dory::CloseWindowEventData& eventData)
+    glfwWindowEventHub->onCloseWindow() += [&windowRespository, &windowAccessor, &viewAccessor, &viewRepository](dory::DataContext& context, dory::CloseWindowEventData& eventData)
         {
             int windowId = eventData.windowId;
-            auto window = windowRespository->get(windowId);
+            auto window = windowAccessor->get(windowId);
 
-            if(window.has_value())
+            if(window)
             {
-                auto windowHandler = window.value().handler;
+                auto windowHandler = window->handler;
+
+                dory::openGL::GlfwWindowFactory::closeWindow(windowHandler);
 
                 context.isStop = true;
                 std::cout << "Close window(id " << windowId << ")" << std::endl;
 
-                windowRespository->remove(windowId);
+                windowRespository->remove(window);
 
                 std::list<dory::View*> attachedViews;
-                viewRepository->getList(windowId, attachedViews);
+                viewAccessor->list(windowId, [](dory::View* view, int windowId) 
+                    {
+                        return view->windowId == windowId;
+                    }, attachedViews);
                 auto end = attachedViews.end();
                 auto i = attachedViews.begin();
                 while(i != end)
                 {
                     std::cout << "remove view(id " << (*i)->id << ")" << std::endl;
-                    viewRepository->remove((*i)->id);
+                    viewRepository->remove(*i);
                     ++i;
                 }
-
-                dory::openGL::GlfwWindowFactory::closeWindow(windowHandler);
             }
         };
 

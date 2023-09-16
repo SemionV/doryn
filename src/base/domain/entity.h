@@ -7,26 +7,14 @@ namespace dory
     struct Entity
     {
         int id;
-
-        Entity(int id):
-            id(id)
-        {}
     };
 
     struct Camera: public Entity
     {
-        Camera(int id):
-            Entity(id)
-        {}
     };
 
-    struct Window
+    struct Window: public Entity
     {
-        int id;
-
-        Window(int id):
-            id(id)
-        {}
     };
 
     struct Viewport
@@ -51,8 +39,7 @@ namespace dory
         int cameraId;
         Viewport viewport;
 
-        View(int id, int windowId, int cameraId, Viewport viewport):
-            Entity(id),
+        View(int windowId, int cameraId, Viewport viewport):
             windowId(windowId),
             cameraId(cameraId),
             viewport(viewport)

@@ -23,6 +23,11 @@ namespace dory::win32
         eventHub->submit(context);
     }
 
+    bool compare(Window* window, HWND hWnd)
+    {
+        return window->hWnd == hWnd;
+    };
+
     void WindowController::pumpSystemMessages()
     {
         MSG msg;
@@ -44,7 +49,7 @@ namespace dory::win32
             {
                 std::cout << "Close win32 window" << std::endl;
 
-                auto window = windowRepository->getByHWND(message->hWnd);
+                auto window = windowRepository->get(message->hWnd, WindowController::compareHandles);
                 if(window)
                 {
                     eventHub->addCase(CloseWindowEventData(window->id));
@@ -52,5 +57,10 @@ namespace dory::win32
             }
         }
         messageBuffer->reset();
+    }
+
+    bool WindowController::compareHandles(Window* window, HWND hWnd)
+    {
+        return window->hWnd == hWnd;
     }
 }

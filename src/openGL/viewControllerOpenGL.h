@@ -8,7 +8,7 @@ namespace dory::openGL
     class ViewControllerOpenGL: public dory::ViewController<GlfwWindow>
     {
         private:
-            std::shared_ptr<EntityRepository<GlfwWindow>> windowRespository;
+            std::shared_ptr<EntityAccessor<GlfwWindow>> windowRespository;
 
             enum VAO_IDs { Triangles, NumVAOs };
             enum Buffer_IDs { ArrayBuffer, NumBuffers };
@@ -20,9 +20,9 @@ namespace dory::openGL
 
         public:
             ViewControllerOpenGL(int viewId, 
-                std::shared_ptr<ViewEntityRepository> viewRepository, 
+                std::shared_ptr<EntityAccessor<View>> viewRepository, 
                 std::shared_ptr<IConfiguration> configuration,
-                std::shared_ptr<EntityRepository<GlfwWindow>> windowRespository);
+                std::shared_ptr<EntityAccessor<GlfwWindow>> windowRespository);
 
             bool initialize(dory::DataContext& context) override;
             void stop(dory::DataContext& context) override;

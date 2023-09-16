@@ -3,7 +3,7 @@
 
 namespace dory::openGL
 {
-    GlfwWindowController::GlfwWindowController(std::shared_ptr<EntityRepository<GlfwWindow>> windowRepository,
+    GlfwWindowController::GlfwWindowController(std::shared_ptr<EntityAccessor<GlfwWindow>> windowRepository,
         std::shared_ptr<WindowEventHubDispatcher> eventHub):
             windowRepository(windowRepository),
             eventHub(eventHub)
