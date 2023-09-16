@@ -12,7 +12,7 @@ namespace dory::win32
     {
     }
 
-    void WindowController::update(const TimeSpan& timeStep, DataContext& context)
+    void WindowController::update(const int referenceId, const TimeSpan& timeStep, DataContext& context)
     {
         pumpSystemMessages();     
         submitEvents(context);   

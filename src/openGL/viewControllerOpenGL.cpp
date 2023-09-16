@@ -78,7 +78,7 @@ namespace dory::openGL
     {
     }
 
-    void ViewControllerOpenGL::update(const dory::TimeSpan& timeStep, dory::DataContext& context)
+    void ViewControllerOpenGL::update(const int referenceId, const dory::TimeSpan& timeStep, dory::DataContext& context)
     {
         auto view = viewRepository->get(viewId);
         if(view)

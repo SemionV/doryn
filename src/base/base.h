@@ -4,7 +4,7 @@
 #include "configuration/configuration.h"
 #include "configuration/fileSystemBasedConfiguration.h"
 #include "basicFrameService.h"
-#include "controllers/viewController.h"
+#include "domain/controllers/viewController.h"
 #include "multithreading/individualProcessThread.h"
 #include "messaging/eventHub.h"
 #include "messaging/events/systemConsole/systemConsoleEventHub.h"

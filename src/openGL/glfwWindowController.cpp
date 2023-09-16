@@ -19,7 +19,7 @@ namespace dory::openGL
         glfwTerminate();
     }
 
-    void GlfwWindowController::update(const TimeSpan& timeStep, DataContext& context)
+    void GlfwWindowController::update(const int referenceId, const TimeSpan& timeStep, DataContext& context)
     {
         glfwPollEvents();
 

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "base/dependencies.h"
+#include "dependencies.h"
+#include "idFactory.h"
 
 namespace dory
 {
@@ -20,16 +21,16 @@ namespace dory
     {
         private:
             std::vector<TEntity> items;
-            TId idCounter;
+            std::shared_ptr<IIdFactory<TId>> idFactory;
 
         public:
-            EntityRepository():
-                idCounter(0)
+            EntityRepository(std::shared_ptr<IIdFactory<TId>> idFactory):
+                idFactory(idFactory)
             {}
 
             TEntity& store(TEntity&& entity) override
             {
-                entity.id = getNewItemId();
+                entity.id = idFactory->generate();
                 return items.emplace_back(std::forward<TEntity>(entity));
             }
 
@@ -56,12 +57,6 @@ namespace dory
                         break;
                     }
                 }
-            }
-
-        protected:
-            TId getNewItemId()
-            {
-                return ++idCounter;
             }
     };
 

@@ -26,6 +26,6 @@ namespace dory::openGL
 
             bool initialize(dory::DataContext& context) override;
             void stop(dory::DataContext& context) override;
-            void update(const dory::TimeSpan& timeStep, dory::DataContext& context) override;
+            void update(const int referenceId, const dory::TimeSpan& timeStep, dory::DataContext& context) override;
     };
 }

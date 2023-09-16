@@ -4,16 +4,17 @@
 
 namespace dory
 {
+    template<typename TId>
     struct Entity
     {
-        int id;
+        TId id;
     };
 
-    struct Camera: public Entity
+    struct Camera: public Entity<int>
     {
     };
 
-    struct Window: public Entity
+    struct Window: public Entity<int>
     {
     };
 
@@ -33,7 +34,7 @@ namespace dory
         }
     };
 
-    struct View: public Entity
+    struct View: public Entity<int>
     {
         int windowId;
         int cameraId;

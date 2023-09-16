@@ -1,6 +1,6 @@
 #pragma once
 
-#include "controller.h"
+#include "base/domain/controller.h"
 
 namespace dory
 {

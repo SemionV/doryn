@@ -29,7 +29,7 @@ namespace dory::win32
         processThread.stop();
     }
 
-    void ConsoleController::update(const TimeSpan& timeStep, DataContext& context)
+    void ConsoleController::update(const int referenceId, const TimeSpan& timeStep, DataContext& context)
     {
         eventHub->submit(context);
     }

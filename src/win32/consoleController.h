@@ -16,7 +16,7 @@ namespace dory::win32
 
             bool initialize(DataContext& context) override;
             void stop(DataContext& context) override;
-            void update(const TimeSpan& timeStep, DataContext& context) override;
+            void update(const int referenceId, const TimeSpan& timeStep, DataContext& context) override;
 
         protected:
             virtual void onKeyPressed(int key);

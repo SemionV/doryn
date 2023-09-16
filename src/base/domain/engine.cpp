@@ -1,4 +1,4 @@
-#include "dependencies.h"
+#include "base/dependencies.h"
 #include "engine.h"
 
 namespace dory
@@ -38,7 +38,8 @@ namespace dory
         auto size = controllers.size();
         for(std::size_t i = 0; i < size; ++i)
         {
-            controllers[i]->update(timeStep, dataContext);
+            //TODO: pass proper controller reference id
+            controllers[i]->update(0, timeStep, dataContext);
         }
 
         return dataContext.isStop;
