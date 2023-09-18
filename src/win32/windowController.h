@@ -11,14 +11,14 @@ namespace dory::win32
         private:
             std::shared_ptr<dory::WindowEventHubDispatcher> eventHub;
             std::shared_ptr<MessageBuffer> messageBuffer;
-            std::shared_ptr<EntityAccessor<Window>> windowRepository;
+            std::shared_ptr<RepositoryReader<Window>> windowRepository;
 
-            static bool compareHandles(Window* window, HWND hWnd);
+            static bool compareHandles(Window& window, HWND hWnd);
 
         public:
             WindowController(std::shared_ptr<dory::WindowEventHubDispatcher> eventHub,
                 std::shared_ptr<MessageBuffer> messageBuffer,
-                std::shared_ptr<EntityAccessor<Window>> windowRepository):
+                std::shared_ptr<RepositoryReader<Window>> windowRepository):
                 eventHub(eventHub),
                 messageBuffer(messageBuffer),
                 windowRepository(windowRepository)

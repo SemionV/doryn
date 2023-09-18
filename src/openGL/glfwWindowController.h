@@ -7,11 +7,11 @@ namespace dory::openGL
     class GlfwWindowController: public Controller
     {
         private:
-            std::shared_ptr<EntityAccessor<GlfwWindow>> windowRepository;
+            std::shared_ptr<RepositoryReader<GlfwWindow>> windowRepository;
             std::shared_ptr<WindowEventHubDispatcher> eventHub;
 
         public:
-            GlfwWindowController(std::shared_ptr<EntityAccessor<GlfwWindow>> windowRepository,
+            GlfwWindowController(std::shared_ptr<RepositoryReader<GlfwWindow>> windowRepository,
                 std::shared_ptr<WindowEventHubDispatcher> eventHub);
 
             bool initialize(DataContext& context) override;

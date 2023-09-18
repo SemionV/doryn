@@ -12,11 +12,11 @@ namespace dory
     {
         protected:
             int viewId;
-            std::shared_ptr<EntityAccessor<View>> viewRepository;
+            std::shared_ptr<RepositoryReader<View>> viewRepository;
             std::shared_ptr<IConfiguration> configuration;
 
         public:
-            ViewController(int viewId, std::shared_ptr<EntityAccessor<View>> viewRepository, std::shared_ptr<IConfiguration> configuration):
+            ViewController(int viewId, std::shared_ptr<RepositoryReader<View>> viewRepository, std::shared_ptr<IConfiguration> configuration):
                 viewId(viewId),
                 viewRepository(viewRepository),
                 configuration(configuration)

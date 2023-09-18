@@ -4,9 +4,9 @@
 namespace dory::openGL
 {
     ViewControllerOpenGL::ViewControllerOpenGL(int viewId, 
-            std::shared_ptr<EntityAccessor<View>> viewRepository, 
+            std::shared_ptr<RepositoryReader<View>> viewRepository, 
             std::shared_ptr<IConfiguration> configuration,
-            std::shared_ptr<EntityAccessor<GlfwWindow>> windowRespository):
+            std::shared_ptr<RepositoryReader<GlfwWindow>> windowRespository):
         ViewController(viewId, viewRepository, configuration),
         windowRespository(windowRespository)
     {
@@ -17,12 +17,12 @@ namespace dory::openGL
         std::cout << "initialize: OpenGL Basic View" << std::endl;
 
         auto view = viewRepository->get(viewId);
-        if(view)
+        if(view.has_value())
         {
-            auto glfwWindow = windowRespository->get(view->windowId);
-            if(glfwWindow)
+            auto glfwWindow = windowRespository->get(view.value().windowId);
+            if(glfwWindow.has_value())
             {
-                auto windowHandler = glfwWindow->handler;
+                auto windowHandler = glfwWindow.value().handler;
                 glfwMakeContextCurrent(windowHandler);
 
                 gl3wInit();
@@ -81,12 +81,12 @@ namespace dory::openGL
     void ViewControllerOpenGL::update(const int referenceId, const dory::TimeSpan& timeStep, dory::DataContext& context)
     {
         auto view = viewRepository->get(viewId);
-        if(view)
+        if(view.has_value())
         {
-            auto glfwWindow = windowRespository->get(view->windowId);
-            if(glfwWindow)
+            auto glfwWindow = windowRespository->get(view.value().windowId);
+            if(glfwWindow.has_value())
             {
-                auto windowHandler = glfwWindow->handler;
+                auto windowHandler = glfwWindow.value().handler;
 
                 glfwMakeContextCurrent(windowHandler);
 

@@ -17,10 +17,10 @@ int runDory()
     auto cameraRepository = std::make_shared<dory::EntityRepository<dory::Camera, int>>(idFactory);
     auto viewRepository = std::make_shared<dory::EntityRepository<dory::View, int>>(idFactory);
 
-    auto controllerAccessor = std::make_shared<dory::EntityAccessor<dory::ControllerReference>>(controllerReferenceRepository);
-    auto windowAccessor = std::make_shared<dory::EntityAccessor<dory::openGL::GlfwWindow>>(windowRespository);
-    auto cameraAccessor = std::make_shared<dory::EntityAccessor<dory::Camera>>(cameraRepository);
-    auto viewAccessor = std::make_shared<dory::EntityAccessor<dory::View>>(viewRepository);
+    auto controllerAccessor = std::make_shared<dory::RepositoryReader<dory::ControllerReference>>(controllerReferenceRepository);
+    auto windowAccessor = std::make_shared<dory::RepositoryReader<dory::openGL::GlfwWindow>>(windowRespository);
+    auto cameraAccessor = std::make_shared<dory::RepositoryReader<dory::Camera>>(cameraRepository);
+    auto viewAccessor = std::make_shared<dory::RepositoryReader<dory::View>>(viewRepository);
 
     dory::DataContext context;
     dory::Engine engine(context);
@@ -41,7 +41,7 @@ int runDory()
     //win32 window
     auto windowsThread = std::make_shared<dory::IndividualProcessThread>();
     auto windowRespositoryWin32 = std::make_shared<dory::EntityRepository<dory::win32::Window, int>>(idFactory);
-    auto windowAccessorWin32 = std::make_shared<dory::EntityAccessor<dory::win32::Window>>(windowRespositoryWin32);
+    auto windowAccessorWin32 = std::make_shared<dory::RepositoryReader<dory::win32::Window>>(windowRespositoryWin32);
     auto messageBufferWin32 = std::make_shared<dory::win32::MessageBuffer>();
     auto win32WindowEventHub = std::make_shared<dory::WindowEventHubDispatcher>();
     auto windowControllerWin32 = std::make_shared<dory::win32::WindowControllerParallel>(windowsThread, win32WindowEventHub, messageBufferWin32, windowAccessorWin32);
@@ -59,15 +59,15 @@ int runDory()
             int windowId = eventData.windowId;
             auto window = windowAccessorWin32->get(windowId);
 
-            if(window)
+            if(window.has_value())
             {
-                auto hWnd = window->hWnd;
+                auto hWnd = window.value().hWnd;
 
                 context.isStop = true;
                 std::cout << "Close window(id " << windowId << ")" << std::endl;
 
                 dory::win32::WindowFactory::closeWindow(hWnd, windowsThread);
-                windowRespositoryWin32->remove(window);
+                windowRespositoryWin32->remove(window.value());
             }
         };
 
@@ -86,33 +86,41 @@ int runDory()
     engine.addController(viewController);
     viewController->initialize(context);
 
+    auto viewIterator = viewAccessor->getTraverseIterator();
+    auto firstView = viewIterator->next();
+    if(firstView.has_value())
+    {
+        std::cout << "First view by iterator: " << firstView.value().id << std::endl;
+    }
+
     glfwWindowEventHub->onCloseWindow() += [&windowRespository, &windowAccessor, &viewAccessor, &viewRepository](dory::DataContext& context, dory::CloseWindowEventData& eventData)
         {
             int windowId = eventData.windowId;
             auto window = windowAccessor->get(windowId);
 
-            if(window)
+            if(window.has_value())
             {
-                auto windowHandler = window->handler;
+                auto windowHandler = window.value().handler;
 
                 dory::openGL::GlfwWindowFactory::closeWindow(windowHandler);
 
                 context.isStop = true;
                 std::cout << "Close window(id " << windowId << ")" << std::endl;
 
-                windowRespository->remove(window);
+                windowRespository->remove(window.value());
 
-                std::list<dory::View*> attachedViews;
-                viewAccessor->list(windowId, [](dory::View* view, int windowId) 
+                std::list<std::reference_wrapper<dory::View>> attachedViews;
+                viewAccessor->list(windowId, [](dory::View& view, int windowId) 
                     {
-                        return view->windowId == windowId;
+                        return view.windowId == windowId;
                     }, attachedViews);
-                auto end = attachedViews.end();
                 auto i = attachedViews.begin();
+                auto end = attachedViews.end();
                 while(i != end)
                 {
-                    std::cout << "remove view(id " << (*i)->id << ")" << std::endl;
-                    viewRepository->remove(*i);
+                    auto view = (*i).get();
+                    std::cout << "remove view(id " << view.id << ")" << std::endl;
+                    viewRepository->remove(view);
                     ++i;
                 }
             }

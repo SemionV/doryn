@@ -3,7 +3,7 @@
 
 namespace dory::openGL
 {
-    GlfwWindowController::GlfwWindowController(std::shared_ptr<EntityAccessor<GlfwWindow>> windowRepository,
+    GlfwWindowController::GlfwWindowController(std::shared_ptr<RepositoryReader<GlfwWindow>> windowRepository,
         std::shared_ptr<WindowEventHubDispatcher> eventHub):
             windowRepository(windowRepository),
             eventHub(eventHub)
@@ -23,17 +23,19 @@ namespace dory::openGL
     {
         glfwPollEvents();
 
-        int count = windowRepository->getEntitiesCount();
-        GlfwWindow* entity = windowRepository->getEntities();
-        for(int i = 0; i < count; ++i)
+        auto iterator = windowRepository->getTraverseIterator();
+        auto entity = iterator->next();
+        while(entity.has_value())
         {
-            if(glfwWindowShouldClose(entity->handler))
+            GlfwWindow& window = entity.value();
+
+            if(glfwWindowShouldClose(window.handler))
             {
-                eventHub->addCase(entity->id);
-                glfwSetWindowShouldClose(entity->handler, 0);
+                eventHub->addCase(window.id);
+                glfwSetWindowShouldClose(window.handler, 0);
             }
 
-            entity++;
+            entity = iterator->next();
         }
 
         eventHub->submit(context);
