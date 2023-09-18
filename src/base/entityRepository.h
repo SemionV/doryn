@@ -79,11 +79,6 @@ namespace dory
                 return items.size();
             }
 
-            TEntity* getEntities() override
-            {
-                return items.data();
-            }
-
             std::unique_ptr<ITraverseIterator<TEntity>> getTraverseIterator() override
             {
                 auto begin = items.begin();
