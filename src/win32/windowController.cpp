@@ -49,18 +49,18 @@ namespace dory::win32
             {
                 std::cout << "Close win32 window" << std::endl;
 
-                auto windowMaybe = windowRepository->get(message->hWnd, WindowController::compareHandles);
-                if(windowMaybe.has_value())
+                auto window = windowRepository->get(message->hWnd, WindowController::compareHandles);
+                if(window)
                 {
-                    eventHub->addCase(CloseWindowEventData(windowMaybe.value().id));
+                    eventHub->addCase(CloseWindowEventData(window->id));
                 }
             }
         }
         messageBuffer->reset();
     }
 
-    bool WindowController::compareHandles(Window& window, HWND hWnd)
+    bool WindowController::compareHandles(Window* window, HWND hWnd)
     {
-        return window.hWnd == hWnd;
+        return window->hWnd == hWnd;
     }
 }

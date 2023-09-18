@@ -46,4 +46,14 @@ namespace dory
             viewport(viewport)
         {}
     };
+
+    struct ComponentReference: Entity<int>
+    {
+        std::shared_ptr<void> component;
+
+        public:
+            ComponentReference(std::shared_ptr<void> component):
+                component(component)
+            {}
+    };
 }

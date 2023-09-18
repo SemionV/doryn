@@ -7,38 +7,8 @@
 #include <functional>
 #include <mutex>
 
-int runDory()
+void configureWin32Window(dory::DataContext& context, std::shared_ptr<dory::Engine> engine, std::shared_ptr<dory::NumberIdFactory<int>> idFactory)
 {
-    auto configuration = std::make_shared<dory::FileSystemBasedConfiguration>("configuration");
-    
-    auto idFactory = std::make_shared<dory::NumberIdFactory<int>>();
-    auto controllerReferenceRepository = std::make_shared<dory::EntityRepository<dory::ControllerReference, int>>(idFactory);
-    auto windowRespository = std::make_shared<dory::EntityRepository<dory::openGL::GlfwWindow, int>>(idFactory);
-    auto cameraRepository = std::make_shared<dory::EntityRepository<dory::Camera, int>>(idFactory);
-    auto viewRepository = std::make_shared<dory::EntityRepository<dory::View, int>>(idFactory);
-
-    auto controllerAccessor = std::make_shared<dory::RepositoryReader<dory::ControllerReference>>(controllerReferenceRepository);
-    auto windowAccessor = std::make_shared<dory::RepositoryReader<dory::openGL::GlfwWindow>>(windowRespository);
-    auto cameraAccessor = std::make_shared<dory::RepositoryReader<dory::Camera>>(cameraRepository);
-    auto viewAccessor = std::make_shared<dory::RepositoryReader<dory::View>>(viewRepository);
-
-    dory::DataContext context;
-    dory::Engine engine(context);
-
-    auto consoleEventHub = std::make_shared<dory::SystemConsoleEventHubDispatcher>();
-    auto consoleController = std::make_shared<dory::win32::ConsoleController>(consoleEventHub);
-    consoleController->initialize(context);
-    engine.addController(consoleController);
-
-    auto consoleControllerReference = controllerReferenceRepository->store(dory::ControllerReference(consoleController));
-    std::cout << "ConsoleController reference id: " << consoleControllerReference.id << std::endl;
-
-    auto glfwWindowEventHub = std::make_shared<dory::WindowEventHubDispatcher>();
-    auto windowController = std::make_shared<dory::openGL::GlfwWindowController>(windowAccessor, glfwWindowEventHub);
-    windowController->initialize(context);
-    engine.addController(windowController);
-
-    //win32 window
     auto windowsThread = std::make_shared<dory::IndividualProcessThread>();
     auto windowRespositoryWin32 = std::make_shared<dory::EntityRepository<dory::win32::Window, int>>(idFactory);
     auto windowAccessorWin32 = std::make_shared<dory::RepositoryReader<dory::win32::Window>>(windowRespositoryWin32);
@@ -46,7 +16,7 @@ int runDory()
     auto win32WindowEventHub = std::make_shared<dory::WindowEventHubDispatcher>();
     auto windowControllerWin32 = std::make_shared<dory::win32::WindowControllerParallel>(windowsThread, win32WindowEventHub, messageBufferWin32, windowAccessorWin32);
     windowControllerWin32->initialize(context);
-    engine.addController(windowControllerWin32);
+    engine->addController(windowControllerWin32);
 
     windowsThread->run();
 
@@ -59,19 +29,51 @@ int runDory()
             int windowId = eventData.windowId;
             auto window = windowAccessorWin32->get(windowId);
 
-            if(window.has_value())
+            if(window)
             {
-                auto hWnd = window.value().hWnd;
+                auto hWnd = window->hWnd;
 
                 context.isStop = true;
                 std::cout << "Close window(id " << windowId << ")" << std::endl;
 
                 dory::win32::WindowFactory::closeWindow(hWnd, windowsThread);
-                windowRespositoryWin32->remove(window.value());
+                windowRespositoryWin32->remove(window);
             }
         };
+}
 
-    //~win32 window
+int runDory()
+{
+    auto configuration = std::make_shared<dory::FileSystemBasedConfiguration>("configuration");
+    
+    auto idFactory = std::make_shared<dory::NumberIdFactory<int>>();
+    auto controllerReferenceRepository = std::make_shared<dory::EntityRepository<dory::ComponentReference, int>>(idFactory);
+    auto windowRespository = std::make_shared<dory::EntityRepository<dory::openGL::GlfwWindow, int>>(idFactory);
+    auto cameraRepository = std::make_shared<dory::EntityRepository<dory::Camera, int>>(idFactory);
+    auto viewRepository = std::make_shared<dory::EntityRepository<dory::View, int>>(idFactory);
+
+    auto controllerAccessor = std::make_shared<dory::RepositoryReader<dory::ComponentReference>>(controllerReferenceRepository);
+    auto windowAccessor = std::make_shared<dory::RepositoryReader<dory::openGL::GlfwWindow>>(windowRespository);
+    auto cameraAccessor = std::make_shared<dory::RepositoryReader<dory::Camera>>(cameraRepository);
+    auto viewAccessor = std::make_shared<dory::RepositoryReader<dory::View>>(viewRepository);
+
+    dory::DataContext context;
+    auto engine = std::make_shared<dory::Engine>(context);
+
+    auto consoleEventHub = std::make_shared<dory::SystemConsoleEventHubDispatcher>();
+    auto consoleController = std::make_shared<dory::win32::ConsoleController>(consoleEventHub);
+    consoleController->initialize(context);
+    engine->addController(consoleController);
+
+    auto consoleControllerReference = controllerReferenceRepository->store(dory::ComponentReference(consoleController));
+    std::cout << "ConsoleController reference id: " << consoleControllerReference.id << std::endl;
+
+    configureWin32Window(context, engine, idFactory);
+
+    auto glfwWindowEventHub = std::make_shared<dory::WindowEventHubDispatcher>();
+    auto windowController = std::make_shared<dory::openGL::GlfwWindowController>(windowAccessor, glfwWindowEventHub);
+    windowController->initialize(context);
+    engine->addController(windowController);
 
     dory::openGL::GlfwWindowParameters glfwWindowParameters;
     auto glfwWindowHandler = dory::openGL::GlfwWindowFactory::createWindow(glfwWindowParameters);
@@ -83,43 +85,36 @@ int runDory()
     auto view = viewRepository->store(dory::View(window.id, camera.id, viewport));
 
     auto viewController = std::make_shared<dory::openGL::ViewControllerOpenGL>(view.id, viewAccessor, configuration, windowAccessor);
-    engine.addController(viewController);
+    engine->addController(viewController);
     viewController->initialize(context);
-
-    auto viewIterator = viewAccessor->getTraverseIterator();
-    auto firstView = viewIterator->next();
-    if(firstView.has_value())
-    {
-        std::cout << "First view by iterator: " << firstView.value().id << std::endl;
-    }
 
     glfwWindowEventHub->onCloseWindow() += [&windowRespository, &windowAccessor, &viewAccessor, &viewRepository](dory::DataContext& context, dory::CloseWindowEventData& eventData)
         {
             int windowId = eventData.windowId;
             auto window = windowAccessor->get(windowId);
 
-            if(window.has_value())
+            if(window)
             {
-                auto windowHandler = window.value().handler;
+                auto windowHandler = window->handler;
 
                 dory::openGL::GlfwWindowFactory::closeWindow(windowHandler);
 
                 context.isStop = true;
                 std::cout << "Close window(id " << windowId << ")" << std::endl;
 
-                windowRespository->remove(window.value());
+                windowRespository->remove(window);
 
-                std::list<std::reference_wrapper<dory::View>> attachedViews;
-                viewAccessor->list(windowId, [](dory::View& view, int windowId) 
+                std::list<dory::View*> attachedViews;
+                viewAccessor->list(windowId, [](dory::View* view, int windowId) 
                     {
-                        return view.windowId == windowId;
+                        return view->windowId == windowId;
                     }, attachedViews);
                 auto i = attachedViews.begin();
                 auto end = attachedViews.end();
                 while(i != end)
                 {
-                    auto view = (*i).get();
-                    std::cout << "remove view(id " << view.id << ")" << std::endl;
+                    auto view = (*i);
+                    std::cout << "remove view(id " << view->id << ")" << std::endl;
                     viewRepository->remove(view);
                     ++i;
                 }
@@ -128,13 +123,13 @@ int runDory()
 
     test::TestLogic logic(consoleEventHub, glfwWindowEventHub);
 
-    engine.initialize(context);
+    engine->initialize(context);
 
     std::cout << "dory:native demo application" << std::endl;
     std::cout << "Press any key to process to render frame OR ESC to exit\r" << std::endl;
 
-    dory::BasicFrameService frameService;
-    frameService.startLoop(engine);
+    auto frameService = std::make_shared<dory::BasicFrameService>();
+    frameService->startLoop(engine);
 
     std::cout << "Session is over." << std::endl;
 

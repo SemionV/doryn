@@ -24,18 +24,16 @@ namespace dory::openGL
         glfwPollEvents();
 
         auto iterator = windowRepository->getTraverseIterator();
-        auto entity = iterator->next();
-        while(entity.has_value())
+        auto window = iterator->next();
+        while(window)
         {
-            GlfwWindow& window = entity.value();
-
-            if(glfwWindowShouldClose(window.handler))
+            if(glfwWindowShouldClose(window->handler))
             {
-                eventHub->addCase(window.id);
-                glfwSetWindowShouldClose(window.handler, 0);
+                eventHub->addCase(window->id);
+                glfwSetWindowShouldClose(window->handler, 0);
             }
 
-            entity = iterator->next();
+            window = iterator->next();
         }
 
         eventHub->submit(context);

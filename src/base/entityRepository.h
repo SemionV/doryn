@@ -9,7 +9,7 @@ namespace dory
     class ITraverseIterator
     {
         public:
-            virtual std::optional<TEntity> next() = 0;
+            virtual TEntity* next() = 0;
     };
 
     template<class TEntity>
@@ -25,14 +25,14 @@ namespace dory
                 lastEntity(lastEntity)
             {}
 
-            std::optional<TEntity> next() override
+            TEntity* next() override
             {
                 if(currentEntity != lastEntity)
                 {
-                    return *currentEntity++;
+                    return currentEntity++;
                 }
 
-                return std::nullopt;
+                return nullptr;
             }
     };
 
@@ -40,9 +40,9 @@ namespace dory
     class EmptyRepositoryTraverseIterator: public ITraverseIterator<TEntity>
     {
         public:
-            std::optional<TEntity> next() override
+            TEntity* next() override
             {
-                return std::nullopt;
+                return nullptr;
             }
     };
 
@@ -53,7 +53,7 @@ namespace dory
             virtual int getEntitiesCount() = 0;
             virtual std::unique_ptr<ITraverseIterator<TEntity>> getTraverseIterator() = 0;
             virtual TEntity& store(TEntity&& entity) = 0;
-            virtual void remove(TEntity& entity) = 0;
+            virtual void remove(TEntity* entity) = 0;
     };
 
     template<class TEntity, typename TId>
@@ -92,14 +92,14 @@ namespace dory
                 return std::make_unique<EmptyRepositoryTraverseIterator<TEntity>>();
             }
 
-            void remove(TEntity& entity) override
+            void remove(TEntity* entity) override
             {
                 auto it = items.begin();
                 auto end = items.end();
 
                 for(; it != end; ++it)
                 {
-                    if((*it).id == entity.id)
+                    if((*it).id == entity->id)
                     {
                         items.erase(it);
                         break;
@@ -130,57 +130,54 @@ namespace dory
             }
 
             template<class TId>
-            std::optional<TEntity> get(TId id)
+            TEntity* get(TId id)
             {
                 auto iterator = repository->getTraverseIterator();
-                auto entityMaybe = iterator->next();
-                while(entityMaybe.has_value())
+                auto entity = iterator->next();
+                while(entity)
                 {
-                    auto entity = entityMaybe.value();
-                    if(entity.id == id)
+                    if(entity->id == id)
                     {
                         return entity;
                     }
 
-                    entityMaybe = iterator->next();
+                    entity = iterator->next();
                 }
 
-                return std::nullopt;
+                return nullptr;
             }
 
             template<typename TField, typename F>
-            std::optional<TEntity> get(TField searchValue, F expression)
+            TEntity* get(TField searchValue, F expression)
             {
                 auto iterator = repository->getTraverseIterator();
-                auto entityMaybe = iterator->next();
-                while(entityMaybe.has_value())
+                auto entity = iterator->next();
+                while(entity)
                 {
-                    auto entity = entityMaybe.value();
                     if(expression(entity, searchValue))
                     {
                         return entity;
                     }
 
-                    entityMaybe = iterator->next();
+                    entity = iterator->next();
                 }
 
-                return std::nullopt;
+                return nullptr;
             }
 
             template<typename TField, typename F>
-            void list(TField searchValue, F expression, std::list<std::reference_wrapper<TEntity>>& list)
+            void list(TField searchValue, F expression, std::list<TEntity*>& list)
             {
                 auto iterator = repository->getTraverseIterator();
-                auto entityMaybe = iterator->next();
-                while(entityMaybe.has_value())
+                auto entity = iterator->next();
+                while(entity)
                 {
-                    auto entity = entityMaybe.value();
                     if(expression(entity, searchValue))
                     {
-                        list.emplace_back(std::ref(entity));
+                        list.emplace_back(entity);
                     }
 
-                    entityMaybe = iterator->next();
+                    entity = iterator->next();
                 }
             }
     };

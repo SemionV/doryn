@@ -5,7 +5,6 @@ project(dory-base)
 add_library(base SHARED configuration/fileSystemBasedConfiguration.cpp
                         basicFrameService.cpp
                         domain/engine.cpp
-                        frameService.cpp
                         types.cpp
                         multithreading/task.cpp
                         multithreading/currentProcessThread.cpp

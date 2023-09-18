@@ -3,12 +3,7 @@
 
 namespace dory
 {
-    BasicFrameService::BasicFrameService():
-        isStop(false)
-    {
-    }
-
-    void BasicFrameService::startLoop(Engine& engine)
+    void BasicFrameService::startLoop(std::shared_ptr<Engine> engine)
     {
         isStop = false;
         TimeSpan timeStep(UnitScale::Nano);
@@ -24,7 +19,7 @@ namespace dory
 
             timeStep.duration = duration.count();
 
-            isStop = engine.update(timeStep);
+            isStop = engine->update(timeStep);
 
             lastTimestamp = currentTimestamp;
         }

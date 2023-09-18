@@ -10,11 +10,7 @@ namespace dory
             bool isStop;
 
         public:
-
-        BasicFrameService();
-
-        void startLoop(Engine& engine);
-        
-        void endLoop();
+            void startLoop(std::shared_ptr<Engine> engine);            
+            void endLoop();
     };
 }
