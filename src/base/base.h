@@ -13,3 +13,4 @@
 #include "domain/geometry/matrixCalculator.h"
 #include "domain/geometry/transformationCalculator.h"
 #include "domain/geometry/mathFunctions.h"
+#include "domain/services/pipelineService.h"

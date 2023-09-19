@@ -8,12 +8,12 @@ struct MessageData
 struct WindowClick
 {
     public:
-        const std::shared_ptr<dory::Window> window;
+        const std::shared_ptr<dory::domain::entity::Window> window;
         const int x;
         const int y;
 
     public:
-        WindowClick(std::shared_ptr<dory::Window> window, int x, int y):
+        WindowClick(std::shared_ptr<dory::domain::entity::Window> window, int x, int y):
             window(window),
             x(x),
             y(y)

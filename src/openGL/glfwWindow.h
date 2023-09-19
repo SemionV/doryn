@@ -2,7 +2,7 @@
 
 namespace dory::openGL
 {
-    struct GlfwWindow: public dory::Window
+    struct GlfwWindow: public domain::entity::Window
     {
         GLFWwindow* handler;
 

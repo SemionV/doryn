@@ -10,7 +10,8 @@ add_library(base SHARED configuration/fileSystemBasedConfiguration.cpp
                         multithreading/currentProcessThread.cpp
                         multithreading/individualProcessThread.cpp
                         domain/geometry/matrixCalculator.cpp
-                        domain/geometry/transformationCalculator.cpp)
+                        domain/geometry/transformationCalculator.cpp
+                        domain/services/pipelineService.cpp)
 
 set_target_properties(base PROPERTIES PREFIX ""
                                     IMPORT_PREFIX ""

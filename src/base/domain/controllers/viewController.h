@@ -5,18 +5,18 @@
 #include "base/entityRepository.h"
 #include "base/domain/entity.h"
 
-namespace dory
+namespace dory::domain
 {
     template<class TWindow>
     class ViewController: public Controller
     {
         protected:
-            int viewId;
-            std::shared_ptr<RepositoryReader<View>> viewRepository;
+            entity::IdType viewId;
+            std::shared_ptr<RepositoryReader<entity::View>> viewRepository;
             std::shared_ptr<IConfiguration> configuration;
 
         public:
-            ViewController(int viewId, std::shared_ptr<RepositoryReader<View>> viewRepository, std::shared_ptr<IConfiguration> configuration):
+            ViewController(entity::IdType viewId, std::shared_ptr<RepositoryReader<entity::View>> viewRepository, std::shared_ptr<IConfiguration> configuration):
                 viewId(viewId),
                 viewRepository(viewRepository),
                 configuration(configuration)

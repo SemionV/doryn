@@ -124,7 +124,7 @@ namespace dory
                 return repository->getEntitiesCount();
             }
 
-            std::unique_ptr<ITraverseIterator<TEntity>> getTraverseIterator()
+            virtual std::unique_ptr<ITraverseIterator<TEntity>> getTraverseIterator()
             {
                 return repository->getTraverseIterator();
             }

@@ -8,8 +8,10 @@ find_package(FakeIt REQUIRED
 
 add_executable(baseTests eventTests.cpp
                          messagesTests.cpp
+                         repositoryTests.cpp
                          domain/geometry/matrixCalculatorTests.cpp
-                         domain/geometry/transformationCalculatorTests.cpp)
+                         domain/geometry/transformationCalculatorTests.cpp
+                         domain/services/pipelineServiceTests.cpp)
                          
 target_include_directories(baseTests PRIVATE "${CMAKE_SOURCE_DIR}")
 

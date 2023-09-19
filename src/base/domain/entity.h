@@ -2,19 +2,22 @@
 
 #include "base/dependencies.h"
 
-namespace dory
+namespace dory::domain::entity
 {
+    using IdType = unsigned int;
+    const IdType nullId = 0;
+
     template<typename TId>
     struct Entity
     {
         TId id;
     };
 
-    struct Camera: public Entity<int>
+    struct Camera: public Entity<IdType>
     {
     };
 
-    struct Window: public Entity<int>
+    struct Window: public Entity<IdType>
     {
     };
 
@@ -34,26 +37,46 @@ namespace dory
         }
     };
 
-    struct View: public Entity<int>
+    struct View: public Entity<IdType>
     {
-        int windowId;
-        int cameraId;
+        IdType windowId;
+        IdType cameraId;
         Viewport viewport;
 
-        View(int windowId, int cameraId, Viewport viewport):
+        View(IdType windowId, IdType cameraId, Viewport viewport):
             windowId(windowId),
             cameraId(cameraId),
             viewport(viewport)
         {}
     };
 
-    struct ComponentReference: Entity<int>
+    struct PipelineNode: Entity<IdType>
     {
-        std::shared_ptr<void> component;
+        std::shared_ptr<void> attachedController;
+        IdType attachedGroupId;
+        IdType groupId;
+        int priority;
 
-        public:
-            ComponentReference(std::shared_ptr<void> component):
-                component(component)
-            {}
+        PipelineNode(){};
+
+        PipelineNode(IdType groupId, std::shared_ptr<void> attachedController = nullptr, IdType attachedGroupId = 0, int priority = 0):
+            attachedController(attachedController),
+            groupId(groupId),
+            attachedGroupId(attachedGroupId),
+            priority(priority)
+        {}
+    };
+
+    struct PipelineGroup: public Entity<IdType>
+    {
+        std::string name;
+        int priority;
+
+        PipelineGroup(){};
+
+        PipelineGroup(std::string name, int priority = 0):
+            name(name),
+            priority(priority)
+        {}
     };
 }

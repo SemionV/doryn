@@ -4,7 +4,7 @@
 namespace dory::openGL
 {
     ViewControllerOpenGL::ViewControllerOpenGL(int viewId, 
-            std::shared_ptr<RepositoryReader<View>> viewRepository, 
+            std::shared_ptr<RepositoryReader<domain::entity::View>> viewRepository, 
             std::shared_ptr<IConfiguration> configuration,
             std::shared_ptr<RepositoryReader<GlfwWindow>> windowRespository):
         ViewController(viewId, viewRepository, configuration),

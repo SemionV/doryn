@@ -2,7 +2,7 @@
 
 namespace dory::win32
 {
-    struct Window: public dory::Window
+    struct Window: public domain::entity::Window
     {
         HWND hWnd;
 
