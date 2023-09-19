@@ -6,8 +6,8 @@ namespace dory::domain::object
 {
     struct PipelineGroup
     {
-        entity::PipelineGroup groupEntity;
-        std::list<entity::PipelineNode> nodeEntities;
+        entity::PipelineGroup* groupEntity;
+        std::list<entity::PipelineNode*> nodeEntities;
     };
 
     struct Pipeline

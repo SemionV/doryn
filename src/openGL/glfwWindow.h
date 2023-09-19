@@ -6,7 +6,8 @@ namespace dory::openGL
     {
         GLFWwindow* handler;
 
-        GlfwWindow(GLFWwindow* handler):
+        GlfwWindow(dory::domain::entity::IdType id, GLFWwindow* handler):
+            domain::entity::Window(id),
             handler(handler)
         {}
     };

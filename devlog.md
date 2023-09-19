@@ -2,6 +2,7 @@
 
 Tasks:
 * Assign ComponentId to every Controller, attach view to controller inderectly with view-controller entity
+* Develop Unit Tests for EntitiyRepository
 * Call initialize method of Controller in Engine::initialize, introduce Engene EventHub and invoke "after initialize event"
 * Introduce logic level Service to manage complex data like Window and View(in order to delete window and views properly)
 * Implement dynamic Controller creating and deletion on Engine

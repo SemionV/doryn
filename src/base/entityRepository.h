@@ -56,21 +56,22 @@ namespace dory
             virtual void remove(TEntity* entity) = 0;
     };
 
-    template<class TEntity, typename TId>
+    template<class TEntity>
     class EntityRepository: public IEntityRepository<TEntity>
     {
         private:
             std::vector<TEntity> items;
-            std::shared_ptr<IIdFactory<TId>> idFactory;
 
         public:
-            EntityRepository(std::shared_ptr<IIdFactory<TId>> idFactory):
-                idFactory(idFactory)
+            EntityRepository()
+            {}
+
+            EntityRepository(std::vector<TEntity> data):
+                items(data)
             {}
 
             TEntity& store(TEntity&& entity) override
             {
-                entity.id = idFactory->generate();
                 return items.emplace_back(std::forward<TEntity>(entity));
             }
 
@@ -99,7 +100,7 @@ namespace dory
 
                 for(; it != end; ++it)
                 {
-                    if((*it).id == entity->id)
+                    if(&(*it) == entity)
                     {
                         items.erase(it);
                         break;

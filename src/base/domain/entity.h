@@ -11,14 +11,23 @@ namespace dory::domain::entity
     struct Entity
     {
         TId id;
+        Entity(TId id):
+            id(id)
+        {}
     };
 
     struct Camera: public Entity<IdType>
     {
+        Camera(IdType id):
+            Entity(id)
+        {}
     };
 
     struct Window: public Entity<IdType>
     {
+        Window(IdType id):
+            Entity(id)
+        {}
     };
 
     struct Viewport
@@ -43,7 +52,8 @@ namespace dory::domain::entity
         IdType cameraId;
         Viewport viewport;
 
-        View(IdType windowId, IdType cameraId, Viewport viewport):
+        View(IdType id, IdType windowId, IdType cameraId, Viewport viewport):
+            Entity(id),
             windowId(windowId),
             cameraId(cameraId),
             viewport(viewport)
@@ -57,9 +67,8 @@ namespace dory::domain::entity
         IdType groupId;
         int priority;
 
-        PipelineNode(){};
-
-        PipelineNode(IdType groupId, std::shared_ptr<void> attachedController = nullptr, IdType attachedGroupId = 0, int priority = 0):
+        PipelineNode(IdType id, IdType groupId, std::shared_ptr<void> attachedController = nullptr, IdType attachedGroupId = 0, int priority = 0):
+            Entity(id),
             attachedController(attachedController),
             groupId(groupId),
             attachedGroupId(attachedGroupId),
@@ -72,9 +81,8 @@ namespace dory::domain::entity
         std::string name;
         int priority;
 
-        PipelineGroup(){};
-
-        PipelineGroup(std::string name, int priority = 0):
+        PipelineGroup(IdType id, std::string name, int priority = 0):
+            Entity(id),
             name(name),
             priority(priority)
         {}

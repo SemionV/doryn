@@ -6,7 +6,8 @@ namespace dory::win32
     {
         HWND hWnd;
 
-        Window(HWND hWnd):
+        Window(dory::domain::entity::IdType id, HWND hWnd):
+            domain::entity::Window(id),
             hWnd(hWnd)
         {}
     };
