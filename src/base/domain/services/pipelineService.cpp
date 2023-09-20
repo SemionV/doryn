@@ -2,40 +2,42 @@
 
 namespace dory::domain::services
 {
-    std::unique_ptr<object::Pipeline> PipelineService::getPipeline()
+    bool compareNodes(std::shared_ptr<object::PipelineNode> a, std::shared_ptr<object::PipelineNode> b)
     {
-        auto pipelineObject = std::make_unique<object::Pipeline>();
+        return a->nodeEntity->priority < b->nodeEntity->priority;
+    }
 
-        auto groupEntitiesIterator = groupsReader->getTraverseIterator();
-        
-        auto groupEntity = groupEntitiesIterator->next();
-        while(groupEntity)
+    std::list<std::shared_ptr<object::PipelineNode>> PipelineService::getPipeline()
+    {
+        std::list<std::shared_ptr<object::PipelineNode>> nodes;
+
+        nodeReader->getTraverseIterator()->forEach([this, &nodes](entity::PipelineNode& nodeEntity)
         {
-            auto pipelineGroupObject = std::make_shared<object::PipelineGroup>();
-            pipelineObject->groups.emplace_back(pipelineGroupObject);
-            pipelineGroupObject->groupEntity = groupEntity;
-
-            std::list<entity::PipelineNode*> nodeEntities;
-            nodeReader->list(groupEntity->id, [](entity::PipelineNode* nodeEntity, entity::IdType groupId)
+            if(nodeEntity.parentNodeId == entity::nullId)
             {
-                return nodeEntity->groupId == groupId;
-            }, pipelineGroupObject->nodeEntities);
-            
-            pipelineGroupObject->nodeEntities.sort([](entity::PipelineNode* a, entity::PipelineNode* b)
-            {
-                return a->priority < b->priority;
-            });
-
-            groupEntity = groupEntitiesIterator->next();
-            nodeEntities.clear();
-        }
-
-        pipelineObject->groups.sort([](std::shared_ptr<object::PipelineGroup> a, std::shared_ptr<object::PipelineGroup> b)
-        {
-            return a->groupEntity->priority < b->groupEntity->priority;
+                nodes.emplace_back(loadNode(nodeEntity));
+            }
         });
 
+        nodes.sort(compareNodes);
 
-        return pipelineObject;
+        return nodes;
+    }
+
+    std::shared_ptr<object::PipelineNode> PipelineService::loadNode(entity::PipelineNode& nodeEntity)
+    {
+        auto node = std::make_shared<object::PipelineNode>(&nodeEntity);
+
+        nodeReader->getTraverseIterator()->forEach([this, &node](entity::PipelineNode& nodeEntity)
+        {
+            if(nodeEntity.parentNodeId == node->nodeEntity->id)
+            {
+                node->children.emplace_back(loadNode(nodeEntity));
+            }
+        });
+
+        node->children.sort(compareNodes);
+
+        return node;
     }
 }

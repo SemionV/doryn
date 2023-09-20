@@ -4,14 +4,13 @@
 
 namespace dory::domain::object
 {
-    struct PipelineGroup
+    struct PipelineNode
     {
-        entity::PipelineGroup* groupEntity;
-        std::list<entity::PipelineNode*> nodeEntities;
-    };
+        entity::PipelineNode* nodeEntity;
+        std::list<std::shared_ptr<object::PipelineNode>> children;
 
-    struct Pipeline
-    {
-        std::list<std::shared_ptr<PipelineGroup>> groups;
+        PipelineNode(entity::PipelineNode* nodeEntity):
+            nodeEntity(nodeEntity)
+        {}
     };
 }

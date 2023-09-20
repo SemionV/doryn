@@ -8,16 +8,16 @@ namespace dory::domain::services
     class PipelineService
     {
         private:
-            std::shared_ptr<RepositoryReader<entity::PipelineGroup>> groupsReader;
             std::shared_ptr<RepositoryReader<entity::PipelineNode>> nodeReader;
 
         public:
-            PipelineService(std::shared_ptr<RepositoryReader<entity::PipelineGroup>> groupsReader,
-                std::shared_ptr<RepositoryReader<entity::PipelineNode>> nodeReader):
-                groupsReader(groupsReader),
+            PipelineService(std::shared_ptr<RepositoryReader<entity::PipelineNode>> nodeReader):
                 nodeReader(nodeReader)
             {}
 
-            virtual std::unique_ptr<object::Pipeline> getPipeline();
+            virtual std::list<std::shared_ptr<object::PipelineNode>> getPipeline();
+
+        private:
+            std::shared_ptr<object::PipelineNode> loadNode(entity::PipelineNode& nodeEntity);
     };
 }

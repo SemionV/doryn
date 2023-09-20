@@ -63,28 +63,16 @@ namespace dory::domain::entity
     struct PipelineNode: Entity<IdType>
     {
         std::shared_ptr<void> attachedController;
-        IdType attachedGroupId;
-        IdType groupId;
-        int priority;
-
-        PipelineNode(IdType id, IdType groupId, std::shared_ptr<void> attachedController = nullptr, IdType attachedGroupId = 0, int priority = 0):
-            Entity(id),
-            attachedController(attachedController),
-            groupId(groupId),
-            attachedGroupId(attachedGroupId),
-            priority(priority)
-        {}
-    };
-
-    struct PipelineGroup: public Entity<IdType>
-    {
+        IdType parentNodeId;
         std::string name;
         int priority;
 
-        PipelineGroup(IdType id, std::string name, int priority = 0):
+        PipelineNode(IdType id, std::shared_ptr<void> attachedController = nullptr, int priority = 0, IdType parentNodeId = nullId, std::string name = ""):
             Entity(id),
-            name(name),
-            priority(priority)
+            attachedController(attachedController),
+            parentNodeId(parentNodeId),
+            priority(priority),
+            name(name)
         {}
     };
 }
