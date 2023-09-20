@@ -5,14 +5,14 @@ using namespace dory::domain;
 TEST_CASE( "Load Pipeline", "[pipelineService]" )
 {
     auto groupsRepository = std::make_shared<dory::EntityRepository<entity::PipelineGroup>>(
-        std::vector<entity::PipelineGroup>{
+        std::initializer_list<entity::PipelineGroup>{
             entity::PipelineGroup(2, "group 2", 1),
             entity::PipelineGroup(1, "group 1", 0)
         });
     auto groupsReader = std::make_shared<dory::RepositoryReader<entity::PipelineGroup>>(groupsRepository);
 
     auto nodesRepository = std::make_shared<dory::EntityRepository<entity::PipelineNode>>(
-        std::vector<entity::PipelineNode>{
+        std::initializer_list<entity::PipelineNode>{
             entity::PipelineNode(2, 1, nullptr, 0, 1),
             entity::PipelineNode(1, 1, nullptr, 0, 0)
         });

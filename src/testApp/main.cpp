@@ -100,21 +100,10 @@ int runDory()
                 std::cout << "Close window(id " << windowId << ")" << std::endl;
 
                 windowRespository->remove(window);
-
-                std::list<dory::domain::entity::View*> attachedViews;
-                viewAccessor->list(windowId, [](dory::domain::entity::View* view, EntityId windowId) 
-                    {
-                        return view->windowId == windowId;
-                    }, attachedViews);
-                auto i = attachedViews.begin();
-                auto end = attachedViews.end();
-                while(i != end)
+                viewRepository->remove([&windowId](dory::domain::entity::View& view)
                 {
-                    auto view = (*i);
-                    std::cout << "remove view(id " << view->id << ")" << std::endl;
-                    viewRepository->remove(view);
-                    ++i;
-                }
+                    return view.windowId == windowId;
+                });
             }
         };
 

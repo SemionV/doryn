@@ -10,6 +10,7 @@ namespace dory
     {
         public:
             virtual TEntity* next() = 0;
+            virtual void forEach(std::function<void(TEntity&)>) = 0;
     };
 
     template<class TEntity>
@@ -34,6 +35,16 @@ namespace dory
 
                 return nullptr;
             }
+
+            void forEach(std::function<void(TEntity&)> expression) override
+            {
+                TEntity* entity = next();
+                while(entity)
+                {
+                    expression(*entity);
+                    entity = next();
+                }
+            }
     };
 
     template<class TEntity>
@@ -43,6 +54,10 @@ namespace dory
             TEntity* next() override
             {
                 return nullptr;
+            }
+
+            void forEach(std::function<void(TEntity&)>) override
+            {
             }
     };
 
@@ -54,6 +69,7 @@ namespace dory
             virtual std::unique_ptr<ITraverseIterator<TEntity>> getTraverseIterator() = 0;
             virtual TEntity& store(TEntity&& entity) = 0;
             virtual void remove(TEntity* entity) = 0;
+            virtual void remove(std::function<bool(TEntity&)>) = 0;
     };
 
     template<class TEntity>
@@ -66,8 +82,8 @@ namespace dory
             EntityRepository()
             {}
 
-            EntityRepository(std::vector<TEntity> data):
-                items(data)
+            EntityRepository(std::initializer_list<TEntity>&& data):
+                items(std::forward<std::vector<TEntity>>(data))
             {}
 
             TEntity& store(TEntity&& entity) override
@@ -101,6 +117,21 @@ namespace dory
                 for(; it != end; ++it)
                 {
                     if(&(*it) == entity)
+                    {
+                        items.erase(it);
+                        break;
+                    }
+                }
+            }
+
+            void remove(std::function<bool(TEntity&)> expression) override
+            {
+                auto it = items.begin();
+                auto end = items.end();
+
+                for(; it != end; ++it)
+                {
+                    if(expression((*it)))
                     {
                         items.erase(it);
                         break;
