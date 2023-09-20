@@ -3,20 +3,23 @@
 
 namespace dory::openGL
 {
-    ViewControllerOpenGL::ViewControllerOpenGL(int viewId, 
-            std::shared_ptr<RepositoryReader<domain::entity::View>> viewRepository, 
+    ViewControllerOpenGL::ViewControllerOpenGL(std::shared_ptr<RepositoryReader<domain::entity::View>> viewRepository, 
             std::shared_ptr<IConfiguration> configuration,
             std::shared_ptr<RepositoryReader<GlfwWindow>> windowRespository):
-        ViewController(viewId, viewRepository, configuration),
+        ViewController(viewRepository, configuration),
         windowRespository(windowRespository)
     {
     }
 
-    bool ViewControllerOpenGL::initialize(dory::DataContext& context)
+    bool ViewControllerOpenGL::initialize(domain::entity::IdType referenceId, dory::DataContext& context)
     {
         std::cout << "initialize: OpenGL Basic View" << std::endl;
 
-        auto view = viewRepository->get(viewId);
+        auto view = viewRepository->get(referenceId, [](domain::entity::View* view, domain::entity::IdType referenceId)
+        {
+            return view->controllerNodeId == referenceId;
+        });
+
         if(view)
         {
             auto glfwWindow = windowRespository->get(view->windowId);
@@ -74,13 +77,17 @@ namespace dory::openGL
         return true;
     }
 
-    void ViewControllerOpenGL::stop(dory::DataContext& context)
+    void ViewControllerOpenGL::stop(domain::entity::IdType referenceId, dory::DataContext& context)
     {
     }
 
-    void ViewControllerOpenGL::update(const int referenceId, const dory::TimeSpan& timeStep, dory::DataContext& context)
+    void ViewControllerOpenGL::update(dory::domain::entity::IdType referenceId, const dory::TimeSpan& timeStep, dory::DataContext& context)
     {
-        auto view = viewRepository->get(viewId);
+        auto view = viewRepository->get(referenceId, [](domain::entity::View* view, domain::entity::IdType referenceId)
+        {
+            return view->controllerNodeId == referenceId;
+        });
+        
         if(view)
         {
             auto glfwWindow = windowRespository->get(view->windowId);

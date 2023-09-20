@@ -12,7 +12,7 @@ namespace test
 
         StepFrameService();
 
-        void startLoop(dory::Engine& engine);
+        void startLoop(dory::domain::Engine& engine, dory::DataContext& context);
         
         void endLoop();
     };

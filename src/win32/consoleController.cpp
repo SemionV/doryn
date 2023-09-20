@@ -3,7 +3,7 @@
 
 namespace dory::win32
 {
-    bool ConsoleController::initialize(DataContext& context)
+    bool ConsoleController::initialize(domain::entity::IdType referenceId, DataContext& context)
     {
         if(AllocConsole())
         {
@@ -24,12 +24,12 @@ namespace dory::win32
         return true;
     }
 
-    void ConsoleController::stop(DataContext& context)
+    void ConsoleController::stop(domain::entity::IdType referenceId, DataContext& context)
     {
         processThread.stop();
     }
 
-    void ConsoleController::update(const int referenceId, const TimeSpan& timeStep, DataContext& context)
+    void ConsoleController::update(dory::domain::entity::IdType referenceId, const TimeSpan& timeStep, DataContext& context)
     {
         eventHub->submit(context);
     }

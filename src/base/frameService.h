@@ -8,7 +8,7 @@ namespace dory
     class DORY_API FrameService
     {
         public:
-            virtual void startLoop(std::shared_ptr<Engine> engine) = 0;
+            virtual void startLoop(std::shared_ptr<domain::Engine> engine, DataContext& context) = 0;
             virtual void endLoop() = 0;
     };
 }

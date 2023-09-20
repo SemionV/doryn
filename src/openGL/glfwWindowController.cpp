@@ -9,17 +9,17 @@ namespace dory::openGL
             eventHub(eventHub)
     {}
 
-    bool GlfwWindowController::initialize(DataContext& context)
+    bool GlfwWindowController::initialize(domain::entity::IdType referenceId, DataContext& context)
     {
         return glfwInit();
     }
     
-    void GlfwWindowController::stop(DataContext& context)
+    void GlfwWindowController::stop(domain::entity::IdType referenceId, DataContext& context)
     {
         glfwTerminate();
     }
 
-    void GlfwWindowController::update(const int referenceId, const TimeSpan& timeStep, DataContext& context)
+    void GlfwWindowController::update(domain::entity::IdType referenceId, const TimeSpan& timeStep, DataContext& context)
     {
         glfwPollEvents();
 

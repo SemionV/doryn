@@ -1,16 +1,20 @@
 # Development log
 
 Tasks:
-* Assign ComponentId to every Controller, attach view to controller inderectly with view-controller entity
-* Develop Unit Tests for EntitiyRepository
-* Call initialize method of Controller in Engine::initialize, introduce Engene EventHub and invoke "after initialize event"
-* Introduce logic level Service to manage complex data like Window and View(in order to delete window and views properly)
-* Implement dynamic Controller creating and deletion on Engine
 * Implement dynamic window open/close with views
-* Add Groups of Controllers to Engine
 * Group all the engine components, repositories, factories, etc in the DataContext object
+* Make order with engine namespaces, folders and files
 * Move src/lib and scr/vendor dirs out of project folder(in order to make vs code intellisence work properly and light)
-* Integrate some scripting engine
+* Integrate C# dotnet as scripting engine
+
+**20.09.23**
+* Task done: Develop Unit Tests for EntitiyRepository
+* Task done: Introduce logic level Service to manage complex data like Window and View(in order to delete window and views properly)
+* Task done: Add Groups of Controllers to Engine
+* Task done: Assign ComponentId to every Controller, attach view to controller inderectly with view-controller entity
+* Task done: Remove Engine::dataContext and pass it in the Engine::update as parameter instead
+* Task done: Introduce Engene EventHub and invoke "after initialize event"
+* Task done: Implement dynamic Controller creating and deletion on Engine
 
 **16.09.23**
 * Task done: Enhance EntityStorage:

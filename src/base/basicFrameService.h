@@ -10,7 +10,7 @@ namespace dory
             bool isStop;
 
         public:
-            void startLoop(std::shared_ptr<Engine> engine);            
+            void startLoop(std::shared_ptr<domain::Engine> engine, DataContext& context);            
             void endLoop();
     };
 }

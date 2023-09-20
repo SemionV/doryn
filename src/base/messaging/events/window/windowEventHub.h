@@ -4,14 +4,12 @@ namespace dory
 {
     struct CloseWindowEventData
     {
-        public:
-            const int windowId;
+        const int windowId;
 
-        public:
-            CloseWindowEventData(int windowId):
-                windowId(windowId)
-            {                
-            }
+        CloseWindowEventData(int windowId):
+            windowId(windowId)
+        {
+        }
     };
 
     class WindowEventHub

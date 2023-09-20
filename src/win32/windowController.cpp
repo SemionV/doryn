@@ -3,16 +3,16 @@
 
 namespace dory::win32
 {
-    bool WindowController::initialize(DataContext& context)
+    bool WindowController::initialize(domain::entity::IdType referenceId, DataContext& context)
     {
         return true;
     }
 
-    void WindowController::stop(DataContext& context)
+    void WindowController::stop(domain::entity::IdType referenceId, DataContext& context)
     {
     }
 
-    void WindowController::update(const int referenceId, const TimeSpan& timeStep, DataContext& context)
+    void WindowController::update(dory::domain::entity::IdType referenceId, const TimeSpan& timeStep, DataContext& context)
     {
         pumpSystemMessages();     
         submitEvents(context);   

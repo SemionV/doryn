@@ -49,12 +49,14 @@ namespace dory::domain::entity
     struct View: public Entity<IdType>
     {
         IdType windowId;
+        IdType controllerNodeId;
         IdType cameraId;
         Viewport viewport;
 
-        View(IdType id, IdType windowId, IdType cameraId, Viewport viewport):
+        View(IdType id, IdType windowId, IdType controllerNodeId, IdType cameraId, Viewport viewport):
             Entity(id),
             windowId(windowId),
+            controllerNodeId(controllerNodeId),
             cameraId(cameraId),
             viewport(viewport)
         {}

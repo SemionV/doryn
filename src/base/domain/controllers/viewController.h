@@ -11,13 +11,11 @@ namespace dory::domain
     class ViewController: public Controller
     {
         protected:
-            entity::IdType viewId;
             std::shared_ptr<RepositoryReader<entity::View>> viewRepository;
             std::shared_ptr<IConfiguration> configuration;
 
         public:
-            ViewController(entity::IdType viewId, std::shared_ptr<RepositoryReader<entity::View>> viewRepository, std::shared_ptr<IConfiguration> configuration):
-                viewId(viewId),
+            ViewController(std::shared_ptr<RepositoryReader<entity::View>> viewRepository, std::shared_ptr<IConfiguration> configuration):
                 viewRepository(viewRepository),
                 configuration(configuration)
             {        

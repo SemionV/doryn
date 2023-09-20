@@ -19,13 +19,12 @@ namespace dory::openGL
             enum {NumVertices = 6};
 
         public:
-            ViewControllerOpenGL(int viewId, 
-                std::shared_ptr<RepositoryReader<domain::entity::View>> viewRepository, 
+            ViewControllerOpenGL(std::shared_ptr<RepositoryReader<domain::entity::View>> viewRepository, 
                 std::shared_ptr<IConfiguration> configuration,
                 std::shared_ptr<RepositoryReader<GlfwWindow>> windowRespository);
 
-            bool initialize(dory::DataContext& context) override;
-            void stop(dory::DataContext& context) override;
-            void update(const int referenceId, const dory::TimeSpan& timeStep, dory::DataContext& context) override;
+            bool initialize(domain::entity::IdType referenceId, dory::DataContext& context) override;
+            void stop(domain::entity::IdType referenceId, dory::DataContext& context) override;
+            void update(domain::entity::IdType referenceId, const dory::TimeSpan& timeStep, dory::DataContext& context) override;
     };
 }

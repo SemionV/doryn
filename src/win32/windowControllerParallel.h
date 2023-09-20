@@ -19,8 +19,8 @@ namespace dory::win32
             {
             }
 
-            bool initialize(DataContext& context) override;
-            void stop(DataContext& context) override;
-            void update(const int referenceId, const TimeSpan& timeStep, DataContext& context) override;
+            bool initialize(domain::entity::IdType referenceId, DataContext& context) override;
+            void stop(domain::entity::IdType referenceId, DataContext& context) override;
+            void update(domain::entity::IdType referenceId, const TimeSpan& timeStep, DataContext& context) override;
     };
 }

@@ -25,9 +25,9 @@ namespace dory::win32
             {
             }
 
-            virtual bool initialize(DataContext& context) override;
-            virtual void stop(DataContext& context) override;
-            virtual void update(const int referenceId, const TimeSpan& timeStep, DataContext& context) override;
+            virtual bool initialize(domain::entity::IdType referenceId, DataContext& context) override;
+            virtual void stop(domain::entity::IdType referenceId, DataContext& context) override;
+            virtual void update(domain::entity::IdType referenceId, const TimeSpan& timeStep, DataContext& context) override;
 
         protected:
             void pumpSystemMessages();

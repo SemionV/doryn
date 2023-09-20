@@ -9,8 +9,8 @@ namespace dory
     class DORY_API Controller
     {
         public:
-            virtual bool initialize(DataContext& context) = 0;
-            virtual void stop(DataContext& context) = 0;
-            virtual void update(const int referenceId, const TimeSpan& timeStep, DataContext& context) = 0;
+            virtual bool initialize(domain::entity::IdType referenceId, DataContext& context) = 0;
+            virtual void stop(domain::entity::IdType referenceId, DataContext& context) = 0;
+            virtual void update(domain::entity::IdType referenceId, const TimeSpan& timeStep, DataContext& context) = 0;
     };
 }

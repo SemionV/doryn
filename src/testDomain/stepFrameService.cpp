@@ -10,7 +10,7 @@ namespace test
 
     }
 
-    void StepFrameService::startLoop(dory::Engine& engine)
+    void StepFrameService::startLoop(dory::domain::Engine& engine, dory::DataContext& context)
     {
         isStop = false;
         dory::TimeSpan timeStep(dory::UnitScale::Micro);
@@ -36,7 +36,7 @@ namespace test
             else
             {
                 timeStep.duration = 16666;
-                isStop = engine.update(timeStep);
+                isStop = engine.update(context, timeStep);
             }
 
             frameCounter++;
