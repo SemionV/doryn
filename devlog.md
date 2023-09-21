@@ -1,9 +1,9 @@
 # Development log
 
 Tasks:
-* Implement dynamic window open/close with views
-* Group all the engine components, repositories, factories, etc in the DataContext object
+* Group all the engine components, repositories, factories, etc in an Project class
 * Make order with engine namespaces, folders and files
+* Implement dynamic window open/close with views
 * Move src/lib and scr/vendor dirs out of project folder(in order to make vs code intellisence work properly and light)
 * Integrate C# dotnet as scripting engine
 

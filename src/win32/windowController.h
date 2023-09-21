@@ -34,3 +34,38 @@ namespace dory::win32
             void submitEvents(DataContext& context);
     };
 }
+
+/*Window creation Example:
+    auto windowsThread = std::make_shared<dory::IndividualProcessThread>();
+    auto windowRespositoryWin32 = std::make_shared<dory::EntityRepository<dory::win32::Window>>();
+    auto windowAccessorWin32 = std::make_shared<dory::RepositoryReader<dory::win32::Window>>(windowRespositoryWin32);
+    auto messageBufferWin32 = std::make_shared<dory::win32::MessageBuffer>();
+    auto win32WindowEventHub = std::make_shared<dory::WindowEventHubDispatcher>();
+    auto windowControllerWin32 = std::make_shared<dory::win32::WindowControllerParallel>(windowsThread, win32WindowEventHub, messageBufferWin32, windowAccessorWin32);
+    auto windowControllerWin32Node = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(idFactory->generate(), 
+        windowControllerWin32, 0, inpoutGroupNode.id));
+    windowControllerWin32->initialize(windowControllerWin32Node.id, context);
+
+    windowsThread->run();
+
+    dory::win32::WindowParameters win32WindowParameters;
+    auto hWnd = dory::win32::WindowFactory::createWindow(win32WindowParameters, messageBufferWin32.get(), windowsThread);
+    auto win32Window = windowRespositoryWin32->store(dory::win32::Window(idFactory->generate(), hWnd));
+
+    win32WindowEventHub->onCloseWindow() += [&](dory::DataContext& context, dory::CloseWindowEventData& eventData)
+    {
+        auto windowId = eventData.windowId;
+        auto window = windowAccessorWin32->get(windowId);
+
+        if(window)
+        {
+            auto hWnd = window->hWnd;
+
+            context.isStop = true;
+            std::cout << "Close window(id " << windowId << ")" << std::endl;
+
+            dory::win32::WindowFactory::closeWindow(hWnd, windowsThread);
+            windowRespositoryWin32->remove(window);
+        }
+    };
+*/

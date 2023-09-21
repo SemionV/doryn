@@ -18,9 +18,9 @@ int runDory()
     auto cameraRepository = std::make_shared<dory::EntityRepository<dory::domain::entity::Camera>>();
     auto viewRepository = std::make_shared<dory::EntityRepository<dory::domain::entity::View>>();
 
-    auto windowAccessor = std::make_shared<dory::RepositoryReader<dory::openGL::GlfwWindow>>(windowRespository);
-    auto cameraAccessor = std::make_shared<dory::RepositoryReader<dory::domain::entity::Camera>>(cameraRepository);
-    auto viewAccessor = std::make_shared<dory::RepositoryReader<dory::domain::entity::View>>(viewRepository);
+    auto windowReader = std::make_shared<dory::RepositoryReader<dory::openGL::GlfwWindow>>(windowRespository);
+    auto cameraReader = std::make_shared<dory::RepositoryReader<dory::domain::entity::Camera>>(cameraRepository);
+    auto viewReader = std::make_shared<dory::RepositoryReader<dory::domain::entity::View>>(viewRepository);
 
     auto pipelineNodeRepository = std::make_shared<dory::EntityRepository<dory::domain::entity::PipelineNode>>();
     auto pipelineNodeReader = std::make_shared<dory::RepositoryReader<dory::domain::entity::PipelineNode>>(pipelineNodeRepository);
@@ -41,43 +41,8 @@ int runDory()
         consoleController, 0, inpoutGroupNode.id));
     consoleController->initialize(consoleControllerNode.id, context);
 
-    //win32
-    auto windowsThread = std::make_shared<dory::IndividualProcessThread>();
-    auto windowRespositoryWin32 = std::make_shared<dory::EntityRepository<dory::win32::Window>>();
-    auto windowAccessorWin32 = std::make_shared<dory::RepositoryReader<dory::win32::Window>>(windowRespositoryWin32);
-    auto messageBufferWin32 = std::make_shared<dory::win32::MessageBuffer>();
-    auto win32WindowEventHub = std::make_shared<dory::WindowEventHubDispatcher>();
-    auto windowControllerWin32 = std::make_shared<dory::win32::WindowControllerParallel>(windowsThread, win32WindowEventHub, messageBufferWin32, windowAccessorWin32);
-    auto windowControllerWin32Node = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(idFactory->generate(), 
-        windowControllerWin32, 0, inpoutGroupNode.id));
-    windowControllerWin32->initialize(windowControllerWin32Node.id, context);
-
-    windowsThread->run();
-
-    dory::win32::WindowParameters win32WindowParameters;
-    auto hWnd = dory::win32::WindowFactory::createWindow(win32WindowParameters, messageBufferWin32.get(), windowsThread);
-    auto win32Window = windowRespositoryWin32->store(dory::win32::Window(idFactory->generate(), hWnd));
-
-    win32WindowEventHub->onCloseWindow() += [&](dory::DataContext& context, dory::CloseWindowEventData& eventData)
-    {
-        auto windowId = eventData.windowId;
-        auto window = windowAccessorWin32->get(windowId);
-
-        if(window)
-        {
-            auto hWnd = window->hWnd;
-
-            context.isStop = true;
-            std::cout << "Close window(id " << windowId << ")" << std::endl;
-
-            dory::win32::WindowFactory::closeWindow(hWnd, windowsThread);
-            windowRespositoryWin32->remove(window);
-        }
-    };
-    //~win32
-
     auto glfwWindowEventHub = std::make_shared<dory::WindowEventHubDispatcher>();
-    auto windowController = std::make_shared<dory::openGL::GlfwWindowController>(windowAccessor, glfwWindowEventHub);
+    auto windowController = std::make_shared<dory::openGL::GlfwWindowController>(windowReader, glfwWindowEventHub);
     auto windowControllerNode = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(idFactory->generate(), 
         windowController, 0, inpoutGroupNode.id));
     windowController->initialize(windowControllerNode.id, context);
@@ -85,7 +50,7 @@ int runDory()
     glfwWindowEventHub->onCloseWindow() += [&](dory::DataContext& context, dory::CloseWindowEventData& eventData)
     {
         auto windowId = eventData.windowId;
-        auto window = windowAccessor->get(windowId);
+        auto window = windowReader->get(windowId);
 
         if(window)
         {
@@ -115,7 +80,7 @@ int runDory()
         auto camera = cameraRepository->store(dory::domain::entity::Camera(idFactory->generate()));
         dory::domain::entity::Viewport viewport(0, 0, 0, 0);
 
-        auto viewController = std::make_shared<dory::openGL::ViewControllerOpenGL>(viewAccessor, configuration, windowAccessor);
+        auto viewController = std::make_shared<dory::openGL::ViewControllerOpenGL>(viewReader, configuration, windowReader);
         auto viewControllerNode = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(idFactory->generate(), 
             viewController, 0, outputGroupNode.id));
 
