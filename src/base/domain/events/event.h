@@ -3,7 +3,7 @@
 #include "base/dependencies.h"
 #include "base/doryExport.h"
 
-namespace dory
+namespace dory::domain::events
 {
     template<class... Ts>
     class DORY_API Event

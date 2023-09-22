@@ -4,7 +4,7 @@
 #include "event.h"
 #include "eventHub.h"
 
-namespace dory::events
+namespace dory::domain::events
 {
     struct InitializeEngineEventData
     {

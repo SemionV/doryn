@@ -8,7 +8,7 @@ namespace dory::openGL
     class ViewControllerOpenGL: public dory::domain::ViewController<GlfwWindow>
     {
         private:
-            std::shared_ptr<RepositoryReader<GlfwWindow>> windowRespository;
+            std::shared_ptr<domain::RepositoryReader<GlfwWindow>> windowRespository;
 
             enum VAO_IDs { Triangles, NumVAOs };
             enum Buffer_IDs { ArrayBuffer, NumBuffers };
@@ -19,12 +19,12 @@ namespace dory::openGL
             enum {NumVertices = 6};
 
         public:
-            ViewControllerOpenGL(std::shared_ptr<RepositoryReader<domain::entity::View>> viewRepository, 
+            ViewControllerOpenGL(std::shared_ptr<domain::RepositoryReader<domain::entity::View>> viewRepository, 
                 std::shared_ptr<configuration::IConfiguration> configuration,
-                std::shared_ptr<RepositoryReader<GlfwWindow>> windowRespository);
+                std::shared_ptr<domain::RepositoryReader<GlfwWindow>> windowRespository);
 
-            bool initialize(domain::entity::IdType referenceId, dory::DataContext& context) override;
-            void stop(domain::entity::IdType referenceId, dory::DataContext& context) override;
-            void update(domain::entity::IdType referenceId, const dory::TimeSpan& timeStep, dory::DataContext& context) override;
+            bool initialize(domain::entity::IdType referenceId, domain::DataContext& context) override;
+            void stop(domain::entity::IdType referenceId, domain::DataContext& context) override;
+            void update(domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, domain::DataContext& context) override;
     };
 }

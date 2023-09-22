@@ -1,7 +1,7 @@
 #include "base/dependencies.h"
 #include "currentProcessThread.h"
 
-namespace dory
+namespace dory::multithreading
 {
     void CurrentProcessThread::invokeTask(std::shared_ptr<Task> task)
     {

@@ -3,15 +3,15 @@
 
 namespace dory::openGL
 {
-    ViewControllerOpenGL::ViewControllerOpenGL(std::shared_ptr<RepositoryReader<domain::entity::View>> viewRepository, 
+    ViewControllerOpenGL::ViewControllerOpenGL(std::shared_ptr<domain::RepositoryReader<domain::entity::View>> viewRepository, 
             std::shared_ptr<configuration::IConfiguration> configuration,
-            std::shared_ptr<RepositoryReader<GlfwWindow>> windowRespository):
+            std::shared_ptr<domain::RepositoryReader<GlfwWindow>> windowRespository):
         ViewController(viewRepository, configuration),
         windowRespository(windowRespository)
     {
     }
 
-    bool ViewControllerOpenGL::initialize(domain::entity::IdType referenceId, dory::DataContext& context)
+    bool ViewControllerOpenGL::initialize(domain::entity::IdType referenceId, domain::DataContext& context)
     {
         std::cout << "initialize: OpenGL Basic View" << std::endl;
 
@@ -77,11 +77,11 @@ namespace dory::openGL
         return true;
     }
 
-    void ViewControllerOpenGL::stop(domain::entity::IdType referenceId, dory::DataContext& context)
+    void ViewControllerOpenGL::stop(domain::entity::IdType referenceId, domain::DataContext& context)
     {
     }
 
-    void ViewControllerOpenGL::update(dory::domain::entity::IdType referenceId, const dory::TimeSpan& timeStep, dory::DataContext& context)
+    void ViewControllerOpenGL::update(dory::domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, domain::DataContext& context)
     {
         auto view = viewRepository->get(referenceId, [](domain::entity::View* view, domain::entity::IdType referenceId)
         {

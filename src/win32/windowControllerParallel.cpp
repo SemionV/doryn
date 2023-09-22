@@ -3,9 +3,9 @@
 
 namespace dory::win32
 {
-    bool WindowControllerParallel::initialize(domain::entity::IdType referenceId, DataContext& context)
+    bool WindowControllerParallel::initialize(domain::entity::IdType referenceId, domain::DataContext& context)
     {
-        auto pumpMessagesTask = dory::allocateActionTask([this]() 
+        auto pumpMessagesTask = multithreading::allocateActionTask([this]() 
         {
             pumpSystemMessages();
 
@@ -18,12 +18,12 @@ namespace dory::win32
         return true;
     }
 
-    void WindowControllerParallel::stop(domain::entity::IdType referenceId, DataContext& context)
+    void WindowControllerParallel::stop(domain::entity::IdType referenceId, domain::DataContext& context)
     {
 
     }
 
-    void WindowControllerParallel::update(domain::entity::IdType referenceId, const TimeSpan& timeStep, DataContext& context)
+    void WindowControllerParallel::update(domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, domain::DataContext& context)
     {
         submitEvents(context);
     }

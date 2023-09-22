@@ -2,7 +2,7 @@
 
 #include "task.h"
 
-namespace dory
+namespace dory::multithreading
 {
     class DORY_API ProcessThread
     {

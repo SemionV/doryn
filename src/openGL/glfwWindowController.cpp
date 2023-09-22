@@ -3,23 +3,23 @@
 
 namespace dory::openGL
 {
-    GlfwWindowController::GlfwWindowController(std::shared_ptr<RepositoryReader<GlfwWindow>> windowRepository,
-        std::shared_ptr<events::WindowEventHubDispatcher> eventHub):
+    GlfwWindowController::GlfwWindowController(std::shared_ptr<domain::RepositoryReader<GlfwWindow>> windowRepository,
+        std::shared_ptr<domain::events::WindowEventHubDispatcher> eventHub):
             windowRepository(windowRepository),
             eventHub(eventHub)
     {}
 
-    bool GlfwWindowController::initialize(domain::entity::IdType referenceId, DataContext& context)
+    bool GlfwWindowController::initialize(domain::entity::IdType referenceId, domain::DataContext& context)
     {
         return glfwInit();
     }
     
-    void GlfwWindowController::stop(domain::entity::IdType referenceId, DataContext& context)
+    void GlfwWindowController::stop(domain::entity::IdType referenceId, domain::DataContext& context)
     {
         glfwTerminate();
     }
 
-    void GlfwWindowController::update(domain::entity::IdType referenceId, const TimeSpan& timeStep, DataContext& context)
+    void GlfwWindowController::update(domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, domain::DataContext& context)
     {
         glfwPollEvents();
 
@@ -29,7 +29,7 @@ namespace dory::openGL
         {
             if(glfwWindowShouldClose(window->handler))
             {
-                eventHub->addCase(events::CloseWindowEventData(window->id));
+                eventHub->addCase(domain::events::CloseWindowEventData(window->id));
                 glfwSetWindowShouldClose(window->handler, 0);
             }
 

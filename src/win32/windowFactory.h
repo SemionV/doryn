@@ -58,9 +58,9 @@ namespace dory::win32
                 return hwnd;
             }
 
-            static HWND createWindow(WindowParameters windowParameters, MessageBuffer* messageBuffer, std::shared_ptr<dory::IndividualProcessThread> windowsThread)
+            static HWND createWindow(WindowParameters windowParameters, MessageBuffer* messageBuffer, std::shared_ptr<multithreading::IndividualProcessThread> windowsThread)
             {
-                auto createWindowTask = dory::allocateFunctionTask<HWND>([](WindowParameters windowParameters, MessageBuffer* messageBuffer) 
+                auto createWindowTask = multithreading::allocateFunctionTask<HWND>([](WindowParameters windowParameters, MessageBuffer* messageBuffer) 
                 {
                     return WindowFactory::createWindow(windowParameters, messageBuffer);
                 }, windowParameters, messageBuffer);
@@ -75,9 +75,9 @@ namespace dory::win32
                 DestroyWindow(hWnd);
             }
 
-            static void closeWindow(HWND hWnd, std::shared_ptr<dory::IndividualProcessThread> windowsThread)
+            static void closeWindow(HWND hWnd, std::shared_ptr<multithreading::IndividualProcessThread> windowsThread)
             {
-                auto createWindowTask = dory::allocateActionTask([](HWND hWnd) 
+                auto createWindowTask = multithreading::allocateActionTask([](HWND hWnd) 
                 {
                     WindowFactory::closeWindow(hWnd);
                 }, hWnd);

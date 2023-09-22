@@ -3,22 +3,22 @@
 
 namespace dory::win32
 {
-    bool WindowController::initialize(domain::entity::IdType referenceId, DataContext& context)
+    bool WindowController::initialize(domain::entity::IdType referenceId, domain::DataContext& context)
     {
         return true;
     }
 
-    void WindowController::stop(domain::entity::IdType referenceId, DataContext& context)
+    void WindowController::stop(domain::entity::IdType referenceId, domain::DataContext& context)
     {
     }
 
-    void WindowController::update(dory::domain::entity::IdType referenceId, const TimeSpan& timeStep, DataContext& context)
+    void WindowController::update(dory::domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, domain::DataContext& context)
     {
         pumpSystemMessages();     
         submitEvents(context);   
     }
 
-    void WindowController::submitEvents(DataContext& context)
+    void WindowController::submitEvents(domain::DataContext& context)
     {
         eventHub->submit(context);
     }
@@ -52,7 +52,7 @@ namespace dory::win32
                 auto window = windowRepository->get(message->hWnd, WindowController::compareHandles);
                 if(window)
                 {
-                    eventHub->addCase(events::CloseWindowEventData(window->id));
+                    eventHub->addCase(domain::events::CloseWindowEventData(window->id));
                 }
             }
         }

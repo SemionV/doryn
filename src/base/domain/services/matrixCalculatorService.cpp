@@ -1,8 +1,8 @@
-#include "matrixCalculator.h"
+#include "matrixCalculatorService.h"
 
-namespace dory
+namespace dory::domain::services
 {
-    void MatrixCalculator::setToIdentity(Matrix4x4* matrix)
+    void MatrixCalculatorService::setToIdentity(geometry::Matrix4x4* matrix)
     {
         auto entries = matrix->entries;
 
@@ -15,15 +15,15 @@ namespace dory
         entries[12] = f0; entries[13] = f0; entries[14] = f0; entries[15] = f1;
     }
 
-    void MatrixCalculator::copyEntriesTo(const Matrix4x4* sourceMatrix, Matrix4x4* destinationMatrix)
+    void MatrixCalculatorService::copyEntriesTo(const geometry::Matrix4x4* sourceMatrix, geometry::Matrix4x4* destinationMatrix)
     {
-        for(int i = 0; i < Matrix4x4::size; ++i)
+        for(int i = 0; i < geometry::Matrix4x4::size; ++i)
         {
             destinationMatrix->entries[i] = sourceMatrix->entries[i];
         }
     }
 
-    void MatrixCalculator::multiply(const Matrix4x4* matrix, const Point3d* vector, Point3d* resultVector)
+    void MatrixCalculatorService::multiply(const geometry::Matrix4x4* matrix, const geometry::Point3d* vector, geometry::Point3d* resultVector)
     {
         const float* entries = matrix->entries;
 
@@ -36,7 +36,7 @@ namespace dory
         resultVector->z = z;
     }
 
-    void MatrixCalculator::multiply(const Matrix4x4* matrix, const Point3d* vector, Point3d* resultVector, float& wResult)
+    void MatrixCalculatorService::multiply(const geometry::Matrix4x4* matrix, const geometry::Point3d* vector, geometry::Point3d* resultVector, float& wResult)
     {
         multiply(matrix, vector, resultVector);
 
@@ -44,7 +44,7 @@ namespace dory
         wResult = (vector->x * entries[12]) + (vector->y * entries[13]) + (vector->z * entries[14]) + entries[15];
     }
 
-    void MatrixCalculator::multiply(const Matrix4x4* matrixLeftSide, const Matrix4x4* matrixRightSide, Matrix4x4* resultMatrix)
+    void MatrixCalculatorService::multiply(const geometry::Matrix4x4* matrixLeftSide, const geometry::Matrix4x4* matrixRightSide, geometry::Matrix4x4* resultMatrix)
     {
         const float* lhs = matrixLeftSide->entries;
         const float* rhs = matrixRightSide->entries;
@@ -86,7 +86,7 @@ namespace dory
         r[12] = m30; r[13] = m31; r[14] = m32; r[15] = m33;
     }
 
-    void MatrixCalculator::invert(const Matrix4x4* matrix, Matrix4x4* resultMatrix)
+    void MatrixCalculatorService::invert(const geometry::Matrix4x4* matrix, geometry::Matrix4x4* resultMatrix)
     {
         const float* m = matrix->entries;
 
@@ -132,9 +132,9 @@ namespace dory
         }
     }
 
-    void MatrixCalculator::toIdentity(Matrix4x4* matrix)
+    void MatrixCalculatorService::toIdentity(geometry::Matrix4x4* matrix)
     {
-        Matrix4x4::setEntries(matrix, Matrix4x4::EntriesArray {
+        geometry::Matrix4x4::setEntries(matrix, geometry::Matrix4x4::EntriesArray {
             1.f, 0.f, 0.f, 0.f,
             0.f, 1.f, 0.f, 0.f,
             0.f, 0.f, 1.f, 0.f,
@@ -142,21 +142,21 @@ namespace dory
         });
     }
 
-    void MatrixCalculator::translate(Matrix4x4* matrix, float dx, float dy, float dz)
+    void MatrixCalculatorService::translate(geometry::Matrix4x4* matrix, float dx, float dy, float dz)
     {
         matrix->entries[3] = dx;
         matrix->entries[7] = dy;
         matrix->entries[11] = dz;
     }
 
-    void MatrixCalculator::scale(Matrix4x4* matrix, float x, float y, float z)
+    void MatrixCalculatorService::scale(geometry::Matrix4x4* matrix, float x, float y, float z)
     {
         matrix->entries[0] = x;
         matrix->entries[5] = y;
         matrix->entries[10] = z;
     }
 
-    void MatrixCalculator::rotateX(Matrix4x4* matrix, float radians)
+    void MatrixCalculatorService::rotateX(geometry::Matrix4x4* matrix, float radians)
     {
         matrix->entries[5] = std::cos(radians);
         matrix->entries[6] = -std::sin(radians);
@@ -164,7 +164,7 @@ namespace dory
         matrix->entries[10] = std::cos(radians);
     }
 
-    void MatrixCalculator::rotateY(Matrix4x4* matrix, float radians)
+    void MatrixCalculatorService::rotateY(geometry::Matrix4x4* matrix, float radians)
     {
         matrix->entries[0] = std::cos(radians);
         matrix->entries[2] = std::sin(radians);
@@ -172,7 +172,7 @@ namespace dory
         matrix->entries[10] = std::cos(radians);
     }
 
-    void MatrixCalculator::rotateZ(Matrix4x4* matrix, float radians)
+    void MatrixCalculatorService::rotateZ(geometry::Matrix4x4* matrix, float radians)
     {
         matrix->entries[0] = std::cos(radians);
         matrix->entries[1] = -std::sin(radians);
@@ -180,9 +180,9 @@ namespace dory
         matrix->entries[5] = std::cos(radians);
     }
 
-    bool MatrixCalculator::isEqual(Matrix4x4* matrixA, Matrix4x4* matrixB)
+    bool MatrixCalculatorService::isEqual(geometry::Matrix4x4* matrixA, geometry::Matrix4x4* matrixB)
     {
-        for(int i = 0; i < Matrix4x4::size; ++i)
+        for(int i = 0; i < geometry::Matrix4x4::size; ++i)
         {
             if(matrixA->entries[i] != matrixB->entries[i])
             {

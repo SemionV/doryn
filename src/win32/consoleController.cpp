@@ -3,7 +3,7 @@
 
 namespace dory::win32
 {
-    bool ConsoleController::initialize(domain::entity::IdType referenceId, DataContext& context)
+    bool ConsoleController::initialize(domain::entity::IdType referenceId, domain::DataContext& context)
     {
         if(AllocConsole())
         {
@@ -12,7 +12,7 @@ namespace dory::win32
 
         std::cout << "SystemConsole.connect()" << std::endl;
 
-        auto readInputTask = dory::allocateActionTask([this]() 
+        auto readInputTask = multithreading::allocateActionTask([this]() 
         {  
             int inputKey = getch();
             onKeyPressed(inputKey);
@@ -24,12 +24,12 @@ namespace dory::win32
         return true;
     }
 
-    void ConsoleController::stop(domain::entity::IdType referenceId, DataContext& context)
+    void ConsoleController::stop(domain::entity::IdType referenceId, domain::DataContext& context)
     {
         processThread.stop();
     }
 
-    void ConsoleController::update(dory::domain::entity::IdType referenceId, const TimeSpan& timeStep, DataContext& context)
+    void ConsoleController::update(domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, domain::DataContext& context)
     {
         eventHub->submit(context);
     }
@@ -38,8 +38,8 @@ namespace dory::win32
     {
         std::cout << std::this_thread::get_id() << ": add key pressed message: " << key << std::endl;
 
-        events::KeyPressedEventData eventData(key);
-        eventHub->addCase(std::forward<events::KeyPressedEventData>(eventData));
+        domain::events::KeyPressedEventData eventData(key);
+        eventHub->addCase(std::forward<domain::events::KeyPressedEventData>(eventData));
     }
 
     void ConsoleController::bindStdHandlesToConsole()

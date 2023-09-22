@@ -1,7 +1,7 @@
-#include "dependencies.h"
+#include "base/dependencies.h"
 #include "basicFrameService.h"
 
-namespace dory
+namespace dory::domain::services
 {
     void BasicFrameService::startLoop(std::shared_ptr<domain::Engine> engine, DataContext& context)
     {

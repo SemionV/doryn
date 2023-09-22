@@ -6,32 +6,32 @@
 
 namespace dory::win32
 {
-        class DORY_API WindowController: public Controller
+        class DORY_API WindowController: public domain::Controller
     {
         private:
-            std::shared_ptr<events::WindowEventHubDispatcher> eventHub;
+            std::shared_ptr<domain::events::WindowEventHubDispatcher> eventHub;
             std::shared_ptr<MessageBuffer> messageBuffer;
-            std::shared_ptr<RepositoryReader<Window>> windowRepository;
+            std::shared_ptr<domain::RepositoryReader<Window>> windowRepository;
 
             static bool compareHandles(Window* window, HWND hWnd);
 
         public:
-            WindowController(std::shared_ptr<events::WindowEventHubDispatcher> eventHub,
+            WindowController(std::shared_ptr<domain::events::WindowEventHubDispatcher> eventHub,
                 std::shared_ptr<MessageBuffer> messageBuffer,
-                std::shared_ptr<RepositoryReader<Window>> windowRepository):
+                std::shared_ptr<domain::RepositoryReader<Window>> windowRepository):
                 eventHub(eventHub),
                 messageBuffer(messageBuffer),
                 windowRepository(windowRepository)
             {
             }
 
-            virtual bool initialize(domain::entity::IdType referenceId, DataContext& context) override;
-            virtual void stop(domain::entity::IdType referenceId, DataContext& context) override;
-            virtual void update(domain::entity::IdType referenceId, const TimeSpan& timeStep, DataContext& context) override;
+            virtual bool initialize(domain::entity::IdType referenceId, domain::DataContext& context) override;
+            virtual void stop(domain::entity::IdType referenceId, domain::DataContext& context) override;
+            virtual void update(domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, domain::DataContext& context) override;
 
         protected:
             void pumpSystemMessages();
-            void submitEvents(DataContext& context);
+            void submitEvents(domain::DataContext& context);
     };
 }
 

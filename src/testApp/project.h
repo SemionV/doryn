@@ -14,28 +14,30 @@ namespace testApp
 
             std::shared_ptr<IIdFactory<EntityId>> windowIdFactory;
             std::shared_ptr<EntityRepository<openGL::GlfwWindow>> windowRespository;
+            std::shared_ptr<RepositoryReader<openGL::GlfwWindow>> windowRepositoryReader;
 
             std::shared_ptr<IIdFactory<EntityId>> cameraIdFactory;
             std::shared_ptr<EntityRepository<entity::Camera>> cameraRepository;
+            std::shared_ptr<RepositoryReader<entity::Camera>> cameraRepositoryReader;
 
             std::shared_ptr<IIdFactory<EntityId>> viewIdFactory;
             std::shared_ptr<EntityRepository<entity::View>> viewRepository;
-            
-            std::shared_ptr<IIdFactory<EntityId>> pipelineNodeIDFactory;
-            std::shared_ptr<EntityRepository<entity::PipelineNode>> pipelineNodeRepository;
-
-            std::shared_ptr<RepositoryReader<openGL::GlfwWindow>> windowRepositoryReader;
-            std::shared_ptr<RepositoryReader<entity::Camera>> cameraRepositoryReader;
             std::shared_ptr<RepositoryReader<entity::View>> viewRepositoryReader;
+            
+            std::shared_ptr<IIdFactory<EntityId>> pipelineNodeIdFactory;
+            std::shared_ptr<EntityRepository<entity::PipelineNode>> pipelineNodeRepository;
             std::shared_ptr<RepositoryReader<entity::PipelineNode>> pipelineNodeRepositoryReader;
 
+            std::shared_ptr<services::IFrameService> frameService;
             std::shared_ptr<services::PipelineService> pipelineService;
 
             std::shared_ptr<events::EngineEventHubDispatcher> engineEventHub;
             std::shared_ptr<events::SystemConsoleEventHubDispatcher> consoleEventHub;
+            std::shared_ptr<events::WindowEventHubDispatcher> glfwWindowEventHub;
 
         protected:
             void configureProject() override;
+            void attachEventHandlers() override;
             void configurePipeline() override;
     };
 }

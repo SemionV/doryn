@@ -2,21 +2,21 @@
 
 namespace dory::win32
 {
-    class DORY_API ConsoleController: public dory::Controller
+    class DORY_API ConsoleController: public domain::Controller
     {
         private:
-            dory::IndividualProcessThread processThread;
-            std::shared_ptr<events::SystemConsoleEventHubDispatcher> eventHub;
+            multithreading::IndividualProcessThread processThread;
+            std::shared_ptr<domain::events::SystemConsoleEventHubDispatcher> eventHub;
 
         public:
-            ConsoleController(std::shared_ptr<events::SystemConsoleEventHubDispatcher> eventHub):
+            ConsoleController(std::shared_ptr<domain::events::SystemConsoleEventHubDispatcher> eventHub):
                 eventHub(eventHub)
             {
             }
 
-            bool initialize(domain::entity::IdType referenceId, DataContext& context) override;
-            void stop(domain::entity::IdType referenceId, DataContext& context) override;
-            void update(dory::domain::entity::IdType referenceId, const TimeSpan& timeStep, DataContext& context) override;
+            bool initialize(domain::entity::IdType referenceId, domain::DataContext& context) override;
+            void stop(domain::entity::IdType referenceId, domain::DataContext& context) override;
+            void update(dory::domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, domain::DataContext& context) override;
 
         protected:
             virtual void onKeyPressed(int key);

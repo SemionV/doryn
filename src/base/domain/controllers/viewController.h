@@ -2,7 +2,7 @@
 
 #include "base/domain/controller.h"
 #include "base/configuration/configuration.h"
-#include "base/entityRepository.h"
+#include "base/domain/entityRepository.h"
 #include "base/domain/entity.h"
 
 namespace dory::domain

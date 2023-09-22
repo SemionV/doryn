@@ -10,10 +10,10 @@ namespace test
 
     }
 
-    void StepFrameService::startLoop(dory::domain::Engine& engine, dory::DataContext& context)
+    void StepFrameService::startLoop(dory::domain::Engine& engine, dory::domain::DataContext& context)
     {
         isStop = false;
-        dory::TimeSpan timeStep(dory::UnitScale::Micro);
+        dory::domain::TimeSpan timeStep(dory::domain::UnitScale::Micro);
         char key;
 
 #ifdef __unix__

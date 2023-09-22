@@ -2,7 +2,7 @@
 
 #include "event.h"
 
-namespace dory
+namespace dory::domain::events
 {
     class EventHubDispatcher
     {

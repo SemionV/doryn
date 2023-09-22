@@ -7,20 +7,20 @@ namespace dory::win32
     class DORY_API WindowControllerParallel: public WindowController
     {
         private:
-            std::shared_ptr<dory::IndividualProcessThread> windowsThread;
+            std::shared_ptr<multithreading::IndividualProcessThread> windowsThread;
 
         public:
-            WindowControllerParallel(std::shared_ptr<dory::IndividualProcessThread> windowsThread,
-                std::shared_ptr<events::WindowEventHubDispatcher> eventHub,
+            WindowControllerParallel(std::shared_ptr<multithreading::IndividualProcessThread> windowsThread,
+                std::shared_ptr<domain::events::WindowEventHubDispatcher> eventHub,
                 std::shared_ptr<MessageBuffer> messageBuffer,
-                std::shared_ptr<RepositoryReader<Window>> windowRepository):
+                std::shared_ptr<domain::RepositoryReader<Window>> windowRepository):
                 WindowController(eventHub, messageBuffer, windowRepository),
                 windowsThread(windowsThread)
             {
             }
 
-            bool initialize(domain::entity::IdType referenceId, DataContext& context) override;
-            void stop(domain::entity::IdType referenceId, DataContext& context) override;
-            void update(domain::entity::IdType referenceId, const TimeSpan& timeStep, DataContext& context) override;
+            bool initialize(domain::entity::IdType referenceId, domain::DataContext& context) override;
+            void stop(domain::entity::IdType referenceId, domain::DataContext& context) override;
+            void update(domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, domain::DataContext& context) override;
     };
 }

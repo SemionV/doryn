@@ -15,17 +15,17 @@ int runDory()
 {
     auto configuration = std::make_shared<dory::configuration::FileSystemBasedConfiguration>("configuration");
     
-    auto idFactory = std::make_shared<dory::NumberIdFactory<EntityId>>();
-    auto windowRespository = std::make_shared<dory::EntityRepository<dory::openGL::GlfwWindow>>();
-    auto cameraRepository = std::make_shared<dory::EntityRepository<dory::domain::entity::Camera>>();
-    auto viewRepository = std::make_shared<dory::EntityRepository<dory::domain::entity::View>>();
+    auto idFactory = std::make_shared<dory::domain::NumberIdFactory<EntityId>>();
+    auto windowRespository = std::make_shared<dory::domain::EntityRepository<dory::openGL::GlfwWindow>>();
+    auto cameraRepository = std::make_shared<dory::domain::EntityRepository<dory::domain::entity::Camera>>();
+    auto viewRepository = std::make_shared<dory::domain::EntityRepository<dory::domain::entity::View>>();
 
-    auto windowReader = std::make_shared<dory::RepositoryReader<dory::openGL::GlfwWindow>>(windowRespository);
-    auto cameraReader = std::make_shared<dory::RepositoryReader<dory::domain::entity::Camera>>(cameraRepository);
-    auto viewReader = std::make_shared<dory::RepositoryReader<dory::domain::entity::View>>(viewRepository);
+    auto windowReader = std::make_shared<dory::domain::RepositoryReader<dory::openGL::GlfwWindow>>(windowRespository);
+    auto cameraReader = std::make_shared<dory::domain::RepositoryReader<dory::domain::entity::Camera>>(cameraRepository);
+    auto viewReader = std::make_shared<dory::domain::RepositoryReader<dory::domain::entity::View>>(viewRepository);
 
-    auto pipelineNodeRepository = std::make_shared<dory::EntityRepository<dory::domain::entity::PipelineNode>>();
-    auto pipelineNodeReader = std::make_shared<dory::RepositoryReader<dory::domain::entity::PipelineNode>>(pipelineNodeRepository);
+    auto pipelineNodeRepository = std::make_shared<dory::domain::EntityRepository<dory::domain::entity::PipelineNode>>();
+    auto pipelineNodeReader = std::make_shared<dory::domain::RepositoryReader<dory::domain::entity::PipelineNode>>(pipelineNodeRepository);
     auto pipelineService = std::make_shared<dory::domain::services::PipelineService>(pipelineNodeReader);
 
     auto inpoutGroupNode = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(idFactory->generate(), 
@@ -33,23 +33,23 @@ int runDory()
     auto outputGroupNode = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(idFactory->generate(), 
         nullptr, 1, dory::domain::entity::nullId, "output group"));
 
-    dory::DataContext context;
-    auto engineEventHub = std::make_shared<dory::events::EngineEventHubDispatcher>();
+    dory::domain::DataContext context;
+    auto engineEventHub = std::make_shared<dory::domain::events::EngineEventHubDispatcher>();
     auto engine = std::make_shared<dory::domain::Engine>(pipelineService, engineEventHub);
 
-    auto consoleEventHub = std::make_shared<dory::events::SystemConsoleEventHubDispatcher>();
+    auto consoleEventHub = std::make_shared<dory::domain::events::SystemConsoleEventHubDispatcher>();
     auto consoleController = std::make_shared<dory::win32::ConsoleController>(consoleEventHub);
     auto consoleControllerNode = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(idFactory->generate(), 
         consoleController, 0, inpoutGroupNode.id));
     consoleController->initialize(consoleControllerNode.id, context);
 
-    auto glfwWindowEventHub = std::make_shared<dory::events::WindowEventHubDispatcher>();
+    auto glfwWindowEventHub = std::make_shared<dory::domain::events::WindowEventHubDispatcher>();
     auto windowController = std::make_shared<dory::openGL::GlfwWindowController>(windowReader, glfwWindowEventHub);
     auto windowControllerNode = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(idFactory->generate(), 
         windowController, 0, inpoutGroupNode.id));
     windowController->initialize(windowControllerNode.id, context);
 
-    consoleEventHub->onKeyPressed() += [] (dory::DataContext& context, dory::events::KeyPressedEventData& keyPressedEventData)
+    consoleEventHub->onKeyPressed() += [] (dory::domain::DataContext& context, dory::domain::events::KeyPressedEventData& keyPressedEventData)
     {
         if(keyPressedEventData.keyPressed == 27)
         {
@@ -62,7 +62,7 @@ int runDory()
         }
     };
 
-    glfwWindowEventHub->onCloseWindow() += [&](dory::DataContext& context, dory::events::CloseWindowEventData& eventData)
+    glfwWindowEventHub->onCloseWindow() += [&](dory::domain::DataContext& context, dory::domain::events::CloseWindowEventData& eventData)
     {
         auto windowId = eventData.windowId;
         auto window = windowReader->get(windowId);
@@ -84,7 +84,7 @@ int runDory()
         }
     };
 
-    engineEventHub->onInitializeEngine() += [&](dory::DataContext& dataContext, const dory::events::InitializeEngineEventData& eventData)
+    engineEventHub->onInitializeEngine() += [&](dory::domain::DataContext& dataContext, const dory::domain::events::InitializeEngineEventData& eventData)
     {
         dory::openGL::GlfwWindowParameters glfwWindowParameters;
         auto glfwWindowHandler = dory::openGL::GlfwWindowFactory::createWindow(glfwWindowParameters);
@@ -107,7 +107,7 @@ int runDory()
     std::cout << "dory:native demo application" << std::endl;
     std::cout << "Press any key to process to render frame OR ESC to exit\r" << std::endl;
 
-    auto frameService = std::make_shared<dory::BasicFrameService>();
+    auto frameService = std::make_shared<dory::domain::services::BasicFrameService>();
     frameService->startLoop(engine, context);
 
     std::cout << "Session is over." << std::endl;

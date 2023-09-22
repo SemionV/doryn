@@ -1,17 +1,17 @@
 #include "base/dependencies.h"
-#include "transformationCalculator.h"
+#include "transformationCalculatorService.h"
 
-namespace dory
+namespace dory::domain::services
 {
-    TransformationCalculator::TransformationCalculator(std::shared_ptr<IMatrixCalculator> matrixCalculator):
+    TransformationCalculatorService::TransformationCalculatorService(std::shared_ptr<IMatrixCalculatorService> matrixCalculator):
         matrixCalculator(matrixCalculator)
     {
     }
 
-    void TransformationCalculator::apply(Transformation<Point3d, Matrix4x4>* transformation, const Point3d* point, Point3d* resultPoint)
+    void TransformationCalculatorService::apply(geometry::Transformation<geometry::Point3d, geometry::Matrix4x4>* transformation, const geometry::Point3d* point, geometry::Point3d* resultPoint)
     {
-        const Point3d* inputPoint = point;
-        Point3d previousTransformationResult(0, 0, 0);
+        const geometry::Point3d* inputPoint = point;
+        geometry::Point3d previousTransformationResult(0, 0, 0);
 
         if(transformation->previous)
         {

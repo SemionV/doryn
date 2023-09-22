@@ -1,9 +1,9 @@
 #pragma once
 
-#include "dependencies.h"
+#include "base/dependencies.h"
 #include "idFactory.h"
 
-namespace dory
+namespace dory::domain
 {
     template<class TEntity>
     class ITraverseIterator

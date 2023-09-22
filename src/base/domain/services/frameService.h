@@ -1,11 +1,11 @@
 #pragma once
 
-#include "doryExport.h"
-#include "domain/engine.h"
+#include "base/doryExport.h"
+#include "base/domain/engine.h"
 
-namespace dory
+namespace dory::domain::services
 {
-    class DORY_API FrameService
+    class DORY_API IFrameService
     {
         public:
             virtual void startLoop(std::shared_ptr<domain::Engine> engine, DataContext& context) = 0;

@@ -9,12 +9,14 @@ namespace dory
     {
         protected:
             virtual void configureProject() = 0;
+            virtual void attachEventHandlers() = 0;
             virtual void configurePipeline() = 0;
 
         public:
             void configure()
             {
                 configureProject();
+                attachEventHandlers();
                 configurePipeline();
             }
     };

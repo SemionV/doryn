@@ -1,6 +1,8 @@
 #pragma once
 
-namespace dory::events
+#include "event.h"
+
+namespace dory::domain::events
 {
     struct CloseWindowEventData
     {
@@ -15,25 +17,25 @@ namespace dory::events
     class WindowEventHub
     {
         private:
-            dory::EventDispatcher<dory::DataContext&, CloseWindowEventData&> closeWindowEvent;
+            EventDispatcher<DataContext&, CloseWindowEventData&> closeWindowEvent;
 
         protected:
-            dory::EventDispatcher<dory::DataContext&, CloseWindowEventData&>& onCloseWindowDispatcher()
+            EventDispatcher<DataContext&, CloseWindowEventData&>& onCloseWindowDispatcher()
             {
                 return closeWindowEvent;
             }
 
         public:
-            dory::Event<dory::DataContext&, CloseWindowEventData&>& onCloseWindow()
+            Event<DataContext&, CloseWindowEventData&>& onCloseWindow()
             {
                 return closeWindowEvent;
             }
     };
 
-    class WindowEventHubDispatcher: public dory::EventHubDispatcher, public WindowEventHub
+    class WindowEventHubDispatcher: public EventHubDispatcher, public WindowEventHub
     {
         private:
-            dory::EventBuffer<CloseWindowEventData> closeWindowEventBuffer;
+            EventBuffer<CloseWindowEventData> closeWindowEventBuffer;
 
         public:
             void addCase(CloseWindowEventData&& closeWindowData)
@@ -41,7 +43,7 @@ namespace dory::events
                 closeWindowEventBuffer.addCase(std::forward<CloseWindowEventData>(closeWindowData));
             }
 
-            void submit(dory::DataContext& context) override
+            void submit(DataContext& context) override
             {
                 closeWindowEventBuffer.submitCases(onCloseWindowDispatcher(), context);
             }

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace dory
+namespace dory::domain::geometry
 {
     struct Point2d
     {

@@ -3,7 +3,7 @@
 #include "base/dependencies.h"
 #include "point.h"
 
-namespace dory
+namespace dory::domain::geometry
 {
     struct Matrix4x4
     {        

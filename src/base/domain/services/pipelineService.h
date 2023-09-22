@@ -1,7 +1,7 @@
 #pragma once
 
 #include "base/domain/object.h"
-#include "base/entityRepository.h"
+#include "base/domain/entityRepository.h"
 
 namespace dory::domain::services
 {

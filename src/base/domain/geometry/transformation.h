@@ -4,7 +4,7 @@
 #include "point.h"
 #include "matrix.h"
 
-namespace dory
+namespace dory::domain::geometry
 {
     template<typename TPoint, typename TMatrix>
     struct Transformation

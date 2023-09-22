@@ -11,7 +11,7 @@ struct TestEntity: public entity::Entity<entity::IdType>
 
 TEST_CASE( "Get entities count", "[repository]" )
 {
-    auto repository = std::make_shared<dory::EntityRepository<TestEntity>>(
+    auto repository = std::make_shared<dory::domain::EntityRepository<TestEntity>>(
         std::initializer_list<TestEntity>
         {
             TestEntity(1),
@@ -23,7 +23,7 @@ TEST_CASE( "Get entities count", "[repository]" )
 
 TEST_CASE( "Iterator", "[repository]" )
 {
-    auto repository = std::make_shared<dory::EntityRepository<TestEntity>>(
+    auto repository = std::make_shared<dory::domain::EntityRepository<TestEntity>>(
         std::initializer_list<TestEntity>
         {
             TestEntity(1),
@@ -45,7 +45,7 @@ TEST_CASE( "Iterator", "[repository]" )
 
 TEST_CASE( "Store entity", "[repository]" )
 {
-    auto repository = std::make_shared<dory::EntityRepository<TestEntity>>();
+    auto repository = std::make_shared<dory::domain::EntityRepository<TestEntity>>();
 
     auto entity = repository->store(TestEntity(1));
 
@@ -55,7 +55,7 @@ TEST_CASE( "Store entity", "[repository]" )
 
 TEST_CASE( "Remove", "[repository]" )
 {
-    auto repository = std::make_shared<dory::EntityRepository<TestEntity>>(
+    auto repository = std::make_shared<dory::domain::EntityRepository<TestEntity>>(
         std::initializer_list<TestEntity>
         {
             TestEntity(1),

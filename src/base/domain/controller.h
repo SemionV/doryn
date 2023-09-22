@@ -1,10 +1,10 @@
 #pragma once
 
-#include "base/dataContext.h"
-#include "base/types.h"
+#include "dataContext.h"
+#include "types.h"
 #include "entity.h"
 
-namespace dory
+namespace dory::domain
 {
     class DORY_API Controller
     {

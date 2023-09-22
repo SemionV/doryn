@@ -1,5 +1,7 @@
 #include "dependencies.h"
 
+using namespace dory::domain;
+
 struct MessageData
 {
     std::string message;
@@ -36,37 +38,37 @@ struct KeyPressed
 class WindowEventHub
 {
     private:
-        dory::EventDispatcher<dory::DataContext&, WindowClick&> clickEvent;
-        dory::EventDispatcher<dory::DataContext&, KeyPressed&> keyPressedEvent;
+        events::EventDispatcher<dory::domain::DataContext&, WindowClick&> clickEvent;
+        events::EventDispatcher<dory::domain::DataContext&, KeyPressed&> keyPressedEvent;
 
     public:
-        dory::Event<dory::DataContext&, WindowClick&>& onClick()
+        events::Event<dory::domain::DataContext&, WindowClick&>& onClick()
         {
             return clickEvent;
         }
 
-        dory::Event<dory::DataContext&, KeyPressed&>& onKeyPressed()
+        events::Event<dory::domain::DataContext&, KeyPressed&>& onKeyPressed()
         {
             return keyPressedEvent;
         }
 
     protected:
-        dory::EventDispatcher<dory::DataContext&, WindowClick&>& onClickDispatcher()
+        events::EventDispatcher<dory::domain::DataContext&, WindowClick&>& onClickDispatcher()
         {
             return clickEvent;
         }
 
-        dory::EventDispatcher<dory::DataContext&, KeyPressed&>& onKeyPressedDispatcher()
+        events::EventDispatcher<dory::domain::DataContext&, KeyPressed&>& onKeyPressedDispatcher()
         {
             return keyPressedEvent;
         }
 };
 
-class WindowEventHubDispatcher: public WindowEventHub, public dory::EventHubDispatcher
+class WindowEventHubDispatcher: public WindowEventHub, public events::EventHubDispatcher
 {
     private:
-        dory::EventBuffer<KeyPressed> keyPressedEventBuffer;
-        dory::EventBuffer<WindowClick> clickEventBuffer;
+        events::EventBuffer<KeyPressed> keyPressedEventBuffer;
+        events::EventBuffer<WindowClick> clickEventBuffer;
 
     public:
         void addCase(WindowClick&& clickData)
@@ -79,7 +81,7 @@ class WindowEventHubDispatcher: public WindowEventHub, public dory::EventHubDisp
             keyPressedEventBuffer.addCase(std::forward<KeyPressed>(clickData));
         }
 
-        void submit(dory::DataContext& dataContext) override
+        void submit(DataContext& dataContext) override
         {
             clickEventBuffer.submitCases(onClickDispatcher(), dataContext);
             keyPressedEventBuffer.submitCases(onKeyPressedDispatcher(), dataContext);
@@ -90,21 +92,21 @@ TEST_CASE( "Event Hub", "[messages]" )
 {
     WindowEventHubDispatcher eventHub;
     std::vector<WindowClick> clicks;
-    dory::DataContext dataContext;
+    dory::domain::DataContext dataContext;
 
-    eventHub.onClick() += [&](dory::DataContext& context, WindowClick& click)
+    eventHub.onClick() += [&](dory::domain::DataContext& context, WindowClick& click)
     {
         clicks.push_back(click);
     };
 
     std::vector<WindowClick> clicks2;
-    eventHub.onClick() += [&](dory::DataContext& context, WindowClick& click)
+    eventHub.onClick() += [&](dory::domain::DataContext& context, WindowClick& click)
     {
         clicks2.push_back(click);
     };
 
     std::vector<KeyPressed> keysPressed;
-    eventHub.onKeyPressed() += [&](dory::DataContext& context, KeyPressed& keyPressed)
+    eventHub.onKeyPressed() += [&](dory::domain::DataContext& context, KeyPressed& keyPressed)
     {
         keysPressed.push_back(keyPressed);
     };

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "base/domain/controller.h"
+#include "controller.h"
 #include "services/pipelineService.h"
-#include "base/events/engineEventHub.h"
+#include "events/engineEventHub.h"
 
 namespace dory::domain
 {

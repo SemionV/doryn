@@ -3,14 +3,13 @@ cmake_minimum_required(VERSION 3.22)
 project(dory-base)
 
 add_library(base SHARED configuration/fileSystemBasedConfiguration.cpp
-                        basicFrameService.cpp
+                        domain/services/basicFrameService.cpp
                         domain/engine.cpp
-                        types.cpp
                         multithreading/task.cpp
                         multithreading/currentProcessThread.cpp
                         multithreading/individualProcessThread.cpp
-                        domain/geometry/matrixCalculator.cpp
-                        domain/geometry/transformationCalculator.cpp
+                        domain/services/matrixCalculatorService.cpp
+                        domain/services/transformationCalculatorService.cpp
                         domain/services/pipelineService.cpp)
 
 set_target_properties(base PROPERTIES PREFIX ""

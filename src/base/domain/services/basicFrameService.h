@@ -2,9 +2,9 @@
 
 #include "frameService.h"
 
-namespace dory
+namespace dory::domain::services
 {
-    class DORY_API BasicFrameService: public FrameService
+    class DORY_API BasicFrameService: public IFrameService
     {
         private:
             bool isStop;

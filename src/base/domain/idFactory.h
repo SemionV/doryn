@@ -1,6 +1,6 @@
 #pragma once
 
-namespace dory
+namespace dory::domain
 {
     template<typename TId>
     class IIdFactory

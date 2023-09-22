@@ -2,7 +2,7 @@
 
 #include "base/doryExport.h"
 
-namespace dory
+namespace dory::multithreading
 {
     class DORY_API Task
     {

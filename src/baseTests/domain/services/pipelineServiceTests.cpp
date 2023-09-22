@@ -4,7 +4,7 @@ using namespace dory::domain;
 
 TEST_CASE( "Load Pipeline", "[pipelineService]" )
 {
-    auto nodesRepository = std::make_shared<dory::EntityRepository<entity::PipelineNode>>(
+    auto nodesRepository = std::make_shared<dory::domain::EntityRepository<entity::PipelineNode>>(
         std::initializer_list<entity::PipelineNode>{
             entity::PipelineNode(2, nullptr, 1, entity::nullId),
             entity::PipelineNode(1, nullptr, 0, entity::nullId),
@@ -13,7 +13,7 @@ TEST_CASE( "Load Pipeline", "[pipelineService]" )
             entity::PipelineNode(5, nullptr, 0, 4),
             entity::PipelineNode(6, nullptr, 0, 2),
         });
-    auto nodesReader = std::make_shared<dory::RepositoryReader<entity::PipelineNode>>(nodesRepository);
+    auto nodesReader = std::make_shared<dory::domain::RepositoryReader<entity::PipelineNode>>(nodesRepository);
 
     auto pipelineService = std::make_shared<services::PipelineService>(nodesReader);
     auto pipeline = pipelineService->getPipeline();

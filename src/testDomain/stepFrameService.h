@@ -2,7 +2,7 @@
 
 namespace test
 {
-    class DORY_API StepFrameService: public dory::FrameService
+    class DORY_API StepFrameService: public dory::domain::services::IFrameService
     {
         private:
             bool isStop;
@@ -12,7 +12,7 @@ namespace test
 
         StepFrameService();
 
-        void startLoop(dory::domain::Engine& engine, dory::DataContext& context);
+        void startLoop(dory::domain::Engine& engine, dory::domain::DataContext& context);
         
         void endLoop();
     };
