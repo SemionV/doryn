@@ -52,7 +52,7 @@ namespace dory::win32
                 auto window = windowRepository->get(message->hWnd, WindowController::compareHandles);
                 if(window)
                 {
-                    eventHub->addCase(CloseWindowEventData(window->id));
+                    eventHub->addCase(events::CloseWindowEventData(window->id));
                 }
             }
         }

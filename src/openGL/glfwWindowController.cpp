@@ -4,7 +4,7 @@
 namespace dory::openGL
 {
     GlfwWindowController::GlfwWindowController(std::shared_ptr<RepositoryReader<GlfwWindow>> windowRepository,
-        std::shared_ptr<WindowEventHubDispatcher> eventHub):
+        std::shared_ptr<events::WindowEventHubDispatcher> eventHub):
             windowRepository(windowRepository),
             eventHub(eventHub)
     {}
@@ -29,7 +29,7 @@ namespace dory::openGL
         {
             if(glfwWindowShouldClose(window->handler))
             {
-                eventHub->addCase(window->id);
+                eventHub->addCase(events::CloseWindowEventData(window->id));
                 glfwSetWindowShouldClose(window->handler, 0);
             }
 

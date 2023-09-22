@@ -1,7 +1,7 @@
 #include "base/dependencies.h"
 #include "fileSystemBasedConfiguration.h"
 
-namespace dory
+namespace dory::configuration
 {
     FileSystemBasedConfiguration::FileSystemBasedConfiguration(std::filesystem::path configurationPath):
         configurationPath(configurationPath)

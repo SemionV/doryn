@@ -1,12 +1,21 @@
 #pragma once
 
 #include "base/dependencies.h"
-#include "keyPressedEventData.h"
-#include "base/messaging/event.h"
-#include "base/messaging/eventHub.h"
+#include "event.h"
+#include "eventHub.h"
 
-namespace dory
+namespace dory::events
 {
+    struct KeyPressedEventData
+    {
+        const char keyPressed;
+        
+        KeyPressedEventData(char keyPressed):
+            keyPressed(keyPressed)
+        {
+        }
+    };
+
     class SystemConsoleEventHub
     {
         private:

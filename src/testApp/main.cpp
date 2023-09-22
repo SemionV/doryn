@@ -9,9 +9,11 @@
 
 using EntityId = dory::domain::entity::IdType;
 
+
+
 int runDory()
 {
-    auto configuration = std::make_shared<dory::FileSystemBasedConfiguration>("configuration");
+    auto configuration = std::make_shared<dory::configuration::FileSystemBasedConfiguration>("configuration");
     
     auto idFactory = std::make_shared<dory::NumberIdFactory<EntityId>>();
     auto windowRespository = std::make_shared<dory::EntityRepository<dory::openGL::GlfwWindow>>();
@@ -35,19 +37,32 @@ int runDory()
     auto engineEventHub = std::make_shared<dory::events::EngineEventHubDispatcher>();
     auto engine = std::make_shared<dory::domain::Engine>(pipelineService, engineEventHub);
 
-    auto consoleEventHub = std::make_shared<dory::SystemConsoleEventHubDispatcher>();
+    auto consoleEventHub = std::make_shared<dory::events::SystemConsoleEventHubDispatcher>();
     auto consoleController = std::make_shared<dory::win32::ConsoleController>(consoleEventHub);
     auto consoleControllerNode = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(idFactory->generate(), 
         consoleController, 0, inpoutGroupNode.id));
     consoleController->initialize(consoleControllerNode.id, context);
 
-    auto glfwWindowEventHub = std::make_shared<dory::WindowEventHubDispatcher>();
+    auto glfwWindowEventHub = std::make_shared<dory::events::WindowEventHubDispatcher>();
     auto windowController = std::make_shared<dory::openGL::GlfwWindowController>(windowReader, glfwWindowEventHub);
     auto windowControllerNode = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(idFactory->generate(), 
         windowController, 0, inpoutGroupNode.id));
     windowController->initialize(windowControllerNode.id, context);
 
-    glfwWindowEventHub->onCloseWindow() += [&](dory::DataContext& context, dory::CloseWindowEventData& eventData)
+    consoleEventHub->onKeyPressed() += [] (dory::DataContext& context, dory::events::KeyPressedEventData& keyPressedEventData)
+    {
+        if(keyPressedEventData.keyPressed == 27)
+        {
+            context.isStop = true;
+            std::cout << std::this_thread::get_id() << ": ESC" << std::endl;
+        }
+        else if(keyPressedEventData.keyPressed != 0)
+        {
+            std::cout << std::this_thread::get_id() << ": key pressed: " << keyPressedEventData.keyPressed << std::endl;
+        }
+    };
+
+    glfwWindowEventHub->onCloseWindow() += [&](dory::DataContext& context, dory::events::CloseWindowEventData& eventData)
     {
         auto windowId = eventData.windowId;
         auto window = windowReader->get(windowId);
@@ -68,8 +83,6 @@ int runDory()
             });
         }
     };
-
-    test::TestLogic logic(consoleEventHub, glfwWindowEventHub);
 
     engineEventHub->onInitializeEngine() += [&](dory::DataContext& dataContext, const dory::events::InitializeEngineEventData& eventData)
     {

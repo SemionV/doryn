@@ -38,8 +38,8 @@ namespace dory::win32
     {
         std::cout << std::this_thread::get_id() << ": add key pressed message: " << key << std::endl;
 
-        dory::KeyPressedEventData eventData(key);
-        eventHub->addCase(std::forward<dory::KeyPressedEventData>(eventData));
+        events::KeyPressedEventData eventData(key);
+        eventHub->addCase(std::forward<events::KeyPressedEventData>(eventData));
     }
 
     void ConsoleController::bindStdHandlesToConsole()

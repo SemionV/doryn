@@ -11,7 +11,7 @@ namespace dory::win32
 
         public:
             WindowControllerParallel(std::shared_ptr<dory::IndividualProcessThread> windowsThread,
-                std::shared_ptr<dory::WindowEventHubDispatcher> eventHub,
+                std::shared_ptr<events::WindowEventHubDispatcher> eventHub,
                 std::shared_ptr<MessageBuffer> messageBuffer,
                 std::shared_ptr<RepositoryReader<Window>> windowRepository):
                 WindowController(eventHub, messageBuffer, windowRepository),

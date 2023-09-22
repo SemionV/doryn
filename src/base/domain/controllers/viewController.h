@@ -12,13 +12,12 @@ namespace dory::domain
     {
         protected:
             std::shared_ptr<RepositoryReader<entity::View>> viewRepository;
-            std::shared_ptr<IConfiguration> configuration;
+            std::shared_ptr<configuration::IConfiguration> configuration;
 
         public:
-            ViewController(std::shared_ptr<RepositoryReader<entity::View>> viewRepository, std::shared_ptr<IConfiguration> configuration):
+            ViewController(std::shared_ptr<RepositoryReader<entity::View>> viewRepository, std::shared_ptr<configuration::IConfiguration> configuration):
                 viewRepository(viewRepository),
                 configuration(configuration)
-            {        
-            }
+            {}
     };
 }

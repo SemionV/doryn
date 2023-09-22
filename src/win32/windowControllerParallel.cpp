@@ -23,7 +23,7 @@ namespace dory::win32
 
     }
 
-    void WindowControllerParallel::update(dory::domain::entity::IdType referenceId, const TimeSpan& timeStep, DataContext& context)
+    void WindowControllerParallel::update(domain::entity::IdType referenceId, const TimeSpan& timeStep, DataContext& context)
     {
         submitEvents(context);
     }

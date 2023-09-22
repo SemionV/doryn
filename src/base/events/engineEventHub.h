@@ -1,8 +1,8 @@
 #pragma once
 
 #include "base/dependencies.h"
-#include "base/messaging/event.h"
-#include "base/messaging/eventHub.h"
+#include "event.h"
+#include "eventHub.h"
 
 namespace dory::events
 {

@@ -2,7 +2,7 @@
 
 #include "configuration.h"
 
-namespace dory
+namespace dory::configuration
 {
     class FileSystemBasedConfiguration: public IConfiguration
     {

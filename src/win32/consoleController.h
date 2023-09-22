@@ -6,10 +6,10 @@ namespace dory::win32
     {
         private:
             dory::IndividualProcessThread processThread;
-            std::shared_ptr<dory::SystemConsoleEventHubDispatcher> eventHub;
+            std::shared_ptr<events::SystemConsoleEventHubDispatcher> eventHub;
 
         public:
-            ConsoleController(std::shared_ptr<dory::SystemConsoleEventHubDispatcher> eventHub):
+            ConsoleController(std::shared_ptr<events::SystemConsoleEventHubDispatcher> eventHub):
                 eventHub(eventHub)
             {
             }

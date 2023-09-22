@@ -8,11 +8,11 @@ namespace dory::openGL
     {
         private:
             std::shared_ptr<RepositoryReader<GlfwWindow>> windowRepository;
-            std::shared_ptr<WindowEventHubDispatcher> eventHub;
+            std::shared_ptr<events::WindowEventHubDispatcher> eventHub;
 
         public:
             GlfwWindowController(std::shared_ptr<RepositoryReader<GlfwWindow>> windowRepository,
-                std::shared_ptr<WindowEventHubDispatcher> eventHub);
+                std::shared_ptr<events::WindowEventHubDispatcher> eventHub);
 
             bool initialize(domain::entity::IdType referenceId, DataContext& context) override;
             void stop(domain::entity::IdType referenceId, DataContext& context) override;

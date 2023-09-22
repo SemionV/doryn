@@ -20,7 +20,7 @@ namespace dory::openGL
 
         public:
             ViewControllerOpenGL(std::shared_ptr<RepositoryReader<domain::entity::View>> viewRepository, 
-                std::shared_ptr<IConfiguration> configuration,
+                std::shared_ptr<configuration::IConfiguration> configuration,
                 std::shared_ptr<RepositoryReader<GlfwWindow>> windowRespository);
 
             bool initialize(domain::entity::IdType referenceId, dory::DataContext& context) override;
