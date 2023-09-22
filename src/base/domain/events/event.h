@@ -30,10 +30,16 @@ namespace dory::domain::events
             template<typename F>
             int operator+=(F&& function)
             {
-                return attachHandler(function);
+                return attachHandler(std::forward<F>(function));
             }
 
             int attachHandler(std::function<void(Ts...)>&& functor)
+            {
+                return attachFunction(std::forward<std::function<void(Ts...)>>(functor));
+            }
+
+            template<typename F>
+            int operator+=(std::function<void(Ts...)>&& functor)
             {
                 return attachFunction(std::forward<std::function<void(Ts...)>>(functor));
             }

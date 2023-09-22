@@ -1,11 +1,14 @@
 # Development log
 
 Tasks:
-* Group all the engine components, repositories, factories, etc in an Project class
-* Make order with engine namespaces, folders and files
+* Generalize DataContext type for all the types in the engine, so that it is possible to work with derived classes of DataContext in the Project class  without casting
 * Implement dynamic window open/close with views
 * Move src/lib and scr/vendor dirs out of project folder(in order to make vs code intellisence work properly and light)
 * Integrate C# dotnet as scripting engine
+
+**22.09.23**
+* Task done: Make order with engine namespaces, folders and files
+* Task done: Group all the engine components, repositories, factories, etc in Project class
 
 **20.09.23**
 * Task done: Develop Unit Tests for EntitiyRepository

@@ -4,7 +4,8 @@ project(dory-win32)
 
 add_library(win32 SHARED windowController.cpp
                         windowControllerParallel.cpp
-                        consoleController.cpp)
+                        consoleController.cpp
+                        windowFactory.cpp)
 
 set_target_properties(win32 PROPERTIES PREFIX ""
                                             IMPORT_PREFIX ""
