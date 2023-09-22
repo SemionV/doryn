@@ -9,9 +9,7 @@ find_package(glfw3 REQUIRED
 
 set_source_files_properties(${CMAKE_SOURCE_DIR}/vendor/GL/gl3w.c PROPERTIES LANGUAGE CXX )
 
-add_library(dory-openGL SHARED ${CMAKE_SOURCE_DIR}/vendor/GL/gl3w.c
-                                viewControllerOpenGL.cpp
-                                glfwWindowController.cpp)
+add_library(dory-openGL SHARED ${CMAKE_SOURCE_DIR}/vendor/GL/gl3w.c)
 
 set_target_properties(dory-openGL PROPERTIES PREFIX ""
                                             IMPORT_PREFIX ""

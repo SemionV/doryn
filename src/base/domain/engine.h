@@ -6,26 +6,48 @@
 
 namespace dory::domain
 {
-    class DORY_API Engine
+    template<class TDataContext>
+    class Engine
     {
         private:
             std::shared_ptr<services::PipelineService> pipelineService;
-            std::shared_ptr<events::EngineEventHubDispatcher> engineEventHub;
+            std::shared_ptr<events::EngineEventHubDispatcher<TDataContext>> engineEventHub;
 
         public:
             Engine(std::shared_ptr<services::PipelineService> pipelineService,
-                std::shared_ptr<events::EngineEventHubDispatcher> engineEventHub):
+                std::shared_ptr<events::EngineEventHubDispatcher<TDataContext>> engineEventHub):
                     pipelineService(pipelineService),
                     engineEventHub(engineEventHub)
             {};
 
-            bool update(DataContext& context, const TimeSpan& timeStep);
-            void initialize(DataContext& context);
-            void stop(DataContext& context);
+            bool update(TDataContext& context, const TimeSpan& timeStep)
+            {
+                auto pipelineNodes = pipelineService->getPipeline();
+
+                touchPipelineNodes(pipelineNodes, context, [](std::shared_ptr<object::PipelineNode> node, TDataContext& context, const TimeSpan& timeStep)
+                {
+                    auto controller = node->nodeEntity->attachedController;
+                    if(controller)
+                    {
+                        std::static_pointer_cast<Controller<TDataContext>>(controller)->update(node->nodeEntity->id, timeStep, context);
+                    }
+                }, timeStep);
+
+                return context.isStop;
+            }
+            
+            void initialize(TDataContext& context)
+            {
+                engineEventHub->fire(context, events::InitializeEngineEventData());
+            };
+
+            void stop(TDataContext& context)
+            {
+            }
 
         private:
             template<typename F, typename... Ts>
-            static void touchPipelineNodes(std::list<std::shared_ptr<object::PipelineNode>> pipelineNodes, DataContext& context, F functor, Ts... arguments)
+            static void touchPipelineNodes(std::list<std::shared_ptr<object::PipelineNode>> pipelineNodes, TDataContext& context, F functor, Ts... arguments)
             {
                 auto end = pipelineNodes.end();
 
@@ -36,7 +58,7 @@ namespace dory::domain
             }
 
             template<typename F, typename... Ts>
-            static void touchNode(std::shared_ptr<object::PipelineNode> node, DataContext& context, F functor, Ts... arguments)
+            static void touchNode(std::shared_ptr<object::PipelineNode> node, TDataContext& context, F functor, Ts... arguments)
             {
                 functor(node, context, arguments...);
 

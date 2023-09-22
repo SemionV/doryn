@@ -6,11 +6,12 @@
 
 namespace dory::domain
 {
+    template<class TDataContext>
     class DORY_API Controller
     {
         public:
-            virtual bool initialize(domain::entity::IdType referenceId, DataContext& context) = 0;
-            virtual void stop(domain::entity::IdType referenceId, DataContext& context) = 0;
-            virtual void update(domain::entity::IdType referenceId, const TimeSpan& timeStep, DataContext& context) = 0;
+            virtual bool initialize(domain::entity::IdType referenceId, TDataContext& context) = 0;
+            virtual void stop(domain::entity::IdType referenceId, TDataContext& context) = 0;
+            virtual void update(domain::entity::IdType referenceId, const TimeSpan& timeStep, TDataContext& context) = 0;
     };
 }

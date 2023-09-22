@@ -7,8 +7,8 @@
 
 namespace dory::domain
 {
-    template<class TWindow>
-    class ViewController: public Controller
+    template<class TDataContext, class TWindow>
+    class ViewController: public Controller<TDataContext>
     {
         protected:
             std::shared_ptr<RepositoryReader<entity::View>> viewRepository;

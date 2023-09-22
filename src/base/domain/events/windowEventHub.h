@@ -14,28 +14,30 @@ namespace dory::domain::events
         }
     };
 
+    template<class TDataContext>
     class WindowEventHub
     {
         private:
-            EventDispatcher<DataContext&, CloseWindowEventData&> closeWindowEvent;
+            EventDispatcher<TDataContext&, CloseWindowEventData&> closeWindowEvent;
 
         protected:
-            EventDispatcher<DataContext&, CloseWindowEventData&>& onCloseWindowDispatcher()
+            EventDispatcher<TDataContext&, CloseWindowEventData&>& onCloseWindowDispatcher()
             {
                 return closeWindowEvent;
             }
 
         public:
-            Event<DataContext&, CloseWindowEventData&>& onCloseWindow()
+            Event<TDataContext&, CloseWindowEventData&>& onCloseWindow()
             {
                 return closeWindowEvent;
             }
     };
 
-    class WindowEventHubDispatcher: public EventHubDispatcher, public WindowEventHub
+    template<class TDataContext>
+    class WindowEventHubDispatcher: public EventHubDispatcher<TDataContext>, public WindowEventHub<TDataContext>
     {
         private:
-            EventBuffer<CloseWindowEventData> closeWindowEventBuffer;
+            EventBuffer<TDataContext, CloseWindowEventData> closeWindowEventBuffer;
 
         public:
             void addCase(CloseWindowEventData&& closeWindowData)
@@ -43,9 +45,9 @@ namespace dory::domain::events
                 closeWindowEventBuffer.addCase(std::forward<CloseWindowEventData>(closeWindowData));
             }
 
-            void submit(DataContext& context) override
+            void submit(TDataContext& context) override
             {
-                closeWindowEventBuffer.submitCases(onCloseWindowDispatcher(), context);
+                closeWindowEventBuffer.submitCases(this->onCloseWindowDispatcher(), context);
             }
     };
 }

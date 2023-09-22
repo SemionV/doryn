@@ -6,17 +6,21 @@
 
 namespace dory::win32
 {
-        class DORY_API WindowController: public domain::Controller
+    template<class TDataContext>
+    class DORY_API WindowController: public domain::Controller<TDataContext>
     {
         private:
-            std::shared_ptr<domain::events::WindowEventHubDispatcher> eventHub;
+            std::shared_ptr<domain::events::WindowEventHubDispatcher<TDataContext>> eventHub;
             std::shared_ptr<MessageBuffer> messageBuffer;
             std::shared_ptr<domain::RepositoryReader<Window>> windowRepository;
 
-            static bool compareHandles(Window* window, HWND hWnd);
+            static bool compareHandles(Window* window, HWND hWnd)
+            {
+                return window->hWnd == hWnd;
+            }
 
         public:
-            WindowController(std::shared_ptr<domain::events::WindowEventHubDispatcher> eventHub,
+            WindowController(std::shared_ptr<domain::events::WindowEventHubDispatcher<TDataContext>> eventHub,
                 std::shared_ptr<MessageBuffer> messageBuffer,
                 std::shared_ptr<domain::RepositoryReader<Window>> windowRepository):
                 eventHub(eventHub),
@@ -25,13 +29,57 @@ namespace dory::win32
             {
             }
 
-            virtual bool initialize(domain::entity::IdType referenceId, domain::DataContext& context) override;
-            virtual void stop(domain::entity::IdType referenceId, domain::DataContext& context) override;
-            virtual void update(domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, domain::DataContext& context) override;
+            virtual bool initialize(domain::entity::IdType referenceId, TDataContext& context) override
+            {
+                return true;
+            };
+
+            virtual void stop(domain::entity::IdType referenceId, TDataContext& context) override
+            {
+            };
+
+            virtual void update(domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, TDataContext& context) override
+            {
+                pumpSystemMessages();     
+                submitEvents(context);   
+            }
 
         protected:
-            void pumpSystemMessages();
-            void submitEvents(domain::DataContext& context);
+            void pumpSystemMessages()
+            {
+                MSG msg;
+
+                while(PeekMessage(&msg,NULL,0,0,PM_NOREMOVE)) 
+                {
+                    if(GetMessage(&msg,NULL,0,0))
+                    { 
+                        TranslateMessage(&msg);
+                        DispatchMessage(&msg);
+                    }		
+                }
+
+                std::size_t size = messageBuffer->messages.size();
+                for(int i = 0; i < size; ++i)
+                {
+                    auto message = messageBuffer->messages[i];
+                    if(message->messageId == WM_CLOSE)
+                    {
+                        std::cout << "Close win32 window" << std::endl;
+
+                        auto window = windowRepository->get(message->hWnd, WindowController::compareHandles);
+                        if(window)
+                        {
+                            eventHub->addCase(domain::events::CloseWindowEventData(window->id));
+                        }
+                    }
+                }
+                messageBuffer->reset();
+            };
+
+            void submitEvents(TDataContext& context)
+            {
+                eventHub->submit(context);
+            };            
     };
 }
 

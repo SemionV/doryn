@@ -1,5 +1,6 @@
 #include "dependencies.h"
 #include "project.h"
+#include "projectDataContext.h"
 
 
 #include <windows.h>
@@ -13,7 +14,7 @@ namespace testApp
 {
     int runProject()
     {
-        Project project;
+        Project<ProjectDataContext> project;
 
         project.configure();
         project.run();

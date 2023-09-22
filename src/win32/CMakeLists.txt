@@ -2,10 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 
 project(dory-win32)
 
-add_library(win32 SHARED windowController.cpp
-                        windowControllerParallel.cpp
-                        consoleController.cpp
-                        windowFactory.cpp)
+add_library(win32 SHARED windowFactory.cpp)
 
 set_target_properties(win32 PROPERTIES PREFIX ""
                                             IMPORT_PREFIX ""

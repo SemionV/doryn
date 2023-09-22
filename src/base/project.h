@@ -19,8 +19,8 @@ namespace dory
             virtual void attachEventHandlers() = 0;
             virtual void configurePipeline(TDataContext& context) = 0;
 
-            virtual std::shared_ptr<domain::Engine> getEngine() = 0;
-            virtual std::shared_ptr<domain::services::IFrameService> getFrameService() = 0;
+            virtual std::shared_ptr<domain::Engine<TDataContext>> getEngine() = 0;
+            virtual std::shared_ptr<domain::services::IFrameService<TDataContext>> getFrameService() = 0;
             virtual std::shared_ptr<TDataContext> getDataContext() = 0;
 
         public:

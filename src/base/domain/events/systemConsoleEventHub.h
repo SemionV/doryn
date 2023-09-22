@@ -16,28 +16,30 @@ namespace dory::domain::events
         }
     };
 
+    template<class TDataContext>
     class SystemConsoleEventHub
     {
         private:
-            EventDispatcher<DataContext&, KeyPressedEventData&> keyPressedEvent;
+            EventDispatcher<TDataContext&, KeyPressedEventData&> keyPressedEvent;
 
         protected:
-            EventDispatcher<DataContext&, KeyPressedEventData&>& onKeyPressedDispatcher()
+            EventDispatcher<TDataContext&, KeyPressedEventData&>& onKeyPressedDispatcher()
             {
                 return keyPressedEvent;
             }
 
         public:
-            Event<DataContext&, KeyPressedEventData&>& onKeyPressed()
+            Event<TDataContext&, KeyPressedEventData&>& onKeyPressed()
             {
                 return keyPressedEvent;
             }
     };
 
-    class SystemConsoleEventHubDispatcher: public EventHubDispatcher, public SystemConsoleEventHub
+    template<class TDataContext>
+    class SystemConsoleEventHubDispatcher: public EventHubDispatcher<TDataContext>, public SystemConsoleEventHub<TDataContext>
     {
         private:
-            EventBuffer<KeyPressedEventData> keyPressedEventBuffer;
+            EventBuffer<TDataContext, KeyPressedEventData> keyPressedEventBuffer;
 
         public:
             void addCase(KeyPressedEventData&& keyPressedData)
@@ -45,9 +47,9 @@ namespace dory::domain::events
                 keyPressedEventBuffer.addCase(std::forward<KeyPressedEventData>(keyPressedData));
             }
 
-            void submit(DataContext& context) override
+            void submit(TDataContext& context) override
             {
-                keyPressedEventBuffer.submitCases(onKeyPressedDispatcher(), context);
+                keyPressedEventBuffer.submitCases(this->onKeyPressedDispatcher(), context);
             }
     };
 }

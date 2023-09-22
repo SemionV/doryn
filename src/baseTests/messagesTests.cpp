@@ -38,37 +38,37 @@ struct KeyPressed
 class WindowEventHub
 {
     private:
-        events::EventDispatcher<dory::domain::DataContext&, WindowClick&> clickEvent;
-        events::EventDispatcher<dory::domain::DataContext&, KeyPressed&> keyPressedEvent;
+        events::EventDispatcher<DataContext&, WindowClick&> clickEvent;
+        events::EventDispatcher<DataContext&, KeyPressed&> keyPressedEvent;
 
     public:
-        events::Event<dory::domain::DataContext&, WindowClick&>& onClick()
+        events::Event<DataContext&, WindowClick&>& onClick()
         {
             return clickEvent;
         }
 
-        events::Event<dory::domain::DataContext&, KeyPressed&>& onKeyPressed()
+        events::Event<DataContext&, KeyPressed&>& onKeyPressed()
         {
             return keyPressedEvent;
         }
 
     protected:
-        events::EventDispatcher<dory::domain::DataContext&, WindowClick&>& onClickDispatcher()
+        events::EventDispatcher<DataContext&, WindowClick&>& onClickDispatcher()
         {
             return clickEvent;
         }
 
-        events::EventDispatcher<dory::domain::DataContext&, KeyPressed&>& onKeyPressedDispatcher()
+        events::EventDispatcher<DataContext&, KeyPressed&>& onKeyPressedDispatcher()
         {
             return keyPressedEvent;
         }
 };
 
-class WindowEventHubDispatcher: public WindowEventHub, public events::EventHubDispatcher
+class WindowEventHubDispatcher: public WindowEventHub, public events::EventHubDispatcher<dory::domain::DataContext>
 {
     private:
-        events::EventBuffer<KeyPressed> keyPressedEventBuffer;
-        events::EventBuffer<WindowClick> clickEventBuffer;
+        events::EventBuffer<DataContext, KeyPressed> keyPressedEventBuffer;
+        events::EventBuffer<DataContext, WindowClick> clickEventBuffer;
 
     public:
         void addCase(WindowClick&& clickData)

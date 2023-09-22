@@ -4,13 +4,14 @@
 
 namespace dory::domain::events
 {
+    template<class TDataContext>
     class EventHubDispatcher
     {
         public:
-            virtual void submit(DataContext& context) = 0;
+            virtual void submit(TDataContext& context) = 0;
     };
 
-    template<typename TEventData>
+    template<typename TDataContext, typename TEventData>
     class EventBuffer
     {
         private:
@@ -36,7 +37,7 @@ namespace dory::domain::events
                 eventCasesBackBuffer->emplace_back(std::forward<TEventData>(eventData));
             }
 
-            void submitCases(EventDispatcher<DataContext&, TEventData&>& eventDispatcher, DataContext& dataContext)
+            void submitCases(EventDispatcher<TDataContext&, TEventData&>& eventDispatcher, TDataContext& dataContext)
             {
                 {
                     const std::lock_guard<std::mutex> lock(mutex);

@@ -10,30 +10,32 @@ namespace dory::domain::events
     {
     };
 
+    template<class TDataContext>
     class EngineEventHub
     {
         private:
-            EventDispatcher<DataContext&, const InitializeEngineEventData&> initializeEngineEvent;
+            EventDispatcher<TDataContext&, const InitializeEngineEventData&> initializeEngineEvent;
 
         protected:
-            EventDispatcher<DataContext&, const InitializeEngineEventData&>& onInitializeEngineDispatcher()
+            EventDispatcher<TDataContext&, const InitializeEngineEventData&>& onInitializeEngineDispatcher()
             {
                 return initializeEngineEvent;
             }
 
         public:
-            Event<DataContext&, const InitializeEngineEventData&>& onInitializeEngine()
+            Event<TDataContext&, const InitializeEngineEventData&>& onInitializeEngine()
             {
                 return initializeEngineEvent;
             }
     };
 
-    class EngineEventHubDispatcher: public EngineEventHub
+    template<class TDataContext>
+    class EngineEventHubDispatcher: public EngineEventHub<TDataContext>
     {
         public:
-            void fire(DataContext& context, const InitializeEngineEventData& initializeEngineEventData)
+            void fire(TDataContext& context, const InitializeEngineEventData& initializeEngineEventData)
             {
-                auto dispatcher = onInitializeEngineDispatcher();
+                auto dispatcher = this->onInitializeEngineDispatcher();
                 dispatcher(context, initializeEngineEventData);
             }
     };
