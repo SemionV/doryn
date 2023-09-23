@@ -101,7 +101,7 @@ namespace testApp
             }
 
         private:
-            void onInitializeEngine(TDataContext& context, const events::InitializeEngineEventData& eventData)
+            entity::IdType newWindow(TDataContext& context)
             {
                 dory::openGL::GlfwWindowParameters glfwWindowParameters;
                 auto glfwWindowHandler = dory::openGL::GlfwWindowFactory::createWindow(glfwWindowParameters);
@@ -117,6 +117,15 @@ namespace testApp
                 auto view = viewRepository->store(dory::domain::entity::View(viewIdFactory->generate(), window.id, viewControllerNode.id, camera.id, viewport));
 
                 viewController->initialize(viewControllerNode.id, context);
+
+                std::cout << "PipelineNode count: " << pipelineNodeRepository->getEntitiesCount() << std::endl;
+
+                return window.id;
+            }
+
+            void onInitializeEngine(TDataContext& context, const events::InitializeEngineEventData& eventData)
+            {
+                context.mainWindowId = newWindow(context);
             }
 
             void onConsoleKeyPressed(TDataContext& context, events::KeyPressedEventData& eventData)
@@ -125,6 +134,10 @@ namespace testApp
                 {
                     context.isStop = true;
                     std::cout << std::this_thread::get_id() << ": ESC" << std::endl;
+                }
+                else if(eventData.keyPressed == 119)
+                {
+                    newWindow(context);
                 }
                 else if(eventData.keyPressed != 0)
                 {
@@ -143,14 +156,35 @@ namespace testApp
 
                     dory::openGL::GlfwWindowFactory::closeWindow(windowHandler);
 
-                    context.isStop = true;
+                    if(windowId == context.mainWindowId)
+                    {
+                        context.isStop = true;
+                    }
                     std::cout << "Close window(id " << windowId << ")" << std::endl;
 
+                    entity::IdType viewControllerNodeId = pipelineNodeIdFactory->getNullId();
+
                     windowRespository->remove(window);
-                    viewRepository->remove([&windowId](dory::domain::entity::View& view)
+                    viewRepository->remove([&windowId, &viewControllerNodeId](dory::domain::entity::View& view)
                     {
-                        return view.windowId == windowId;
+                        if(view.windowId == windowId)
+                        {
+                            viewControllerNodeId = view.controllerNodeId;
+                            return true;
+                        }
+
+                        return false;
                     });
+
+                    if(viewControllerNodeId != pipelineNodeIdFactory->getNullId())
+                    {
+                        pipelineNodeRepository->remove([&viewControllerNodeId](dory::domain::entity::PipelineNode& node)
+                        {
+                            return node.id == viewControllerNodeId;
+                        });
+                    }
+
+                    std::cout << "PipelineNode count: " << pipelineNodeRepository->getEntitiesCount() << std::endl;
                 }
             }
     };

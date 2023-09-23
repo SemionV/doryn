@@ -4,7 +4,7 @@ namespace dory::domain::services
 {
     bool compareNodes(std::shared_ptr<object::PipelineNode> a, std::shared_ptr<object::PipelineNode> b)
     {
-        return a->nodeEntity->priority < b->nodeEntity->priority;
+        return a->nodeEntity.priority < b->nodeEntity.priority;
     }
 
     std::list<std::shared_ptr<object::PipelineNode>> PipelineService::getPipeline()
@@ -26,11 +26,11 @@ namespace dory::domain::services
 
     std::shared_ptr<object::PipelineNode> PipelineService::loadNode(entity::PipelineNode& nodeEntity)
     {
-        auto node = std::make_shared<object::PipelineNode>(&nodeEntity);
+        auto node = std::make_shared<object::PipelineNode>(nodeEntity);
 
         nodeReader->getTraverseIterator()->forEach([this, &node](entity::PipelineNode& nodeEntity)
         {
-            if(nodeEntity.parentNodeId == node->nodeEntity->id)
+            if(nodeEntity.parentNodeId == node->nodeEntity.id)
             {
                 node->children.emplace_back(loadNode(nodeEntity));
             }

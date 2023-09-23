@@ -1,9 +1,11 @@
 # Development log
 
 Tasks:
-* Implement dynamic window open/close with views
 * Move src/lib and scr/vendor dirs out of project folder(in order to make vs code intellisence work properly and light)
 * Integrate C# dotnet as scripting engine
+
+**23.09.23**
+* Task done: Implement dynamic window open/close with views
 
 **22.09.23**
 * Task done: Generalize DataContext type for all the types in the engine, so that it is possible to work with derived classes of DataContext in the Project class  without casting

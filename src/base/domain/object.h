@@ -6,10 +6,11 @@ namespace dory::domain::object
 {
     struct PipelineNode
     {
-        entity::PipelineNode* nodeEntity;
+
+        entity::PipelineNode nodeEntity;
         std::list<std::shared_ptr<object::PipelineNode>> children;
 
-        PipelineNode(entity::PipelineNode* nodeEntity):
+        PipelineNode(entity::PipelineNode& nodeEntity):
             nodeEntity(nodeEntity)
         {}
     };

@@ -14,23 +14,23 @@ namespace dory::domain
     };
 
     template<class TEntity>
-    class CongruentRepositoryTraverseIterator: public ITraverseIterator<TEntity>
+    class VectorRepositoryTraverseIterator: public ITraverseIterator<TEntity>
     {
         private:
-            TEntity* currentEntity;
-            TEntity* lastEntity;
+            typename std::vector<TEntity>::iterator current;
+            typename std::vector<TEntity>::iterator end;
 
         public:
-            CongruentRepositoryTraverseIterator(TEntity* firstEntity, TEntity* lastEntity):
-                currentEntity(firstEntity),
-                lastEntity(lastEntity)
+            VectorRepositoryTraverseIterator(typename std::vector<TEntity>::iterator begin, typename std::vector<TEntity>::iterator end):
+                current(begin),
+                end(end)
             {}
 
             TEntity* next() override
             {
-                if(currentEntity != lastEntity)
+                if(current != end)
                 {
-                    return currentEntity++;
+                    return &(*current++);
                 }
 
                 return nullptr;
@@ -80,11 +80,13 @@ namespace dory::domain
 
         public:
             EntityRepository()
-            {}
+            {
+            }
 
             EntityRepository(std::initializer_list<TEntity>&& data):
                 items(std::forward<std::vector<TEntity>>(data))
-            {}
+            {
+            }
 
             TEntity& store(TEntity&& entity) override
             {
@@ -103,7 +105,7 @@ namespace dory::domain
 
                 if(items.size())
                 {
-                    return std::make_unique<CongruentRepositoryTraverseIterator<TEntity>>(&(*begin), &(*end));
+                    return std::make_unique<VectorRepositoryTraverseIterator<TEntity>>(begin, end);
                 }
 
                 return std::make_unique<EmptyRepositoryTraverseIterator<TEntity>>();

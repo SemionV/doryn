@@ -6,5 +6,6 @@ namespace testApp
     {
         dory::domain::entity::IdType inputGroupNodeId;
         dory::domain::entity::IdType outputGroupNodeId;
+        dory::domain::entity::IdType mainWindowId;
     };
 }

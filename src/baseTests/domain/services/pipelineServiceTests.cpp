@@ -21,19 +21,19 @@ TEST_CASE( "Load Pipeline", "[pipelineService]" )
     REQUIRE(pipeline.size() == 2);
     
     auto i = pipeline.begin();
-    REQUIRE((*i)->nodeEntity->id == 1);
+    REQUIRE((*i)->nodeEntity.id == 1);
     auto children = (*i)->children;
     REQUIRE(children.size() == 2);
     auto j = children.begin();
-    REQUIRE((*j)->nodeEntity->id == 4);
+    REQUIRE((*j)->nodeEntity.id == 4);
     REQUIRE((*j)->children.size() == 1);
     j++;
-    REQUIRE((*j)->nodeEntity->id == 3);
+    REQUIRE((*j)->nodeEntity.id == 3);
     
     ++i;
-    REQUIRE((*i)->nodeEntity->id == 2);
+    REQUIRE((*i)->nodeEntity.id == 2);
     children = (*i)->children;
     REQUIRE(children.size() == 1);
     j = children.begin();
-    REQUIRE((*j)->nodeEntity->id == 6);
+    REQUIRE((*j)->nodeEntity.id == 6);
 }

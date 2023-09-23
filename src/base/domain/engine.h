@@ -26,10 +26,10 @@ namespace dory::domain
 
                 touchPipelineNodes(pipelineNodes, context, [](std::shared_ptr<object::PipelineNode> node, TDataContext& context, const TimeSpan& timeStep)
                 {
-                    auto controller = node->nodeEntity->attachedController;
+                    auto controller = node->nodeEntity.attachedController;
                     if(controller)
                     {
-                        std::static_pointer_cast<Controller<TDataContext>>(controller)->update(node->nodeEntity->id, timeStep, context);
+                        std::static_pointer_cast<Controller<TDataContext>>(controller)->update(node->nodeEntity.id, timeStep, context);
                     }
                 }, timeStep);
 

@@ -7,6 +7,7 @@ namespace dory::domain
     {
         public:
             virtual TId generate() = 0;
+            virtual TId getNullId() = 0;
     };
 
     template<typename TId>
@@ -16,9 +17,14 @@ namespace dory::domain
             TId counter;
 
         public:
-            TId generate()
+            TId generate() override
             {
                 return ++counter;
+            }
+
+            TId getNullId() override
+            {
+                return entity::nullId;;
             }
     };
 }
