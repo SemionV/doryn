@@ -1,4 +1,5 @@
 #include "dependencies.h"
+#include "serviceLocator.h"
 #include "project.h"
 #include "projectDataContext.h"
 
@@ -14,10 +15,10 @@ namespace testApp
 {
     int runProject()
     {
-        Project<ProjectDataContext> project;
+        ProjectDataContext context;
 
-        project.configure();
-        project.run();
+        testApp::Project<ProjectDataContext> project;
+        project.run(context);
 
         std::cout << "Session is over." << std::endl;
 

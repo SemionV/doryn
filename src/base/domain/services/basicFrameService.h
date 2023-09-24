@@ -11,7 +11,7 @@ namespace dory::domain::services
             bool isStop;
 
         public:
-            void startLoop(std::shared_ptr<domain::Engine<TDataContext>> engine, TDataContext& context)
+            void startLoop(domain::Engine<TDataContext>& engine, TDataContext& context) override
             {
                 isStop = false;
                 TimeSpan timeStep(UnitScale::Nano);
@@ -27,15 +27,15 @@ namespace dory::domain::services
 
                     timeStep.duration = duration.count();
 
-                    isStop = engine->update(context, timeStep);
+                    isStop = engine.update(context, timeStep);
 
                     lastTimestamp = currentTimestamp;
                 }
 
-                engine->stop(context);
+                engine.stop(context);
             }
 
-            void endLoop()
+            void endLoop() override
             {
                 isStop = true;
             }

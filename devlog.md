@@ -4,6 +4,9 @@ Tasks:
 * Move src/lib and scr/vendor dirs out of project folder(in order to make vs code intellisence work properly and light)
 * Integrate C# dotnet as scripting engine
 
+**24.09.23**
+* Task done: Refactor Project class, make it just a service container, develop separate class to hold application logic
+
 **23.09.23**
 * Task done: Implement dynamic window open/close with views
 

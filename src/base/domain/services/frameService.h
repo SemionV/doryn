@@ -9,7 +9,7 @@ namespace dory::domain::services
     class IFrameService
     {
         public:
-            virtual void startLoop(std::shared_ptr<domain::Engine<TDataContext>> engine, TDataContext& context) = 0;
+            virtual void startLoop(domain::Engine<TDataContext>& engine, TDataContext& context) = 0;
             virtual void endLoop() = 0;
     };
 }

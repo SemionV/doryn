@@ -15,7 +15,7 @@ namespace testApp
                 frameCounter(0)
             {}
 
-            void startLoop(dory::domain::Engine<TDataContext>& engine, TDataContext& context)
+            void startLoop(dory::domain::Engine<TDataContext>& engine, TDataContext& context) override
             {
                 isStop = false;
                 dory::domain::TimeSpan timeStep(dory::domain::UnitScale::Micro);
@@ -52,7 +52,7 @@ namespace testApp
 #endif
             }
         
-            void endLoop()
+            void endLoop() override
             {
                 isStop = true;
             }

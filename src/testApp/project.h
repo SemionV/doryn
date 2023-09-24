@@ -1,119 +1,75 @@
 #pragma once
 
+#include "serviceLocator.h"
+
 namespace testApp
 {
-    using EntityId = dory::domain::entity::IdType;
-    using namespace dory;
-    using namespace domain;
-
     template<class TDataContext>
-    class Project: public dory::Project<TDataContext>
+    class Project
     {
         private:
-            std::shared_ptr<configuration::IConfiguration> configuration;
+            std::shared_ptr<ServiceLocator<TDataContext>> serviceLocator;
 
-            std::shared_ptr<IIdFactory<EntityId>> windowIdFactory;
-            std::shared_ptr<EntityRepository<openGL::GlfwWindow>> windowRespository;
-            std::shared_ptr<RepositoryReader<openGL::GlfwWindow>> windowRepositoryReader;
+        public:
+            Project(): serviceLocator(std::make_shared<testApp::ServiceLocator<TDataContext>>())
+            {
+                serviceLocator->configure();
+                attachEventHandlers();
+            }
 
-            std::shared_ptr<IIdFactory<EntityId>> cameraIdFactory;
-            std::shared_ptr<EntityRepository<entity::Camera>> cameraRepository;
-            std::shared_ptr<RepositoryReader<entity::Camera>> cameraRepositoryReader;
+            void run(TDataContext& context)
+            {
+                auto pipelineService = serviceLocator->getPipelineService();
+                auto engineEventHub = serviceLocator->getEngineEventHub();
+                dory::domain::Engine<TDataContext> engine(pipelineService, engineEventHub);
+                engine.initialize(context);
 
-            std::shared_ptr<IIdFactory<EntityId>> viewIdFactory;
-            std::shared_ptr<EntityRepository<entity::View>> viewRepository;
-            std::shared_ptr<RepositoryReader<entity::View>> viewRepositoryReader;
-            
-            std::shared_ptr<IIdFactory<EntityId>> pipelineNodeIdFactory;
-            std::shared_ptr<EntityRepository<entity::PipelineNode>> pipelineNodeRepository;
-            std::shared_ptr<RepositoryReader<entity::PipelineNode>> pipelineNodeRepositoryReader;
-
-            std::shared_ptr<services::PipelineService> pipelineService;
-
-            std::shared_ptr<events::EngineEventHubDispatcher<TDataContext>> engineEventHub;
-            std::shared_ptr<events::SystemConsoleEventHubDispatcher<TDataContext>> consoleEventHub;
-            std::shared_ptr<events::WindowEventHubDispatcher<TDataContext>> glfwWindowEventHub;
+                services::BasicFrameService<TDataContext> frameService;
+                frameService.startLoop(engine, context);
+            }
 
         protected:
-            std::shared_ptr<Engine<TDataContext>> getEngine() override
+            void attachEventHandlers()
             {
-                return std::make_shared<dory::domain::Engine<TDataContext>>(pipelineService, engineEventHub);
+                serviceLocator->getEngineEventHub()->onInitializeEngine() += 
+                    std::bind(&Project::onInitializeEngine, this, std::placeholders::_1, std::placeholders::_2);
+                serviceLocator->getConsoleEventHub()->onKeyPressed() += 
+                    std::bind(&Project::onConsoleKeyPressed, this, std::placeholders::_1, std::placeholders::_2);
+                serviceLocator->getGlfwWindowEventHub()->onCloseWindow() += 
+                    std::bind(&Project::onCloseWindow, this, std::placeholders::_1, std::placeholders::_2);
             }
-
-            std::shared_ptr<services::IFrameService<TDataContext>> getFrameService() override
-            {
-                return std::make_shared<dory::domain::services::BasicFrameService<TDataContext>>();
-            }
-
-            std::shared_ptr<TDataContext> getDataContext() override
-            {
-                return std::make_shared<TDataContext>();
-            }
-
-            void configureProject() override
-            {
-                configuration = std::make_shared<configuration::FileSystemBasedConfiguration>("configuration");
-
-                windowIdFactory = std::make_shared<NumberIdFactory<EntityId>>();
-                windowRespository = std::make_shared<EntityRepository<openGL::GlfwWindow>>();
-                windowRepositoryReader = std::make_shared<RepositoryReader<dory::openGL::GlfwWindow>>(windowRespository);
-
-                cameraIdFactory = std::make_shared<NumberIdFactory<EntityId>>();
-                cameraRepository = std::make_shared<EntityRepository<entity::Camera>>();
-                cameraRepositoryReader = std::make_shared<RepositoryReader<entity::Camera>>(cameraRepository);
-
-                viewIdFactory = std::make_shared<NumberIdFactory<EntityId>>();
-                viewRepository = std::make_shared<EntityRepository<entity::View>>();
-                viewRepositoryReader = std::make_shared<RepositoryReader<entity::View>>(viewRepository);
-
-                pipelineNodeIdFactory = std::make_shared<NumberIdFactory<EntityId>>();
-                pipelineNodeRepository = std::make_shared<EntityRepository<entity::PipelineNode>>();
-                pipelineNodeRepositoryReader = std::make_shared<RepositoryReader<entity::PipelineNode>>(pipelineNodeRepository);
-
-                pipelineService = std::make_shared<services::PipelineService>(pipelineNodeRepositoryReader);
-
-                engineEventHub = std::make_shared<events::EngineEventHubDispatcher<TDataContext>>();
-                consoleEventHub = std::make_shared<events::SystemConsoleEventHubDispatcher<TDataContext>>();
-                glfwWindowEventHub = std::make_shared<events::WindowEventHubDispatcher<TDataContext>>();
-            }
-
-            void configurePipeline(TDataContext& context) override
-            {
-                auto inputGroupNode = pipelineNodeRepository->store(entity::PipelineNode(pipelineNodeIdFactory->generate(), nullptr, 0, entity::nullId, "input group"));
-                auto outputGroupNode = pipelineNodeRepository->store(entity::PipelineNode(pipelineNodeIdFactory->generate(), nullptr, 1, entity::nullId, "output group"));
-                context.inputGroupNodeId = inputGroupNode.id;
-                context.outputGroupNodeId = outputGroupNode.id;
-
-                auto consoleController = std::make_shared<dory::win32::ConsoleController<TDataContext>>(consoleEventHub);
-                auto consoleControllerNode = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(pipelineNodeIdFactory->generate(), consoleController, 0, inputGroupNode.id));
-                consoleController->initialize(consoleControllerNode.id, context);
-
-                auto windowController = std::make_shared<dory::openGL::GlfwWindowController<TDataContext>>(windowRepositoryReader, glfwWindowEventHub);
-                auto windowControllerNode = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(pipelineNodeIdFactory->generate(), windowController, 0, inputGroupNode.id));
-                windowController->initialize(windowControllerNode.id, context);
-            }
-
-            void attachEventHandlers() override
-            {
-                engineEventHub->onInitializeEngine() += std::bind(&Project::onInitializeEngine, this, std::placeholders::_1, std::placeholders::_2);
-                consoleEventHub->onKeyPressed() += std::bind(&Project::onConsoleKeyPressed, this, std::placeholders::_1, std::placeholders::_2);
-                glfwWindowEventHub->onCloseWindow() += std::bind(&Project::onCloseWindow, this, std::placeholders::_1, std::placeholders::_2);
-            }
-
+        
         private:
+            void onInitializeEngine(TDataContext& context, const events::InitializeEngineEventData& eventData)
+            {
+                configurePipeline(context);
+                context.mainWindowId = newWindow(context);
+            }
+
             entity::IdType newWindow(TDataContext& context)
             {
+                auto windowRespository = serviceLocator->getWindowRepository();
+                auto windowIdFactory = serviceLocator->getWindowIdFactory();
                 dory::openGL::GlfwWindowParameters glfwWindowParameters;
                 auto glfwWindowHandler = dory::openGL::GlfwWindowFactory::createWindow(glfwWindowParameters);
                 auto window = windowRespository->store(dory::openGL::GlfwWindow(windowIdFactory->generate(), glfwWindowHandler));
 
+                auto cameraRepository = serviceLocator->getCameraRepository();
+                auto cameraIdFactory = serviceLocator->getCameraIdFactory();
                 auto camera = cameraRepository->store(dory::domain::entity::Camera(cameraIdFactory->generate()));
                 dory::domain::entity::Viewport viewport(0, 0, 0, 0);
 
+                auto pipelineNodeIdFactory = serviceLocator->getPipelineNodeIdFactory();
+                auto pipelineNodeRepository = serviceLocator->getPipelineNodeRepository();
+                auto viewRepositoryReader = serviceLocator->getViewRepositoryReader();
+                auto configuration = serviceLocator->getConfiguration();
+                auto windowRepositoryReader = serviceLocator->getWindowRepositoryReader();
                 auto viewController = std::make_shared<dory::openGL::ViewControllerOpenGL<TDataContext>>(viewRepositoryReader, configuration, windowRepositoryReader);
                 auto viewControllerNode = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(pipelineNodeIdFactory->generate(), 
                     viewController, 0, context.outputGroupNodeId));
 
+                auto viewIdFactory = serviceLocator->getViewIdFactory();
+                auto viewRepository = serviceLocator->getViewRepository();
                 auto view = viewRepository->store(dory::domain::entity::View(viewIdFactory->generate(), window.id, viewControllerNode.id, camera.id, viewport));
 
                 viewController->initialize(viewControllerNode.id, context);
@@ -123,9 +79,26 @@ namespace testApp
                 return window.id;
             }
 
-            void onInitializeEngine(TDataContext& context, const events::InitializeEngineEventData& eventData)
+            void configurePipeline(TDataContext& context)
             {
-                context.mainWindowId = newWindow(context);
+                auto pipelineNodeIdFactory = serviceLocator->getPipelineNodeIdFactory();
+                auto pipelineNodeRepository = serviceLocator->getPipelineNodeRepository();
+                auto inputGroupNode = pipelineNodeRepository->store(entity::PipelineNode(pipelineNodeIdFactory->generate(), nullptr, 0, entity::nullId, "input group"));
+                auto outputGroupNode = pipelineNodeRepository->store(entity::PipelineNode(pipelineNodeIdFactory->generate(), nullptr, 1, entity::nullId, "output group"));
+                context.inputGroupNodeId = inputGroupNode.id;
+                context.outputGroupNodeId = outputGroupNode.id;
+
+                auto consoleEventHub = serviceLocator->getConsoleEventHub();
+                auto consoleController = std::make_shared<dory::win32::ConsoleController<TDataContext>>(consoleEventHub);
+                auto consoleControllerNode = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(pipelineNodeIdFactory->generate(), consoleController, 0, inputGroupNode.id));
+                consoleController->initialize(consoleControllerNode.id, context);
+
+                auto windowRepositoryReader = serviceLocator->getWindowRepositoryReader();
+                auto glfwWindowEventHub = serviceLocator->getGlfwWindowEventHub();
+
+                auto windowController = std::make_shared<dory::openGL::GlfwWindowController<TDataContext>>(windowRepositoryReader, glfwWindowEventHub);
+                auto windowControllerNode = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(pipelineNodeIdFactory->generate(), windowController, 0, inputGroupNode.id));
+                windowController->initialize(windowControllerNode.id, context);
             }
 
             void onConsoleKeyPressed(TDataContext& context, events::KeyPressedEventData& eventData)
@@ -148,6 +121,7 @@ namespace testApp
             void onCloseWindow(TDataContext& context, events::CloseWindowEventData& eventData)
             {
                 auto windowId = eventData.windowId;
+                auto windowRepositoryReader = serviceLocator->getWindowRepositoryReader();
                 auto window = windowRepositoryReader->get(windowId);
 
                 if(window)
@@ -162,9 +136,12 @@ namespace testApp
                     }
                     std::cout << "Close window(id " << windowId << ")" << std::endl;
 
+                    auto pipelineNodeIdFactory = serviceLocator->getPipelineNodeIdFactory();
                     entity::IdType viewControllerNodeId = pipelineNodeIdFactory->getNullId();
 
-                    windowRespository->remove(window);
+                    auto viewRepository = serviceLocator->getViewRepository();
+                    auto windowRepository = serviceLocator->getWindowRepository();
+                    windowRepository->remove(window);
                     viewRepository->remove([&windowId, &viewControllerNodeId](dory::domain::entity::View& view)
                     {
                         if(view.windowId == windowId)
@@ -176,6 +153,7 @@ namespace testApp
                         return false;
                     });
 
+                    auto pipelineNodeRepository = serviceLocator->getPipelineNodeRepository();
                     if(viewControllerNodeId != pipelineNodeIdFactory->getNullId())
                     {
                         pipelineNodeRepository->remove([&viewControllerNodeId](dory::domain::entity::PipelineNode& node)

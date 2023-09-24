@@ -2,7 +2,7 @@
 
 #include "dependencies.h"
 #include "configuration/configuration.h"
-#include "project.h"
+#include "serviceLocator.h"
 #include "configuration/fileSystemBasedConfiguration.h"
 #include "domain/services/basicFrameService.h"
 #include "domain/services/matrixCalculatorService.h"
