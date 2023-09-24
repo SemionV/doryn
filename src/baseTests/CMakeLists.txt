@@ -4,7 +4,7 @@ project(dory-base-tests)
 
 find_package(Catch2 3 REQUIRED)
 find_package(FakeIt REQUIRED
-            PATHS ../vendor/ NO_DEFAULT_PATH)
+            PATHS ${VENDOR_DIR} NO_DEFAULT_PATH)
 
 add_executable(baseTests eventTests.cpp
                          messagesTests.cpp
@@ -14,6 +14,7 @@ add_executable(baseTests eventTests.cpp
                          domain/services/pipelineServiceTests.cpp)
                          
 target_include_directories(baseTests PRIVATE "${CMAKE_SOURCE_DIR}")
+target_include_directories(baseTests PRIVATE ${VENDOR_DIR})
 
 target_link_libraries(baseTests PRIVATE base Catch2::Catch2WithMain)
 target_link_libraries(baseTests PRIVATE FakeIt::FakeIt-catch)

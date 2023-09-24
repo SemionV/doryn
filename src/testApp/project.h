@@ -39,12 +39,6 @@ namespace testApp
             }
         
         private:
-            void onInitializeEngine(TDataContext& context, const events::InitializeEngineEventData& eventData)
-            {
-                configurePipeline(context);
-                context.mainWindowId = newWindow(context);
-            }
-
             entity::IdType newWindow(TDataContext& context)
             {
                 auto windowRespository = serviceLocator->getWindowRepository();
@@ -98,6 +92,12 @@ namespace testApp
                 auto windowController = std::make_shared<dory::openGL::GlfwWindowController<TDataContext>>(windowRepositoryReader, glfwWindowEventHub);
                 auto windowControllerNode = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(pipelineNodeIdFactory->generate(), windowController, 0, inputGroupNode.id));
                 windowController->initialize(windowControllerNode.id, context);
+            }
+
+            void onInitializeEngine(TDataContext& context, const events::InitializeEngineEventData& eventData)
+            {
+                configurePipeline(context);
+                context.mainWindowId = newWindow(context);
             }
 
             void onConsoleKeyPressed(TDataContext& context, events::KeyPressedEventData& eventData)

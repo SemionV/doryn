@@ -1,5 +1,5 @@
-LIB_DIR=src/lib/
-VENDOR_DIR=src/vendor/
+source ./build/settings.sh
+
 mkdir -p $VENDOR_DIR
 
 #install Catch2 - unit testing framework
@@ -16,7 +16,7 @@ FAKEIT_DIR=${LIB_DIR}FakeIt/
 mkdir -p $FAKEIT_DIR
 git clone https://github.com/eranpeer/FakeIt.git ${FAKEIT_DIR}
 cd $FAKEIT_DIR
-cmake -S . -B build -DCMAKE_INSTALL_PREFIX=../../vendor/FakeIt/
+cmake -S . -B build -DCMAKE_INSTALL_PREFIX=${VENDOR_DIR}FakeIt/
 cmake --build build
 cmake --install build
 cd -
@@ -26,7 +26,7 @@ GLFW_DIR=${LIB_DIR}glfw/
 mkdir -p $GLFW_DIR
 git clone https://github.com/glfw/glfw.git $GLFW_DIR
 cd $GLFW_DIR
-cmake -S . -B build -DCMAKE_INSTALL_PREFIX=../../vendor/glfw/
+cmake -S . -B build -DCMAKE_INSTALL_PREFIX=${VENDOR_DIR}glfw/
 cmake --build build
 cmake --install build
 cd -

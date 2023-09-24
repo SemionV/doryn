@@ -1,7 +1,7 @@
 # Development log
 
 Tasks:
-* Move src/lib and scr/vendor dirs out of project folder(in order to make vs code intellisence work properly and light)
+* Move src/lib out of project folder(in order to make vs code intellisence work properly and light)
 * Integrate C# dotnet as scripting engine
 
 **24.09.23**

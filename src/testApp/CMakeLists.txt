@@ -4,7 +4,7 @@ project(dory-testApp)
 
 add_executable(testApp main.cpp)
 target_include_directories(testApp PRIVATE "${CMAKE_SOURCE_DIR}")
-target_include_directories(testApp PRIVATE "${CMAKE_SOURCE_DIR}/vendor")
+target_include_directories(testApp PRIVATE ${VENDOR_DIR})
 target_precompile_headers(testApp PRIVATE dependencies.h)
 
 target_link_libraries(testApp win32 dory-openGL base)

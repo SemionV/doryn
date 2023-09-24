@@ -5,14 +5,14 @@
         "name": "Debug doryn with g++",
         "type": "cppdbg",
         "request": "launch",
-        "program": "${workspaceFolder}\\bin\\testApp.exe",
+        "program": "${workspaceFolder}/bin/testApp.exe",
         "args": [],
         "stopAtEntry": false,
-        "cwd": "${workspaceFolder}\\bin",
+        "cwd": "${workspaceFolder}/bin",
         "environment": [],
         "externalConsole": false,
         "MIMode": "gdb",
-        "miDebuggerPath": "C:\\msys64\\mingw64\\bin\\gdb.exe",
+        "miDebuggerPath": "{{DEBUGGER_PATH}}",
         "setupCommands": [
           {
             "description": "Enable pretty-printing for gdb",
