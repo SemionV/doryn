@@ -17,7 +17,10 @@ namespace testApp
     {
         ProjectDataContext context;
 
-        testApp::Project<ProjectDataContext> project;
+        auto serviceLocator = std::make_shared<testApp::ServiceLocator<ProjectDataContext>>();
+        serviceLocator->configure();
+
+        testApp::Project<ProjectDataContext> project(serviceLocator);
         project.run(context);
 
         std::cout << "Session is over." << std::endl;

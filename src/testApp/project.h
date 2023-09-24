@@ -11,14 +11,13 @@ namespace testApp
             std::shared_ptr<ServiceLocator<TDataContext>> serviceLocator;
 
         public:
-            Project(): serviceLocator(std::make_shared<testApp::ServiceLocator<TDataContext>>())
-            {
-                serviceLocator->configure();
-                attachEventHandlers();
-            }
+            Project(std::shared_ptr<ServiceLocator<TDataContext>> serviceLocator): serviceLocator(serviceLocator)
+            {}
 
             void run(TDataContext& context)
             {
+                attachEventHandlers();
+
                 auto pipelineService = serviceLocator->getPipelineService();
                 auto engineEventHub = serviceLocator->getEngineEventHub();
                 dory::domain::Engine<TDataContext> engine(pipelineService, engineEventHub);
