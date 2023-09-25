@@ -109,7 +109,7 @@ namespace dory::win32
         {
             auto hWnd = window->hWnd;
 
-            context.isStop = true;
+            serviceLocator->getFrameService()->endLoop();
             std::cout << "Close window(id " << windowId << ")" << std::endl;
 
             dory::win32::WindowFactory::closeWindow(hWnd, windowsThread);

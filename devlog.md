@@ -1,12 +1,20 @@
 # Development log
 
 Tasks:
+* Stop engine using Event and FrameService
 * Render Meshes
-* Control Camera
+* Camera Control
 * Mouse picking
-* Integrate C# dotnet core as scripting engine
+* Animation
 * Collision detection
+* Integrate C# dotnet core as scripting engine
+* Scene
+* Spatial partition
 * Path finding
+* Build for Linux
+* Build for MacOS
+* Networking/Mutliplayer
+* Vioce control
 
 **25.09.23**
 * Task done: Compile with Visual C++ compiler

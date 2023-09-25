@@ -10,11 +10,16 @@ namespace dory::domain::events
     {
     };
 
+    struct StopEngineEventData
+    {
+    };
+
     template<class TDataContext>
     class EngineEventHub
     {
         private:
             EventDispatcher<TDataContext&, const InitializeEngineEventData&> initializeEngineEvent;
+            EventDispatcher<TDataContext&, const StopEngineEventData&> stopEngineEvent;
 
         protected:
             EventDispatcher<TDataContext&, const InitializeEngineEventData&>& onInitializeEngineDispatcher()
@@ -22,10 +27,20 @@ namespace dory::domain::events
                 return initializeEngineEvent;
             }
 
+            EventDispatcher<TDataContext&, const StopEngineEventData&>& onStopEngineDispatcher()
+            {
+                return stopEngineEvent;
+            }
+
         public:
             Event<TDataContext&, const InitializeEngineEventData&>& onInitializeEngine()
             {
                 return initializeEngineEvent;
+            }
+
+            Event<TDataContext&, const StopEngineEventData&>& onStopEngine()
+            {
+                return stopEngineEvent;
             }
     };
 
@@ -37,6 +52,12 @@ namespace dory::domain::events
             {
                 auto dispatcher = this->onInitializeEngineDispatcher();
                 dispatcher(context, initializeEngineEventData);
+            }
+
+            void fire(TDataContext& context, const StopEngineEventData& stopEngineEventData)
+            {
+                auto dispatcher = this->onStopEngineDispatcher();
+                dispatcher(context, stopEngineEventData);
             }
     };
 }

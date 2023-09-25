@@ -41,7 +41,7 @@ namespace testApp
                     else
                     {
                         timeStep.duration = 16666;
-                        isStop = engine.update(context, timeStep);
+                        engine.update(context, timeStep);
                     }
 
                     frameCounter++;

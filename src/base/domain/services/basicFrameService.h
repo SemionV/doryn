@@ -27,7 +27,7 @@ namespace dory::domain::services
 
                     timeStep.duration = duration.count();
 
-                    isStop = engine.update(context, timeStep);
+                    engine.update(context, timeStep);
 
                     lastTimestamp = currentTimestamp;
                 }

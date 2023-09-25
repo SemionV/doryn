@@ -20,7 +20,7 @@ namespace dory::domain
                     engineEventHub(engineEventHub)
             {};
 
-            bool update(TDataContext& context, const TimeSpan& timeStep)
+            void update(TDataContext& context, const TimeSpan& timeStep)
             {
                 auto pipelineNodes = pipelineService->getPipeline();
 
@@ -32,8 +32,6 @@ namespace dory::domain
                         std::static_pointer_cast<Controller<TDataContext>>(controller)->update(node->nodeEntity.id, timeStep, context);
                     }
                 }, timeStep);
-
-                return context.isStop;
             }
             
             void initialize(TDataContext& context)
@@ -43,6 +41,7 @@ namespace dory::domain
 
             void stop(TDataContext& context)
             {
+                engineEventHub->fire(context, events::StopEngineEventData());
             }
 
         private:

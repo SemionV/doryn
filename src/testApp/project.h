@@ -23,8 +23,8 @@ namespace testApp
                 dory::domain::Engine<TDataContext> engine(pipelineService, engineEventHub);
                 engine.initialize(context);
 
-                services::BasicFrameService<TDataContext> frameService;
-                frameService.startLoop(engine, context);
+                auto frameService = serviceLocator->getFrameService();
+                frameService->startLoop(engine, context);
             }
 
         protected:
@@ -32,6 +32,8 @@ namespace testApp
             {
                 serviceLocator->getEngineEventHub()->onInitializeEngine() += 
                     std::bind(&Project::onInitializeEngine, this, std::placeholders::_1, std::placeholders::_2);
+                serviceLocator->getEngineEventHub()->onStopEngine() += 
+                    std::bind(&Project::onStopEngine, this, std::placeholders::_1, std::placeholders::_2);
                 serviceLocator->getConsoleEventHub()->onKeyPressed() += 
                     std::bind(&Project::onConsoleKeyPressed, this, std::placeholders::_1, std::placeholders::_2);
                 serviceLocator->getGlfwWindowEventHub()->onCloseWindow() += 
@@ -100,11 +102,16 @@ namespace testApp
                 context.mainWindowId = newWindow(context);
             }
 
+            void onStopEngine(TDataContext& context, const events::StopEngineEventData& eventData)
+            {
+                std::cout << "Stopping Engine..." << std::endl;
+            }
+
             void onConsoleKeyPressed(TDataContext& context, events::KeyPressedEventData& eventData)
             {
                 if(eventData.keyPressed == 27)
                 {
-                    context.isStop = true;
+                    serviceLocator->getFrameService()->endLoop();
                     std::cout << std::this_thread::get_id() << ": ESC" << std::endl;
                 }
                 else if(eventData.keyPressed == 119)
@@ -131,7 +138,7 @@ namespace testApp
 
                     if(windowId == context.mainWindowId)
                     {
-                        context.isStop = true;
+                        serviceLocator->getFrameService()->endLoop();
                     }
                     std::cout << "Close window(id " << windowId << ")" << std::endl;
 

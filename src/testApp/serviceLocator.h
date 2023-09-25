@@ -36,6 +36,11 @@ namespace testApp
                 return std::make_shared<configuration::FileSystemBasedConfiguration>("configuration");
             }
 
+            std::shared_ptr<domain::services::IFrameService<TDataContext>> buildFrameService() override
+            {
+                return std::make_shared<services::BasicFrameService<TDataContext>>();
+            }
+
             std::shared_ptr<IIdFactory<entity::IdType>> buildCameraIdFactory() override
             {
                 return std::make_shared<NumberIdFactory<entity::IdType>>();

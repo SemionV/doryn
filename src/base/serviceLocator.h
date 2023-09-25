@@ -15,6 +15,7 @@ namespace dory
     {
         private:
             std::shared_ptr<configuration::IConfiguration> configuration;
+            std::shared_ptr<domain::services::IFrameService<TDataContext>> frameService;
 
             std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> cameraIdFactory;
             std::shared_ptr<domain::EntityRepository<domain::entity::Camera>> cameraRepository;
@@ -37,6 +38,7 @@ namespace dory
             virtual void configureServices() = 0;
 
             virtual std::shared_ptr<configuration::IConfiguration> buildConfiguration() = 0;
+            virtual std::shared_ptr<domain::services::IFrameService<TDataContext>> buildFrameService() = 0;
             
             virtual std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> buildCameraIdFactory() = 0;
             virtual std::shared_ptr<domain::EntityRepository<domain::entity::Camera>> buildCameraRepository() = 0;
@@ -59,6 +61,7 @@ namespace dory
             void configure()
             {
                 configuration = buildConfiguration();
+                frameService = buildFrameService();
             
                 cameraIdFactory = buildCameraIdFactory();
                 cameraRepository = buildCameraRepository();
@@ -81,6 +84,7 @@ namespace dory
             }
 
             std::shared_ptr<configuration::IConfiguration> getConfiguration() { return configuration;}
+            std::shared_ptr<domain::services::IFrameService<TDataContext>> getFrameService() { return frameService;}
             
             std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> getCameraIdFactory() {return cameraIdFactory;}
             std::shared_ptr<domain::EntityRepository<domain::entity::Camera>> getCameraRepository() {return cameraRepository;}
