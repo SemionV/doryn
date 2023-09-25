@@ -1,10 +1,11 @@
 #pragma once
 
 #include "configuration.h"
+#include "base/doryExport.h"
 
 namespace dory::configuration
 {
-    class FileSystemBasedConfiguration: public IConfiguration
+    class DORY_API FileSystemBasedConfiguration: public IConfiguration
     {
         private:
             std::filesystem::path configurationPath;

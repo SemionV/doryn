@@ -3,7 +3,7 @@
 namespace dory::win32
 {
     template<class TDataContext>
-    class DORY_API ConsoleController: public domain::Controller<TDataContext>
+    class ConsoleController: public domain::Controller<TDataContext>
     {
         private:
             multithreading::IndividualProcessThread processThread;

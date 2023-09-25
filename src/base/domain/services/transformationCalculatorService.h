@@ -2,10 +2,11 @@
 
 #include "base/domain/geometry/transformation.h"
 #include "matrixCalculatorService.h"
+#include "base/doryExport.h"
 
 namespace dory::domain::services
 {
-    class TransformationCalculatorService
+    class DORY_API TransformationCalculatorService
     {
         private:
             std::shared_ptr<IMatrixCalculatorService> matrixCalculator;

@@ -7,7 +7,7 @@
 namespace dory::domain
 {
     template<class TDataContext>
-    class DORY_API Controller
+    class Controller
     {
         public:
             virtual bool initialize(domain::entity::IdType referenceId, TDataContext& context) = 0;

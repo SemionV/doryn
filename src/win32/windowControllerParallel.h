@@ -5,7 +5,7 @@
 namespace dory::win32
 {
     template<class TDataContext>
-    class DORY_API WindowControllerParallel: public WindowController<TDataContext>
+    class WindowControllerParallel: public WindowController<TDataContext>
     {
         private:
             std::shared_ptr<multithreading::IndividualProcessThread> windowsThread;

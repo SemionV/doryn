@@ -7,7 +7,7 @@
 namespace dory::win32
 {
     template<class TDataContext>
-    class DORY_API WindowController: public domain::Controller<TDataContext>
+    class WindowController: public domain::Controller<TDataContext>
     {
         private:
             std::shared_ptr<domain::events::WindowEventHubDispatcher<TDataContext>> eventHub;

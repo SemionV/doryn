@@ -6,7 +6,7 @@
 namespace dory::domain::events
 {
     template<class... Ts>
-    class DORY_API Event
+    class Event
     {
         private:
             int idCounter;
@@ -65,7 +65,7 @@ namespace dory::domain::events
     };
 
     template<class... Ts>
-    class DORY_API EventDispatcher: public Event<Ts...>
+    class EventDispatcher: public Event<Ts...>
     {
         public:
             void operator()(Ts... arguments)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base/domain/geometry/matrix.h"
+#include "base/doryExport.h"
 
 namespace dory::domain::services
 {
@@ -22,7 +23,7 @@ namespace dory::domain::services
             virtual bool isEqual(geometry::Matrix4x4* matrixA, geometry::Matrix4x4* matrixB) = 0;
     };
 
-    class MatrixCalculatorService: public IMatrixCalculatorService
+    class DORY_API MatrixCalculatorService: public IMatrixCalculatorService
     {
         public:
             void setToIdentity(geometry::Matrix4x4* matrix) override;

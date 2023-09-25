@@ -2,10 +2,11 @@
 
 #include "base/domain/object.h"
 #include "base/domain/entityRepository.h"
+#include "base/doryExport.h"
 
 namespace dory::domain::services
 {
-    class PipelineService
+    class DORY_API PipelineService
     {
         private:
             std::shared_ptr<RepositoryReader<entity::PipelineNode>> nodeReader;

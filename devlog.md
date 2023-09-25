@@ -1,11 +1,19 @@
 # Development log
 
 Tasks:
-* Move src/lib out of project folder(in order to make vs code intellisence work properly and light)
-* Integrate C# dotnet as scripting engine
+* Render Meshes
+* Control Camera
+* Mouse picking
+* Integrate C# dotnet core as scripting engine
+* Collision detection
+* Path finding
+
+**25.09.23**
+* Task done: Compile with Visual C++ compiler
 
 **24.09.23**
 * Task done: Refactor Project class, make it just a service container, develop separate class to hold application logic
+* Task done: Move src/lib out of project folder(in order to make vs code intellisence work properly and light)
 
 **23.09.23**
 * Task done: Implement dynamic window open/close with views

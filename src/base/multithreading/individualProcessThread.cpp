@@ -46,7 +46,7 @@ namespace dory::multithreading
 
     void IndividualProcessThread::run()
     {
-        std::thread workingThread = std::thread(&threadMain, this);
+        std::thread workingThread = std::thread(&IndividualProcessThread::threadMain, this);
         workingThread.detach();
     }
 

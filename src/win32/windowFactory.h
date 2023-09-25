@@ -8,7 +8,7 @@ namespace dory::win32
 {
     LRESULT WINAPI windowProcedure(HWND hWnd, UINT WindowsMessage, WPARAM wParam, LPARAM lParam);
 
-    class WindowFactory
+    class DORY_API WindowFactory
     {
         public:
             static HWND createWindow(WindowParameters windowParameters, MessageBuffer* messageBuffer)
