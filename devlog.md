@@ -1,13 +1,18 @@
 # Development log
 
 Tasks:
+* Define virtual constructors and default move members for Interface classes
+* Return const& from EntityRepository and build a method for mutations
+* Generalize core type of Matricies, so that it can support also double
+* Do not include internal header files into dependencies.h(precompiled headers), because it increases compilation time a lot
 * Stop engine using Event and FrameService
 * Render Meshes
 * Camera Control
 * Mouse picking
 * Animation
 * Collision detection
-* Integrate C# dotnet core as scripting engine
+* Dynamic module loading(plugin system)
+* Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
 * Scene
 * Spatial partition
 * Path finding

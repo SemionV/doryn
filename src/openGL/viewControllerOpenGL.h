@@ -86,8 +86,14 @@ namespace dory::openGL
                             });
                         glUseProgram(programId);
 
-                        glVertexAttribPointer( vPosition, 2, GL_FLOAT, GL_FALSE, 0, (void*)(0) );
-                        glEnableVertexAttribArray( vPosition );
+                        auto triangleColorUniform = glGetUniformLocation(programId, "triangleColor");
+                        if(triangleColorUniform >= 0)
+                        {
+                            glUniform4f(triangleColorUniform, 0.7, 0.7, 0.7, 1.0);
+                        }
+
+                        glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, (void*)(0));
+                        glEnableVertexAttribArray(vPosition);
                     }
                 }
 

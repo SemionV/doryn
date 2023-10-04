@@ -1,4 +1,5 @@
 #include "dependencies.h"
+#include "openGL/openGL.h"
 #include "serviceLocator.h"
 #include "project.h"
 #include "projectDataContext.h"
