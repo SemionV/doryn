@@ -1,4 +1,5 @@
-#include "baseTests/dependencies.h"
+#include "dependencies.h"
+#include "base/base.h"
 
 using namespace dory::domain;
 

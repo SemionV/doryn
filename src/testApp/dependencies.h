@@ -1,7 +1,8 @@
 #pragma once
 
 #include <iostream>
-#include <memory>
+#include <windows.h>
 
-#include "base/base.h"
-#include "win32/win32.h"
+#include "base/dependencies.h"
+#include "win32/dependencies.h"
+#include "openGL/dependencies.h"

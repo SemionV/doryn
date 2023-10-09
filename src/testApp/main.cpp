@@ -1,16 +1,10 @@
 #include "dependencies.h"
+#include "base/base.h"
 #include "openGL/openGL.h"
+#include "win32/win32.h"
 #include "serviceLocator.h"
 #include "project.h"
 #include "projectDataContext.h"
-
-
-#include <windows.h>
-
-#include <thread>
-#include <iostream>
-#include <functional>
-#include <mutex>
 
 namespace testApp
 {

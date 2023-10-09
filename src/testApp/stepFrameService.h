@@ -1,5 +1,7 @@
 #pragma once
 
+#include "base/base.h"
+
 namespace testApp
 {
     template<class TDataContext>

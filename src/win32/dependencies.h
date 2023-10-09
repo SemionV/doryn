@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base/dependencies.h"
 #include <memory>
 
 #ifdef _WIN32
@@ -7,5 +8,3 @@
 #include <windows.h>
 #include <tchar.h>
 #endif
-
-#include "base/base.h"

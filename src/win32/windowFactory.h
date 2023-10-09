@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base/base.h"
 #include "windowParameters.h"
 #include "window.h"
 #include "messageBuffer.h"

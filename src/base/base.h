@@ -1,6 +1,5 @@
 #pragma once
 
-#include "dependencies.h"
 #include "configuration/configuration.h"
 #include "serviceLocator.h"
 #include "configuration/fileSystemBasedConfiguration.h"
