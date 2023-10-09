@@ -44,10 +44,23 @@ namespace dory::domain
             }
     };
 
-    /*template <std::string_view const&... Strs>
-    struct join
+    constexpr std::size_t getStringLength(const char* string)
     {
-        // Join all strings into a single std::array of chars
+        std::size_t length = 0;
+        if(string)
+        {
+            while(string[length] != 0)
+            {
+                ++length;
+            }
+        }
+
+        return length;
+    }
+
+    template <std::string_view const&... Strs>
+    struct JoinStrings
+    {
         static constexpr auto impl() noexcept
         {
             constexpr std::size_t len = (Strs.size() + ... + 0);
@@ -59,12 +72,10 @@ namespace dory::domain
             arr[len] = 0;
             return arr;
         }
-        // Give the joined string static storage
         static constexpr auto arr = impl();
-        // View as a std::string_view
         static constexpr std::string_view value {arr.data(), arr.size() - 1};
     };
-    // Helper to get the value out
+
     template <std::string_view const&... Strs>
-    static constexpr auto join_v = join<Strs...>::value;*/
+    static constexpr auto JoinStringLiterals = JoinStrings<Strs...>::value;
 }

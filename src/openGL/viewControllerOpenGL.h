@@ -95,12 +95,21 @@ namespace dory::openGL
                             glUniform4f(triangleColorIndex, 0.7, 0.7, 0.7, 1.0);
                         }
 
-                        auto uniformBlockTest = makeUniformBlock("ColorsBlock", "brightColor", "hippieColor", "darkColor");
+                        static constexpr std::string_view blockNameLiteral = "ColorsBlock";
+                        static constexpr std::string_view pointLiteral = ".";
+                        static constexpr std::string_view prefixLiteral = dory::domain::JoinStringLiterals<blockNameLiteral, pointLiteral>;
 
-                        const char* memberNames[] = {"ColorsBlock.brightColor", "ColorsBlock.hippieColor", "ColorsBlock.darkColor"};
-                        UniformBlock<3> colorsUniformBlock("ColorsBlock");
+                        static constexpr std::string_view brightColorLiteral = "brightColor";
+                        static constexpr std::string_view hippieColorLiteral = "hippieColor";
+                        static constexpr std::string_view darkColorLiteral = "darkColor";
 
-                        bindUniformBlock(programId, uniformBlockTest, memberNames);
+                        static constexpr auto brightColorUniformName = dory::domain::JoinStringLiterals<prefixLiteral, brightColorLiteral>;
+                        static constexpr auto hippieColorUniformName = dory::domain::JoinStringLiterals<prefixLiteral, hippieColorLiteral>;
+                        static constexpr auto darkColorUniformName = dory::domain::JoinStringLiterals<prefixLiteral, darkColorLiteral>;
+
+                        auto uniformBlock = makeUniformBlock(blockNameLiteral, {brightColorUniformName, hippieColorUniformName, darkColorUniformName});
+
+                        bindUniformBlock(programId, uniformBlock);
 
                         auto colorsBlockIndex = glGetUniformBlockIndex(programId, "ColorsBlock");
                         if(colorsBlockIndex != GL_INVALID_INDEX)
@@ -141,7 +150,7 @@ namespace dory::openGL
                 GLint type = 0;
             };
 
-            template<unsigned int membersCount>
+            template<std::size_t membersCount>
             struct UniformBlock
             {
                 std::string key;
@@ -150,69 +159,58 @@ namespace dory::openGL
                 GLint bufferOffset = 0;
                 std::array<Uniform, membersCount> members;
 
-                template<typename TKey>
-                UniformBlock(TKey&& blockName):
-                    key(std::forward<TKey>(blockName))
+                UniformBlock(const char* blockName):
+                    key(blockName)
                 {}
             };
 
-            template<typename TName, typename... Ts>
-            decltype(auto) makeUniformBlock(TName blockName, Ts... memberNames)
+            template<typename T, std::size_t N>
+            static constexpr decltype(auto) makeUniformBlock(const std::string_view& blockName, 
+                const T(&memberNames)[N]) noexcept
             {
-                std::initializer_list<TName> nameList = {memberNames...};
-                UniformBlock<sizeof...(Ts)> uniformBlock(std::forward<TName>(blockName));
+                UniformBlock<N> uniformBlock(blockName.data());
 
-                auto current = nameList.begin();
-                auto end = nameList.end();
-                int i = 0;
-                while(current != end)
+                for(std::size_t i = 0; i < N; ++i)
                 {
-                    uniformBlock.members[i].key = std::string(std::string(blockName) + "." + std::string(*current));
-
-                    ++current;
-                    ++i;
+                    uniformBlock.members[i].key = memberNames[i];
                 }
 
                 return uniformBlock;
             }
 
-            template<unsigned int membersCount>
-            std::vector<const char*> getUniformBlockMemberNames(const UniformBlock<membersCount>& block)
+            template<std::size_t N>
+            static constexpr void getUniformBlockMemberNames(const UniformBlock<N>& block, const char*(&memberNames)[N]) noexcept
             {
-                std::vector<const char*> memberNames(membersCount, nullptr);
-                
-                for(std::size_t i = 0; i < block.members.size(); ++i)
+                for(std::size_t i = 0; i < N; ++i)
                 {
-                    memberNames.emplace_back(block.members[i].key.c_str());
+                    memberNames[i] = block.members[i].key.c_str();
                 }
-
-                return memberNames;
             }
 
-            template<unsigned int membersCount>
-            void bindUniformBlock(GLuint programId, UniformBlock<membersCount>& block, const char* memberNames[membersCount])
+            template<std::size_t N>
+            static void bindUniformBlock(GLuint programId, UniformBlock<N>& block)
             {
                 block.index = glGetUniformBlockIndex(programId, block.key.c_str());
                 if(block.index != GL_INVALID_INDEX)
                 {
                     glGetActiveUniformBlockiv(programId, block.index, GL_UNIFORM_BLOCK_DATA_SIZE, &block.size);
                     
-                    GLuint memberIndices[membersCount];
-                    GLint memberOffset[membersCount];
-                    GLint memberSize[membersCount];
-                    GLint memberType[membersCount];
+                    GLuint memberIndices[N];
+                    GLint memberOffset[N];
+                    GLint memberSize[N];
+                    GLint memberType[N];
 
-                    auto memberNames2 = getUniformBlockMemberNames(block);
+                    const char* memberNames[N];
+                    getUniformBlockMemberNames(block, memberNames);
 
-                    glGetUniformIndices(programId, membersCount, memberNames2.data(), memberIndices);
-                    glGetActiveUniformsiv(programId, membersCount, memberIndices, GL_UNIFORM_OFFSET, memberOffset);
-                    glGetActiveUniformsiv(programId, membersCount, memberIndices, GL_UNIFORM_SIZE, memberSize);
-                    glGetActiveUniformsiv(programId, membersCount, memberIndices, GL_UNIFORM_TYPE, memberType);
+                    glGetUniformIndices(programId, N, memberNames, memberIndices);
+                    glGetActiveUniformsiv(programId, N, memberIndices, GL_UNIFORM_OFFSET, memberOffset);
+                    glGetActiveUniformsiv(programId, N, memberIndices, GL_UNIFORM_SIZE, memberSize);
+                    glGetActiveUniformsiv(programId, N, memberIndices, GL_UNIFORM_TYPE, memberType);
 
-                    for(std::size_t i = 0; i < membersCount; ++i)
+                    for(std::size_t i = 0; i < N; ++i)
                     {
                         Uniform& member = block.members[i];
-                        //member.key = memberNames[i];
                         member.index = memberIndices[i];
                         member.offset = memberOffset[i];
                         member.type = memberType[i];
