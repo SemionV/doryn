@@ -2,6 +2,7 @@
 
 #include "glfwWindow.h"
 #include "shaderService.h"
+#include "buffers/uniform.h"
 
 namespace dory::openGL
 {
@@ -10,6 +11,8 @@ namespace dory::openGL
     {
         private:
             std::shared_ptr<domain::RepositoryReader<GlfwWindow>> windowRespository;
+
+            buffers::ColorsUniformBlockBinder colorsUniformBlock;
 
             enum VAO_IDs { Triangles, NumVAOs };
             enum Buffer_IDs { ArrayBuffer, UniformBuffer, NumBuffers };
@@ -86,6 +89,9 @@ namespace dory::openGL
                             });
                         glUseProgram(programId);
 
+                        colorsUniformBlock.bind(programId);
+                        auto blockSize = colorsUniformBlock.getBlockDataSize();
+
                         glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, (void*)(0));
                         glEnableVertexAttribArray(vPosition);
 
@@ -94,22 +100,6 @@ namespace dory::openGL
                         {
                             glUniform4f(triangleColorIndex, 0.7, 0.7, 0.7, 1.0);
                         }
-
-                        static constexpr std::string_view blockNameLiteral = "ColorsBlock";
-                        static constexpr std::string_view pointLiteral = ".";
-                        static constexpr std::string_view prefixLiteral = dory::domain::JoinStringLiterals<blockNameLiteral, pointLiteral>;
-
-                        static constexpr std::string_view brightColorLiteral = "brightColor";
-                        static constexpr std::string_view hippieColorLiteral = "hippieColor";
-                        static constexpr std::string_view darkColorLiteral = "darkColor";
-
-                        static constexpr auto brightColorUniformName = dory::domain::JoinStringLiterals<prefixLiteral, brightColorLiteral>;
-                        static constexpr auto hippieColorUniformName = dory::domain::JoinStringLiterals<prefixLiteral, hippieColorLiteral>;
-                        static constexpr auto darkColorUniformName = dory::domain::JoinStringLiterals<prefixLiteral, darkColorLiteral>;
-
-                        auto uniformBlock = makeUniformBlock(blockNameLiteral, {brightColorUniformName, hippieColorUniformName, darkColorUniformName});
-
-                        bindUniformBlock(programId, uniformBlock);
 
                         auto colorsBlockIndex = glGetUniformBlockIndex(programId, "ColorsBlock");
                         if(colorsBlockIndex != GL_INVALID_INDEX)
@@ -132,104 +122,6 @@ namespace dory::openGL
                 }
 
                 return true;
-            }
-
-            struct Buffer
-            {
-                GLuint index = GL_INVALID_INDEX;
-                GLuint size = 0;
-                GLvoid* data = nullptr;
-            };
-
-            struct Uniform
-            {
-                std::string key;
-                GLuint index = GL_INVALID_INDEX;
-                GLint size = 0;
-                GLint offset = 0;
-                GLint type = 0;
-            };
-
-            template<std::size_t membersCount>
-            struct UniformBlock
-            {
-                std::string key;
-                GLuint index = GL_INVALID_INDEX;
-                GLint size = 0;
-                GLint bufferOffset = 0;
-                std::array<Uniform, membersCount> members;
-
-                UniformBlock(const char* blockName):
-                    key(blockName)
-                {}
-            };
-
-            template<typename T, std::size_t N>
-            static constexpr decltype(auto) makeUniformBlock(const std::string_view& blockName, 
-                const T(&memberNames)[N]) noexcept
-            {
-                UniformBlock<N> uniformBlock(blockName.data());
-
-                for(std::size_t i = 0; i < N; ++i)
-                {
-                    uniformBlock.members[i].key = memberNames[i];
-                }
-
-                return uniformBlock;
-            }
-
-            template<std::size_t N>
-            static constexpr void getUniformBlockMemberNames(const UniformBlock<N>& block, const char*(&memberNames)[N]) noexcept
-            {
-                for(std::size_t i = 0; i < N; ++i)
-                {
-                    memberNames[i] = block.members[i].key.c_str();
-                }
-            }
-
-            template<std::size_t N>
-            static void bindUniformBlock(GLuint programId, UniformBlock<N>& block)
-            {
-                block.index = glGetUniformBlockIndex(programId, block.key.c_str());
-                if(block.index != GL_INVALID_INDEX)
-                {
-                    glGetActiveUniformBlockiv(programId, block.index, GL_UNIFORM_BLOCK_DATA_SIZE, &block.size);
-                    
-                    GLuint memberIndices[N];
-                    GLint memberOffset[N];
-                    GLint memberSize[N];
-                    GLint memberType[N];
-
-                    const char* memberNames[N];
-                    getUniformBlockMemberNames(block, memberNames);
-
-                    glGetUniformIndices(programId, N, memberNames, memberIndices);
-                    glGetActiveUniformsiv(programId, N, memberIndices, GL_UNIFORM_OFFSET, memberOffset);
-                    glGetActiveUniformsiv(programId, N, memberIndices, GL_UNIFORM_SIZE, memberSize);
-                    glGetActiveUniformsiv(programId, N, memberIndices, GL_UNIFORM_TYPE, memberType);
-
-                    for(std::size_t i = 0; i < N; ++i)
-                    {
-                        Uniform& member = block.members[i];
-                        member.index = memberIndices[i];
-                        member.offset = memberOffset[i];
-                        member.type = memberType[i];
-                        member.size = memberSize[i];
-                    }
-                }
-            }
-
-            Buffer allocateBuffer(GLint bufferSize)
-            {
-                Buffer buffer;
-                buffer.size = bufferSize;
-                buffer.data = malloc(bufferSize);
-                if(buffer.data == nullptr)
-                {
-                    buffer.size = 0;
-                }
-
-                return buffer;
             }
 
             void stop(domain::entity::IdType referenceId, TDataContext& context) override
