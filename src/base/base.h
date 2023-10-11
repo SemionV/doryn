@@ -1,5 +1,6 @@
 #pragma once
 
+#include "compileTimeTypes.h"
 #include "configuration/configuration.h"
 #include "serviceLocator.h"
 #include "configuration/fileSystemBasedConfiguration.h"

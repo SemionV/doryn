@@ -36,6 +36,8 @@ namespace dory::openGL::graphics
                         member.offset = memberOffset[i];
                         member.type = memberType[i];
                         member.count = memberSize[i];
+
+                        member.size = getOpenGLTypeSize(member.type) * member.count;
                     }
                 }
             }

@@ -11,6 +11,7 @@ namespace dory::openGL::graphics
         GLuint index = GL_INVALID_INDEX;
         GLint count = 0;
         GLint offset = 0;
+        std::size_t size = 0;
 
         DataBinding() {}
 
@@ -38,25 +39,4 @@ namespace dory::openGL::graphics
             DataBinding(blockName)
         {}
     };
-
-    Buffer allocateBuffer(GLint bufferSize)
-    {
-        Buffer buffer;
-        buffer.data = malloc(bufferSize);
-        if(buffer.data != nullptr)
-        {
-            buffer.count = bufferSize;
-        }
-
-        return buffer;
-    }
-
-    void deallocateBuffer(Buffer& buffer) noexcept
-    {
-        if(buffer.data)
-        {
-            free(buffer.data);
-            buffer.data = 0;
-        }
-    }
 }
