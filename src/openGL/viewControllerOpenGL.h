@@ -2,7 +2,9 @@
 
 #include "glfwWindow.h"
 #include "shaderService.h"
-#include "buffers/uniform.h"
+
+#include "graphics/openglProcedures.h"
+#include "graphics/factory.h"
 
 namespace dory::openGL
 {
@@ -11,8 +13,6 @@ namespace dory::openGL
     {
         private:
             std::shared_ptr<domain::RepositoryReader<GlfwWindow>> windowRespository;
-
-            buffers::ColorsUniformBlockBinder colorsUniformBlock;
 
             enum VAO_IDs { Triangles, NumVAOs };
             enum Buffer_IDs { ArrayBuffer, UniformBuffer, NumBuffers };
@@ -88,9 +88,6 @@ namespace dory::openGL
                                 return false;
                             });
                         glUseProgram(programId);
-
-                        colorsUniformBlock.bind(programId);
-                        auto blockSize = colorsUniformBlock.getBlockDataSize();
 
                         glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, (void*)(0));
                         glEnableVertexAttribArray(vPosition);
