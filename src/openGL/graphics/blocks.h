@@ -28,15 +28,44 @@ namespace dory::openGL::graphics
     struct Uniform: public DataBinding
     {
         GLint type = 0;
+
+        Uniform() = default;
+
+        Uniform(const std::string_view& blockName):
+            DataBinding(blockName)
+        {}
     };
 
     template<std::size_t MembersCount>
     struct UniformBlock: public DataBinding
     {
-        std::array<Uniform, MembersCount> members;
+        Uniform members[MembersCount];
 
         UniformBlock(const std::string_view& blockName):
             DataBinding(blockName)
+        {}
+
+        UniformBlock(const std::string_view& blockName, const Uniform(&members)[MembersCount]):
+            DataBinding(blockName),
+            members(members)
+        {}
+    };
+
+    struct ColorsUniformBlock: public UniformBlock<3>
+    {
+        Uniform& brightColor;
+        Uniform& hippieColor;
+        Uniform& darkColor;
+
+        ColorsUniformBlock():
+            UniformBlock("ColorsBlock", {
+                Uniform("ColorsBlock.brightColor"),
+                Uniform("ColorsBlock.hippieColor"),
+                Uniform("ColorsBlock.darkColor")
+            }),
+            brightColor(UniformBlock::members[0]),
+            hippieColor(UniformBlock::members[1]),
+            darkColor(UniformBlock::members[2])
         {}
     };
 }
