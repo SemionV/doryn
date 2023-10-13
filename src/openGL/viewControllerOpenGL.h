@@ -13,6 +13,7 @@ namespace dory::openGL
     {
         private:
             std::shared_ptr<domain::RepositoryReader<GlfwWindow>> windowRespository;
+            graphics::ColorsBufferInterface colorsUniform;
 
             enum VAO_IDs { Triangles, NumVAOs };
             enum Buffer_IDs { ArrayBuffer, UniformBuffer, NumBuffers };
@@ -105,14 +106,18 @@ namespace dory::openGL
                             GLint blockSize {0};
                             glGetActiveUniformBlockiv(programId, colorsBlockIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
 
-                            GLfloat  colors[3][4] = {
-                            { 0.7f, 0.7f, 0.7f, 1.0f }, 
-                            { 0.7f, 0.7f, 0.0f, 1.0f },
-                            { 0.2f, 0.2f, 0.2f, 1.0f }};
+                            graphics::Buffer buffer;
+                            buffer.data = &colorsUniform;
+                            buffer.size = sizeof(colorsUniform);
+                            buffer.index = Buffers[UniformBuffer];
 
-                            glBufferStorage( GL_UNIFORM_BUFFER, sizeof(colors), colors, 0);
+                            colorsUniform.brightColor = domain::Color(0.7f, 0.7f, 0.7f, 1.0f);
+                            colorsUniform.hippieColor = domain::Color(0.7f, 0.7f, 0.0f, 1.0f);
+                            colorsUniform.darkColor = domain::Color(0.2f, 0.2f, 0.2f, 1.0f);
 
-                            glBindBufferBase(GL_UNIFORM_BUFFER, colorsBlockIndex, Buffers[UniformBuffer]);
+                            glBufferStorage( GL_UNIFORM_BUFFER, buffer.size, buffer.data, 0);
+
+                            glBindBufferBase(GL_UNIFORM_BUFFER, colorsBlockIndex, buffer.index);
 
                         }
                     }

@@ -12,7 +12,7 @@ namespace dory::openGL::graphics
         buffer.data = malloc(bufferSize);
         if(buffer.data != nullptr)
         {
-            buffer.count = bufferSize;
+            buffer.size = bufferSize;
         }
 
         return buffer;
@@ -24,6 +24,7 @@ namespace dory::openGL::graphics
         {
             free(buffer.data);
             buffer.data = 0;
+            buffer.size = 0;
         }
     }
 
@@ -35,7 +36,7 @@ namespace dory::openGL::graphics
             {
                 for(std::size_t i = 0; i < MembersCount; ++i)
                 {
-                    memberNames[i] = block.members[i].key.c_str();
+                    memberNames[i] = block.members[i]->key.c_str();
                 }
             }
 
@@ -46,7 +47,7 @@ namespace dory::openGL::graphics
 
                 for(std::size_t i = 0; i < MembersCount; ++i)
                 {
-                    bufferBlock.members[i].key = memberNames[i];
+                    bufferBlock.members[i]->key = memberNames[i];
                 }
 
                 return bufferBlock;
@@ -58,7 +59,7 @@ namespace dory::openGL::graphics
                 for(std::size_t i = 0; i < MembersCount; ++i)
                 {
                     auto member = uniformBloc.members[i];
-                    if(strcmp(memberName.data(), member.key.c_str()) == 0)
+                    if(strcmp(memberName.data(), member->key.c_str()) == 0)
                     {
                         return member;
                     }

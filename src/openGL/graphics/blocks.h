@@ -39,33 +39,53 @@ namespace dory::openGL::graphics
     template<std::size_t MembersCount>
     struct UniformBlock: public DataBinding
     {
-        Uniform members[MembersCount];
+        std::array<Uniform*, MembersCount> members;
 
         UniformBlock(const std::string_view& blockName):
             DataBinding(blockName)
         {}
 
-        UniformBlock(const std::string_view& blockName, const Uniform(&members)[MembersCount]):
+        template<typename ...T>
+        UniformBlock(const std::string_view& blockName, T... members):
             DataBinding(blockName),
-            members(members)
+            members{members...}
         {}
     };
 
     struct ColorsUniformBlock: public UniformBlock<3>
     {
-        Uniform& brightColor;
-        Uniform& hippieColor;
-        Uniform& darkColor;
+        static constexpr std::string_view pointLiteral = ".";
+        static constexpr std::string_view blockNameLiteral = "ColorsBlock";
+        static constexpr std::string_view prefixLiteral = dory::compileTime::JoinStringLiterals<blockNameLiteral, pointLiteral>;
+
+        static constexpr std::string_view brightColorLiteral = "brightColor";
+        static constexpr std::string_view hippieColorLiteral = "hippieColor";
+        static constexpr std::string_view darkColorLiteral = "darkColor";
+
+        Uniform brightColor = Uniform(dory::compileTime::JoinStringLiterals<prefixLiteral, brightColorLiteral>);
+        Uniform hippieColor = Uniform(dory::compileTime::JoinStringLiterals<prefixLiteral, hippieColorLiteral>);
+        Uniform darkColor = Uniform(dory::compileTime::JoinStringLiterals<prefixLiteral, darkColorLiteral>);
 
         ColorsUniformBlock():
-            UniformBlock("ColorsBlock", {
-                Uniform("ColorsBlock.brightColor"),
-                Uniform("ColorsBlock.hippieColor"),
-                Uniform("ColorsBlock.darkColor")
-            }),
-            brightColor(UniformBlock::members[0]),
-            hippieColor(UniformBlock::members[1]),
-            darkColor(UniformBlock::members[2])
+            UniformBlock(blockNameLiteral, &brightColor, &hippieColor, &darkColor)
         {}
+    };
+
+    struct ColorsBufferInterface
+    {
+       domain::Color brightColor;
+       domain::Color hippieColor;
+       domain::Color darkColor;
+    };
+
+    class BufferInterfaceFactory
+    {
+        public:
+            template<typename TInterface>
+            static TInterface& getBufferInterface(const Buffer& hostBuffer, const std::size_t offset = 0)
+            {
+                TInterface& bufferInterface = *(static_cast<TInterface*>(hostBuffer.data) + offset);
+                return bufferInterface;
+            }
     };
 }

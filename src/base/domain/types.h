@@ -50,5 +50,11 @@ namespace dory::domain
         float g;
         float b;
         float a;
+
+        Color() = default;
+
+        Color(float r, float g, float b, float a):
+            r(r), g(g), b(b), a(a)
+        {}
     };
 }

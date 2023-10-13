@@ -2,6 +2,7 @@
 
 #include "openGL/dependencies.h"
 #include "blocks.h"
+#include "factory.h"
 
 namespace dory::openGL::graphics
 {
@@ -22,7 +23,7 @@ namespace dory::openGL::graphics
                     GLint memberType[N];
 
                     const char* memberNames[N];
-                    getBlockMemberNames(block, memberNames);
+                    BufferBlockFactory::getBlockMemberNames(block, memberNames);
 
                     glGetUniformIndices(programId, N, memberNames, memberIndices);
                     glGetActiveUniformsiv(programId, N, memberIndices, GL_UNIFORM_OFFSET, memberOffset);
@@ -31,13 +32,13 @@ namespace dory::openGL::graphics
 
                     for(std::size_t i = 0; i < N; ++i)
                     {
-                        Uniform& member = block.members[i];
-                        member.index = memberIndices[i];
-                        member.offset = memberOffset[i];
-                        member.type = memberType[i];
-                        member.count = memberSize[i];
+                        Uniform* member = block.members[i];
+                        member->index = memberIndices[i];
+                        member->offset = memberOffset[i];
+                        member->type = memberType[i];
+                        member->count = memberSize[i];
 
-                        member.size = getOpenGLTypeSize(member.type) * member.count;
+                        member->size = getOpenGLTypeSize(member->type) * member->count;
                     }
                 }
             }
