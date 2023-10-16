@@ -3,6 +3,7 @@
 #include "base/base.h"
 #include "graphics/program.h"
 #include "graphics/blocks.h"
+#include "graphics/vertexArray.h"
 #include "shaderService.h"
 
 namespace dory::openGL

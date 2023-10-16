@@ -82,36 +82,10 @@ namespace dory::openGL::graphics
             static constexpr auto hippieColorUniformName = dory::compileTime::JoinStringLiterals<prefixLiteral, hippieColorLiteral>;
             static constexpr auto darkColorUniformName = dory::compileTime::JoinStringLiterals<prefixLiteral, darkColorLiteral>;
 
-        private:
-            template<std::size_t MembersCount>
-            static void setMemberColor(domain::Color& colorData, UniformBlock<MembersCount>& uniformBloc, Buffer& buffer, const std::string_view& memberName)
-            {
-                Uniform& member = BufferBlockFactory::getUniformBlockMember(uniformBloc, memberName);
-                memcpy(buffer.data + member.offset, &colorData, member.size);
-            }
-
         public:
             static decltype(auto) createColorsUniformBlock() noexcept
             {
                 return BufferBlockFactory::createUniformBlock(blockNameLiteral, {brightColorUniformName, hippieColorUniformName, darkColorUniformName});
-            }
-
-            template<std::size_t MembersCount>
-            static void setBrightColor(domain::Color& colorData, UniformBlock<MembersCount>& uniformBloc, Buffer& buffer)
-            {
-                setMemberColor(colorData, uniformBloc, brightColorUniformName);
-            }
-
-            template<std::size_t MembersCount>
-            static void setHippieColor(domain::Color& colorData, UniformBlock<MembersCount>& uniformBloc, Buffer& buffer)
-            {
-                setMemberColor(colorData, uniformBloc, hippieColorUniformName);
-            }
-
-            template<std::size_t MembersCount>
-            static void setDarkColor(domain::Color& colorData, UniformBlock<MembersCount>& uniformBloc, Buffer& buffer)
-            {
-                setMemberColor(colorData, uniformBloc, darkColorUniformName);
             }
     };
 }

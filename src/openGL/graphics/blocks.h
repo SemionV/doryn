@@ -77,15 +77,4 @@ namespace dory::openGL::graphics
        domain::Color hippieColor;
        domain::Color darkColor;
     };
-
-    class BufferInterfaceFactory
-    {
-        public:
-            template<typename TInterface>
-            static TInterface& getBufferInterface(const Buffer& hostBuffer, const std::size_t offset = 0)
-            {
-                TInterface& bufferInterface = *(static_cast<TInterface*>(hostBuffer.data) + offset);
-                return bufferInterface;
-            }
-    };
 }
