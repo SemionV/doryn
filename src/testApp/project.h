@@ -59,7 +59,8 @@ namespace testApp
                 auto viewRepositoryReader = serviceLocator->getViewRepositoryReader();
                 auto configuration = serviceLocator->getConfiguration();
                 auto windowRepositoryReader = serviceLocator->getWindowRepositoryReader();
-                auto viewController = std::make_shared<dory::openGL::ViewControllerOpenGL<TDataContext>>(viewRepositoryReader, configuration, windowRepositoryReader);
+                auto renderer = std::make_shared<dory::openGL::Renderer>();
+                auto viewController = std::make_shared<dory::openGL::ViewControllerOpenGL<TDataContext>>(viewRepositoryReader, configuration, windowRepositoryReader, renderer);
                 auto viewControllerNode = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(pipelineNodeIdFactory->generate(), 
                     viewController, 0, context.outputGroupNodeId));
 
