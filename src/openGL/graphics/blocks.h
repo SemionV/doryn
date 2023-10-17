@@ -5,10 +5,12 @@
 
 namespace dory::openGL::graphics
 {
+    static constexpr GLuint unboundId = GL_INVALID_INDEX;
+
     struct DataBinding
     {
         std::string key;
-        GLuint index = GL_INVALID_INDEX;
+        GLuint index = unboundId;
         GLint count = 0;
         GLint offset = 0;
         std::size_t size = 0;

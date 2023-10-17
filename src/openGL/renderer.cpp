@@ -6,8 +6,9 @@ namespace dory::openGL
     void Renderer::initialize(std::shared_ptr<configuration::IConfiguration> configuration)
     {
         program = loadProgram(configuration);
-
         bindProgram(program);
+
+        //vertexArray = createVertexArray();
 
         glGenVertexArrays( NumVAOs, VAOs );
         glBindVertexArray( VAOs[Triangles] );
@@ -31,7 +32,7 @@ namespace dory::openGL
         }*/
 
         auto colorsBlockIndex = glGetUniformBlockIndex(program.id, "ColorsBlock");
-        if(colorsBlockIndex != GL_INVALID_INDEX)
+        if(colorsBlockIndex != graphics::unboundId)
         {
             glBindBuffer( GL_UNIFORM_BUFFER, Buffers[UniformBuffer] );
             GLint blockSize {0};

@@ -2,13 +2,13 @@
 
 #include "openGL/dependencies.h"
 #include "openGL/shaderMetadata.h"
+#include "blocks.h"
 
 namespace dory::openGL::graphics
 {
     struct Program
     {
-        static constexpr GLuint unboundProgramId = -1;
-        GLuint id = unboundProgramId;
+        GLuint id = unboundId;
         std::vector<ShaderMetadata> shaders;
 
         Program() = default;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "openGL/dependencies.h"
+#include "blocks.h"
 
 namespace dory::openGL::graphics
 {
@@ -20,8 +21,15 @@ namespace dory::openGL::graphics
 
     struct VertexArray
     {
-        GLuint id;
+        GLuint id = unboundId;
         Buffer vertexBuffer;
         std::vector<VertexAttribute> vertexAttributes;
+
+        VertexArray() = default;
+
+        template<typename T>
+        VertexArray(T&& vertexAttributes):
+            vertexAttributes(std::forward<T>(vertexAttributes))
+        {}
     };
 }

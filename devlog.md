@@ -4,8 +4,6 @@ Tasks:
 * Define virtual constructors and default move members for Interface classes
 * Return const& from EntityRepository and build a method for mutations
 * Generalize core type of Matricies, so that it can support also double
-* Do not include internal header files into dependencies.h(precompiled headers), because it increases compilation time a lot
-* Stop engine using Event and FrameService
 * Render Meshes
 * Camera Control
 * Mouse picking
@@ -20,6 +18,10 @@ Tasks:
 * Build for MacOS
 * Networking/Mutliplayer
 * Vioce control
+
+**17.10.23**
+* Task done(some time ago): Do not include internal header files into dependencies.h(precompiled headers), because it increases compilation time a lot
+* Task done(some time ago): Stop engine using Event and FrameService
 
 **25.09.23**
 * Task done: Compile with Visual C++ compiler

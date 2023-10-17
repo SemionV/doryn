@@ -13,7 +13,7 @@ namespace dory::openGL::graphics
             static void bindBlock(GLuint programId, UniformBlock<N>& block)
             {
                 block.index = glGetUniformBlockIndex(programId, block.key.c_str());
-                if(block.index != GL_INVALID_INDEX)
+                if(block.index != graphics::unboundId)
                 {
                     glGetActiveUniformBlockiv(programId, block.index, GL_UNIFORM_BLOCK_DATA_SIZE, &block.size);
                     

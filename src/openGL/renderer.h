@@ -12,6 +12,7 @@ namespace dory::openGL
     {
         private:
             graphics::Program program;
+            graphics::VertexArray vertexArray;
 
             graphics::ColorsBufferInterface colorsUniform;
 
@@ -33,5 +34,15 @@ namespace dory::openGL
             virtual graphics::Program loadProgram(std::shared_ptr<configuration::IConfiguration> configuration);
 
             void bindProgram(graphics::Program program);
+
+            template<typename T>
+            graphics::VertexArray createVertexArray(T&& vertexAttributes)
+            {
+                graphics::VertexArray vertexArray(std::forward<T>(vertexAttributes));
+
+                glGenVertexArrays(1, &vertexArray.id);
+
+                return vertexArray;
+            }
     };
 }
