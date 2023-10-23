@@ -6,7 +6,9 @@ find_package(Catch2 3 REQUIRED)
 find_package(FakeIt REQUIRED
             PATHS ${VENDOR_DIR} NO_DEFAULT_PATH)
 
-add_executable(baseTests eventTests.cpp
+add_executable(baseTests linearAlgebra.cpp
+                         templates.cpp
+                         eventTests.cpp
                          messagesTests.cpp
                          repositoryTests.cpp
                          domain/geometry/matrixCalculatorTests.cpp

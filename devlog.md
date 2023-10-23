@@ -12,12 +12,13 @@ Tasks:
 * Dynamic module loading(plugin system)
 * Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
 * Scene
+* Serialization of scene state
 * Spatial partition
 * Path finding
 * Build for Linux
 * Build for MacOS
 * Networking/Mutliplayer
-* Vioce control
+* Voice control
 
 **17.10.23**
 * Task done(some time ago): Do not include internal header files into dependencies.h(precompiled headers), because it increases compilation time a lot
