@@ -5,46 +5,30 @@ namespace dory::openGL
 {
     void Renderer::initialize(std::shared_ptr<configuration::IConfiguration> configuration)
     {
-        program = loadProgram(configuration);
-        graphics::OpenglProcedures::bindProgram(program);
+        program = loadProgram(configuration); //TODO: this needs rework. Split onto two parts: 1. Build Program object and load shaders, 2. Bind program to OpenGL and compile
 
-        graphics::OpenglProcedures::loadVertexArray(trianglesVertexArray);
-        graphics::OpenglProcedures::bindVertexArray(trianglesVertexArray);
+        graphics::OpenglProcedures::loadVertexArray(trianglesVertexArray);//TODO: Move Program to VertexArray
+        graphics::OpenglProcedures::setVertexArrayData(trianglesVertexArray, 
+            trianglesVertexArray.verticesData.data(), 
+            sizeof(trianglesVertexArray.verticesData));
 
-        GLfloat  vertices[NumVertices][2] = {
-            { -0.90f, -0.90f }, {  0.85f, -0.90f }, { -0.90f,  0.85f },  // Triangle 1
-            {  0.90f, -0.85f }, {  0.90f,  0.90f }, { -0.85f,  0.90f }   // Triangle 2
-        };
-
-        glCreateBuffers( NumBuffers, Buffers );
-        glBindBuffer( GL_ARRAY_BUFFER, Buffers[ArrayBuffer] );
-        glBufferStorage( GL_ARRAY_BUFFER, sizeof(vertices), vertices, 0);
-
-        for(std::size_t i = 0; i < trianglesVertexArray.vertexAttributes.size(); ++i)
-        {
-            graphics::VertexAttribute& attribute = trianglesVertexArray.vertexAttributes[i];
-            glVertexAttribPointer(i, attribute.count, attribute.type, attribute.normalized, attribute.stride, attribute.pointer);
-            glEnableVertexAttribArray(i);
-        }
-
-        graphics::OpenglProcedures::loadUniformBlock(program.id, colorsUniformBlock);
-
+        graphics::OpenglProcedures::loadUniformBlock(program.id, colorsUniformBlock);//TODO: move Unifrom Block to Program object
         if(colorsUniformBlock.index != graphics::unboundId)
         {
-            glBindBuffer( GL_UNIFORM_BUFFER, Buffers[UniformBuffer] );
+            glCreateBuffers(1, &colorsUniformBlock.buffer.index);
+            glBindBuffer(GL_UNIFORM_BUFFER, colorsUniformBlock.buffer.index);
 
             auto buffer = colorsUniformBlock.buffer;
             buffer.data = &colorsUniformBlock.colors;
             buffer.size = sizeof(colorsUniformBlock.colors);
-            buffer.index = Buffers[UniformBuffer];
 
             colorsUniformBlock.colors.brightColor = domain::Color(0.7f, 0.7f, 0.7f, 1.0f);
             colorsUniformBlock.colors.hippieColor = domain::Color(0.7f, 0.7f, 0.0f, 1.0f);
             colorsUniformBlock.colors.darkColor = domain::Color(0.2f, 0.2f, 0.2f, 1.0f);
 
             glBufferStorage( GL_UNIFORM_BUFFER, buffer.size, buffer.data, 0);
-            
-            glBindBufferBase(GL_UNIFORM_BUFFER, colorsUniformBlock.index, buffer.index);
+
+            glBindBufferBase(GL_UNIFORM_BUFFER, colorsUniformBlock.index, colorsUniformBlock.buffer.index);
 
         }
     }
@@ -56,19 +40,21 @@ namespace dory::openGL
         glClearBufferfv(GL_COLOR, 0, black);
 
         glBindVertexArray( trianglesVertexArray.id );
-        glDrawArrays( GL_TRIANGLES, 0, NumVertices );
+        graphics::OpenglProcedures::useProgram(program);
+
+        glDrawArrays(GL_TRIANGLES, 0, trianglesVertexArray.verticesCount);
     }
 
     graphics::Program Renderer::loadProgram(std::shared_ptr<configuration::IConfiguration> configuration)
     {
         ShaderMetadata verticiesShader;
         verticiesShader.identifier = "shaders/triangles/triangles.vert";
-        verticiesShader.shaderSource = configuration->getTextFileContent("shaders/triangles/triangles.vert");
+        verticiesShader.shaderSource = configuration->getTextFileContent(verticiesShader.identifier);
         verticiesShader.type = GL_VERTEX_SHADER;
 
         ShaderMetadata fragmentShader;
         fragmentShader.identifier = "shaders/triangles/triangles.frag";
-        fragmentShader.shaderSource = configuration->getTextFileContent("shaders/triangles/triangles.frag");
+        fragmentShader.shaderSource = configuration->getTextFileContent(fragmentShader.identifier);
         fragmentShader.type = GL_FRAGMENT_SHADER;
 
         graphics::Program program({ verticiesShader, fragmentShader });

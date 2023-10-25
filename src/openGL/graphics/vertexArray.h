@@ -24,8 +24,9 @@ namespace dory::openGL::graphics
     struct VertexArray
     {
         GLuint id = unboundId;
-        Buffer vertexBuffer;
+        Buffer buffer;
         std::array<VertexAttribute, NAttributes> vertexAttributes;
+        std::size_t verticesCount {};
 
         VertexArray() = default;
 

@@ -11,6 +11,16 @@ namespace dory::openGL
 {
     struct TrianglesVertexArray: public graphics::VertexArray<1>
     {
+        std::array<GLfloat, 12> verticesData = {
+            -0.90f, -0.90f, 
+            0.85f, -0.90f,
+            -0.90f,  0.85f,
+            
+            0.90f, -0.85f,
+            0.90f,  0.90f,
+            -0.85f,  0.90f
+        };
+
         TrianglesVertexArray():
             graphics::VertexArray<1>({graphics::VertexAttribute(2, GL_FLOAT)})
         {}
@@ -49,12 +59,6 @@ namespace dory::openGL
             graphics::Program program;
             TrianglesVertexArray trianglesVertexArray;
             ColorsUniformBlock colorsUniformBlock;
-
-            ColorsBufferInterface colorsUniform;
-
-            enum Buffer_IDs { ArrayBuffer, UniformBuffer, NumBuffers };
-            GLuint  Buffers[NumBuffers];
-            enum {NumVertices = 6};
 
         public:
             virtual ~Renderer() = default;
