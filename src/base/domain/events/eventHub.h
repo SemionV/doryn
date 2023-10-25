@@ -8,6 +8,8 @@ namespace dory::domain::events
     class EventHubDispatcher
     {
         public:
+            virtual ~EventHubDispatcher() = default;
+
             virtual void submit(TDataContext& context) = 0;
     };
 

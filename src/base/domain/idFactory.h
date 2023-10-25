@@ -6,6 +6,8 @@ namespace dory::domain
     class IIdFactory
     {
         public:
+            virtual ~IIdFactory() = default;
+
             virtual TId generate() = 0;
             virtual TId getNullId() = 0;
     };

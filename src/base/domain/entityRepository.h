@@ -9,6 +9,8 @@ namespace dory::domain
     class ITraverseIterator
     {
         public:
+            virtual ~ITraverseIterator() = default;
+
             virtual TEntity* next() = 0;
             virtual void forEach(std::function<void(TEntity&)>) = 0;
     };
@@ -65,6 +67,8 @@ namespace dory::domain
     class IEntityRepository
     {
         public:
+            virtual ~IEntityRepository() = default;
+
             virtual int getEntitiesCount() = 0;
             virtual std::unique_ptr<ITraverseIterator<TEntity>> getTraverseIterator() = 0;
             virtual TEntity& store(TEntity&& entity) = 0;
@@ -158,7 +162,7 @@ namespace dory::domain
                 return repository->getEntitiesCount();
             }
 
-            virtual std::unique_ptr<ITraverseIterator<TEntity>> getTraverseIterator()
+            std::unique_ptr<ITraverseIterator<TEntity>> getTraverseIterator()
             {
                 return repository->getTraverseIterator();
             }

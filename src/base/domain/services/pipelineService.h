@@ -16,7 +16,7 @@ namespace dory::domain::services
                 nodeReader(nodeReader)
             {}
 
-            virtual std::list<std::shared_ptr<object::PipelineNode>> getPipeline();
+            std::list<std::shared_ptr<object::PipelineNode>> getPipeline();
 
         private:
             std::shared_ptr<object::PipelineNode> loadNode(entity::PipelineNode& nodeEntity);

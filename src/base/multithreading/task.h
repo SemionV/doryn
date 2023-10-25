@@ -7,8 +7,8 @@ namespace dory::multithreading
     class DORY_API Task
     {
         private:
-            bool isDoneFlag;
-            bool isErrorFlag;
+            bool isDoneFlag{};
+            bool isErrorFlag{};
 
         protected:
             void setDone(bool isDone);
@@ -17,6 +17,7 @@ namespace dory::multithreading
 
         public:
             Task();
+            virtual ~Task() = default;
 
             bool getDone();
             bool getError();

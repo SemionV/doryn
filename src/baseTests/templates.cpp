@@ -112,12 +112,9 @@ namespace test_fold_exprexxions
         sum = addArgumentsLeft<2, 3, 4>(1);
         REQUIRE(sum == 10);
 
-        // (2 + (3 + (4 + 1)))
+        // ((2 + 1) + ((3 + 1) + ((4 + 1) + (1 + 1))))
         sum = addConstant<1, 2, 3, 4>(1);
         REQUIRE(sum == 14);
-
-        std::array<std::string_view, 5> container = {"String1", "String2", "String3", "String4", "String5"};
-        printArguments(container, Indices<0, 1, 2>());
     }
 
     template<std::size_t...>

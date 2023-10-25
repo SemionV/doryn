@@ -8,6 +8,8 @@ namespace dory::domain::services
     class IMatrixCalculatorService
     {
         public:
+            virtual ~IMatrixCalculatorService() = default;
+
             virtual void setToIdentity(geometry::Matrix4x4* matrix) = 0;
             virtual void copyEntriesTo(const geometry::Matrix4x4* sourceMatrix, geometry::Matrix4x4* destinationMatrix) = 0;
             virtual void multiply(const geometry::Matrix4x4* matrixLeftSide, const geometry::Matrix4x4* matrixRightSide, geometry::Matrix4x4* resultMatrix) = 0;

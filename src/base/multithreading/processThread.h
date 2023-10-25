@@ -7,6 +7,8 @@ namespace dory::multithreading
     class DORY_API ProcessThread
     {
         public:
+            virtual ~ProcessThread() = default;
+
             virtual void invokeTask(std::shared_ptr<Task> task) = 0;
             virtual void stop() = 0;
             virtual void run() = 0;

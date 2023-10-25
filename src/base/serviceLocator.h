@@ -58,6 +58,8 @@ namespace dory
             virtual std::shared_ptr<domain::events::SystemConsoleEventHubDispatcher<TDataContext>> buildConsoleEventHub() = 0;
 
         public:
+            virtual ~ServiceLocator() = default;
+
             void configure()
             {
                 configuration = buildConfiguration();

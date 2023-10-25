@@ -1,9 +1,9 @@
 # Development log
 
 Tasks:
-* Define virtual constructors and default move members for Interface classes
 * Return const& from EntityRepository and build a method for mutations
 * Generalize core type of Matricies, so that it can support also double
+* Consider to allocate controller classes on stack(use const T& instead of std::shared_ptr/std::unique_ptr)
 * Render Meshes
 * Camera Control
 * Mouse picking
@@ -19,6 +19,9 @@ Tasks:
 * Build for MacOS
 * Networking/Mutliplayer
 * Voice control
+
+**25.10.23**
+* Task done: Define virtual constructors and default move members for Interface classes
 
 **17.10.23**
 * Task done(some time ago): Do not include internal header files into dependencies.h(precompiled headers), because it increases compilation time a lot

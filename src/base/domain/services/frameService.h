@@ -9,6 +9,8 @@ namespace dory::domain::services
     class IFrameService
     {
         public:
+            virtual ~IFrameService() = default;
+
             virtual void startLoop(domain::Engine<TDataContext>& engine, TDataContext& context) = 0;
             virtual void endLoop() = 0;
     };
