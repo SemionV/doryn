@@ -13,7 +13,7 @@ namespace dory::openGL::graphics
         GLuint index = unboundId;
         GLint count = 0;
         GLint offset = 0;
-        std::size_t size = 0;
+        GLint size = 0;
 
         DataBinding() {}
 
@@ -41,42 +41,26 @@ namespace dory::openGL::graphics
     template<std::size_t MembersCount>
     struct UniformBlock: public DataBinding
     {
-        std::array<Uniform*, MembersCount> members;
+        std::array<Uniform, MembersCount> members;
+        Buffer buffer;
 
         UniformBlock(const std::string_view& blockName):
             DataBinding(blockName)
         {}
 
-        template<typename ...T>
+        template<typename... T>
         UniformBlock(const std::string_view& blockName, T... members):
             DataBinding(blockName),
             members{members...}
         {}
-    };
 
-    struct ColorsUniformBlock: public UniformBlock<3>
-    {
-        static constexpr std::string_view pointLiteral = ".";
-        static constexpr std::string_view blockNameLiteral = "ColorsBlock";
-        static constexpr std::string_view prefixLiteral = dory::compileTime::JoinStringLiterals<blockNameLiteral, pointLiteral>;
-
-        static constexpr std::string_view brightColorLiteral = "brightColor";
-        static constexpr std::string_view hippieColorLiteral = "hippieColor";
-        static constexpr std::string_view darkColorLiteral = "darkColor";
-
-        Uniform brightColor = Uniform(dory::compileTime::JoinStringLiterals<prefixLiteral, brightColorLiteral>);
-        Uniform hippieColor = Uniform(dory::compileTime::JoinStringLiterals<prefixLiteral, hippieColorLiteral>);
-        Uniform darkColor = Uniform(dory::compileTime::JoinStringLiterals<prefixLiteral, darkColorLiteral>);
-
-        ColorsUniformBlock():
-            UniformBlock(blockNameLiteral, &brightColor, &hippieColor, &darkColor)
-        {}
-    };
-
-    struct ColorsBufferInterface
-    {
-       domain::Color brightColor;
-       domain::Color hippieColor;
-       domain::Color darkColor;
+        UniformBlock(const std::string_view& blockName, const std::string_view(&memberNames)[MembersCount]):
+            DataBinding(blockName)
+        {
+            for(std::size_t i; i < MembersCount; ++i)
+            {
+                members[i] = memberNames[i];
+            }
+        }
     };
 }

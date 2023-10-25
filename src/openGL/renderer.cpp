@@ -6,12 +6,10 @@ namespace dory::openGL
     void Renderer::initialize(std::shared_ptr<configuration::IConfiguration> configuration)
     {
         program = loadProgram(configuration);
-        bindProgram(program);
+        graphics::OpenglProcedures::bindProgram(program);
 
-        //vertexArray = createVertexArray();
-
-        glGenVertexArrays( NumVAOs, VAOs );
-        glBindVertexArray( VAOs[Triangles] );
+        graphics::OpenglProcedures::loadVertexArray(trianglesVertexArray);
+        graphics::OpenglProcedures::bindVertexArray(trianglesVertexArray);
 
         GLfloat  vertices[NumVertices][2] = {
             { -0.90f, -0.90f }, {  0.85f, -0.90f }, { -0.90f,  0.85f },  // Triangle 1
@@ -22,34 +20,31 @@ namespace dory::openGL
         glBindBuffer( GL_ARRAY_BUFFER, Buffers[ArrayBuffer] );
         glBufferStorage( GL_ARRAY_BUFFER, sizeof(vertices), vertices, 0);
 
-        glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, (void*)(0));
-        glEnableVertexAttribArray(vPosition);
-
-        /*auto triangleColorIndex = glGetUniformLocation(programId, "triangleColor");
-        if(triangleColorIndex != GL_INVALID_INDEX)
+        for(std::size_t i = 0; i < trianglesVertexArray.vertexAttributes.size(); ++i)
         {
-            glUniform4f(triangleColorIndex, 0.7, 0.7, 0.7, 1.0);
-        }*/
+            graphics::VertexAttribute& attribute = trianglesVertexArray.vertexAttributes[i];
+            glVertexAttribPointer(i, attribute.count, attribute.type, attribute.normalized, attribute.stride, attribute.pointer);
+            glEnableVertexAttribArray(i);
+        }
 
-        auto colorsBlockIndex = glGetUniformBlockIndex(program.id, "ColorsBlock");
-        if(colorsBlockIndex != graphics::unboundId)
+        graphics::OpenglProcedures::loadUniformBlock(program.id, colorsUniformBlock);
+
+        if(colorsUniformBlock.index != graphics::unboundId)
         {
             glBindBuffer( GL_UNIFORM_BUFFER, Buffers[UniformBuffer] );
-            GLint blockSize {0};
-            glGetActiveUniformBlockiv(program.id, colorsBlockIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
 
-            graphics::Buffer buffer;
-            buffer.data = &colorsUniform;
-            buffer.size = sizeof(colorsUniform);
+            auto buffer = colorsUniformBlock.buffer;
+            buffer.data = &colorsUniformBlock.colors;
+            buffer.size = sizeof(colorsUniformBlock.colors);
             buffer.index = Buffers[UniformBuffer];
 
-            colorsUniform.brightColor = domain::Color(0.7f, 0.7f, 0.7f, 1.0f);
-            colorsUniform.hippieColor = domain::Color(0.7f, 0.7f, 0.0f, 1.0f);
-            colorsUniform.darkColor = domain::Color(0.2f, 0.2f, 0.2f, 1.0f);
+            colorsUniformBlock.colors.brightColor = domain::Color(0.7f, 0.7f, 0.7f, 1.0f);
+            colorsUniformBlock.colors.hippieColor = domain::Color(0.7f, 0.7f, 0.0f, 1.0f);
+            colorsUniformBlock.colors.darkColor = domain::Color(0.2f, 0.2f, 0.2f, 1.0f);
 
             glBufferStorage( GL_UNIFORM_BUFFER, buffer.size, buffer.data, 0);
-
-            glBindBufferBase(GL_UNIFORM_BUFFER, colorsBlockIndex, buffer.index);
+            
+            glBindBufferBase(GL_UNIFORM_BUFFER, colorsUniformBlock.index, buffer.index);
 
         }
     }
@@ -60,7 +55,7 @@ namespace dory::openGL
 
         glClearBufferfv(GL_COLOR, 0, black);
 
-        glBindVertexArray( VAOs[Triangles] );
+        glBindVertexArray( trianglesVertexArray.id );
         glDrawArrays( GL_TRIANGLES, 0, NumVertices );
     }
 
@@ -94,10 +89,5 @@ namespace dory::openGL
             });
 
         return program;
-    }
-
-    void Renderer::bindProgram(graphics::Program program)
-    {
-        glUseProgram(program.id);
     }
 }

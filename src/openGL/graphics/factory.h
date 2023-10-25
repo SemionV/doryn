@@ -36,7 +36,7 @@ namespace dory::openGL::graphics
             {
                 for(std::size_t i = 0; i < MembersCount; ++i)
                 {
-                    memberNames[i] = block.members[i]->key.c_str();
+                    memberNames[i] = block.members[i].key.c_str();
                 }
             }
 
@@ -47,7 +47,7 @@ namespace dory::openGL::graphics
 
                 for(std::size_t i = 0; i < MembersCount; ++i)
                 {
-                    bufferBlock.members[i]->key = memberNames[i];
+                    bufferBlock.members[i].key = memberNames[i];
                 }
 
                 return bufferBlock;
@@ -59,33 +59,11 @@ namespace dory::openGL::graphics
                 for(std::size_t i = 0; i < MembersCount; ++i)
                 {
                     auto member = uniformBloc.members[i];
-                    if(strcmp(memberName.data(), member->key.c_str()) == 0)
+                    if(strcmp(memberName.data(), member.key.c_str()) == 0)
                     {
                         return member;
                     }
                 }
-            }
-    };
-
-    class ColorsUniformBlockInterface
-    {
-        private:
-            static constexpr std::string_view pointLiteral = ".";
-            static constexpr std::string_view blockNameLiteral = "ColorsBlock";
-            static constexpr std::string_view prefixLiteral = dory::compileTime::JoinStringLiterals<blockNameLiteral, pointLiteral>;
-
-            static constexpr std::string_view brightColorLiteral = "brightColor";
-            static constexpr std::string_view hippieColorLiteral = "hippieColor";
-            static constexpr std::string_view darkColorLiteral = "darkColor";
-
-            static constexpr auto brightColorUniformName = dory::compileTime::JoinStringLiterals<prefixLiteral, brightColorLiteral>;
-            static constexpr auto hippieColorUniformName = dory::compileTime::JoinStringLiterals<prefixLiteral, hippieColorLiteral>;
-            static constexpr auto darkColorUniformName = dory::compileTime::JoinStringLiterals<prefixLiteral, darkColorLiteral>;
-
-        public:
-            static decltype(auto) createColorsUniformBlock() noexcept
-            {
-                return BufferBlockFactory::createUniformBlock(blockNameLiteral, {brightColorUniformName, hippieColorUniformName, darkColorUniformName});
             }
     };
 }

@@ -3,6 +3,8 @@
 #include "openGL/dependencies.h"
 #include "blocks.h"
 #include "factory.h"
+#include "program.h"
+#include "vertexArray.h"
 
 namespace dory::openGL::graphics
 {
@@ -10,7 +12,7 @@ namespace dory::openGL::graphics
     {
         public:
             template<std::size_t N>
-            static void bindBlock(GLuint programId, UniformBlock<N>& block)
+            static void loadUniformBlock(GLuint programId, UniformBlock<N>& block)
             {
                 block.index = glGetUniformBlockIndex(programId, block.key.c_str());
                 if(block.index != graphics::unboundId)
@@ -32,13 +34,13 @@ namespace dory::openGL::graphics
 
                     for(std::size_t i = 0; i < N; ++i)
                     {
-                        Uniform* member = block.members[i];
-                        member->index = memberIndices[i];
-                        member->offset = memberOffset[i];
-                        member->type = memberType[i];
-                        member->count = memberSize[i];
+                        Uniform& member = block.members[i];
+                        member.index = memberIndices[i];
+                        member.offset = memberOffset[i];
+                        member.type = memberType[i];
+                        member.count = memberSize[i];
 
-                        member->size = getOpenGLTypeSize(member->type) * member->count;
+                        member.size = getOpenGLTypeSize(member.type) * member.count;
                     }
                 }
             }
@@ -99,6 +101,23 @@ namespace dory::openGL::graphics
                 }
 
                 return size;
+            }
+
+            static void bindProgram(Program program)
+            {
+                glUseProgram(program.id);
+            }
+
+            template<std::size_t NAttributes>
+            static void loadVertexArray(VertexArray<NAttributes>& vertexArray)
+            {
+                glGenVertexArrays(1, &vertexArray.id);
+            }
+
+            template<std::size_t NAttributes>
+            static void bindVertexArray(VertexArray<NAttributes>& vertexArray)
+            {
+                glBindVertexArray(vertexArray.id);
             }
     };
 }

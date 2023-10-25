@@ -7,29 +7,34 @@ namespace dory::openGL::graphics
 {
     struct VertexAttribute
     {
-        GLuint id;
         GLint count;
         GLenum type;
         GLboolean normalized;
         GLsizei stride;
         const void* pointer;
 
-        VertexAttribute(GLuint id, GLint count, GLenum type, GLboolean normalized = GL_FALSE, GLsizei stride = 0, const void* pointer = nullptr):
-            id(id), count(count), type(type), normalized(normalized), stride(stride), pointer(pointer)
+        VertexAttribute() = default;
+
+        VertexAttribute(GLint count, GLenum type, GLboolean normalized = GL_FALSE, GLsizei stride = 0, const void* pointer = nullptr):
+            count(count), type(type), normalized(normalized), stride(stride), pointer(pointer)
         {}
     };
 
+    template<std::size_t NAttributes>
     struct VertexArray
     {
         GLuint id = unboundId;
         Buffer vertexBuffer;
-        std::vector<VertexAttribute> vertexAttributes;
+        std::array<VertexAttribute, NAttributes> vertexAttributes;
 
         VertexArray() = default;
 
-        template<typename T>
-        VertexArray(T&& vertexAttributes):
-            vertexAttributes(std::forward<T>(vertexAttributes))
-        {}
+        VertexArray(const VertexAttribute (&attributes)[NAttributes])
+        {
+            for(std::size_t i = 0; i < NAttributes; ++i)
+            {
+                vertexAttributes[i] = attributes[i];
+            }
+        }
     };
 }
