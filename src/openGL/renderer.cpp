@@ -6,31 +6,11 @@ namespace dory::openGL
     void Renderer::initialize(std::shared_ptr<configuration::IConfiguration> configuration)
     {
         program = loadProgram(configuration); //TODO: this needs rework. Split onto two parts: 1. Build Program object and load shaders, 2. Bind program to OpenGL and compile
-
-        graphics::OpenglProcedures::loadVertexArray(trianglesVertexArray);//TODO: Move Program to VertexArray
-        graphics::OpenglProcedures::setVertexArrayData(trianglesVertexArray, 
-            trianglesVertexArray.verticesData.data(), 
-            sizeof(trianglesVertexArray.verticesData));
-
         graphics::OpenglProcedures::loadUniformBlock(program.id, colorsUniformBlock);//TODO: move Unifrom Block to Program object
-        if(colorsUniformBlock.index != graphics::unboundId)
-        {
-            glCreateBuffers(1, &colorsUniformBlock.buffer.index);
-            glBindBuffer(GL_UNIFORM_BUFFER, colorsUniformBlock.buffer.index);
+        graphics::OpenglProcedures::setUniformBlockData(colorsUniformBlock, &colorsUniformData, sizeof(colorsUniformData));
 
-            auto buffer = colorsUniformBlock.buffer;
-            buffer.data = &colorsUniformBlock.colors;
-            buffer.size = sizeof(colorsUniformBlock.colors);
-
-            colorsUniformBlock.colors.brightColor = domain::Color(0.7f, 0.7f, 0.7f, 1.0f);
-            colorsUniformBlock.colors.hippieColor = domain::Color(0.7f, 0.7f, 0.0f, 1.0f);
-            colorsUniformBlock.colors.darkColor = domain::Color(0.2f, 0.2f, 0.2f, 1.0f);
-
-            glBufferStorage( GL_UNIFORM_BUFFER, buffer.size, buffer.data, 0);
-
-            glBindBufferBase(GL_UNIFORM_BUFFER, colorsUniformBlock.index, colorsUniformBlock.buffer.index);
-
-        }
+        graphics::OpenglProcedures::loadVertexArray(trianglesVertexArray);
+        graphics::OpenglProcedures::setVertexArrayData(trianglesVertexArray, verticesData.data(), sizeof(verticesData));
     }
 
     void Renderer::draw()
@@ -47,17 +27,17 @@ namespace dory::openGL
 
     graphics::Program Renderer::loadProgram(std::shared_ptr<configuration::IConfiguration> configuration)
     {
-        ShaderMetadata verticiesShader;
-        verticiesShader.identifier = "shaders/triangles/triangles.vert";
-        verticiesShader.shaderSource = configuration->getTextFileContent(verticiesShader.identifier);
-        verticiesShader.type = GL_VERTEX_SHADER;
+        ShaderMetadata verticesShader;
+        verticesShader.identifier = "shaders/triangles/triangles.vert";
+        verticesShader.shaderSource = configuration->getTextFileContent(verticesShader.identifier);
+        verticesShader.type = GL_VERTEX_SHADER;
 
         ShaderMetadata fragmentShader;
         fragmentShader.identifier = "shaders/triangles/triangles.frag";
         fragmentShader.shaderSource = configuration->getTextFileContent(fragmentShader.identifier);
         fragmentShader.type = GL_FRAGMENT_SHADER;
 
-        graphics::Program program({ verticiesShader, fragmentShader });
+        graphics::Program program({ verticesShader, fragmentShader });
 
         program.id = ShaderService::buildProgram(program.shaders, [](ShaderServiceError& error)
             {

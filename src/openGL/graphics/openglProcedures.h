@@ -36,41 +36,6 @@ namespace dory::openGL::graphics
                 return 0;
             }
 
-        public:
-            template<std::size_t N>
-            static void loadUniformBlock(GLuint programId, UniformBlock<N>& block)
-            {
-                block.index = glGetUniformBlockIndex(programId, block.key.c_str());
-                if(block.index != graphics::unboundId)
-                {
-                    glGetActiveUniformBlockiv(programId, block.index, GL_UNIFORM_BLOCK_DATA_SIZE, &block.size);
-                    
-                    GLuint memberIndices[N];
-                    GLint memberOffset[N];
-                    GLint memberSize[N];
-                    GLint memberType[N];
-
-                    const char* memberNames[N];
-                    BufferBlockFactory::getBlockMemberNames(block, memberNames);
-
-                    glGetUniformIndices(programId, N, memberNames, memberIndices);
-                    glGetActiveUniformsiv(programId, N, memberIndices, GL_UNIFORM_OFFSET, memberOffset);
-                    glGetActiveUniformsiv(programId, N, memberIndices, GL_UNIFORM_SIZE, memberSize);
-                    glGetActiveUniformsiv(programId, N, memberIndices, GL_UNIFORM_TYPE, memberType);
-
-                    for(std::size_t i = 0; i < N; ++i)
-                    {
-                        Uniform& member = block.members[i];
-                        member.index = memberIndices[i];
-                        member.offset = memberOffset[i];
-                        member.type = memberType[i];
-                        member.count = memberSize[i];
-
-                        member.size = getOpenGLTypeSize(member.type) * member.count;
-                    }
-                }
-            }
-
             // Helper function to convert GLSL types to storage sizes
             static std::size_t getOpenGLTypeSize(GLenum type)
             {
@@ -115,18 +80,55 @@ namespace dory::openGL::graphics
                 return size;
             }
 
-            template<std::size_t MembersCount>
-            static std::size_t getBlockDataSize(const UniformBlock<MembersCount>& block)
+        public:
+            template<std::size_t N>
+            static void loadUniformBlock(GLuint programId, UniformBlock<N>& block)
             {
-                std::size_t size = 0;
-
-                for(std::size_t i = 0; i < MembersCount; ++i)
+                block.index = glGetUniformBlockIndex(programId, block.key.c_str());
+                if(block.index != graphics::unboundId)
                 {
-                    auto member = block.members[i];
-                    size += getOpenGLTypeSize(member.type) * member.count;
-                }
+                    glGetActiveUniformBlockiv(programId, block.index, GL_UNIFORM_BLOCK_DATA_SIZE, &block.size);
+                    
+                    GLuint memberIndices[N];
+                    GLint memberOffset[N];
+                    GLint memberSize[N];
+                    GLint memberType[N];
 
-                return size;
+                    const char* memberNames[N];
+                    BufferBlockFactory::getBlockMemberNames(block, memberNames);
+
+                    glGetUniformIndices(programId, N, memberNames, memberIndices);
+                    glGetActiveUniformsiv(programId, N, memberIndices, GL_UNIFORM_OFFSET, memberOffset);
+                    glGetActiveUniformsiv(programId, N, memberIndices, GL_UNIFORM_SIZE, memberSize);
+                    glGetActiveUniformsiv(programId, N, memberIndices, GL_UNIFORM_TYPE, memberType);
+
+                    std::size_t size {};
+                    for(std::size_t i = 0; i < N; ++i)
+                    {
+                        Uniform& member = block.members[i];
+                        member.index = memberIndices[i];
+                        member.offset = memberOffset[i];
+                        member.type = memberType[i];
+                        member.count = memberSize[i];
+
+                        member.size = getOpenGLTypeSize(member.type) * member.count;
+                        size += member.size;
+                    }
+                    block.size = size;
+
+                    glCreateBuffers(1, &block.buffer.index);
+                    glBindBufferBase(GL_UNIFORM_BUFFER, block.index, block.buffer.index);
+                }
+            }
+
+            template<std::size_t MembersCount>
+            static void setUniformBlockData(UniformBlock<MembersCount>& block, GLvoid* data, GLsizeiptr dataSize)
+            {
+                block.buffer.data = data;
+                block.buffer.size = dataSize;
+
+                glBindBuffer(GL_UNIFORM_BUFFER, block.buffer.index);
+                glBufferStorage(GL_UNIFORM_BUFFER, block.buffer.size, block.buffer.data, 0);
             }
 
             static void useProgram(Program program)

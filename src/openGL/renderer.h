@@ -11,16 +11,6 @@ namespace dory::openGL
 {
     struct TrianglesVertexArray: public graphics::VertexArray<1>
     {
-        std::array<GLfloat, 12> verticesData = {
-            -0.90f, -0.90f, 
-            0.85f, -0.90f,
-            -0.90f,  0.85f,
-            
-            0.90f, -0.85f,
-            0.90f,  0.90f,
-            -0.85f,  0.90f
-        };
-
         TrianglesVertexArray():
             graphics::VertexArray<1>({graphics::VertexAttribute(2, GL_FLOAT)})
         {}
@@ -28,9 +18,14 @@ namespace dory::openGL
 
     struct ColorsBufferInterface
     {
-       domain::Color brightColor;
-       domain::Color hippieColor;
-       domain::Color darkColor;
+        domain::Color brightColor;
+        domain::Color hippieColor;
+        domain::Color darkColor;
+
+        ColorsBufferInterface(const domain::Color& brightColor, const domain::Color& hippieColor, const domain::Color& darkColor):
+            brightColor(brightColor), hippieColor(hippieColor), darkColor(darkColor)
+        {}
+
     };
 
     struct ColorsUniformBlock: public graphics::UniformBlock<3>
@@ -42,8 +37,6 @@ namespace dory::openGL
         static constexpr std::string_view brightColorLiteral = "brightColor";
         static constexpr std::string_view hippieColorLiteral = "hippieColor";
         static constexpr std::string_view darkColorLiteral = "darkColor";
-
-        ColorsBufferInterface colors;
 
         ColorsUniformBlock():
             graphics::UniformBlock<3>(blockNameLiteral, 
@@ -59,6 +52,20 @@ namespace dory::openGL
             graphics::Program program;
             TrianglesVertexArray trianglesVertexArray;
             ColorsUniformBlock colorsUniformBlock;
+            ColorsBufferInterface colorsUniformData {
+                    domain::Color(0.7f, 0.7f, 0.7f, 1.0f), 
+                    domain::Color(0.7f, 0.7f, 0.0f, 1.0f), 
+                    domain::Color(0.2f, 0.2f, 0.2f, 1.0f)
+                };
+            std::array<GLfloat, 12> verticesData = {
+                    -0.90f, -0.90f, 
+                    0.85f, -0.90f,
+                    -0.90f,  0.85f,
+                    
+                    0.90f, -0.85f,
+                    0.90f,  0.90f,
+                    -0.85f,  0.90f
+                };
 
         public:
             virtual ~Renderer() = default;
