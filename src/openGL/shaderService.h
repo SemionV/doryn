@@ -1,25 +1,54 @@
 #pragma once
 
-#include "dependencies.h"
-#include "shaderServiceError.h"
-#include "shaderMetadata.h"
+#include "graphics/program.h"
 
 namespace dory::openGL
 {
+    struct ShaderCompilationError
+    {
+        std::string compilationLog;
+        std::string shaderIdentifier;
+
+        ShaderCompilationError(std::string shaderIdentifier, std::string compilationLog):
+            shaderIdentifier(shaderIdentifier),
+            compilationLog(compilationLog)
+        {};
+    };
+
+    struct ShaderProgramLinkingError
+    {
+        std::string linkingLog;
+
+        ShaderProgramLinkingError(std::string linkingLog):
+            linkingLog(linkingLog)
+        {};
+    };
+
+    struct ShaderServiceError
+    {
+        std::shared_ptr<ShaderCompilationError> shaderCompilationError;
+        std::shared_ptr<ShaderProgramLinkingError> shaderProgramLinkingError;
+    };
+
     class ShaderService
     {
         public:
-            static GLuint buildProgram(const std::vector<ShaderMetadata>& shadersMetadata, std::function<bool(ShaderServiceError&)> errorHandler = 0)
+            static void loadProgram(graphics::Program& program,
+                std::shared_ptr<configuration::IConfiguration> configuration, 
+                std::function<void(ShaderServiceError&)> errorHandler = 0)
             {
-                GLuint programId = glCreateProgram();
+                program.id = glCreateProgram();
 
-                std::size_t shadersCount = shadersMetadata.size();
+                auto& shaders = program.shaders;
+                std::size_t shadersCount = shaders.size();
                 for(std::size_t i = 0; i < shadersCount; ++i)
                 {
-                    auto shaderMetadata = shadersMetadata[i];
+                    auto& shader = shaders[i];
 
-                    auto shaderId = shaderMetadata.shaderId = glCreateShader(shaderMetadata.type);
-                    const char* shaderSource = shaderMetadata.shaderSource.c_str();
+                    shader.sourceCode = configuration->getTextFileContent(shader.key);
+
+                    auto shaderId = shader.id = glCreateShader(shader.type);
+                    const char* shaderSource = shader.sourceCode.c_str();
                     glShaderSource(shaderId, 1, &shaderSource, 0);
 
                     glCompileShader(shaderId);
@@ -37,54 +66,42 @@ namespace dory::openGL
                         if(errorHandler)
                         {
                             ShaderServiceError shaderServiceError;
-                            shaderServiceError.shaderCompilationError = std::make_shared<ShaderCompilationError>(shaderMetadata.identifier, logString);
+                            shaderServiceError.shaderCompilationError = std::make_shared<ShaderCompilationError>(shader.key, logString);
 
-                            if(errorHandler(shaderServiceError))
-                            {
-                                return programId;
-                            }
-                        }
-                        else
-                        {
-                            return programId;
+                            errorHandler(shaderServiceError);
                         }
                     }
 
-                    glAttachShader(programId, shaderId);
+                    glAttachShader(program.id, shaderId);
                 }
 
-                glLinkProgram(programId);
+                glLinkProgram(program.id);
 
                 GLint linked;
-                glGetProgramiv(programId, GL_LINK_STATUS, &linked);
+                glGetProgramiv(program.id, GL_LINK_STATUS, &linked);
                 if (!linked)
                 {
                     for(std::size_t i = 0; i < shadersCount; ++i) 
                     {
-                        auto shaderMetadata = shadersMetadata[i];
-                        glDeleteShader(shaderMetadata.shaderId);
-                        shaderMetadata.shaderId = 0;
+                        auto& shader = shaders[i];
+                        glDeleteShader(shader.id);
+                        shader.id = 0;
                     }
 
                     GLsizei len;
-                    glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &len);
+                    glGetProgramiv(program.id, GL_INFO_LOG_LENGTH, &len);
 
                     std::string logString(len + 1, 0);
-                    glGetProgramInfoLog(programId, len, &len, logString.data());
+                    glGetProgramInfoLog(program.id, len, &len, logString.data());
 
                     if(errorHandler)
                     {
                         ShaderServiceError shaderServiceError;
                         shaderServiceError.shaderProgramLinkingError = std::make_shared<ShaderProgramLinkingError>(logString);
 
-                        if(errorHandler(shaderServiceError))
-                        {
-                            return programId;
-                        }
+                        errorHandler(shaderServiceError);
                     }
                 }
-
-                return programId;
             }
     };
 }

@@ -4,8 +4,6 @@
 #include "graphics/program.h"
 #include "graphics/blocks.h"
 #include "graphics/vertexArray.h"
-#include "graphics/openglProcedures.h"
-#include "shaderService.h"
 
 namespace dory::openGL
 {
@@ -46,17 +44,31 @@ namespace dory::openGL
         {}
     };
 
+    struct TrianglesProgram: graphics::Program
+    {
+        ColorsUniformBlock colorsUniformBlock;
+
+        TrianglesProgram():
+            graphics::Program("Triangles Program",
+            { 
+                graphics::Shader(GL_VERTEX_SHADER, "shaders/triangles/triangles.vert"), 
+                graphics::Shader(GL_FRAGMENT_SHADER, "shaders/triangles/triangles.frag") 
+            })
+        {}
+    };
+
     class Renderer
     {
         private:
-            graphics::Program program;
+            TrianglesProgram trianglesProgram;
             TrianglesVertexArray trianglesVertexArray;
-            ColorsUniformBlock colorsUniformBlock;
+            
             ColorsBufferInterface colorsUniformData {
-                    domain::Color(0.7f, 0.7f, 0.7f, 1.0f), 
-                    domain::Color(0.7f, 0.7f, 0.0f, 1.0f), 
-                    domain::Color(0.2f, 0.2f, 0.2f, 1.0f)
-                };
+                domain::Color(0.7f, 0.7f, 0.7f, 1.0f), 
+                domain::Color(0.7f, 0.7f, 0.0f, 1.0f), 
+                domain::Color(0.2f, 0.2f, 0.2f, 1.0f)
+            };
+
             std::array<GLfloat, 12> verticesData = {
                     -0.90f, -0.90f, 
                     0.85f, -0.90f,
@@ -70,10 +82,7 @@ namespace dory::openGL
         public:
             virtual ~Renderer() = default;
 
-            void initialize(std::shared_ptr<configuration::IConfiguration> configuration);
-            void draw();
-
-        private:
-            virtual graphics::Program loadProgram(std::shared_ptr<configuration::IConfiguration> configuration);
+            virtual void initialize(std::shared_ptr<configuration::IConfiguration> configuration);
+            virtual void draw();
     };
 }

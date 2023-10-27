@@ -1,9 +1,13 @@
 # Development log
 
 Tasks:
+* Refactor Program and Uniform Blocks
+* Destroy OpenGL buffers and recreate them when assigning data to an object
+* Move OpenglProcedures to upper namespace and a separate compilation unit
 * Return const& from EntityRepository and build a method for mutations
 * Generalize core type of Matricies, so that it can support also double
 * Consider to allocate controller classes on stack(use const T& instead of std::shared_ptr/std::unique_ptr)
+* Implement dynamic linking(load) of the dll, so that compilation/linking time in development will be reduced(long linking time of testApp.exe)
 * Render Meshes
 * Camera Control
 * Mouse picking

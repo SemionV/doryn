@@ -1,9 +1,6 @@
 #pragma once
 
 #include "glfwWindow.h"
-#include "shaderService.h"
-
-#include "graphics/openglProcedures.h"
 #include "graphics/factory.h"
 #include "renderer.h"
 
