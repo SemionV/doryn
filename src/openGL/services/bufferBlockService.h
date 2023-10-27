@@ -2,13 +2,13 @@
 
 #include "openGL/dependencies.h"
 #include "base/base.h"
-#include "blocks.h"
+#include "openGL/graphics/blocks.h"
 
-namespace dory::openGL::graphics
+namespace dory::openGL::services
 {
-    Buffer allocateBuffer(GLint bufferSize)
+    graphics::Buffer allocateBuffer(GLint bufferSize)
     {
-        Buffer buffer;
+        graphics::Buffer buffer;
         buffer.data = malloc(bufferSize);
         if(buffer.data != nullptr)
         {
@@ -18,7 +18,7 @@ namespace dory::openGL::graphics
         return buffer;
     }
 
-    void deallocateBuffer(Buffer& buffer) noexcept
+    void deallocateBuffer(graphics::Buffer& buffer) noexcept
     {
         if(buffer.data)
         {
@@ -28,11 +28,11 @@ namespace dory::openGL::graphics
         }
     }
 
-    class BufferBlockFactory
+    class BufferBlockService
     {
         public:
             template<std::size_t MembersCount>
-            static constexpr void getBlockMemberNames(const UniformBlock<MembersCount>& block, const char*(&memberNames)[MembersCount]) noexcept
+            static constexpr void getBlockMemberNames(const graphics::UniformBlock<MembersCount>& block, const char*(&memberNames)[MembersCount]) noexcept
             {
                 for(std::size_t i = 0; i < MembersCount; ++i)
                 {
@@ -41,9 +41,9 @@ namespace dory::openGL::graphics
             }
 
             template<std::size_t MembersCount>
-            static UniformBlock<MembersCount> createUniformBlock(const std::string_view& blockName, const std::string_view(&memberNames)[MembersCount]) noexcept
+            static graphics::UniformBlock<MembersCount> createUniformBlock(const std::string_view& blockName, const std::string_view(&memberNames)[MembersCount]) noexcept
             {
-                UniformBlock<MembersCount> bufferBlock(blockName);
+                graphics::UniformBlock<MembersCount> bufferBlock(blockName);
 
                 for(std::size_t i = 0; i < MembersCount; ++i)
                 {
@@ -54,7 +54,7 @@ namespace dory::openGL::graphics
             }
 
             template<std::size_t MembersCount>
-            static const Uniform& getUniformBlockMember(UniformBlock<MembersCount>& uniformBloc, const std::string_view& memberName)
+            static const graphics::Uniform& getUniformBlockMember(graphics::UniformBlock<MembersCount>& uniformBloc, const std::string_view& memberName)
             {
                 for(std::size_t i = 0; i < MembersCount; ++i)
                 {

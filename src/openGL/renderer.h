@@ -62,7 +62,8 @@ namespace dory::openGL
         private:
             TrianglesProgram trianglesProgram;
             TrianglesVertexArray trianglesVertexArray;
-            
+            domain::Color clearScreenColor {0.0f, 0.0f, 0.0f};
+
             ColorsBufferInterface colorsUniformData {
                 domain::Color(0.7f, 0.7f, 0.7f, 1.0f), 
                 domain::Color(0.7f, 0.7f, 0.0f, 1.0f), 

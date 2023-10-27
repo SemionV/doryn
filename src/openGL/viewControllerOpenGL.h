@@ -1,7 +1,6 @@
 #pragma once
 
 #include "glfwWindow.h"
-#include "graphics/factory.h"
 #include "renderer.h"
 
 namespace dory::openGL

@@ -1,18 +1,18 @@
 #pragma once
 
 #include "openGL/dependencies.h"
-#include "blocks.h"
-#include "factory.h"
-#include "program.h"
-#include "vertexArray.h"
+#include "bufferBlockService.h"
+#include "openGL/graphics/blocks.h"
+#include "openGL/graphics/program.h"
+#include "openGL/graphics/vertexArray.h"
 
-namespace dory::openGL::graphics
+namespace dory::openGL::services
 {
-    class OpenglProcedures
+    class OpenglService
     {
         private:
             template<std::size_t NAttributes>
-            static std::size_t getSingleVertexSize(VertexArray<NAttributes>& vertexArray) noexcept
+            static std::size_t getSingleVertexSize(graphics::VertexArray<NAttributes>& vertexArray) noexcept
             {
                 std::size_t size {};
                 for(std::size_t i = 0; i < NAttributes; ++i)
@@ -25,7 +25,7 @@ namespace dory::openGL::graphics
             }
 
             template<std::size_t NAttributes>
-            static std::size_t getVerticiesCount(VertexArray<NAttributes>& vertexArray) noexcept
+            static std::size_t getVerticiesCount(graphics::VertexArray<NAttributes>& vertexArray) noexcept
             {
                 auto vertexSize = getSingleVertexSize(vertexArray);
                 if(vertexSize > 0)
@@ -80,9 +80,26 @@ namespace dory::openGL::graphics
                 return size;
             }
 
+            static void useProgram(const graphics::Program& program)
+            {
+                glUseProgram(program.id);
+            }
+
+            template<std::size_t NAttributes>
+            static void useVertextArray(const graphics::VertexArray<NAttributes>& vertexArray)
+            {
+                glBindVertexArray(vertexArray.id);
+            }
+
         public:
+            static void clearViewport(const domain::Color& clearColor)
+            {
+                GLfloat color[] = {clearColor.r, clearColor.g, clearColor.b, clearColor.a};
+                glClearBufferfv(GL_COLOR, 0, color);
+            }
+
             template<std::size_t N>
-            static void loadUniformBlock(GLuint programId, UniformBlock<N>& block)
+            static void loadUniformBlock(GLuint programId, graphics::UniformBlock<N>& block)
             {
                 block.index = glGetUniformBlockIndex(programId, block.key.c_str());
                 if(block.index != graphics::unboundId)
@@ -95,7 +112,7 @@ namespace dory::openGL::graphics
                     GLint memberType[N];
 
                     const char* memberNames[N];
-                    BufferBlockFactory::getBlockMemberNames(block, memberNames);
+                    BufferBlockService::getBlockMemberNames(block, memberNames);
 
                     glGetUniformIndices(programId, N, memberNames, memberIndices);
                     glGetActiveUniformsiv(programId, N, memberIndices, GL_UNIFORM_OFFSET, memberOffset);
@@ -105,7 +122,7 @@ namespace dory::openGL::graphics
                     std::size_t size {};
                     for(std::size_t i = 0; i < N; ++i)
                     {
-                        Uniform& member = block.members[i];
+                        graphics::Uniform& member = block.members[i];
                         member.index = memberIndices[i];
                         member.offset = memberOffset[i];
                         member.type = memberType[i];
@@ -122,7 +139,7 @@ namespace dory::openGL::graphics
             }
 
             template<std::size_t MembersCount>
-            static void setUniformBlockData(UniformBlock<MembersCount>& block, GLvoid* data, GLsizeiptr dataSize)
+            static void setUniformBlockData(graphics::UniformBlock<MembersCount>& block, GLvoid* data, GLsizeiptr dataSize)
             {
                 block.buffer.data = data;
                 block.buffer.size = dataSize;
@@ -131,24 +148,19 @@ namespace dory::openGL::graphics
                 glBufferStorage(GL_UNIFORM_BUFFER, block.buffer.size, block.buffer.data, 0);
             }
 
-            static void useProgram(Program program)
-            {
-                glUseProgram(program.id);
-            }
-
             template<std::size_t NAttributes>
-            static void loadVertexArray(VertexArray<NAttributes>& vertexArray)
+            static void loadVertexArray(graphics::VertexArray<NAttributes>& vertexArray)
             {
                 glGenVertexArrays(1, &vertexArray.id);
                 glCreateBuffers(1, &vertexArray.buffer.index);
             }
 
             template<std::size_t NAttributes>
-            static void setVertexArrayData(VertexArray<NAttributes>& vertexArray, GLvoid* data, GLsizeiptr dataSize) noexcept
+            static void setVertexArrayData(graphics::VertexArray<NAttributes>& vertexArray, GLvoid* data, GLsizeiptr dataSize) noexcept
             {
                 vertexArray.buffer.data = data;
                 vertexArray.buffer.size = dataSize;
-                vertexArray.verticesCount = graphics::OpenglProcedures::getVerticiesCount(vertexArray);
+                vertexArray.verticesCount = getVerticiesCount(vertexArray);
 
                 glBindVertexArray(vertexArray.id);
 
@@ -161,6 +173,14 @@ namespace dory::openGL::graphics
                     glVertexAttribPointer(i, attribute.count, attribute.type, attribute.normalized, attribute.stride, attribute.pointer);
                     glEnableVertexAttribArray(i);
                 }
+            }
+
+            static void drawObject(const graphics::Program& program, const TrianglesVertexArray& vertexArray)
+            {
+                useProgram(program);
+                useVertextArray(vertexArray);
+
+                glDrawArrays(GL_TRIANGLES, 0, vertexArray.verticesCount);
             }
     };
 }

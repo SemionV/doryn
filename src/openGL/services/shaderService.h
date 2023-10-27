@@ -1,8 +1,8 @@
 #pragma once
 
-#include "graphics/program.h"
+#include "openGL/graphics/program.h"
 
-namespace dory::openGL
+namespace dory::openGL::services
 {
     struct ShaderCompilationError
     {

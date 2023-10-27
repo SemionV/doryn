@@ -1,13 +1,13 @@
 #include "dependencies.h"
 #include "renderer.h"
-#include "graphics/openglProcedures.h"
-#include "shaderService.h"
+#include "services/openglService.h"
+#include "services/shaderService.h"
 
 namespace dory::openGL
 {
     void Renderer::initialize(std::shared_ptr<configuration::IConfiguration> configuration)
     {
-        ShaderService::loadProgram(trianglesProgram, configuration, [](ShaderServiceError& error)
+        services::ShaderService::loadProgram(trianglesProgram, configuration, [](services::ShaderServiceError& error)
             {
                 if(error.shaderCompilationError)
                 {
@@ -20,22 +20,17 @@ namespace dory::openGL
                 }
             });
 
-        graphics::OpenglProcedures::loadUniformBlock(trianglesProgram.id, trianglesProgram.colorsUniformBlock);
-        graphics::OpenglProcedures::setUniformBlockData(trianglesProgram.colorsUniformBlock, &colorsUniformData, sizeof(colorsUniformData));
+        services::OpenglService::loadUniformBlock(trianglesProgram.id, trianglesProgram.colorsUniformBlock);
+        services::OpenglService::setUniformBlockData(trianglesProgram.colorsUniformBlock, &colorsUniformData, sizeof(colorsUniformData));
 
-        graphics::OpenglProcedures::loadVertexArray(trianglesVertexArray);
-        graphics::OpenglProcedures::setVertexArrayData(trianglesVertexArray, verticesData.data(), sizeof(verticesData));
+        services::OpenglService::loadVertexArray(trianglesVertexArray);
+        services::OpenglService::setVertexArrayData(trianglesVertexArray, verticesData.data(), sizeof(verticesData));
     }
 
     void Renderer::draw()
     {
-        static const float black[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        services::OpenglService::clearViewport(clearScreenColor);
 
-        glClearBufferfv(GL_COLOR, 0, black);
-
-        glBindVertexArray( trianglesVertexArray.id );
-        graphics::OpenglProcedures::useProgram(trianglesProgram);
-
-        glDrawArrays(GL_TRIANGLES, 0, trianglesVertexArray.verticesCount);
+        services::OpenglService::drawObject(trianglesProgram, trianglesVertexArray);
     }
 }
