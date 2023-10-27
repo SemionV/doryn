@@ -1,7 +1,6 @@
 # Development log
 
 Tasks:
-* Destroy OpenGL buffers and recreate them when assigning data to an object
 * Return const& from EntityRepository and build a method for mutations
 * Generalize core type of Matricies, so that it can support also double
 * Consider to allocate controller classes on stack(use const T& instead of std::shared_ptr/std::unique_ptr)
@@ -25,6 +24,7 @@ Tasks:
 **27.10.23**
 * Task done: Refactor Program and Uniform Blocks
 * Task done: Move OpenglProcedures to a different namespace
+* Task done: Destroy OpenGL buffers and recreate them when assigning data to an object
 
 **25.10.23**
 * Task done: Define virtual constructors and default move members for Interface classes
