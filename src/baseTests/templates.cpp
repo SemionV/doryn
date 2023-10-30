@@ -94,7 +94,7 @@ namespace test_fold_exprexxions
         return((arguments + constant) + ...);
     }
 
-    TEST_CASE( "Test fold expressions: ( ... op pack )", "[templates]" ) 
+    TEST_CASE( "Test fold expressions: ( ... op pack )", "[.][templates]" ) 
     {
         // (((1 + 2) + 3) + 4)
         auto sum = sumAllArguments<1, 2, 3, 4>();
@@ -128,7 +128,7 @@ namespace test_fold_exprexxions
         basics_varprint2_hpp::print(std::get<Idx>(container)...);
     }
 
-    TEST_CASE( "Indices struct(TMP collection type)", "[templates]" ) 
+    TEST_CASE( "Indices struct(TMP collection type)", "[.][templates]" ) 
     {
         std::array<std::string_view, 5> container = {"String1", "String2", "String3", "String4", "String5"};
         printArguments(container, Indices<0, 1, 2>());

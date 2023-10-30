@@ -4,8 +4,8 @@ namespace dory::domain::geometry
 {
     struct Point2d
     {
-        float x;
-        float y;
+        float x {};
+        float y {};
 
         Point2d(float x, float y):
             x(x), 
@@ -22,7 +22,7 @@ namespace dory::domain::geometry
 
     struct Point3d: public Point2d
     {
-        float z;
+        float z {};
 
         Point3d(float x, float y, float z):
             Point2d(x, y),

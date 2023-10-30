@@ -76,7 +76,8 @@ namespace dory::domain
             virtual void remove(std::function<bool(TEntity&)>) = 0;
     };
 
-    template<class TEntity>
+    template<class TEntity,
+        typename = std::enable_if_t<(!std::is_reference_v<TEntity>)>>
     class EntityRepository: public IEntityRepository<TEntity>
     {
         private:
@@ -94,7 +95,7 @@ namespace dory::domain
 
             TEntity& store(TEntity&& entity) override
             {
-                return items.emplace_back(std::forward<TEntity>(entity));
+                return items.emplace_back(std::move(entity));
             }
 
             int getEntitiesCount() override
