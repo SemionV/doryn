@@ -32,18 +32,14 @@ namespace dory::openGL
             {
                 glfwPollEvents();
 
-                auto iterator = windowRepository->getTraverseIterator();
-                auto window = iterator->next();
-                while(window)
+                windowRepository->forEach([this](auto& window)
                 {
-                    if(glfwWindowShouldClose(window->handler))
+                    if(glfwWindowShouldClose(window.handler))
                     {
-                        eventHub->addCase(domain::events::CloseWindowEventData(window->id));
-                        glfwSetWindowShouldClose(window->handler, 0);
+                        eventHub->addCase(domain::events::CloseWindowEventData(window.id));
+                        glfwSetWindowShouldClose(window.handler, 0);
                     }
-
-                    window = iterator->next();
-                }
+                });
 
                 eventHub->submit(context);
             }

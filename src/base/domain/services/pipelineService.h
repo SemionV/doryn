@@ -19,6 +19,6 @@ namespace dory::domain::services
             std::list<std::shared_ptr<object::PipelineNode>> getPipeline();
 
         private:
-            std::shared_ptr<object::PipelineNode> loadNode(entity::PipelineNode& nodeEntity);
+            std::shared_ptr<object::PipelineNode> loadNode(const entity::PipelineNode& nodeEntity);
     };
 }

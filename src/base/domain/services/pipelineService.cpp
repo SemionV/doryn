@@ -11,7 +11,7 @@ namespace dory::domain::services
     {
         std::list<std::shared_ptr<object::PipelineNode>> nodes;
 
-        nodeReader->getTraverseIterator()->forEach([this, &nodes](entity::PipelineNode& nodeEntity)
+        nodeReader->getTraverseIterator().forEach([this, &nodes](const entity::PipelineNode& nodeEntity)
         {
             if(nodeEntity.parentNodeId == entity::nullId)
             {
@@ -24,11 +24,11 @@ namespace dory::domain::services
         return nodes;
     }
 
-    std::shared_ptr<object::PipelineNode> PipelineService::loadNode(entity::PipelineNode& nodeEntity)
+    std::shared_ptr<object::PipelineNode> PipelineService::loadNode(const entity::PipelineNode& nodeEntity)
     {
         auto node = std::make_shared<object::PipelineNode>(nodeEntity);
 
-        nodeReader->getTraverseIterator()->forEach([this, &node](entity::PipelineNode& nodeEntity)
+        nodeReader->getTraverseIterator().forEach([this, &node](const auto& nodeEntity)
         {
             if(nodeEntity.parentNodeId == node->nodeEntity.id)
             {

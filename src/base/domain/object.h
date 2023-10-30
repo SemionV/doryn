@@ -10,7 +10,7 @@ namespace dory::domain::object
         entity::PipelineNode nodeEntity;
         std::list<std::shared_ptr<object::PipelineNode>> children;
 
-        PipelineNode(entity::PipelineNode& nodeEntity):
+        PipelineNode(const entity::PipelineNode& nodeEntity):
             nodeEntity(nodeEntity)
         {}
     };

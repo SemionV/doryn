@@ -149,7 +149,7 @@ namespace testApp
                     auto viewRepository = serviceLocator->getViewRepository();
                     auto windowRepository = serviceLocator->getWindowRepository();
                     windowRepository->remove(window);
-                    viewRepository->remove([&windowId, &viewControllerNodeId](dory::domain::entity::View& view)
+                    viewRepository->remove([&windowId, &viewControllerNodeId](const dory::domain::entity::View& view)
                     {
                         if(view.windowId == windowId)
                         {
@@ -163,7 +163,7 @@ namespace testApp
                     auto pipelineNodeRepository = serviceLocator->getPipelineNodeRepository();
                     if(viewControllerNodeId != pipelineNodeIdFactory->getNullId())
                     {
-                        pipelineNodeRepository->remove([&viewControllerNodeId](dory::domain::entity::PipelineNode& node)
+                        pipelineNodeRepository->remove([&viewControllerNodeId](const dory::domain::entity::PipelineNode& node)
                         {
                             return node.id == viewControllerNodeId;
                         });

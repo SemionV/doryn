@@ -57,9 +57,9 @@ namespace dory::openGL
         private:
             GLFWwindow* getWindowHandler(domain::entity::IdType referenceId)
             {
-                auto view = this->viewRepository->get(referenceId, [](domain::entity::View* view, domain::entity::IdType referenceId)
+                auto view = this->viewRepository->get(referenceId, [](const domain::entity::View& view, domain::entity::IdType referenceId)
                 {
-                    return view->controllerNodeId == referenceId;
+                    return view.controllerNodeId == referenceId;
                 });
 
                 if(view != nullptr)

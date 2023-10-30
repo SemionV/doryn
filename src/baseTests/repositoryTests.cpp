@@ -34,7 +34,7 @@ TEST_CASE( "Iterator", "[repository]" )
     std::vector<entity::IdType> ids;
 
     auto iterator = repository->getTraverseIterator();
-    iterator->forEach([&ids](TestEntity& entity)
+    iterator.forEach([&ids](const TestEntity& entity)
     {
         ids.push_back(entity.id);
     });
@@ -63,7 +63,7 @@ TEST_CASE( "Remove", "[repository]" )
             TestEntity(2)
         });
 
-    repository->remove([](TestEntity& entity)
+    repository->remove([](const TestEntity& entity)
     {
         return entity.id == 1;
     });
@@ -71,7 +71,7 @@ TEST_CASE( "Remove", "[repository]" )
     std::vector<entity::IdType> ids;
 
     auto iterator = repository->getTraverseIterator();
-    iterator->forEach([&ids](TestEntity& entity)
+    iterator.forEach([&ids](const TestEntity& entity)
     {
         ids.push_back(entity.id);
     });

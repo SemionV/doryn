@@ -6,21 +6,11 @@
 namespace dory::domain
 {
     template<class TEntity>
-    class ITraverseIterator
-    {
-        public:
-            virtual ~ITraverseIterator() = default;
-
-            virtual TEntity* next() = 0;
-            virtual void forEach(std::function<void(TEntity&)>) = 0;
-    };
-
-    template<class TEntity>
-    class VectorRepositoryTraverseIterator: public ITraverseIterator<TEntity>
+    class VectorRepositoryTraverseIterator
     {
         private:
-            typename std::vector<TEntity>::iterator current;
-            typename std::vector<TEntity>::iterator end;
+            typename std::vector<TEntity>::const_iterator current;
+            typename std::vector<TEntity>::const_iterator end;
 
         public:
             VectorRepositoryTraverseIterator(typename std::vector<TEntity>::iterator begin, typename std::vector<TEntity>::iterator end):
@@ -28,38 +18,23 @@ namespace dory::domain
                 end(end)
             {}
 
-            TEntity* next() override
+            const TEntity& next()
             {
-                if(current != end)
+                return *current++;
+            }
+
+            bool isEmpty() noexcept
+            {
+                return current == end;
+            }
+
+            void forEach(std::function<void(const TEntity&)> expression)
+            {
+                while(!isEmpty())
                 {
-                    return &(*current++);
+                    const TEntity& entity = next();
+                    expression(entity);
                 }
-
-                return nullptr;
-            }
-
-            void forEach(std::function<void(TEntity&)> expression) override
-            {
-                TEntity* entity = next();
-                while(entity)
-                {
-                    expression(*entity);
-                    entity = next();
-                }
-            }
-    };
-
-    template<class TEntity>
-    class EmptyRepositoryTraverseIterator: public ITraverseIterator<TEntity>
-    {
-        public:
-            TEntity* next() override
-            {
-                return nullptr;
-            }
-
-            void forEach(std::function<void(TEntity&)>) override
-            {
             }
     };
 
@@ -70,10 +45,10 @@ namespace dory::domain
             virtual ~IEntityRepository() = default;
 
             virtual int getEntitiesCount() = 0;
-            virtual std::unique_ptr<ITraverseIterator<TEntity>> getTraverseIterator() = 0;
+            virtual VectorRepositoryTraverseIterator<TEntity> getTraverseIterator() = 0;
             virtual TEntity& store(TEntity&& entity) = 0;
-            virtual void remove(TEntity* entity) = 0;
-            virtual void remove(std::function<bool(TEntity&)>) = 0;
+            virtual void remove(const TEntity* entity) = 0;
+            virtual void remove(std::function<bool(const TEntity&)>) = 0;
     };
 
     template<class TEntity,
@@ -103,20 +78,15 @@ namespace dory::domain
                 return items.size();
             }
 
-            std::unique_ptr<ITraverseIterator<TEntity>> getTraverseIterator() override
+            VectorRepositoryTraverseIterator<TEntity> getTraverseIterator() override
             {
                 auto begin = items.begin();
                 auto end = items.end();
 
-                if(items.size())
-                {
-                    return std::make_unique<VectorRepositoryTraverseIterator<TEntity>>(begin, end);
-                }
-
-                return std::make_unique<EmptyRepositoryTraverseIterator<TEntity>>();
+                return VectorRepositoryTraverseIterator<TEntity>(begin, end);
             }
 
-            void remove(TEntity* entity) override
+            void remove(const TEntity* entity) override
             {
                 auto it = items.begin();
                 auto end = items.end();
@@ -131,7 +101,7 @@ namespace dory::domain
                 }
             }
 
-            void remove(std::function<bool(TEntity&)> expression) override
+            void remove(std::function<bool(const TEntity&)> expression) override
             {
                 auto it = items.begin();
                 auto end = items.end();
@@ -163,60 +133,64 @@ namespace dory::domain
                 return repository->getEntitiesCount();
             }
 
-            std::unique_ptr<ITraverseIterator<TEntity>> getTraverseIterator()
+            VectorRepositoryTraverseIterator<TEntity> getTraverseIterator()
             {
                 return repository->getTraverseIterator();
             }
 
             template<class TId>
-            TEntity* get(TId id)
+            const TEntity* get(TId id)
             {
                 auto iterator = repository->getTraverseIterator();
-                auto entity = iterator->next();
-                while(entity)
-                {
-                    if(entity->id == id)
-                    {
-                        return entity;
-                    }
 
-                    entity = iterator->next();
+                while(!iterator.isEmpty())
+                {
+                    auto& entity = iterator.next();
+                    if(entity.id == id)
+                    {
+                        return &entity;
+                    }
                 }
 
                 return nullptr;
             }
 
             template<typename TField, typename F>
-            TEntity* get(TField searchValue, F expression)
+            const TEntity* get(TField searchValue, F expression)
             {
                 auto iterator = repository->getTraverseIterator();
-                auto entity = iterator->next();
-                while(entity)
+
+                while(!iterator.isEmpty())
                 {
+                    auto& entity = iterator.next();
+
                     if(expression(entity, searchValue))
                     {
-                        return entity;
+                        return &entity;
                     }
-
-                    entity = iterator->next();
                 }
 
                 return nullptr;
             }
 
+            void forEach(std::function<void(const TEntity&)>&& expression)
+            {
+                repository->getTraverseIterator().forEach(std::move(expression));
+            }
+
             template<typename TField, typename F>
-            void list(TField searchValue, F expression, std::list<TEntity*>& list)
+            void list(TField searchValue, F expression, std::list<const TEntity*>& list)
             {
                 auto iterator = repository->getTraverseIterator();
-                auto entity = iterator->next();
-                while(entity)
+
+                while(!iterator.isEmpty())
                 {
+                    auto& entity = iterator.next();
+
                     if(expression(entity, searchValue))
                     {
-                        list.emplace_back(entity);
+                        list.emplace_back(&entity);
                     }
-
-                    entity = iterator->next();
                 }
             }
     };
