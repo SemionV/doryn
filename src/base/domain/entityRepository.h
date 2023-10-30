@@ -47,7 +47,7 @@ namespace dory::domain
             virtual int getEntitiesCount() = 0;
             virtual VectorRepositoryTraverseIterator<TEntity> getTraverseIterator() = 0;
             virtual TEntity& store(TEntity&& entity) = 0;
-            virtual void remove(const TEntity* entity) = 0;
+            virtual void remove(const TEntity& entity) = 0;
             virtual void remove(std::function<bool(const TEntity&)>) = 0;
     };
 
@@ -86,14 +86,14 @@ namespace dory::domain
                 return VectorRepositoryTraverseIterator<TEntity>(begin, end);
             }
 
-            void remove(const TEntity* entity) override
+            void remove(const TEntity& entity) override
             {
                 auto it = items.begin();
                 auto end = items.end();
 
                 for(; it != end; ++it)
                 {
-                    if(&(*it) == entity)
+                    if(entity.id == (*it).id)
                     {
                         items.erase(it);
                         break;
@@ -139,7 +139,7 @@ namespace dory::domain
             }
 
             template<class TId>
-            const TEntity* get(TId id)
+            std::optional<TEntity> get(TId id)
             {
                 auto iterator = repository->getTraverseIterator();
 
@@ -148,15 +148,15 @@ namespace dory::domain
                     auto& entity = iterator.next();
                     if(entity.id == id)
                     {
-                        return &entity;
+                        return entity;
                     }
                 }
 
-                return nullptr;
+                return {};
             }
 
             template<typename TField, typename F>
-            const TEntity* get(TField searchValue, F expression)
+            std::optional<TEntity> get(TField searchValue, F expression)
             {
                 auto iterator = repository->getTraverseIterator();
 
@@ -166,11 +166,11 @@ namespace dory::domain
 
                     if(expression(entity, searchValue))
                     {
-                        return &entity;
+                        return entity;
                     }
                 }
 
-                return nullptr;
+                return {};
             }
 
             void forEach(std::function<void(const TEntity&)>&& expression)
@@ -179,7 +179,7 @@ namespace dory::domain
             }
 
             template<typename TField, typename F>
-            void list(TField searchValue, F expression, std::list<const TEntity*>& list)
+            void list(TField searchValue, F expression, std::list<const TEntity&>& list)
             {
                 auto iterator = repository->getTraverseIterator();
 
@@ -189,7 +189,7 @@ namespace dory::domain
 
                     if(expression(entity, searchValue))
                     {
-                        list.emplace_back(&entity);
+                        list.emplace_back(entity);
                     }
                 }
             }

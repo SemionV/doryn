@@ -14,9 +14,9 @@ namespace dory::win32
             std::shared_ptr<MessageBuffer> messageBuffer;
             std::shared_ptr<domain::RepositoryReader<Window>> windowRepository;
 
-            static bool compareHandles(Window* window, HWND hWnd)
+            static bool compareHandles(const Window& window, HWND hWnd)
             {
-                return window->hWnd == hWnd;
+                return window.hWnd == hWnd;
             }
 
         public:
@@ -67,9 +67,9 @@ namespace dory::win32
                         std::cout << "Close win32 window" << std::endl;
 
                         auto window = windowRepository->get(message->hWnd, WindowController::compareHandles);
-                        if(window)
+                        if(window.has_value())
                         {
-                            eventHub->addCase(domain::events::CloseWindowEventData(window->id));
+                            eventHub->addCase(domain::events::CloseWindowEventData(window.value().id));
                         }
                     }
                 }

@@ -131,9 +131,9 @@ namespace testApp
                 auto windowRepositoryReader = serviceLocator->getWindowRepositoryReader();
                 auto window = windowRepositoryReader->get(windowId);
 
-                if(window)
+                if(window.has_value())
                 {
-                    auto windowHandler = window->handler;
+                    auto windowHandler = window.value().handler;
 
                     dory::openGL::GlfwWindowFactory::closeWindow(windowHandler);
 
@@ -148,7 +148,7 @@ namespace testApp
 
                     auto viewRepository = serviceLocator->getViewRepository();
                     auto windowRepository = serviceLocator->getWindowRepository();
-                    windowRepository->remove(window);
+                    windowRepository->remove(window.value());
                     viewRepository->remove([&windowId, &viewControllerNodeId](const dory::domain::entity::View& view)
                     {
                         if(view.windowId == windowId)

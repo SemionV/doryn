@@ -1,7 +1,6 @@
 # Development log
 
 Tasks:
-* Return const& from EntityRepository and build a method for mutations
 * Generalize core type of Matricies, so that it can support also double
 * Consider to allocate controller classes on stack(use const T& instead of std::shared_ptr/std::unique_ptr)
 * Implement dynamic linking(load) of the dll, so that compilation/linking time in development will be reduced(long linking time of testApp.exe)
@@ -20,6 +19,9 @@ Tasks:
 * Build for MacOS
 * Networking/Mutliplayer
 * Voice control
+
+**30.10.23**
+* Task done: Return const& from EntityRepository
 
 **27.10.23**
 * Task done: Refactor Program and Uniform Blocks

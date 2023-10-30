@@ -62,12 +62,12 @@ namespace dory::openGL
                     return view.controllerNodeId == referenceId;
                 });
 
-                if(view != nullptr)
+                if(view.has_value())
                 {
-                    auto glfwWindow = windowRespository->get(view->windowId);
-                    if(glfwWindow)
+                    auto glfwWindow = windowRespository->get(view.value().windowId);
+                    if(glfwWindow.has_value())
                     {
-                        return glfwWindow->handler;
+                        return glfwWindow.value().handler;
                     }
                 }
 
