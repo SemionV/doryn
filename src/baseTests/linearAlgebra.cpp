@@ -115,3 +115,40 @@ TEST_CASE( "Vector projection", "[.][linearAlgebra]" )
     std::cout << "lengthP: " << lengthP << std::endl;
     std::cout << "length_b_a: " << length_b_a << std::endl;
 }
+
+class Base
+{
+    public:
+        virtual void test(int i) const
+        {
+            std::cout << "base test" << std::endl;
+        }
+};
+
+class Derived: public Base
+{
+    public:
+        void test(int i) const override
+        {
+            std::cout << "derived test" << std::endl;
+        }
+};
+
+Base getInstance()
+{
+    return Derived();
+}
+
+void callTest(const Base& instance)
+{
+    instance.test(1);
+}
+
+TEST_CASE( "Class references", "[.][linearAlgebra]" ) 
+{
+    const Base& instance = getInstance();
+    callTest(instance);
+    
+    Derived instance2;
+    callTest(instance2);
+}

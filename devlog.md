@@ -1,9 +1,8 @@
 # Development log
 
 Tasks:
-* Generalize core type of Matricies, so that it can support also double
 * Consider to allocate controller classes on stack(use const T& instead of std::shared_ptr/std::unique_ptr)
-* Implement dynamic linking(load) of the dll, so that compilation/linking time in development will be reduced(long linking time of testApp.exe)
+* Generalize core type of Matricies, so that it can support also double
 * Render Meshes
 * Camera Control
 * Mouse picking
@@ -15,9 +14,10 @@ Tasks:
 * Serialization of scene state
 * Spatial partition
 * Path finding
+* Networking/Mutliplayer
 * Build for Linux
 * Build for MacOS
-* Networking/Mutliplayer
+* Implement dynamic linking(load) of the dll, so that compilation/linking time in development will be reduced(long linking time of testApp.exe)
 * Voice control
 
 **30.10.23**

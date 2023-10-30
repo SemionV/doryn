@@ -46,7 +46,7 @@ namespace dory::domain
 
             virtual int getEntitiesCount() = 0;
             virtual VectorRepositoryTraverseIterator<TEntity> getTraverseIterator() = 0;
-            virtual TEntity& store(TEntity&& entity) = 0;
+            virtual const TEntity& store(TEntity&& entity) = 0;
             virtual void remove(const TEntity& entity) = 0;
             virtual void remove(std::function<bool(const TEntity&)>) = 0;
     };
@@ -68,7 +68,7 @@ namespace dory::domain
             {
             }
 
-            TEntity& store(TEntity&& entity) override
+            const TEntity& store(TEntity&& entity) override
             {
                 return items.emplace_back(std::move(entity));
             }
