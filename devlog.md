@@ -1,7 +1,6 @@
 # Development log
 
 Tasks:
-* Consider to allocate controller classes on stack(use const T& instead of std::shared_ptr/std::unique_ptr)
 * Generalize core type of Matricies, so that it can support also double
 * Render Meshes
 * Camera Control
@@ -22,6 +21,9 @@ Tasks:
 
 **30.10.23**
 * Task done: Return const& from EntityRepository
+* Task done: Consider to allocate controller classes on stack(use const T& instead of std::shared_ptr/std::unique_ptr)
+    * The conclusion is that heap allocation is needed for dynamic component instantiation(ViewControllers for instance, which are constracted on the fly)
+    * Stack memory can be overused, what can lead to stack overflow(limit is usually from 1 to 8MB)
 
 **27.10.23**
 * Task done: Refactor Program and Uniform Blocks

@@ -13,7 +13,7 @@ namespace dory::domain
             typename std::vector<TEntity>::const_iterator end;
 
         public:
-            VectorRepositoryTraverseIterator(typename std::vector<TEntity>::iterator begin, typename std::vector<TEntity>::iterator end):
+            VectorRepositoryTraverseIterator(typename std::vector<TEntity>::const_iterator begin, typename std::vector<TEntity>::const_iterator end):
                 current(begin),
                 end(end)
             {}
@@ -48,7 +48,7 @@ namespace dory::domain
             virtual VectorRepositoryTraverseIterator<TEntity> getTraverseIterator() = 0;
             virtual const TEntity& store(TEntity&& entity) = 0;
             virtual void remove(const TEntity& entity) = 0;
-            virtual void remove(std::function<bool(const TEntity&)>) = 0;
+            virtual void remove(const std::function<bool(const TEntity&)>&) = 0;
     };
 
     template<class TEntity,
@@ -57,6 +57,35 @@ namespace dory::domain
     {
         private:
             std::vector<TEntity> items;
+
+        private:
+            template<typename T, typename F> 
+            inline bool matchEntry(const T& entry, const F& expression)
+            {
+                return expression(entry);
+            }
+
+            template<typename T> 
+            inline bool matchEntry(const T& entry, const T& entity)
+            {
+                return entry.id == entity.id;
+            }
+
+            template<typename T>
+            inline void removeEntry(const T& entityExpression)
+            {
+                auto it = items.cbegin();
+                auto end = items.cend();
+
+                for(; it != end; ++it)
+                {
+                    if(matchEntry(*it, entityExpression))
+                    {
+                        items.erase(it);
+                        break;
+                    }
+                }
+            }
 
         public:
             EntityRepository()
@@ -80,40 +109,20 @@ namespace dory::domain
 
             VectorRepositoryTraverseIterator<TEntity> getTraverseIterator() override
             {
-                auto begin = items.begin();
-                auto end = items.end();
+                auto begin = items.cbegin();
+                auto end = items.cend();
 
                 return VectorRepositoryTraverseIterator<TEntity>(begin, end);
             }
 
             void remove(const TEntity& entity) override
             {
-                auto it = items.begin();
-                auto end = items.end();
-
-                for(; it != end; ++it)
-                {
-                    if(entity.id == (*it).id)
-                    {
-                        items.erase(it);
-                        break;
-                    }
-                }
+                removeEntry(entity);
             }
 
-            void remove(std::function<bool(const TEntity&)> expression) override
+            void remove(const std::function<bool(const TEntity&)>& expression) override
             {
-                auto it = items.begin();
-                auto end = items.end();
-
-                for(; it != end; ++it)
-                {
-                    if(expression((*it)))
-                    {
-                        items.erase(it);
-                        break;
-                    }
-                }
+                removeEntry(expression);
             }
     };
 
