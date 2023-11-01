@@ -99,7 +99,7 @@ namespace dory::openGL::services
             }
 
             template<std::size_t N>
-            static void loadUniformBlock(GLuint programId, graphics::UniformBlock<N>& block)
+            static void loadUniformBlock(GLuint programId, graphics::UniformArrayBlock<N>& block)
             {
                 block.index = glGetUniformBlockIndex(programId, block.key.c_str());
                 if(block.index != graphics::unboundId)
@@ -135,25 +135,21 @@ namespace dory::openGL::services
                 }
             }
 
-            template<std::size_t MembersCount>
-            static void setUniformBlockData(graphics::UniformBlock<MembersCount>& block, GLvoid* data, GLsizeiptr dataSize)
+            static void setUniformBlockData(graphics::UniformBlock& block, GLvoid* data, GLsizeiptr dataSize)
             {
                 block.buffer.data = data;
                 block.buffer.size = dataSize;
 
                 if(block.buffer.index != graphics::unboundId)
                 {
-                    glDeleteBuffers(1, &block.buffer.index);
-                    block.buffer.index = graphics::unboundId;
+                    glNamedBufferSubData(block.buffer.index, 0, dataSize, data);
                 }
-
-                glCreateBuffers(1, &block.buffer.index);
-                if(block.buffer.index != graphics::unboundId)
+                else
                 {
-                    glBindBufferBase(GL_UNIFORM_BUFFER, block.index, block.buffer.index);
-
+                    glCreateBuffers(1, &block.buffer.index);
                     glBindBuffer(GL_UNIFORM_BUFFER, block.buffer.index);
-                    glBufferStorage(GL_UNIFORM_BUFFER, block.buffer.size, block.buffer.data, 0);
+                    glBindBufferBase(GL_UNIFORM_BUFFER, block.index, block.buffer.index);
+                    glBufferStorage(GL_UNIFORM_BUFFER, block.buffer.size, block.buffer.data, GL_DYNAMIC_STORAGE_BIT);
                 }
             }
 
@@ -174,22 +170,20 @@ namespace dory::openGL::services
 
                 if(vertexArray.buffer.index != graphics::unboundId)
                 {
-                    glDeleteBuffers(1, &vertexArray.buffer.index);
-                    vertexArray.buffer.index = graphics::unboundId;
+                    glNamedBufferSubData(vertexArray.buffer.index, 0, dataSize, data);
                 }
-
-                glCreateBuffers(1, &vertexArray.buffer.index);
-                if(vertexArray.buffer.index != graphics::unboundId)
+                else
                 {
+                    glCreateBuffers(1, &vertexArray.buffer.index);
                     glBindBuffer(GL_ARRAY_BUFFER, vertexArray.buffer.index);
-                    glBufferStorage(GL_ARRAY_BUFFER, dataSize, data, 0);
-                }
+                    glBufferStorage(GL_ARRAY_BUFFER, dataSize, data, GL_DYNAMIC_STORAGE_BIT);
 
-                for(std::size_t i = 0; i < vertexArray.vertexAttributes.size(); ++i)
-                {
-                    graphics::VertexAttribute& attribute = vertexArray.vertexAttributes[i];
-                    glVertexAttribPointer(i, attribute.count, attribute.type, attribute.normalized, attribute.stride, attribute.pointer);
-                    glEnableVertexAttribArray(i);
+                    for(std::size_t i = 0; i < vertexArray.vertexAttributes.size(); ++i)
+                    {
+                        graphics::VertexAttribute& attribute = vertexArray.vertexAttributes[i];
+                        glVertexAttribPointer(i, attribute.count, attribute.type, attribute.normalized, attribute.stride, attribute.pointer);
+                        glEnableVertexAttribArray(i);
+                    }
                 }
             }
 

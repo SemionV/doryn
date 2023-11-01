@@ -31,6 +31,11 @@ namespace dory::openGL
     {
         services::OpenglService::clearViewport(clearScreenColor);
 
+        colorsUniformData.hippieColor.r = 1.f;
+        colorsUniformData.hippieColor.g = 0.f;
+        colorsUniformData.hippieColor.b = 0.f;
+        services::OpenglService::setUniformBlockData(trianglesProgram.colorsUniformBlock, &colorsUniformData, sizeof(colorsUniformData));
+
         services::OpenglService::drawObject(trianglesProgram, trianglesVertexArray);
     }
 }

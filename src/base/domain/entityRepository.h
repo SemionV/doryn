@@ -6,14 +6,14 @@
 namespace dory::domain
 {
     template<class TEntity>
-    class VectorRepositoryTraverseIterator
+    class RepositoryTraverseIterator
     {
         private:
             typename std::vector<TEntity>::const_iterator current;
             typename std::vector<TEntity>::const_iterator end;
 
         public:
-            VectorRepositoryTraverseIterator(typename std::vector<TEntity>::const_iterator begin, typename std::vector<TEntity>::const_iterator end):
+            RepositoryTraverseIterator(typename std::vector<TEntity>::const_iterator begin, typename std::vector<TEntity>::const_iterator end):
                 current(begin),
                 end(end)
             {}
@@ -45,7 +45,7 @@ namespace dory::domain
             virtual ~IEntityRepository() = default;
 
             virtual int getEntitiesCount() = 0;
-            virtual VectorRepositoryTraverseIterator<TEntity> getTraverseIterator() = 0;
+            virtual RepositoryTraverseIterator<TEntity> getTraverseIterator() = 0;
             virtual const TEntity& store(TEntity&& entity) = 0;
             virtual void remove(const TEntity& entity) = 0;
             virtual void remove(const std::function<bool(const TEntity&)>&) = 0;
@@ -107,12 +107,12 @@ namespace dory::domain
                 return items.size();
             }
 
-            VectorRepositoryTraverseIterator<TEntity> getTraverseIterator() override
+            RepositoryTraverseIterator<TEntity> getTraverseIterator() override
             {
                 auto begin = items.cbegin();
                 auto end = items.cend();
 
-                return VectorRepositoryTraverseIterator<TEntity>(begin, end);
+                return RepositoryTraverseIterator<TEntity>(begin, end);
             }
 
             void remove(const TEntity& entity) override
@@ -142,7 +142,7 @@ namespace dory::domain
                 return repository->getEntitiesCount();
             }
 
-            VectorRepositoryTraverseIterator<TEntity> getTraverseIterator()
+            RepositoryTraverseIterator<TEntity> getTraverseIterator()
             {
                 return repository->getTraverseIterator();
             }

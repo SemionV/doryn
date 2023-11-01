@@ -32,7 +32,7 @@ namespace dory::openGL::services
     {
         public:
             template<std::size_t MembersCount>
-            static constexpr void getBlockMemberNames(const graphics::UniformBlock<MembersCount>& block, const char*(&memberNames)[MembersCount]) noexcept
+            static constexpr void getBlockMemberNames(const graphics::UniformArrayBlock<MembersCount>& block, const char*(&memberNames)[MembersCount]) noexcept
             {
                 for(std::size_t i = 0; i < MembersCount; ++i)
                 {
@@ -41,9 +41,9 @@ namespace dory::openGL::services
             }
 
             template<std::size_t MembersCount>
-            static graphics::UniformBlock<MembersCount> createUniformBlock(const std::string_view& blockName, const std::string_view(&memberNames)[MembersCount]) noexcept
+            static graphics::UniformArrayBlock<MembersCount> createUniformBlock(const std::string_view& blockName, const std::string_view(&memberNames)[MembersCount]) noexcept
             {
-                graphics::UniformBlock<MembersCount> bufferBlock(blockName);
+                graphics::UniformArrayBlock<MembersCount> bufferBlock(blockName);
 
                 for(std::size_t i = 0; i < MembersCount; ++i)
                 {
@@ -54,7 +54,7 @@ namespace dory::openGL::services
             }
 
             template<std::size_t MembersCount>
-            static const graphics::Uniform& getUniformBlockMember(graphics::UniformBlock<MembersCount>& uniformBloc, const std::string_view& memberName)
+            static const graphics::Uniform& getUniformBlockMember(graphics::UniformArrayBlock<MembersCount>& uniformBloc, const std::string_view& memberName)
             {
                 for(std::size_t i = 0; i < MembersCount; ++i)
                 {
