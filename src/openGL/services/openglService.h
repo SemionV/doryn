@@ -11,21 +11,23 @@ namespace dory::openGL::services
     class OpenglService
     {
         private:
-            template<std::size_t NAttributes>
-            static std::size_t getSingleVertexSize(graphics::VertexArray<NAttributes>& vertexArray) noexcept
+            static std::size_t getSingleVertexSize(const graphics::VertexArray& vertexArray) noexcept
             {
                 std::size_t size {};
-                for(std::size_t i = 0; i < NAttributes; ++i)
+
+                auto attributesCount = vertexArray.getAttributesCount();
+                auto attributes = vertexArray.getAttributes();
+
+                for(std::size_t i = 0; i < attributesCount; ++i)
                 {
-                    auto attribute = vertexArray.vertexAttributes[i];
+                    auto attribute = attributes[i];
                     size += getOpenGLTypeSize(attribute.type) * attribute.count;
                 }
 
                 return size;
             }
 
-            template<std::size_t NAttributes>
-            static std::size_t getVerticiesCount(graphics::VertexArray<NAttributes>& vertexArray) noexcept
+            static std::size_t getVerticiesCount(const graphics::VertexArray& vertexArray) noexcept
             {
                 auto vertexSize = getSingleVertexSize(vertexArray);
                 if(vertexSize > 0)
@@ -85,8 +87,7 @@ namespace dory::openGL::services
                 glUseProgram(program.id);
             }
 
-            template<std::size_t NAttributes>
-            static void useVertextArray(const graphics::VertexArray<NAttributes>& vertexArray)
+            static void useVertextArray(const graphics::VertexArray& vertexArray)
             {
                 glBindVertexArray(vertexArray.id);
             }
@@ -153,14 +154,12 @@ namespace dory::openGL::services
                 }
             }
 
-            template<std::size_t NAttributes>
-            static void loadVertexArray(graphics::VertexArray<NAttributes>& vertexArray)
+            static void loadVertexArray(graphics::VertexArray& vertexArray)
             {
                 glGenVertexArrays(1, &vertexArray.id);
             }
 
-            template<std::size_t NAttributes>
-            static void setVertexArrayData(graphics::VertexArray<NAttributes>& vertexArray, GLvoid* data, GLsizeiptr dataSize) noexcept
+            static void setVertexArrayData(graphics::VertexArray& vertexArray, GLvoid* data, GLsizeiptr dataSize) noexcept
             {
                 vertexArray.buffer.data = data;
                 vertexArray.buffer.size = dataSize;
@@ -178,9 +177,12 @@ namespace dory::openGL::services
                     glBindBuffer(GL_ARRAY_BUFFER, vertexArray.buffer.index);
                     glBufferStorage(GL_ARRAY_BUFFER, dataSize, data, GL_DYNAMIC_STORAGE_BIT);
 
-                    for(std::size_t i = 0; i < vertexArray.vertexAttributes.size(); ++i)
+                    auto attributesCount = vertexArray.getAttributesCount();
+                    auto attributes = vertexArray.getAttributes();
+
+                    for(std::size_t i = 0; i < attributesCount; ++i)
                     {
-                        graphics::VertexAttribute& attribute = vertexArray.vertexAttributes[i];
+                        graphics::VertexAttribute& attribute = attributes[i];
                         glVertexAttribPointer(i, attribute.count, attribute.type, attribute.normalized, attribute.stride, attribute.pointer);
                         glEnableVertexAttribArray(i);
                     }

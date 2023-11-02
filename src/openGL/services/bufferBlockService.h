@@ -31,38 +31,15 @@ namespace dory::openGL::services
     class BufferBlockService
     {
         public:
-            template<std::size_t MembersCount>
-            static constexpr void getBlockMemberNames(const graphics::UniformArrayBlock<MembersCount>& block, const char*(&memberNames)[MembersCount]) noexcept
+            static void getBlockMemberNames(const graphics::UniformBlock& block, 
+                const char** memberNames) noexcept
             {
-                for(std::size_t i = 0; i < MembersCount; ++i)
+                auto membersCount = block.getMembersCount();
+                auto members = block.getMembers();
+
+                for(std::size_t i = 0; i < membersCount; ++i)
                 {
-                    memberNames[i] = block.members[i].key.c_str();
-                }
-            }
-
-            template<std::size_t MembersCount>
-            static graphics::UniformArrayBlock<MembersCount> createUniformBlock(const std::string_view& blockName, const std::string_view(&memberNames)[MembersCount]) noexcept
-            {
-                graphics::UniformArrayBlock<MembersCount> bufferBlock(blockName);
-
-                for(std::size_t i = 0; i < MembersCount; ++i)
-                {
-                    bufferBlock.members[i].key = memberNames[i];
-                }
-
-                return bufferBlock;
-            }
-
-            template<std::size_t MembersCount>
-            static const graphics::Uniform& getUniformBlockMember(graphics::UniformArrayBlock<MembersCount>& uniformBloc, const std::string_view& memberName)
-            {
-                for(std::size_t i = 0; i < MembersCount; ++i)
-                {
-                    auto member = uniformBloc.members[i];
-                    if(strcmp(memberName.data(), member.key.c_str()) == 0)
-                    {
-                        return member;
-                    }
+                    memberNames[i] = members[i].key.c_str();
                 }
             }
     };

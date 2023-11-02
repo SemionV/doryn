@@ -7,10 +7,10 @@
 
 namespace dory::openGL
 {
-    struct TrianglesVertexArray: public graphics::VertexArray<1>
+    struct TrianglesVertexArray: public graphics::AttributedVertexArray<1>
     {
         TrianglesVertexArray():
-            graphics::VertexArray<1>({graphics::VertexAttribute(2, GL_FLOAT)})
+            graphics::AttributedVertexArray<1>({graphics::VertexAttribute(2, GL_FLOAT)})
         {}
     };
 

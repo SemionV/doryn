@@ -20,22 +20,51 @@ namespace dory::openGL::graphics
         {}
     };
 
-    template<std::size_t NAttributes>
     struct VertexArray
     {
         GLuint id = unboundId;
         Buffer buffer;
-        std::array<VertexAttribute, NAttributes> vertexAttributes;
         std::size_t verticesCount {};
 
-        VertexArray() = default;
+        virtual const std::size_t getAttributesCount() const = 0;
+        virtual std::size_t getAttributesCount() = 0;
+        virtual const VertexAttribute* getAttributes() const = 0;
+        virtual VertexAttribute* getAttributes() = 0;
+    };
 
-        VertexArray(const VertexAttribute (&attributes)[NAttributes])
+    template<std::size_t NAttributes>
+    struct AttributedVertexArray: public VertexArray
+    {
+        std::array<VertexAttribute, NAttributes> vertexAttributes;
+
+        AttributedVertexArray() = default;
+
+        AttributedVertexArray(const VertexAttribute (&attributes)[NAttributes])
         {
             for(std::size_t i = 0; i < NAttributes; ++i)
             {
                 vertexAttributes[i] = attributes[i];
             }
+        }
+
+        const std::size_t getAttributesCount() const noexcept override
+        {
+            return vertexAttributes.size();
+        }
+
+        const VertexAttribute* getAttributes() const noexcept override
+        {
+            return vertexAttributes.data();
+        }
+
+        std::size_t getAttributesCount() noexcept override
+        {
+            return vertexAttributes.size();
+        }
+
+        VertexAttribute* getAttributes() noexcept override
+        {
+            return vertexAttributes.data();
         }
     };
 }

@@ -41,7 +41,9 @@ namespace dory::openGL::graphics
             key(blockName)
         {}
 
+        virtual const std::size_t getMembersCount() const = 0;
         virtual std::size_t getMembersCount() = 0;
+        virtual const Uniform* getMembers() const = 0;
         virtual Uniform* getMembers() = 0;
     };
 
@@ -67,6 +69,16 @@ namespace dory::openGL::graphics
             {
                 members[i] = memberNames[i];
             }
+        }
+
+        const std::size_t getMembersCount() const noexcept override
+        {
+            return members.size();
+        }
+
+        const Uniform* getMembers() const noexcept override
+        {
+            return members.data();
         }
 
         std::size_t getMembersCount() noexcept override
