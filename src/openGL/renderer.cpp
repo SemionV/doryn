@@ -31,9 +31,21 @@ namespace dory::openGL
     {
         services::OpenglService::clearViewport(clearScreenColor);
 
-        colorsUniformData.hippieColor.r = 1.f;
-        colorsUniformData.hippieColor.g = 0.f;
-        colorsUniformData.hippieColor.b = 0.f;
+        auto& hippieColor = colorsUniformData.hippieColor;
+
+        if(hippieColor.r >= 1.f || hippieColor.g  >= 1.f || hippieColor.b  >= 1.f)
+        {
+            hippieColorDelta = -colorDelta;
+        }
+        else if(hippieColor.r <= 0.f || hippieColor.g <= 0.f || hippieColor.b <= 0.f)
+        {
+            hippieColorDelta = colorDelta;
+        }
+
+        hippieColor.r += hippieColorDelta;
+        hippieColor.g += hippieColorDelta;
+        hippieColor.b += hippieColorDelta;
+
         services::OpenglService::setUniformBlockData(trianglesProgram.colorsUniformBlock, &colorsUniformData, sizeof(colorsUniformData));
 
         services::OpenglService::drawObject(trianglesProgram, trianglesVertexArray);

@@ -100,7 +100,7 @@ namespace dory::openGL::services
             }
 
             template<std::size_t N>
-            static void loadUniformBlock(GLuint programId, graphics::UniformArrayBlock<N>& block)
+            static void loadUniformBlock(GLuint programId, graphics::ArrayUniformBlock<N>& block)
             {
                 block.index = glGetUniformBlockIndex(programId, block.key.c_str());
                 if(block.index != graphics::unboundId)
@@ -121,9 +121,10 @@ namespace dory::openGL::services
                     glGetActiveUniformsiv(programId, N, memberIndices, GL_UNIFORM_TYPE, memberType);
 
                     std::size_t size {};
+                    auto members = block.getMembers();
                     for(std::size_t i = 0; i < N; ++i)
                     {
-                        graphics::Uniform& member = block.members[i];
+                        graphics::Uniform& member = members[i];
                         member.index = memberIndices[i];
                         member.offset = memberOffset[i];
                         member.type = memberType[i];

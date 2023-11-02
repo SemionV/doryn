@@ -20,51 +20,54 @@ namespace dory::openGL::graphics
         {}
     };
 
-    struct VertexArray
+    class VertexArray
     {
-        GLuint id = unboundId;
-        Buffer buffer;
-        std::size_t verticesCount {};
+        public:
+            GLuint id = unboundId;
+            Buffer buffer;
+            std::size_t verticesCount {};
 
-        virtual const std::size_t getAttributesCount() const = 0;
-        virtual std::size_t getAttributesCount() = 0;
-        virtual const VertexAttribute* getAttributes() const = 0;
-        virtual VertexAttribute* getAttributes() = 0;
+            virtual const std::size_t getAttributesCount() const = 0;
+            virtual std::size_t getAttributesCount() = 0;
+            virtual const VertexAttribute* getAttributes() const = 0;
+            virtual VertexAttribute* getAttributes() = 0;
     };
 
     template<std::size_t NAttributes>
-    struct AttributedVertexArray: public VertexArray
+    class AttributedVertexArray: public VertexArray
     {
-        std::array<VertexAttribute, NAttributes> vertexAttributes;
+        private:
+            std::array<VertexAttribute, NAttributes> vertexAttributes;
 
-        AttributedVertexArray() = default;
+        public:
+            AttributedVertexArray() = default;
 
-        AttributedVertexArray(const VertexAttribute (&attributes)[NAttributes])
-        {
-            for(std::size_t i = 0; i < NAttributes; ++i)
+            AttributedVertexArray(const VertexAttribute (&attributes)[NAttributes])
             {
-                vertexAttributes[i] = attributes[i];
+                for(std::size_t i = 0; i < NAttributes; ++i)
+                {
+                    vertexAttributes[i] = attributes[i];
+                }
             }
-        }
 
-        const std::size_t getAttributesCount() const noexcept override
-        {
-            return vertexAttributes.size();
-        }
+            const std::size_t getAttributesCount() const noexcept override
+            {
+                return vertexAttributes.size();
+            }
 
-        const VertexAttribute* getAttributes() const noexcept override
-        {
-            return vertexAttributes.data();
-        }
+            const VertexAttribute* getAttributes() const noexcept override
+            {
+                return vertexAttributes.data();
+            }
 
-        std::size_t getAttributesCount() noexcept override
-        {
-            return vertexAttributes.size();
-        }
+            std::size_t getAttributesCount() noexcept override
+            {
+                return vertexAttributes.size();
+            }
 
-        VertexAttribute* getAttributes() noexcept override
-        {
-            return vertexAttributes.data();
-        }
+            VertexAttribute* getAttributes() noexcept override
+            {
+                return vertexAttributes.data();
+            }
     };
 }

@@ -26,7 +26,7 @@ namespace dory::openGL
 
     };
 
-    struct ColorsUniformBlock: public graphics::UniformArrayBlock<3>
+    struct ColorsUniformBlock: public graphics::ArrayUniformBlock<3>
     {
         static constexpr std::string_view pointLiteral = ".";
         static constexpr std::string_view blockNameLiteral = "ColorsBlock";
@@ -37,7 +37,7 @@ namespace dory::openGL
         static constexpr std::string_view darkColorLiteral = "darkColor";
 
         ColorsUniformBlock():
-            graphics::UniformArrayBlock<3>(blockNameLiteral, 
+            graphics::ArrayUniformBlock<3>(blockNameLiteral, 
                 dory::compileTime::JoinStringLiterals<prefixLiteral, brightColorLiteral>, 
                 dory::compileTime::JoinStringLiterals<prefixLiteral, hippieColorLiteral>, 
                 dory::compileTime::JoinStringLiterals<prefixLiteral, darkColorLiteral>)
@@ -64,9 +64,12 @@ namespace dory::openGL
             TrianglesVertexArray trianglesVertexArray;
             domain::Color clearScreenColor {0.0f, 0.0f, 0.0f};
 
+            float colorDelta = 0.0001f;
+            float hippieColorDelta = colorDelta;
+
             ColorsBufferInterface colorsUniformData {
                 domain::Color(0.7f, 0.7f, 0.7f, 1.0f), 
-                domain::Color(0.7f, 0.7f, 0.0f, 1.0f), 
+                domain::Color(0.2f, 0.2, 0.f, 1.0f), 
                 domain::Color(0.2f, 0.2f, 0.2f, 1.0f)
             };
 
