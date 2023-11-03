@@ -6,59 +6,119 @@
 namespace dory::domain::events
 {
     template<class... Ts>
-    class Event
+    class Callable
+    {
+        public:
+            virtual ~Callable() = default;
+            
+            virtual void operator()(Ts... arguments) const = 0;
+    };
+
+    template<class... Ts>
+    class CallableFunction: public Callable<Ts...>
     {
         private:
-            int idCounter;
-
-        protected:
-            std::map<int, std::function<void(Ts...)>> handlers;
+            std::function<void(Ts...)> function;
 
         public:
-            Event():
-                idCounter(0)
-            {                
-            }
+            CallableFunction(std::function<void(Ts...)>&& function):
+                function(std::move(function))
+            {}
 
+            void operator()(Ts... arguments) const override
+            {
+                std::invoke(function, arguments...);
+            }
+    };
+
+    template<typename T, class... Ts>
+    class CallableMemberFunction: public Callable<Ts...>
+    {
+        private:
+            std::pair<T*, void (T::*)(Ts...)> memberFunctionPair;
+
+        public:
+            CallableMemberFunction(T* instance, void (T::* memberFunction)(Ts...)):
+                memberFunctionPair(instance, memberFunction)
+            {}
+
+            void operator()(Ts... arguments) const override
+            {
+                std::invoke(memberFunctionPair.second, memberFunctionPair.first, arguments...);
+            }
+    };
+
+    template<class... Ts>
+    class Event
+    {
+        public:
+            using KeyType = std::size_t;
+
+        private:
+            KeyType idCounter {};
+
+        protected:
+            std::map<KeyType, std::shared_ptr<Callable<Ts...>>> handlers;
+
+        public:
             template<typename F>
-            int attachHandler(F&& function)
+            KeyType attachHandler(F&& function)
             {
                 auto functor = std::forward<F>(function);
                 return attachFunction(std::move(functor));
             }
 
             template<typename F>
-            int operator+=(F&& function)
+            KeyType operator+=(F&& function)
             {
-                return attachHandler(std::forward<F>(function));
+                return attachHandler(std::move(function));
             }
 
-            int attachHandler(std::function<void(Ts...)>&& functor)
+            KeyType attachHandler(std::function<void(Ts...)>&& functor)
             {
-                return attachFunction(std::forward<std::function<void(Ts...)>>(functor));
+                return attachFunction(std::move(functor));
             }
 
             template<typename F>
-            int operator+=(std::function<void(Ts...)>&& functor)
+            KeyType operator+=(std::function<void(Ts...)>&& functor)
             {
-                return attachFunction(std::forward<std::function<void(Ts...)>>(functor));
+                return attachFunction(std::move(functor));
             }
 
-            void detachHandler(int handlerKey)
+            template<typename T>
+            KeyType attachHandler(T* instance, void (T::* memberFunction)(Ts...))
+            {
+                return attachMemberFunction(instance, memberFunction);
+            }
+
+            void detachHandler(KeyType handlerKey)
             {
                 handlers.erase(handlerKey);
             }
 
         private:
-            int attachFunction(std::function<void(Ts...)>&& functor)
+            KeyType attachFunction(std::function<void(Ts...)>&& functor)
             {
-                int key = getNewKey();
-                handlers.emplace(key, std::forward<std::function<void(Ts...)>>(functor));
+                auto callable = std::make_shared<CallableFunction<Ts...>>(std::move(functor));
+                return attachCallable(callable);
+            }
+
+            template<typename T>
+            KeyType attachMemberFunction(T* instance, void (T::* memberFunction)(Ts...))
+            {
+                auto callable = std::make_shared<CallableMemberFunction<T, Ts...>>(instance, memberFunction);
+                return attachCallable(callable);
+            }
+
+            KeyType attachCallable(std::shared_ptr<Callable<Ts...>> callable)
+            {
+                KeyType key = getNewKey();
+                handlers.emplace(key, callable);
 
                 return key;
             }
 
-            int getNewKey()
+            KeyType getNewKey()
             {
                 return idCounter++;
             }
@@ -72,7 +132,7 @@ namespace dory::domain::events
             {
                 for (const auto& [key, handler]: this->handlers)
                 {
-                    std::invoke(handler, arguments...);
+                    handler->operator()(arguments...);
                 }
             }
     };

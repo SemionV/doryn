@@ -30,14 +30,11 @@ namespace testApp
         protected:
             void attachEventHandlers()
             {
-                serviceLocator->getEngineEventHub()->onInitializeEngine() += 
-                    std::bind(&Project::onInitializeEngine, this, std::placeholders::_1, std::placeholders::_2);
-                serviceLocator->getEngineEventHub()->onStopEngine() += 
-                    std::bind(&Project::onStopEngine, this, std::placeholders::_1, std::placeholders::_2);
-                serviceLocator->getConsoleEventHub()->onKeyPressed() += 
-                    std::bind(&Project::onConsoleKeyPressed, this, std::placeholders::_1, std::placeholders::_2);
-                serviceLocator->getGlfwWindowEventHub()->onCloseWindow() += 
-                    std::bind(&Project::onCloseWindow, this, std::placeholders::_1, std::placeholders::_2);
+                serviceLocator->getEngineEventHub()->onInitializeEngine().attachHandler(this, &Project::onInitializeEngine); 
+                serviceLocator->getEngineEventHub()->onStopEngine().attachHandler(this, &Project::onStopEngine); 
+                
+                serviceLocator->getConsoleEventHub()->onKeyPressed().attachHandler(this, &Project::onConsoleKeyPressed);
+                serviceLocator->getGlfwWindowEventHub()->onCloseWindow().attachHandler(this, &Project::onCloseWindow);
             }
         
         private:
