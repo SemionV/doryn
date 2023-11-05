@@ -42,3 +42,12 @@ mkdir -p ${VENDOR_DIR}GL
 cp ${GL3W_DIR}include/GL/gl3w.h ${VENDOR_DIR}GL/gl3w.h
 cp ${GL3W_DIR}include/GL/glcorearb.h ${VENDOR_DIR}GL/glcorearb.h
 cp ${GL3W_DIR}src/gl3w.c ${VENDOR_DIR}GL/gl3w.c
+
+#install RTTR - Run Time Type Reflection library
+RTTR_DIR=${LIB_DIR}rttr/
+mkdir -p $RTTR_DIR
+git clone https://github.com/rttrorg/rttr.git $RTTR_DIR
+cd $RTTR_DIR
+cmake -S . -B "$CMAKE_BUILD_DIR" -DBUILD_STATIC=On -DBUILD_EXAMPLES=Off -DBUILD_UNIT_TESTS=Off -DCMAKE_BUILD_TYPE=$BUILD_CONFIG -DCMAKE_INSTALL_PREFIX=${VENDOR_DIR}rttr/ -G "$CMAKE_GENERATOR"
+cmake --build "$CMAKE_BUILD_DIR" --config "$BUILD_CONFIG"
+cmake --install "$CMAKE_BUILD_DIR" --config "$BUILD_CONFIG"

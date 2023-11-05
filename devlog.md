@@ -1,6 +1,10 @@
 # Development log
 
 Tasks:
+* Static mapping of Vertex Attributes
+* Fill Buffers with mapped data
+* Batch rendering
+
 * Generalize core type of Matricies, so that it can support also double
 * Render Meshes
 * Camera Control
