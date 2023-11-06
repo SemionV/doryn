@@ -231,7 +231,7 @@ template <class T>
 using member_type_t = typename MemberType<T>::type;
 
 template<typename TMemberPointer, TMemberPointer memberPointer>
-struct MemberBinding
+struct MemberMapping
 {
     static constexpr std::size_t getSize()
     {
@@ -244,14 +244,58 @@ struct MemberBinding
     }
 };
 
-TEST_CASE( "Reflection test", "[typeMapping]" )
+TEST_CASE( "Member Reflection test", "[typeMapping]" )
 {
     constexpr auto xPointer = &Point::x;
-    using PointXBinding = MemberBinding<decltype(xPointer), xPointer>;
-    
-    std::cout << "Point::x size: " << PointXBinding::getSize() << std::endl;
+    using PointXMapping = MemberMapping<decltype(xPointer), xPointer>;
+
+    REQUIRE(PointXMapping::getSize() == sizeof(Point::x));
 
     Point p {456, 2, 3};
 
-    std::cout << "p.x value: " << p.*PointXBinding::getMemberPointer() << std::endl;
+    REQUIRE(p.*PointXMapping::getMemberPointer() == 456);
+}
+
+template <typename C, typename... MemberMappings>
+struct ClassMapping;
+
+template <typename C>
+struct ClassMapping<C>
+{
+    static constexpr std::size_t getSize()
+    {
+        return 0;
+    }
+};
+
+template<typename C, typename MemberMapping, typename... MemberMappings>
+struct ClassMapping<C, MemberMapping, MemberMappings...>: ClassMapping<C, MemberMappings...>
+{
+    using ParentType = ClassMapping<C, MemberMappings...>;
+
+    static constexpr std::size_t getSize()
+    {
+        auto size = MemberMapping::getSize();
+        
+        if constexpr (sizeof...(MemberMappings) > 0)
+        {
+            size += ParentType::getSize();
+        }
+
+        return size;
+    }
+};
+
+TEST_CASE( "Class Reflection test", "[typeMapping]" )
+{
+    constexpr auto xPointer = &Point::x;
+    using PointXMapping = MemberMapping<decltype(xPointer), xPointer>;
+    constexpr auto yPointer = &Point::y;
+    using PointYMapping = MemberMapping<decltype(yPointer), yPointer>;
+    constexpr auto zPointer = &Point::z;
+    using PointZMapping = MemberMapping<decltype(zPointer), zPointer>;
+
+    using PointMapping = ClassMapping<Point, PointXMapping, PointYMapping, PointZMapping>;
+
+    std::cout << "Point Mapping size: " << PointMapping::getSize() << std::endl;
 }
