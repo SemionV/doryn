@@ -1,8 +1,9 @@
 #include "dependencies.h"
+#include "dataLayout.h"
 
 struct Point
 {
-    int x {};
+    std::size_t x {};
     int y {};
     int z {};
 };
@@ -29,73 +30,10 @@ enum class AttributeId
     meshIndex
 };
 
-using AttributeIndex = unsigned short;
 using Byte = std::uint8_t;
 
-template<typename TId, TId Id, typename T>
-struct Attribute
-{
-    static constexpr TId id = Id;
-    using ValueType = T;
-};
-
-template <typename TId, class... Ts>
-struct Layout;
-
-template<typename TId>
-struct Layout<TId>
-{
-};
-
-template<typename TId, typename T, typename... Ts>
-struct Layout<TId, T, Ts...>: public Layout<TId, Ts...>
-{
-    using ParentType = Layout<TId, Ts...>;
-
-    static constexpr std::size_t getAttributeSize()
-    {
-        return sizeof(typename T::ValueType);
-    }
-
-    static constexpr std::size_t getSize()
-    {
-        if constexpr (sizeof...(Ts) > 0)
-        {
-            return getAttributeSize() + ParentType::getSize();
-        }
-
-        return getAttributeSize();
-    }
-
-    template<TId attributeId, std::size_t offset = 0>
-    static constexpr std::size_t getAttributeOffset()
-    {
-        if constexpr(T::id == attributeId)
-        {
-            return offset;
-        }
-        else if constexpr (sizeof...(Ts) == 1)
-        {
-            return offset + getAttributeSize();
-        }
-        else if constexpr(sizeof...(Ts) > 1)
-        {
-            return ParentType::template getAttributeOffset<attributeId, offset + getAttributeSize()>();
-        }
-        else
-        {
-            static_assert(sizeof...(Ts) == 0, "Invalid attribute id");
-        }
-    }
-};
-
-template<AttributeId id, typename T>
-struct VertexAttribute: public Attribute<AttributeId, id, T>
-{    
-};
-
 template<typename TLayout>
-struct VertexLayout
+struct VertexSerializer
 {
     static constexpr std::size_t getSize() noexcept
     {
@@ -189,16 +127,21 @@ struct VertexLayout
     }
 };
 
+template<AttributeId id, typename T>
+struct VertexAttribute: public dory::Attribute<AttributeId, id, T>
+{    
+};
+
 TEST_CASE( "Layout test", "[typeMapping]" )
 {
-    using LayoutMap = Layout<AttributeId,
+    using LayoutMap = dory::Layout<AttributeId,
         VertexAttribute<AttributeId::meshIndex, std::size_t>,
         VertexAttribute<AttributeId::position, Point>, 
         VertexAttribute<AttributeId::color, Color>,
         VertexAttribute<AttributeId::normal, Point>,
         VertexAttribute<AttributeId::textureCoordinates, TextureCoordinates>>;
 
-    using VertexLayout = VertexLayout<LayoutMap>;
+    using VertexSerializer = VertexSerializer<LayoutMap>;
 
     constexpr std::size_t VerticesCount = 1;
 
@@ -216,18 +159,18 @@ TEST_CASE( "Layout test", "[typeMapping]" )
 
     const std::size_t& meshIndex = 12;
 
-    constexpr std::size_t VertexSize = VertexLayout::getSize();
+    constexpr std::size_t VertexSize = VertexSerializer::getSize();
     constexpr std::size_t BufferSize = VertexSize * VerticesCount;
-    Byte buffer[VertexLayout::getSize() * VerticesCount];
+    Byte buffer[VertexSerializer::getSize() * VerticesCount];
 
     Byte* cursor = buffer;
     for(std::size_t i = 0; i < VerticesCount; ++i)
     {
-        VertexLayout::writePosition(positions[i], cursor);
-        VertexLayout::writeColor(colors[i], cursor);
-        VertexLayout::writeTextureCoordinates(textureCoordinates[i], cursor);
-        VertexLayout::writeNormal(normals[i], cursor);
-        VertexLayout::writeMeshIndex(meshIndex, cursor);
+        VertexSerializer::writePosition(positions[i], cursor);
+        VertexSerializer::writeColor(colors[i], cursor);
+        VertexSerializer::writeTextureCoordinates(textureCoordinates[i], cursor);
+        VertexSerializer::writeNormal(normals[i], cursor);
+        VertexSerializer::writeMeshIndex(meshIndex, cursor);
 
         cursor += VertexSize;
     }
@@ -260,4 +203,55 @@ TEST_CASE( "Layout test", "[typeMapping]" )
     REQUIRE(coordinates2.u == coordinates.u);
     REQUIRE(coordinates2.v == coordinates.v);
     cursor += sizeof(TextureCoordinates);
+}
+
+//-------------------------------------------------------------------------------------------------------------------------
+
+template <class T>
+struct MemberPointerType;
+
+template <class C, class T>
+struct MemberPointerType<T C::*> 
+{ 
+    using type = T;
+    using classType = C;
+
+    static constexpr std::size_t getSize()
+    {
+        return sizeof(T);
+    }
+};
+
+template <class T>
+struct MemberType : MemberPointerType<typename std::remove_cv<T>::type> 
+{    
+};
+
+template <class T>
+using member_type_t = typename MemberType<T>::type;
+
+template<typename TMemberPointer, TMemberPointer memberPointer>
+struct MemberBinding
+{
+    static constexpr std::size_t getSize()
+    {
+        return MemberType<TMemberPointer>::getSize();
+    }
+
+    static constexpr TMemberPointer getMemberPointer()
+    {
+        return memberPointer;
+    }
+};
+
+TEST_CASE( "Reflection test", "[typeMapping]" )
+{
+    constexpr auto xPointer = &Point::x;
+    using PointXBinding = MemberBinding<decltype(xPointer), xPointer>;
+    
+    std::cout << "Point::x size: " << PointXBinding::getSize() << std::endl;
+
+    Point p {456, 2, 3};
+
+    std::cout << "p.x value: " << p.*PointXBinding::getMemberPointer() << std::endl;
 }
