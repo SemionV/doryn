@@ -256,7 +256,7 @@ TEST_CASE( "Member Reflection test", "[typeMapping]" )
     REQUIRE(p.*PointXMapping::getMemberPointer() == 456);
 }
 
-template <typename C, typename... MemberMappings>
+template <typename C, typename... TMemberMappings>
 struct ClassMapping;
 
 template <typename C>
@@ -268,16 +268,16 @@ struct ClassMapping<C>
     }
 };
 
-template<typename C, typename MemberMapping, typename... MemberMappings>
-struct ClassMapping<C, MemberMapping, MemberMappings...>: ClassMapping<C, MemberMappings...>
+template<typename C, typename TMemberMapping, typename... TMemberMappings>
+struct ClassMapping<C, TMemberMapping, TMemberMappings...>: ClassMapping<C, TMemberMappings...>
 {
-    using ParentType = ClassMapping<C, MemberMappings...>;
+    using ParentType = ClassMapping<C, TMemberMappings...>;
 
     static constexpr std::size_t getSize()
     {
-        auto size = MemberMapping::getSize();
+        auto size = TMemberMapping::getSize();
         
-        if constexpr (sizeof...(MemberMappings) > 0)
+        if constexpr (sizeof...(TMemberMappings) > 0)
         {
             size += ParentType::getSize();
         }
@@ -286,16 +286,40 @@ struct ClassMapping<C, MemberMapping, MemberMappings...>: ClassMapping<C, Member
     }
 };
 
+template<typename C>
+struct ClassMappingType: ClassMapping<C>
+{
+};
+
+/*template<>
+struct ClassMappingType<Point>: ClassMapping<Point, 
+    MemberMapping<decltype(&Point::x), &Point::x>, 
+    MemberMapping<decltype(&Point::y), &Point::y>, 
+    MemberMapping<decltype(&Point::z), &Point::z>>
+{
+};*/
+
+#define EMPTY_CLASS_NAME
+#define CURRENT_CLASS_TYPE Point
+//#define SET_CURRENT_CLASS_TYPE(ClassName)(CURRENT_CLASS_TYPE=(ClassName))
+
+#define BEGIN_CLASS_MAP(ClassType)\
+template<>\
+struct ClassMappingType<CURRENT_CLASS_TYPE>: ClassMapping<CURRENT_CLASS_TYPE
+
+#define MAP_MEMBER(MemberName)\
+,MemberMapping<decltype(&CURRENT_CLASS_TYPE::MemberName), &CURRENT_CLASS_TYPE::MemberName>
+
+#define END_CLASS_MAP >{};
+
+BEGIN_CLASS_MAP(Point)
+    MAP_MEMBER(x)
+    MAP_MEMBER(y)
+    MAP_MEMBER(z)
+END_CLASS_MAP
+
 TEST_CASE( "Class Reflection test", "[typeMapping]" )
 {
-    constexpr auto xPointer = &Point::x;
-    using PointXMapping = MemberMapping<decltype(xPointer), xPointer>;
-    constexpr auto yPointer = &Point::y;
-    using PointYMapping = MemberMapping<decltype(yPointer), yPointer>;
-    constexpr auto zPointer = &Point::z;
-    using PointZMapping = MemberMapping<decltype(zPointer), zPointer>;
-
-    using PointMapping = ClassMapping<Point, PointXMapping, PointYMapping, PointZMapping>;
-
-    std::cout << "Point Mapping size: " << PointMapping::getSize() << std::endl;
+    std::cout << "Point Mapping size: " << ClassMappingType<Point>::getSize() << std::endl;
+    std::cout << "Color Mapping size: " << ClassMappingType<Color>::getSize() << std::endl;
 }
