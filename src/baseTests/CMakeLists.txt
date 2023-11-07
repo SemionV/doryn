@@ -6,6 +6,8 @@ find_package(Catch2 3 REQUIRED)
 find_package(FakeIt REQUIRED
             PATHS ${VENDOR_DIR} NO_DEFAULT_PATH)
 #find_package(RTTR REQUIRED Core PATHS ${VENDOR_DIR} NO_DEFAULT_PATH)
+find_package(refl-cpp REQUIRED 
+            PATHS ${VENDOR_DIR} NO_DEFAULT_PATH)
 
 add_executable(baseTests linearAlgebra.cpp
                          templates.cpp

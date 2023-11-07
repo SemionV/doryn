@@ -95,7 +95,8 @@
         "cfenv": "cpp",
         "cinttypes": "cpp",
         "glcorearb.h": "c",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "complex": "cpp"
     },
     "cmake.configureOnOpen": true
 }

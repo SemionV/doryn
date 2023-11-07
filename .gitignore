@@ -6,6 +6,7 @@ bin/
 build/cmake-artifacts/
 build/cmake-artifacts-vs/
 build/cmake-artifacts-ninja/
+build/cmake-artifacts-make/
 *.gch
 build/settings.sh
 .vscode/c_cpp_properties.json

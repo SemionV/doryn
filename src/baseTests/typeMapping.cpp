@@ -1,11 +1,10 @@
 #include "dependencies.h"
 #include "dataLayout.h"
 
-struct Point
+struct TextureCoordinates
 {
-    std::size_t x {};
-    int y {};
-    int z {};
+    int u {};
+    int v {};
 };
 
 struct Color
@@ -13,12 +12,15 @@ struct Color
     int r {};
     int g {};
     int b {};
+    TextureCoordinates coords {};
 };
 
-struct TextureCoordinates
+struct Point
 {
-    int u {};
-    int v {};
+    std::size_t x {};
+    int y {};
+    int z {};
+    Color color {};
 };
 
 enum class AttributeId
@@ -266,6 +268,11 @@ struct ClassMapping<C>
     {
         return 0;
     }
+
+    static constexpr std::size_t getCount()
+    {
+        return 0;
+    }
 };
 
 template<typename C, typename TMemberMapping, typename... TMemberMappings>
@@ -284,6 +291,11 @@ struct ClassMapping<C, TMemberMapping, TMemberMappings...>: ClassMapping<C, TMem
 
         return size;
     }
+
+    static constexpr std::size_t getCount()
+    {
+        return sizeof...(TMemberMappings) + 1;
+    }
 };
 
 template<typename C>
@@ -291,15 +303,15 @@ struct ClassMappingType: ClassMapping<C>
 {
 };
 
-/*template<>
+template<>
 struct ClassMappingType<Point>: ClassMapping<Point, 
     MemberMapping<decltype(&Point::x), &Point::x>, 
     MemberMapping<decltype(&Point::y), &Point::y>, 
     MemberMapping<decltype(&Point::z), &Point::z>>
 {
-};*/
+};
 
-#define EMPTY_CLASS_NAME
+/*#define EMPTY_CLASS_NAME
 #define CURRENT_CLASS_TYPE Point
 //#define SET_CURRENT_CLASS_TYPE(ClassName)(CURRENT_CLASS_TYPE=(ClassName))
 
@@ -316,10 +328,219 @@ BEGIN_CLASS_MAP(Point)
     MAP_MEMBER(x)
     MAP_MEMBER(y)
     MAP_MEMBER(z)
-END_CLASS_MAP
+END_CLASS_MAP*/
 
-TEST_CASE( "Class Reflection test", "[typeMapping]" )
+TEST_CASE( "Class Reflection test", "[.][typeMapping]" )
 {
     std::cout << "Point Mapping size: " << ClassMappingType<Point>::getSize() << std::endl;
+    std::cout << "Point Mapping count: " << ClassMappingType<Point>::getCount() << std::endl;
     std::cout << "Color Mapping size: " << ClassMappingType<Color>::getSize() << std::endl;
+    std::cout << "Color Mapping count: " << ClassMappingType<Color>::getCount() << std::endl;
+}
+
+//-------------------------------------------------------------------------------------------------------------------------
+
+// define an empty maker attribute to be used on fields and functions only
+struct serializable : refl::attr::usage::field, refl::attr::usage::function
+{
+};
+
+REFL_TYPE(TextureCoordinates)
+    REFL_FIELD(u, serializable())
+    REFL_FIELD(v, serializable())
+REFL_END
+
+REFL_TYPE(Color)
+    REFL_FIELD(r, serializable())
+    REFL_FIELD(g, serializable())
+    REFL_FIELD(b, serializable())
+    REFL_FIELD(coords, serializable())
+REFL_END
+
+REFL_TYPE(Point)
+    REFL_FIELD(x, serializable())
+    REFL_FIELD(y, serializable())
+    REFL_FIELD(z, serializable())
+    REFL_FIELD(color, serializable())
+REFL_END
+
+/*namespace refl_impl::metadata 
+{ 
+    template<> struct type_info__<Point> 
+    { 
+        typedef Point type; 
+        
+        static constexpr auto attributes{ ::refl::detail::make_attributes<::refl::attr::usage:: type>() }; 
+        static constexpr auto name{ ::refl::util::make_const_string("Point") }; 
+        static constexpr size_t member_index_offset = 72 + 1; 
+        
+        template <size_t, typename = void> 
+        struct member {};
+        
+        template<typename Unused__> 
+        struct member<73 - member_index_offset, Unused__> 
+        { 
+            typedef ::refl::member::field member_type; 
+            static constexpr auto name{ ::refl::util::make_const_string("x") }; 
+            static constexpr auto attributes{ ::refl::detail::make_attributes<::refl::attr::usage:: field>(serializable()) }; 
+            
+            public: 
+                typedef decltype(type::x) value_type; 
+                static constexpr auto pointer{ &type::x }; 
+                
+                template <typename Proxy> 
+                struct remap 
+                { 
+                    template <typename... Args> 
+                    decltype(auto) x(Args&&... args) 
+                    { 
+                        return Proxy::invoke_impl(static_cast<Proxy&>(*this), ::std::forward<Args>(args)...); 
+                    } 
+                    
+                    template <typename... Args> 
+                    decltype(auto) x(Args&&... args) const 
+                    { 
+                        return Proxy::invoke_impl(static_cast<const Proxy&>(*this), ::std::forward<Args>(args)...); 
+                    } 
+                };
+        };
+        
+        template<typename Unused__> 
+        struct member<74 - member_index_offset, Unused__> 
+        { 
+            typedef ::refl::member::field member_type; 
+            static constexpr auto name{ ::refl::util::make_const_string("y") }; 
+            static constexpr auto attributes{ ::refl::detail::make_attributes<::refl::attr::usage:: field>(serializable()) };
+
+            public: 
+                typedef decltype(type::y) value_type; 
+                static constexpr auto pointer{ &type::y }; 
+                
+                template <typename Proxy> 
+                struct remap 
+                { 
+                    template <typename... Args> 
+                    decltype(auto) y(Args&&... args) 
+                    { 
+                        return Proxy::invoke_impl(static_cast<Proxy&>(*this), ::std::forward<Args>(args)...); 
+                    } 
+                    
+                    template <typename... Args> 
+                    decltype(auto) y(Args&&... args) const 
+                    { 
+                        return Proxy::invoke_impl(static_cast<const Proxy&>(*this), ::std::forward<Args>(args)...); 
+                    } 
+                }; 
+        };
+        
+        template<typename Unused__> 
+        struct member<75 - member_index_offset, Unused__> 
+        { 
+            typedef ::refl::member::field member_type; 
+            static constexpr auto name{ ::refl::util::make_const_string("z") };            
+            static constexpr auto attributes{ ::refl::detail::make_attributes<::refl::attr::usage:: field>(serializable()) }; 
+            
+            public: 
+                typedef decltype(type::z) value_type;
+                static constexpr auto pointer{ &type::z }; 
+                
+                template <typename Proxy> struct remap 
+                { 
+                    template <typename... Args> 
+                    decltype(auto) z(Args&&... args) 
+                    { 
+                        return Proxy::invoke_impl(static_cast<Proxy&>(*this), ::std::forward<Args>(args)...); 
+                    } 
+                    
+                    template <typename... Args> 
+                    decltype(auto) z(Args&&... args) const 
+                    { 
+                        return Proxy::invoke_impl(static_cast<const Proxy&>(*this), ::std::forward<Args>(args)...); 
+                    } 
+                }; 
+        };
+
+        template<typename Unused__> 
+        struct member<76 - member_index_offset, Unused__> 
+        { 
+            typedef ::refl::member::field member_type; 
+            static constexpr auto name{ ::refl::util::make_const_string("color") };
+            static constexpr auto attributes{ ::refl::detail::make_attributes<::refl::attr::usage:: field>(serializable()) }; 
+            
+            public: 
+                typedef decltype(type::color) value_type; 
+                static constexpr auto pointer{ &type::color }; 
+                
+                template <typename Proxy> 
+                struct remap 
+                { 
+                    template <typename... Args> 
+                    decltype(auto) color(Args&&... args) 
+                    { 
+                        return Proxy::invoke_impl(static_cast<Proxy&>(*this), ::std::forward<Args>(args)...); 
+                    } 
+                    
+                    template <typename... Args> 
+                    decltype(auto) color(Args&&... args) const 
+                    { 
+                        return Proxy::invoke_impl(static_cast<const Proxy&>(*this), ::std::forward<Args>(args)...); 
+                    } 
+                }; 
+        };
+        
+        static constexpr size_t member_count{ 77 - member_index_offset }; 
+    }; 
+}*/
+
+template <typename T>
+void serialize(std::ostream& os, T&& value, const std::string& indent = "")
+{
+    refl::descriptor::type_descriptor<std::remove_reference_t<T>> typeDescriptor{};
+
+    // iterate over the members of T
+    for_each(typeDescriptor.members, [&](auto member)
+    {
+        // is_readable checks if the member is a non-const field
+        // or a 0-arg const-qualified function marked with property attribute
+        if constexpr (is_readable(member) && refl::descriptor::has_attribute<serializable>(member))
+        {
+            using memberType = decltype(member);
+
+            os << indent;
+
+            // get_display_name prefers the friendly_name of the property over the function name
+            os << get_display_name(member) << " = ";
+            // member(value) returns a reference to the field or calls the property accessor
+            if constexpr (std::is_trivial_v<typename memberType::value_type>)
+            {
+                os << member(value) << ";" << std::endl;
+            }
+            else
+            {
+                os << std::endl;
+                serialize(os, member(value), indent + "    ");
+            }
+        }
+    });
+}
+
+TEST_CASE( "refl-cpp serialization test", "[typeMapping]" )
+{
+    Point point {
+        1, 
+        2, 
+        3, 
+        Color 
+        {
+            4, 
+            5, 
+            6,
+            TextureCoordinates
+            {
+                7, 
+                8
+            }
+        }};
+
+    serialize(std::cout, point);
 }
