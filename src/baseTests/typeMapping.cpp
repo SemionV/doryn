@@ -23,18 +23,43 @@ struct Point
     Color color {};
 };
 
-enum class AttributeId
+struct serializable : refl::attr::usage::field, refl::attr::usage::function
 {
-    position,
-    color,
-    textureCoordinates,
-    normal,
-    meshIndex
 };
+
+template<typename T>
+struct VertexAttributeType: public T
+{
+};
+
+REFL_TYPE(TextureCoordinates)
+    REFL_FIELD(u, serializable())
+    REFL_FIELD(v, serializable())
+REFL_END
+
+REFL_TYPE(Color)
+    REFL_FIELD(r, serializable())
+    REFL_FIELD(g, serializable())
+    REFL_FIELD(b, serializable())
+    REFL_FIELD(coords, serializable())
+REFL_END
+
+REFL_TYPE(Point)
+    REFL_FIELD(x, serializable())
+    REFL_FIELD(y, serializable())
+    REFL_FIELD(z, serializable())
+    REFL_FIELD(color, serializable())
+REFL_END
+
+REFL_TYPE(VertexAttributeType<Point>)
+    REFL_FIELD(x)
+    REFL_FIELD(y)
+    REFL_FIELD(z)
+REFL_END
 
 using Byte = std::uint8_t;
 
-template<typename TLayout>
+template<typename TLayout, typename TId>
 struct VertexSerializer
 {
     static constexpr std::size_t getSize() noexcept
@@ -42,91 +67,65 @@ struct VertexSerializer
         return TLayout::getSize();
     }
 
-    template<AttributeId Id, typename T>
-    static void writeAttribute(const T& attributeValue, Byte* buffer)
+    template<typename T>
+    static std::size_t writeTrivialValue(const T attributeValue, Byte* buffer)
+    {
+        auto size = sizeof(T);
+        memcpy(buffer, &attributeValue, size);
+        return size;
+    }
+
+    template<typename T>
+    static std::size_t writeValue(const T& attributeValue, Byte* buffer)
+    {
+        std::size_t offset = {};
+
+        if constexpr (std::is_trivial_v<T>)
+        {
+            offset += writeTrivialValue(attributeValue, buffer + offset);
+        }
+        else
+        {
+            for_each(refl::reflect(attributeValue).members, [&](auto member)
+            {
+                if constexpr (is_readable(member))
+                {
+                    using memberType = decltype(member);
+
+                    if constexpr (std::is_trivial_v<typename memberType::value_type>)
+                    {
+                        offset += writeTrivialValue(member(attributeValue), buffer + offset);
+                    }
+                    else
+                    {
+                        offset += writeValue(member(attributeValue), buffer + offset);
+                    }
+                }
+            });
+        }
+
+        return offset;
+    }
+
+    template<TId Id, typename T>
+    static std::size_t writeAttribute(const T& attributeValue, Byte* buffer)
     {
         auto offset = TLayout::template getAttributeOffset<Id>();
+        auto size = writeValue(attributeValue, buffer + offset);
 
-        std::cout << "Attribute: " << static_cast<unsigned int>(Id) << "; Offset: " << offset << ";" << std::endl;
+        std::cout << "Attribute: " << static_cast<unsigned int>(Id) << "; Offset: " << offset << ";" << " Size: " << size << std::endl;
+
+        return size;
     }
+};
 
-    template<AttributeId Id>
-    static void writePoint(const Point& point, Byte* buffer)
-    {
-        constexpr auto offset = TLayout::template getAttributeOffset<Id>();
-
-        Byte* cursor = buffer;
-
-        memcpy(cursor + offset, &point.x, sizeof(point.x));
-        cursor += sizeof(point.x);
-        memcpy(cursor + offset, &point.y, sizeof(point.y));
-        cursor += sizeof(point.y);
-        memcpy(cursor + offset, &point.z, sizeof(point.z));
-        cursor += sizeof(point.z);
-    }
-
-    template<AttributeId Id>
-    static void writeColor(const Color& color, Byte* buffer)
-    {
-        constexpr auto offset = TLayout::template getAttributeOffset<Id>();
-
-        Byte* cursor = buffer;
-
-        memcpy(cursor + offset, &color.r, sizeof(color.r));
-        cursor += sizeof(color.r);
-        memcpy(cursor + offset, &color.g, sizeof(color.g));
-        cursor += sizeof(color.g);
-        memcpy(cursor + offset, &color.b, sizeof(color.b));
-        cursor += sizeof(color.b);
-    }
-
-    template<AttributeId Id>
-    static void writeTextureCoordinates(const TextureCoordinates& coordinates, Byte* buffer)
-    {
-        constexpr auto offset = TLayout::template getAttributeOffset<Id>();
-
-        Byte* cursor = buffer;
-
-        memcpy(cursor + offset, &coordinates.u, sizeof(coordinates.u));
-        cursor += sizeof(coordinates.u);
-        memcpy(cursor + offset, &coordinates.v, sizeof(coordinates.v));
-        cursor += sizeof(coordinates.v);
-    }
-
-    template<AttributeId Id>
-    static void writeSize(const std::size_t& size, Byte* buffer)
-    {
-        constexpr auto offset = TLayout::template getAttributeOffset<Id>();
-
-        Byte* cursor = buffer;
-
-        memcpy(cursor + offset, &size, sizeof(size));
-    }
-
-    static void writePosition(const Point& position, Byte* buffer)
-    {
-        writePoint<AttributeId::position>(position, buffer);
-    }
-
-    static void writeColor(const Color& color, Byte* buffer)
-    {
-        writeColor<AttributeId::color>(color, buffer);
-    }
-
-    static void writeTextureCoordinates(const TextureCoordinates& coordinates, Byte* buffer)
-    {
-        writeTextureCoordinates<AttributeId::textureCoordinates>(coordinates, buffer);
-    }
-
-    static void writeNormal(const Point& normal, Byte* buffer)
-    {
-        writePoint<AttributeId::normal>(normal, buffer);
-    }
-
-    static void writeMeshIndex(const std::size_t& meshIndex, Byte* buffer)
-    {
-        writeSize<AttributeId::meshIndex>(meshIndex, buffer);
-    }
+enum class AttributeId
+{
+    meshId,
+    position,
+    color,
+    textureCoordinates,
+    normal
 };
 
 template<AttributeId id, typename T>
@@ -137,13 +136,13 @@ struct VertexAttribute: public dory::Attribute<AttributeId, id, T>
 TEST_CASE( "Layout test", "[typeMapping]" )
 {
     using LayoutMap = dory::Layout<AttributeId,
-        VertexAttribute<AttributeId::meshIndex, std::size_t>,
-        VertexAttribute<AttributeId::position, Point>, 
+        VertexAttribute<AttributeId::meshId, std::size_t>,
+        VertexAttribute<AttributeId::position, VertexAttributeType<Point>>, 
         VertexAttribute<AttributeId::color, Color>,
         VertexAttribute<AttributeId::normal, Point>,
         VertexAttribute<AttributeId::textureCoordinates, TextureCoordinates>>;
 
-    using VertexSerializer = VertexSerializer<LayoutMap>;
+    using VertexSerializer = VertexSerializer<LayoutMap, AttributeId>;
 
     constexpr std::size_t VerticesCount = 1;
 
@@ -159,7 +158,7 @@ TEST_CASE( "Layout test", "[typeMapping]" )
     const Point& normal = {9, 10, 11};
     Point normals[VerticesCount] = { normal };
 
-    const std::size_t& meshIndex = 12;
+    const std::size_t& meshId = 12;
 
     constexpr std::size_t VertexSize = VertexSerializer::getSize();
     constexpr std::size_t BufferSize = VertexSize * VerticesCount;
@@ -168,43 +167,43 @@ TEST_CASE( "Layout test", "[typeMapping]" )
     Byte* cursor = buffer;
     for(std::size_t i = 0; i < VerticesCount; ++i)
     {
-        VertexSerializer::writePosition(positions[i], cursor);
-        VertexSerializer::writeColor(colors[i], cursor);
-        VertexSerializer::writeTextureCoordinates(textureCoordinates[i], cursor);
-        VertexSerializer::writeNormal(normals[i], cursor);
-        VertexSerializer::writeMeshIndex(meshIndex, cursor);
+        VertexSerializer::writeAttribute<AttributeId::meshId>(meshId, cursor);
+        VertexSerializer::writeAttribute<AttributeId::position>(positions[i], cursor);
+        VertexSerializer::writeAttribute<AttributeId::color>(colors[i], cursor);
+        VertexSerializer::writeAttribute<AttributeId::normal>(normals[i], cursor);
+        VertexSerializer::writeAttribute<AttributeId::textureCoordinates>(textureCoordinates[i], cursor);
 
         cursor += VertexSize;
     }
 
     cursor = buffer;
 
-    const std::size_t& meshIndex2 = *reinterpret_cast<std::size_t*>((Byte*)cursor);
-    REQUIRE(meshIndex2 == meshIndex);
+    const std::size_t& meshId2 = *reinterpret_cast<std::size_t*>((Byte*)cursor);
+    REQUIRE(meshId2 == meshId);
     cursor += sizeof(std::size_t);
 
     const Point& position2 = *reinterpret_cast<Point*>((Byte*)cursor);
     REQUIRE(position2.x == position.x);
     REQUIRE(position2.y == position.y);
     REQUIRE(position2.z == position.z);
-    cursor += sizeof(Point);
+    cursor += LayoutMap::getAttributeSize<AttributeId::position>();
 
     const Color& color2 = *reinterpret_cast<Color*>((Byte*)cursor);
     REQUIRE(color2.r == color.r);
     REQUIRE(color2.g == color.g);
     REQUIRE(color2.b == color.b);
-    cursor += sizeof(Color);
+    cursor += LayoutMap::getAttributeSize<AttributeId::color>();
 
     const Point& normal2 = *reinterpret_cast<Point*>((Byte*)cursor);
     REQUIRE(normal2.x == normal.x);
     REQUIRE(normal2.y == normal.y);
     REQUIRE(normal2.z == normal.z);
-    cursor += sizeof(Point);
+    cursor += LayoutMap::getAttributeSize<AttributeId::normal>();
 
     const TextureCoordinates& coordinates2 = *reinterpret_cast<TextureCoordinates*>((Byte*)cursor);
     REQUIRE(coordinates2.u == coordinates.u);
     REQUIRE(coordinates2.v == coordinates.v);
-    cursor += sizeof(TextureCoordinates);
+    cursor += LayoutMap::getAttributeSize<AttributeId::textureCoordinates>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
@@ -339,30 +338,6 @@ TEST_CASE( "Class Reflection test", "[.][typeMapping]" )
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
-
-// define an empty maker attribute to be used on fields and functions only
-struct serializable : refl::attr::usage::field, refl::attr::usage::function
-{
-};
-
-REFL_TYPE(TextureCoordinates)
-    REFL_FIELD(u, serializable())
-    REFL_FIELD(v, serializable())
-REFL_END
-
-REFL_TYPE(Color)
-    REFL_FIELD(r, serializable())
-    REFL_FIELD(g, serializable())
-    REFL_FIELD(b, serializable())
-    REFL_FIELD(coords, serializable())
-REFL_END
-
-REFL_TYPE(Point)
-    REFL_FIELD(x, serializable())
-    REFL_FIELD(y, serializable())
-    REFL_FIELD(z, serializable())
-    REFL_FIELD(color, serializable())
-REFL_END
 
 /*namespace refl_impl::metadata 
 { 

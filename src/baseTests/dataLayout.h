@@ -1,5 +1,7 @@
 #pragma once
 
+#include "dependencies.h"
+
 namespace dory
 {
     template<typename TAttributeId, TAttributeId Id, typename T>
@@ -17,6 +19,41 @@ namespace dory
     {
     };
 
+    template<typename T>
+    constexpr std::size_t getReflTypeSize()
+    {
+        std::size_t size {};
+
+        if constexpr (std::is_trivial_v<T>)
+        {
+            size = sizeof(T);
+        }
+        else
+        {
+            constexpr refl::descriptor::type_descriptor<std::remove_reference_t<T>> typeDescriptor{};
+
+            for_each(typeDescriptor.members, [&](auto member)
+            {
+                if constexpr (is_readable(member))
+                {
+                    using memberType = decltype(member);
+
+                    if constexpr (std::is_trivial_v<typename memberType::value_type>)
+                    {
+                        size += sizeof(typename memberType::value_type);
+                    }
+                    else
+                    {
+                        size += getReflTypeSize<typename memberType::value_type>();
+                    }
+                    
+                }
+            });
+        }
+
+        return size;
+    }
+
     template<typename TAttributeId, typename TAttribute, typename... TAttributes>
     struct Layout<TAttributeId, TAttribute, TAttributes...>: public Layout<TAttributeId, TAttributes...>
     {
@@ -24,7 +61,24 @@ namespace dory
 
         static constexpr std::size_t getAttributeSize()
         {
-            return sizeof(typename TAttribute::type);
+            return getReflTypeSize<typename TAttribute::type>();
+        }
+
+        template<TAttributeId attributeId>
+        static constexpr std::size_t getAttributeSize()
+        {
+            if constexpr(TAttribute::id == attributeId)
+            {
+                return getAttributeSize();
+            }
+            else if constexpr (sizeof...(TAttributes) > 0)
+            {
+                return ParentType::template getAttributeSize<attributeId>();
+            }
+            else
+            {
+                static_assert(sizeof...(TAttributes) == 0, "Invalid attribute id");
+            }
         }
 
         static constexpr std::size_t getSize()
