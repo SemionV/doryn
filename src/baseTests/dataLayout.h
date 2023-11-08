@@ -91,6 +91,18 @@ namespace dory
             return getAttributeSize();
         }
 
+        static constexpr std::size_t getCount()
+        {
+            std::size_t count = 1;
+
+            if constexpr(sizeof...(TAttributes) > 0)
+            {
+                count += ParentType::getCount();
+            }
+
+            return count;
+        }
+
         template<TAttributeId attributeId, std::size_t offset = 0>
         static constexpr std::size_t getAttributeOffset()
         {

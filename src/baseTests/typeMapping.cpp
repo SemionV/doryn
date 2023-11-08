@@ -27,11 +27,6 @@ struct serializable : refl::attr::usage::field, refl::attr::usage::function
 {
 };
 
-template<typename T>
-struct VertexAttributeType: public T
-{
-};
-
 REFL_TYPE(TextureCoordinates)
     REFL_FIELD(u, serializable())
     REFL_FIELD(v, serializable())
@@ -50,6 +45,11 @@ REFL_TYPE(Point)
     REFL_FIELD(z, serializable())
     REFL_FIELD(color, serializable())
 REFL_END
+
+template<typename T>
+struct VertexAttributeType: public T
+{
+};
 
 REFL_TYPE(VertexAttributeType<Point>)
     REFL_FIELD(x)
@@ -73,7 +73,7 @@ using Byte = std::uint8_t;
 template<typename TLayout, typename TId>
 struct VertexSerializer
 {
-    static constexpr std::size_t getSize() noexcept
+    static constexpr std::size_t getVertexSize() noexcept
     {
         return TLayout::getSize();
     }
@@ -83,6 +83,14 @@ struct VertexSerializer
     {
         auto size = sizeof(T);
         memcpy(buffer, &attributeValue, size);
+        return size;
+    }
+
+    template<typename T>
+    static std::size_t readTrivialValue(T& attributeValue, Byte* buffer)
+    {
+        auto size = sizeof(T);
+        memcpy(&attributeValue, buffer, size);
         return size;
     }
 
@@ -112,6 +120,32 @@ struct VertexSerializer
         return offset;
     }
 
+    template<typename T, typename TDescriptor>
+    static std::size_t readComplexValue(T& attributeValue, Byte* buffer, TDescriptor typeDescriptor)
+    {
+        std::size_t offset = {};
+
+        for_each(typeDescriptor.members, [&](auto member)
+        {
+            if constexpr (is_readable(member))
+            {
+                using memberType = decltype(member);
+
+                if constexpr (std::is_trivial_v<typename memberType::value_type>)
+                {
+                    offset += readTrivialValue(attributeValue.*memberType::pointer, buffer + offset);
+                }
+                else
+                {
+                    constexpr refl::descriptor::type_descriptor<typename memberType::value_type> typeDescriptor{};
+                    offset += readComplexValue(attributeValue.*memberType::pointer, buffer + offset, typeDescriptor);
+                }
+            }
+        });
+
+        return offset;
+    }
+
     template<TId Id, typename T>
     static std::size_t writeAttribute(const T& attributeValue, Byte* buffer)
     {
@@ -129,7 +163,29 @@ struct VertexSerializer
             size += writeComplexValue(attributeValue, buffer + offset, typeDescriptor);
         }
 
-        std::cout << "Attribute: " << static_cast<unsigned int>(Id) << "; Offset: " << offset << ";" << " Size: " << size << std::endl;
+        std::cout << "Write Attribute: " << static_cast<unsigned int>(Id) << "; Offset: " << offset << ";" << " Size: " << size << std::endl;
+
+        return size;
+    }
+
+    template<TId Id, typename T>
+    static std::size_t readAttribute(T& attributeValue, Byte* buffer)
+    {
+        std::size_t size = {};
+
+        auto offset = TLayout::template getAttributeOffset<Id>();
+
+        if constexpr (std::is_trivial_v<T>)
+        {
+            size += readTrivialValue(attributeValue, buffer + offset);
+        }
+        else
+        {
+            auto typeDescriptor = TLayout::template getAttributeTypeDescriptor<Id>();
+            size += readComplexValue(attributeValue, buffer + offset, typeDescriptor);
+        }
+
+        std::cout << "Read Attribute: " << static_cast<unsigned int>(Id) << "; Offset: " << offset << ";" << " Size: " << size << std::endl;
 
         return size;
     }
@@ -149,7 +205,7 @@ struct VertexAttribute: public dory::Attribute<AttributeId, id, T>
 {    
 };
 
-TEST_CASE( "Layout test", "[typeMapping]" )
+TEST_CASE( "Layout serialization test", "[typeMapping]" )
 {
     using LayoutMap = dory::Layout<AttributeId,
         VertexAttribute<AttributeId::meshId, std::size_t>,
@@ -158,27 +214,21 @@ TEST_CASE( "Layout test", "[typeMapping]" )
         VertexAttribute<AttributeId::normal, VertexAttributeType<Point>>,
         VertexAttribute<AttributeId::textureCoordinates, VertexAttributeType<TextureCoordinates>>>;
 
+    std::cout << "Attributes count: " << LayoutMap::getCount() << std::endl; 
+
     using VertexSerializer = VertexSerializer<LayoutMap, AttributeId>;
 
-    constexpr std::size_t VerticesCount = 1;
+    constexpr std::size_t VerticesCount = 2;
 
-    const Point& position = Point{1, 2, 3};
-    Point positions[VerticesCount] = { position };
-
-    const Color& color = Color {4, 5, 6};
-    Color colors[VerticesCount] = { color };
-
-    const TextureCoordinates& coordinates = {7, 8};
-    TextureCoordinates textureCoordinates[VerticesCount] { coordinates };
-
-    const Point& normal = {9, 10, 11};
-    Point normals[VerticesCount] = { normal };
-
+    Point positions[VerticesCount] = { Point{1, 2, 3},  Point{4, 5, 6}};
+    Color colors[VerticesCount] = { Color {4, 5, 6}, Color {7, 8, 9} };
+    TextureCoordinates textureCoordinates[VerticesCount] = { TextureCoordinates{7, 8}, TextureCoordinates{9, 10} };
+    Point normals[VerticesCount] = { Point{9, 10, 11}, Point{12, 13, 14} };
     const std::size_t& meshId = 12;
 
-    constexpr std::size_t VertexSize = VertexSerializer::getSize();
+    constexpr std::size_t VertexSize = VertexSerializer::getVertexSize();
     constexpr std::size_t BufferSize = VertexSize * VerticesCount;
-    Byte buffer[VertexSerializer::getSize() * VerticesCount];
+    Byte buffer[VertexSize * VerticesCount];
 
     Byte* cursor = buffer;
     for(std::size_t i = 0; i < VerticesCount; ++i)
@@ -193,33 +243,39 @@ TEST_CASE( "Layout test", "[typeMapping]" )
     }
 
     cursor = buffer;
+    Point positions2[VerticesCount];
+    Color colors2[VerticesCount];
+    Point normals2[VerticesCount];
+    TextureCoordinates textureCoordinates2[VerticesCount];
+    std::size_t meshId2 {};
 
-    const std::size_t& meshId2 = *reinterpret_cast<std::size_t*>((Byte*)cursor);
-    REQUIRE(meshId2 == meshId);
-    cursor += sizeof(std::size_t);
+    for(std::size_t i = 0; i < VerticesCount; ++i)
+    {
+        VertexSerializer::readAttribute<AttributeId::meshId>(meshId2, cursor);
+        VertexSerializer::readAttribute<AttributeId::position>(positions2[i], cursor);
+        VertexSerializer::readAttribute<AttributeId::color>(colors2[i], cursor);
+        VertexSerializer::readAttribute<AttributeId::normal>(normals2[i], cursor);
+        VertexSerializer::readAttribute<AttributeId::textureCoordinates>(textureCoordinates2[i], cursor);
 
-    const Point& position2 = *reinterpret_cast<Point*>((Byte*)cursor);
-    REQUIRE(position2.x == position.x);
-    REQUIRE(position2.y == position.y);
-    REQUIRE(position2.z == position.z);
-    cursor += LayoutMap::getAttributeSize<AttributeId::position>();
+        REQUIRE(meshId2 == meshId);
 
-    const Color& color2 = *reinterpret_cast<Color*>((Byte*)cursor);
-    REQUIRE(color2.r == color.r);
-    REQUIRE(color2.g == color.g);
-    REQUIRE(color2.b == color.b);
-    cursor += LayoutMap::getAttributeSize<AttributeId::color>();
+        REQUIRE(positions2[i].x == positions[i].x);
+        REQUIRE(positions2[i].y == positions[i].y);
+        REQUIRE(positions2[i].z == positions[i].z);
 
-    const Point& normal2 = *reinterpret_cast<Point*>((Byte*)cursor);
-    REQUIRE(normal2.x == normal.x);
-    REQUIRE(normal2.y == normal.y);
-    REQUIRE(normal2.z == normal.z);
-    cursor += LayoutMap::getAttributeSize<AttributeId::normal>();
+        REQUIRE(colors2[i].r == colors[i].r);
+        REQUIRE(colors2[i].g == colors[i].g);
+        REQUIRE(colors2[i].b == colors[i].b);
 
-    const TextureCoordinates& coordinates2 = *reinterpret_cast<TextureCoordinates*>((Byte*)cursor);
-    REQUIRE(coordinates2.u == coordinates.u);
-    REQUIRE(coordinates2.v == coordinates.v);
-    cursor += LayoutMap::getAttributeSize<AttributeId::textureCoordinates>();
+        REQUIRE(normals2[i].x == normals[i].x);
+        REQUIRE(normals2[i].y == normals[i].y);
+        REQUIRE(normals2[i].z == normals[i].z);
+
+        REQUIRE(textureCoordinates2[i].u == textureCoordinates[i].u);
+        REQUIRE(textureCoordinates2[i].v == textureCoordinates[i].v);
+
+        cursor += VertexSize;
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
