@@ -111,5 +111,22 @@ namespace dory
                 static_assert(sizeof...(TAttributes) == 0, "Invalid attribute id");
             }
         }
+
+        template<TAttributeId attributeId>
+        static constexpr decltype(auto) getAttributeTypeDescriptor()
+        {
+            if constexpr(TAttribute::id == attributeId)
+            {
+                return refl::descriptor::type_descriptor<typename TAttribute::type> {};
+            }
+            else if constexpr (sizeof...(TAttributes) > 0)
+            {
+                return ParentType::template getAttributeTypeDescriptor<attributeId>();
+            }
+            else
+            {
+                static_assert(sizeof...(TAttributes) == 0, "Invalid attribute id");
+            }
+        }
     };
 }

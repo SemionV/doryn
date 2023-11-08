@@ -57,6 +57,17 @@ REFL_TYPE(VertexAttributeType<Point>)
     REFL_FIELD(z)
 REFL_END
 
+REFL_TYPE(VertexAttributeType<Color>)
+    REFL_FIELD(r)
+    REFL_FIELD(g)
+    REFL_FIELD(b)
+REFL_END
+
+REFL_TYPE(VertexAttributeType<TextureCoordinates>)
+    REFL_FIELD(u)
+    REFL_FIELD(v)
+REFL_END
+
 using Byte = std::uint8_t;
 
 template<typename TLayout, typename TId>
@@ -75,34 +86,28 @@ struct VertexSerializer
         return size;
     }
 
-    template<typename T>
-    static std::size_t writeValue(const T& attributeValue, Byte* buffer)
+    template<typename T, typename TDescriptor>
+    static std::size_t writeComplexValue(const T& attributeValue, Byte* buffer, TDescriptor typeDescriptor)
     {
         std::size_t offset = {};
 
-        if constexpr (std::is_trivial_v<T>)
+        for_each(typeDescriptor.members, [&](auto member)
         {
-            offset += writeTrivialValue(attributeValue, buffer + offset);
-        }
-        else
-        {
-            for_each(refl::reflect(attributeValue).members, [&](auto member)
+            if constexpr (is_readable(member))
             {
-                if constexpr (is_readable(member))
-                {
-                    using memberType = decltype(member);
+                using memberType = decltype(member);
 
-                    if constexpr (std::is_trivial_v<typename memberType::value_type>)
-                    {
-                        offset += writeTrivialValue(member(attributeValue), buffer + offset);
-                    }
-                    else
-                    {
-                        offset += writeValue(member(attributeValue), buffer + offset);
-                    }
+                if constexpr (std::is_trivial_v<typename memberType::value_type>)
+                {
+                    offset += writeTrivialValue(member(attributeValue), buffer + offset);
                 }
-            });
-        }
+                else
+                {
+                    constexpr refl::descriptor::type_descriptor<typename memberType::value_type> typeDescriptor{};
+                    offset += writeComplexValue(member(attributeValue), buffer + offset, typeDescriptor);
+                }
+            }
+        });
 
         return offset;
     }
@@ -110,8 +115,19 @@ struct VertexSerializer
     template<TId Id, typename T>
     static std::size_t writeAttribute(const T& attributeValue, Byte* buffer)
     {
+        std::size_t size = {};
+
         auto offset = TLayout::template getAttributeOffset<Id>();
-        auto size = writeValue(attributeValue, buffer + offset);
+
+        if constexpr (std::is_trivial_v<T>)
+        {
+            size += writeTrivialValue(attributeValue, buffer + offset);
+        }
+        else
+        {
+            auto typeDescriptor = TLayout::template getAttributeTypeDescriptor<Id>();
+            size += writeComplexValue(attributeValue, buffer + offset, typeDescriptor);
+        }
 
         std::cout << "Attribute: " << static_cast<unsigned int>(Id) << "; Offset: " << offset << ";" << " Size: " << size << std::endl;
 
@@ -138,9 +154,9 @@ TEST_CASE( "Layout test", "[typeMapping]" )
     using LayoutMap = dory::Layout<AttributeId,
         VertexAttribute<AttributeId::meshId, std::size_t>,
         VertexAttribute<AttributeId::position, VertexAttributeType<Point>>, 
-        VertexAttribute<AttributeId::color, Color>,
-        VertexAttribute<AttributeId::normal, Point>,
-        VertexAttribute<AttributeId::textureCoordinates, TextureCoordinates>>;
+        VertexAttribute<AttributeId::color, VertexAttributeType<Color>>,
+        VertexAttribute<AttributeId::normal, VertexAttributeType<Point>>,
+        VertexAttribute<AttributeId::textureCoordinates, VertexAttributeType<TextureCoordinates>>>;
 
     using VertexSerializer = VertexSerializer<LayoutMap, AttributeId>;
 
