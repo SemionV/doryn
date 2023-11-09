@@ -9,17 +9,17 @@ struct TextureCoordinates
 
 struct Color
 {
-    int r {};
-    int g {};
-    int b {};
+    float r {};
+    float g {};
+    float b {};
     TextureCoordinates coords {};
 };
 
 struct Point
 {
-    std::size_t x {};
-    int y {};
-    int z {};
+    float x {};
+    float y {};
+    float z {};
     Color color {};
 };
 
@@ -205,6 +205,18 @@ struct VertexAttribute: public dory::Attribute<AttributeId, id, T>
 {    
 };
 
+template<typename LayoutMap, typename T, typename TMembers, AttributeId attributeId, std::size_t membersCount>
+void testAttributeDescriptor()
+{
+    auto attributeDescriptor = LayoutMap::template getDescriptor<attributeId>();
+    using AttributeDescriptorType = decltype(attributeDescriptor);
+    REQUIRE(std::is_same_v<typename AttributeDescriptorType::type, T>);
+    REQUIRE(std::is_same_v<typename AttributeDescriptorType::memberValueType, TMembers>);
+    REQUIRE(AttributeDescriptorType::size == LayoutMap::template getAttributeSize<attributeId>());
+    REQUIRE(AttributeDescriptorType::offset == LayoutMap::template getAttributeOffset<attributeId>());
+    REQUIRE(AttributeDescriptorType::membersCount == membersCount);
+}
+
 TEST_CASE( "Layout serialization test", "[typeMapping]" )
 {
     using LayoutMap = dory::Layout<AttributeId,
@@ -276,6 +288,11 @@ TEST_CASE( "Layout serialization test", "[typeMapping]" )
 
         cursor += VertexSize;
     }
+
+    testAttributeDescriptor<LayoutMap, std::size_t, std::size_t, AttributeId::meshId, 1>();
+    testAttributeDescriptor<LayoutMap, VertexAttributeType<Point>, float, AttributeId::position, 3>();
+
+    auto positionDescriptor = LayoutMap::getDescriptor<AttributeId::meshId>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
