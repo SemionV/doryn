@@ -134,7 +134,7 @@ namespace dory
     struct TypeDescriptor
     {
         using memberCommonType = typename std::conditional_t<std::is_trivial_v<T>, 
-            T, 
+            void, 
             typename TypeMemberCommonType<T, static_cast<int>(refl::detail::type_info<T>::member_count) - 1>::type>;
     };
 

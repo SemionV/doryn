@@ -289,7 +289,7 @@ TEST_CASE( "Layout serialization test", "[typeMapping]" )
         cursor += VertexSize;
     }
 
-    testAttributeDescriptor<LayoutMap, std::size_t, std::size_t, AttributeId::meshId, 0>();
+    testAttributeDescriptor<LayoutMap, std::size_t, void, AttributeId::meshId, 0>();
     testAttributeDescriptor<LayoutMap, VertexAttributeType<Point>, float, AttributeId::position, 3>();
 }
 
