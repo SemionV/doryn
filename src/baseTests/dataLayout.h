@@ -78,7 +78,7 @@ namespace dory
 
         if constexpr (std::is_trivial_v<T>)
         {
-            count = 1;
+            count = 0;
         }
         else
         {
@@ -106,7 +106,7 @@ namespace dory
         return count;
     }
 
-    template<typename T, std::size_t Idx>
+    template<typename T, int Idx>
     struct TypeMemberCommonType
     {
         using memberValueType = typename refl::detail::member_info<T, Idx>::value_type;
@@ -125,9 +125,17 @@ namespace dory
     };
 
     template<typename T>
+    struct TypeMemberCommonType<T, -1>
+    {
+        using type = void;
+    };
+
+    template<typename T>
     struct TypeDescriptor
     {
-        using memberCommonType = typename TypeMemberCommonType<T, refl::detail::type_info<T>::member_count - 1>::type;
+        using memberCommonType = typename std::conditional_t<std::is_trivial_v<T>, 
+            T, 
+            typename TypeMemberCommonType<T, static_cast<int>(refl::detail::type_info<T>::member_count) - 1>::type>;
     };
 
     template<typename TAttributeId, typename TAttribute, typename... TAttributes>
@@ -224,30 +232,15 @@ namespace dory
             constexpr std::size_t parentAttributesCount = sizeof...(TAttributes);
             if constexpr (attributeId == TAttribute::id)
             {
-                if constexpr (!std::is_trivial_v<AttributeType>)
-                {
-                    using MembersValueType = typename TypeDescriptor<AttributeType>::memberCommonType;
+                using MembersValueType = typename TypeDescriptor<AttributeType>::memberCommonType;
 
-                    return AttributeDescriptor<TAttributeId, 
-                        AttributeType, 
-                        MembersValueType, 
-                        TAttribute::id, 
-                        getAttributeSize(), 
-                        offset,
-                        getReflTypeMembersCount<AttributeType>()>();
-                }
-                else
-                {
-                    using MembersValueType = AttributeType;
-
-                    return AttributeDescriptor<TAttributeId, 
-                        AttributeType, 
-                        MembersValueType, 
-                        TAttribute::id, 
-                        sizeof(AttributeType), 
-                        offset,
-                        0>();
-                }
+                return AttributeDescriptor<TAttributeId, 
+                    AttributeType, 
+                    MembersValueType, 
+                    attributeId,
+                    getAttributeSize(), 
+                    offset,
+                    getReflTypeMembersCount<AttributeType>()>();
             }
             else if constexpr (sizeof...(TAttributes) > 0)
             {
