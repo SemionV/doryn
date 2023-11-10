@@ -116,15 +116,6 @@ namespace dory
     };
 
     template<typename T>
-    struct TypeMemberCommonType<T, 0>
-    {
-        using memberValueType = typename refl::detail::member_info<T, 0>::value_type;
-        using type = typename std::conditional_t<std::is_trivial_v<memberValueType>, 
-            memberValueType, 
-            void>;
-    };
-
-    template<typename T>
     struct TypeMemberCommonType<T, -1>
     {
         using type = void;
