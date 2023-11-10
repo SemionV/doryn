@@ -12,7 +12,6 @@ struct Color
     float r {};
     float g {};
     float b {};
-    TextureCoordinates coords {};
 };
 
 struct Point
@@ -20,7 +19,12 @@ struct Point
     float x {};
     float y {};
     float z {};
-    Color color {};
+};
+
+struct DoublePoint
+{
+    Point p1;
+    Point p2;
 };
 
 struct serializable : refl::attr::usage::field, refl::attr::usage::function
@@ -36,14 +40,12 @@ REFL_TYPE(Color)
     REFL_FIELD(r, serializable())
     REFL_FIELD(g, serializable())
     REFL_FIELD(b, serializable())
-    REFL_FIELD(coords, serializable())
 REFL_END
 
 REFL_TYPE(Point)
     REFL_FIELD(x, serializable())
     REFL_FIELD(y, serializable())
     REFL_FIELD(z, serializable())
-    REFL_FIELD(color, serializable())
 REFL_END
 
 template<typename T>
@@ -66,6 +68,11 @@ REFL_END
 REFL_TYPE(VertexAttributeType<TextureCoordinates>)
     REFL_FIELD(u)
     REFL_FIELD(v)
+REFL_END
+
+REFL_TYPE(VertexAttributeType<DoublePoint>)
+    REFL_FIELD(p1)
+    REFL_FIELD(p2)
 REFL_END
 
 using Byte = std::uint8_t;
@@ -197,7 +204,8 @@ enum class AttributeId
     position,
     color,
     textureCoordinates,
-    normal
+    normal,
+    doublePoint
 };
 
 template<AttributeId id, typename T>
@@ -224,7 +232,8 @@ TEST_CASE( "Layout serialization test", "[typeMapping]" )
         VertexAttribute<AttributeId::position, VertexAttributeType<Point>>, 
         VertexAttribute<AttributeId::color, VertexAttributeType<Color>>,
         VertexAttribute<AttributeId::normal, VertexAttributeType<Point>>,
-        VertexAttribute<AttributeId::textureCoordinates, VertexAttributeType<TextureCoordinates>>>;
+        VertexAttribute<AttributeId::textureCoordinates, VertexAttributeType<TextureCoordinates>>,
+        VertexAttribute<AttributeId::doublePoint, VertexAttributeType<DoublePoint>>>;
 
     std::cout << "Attributes count: " << LayoutMap::getCount() << std::endl; 
 
@@ -236,6 +245,7 @@ TEST_CASE( "Layout serialization test", "[typeMapping]" )
     Color colors[VerticesCount] = { Color {4, 5, 6}, Color {7, 8, 9} };
     TextureCoordinates textureCoordinates[VerticesCount] = { TextureCoordinates{7, 8}, TextureCoordinates{9, 10} };
     Point normals[VerticesCount] = { Point{9, 10, 11}, Point{12, 13, 14} };
+    DoublePoint doublePoints[VerticesCount] = { DoublePoint{ Point{9, 10, 11}, Point{12, 13, 14}}, DoublePoint{ Point{9, 10, 11}, Point{12, 13, 14}} };
     const std::size_t& meshId = 12;
 
     constexpr std::size_t VertexSize = VertexSerializer::getVertexSize();
@@ -250,6 +260,7 @@ TEST_CASE( "Layout serialization test", "[typeMapping]" )
         VertexSerializer::writeAttribute<AttributeId::color>(colors[i], cursor);
         VertexSerializer::writeAttribute<AttributeId::normal>(normals[i], cursor);
         VertexSerializer::writeAttribute<AttributeId::textureCoordinates>(textureCoordinates[i], cursor);
+        VertexSerializer::writeAttribute<AttributeId::doublePoint>(doublePoints[i], cursor);
 
         cursor += VertexSize;
     }
@@ -259,6 +270,7 @@ TEST_CASE( "Layout serialization test", "[typeMapping]" )
     Color colors2[VerticesCount];
     Point normals2[VerticesCount];
     TextureCoordinates textureCoordinates2[VerticesCount];
+    DoublePoint doublePoints2[VerticesCount];
     std::size_t meshId2 {};
 
     for(std::size_t i = 0; i < VerticesCount; ++i)
@@ -268,6 +280,7 @@ TEST_CASE( "Layout serialization test", "[typeMapping]" )
         VertexSerializer::readAttribute<AttributeId::color>(colors2[i], cursor);
         VertexSerializer::readAttribute<AttributeId::normal>(normals2[i], cursor);
         VertexSerializer::readAttribute<AttributeId::textureCoordinates>(textureCoordinates2[i], cursor);
+        VertexSerializer::readAttribute<AttributeId::doublePoint>(doublePoints2[i], cursor);
 
         REQUIRE(meshId2 == meshId);
 
@@ -286,11 +299,19 @@ TEST_CASE( "Layout serialization test", "[typeMapping]" )
         REQUIRE(textureCoordinates2[i].u == textureCoordinates[i].u);
         REQUIRE(textureCoordinates2[i].v == textureCoordinates[i].v);
 
+        REQUIRE(doublePoints2[i].p1.x == doublePoints[i].p1.x);
+        REQUIRE(doublePoints2[i].p1.y == doublePoints[i].p1.y);
+        REQUIRE(doublePoints2[i].p1.z == doublePoints[i].p1.z);
+        REQUIRE(doublePoints2[i].p2.x == doublePoints[i].p2.x);
+        REQUIRE(doublePoints2[i].p2.y == doublePoints[i].p2.y);
+        REQUIRE(doublePoints2[i].p2.z == doublePoints[i].p2.z);
+
         cursor += VertexSize;
     }
 
     testAttributeDescriptor<LayoutMap, std::size_t, void, AttributeId::meshId, 0>();
     testAttributeDescriptor<LayoutMap, VertexAttributeType<Point>, float, AttributeId::position, 3>();
+    testAttributeDescriptor<LayoutMap, VertexAttributeType<DoublePoint>, float, AttributeId::doublePoint, 6>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
@@ -588,21 +609,7 @@ void serialize(std::ostream& os, T&& value, const std::string& indent = "")
 
 TEST_CASE( "refl-cpp serialization test", "[typeMapping]" )
 {
-    Point point {
-        1, 
-        2, 
-        3, 
-        Color 
-        {
-            4, 
-            5, 
-            6,
-            TextureCoordinates
-            {
-                7, 
-                8
-            }
-        }};
+    Point point {1, 2, 3};
 
     serialize(std::cout, point);
 }

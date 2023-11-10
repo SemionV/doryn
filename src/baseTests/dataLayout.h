@@ -107,16 +107,23 @@ namespace dory
     }
 
     template<typename T, int Idx>
-    struct TypeMemberCommonType
+    struct TrivialMemberType
     {
-        using memberValueType = typename refl::detail::member_info<T, Idx>::value_type;
-        using type = typename std::conditional_t<std::is_trivial_v<memberValueType>, 
-            memberValueType, 
-            typename TypeMemberCommonType<T, Idx - 1>::type>;
+        private:
+            using MemberValueType = typename refl::detail::member_info<T, Idx>::value_type;
+            using NestedMemberTrivialType = typename TrivialMemberType<MemberValueType, 
+                static_cast<int>(refl::detail::type_info<MemberValueType>::member_count) - 1>::type;
+
+        public:
+            using type = std::conditional_t<std::is_trivial_v<MemberValueType>, 
+                MemberValueType,
+                std::conditional_t<std::is_trivial_v<NestedMemberTrivialType>, 
+                    NestedMemberTrivialType, 
+                    typename TrivialMemberType<T, Idx - 1>::type>>;
     };
 
     template<typename T>
-    struct TypeMemberCommonType<T, -1>
+    struct TrivialMemberType<T, -1>
     {
         using type = void;
     };
@@ -124,9 +131,9 @@ namespace dory
     template<typename T>
     struct TypeDescriptor
     {
-        using memberCommonType = typename std::conditional_t<std::is_trivial_v<T>, 
+        using trivialMemberType = std::conditional_t<std::is_trivial_v<T>, 
             void, 
-            typename TypeMemberCommonType<T, static_cast<int>(refl::detail::type_info<T>::member_count) - 1>::type>;
+            typename TrivialMemberType<T, static_cast<int>(refl::detail::type_info<T>::member_count) - 1>::type>;
     };
 
     template<typename TAttributeId, typename TAttribute, typename... TAttributes>
@@ -223,11 +230,11 @@ namespace dory
             constexpr std::size_t parentAttributesCount = sizeof...(TAttributes);
             if constexpr (attributeId == TAttribute::id)
             {
-                using MembersValueType = typename TypeDescriptor<AttributeType>::memberCommonType;
+                using TrivialMemberType = typename TypeDescriptor<AttributeType>::trivialMemberType;
 
                 return AttributeDescriptor<TAttributeId, 
                     AttributeType, 
-                    MembersValueType, 
+                    TrivialMemberType, 
                     attributeId,
                     getAttributeSize(), 
                     offset,
