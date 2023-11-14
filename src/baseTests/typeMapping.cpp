@@ -80,11 +80,6 @@ using Byte = std::uint8_t;
 template<typename TLayout, typename TId>
 struct VertexSerializer
 {
-    static constexpr std::size_t getVertexSize() noexcept
-    {
-        return TLayout::getSize();
-    }
-
     template<typename T>
     static std::size_t writeTrivialValue(const T attributeValue, Byte* buffer)
     {
@@ -158,7 +153,7 @@ struct VertexSerializer
     {
         std::size_t size = {};
 
-        auto offset = TLayout::template getAttributeOffset<Id>();
+        auto offset = TLayout::template AttributeOffset<Id>::value;
 
         if constexpr (std::is_trivial_v<T>)
         {
@@ -180,7 +175,7 @@ struct VertexSerializer
     {
         std::size_t size = {};
 
-        auto offset = TLayout::template getAttributeOffset<Id>();
+        auto offset = TLayout::template AttributeOffset<Id>::value;
 
         if constexpr (std::is_trivial_v<T>)
         {
@@ -213,16 +208,23 @@ struct VertexAttribute: public dory::Attribute<AttributeId, id, T>
 {    
 };
 
-template<typename LayoutMap, typename T, typename TMembers, AttributeId attributeId, std::size_t membersCount>
+template<typename LayoutMap, typename T, typename TMembers, AttributeId attributeId, std::size_t membersCount, std::size_t offset>
 void testAttributeDescriptor()
 {
-    auto attributeDescriptor = LayoutMap::template getDescriptor<attributeId>();
-    using AttributeDescriptorType = decltype(attributeDescriptor);
-    REQUIRE(std::is_same_v<typename AttributeDescriptorType::type, T>);
-    REQUIRE(std::is_same_v<typename AttributeDescriptorType::memberValueType, TMembers>);
-    REQUIRE(AttributeDescriptorType::size == LayoutMap::template getAttributeSize<attributeId>());
-    REQUIRE(AttributeDescriptorType::offset == LayoutMap::template getAttributeOffset<attributeId>());
-    REQUIRE(AttributeDescriptorType::membersCount == membersCount);
+    using Descriptor = typename LayoutMap::Attribute<attributeId>;
+
+    REQUIRE(std::is_same_v<typename Descriptor::Type, T>);
+    REQUIRE(std::is_same_v<typename Descriptor::TrivialMemberType, TMembers>);
+    if constexpr (std::is_same_v<TMembers, void>)
+    {
+        REQUIRE(Descriptor::size == sizeof(T));
+    }
+    else
+    {
+        REQUIRE(Descriptor::size == sizeof(TMembers) * membersCount);
+    }
+    REQUIRE(Descriptor::offset == offset);
+    REQUIRE(Descriptor::trivialMemberCount == membersCount);
 }
 
 TEST_CASE( "Layout serialization test", "[typeMapping]" )
@@ -248,7 +250,7 @@ TEST_CASE( "Layout serialization test", "[typeMapping]" )
     DoublePoint doublePoints[VerticesCount] = { DoublePoint{ Point{9, 10, 11}, Point{12, 13, 14}}, DoublePoint{ Point{9, 10, 11}, Point{12, 13, 14}} };
     const std::size_t& meshId = 12;
 
-    constexpr std::size_t VertexSize = VertexSerializer::getVertexSize();
+    constexpr std::size_t VertexSize = LayoutMap::Size::value;
     constexpr std::size_t BufferSize = VertexSize * VerticesCount;
     Byte buffer[VertexSize * VerticesCount];
 
@@ -309,9 +311,9 @@ TEST_CASE( "Layout serialization test", "[typeMapping]" )
         cursor += VertexSize;
     }
 
-    testAttributeDescriptor<LayoutMap, std::size_t, void, AttributeId::meshId, 0>();
-    testAttributeDescriptor<LayoutMap, VertexAttributeType<Point>, float, AttributeId::position, 3>();
-    testAttributeDescriptor<LayoutMap, VertexAttributeType<DoublePoint>, float, AttributeId::doublePoint, 6>();
+    testAttributeDescriptor<LayoutMap, std::size_t, void, AttributeId::meshId, 0, 0>();
+    testAttributeDescriptor<LayoutMap, VertexAttributeType<Point>, float, AttributeId::position, 3, 8>();
+    testAttributeDescriptor<LayoutMap, VertexAttributeType<DoublePoint>, float, AttributeId::doublePoint, 6, 52>();
 }
 
 //-------------------------------------------------------------------------------------------------------------------------

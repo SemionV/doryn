@@ -17,95 +17,6 @@ namespace dory
         using type = T;
     };
 
-    template <typename TAttributeId, class... TAttributes>
-    struct Layout;
-
-    template<typename TAttributeId>
-    struct Layout<TAttributeId>
-    {
-    };
-
-    template<typename TAttributeId, typename T, typename TMemberValueType, TAttributeId Id, std::size_t Size, std::size_t Offset, std::size_t MembersCount>
-    struct AttributeDescriptor
-    {
-        using type = T;
-        using memberValueType = TMemberValueType;
-        static const std::size_t size = Size;
-        static const std::size_t offset = Offset;
-        static const std::size_t membersCount = MembersCount;
-        static const TAttributeId id = Id;
-    };
-
-    template<typename T>
-    constexpr std::size_t getReflTypeSize()
-    {
-        std::size_t size {};
-
-        if constexpr (std::is_trivial_v<T>)
-        {
-            size = sizeof(T);
-        }
-        else
-        {
-            constexpr refl::descriptor::type_descriptor<std::remove_reference_t<T>> typeDescriptor{};
-
-            for_each(typeDescriptor.members, [&](auto member)
-            {
-                if constexpr (is_readable(member))
-                {
-                    using memberType = decltype(member);
-
-                    if constexpr (std::is_trivial_v<typename memberType::value_type>)
-                    {
-                        size += sizeof(typename memberType::value_type);
-                    }
-                    else
-                    {
-                        size += getReflTypeSize<typename memberType::value_type>();
-                    }
-                    
-                }
-            });
-        }
-
-        return size;
-    }
-
-    template<typename T>
-    constexpr std::size_t getReflTypeMembersCount()
-    {
-        std::size_t count {};
-
-        if constexpr (std::is_trivial_v<T>)
-        {
-            count = 0;
-        }
-        else
-        {
-            constexpr refl::descriptor::type_descriptor<std::remove_reference_t<T>> typeDescriptor{};
-
-            for_each(typeDescriptor.members, [&](auto member)
-            {
-                if constexpr (is_readable(member))
-                {
-                    using memberType = decltype(member);
-
-                    if constexpr (std::is_trivial_v<typename memberType::value_type>)
-                    {
-                        ++count;
-                    }
-                    else
-                    {
-                        count += getReflTypeMembersCount<typename memberType::value_type>();
-                    }
-                    
-                }
-            });
-        }
-
-        return count;
-    }
-
     template<typename T, int Idx>
     struct TrivialMemberType
     {
@@ -128,12 +39,152 @@ namespace dory
         using type = void;
     };
 
+    template<typename T, int Idx>
+    struct TypeMembersSize;
+
+    template<typename T, bool isTrivialTypeMember>
+    struct TypeSize
+    {
+        static const std::size_t value = sizeof(T);
+    };
+
+    template<typename T>
+    struct TypeSize<T, false>
+    {
+        static const std::size_t value = TypeMembersSize<T, static_cast<int>(refl::detail::type_info<T>::member_count) - 1>::value;
+    };
+
+    template<typename T, int Idx>
+    struct TypeMembersSize
+    {
+        private:
+            using MemberValueType = typename refl::detail::member_info<T, Idx>::value_type;
+
+        public:
+            static const std::size_t value = TypeSize<MemberValueType, std::is_trivial_v<MemberValueType>>::value + 
+                TypeMembersSize<T, Idx - 1>::value;
+    };
+
+    template<typename T>
+    struct TypeMembersSize<T, -1>
+    {
+        public:
+            static const std::size_t value = 0;
+    };
+
+    template<typename T, int Idx>
+    struct TypeTrivialMembersCount;
+
+    template<typename T, bool isTrivialTypeMember, bool isRoot>
+    struct TypeCount
+    {
+        static const std::size_t value = 1;
+    };
+
+    template<typename T, bool isTrivialTypeMember>
+    struct TypeCount<T, isTrivialTypeMember, true>
+    {
+        static const std::size_t value = 0;
+    };
+
+    template<typename T>
+    struct TypeCount<T, false, true>
+    {
+        static const std::size_t value = TypeTrivialMembersCount<T, static_cast<int>(refl::detail::type_info<T>::member_count) - 1>::value;
+    };
+
+    template<typename T>
+    struct TypeCount<T, false, false>: public TypeCount<T, false, true>
+    {};
+
+    template<typename T, int Idx>
+    struct TypeTrivialMembersCount
+    {
+        private:
+            using MemberValueType = typename refl::detail::member_info<T, Idx>::value_type;
+
+        public:
+            static const std::size_t value = TypeCount<MemberValueType, std::is_trivial_v<MemberValueType>, false>::value + 
+                TypeTrivialMembersCount<T, Idx - 1>::value;
+    };
+
+    template<typename T>
+    struct TypeTrivialMembersCount<T, -1>
+    {
+        public:
+            static const std::size_t value = 0;
+    };
+
     template<typename T>
     struct TypeDescriptor
     {
-        using trivialMemberType = std::conditional_t<std::is_trivial_v<T>, 
+        static const bool isTrivial = std::is_trivial_v<T>;
+
+        using Type = T;
+
+        using TrivialMemberType = std::conditional_t<isTrivial, 
             void, 
             typename TrivialMemberType<T, static_cast<int>(refl::detail::type_info<T>::member_count) - 1>::type>;
+
+        static const std::size_t size = TypeSize<T, isTrivial>::value;
+        static const std::size_t trivialMemberCount = TypeCount<T, isTrivial, true>::value;
+    };
+
+    template<typename T, typename TMemberValueType, std::size_t Size, std::size_t Offset, std::size_t MembersCount>
+    struct AttributeDescriptor
+    {
+        using Type = T;
+        using TrivialMemberType = TMemberValueType;
+        static const std::size_t size = Size;
+        static const std::size_t offset = Offset;
+        static const std::size_t trivialMemberCount = MembersCount;
+    };
+
+    template <typename TAttributeId, class... TAttributes>
+    struct Layout;
+
+    template<typename TAttributeId>
+    struct Layout<TAttributeId>
+    {
+        struct Size
+        {
+            static const std::size_t value = 0;
+        };
+
+        template<TAttributeId attributeId, std::size_t offset>
+        struct AttributeOffset
+        {
+            static const std::size_t value = 0;
+        };
+
+        template<TAttributeId attributeId>
+        struct AttributeSize
+        {
+            static const std::size_t value = 0;
+        };
+
+        template<TAttributeId attributeId>
+        struct AttributeTrivialMemberCount
+        {
+            static const std::size_t value = 0;
+        };
+
+        template<TAttributeId attributeId>
+        struct AttributeTrivialMemberType
+        {
+            using Type = void;
+        };
+
+        template<TAttributeId attributeId>
+        struct AttributeTypeById
+        {
+            using Type = void;
+        };
+
+        static constexpr std::size_t getCount()
+        {
+            return 0;
+        }
     };
 
     template<typename TAttributeId, typename TAttribute, typename... TAttributes>
@@ -141,70 +192,11 @@ namespace dory
     {
         using ParentType = Layout<TAttributeId, TAttributes...>;
         using AttributeType = typename TAttribute::type;
-
-        static constexpr std::size_t getAttributeSize()
-        {
-            return getReflTypeSize<typename TAttribute::type>();
-        }
-
-        template<TAttributeId attributeId>
-        static constexpr std::size_t getAttributeSize()
-        {
-            if constexpr(TAttribute::id == attributeId)
-            {
-                return getAttributeSize();
-            }
-            else if constexpr (sizeof...(TAttributes) > 0)
-            {
-                return ParentType::template getAttributeSize<attributeId>();
-            }
-            else
-            {
-                static_assert(sizeof...(TAttributes) == 0, "Invalid attribute id");
-            }
-        }
-
-        static constexpr std::size_t getSize()
-        {
-            if constexpr (sizeof...(TAttributes) > 0)
-            {
-                return getAttributeSize() + ParentType::getSize();
-            }
-
-            return getAttributeSize();
-        }
+        using AttributeTypeDescriptor = TypeDescriptor<AttributeType>;
 
         static constexpr std::size_t getCount()
         {
-            std::size_t count = 1;
-
-            if constexpr(sizeof...(TAttributes) > 0)
-            {
-                count += ParentType::getCount();
-            }
-
-            return count;
-        }
-
-        template<TAttributeId attributeId, std::size_t offset = 0>
-        static constexpr std::size_t getAttributeOffset()
-        {
-            if constexpr(TAttribute::id == attributeId)
-            {
-                return offset;
-            }
-            else if constexpr (sizeof...(TAttributes) == 1)
-            {
-                return offset + getAttributeSize();
-            }
-            else if constexpr(sizeof...(TAttributes) > 1)
-            {
-                return ParentType::template getAttributeOffset<attributeId, offset + getAttributeSize()>();
-            }
-            else
-            {
-                static_assert(sizeof...(TAttributes) == 0, "Invalid attribute id");
-            }
+            return sizeof...(TAttributes) + 1;
         }
 
         template<TAttributeId attributeId>
@@ -224,30 +216,56 @@ namespace dory
             }
         }
 
-        template<TAttributeId attributeId, std::size_t offset = 0>
-        static constexpr decltype(auto) getDescriptor()
+        struct Size
         {
-            constexpr std::size_t parentAttributesCount = sizeof...(TAttributes);
-            if constexpr (attributeId == TAttribute::id)
-            {
-                using TrivialMemberType = typename TypeDescriptor<AttributeType>::trivialMemberType;
+            static const std::size_t value = AttributeTypeDescriptor::size + ParentType::Size::value;
+        };
 
-                return AttributeDescriptor<TAttributeId, 
-                    AttributeType, 
-                    TrivialMemberType, 
-                    attributeId,
-                    getAttributeSize(), 
-                    offset,
-                    getReflTypeMembersCount<AttributeType>()>();
-            }
-            else if constexpr (sizeof...(TAttributes) > 0)
-            {
-                return ParentType::template getDescriptor<attributeId, offset + getAttributeSize()>();
-            }
-            else
-            {
-                static_assert(sizeof...(TAttributes) == 0, "Invalid attribute id");
-            }
-        }
+        template<TAttributeId attributeId, std::size_t offset = 0>
+        struct AttributeOffset
+        {
+            static const std::size_t value = attributeId == TAttribute::id ? 
+                offset : ParentType::template AttributeOffset<attributeId, offset + AttributeTypeDescriptor::size>::value;
+        };
+
+        template<TAttributeId attributeId>
+        struct AttributeSize
+        {
+            static const std::size_t value = attributeId == TAttribute::id ? 
+                AttributeTypeDescriptor::size : ParentType::template AttributeSize<attributeId>::value;
+        };
+
+        template<TAttributeId attributeId>
+        struct AttributeTrivialMemberCount
+        {
+            static const std::size_t value = attributeId == TAttribute::id ? 
+                AttributeTypeDescriptor::trivialMemberCount : ParentType::template AttributeTrivialMemberCount<attributeId>::value;
+        };
+
+        template<TAttributeId attributeId>
+        struct AttributeTrivialMemberType
+        {
+            using Type = std::conditional_t<attributeId == TAttribute::id,
+                typename AttributeTypeDescriptor::TrivialMemberType,
+                typename ParentType::AttributeTrivialMemberType<attributeId>::Type>;
+        };
+
+        template<TAttributeId attributeId>
+        struct AttributeTypeById
+        {
+            using Type = std::conditional_t<attributeId == TAttribute::id,
+                typename AttributeTypeDescriptor::Type,
+                typename ParentType::AttributeTypeById<attributeId>::Type>;
+        };
+
+        template<TAttributeId attributeId>
+        struct Attribute
+        {
+            using TrivialMemberType = typename AttributeTrivialMemberType<attributeId>::Type;
+            using Type = typename AttributeTypeById<attributeId>::Type;
+            static const std::size_t size = AttributeSize<attributeId>::value;
+            static const std::size_t trivialMemberCount = AttributeTrivialMemberCount<attributeId>::value;
+            static const std::size_t offset = AttributeOffset<attributeId>::value;
+        };
     };
 }
