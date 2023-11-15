@@ -181,7 +181,7 @@ namespace dory
         };
 
         template<auto attributeId>
-        struct AttributeTypeById
+        struct AttributeType
         {
             using Type = void;
         };
@@ -191,18 +191,9 @@ namespace dory
     struct Layout<TAttribute, TAttributes...>: public Layout<TAttributes...>
     {
         using ParentType = Layout<TAttributes...>;
-        using AttributeType = typename TAttribute::type;
-        using AttributeTypeDescriptor = TypeDescriptor<AttributeType>;
+        using AttributeTypeDescriptor = TypeDescriptor<typename TAttribute::type>;
 
         static const std::size_t count = sizeof...(TAttributes) + 1;
-
-        template<auto attributeId>
-        struct AttributeTypeReflection
-        {
-            static const auto value = attributeId == TAttribute::id ? 
-                refl::descriptor::type_descriptor<AttributeType> {} : 
-                ParentType::template AttributeTypeReflection<attributeId>::value;
-        };
 
         struct Size
         {
@@ -239,18 +230,18 @@ namespace dory
         };
 
         template<auto attributeId>
-        struct AttributeTypeById
+        struct AttributeType
         {
             using Type = std::conditional_t<attributeId == TAttribute::id,
                 typename AttributeTypeDescriptor::Type,
-                typename ParentType::AttributeTypeById<attributeId>::Type>;
+                typename ParentType::AttributeType<attributeId>::Type>;
         };
 
         template<auto attributeId>
         struct Attribute
         {
             using TrivialMemberType = typename AttributeTrivialMemberType<attributeId>::Type;
-            using Type = typename AttributeTypeById<attributeId>::Type;
+            using Type = typename AttributeType<attributeId>::Type;
             static const std::size_t size = AttributeSize<attributeId>::value;
             static const std::size_t trivialMemberCount = AttributeTrivialMemberCount<attributeId>::value;
             static const std::size_t offset = AttributeOffset<attributeId>::value;

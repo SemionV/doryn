@@ -161,7 +161,7 @@ struct VertexSerializer
         }
         else
         {
-            using AttributeType = typename TLayout::template AttributeTypeById<Id>::Type;
+            using AttributeType = typename TLayout::template Attribute<Id>::Type;
             auto typeDescriptor = refl::descriptor::type_descriptor<AttributeType> {};
             size += writeComplexValue(attributeValue, buffer + offset, typeDescriptor);
         }
@@ -184,7 +184,7 @@ struct VertexSerializer
         }
         else
         {
-            using AttributeType = typename TLayout::template AttributeTypeById<Id>::Type;
+            using AttributeType = typename TLayout::template Attribute<Id>::Type;
             auto typeDescriptor = refl::descriptor::type_descriptor<AttributeType> {};
             size += readComplexValue(attributeValue, buffer + offset, typeDescriptor);
         }
