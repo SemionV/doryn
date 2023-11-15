@@ -77,7 +77,7 @@ REFL_END
 
 using Byte = std::uint8_t;
 
-template<typename TLayout, typename TId>
+template<typename TLayout>
 struct VertexSerializer
 {
     template<typename T>
@@ -148,7 +148,7 @@ struct VertexSerializer
         return offset;
     }
 
-    template<TId Id, typename T>
+    template<auto Id, typename T>
     static std::size_t writeAttribute(const T& attributeValue, Byte* buffer)
     {
         std::size_t size = {};
@@ -170,7 +170,7 @@ struct VertexSerializer
         return size;
     }
 
-    template<TId Id, typename T>
+    template<auto Id, typename T>
     static std::size_t readAttribute(T& attributeValue, Byte* buffer)
     {
         std::size_t size = {};
@@ -203,11 +203,6 @@ enum class AttributeId
     doublePoint
 };
 
-template<AttributeId id, typename T>
-struct VertexAttribute: public dory::Attribute<AttributeId, id, T>
-{    
-};
-
 template<typename LayoutMap, typename T, typename TMembers, AttributeId attributeId, std::size_t membersCount, std::size_t offset>
 void testAttributeDescriptor()
 {
@@ -229,17 +224,16 @@ void testAttributeDescriptor()
 
 TEST_CASE( "Layout serialization test", "[typeMapping]" )
 {
-    using LayoutMap = dory::Layout<AttributeId,
-        VertexAttribute<AttributeId::meshId, std::size_t>,
-        VertexAttribute<AttributeId::position, VertexAttributeType<Point>>, 
-        VertexAttribute<AttributeId::color, VertexAttributeType<Color>>,
-        VertexAttribute<AttributeId::normal, VertexAttributeType<Point>>,
-        VertexAttribute<AttributeId::textureCoordinates, VertexAttributeType<TextureCoordinates>>,
-        VertexAttribute<AttributeId::doublePoint, VertexAttributeType<DoublePoint>>>;
+    using LayoutMap = dory::Layout<dory::Attribute<AttributeId::meshId, std::size_t>,
+        dory::Attribute<AttributeId::position, VertexAttributeType<Point>>, 
+        dory::Attribute<AttributeId::color, VertexAttributeType<Color>>,
+        dory::Attribute<AttributeId::normal, VertexAttributeType<Point>>,
+        dory::Attribute<AttributeId::textureCoordinates, VertexAttributeType<TextureCoordinates>>,
+        dory::Attribute<AttributeId::doublePoint, VertexAttributeType<DoublePoint>>>;
 
     std::cout << "Attributes count: " << LayoutMap::getCount() << std::endl; 
 
-    using VertexSerializer = VertexSerializer<LayoutMap, AttributeId>;
+    using VertexSerializer = VertexSerializer<LayoutMap>;
 
     constexpr std::size_t VerticesCount = 2;
 
