@@ -4,41 +4,50 @@
 
 namespace dory
 {
-    template<auto Id, typename T>
-    struct Attribute
+    template<typename T, int Idx>
+    struct TrivialMembersType;
+
+    template<typename T, bool isTrivialTypeMember, bool isRoot>
+    struct MemberTrivialType
     {
-        static constexpr auto id = Id;
-        using type = T;
+        using Type = T;
+    };
+
+    template<typename T, bool isTrivialTypeMember>
+    struct MemberTrivialType<T, isTrivialTypeMember, true>
+    {
+        using Type = void;
     };
 
     template<typename T>
-    struct ValueType
+    struct MemberTrivialType<T, false, true>
     {
-        using type = T;
+        using Type = typename TrivialMembersType<T, ((int)(refl::detail::type_info<T>::member_count) - 1)>::Type;
     };
 
+    template<typename T>
+    struct MemberTrivialType<T, false, false>: public MemberTrivialType<T, false, true>
+    {};
+
     template<typename T, int Idx>
-    struct TrivialMemberType
+    struct TrivialMembersType
     {
         private:
             using MemberValueType = typename refl::detail::member_info<T, Idx>::value_type;
-            using NestedMemberTrivialType = typename TrivialMemberType<MemberValueType, 
-                static_cast<int>(refl::detail::type_info<MemberValueType>::member_count) - 1>::type;
+            using NestedMemberTrivialType = MemberTrivialType<MemberValueType, std::is_trivial_v<MemberValueType>, false>;
 
         public:
-            using type = std::conditional_t<std::is_trivial_v<MemberValueType>, 
-                MemberValueType,
-                std::conditional_t<std::is_trivial_v<NestedMemberTrivialType>, 
+            using Type = std::conditional_t<std::is_trivial_v<NestedMemberTrivialType>, 
                     NestedMemberTrivialType, 
-                    typename TrivialMemberType<T, Idx - 1>::type>>;
+                    typename TrivialMembersType<T, Idx - 1>::Type>;
     };
 
     template<typename T>
-    struct TrivialMemberType<T, -1>
+    struct TrivialMembersType<T, -1>
     {
-        using type = void;
+        using Type = void;
     };
-
+    
     template<typename T, int Idx>
     struct TypeMembersSize;
 
@@ -121,23 +130,17 @@ namespace dory
         static const bool isTrivial = std::is_trivial_v<T>;
 
         using Type = T;
-
-        using TrivialMemberType = std::conditional_t<isTrivial, 
-            void, 
-            typename TrivialMemberType<T, static_cast<int>(refl::detail::type_info<T>::member_count) - 1>::type>;
+        using TrivialMemberType = typename MemberTrivialType<T, isTrivial, true>::Type;
 
         static const std::size_t size = TypeSize<T, isTrivial>::value;
         static const std::size_t trivialMemberCount = TypeCount<T, isTrivial, true>::value;
     };
 
-    template<typename T, typename TMemberValueType, std::size_t Size, std::size_t Offset, std::size_t MembersCount>
-    struct AttributeDescriptor
+    template<auto Id, typename T>
+    struct Attribute
     {
-        using Type = T;
-        using TrivialMemberType = TMemberValueType;
-        static const std::size_t size = Size;
-        static const std::size_t offset = Offset;
-        static const std::size_t trivialMemberCount = MembersCount;
+        static constexpr auto id = Id;
+        using type = T;
     };
 
     template <class... TAttributes>
@@ -146,6 +149,8 @@ namespace dory
     template<>
     struct Layout<>
     {
+        static const std::size_t count = 0;
+
         struct Size
         {
             static const std::size_t value = 0;
@@ -180,11 +185,6 @@ namespace dory
         {
             using Type = void;
         };
-
-        static constexpr std::size_t getCount()
-        {
-            return 0;
-        }
     };
 
     template<typename TAttribute, typename... TAttributes>
@@ -194,27 +194,15 @@ namespace dory
         using AttributeType = typename TAttribute::type;
         using AttributeTypeDescriptor = TypeDescriptor<AttributeType>;
 
-        static constexpr std::size_t getCount()
-        {
-            return sizeof...(TAttributes) + 1;
-        }
+        static const std::size_t count = sizeof...(TAttributes) + 1;
 
         template<auto attributeId>
-        static constexpr decltype(auto) getAttributeTypeDescriptor()
+        struct AttributeTypeReflection
         {
-            if constexpr(TAttribute::id == attributeId)
-            {
-                return refl::descriptor::type_descriptor<AttributeType> {};
-            }
-            else if constexpr (sizeof...(TAttributes) > 0)
-            {
-                return ParentType::template getAttributeTypeDescriptor<attributeId>();
-            }
-            else
-            {
-                static_assert(sizeof...(TAttributes) == 0, "Invalid attribute id");
-            }
-        }
+            static const auto value = attributeId == TAttribute::id ? 
+                refl::descriptor::type_descriptor<AttributeType> {} : 
+                ParentType::template AttributeTypeReflection<attributeId>::value;
+        };
 
         struct Size
         {
