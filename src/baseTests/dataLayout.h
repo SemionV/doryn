@@ -192,13 +192,13 @@ namespace dory
         };
     };
 
-    template<typename TAttribute, typename... TAttributes>
-    struct Layout<TAttribute, TAttributes...>: public Layout<TAttributes...>
+    template<auto id, typename T, auto... ids, typename... Ts>
+    struct Layout<Attribute<id, T>, Attribute<ids, Ts>...>: public Layout<Attribute<ids, Ts>...>
     {
-        using ParentType = Layout<TAttributes...>;
-        using AttributeTypeDescriptor = TypeDescriptor<typename TAttribute::Type>;
+        using ParentType = Layout<Attribute<ids, Ts>...>;
+        using AttributeTypeDescriptor = TypeDescriptor<T>;
 
-        static const std::size_t count = sizeof...(TAttributes) + 1;
+        static const std::size_t count = sizeof...(Ts) + 1;
 
         struct Size
         {
@@ -208,28 +208,28 @@ namespace dory
         template<auto attributeId, std::size_t offset = 0>
         struct AttributeOffset
         {
-            static const std::size_t value = attributeId == TAttribute::id ? 
+            static const std::size_t value = attributeId == id ? 
                 offset : ParentType::template AttributeOffset<attributeId, offset + AttributeTypeDescriptor::size>::value;
         };
 
         template<auto attributeId>
         struct AttributeSize
         {
-            static const std::size_t value = attributeId == TAttribute::id ? 
+            static const std::size_t value = attributeId == id ? 
                 AttributeTypeDescriptor::size : ParentType::template AttributeSize<attributeId>::value;
         };
 
         template<auto attributeId>
         struct AttributeTrivialMemberCount
         {
-            static const std::size_t value = attributeId == TAttribute::id ? 
+            static const std::size_t value = attributeId == id ? 
                 AttributeTypeDescriptor::trivialMemberCount : ParentType::template AttributeTrivialMemberCount<attributeId>::value;
         };
 
         template<auto attributeId>
         struct AttributeTrivialMemberType
         {
-            using Type = std::conditional_t<attributeId == TAttribute::id,
+            using Type = std::conditional_t<attributeId == id,
                 typename AttributeTypeDescriptor::TrivialMemberType,
                 typename ParentType::AttributeTrivialMemberType<attributeId>::Type>;
         };
@@ -237,7 +237,7 @@ namespace dory
         template<auto attributeId>
         struct AttributeType
         {
-            using Type = std::conditional_t<attributeId == TAttribute::id,
+            using Type = std::conditional_t<attributeId == id,
                 typename AttributeTypeDescriptor::Type,
                 typename ParentType::AttributeType<attributeId>::Type>;
         };
@@ -259,11 +259,11 @@ namespace dory
         static const std::size_t value = 0;
     };
 
-    template<typename T, typename... Ts>
-    struct LayoutSize<Layout<T, Ts...>>
+    template<auto id, typename T, auto... ids, typename... Ts>
+    struct LayoutSize<Layout<Attribute<id, T>, Attribute<ids, Ts>...>>
     {
-        using AttributeType = typename T::Type;
-        static const std::size_t value = TypeSize<AttributeType, std::is_trivial_v<AttributeType>>::value + LayoutSize<Layout<Ts...>>::value;
+        static const std::size_t value = TypeSize<T, std::is_trivial_v<T>>::value + 
+            LayoutSize<Layout<Attribute<ids, Ts>...>>::value;
     };
 
     template<>
