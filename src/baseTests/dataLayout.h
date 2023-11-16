@@ -4,6 +4,11 @@
 
 namespace dory
 {
+    struct TypeMap
+    {
+        //TODO...
+    };
+
     template<typename T, int Idx>
     struct TrivialMembersType;
 
@@ -34,7 +39,7 @@ namespace dory
     {
         private:
             using MemberValueType = typename refl::detail::member_info<T, Idx>::value_type;
-            using NestedMemberTrivialType = MemberTrivialType<MemberValueType, std::is_trivial_v<MemberValueType>, false>;
+            using NestedMemberTrivialType = typename MemberTrivialType<MemberValueType, std::is_trivial_v<MemberValueType>, false>::Type;
 
         public:
             using Type = std::conditional_t<std::is_trivial_v<NestedMemberTrivialType>, 
@@ -140,7 +145,7 @@ namespace dory
     struct Attribute
     {
         static constexpr auto id = Id;
-        using type = T;
+        using Type = T;
     };
 
     template <class... TAttributes>
@@ -191,7 +196,7 @@ namespace dory
     struct Layout<TAttribute, TAttributes...>: public Layout<TAttributes...>
     {
         using ParentType = Layout<TAttributes...>;
-        using AttributeTypeDescriptor = TypeDescriptor<typename TAttribute::type>;
+        using AttributeTypeDescriptor = TypeDescriptor<typename TAttribute::Type>;
 
         static const std::size_t count = sizeof...(TAttributes) + 1;
 
@@ -247,4 +252,75 @@ namespace dory
             static const std::size_t offset = AttributeOffset<attributeId>::value;
         };
     };
+
+    template<typename T>
+    struct LayoutSize
+    {
+        static const std::size_t value = 0;
+    };
+
+    template<typename T, typename... Ts>
+    struct LayoutSize<Layout<T, Ts...>>
+    {
+        using AttributeType = typename T::Type;
+        static const std::size_t value = TypeSize<AttributeType, std::is_trivial_v<AttributeType>>::value + LayoutSize<Layout<Ts...>>::value;
+    };
+
+    template<>
+    struct LayoutSize<Layout<>>
+    {
+        static const std::size_t value = 0;
+    };
+
+    template<typename T>
+    static const auto LayoutSize_v = LayoutSize<T>::value;
+
+    template<auto attributeId, typename T>
+    struct LayoutAttributeSize
+    {
+        static const std::size_t value = 0;
+    };
+
+    template<auto attributeId, typename T, typename... Ts>
+    struct LayoutAttributeSize<attributeId, Layout<T, Ts...>>
+    {
+        using AttributeType = typename T::Type;
+
+        static const std::size_t value = attributeId == T::id ? 
+            TypeSize<AttributeType, std::is_trivial_v<AttributeType>>::value 
+            : LayoutAttributeSize<attributeId, Layout<Ts...>>::value;
+    };
+
+    template<auto attributeId>
+    struct LayoutAttributeSize<attributeId, Layout<>>
+    {
+        static const std::size_t value = 0;
+    };
+
+    template<auto attributeId, typename T>
+    static const auto LayoutAttributeSize_v = LayoutAttributeSize<attributeId, T>::value;
+
+    template<auto attributeId, typename T>
+    struct LayoutAttributeType
+    {
+        using Type = void;
+    };
+
+    template<auto attributeId, typename T, typename... Ts>
+    struct LayoutAttributeType<attributeId, Layout<T, Ts...>>
+    {
+        using AttributeType = typename T::Type;
+
+        using Type = std::conditional_t<attributeId == T::id,
+            AttributeType, typename LayoutAttributeType<attributeId, Layout<Ts...>>::Type>;
+    };
+
+    template<auto attributeId>
+    struct LayoutAttributeType<attributeId, Layout<>>
+    {
+        using Type = void;
+    };
+
+    template<auto attributeId, typename T>
+    using LayoutAttributeType_t = typename LayoutAttributeType<attributeId, T>::Type;
 }
