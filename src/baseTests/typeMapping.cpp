@@ -161,7 +161,7 @@ struct VertexSerializer
         }
         else
         {
-            using AttributeType = dory::LayoutAttributeType_t<Id, TLayout>;
+            using AttributeType = dory::LayoutAttributeTypeT<Id, TLayout>;
             auto typeDescriptor = refl::descriptor::type_descriptor<AttributeType> {};
             size += writeComplexValue(attributeValue, buffer + offset, typeDescriptor);
         }
@@ -184,7 +184,7 @@ struct VertexSerializer
         }
         else
         {
-            using AttributeType = dory::LayoutAttributeType_t<Id, TLayout>;
+            using AttributeType = dory::LayoutAttributeTypeT<Id, TLayout>;
             auto typeDescriptor = refl::descriptor::type_descriptor<AttributeType> {};
             size += readComplexValue(attributeValue, buffer + offset, typeDescriptor);
         }
@@ -209,9 +209,9 @@ template<typename LayoutMap, typename T, typename TMembers, AttributeId attribut
 void testAttributeDescriptor()
 {
     using Descriptor = typename LayoutMap::Attribute<attributeId>;
-    const auto attributeSize = dory::LayoutAttributeSize_v<attributeId, LayoutMap>;
+    const auto attributeSize = dory::LayoutAttributeSizeV<attributeId, LayoutMap>;
 
-    REQUIRE(std::is_same_v<dory::LayoutAttributeType_t<attributeId, LayoutMap>, T>);
+    REQUIRE(std::is_same_v<dory::LayoutAttributeTypeT<attributeId, LayoutMap>, T>);
     REQUIRE(std::is_same_v<typename Descriptor::TrivialMemberType, TMembers>);
     if constexpr (std::is_same_v<TMembers, void>)
     {
@@ -235,7 +235,7 @@ TEST_CASE( "Layout serialization test", "[typeMapping]" )
         dory::Attribute<AttributeId::doublePoint, VertexAttributeType<DoublePoint>>>;
 
     std::cout << "Attributes count: " << LayoutMap::count << std::endl; 
-    std::cout << "Vertex size: " << dory::LayoutSize_v<LayoutMap> << std::endl; 
+    std::cout << "Vertex size: " << dory::LayoutSizeV<LayoutMap> << std::endl; 
 
     using VertexSerializer = VertexSerializer<LayoutMap>;
 

@@ -52,7 +52,7 @@ namespace dory
     {
         using Type = void;
     };
-    
+
     template<typename T, int Idx>
     struct TypeMembersSize;
 
@@ -273,7 +273,7 @@ namespace dory
     };
 
     template<typename T>
-    static const auto LayoutSize_v = LayoutSize<T>::value;
+    static const auto LayoutSizeV = LayoutSize<T>::value;
 
     template<auto attributeId, typename T>
     struct LayoutAttributeSize
@@ -298,7 +298,7 @@ namespace dory
     };
 
     template<auto attributeId, typename T>
-    static const auto LayoutAttributeSize_v = LayoutAttributeSize<attributeId, T>::value;
+    static const auto LayoutAttributeSizeV = LayoutAttributeSize<attributeId, T>::value;
 
     template<auto attributeId, typename T>
     struct LayoutAttributeType
@@ -322,5 +322,5 @@ namespace dory
     };
 
     template<auto attributeId, typename T>
-    using LayoutAttributeType_t = typename LayoutAttributeType<attributeId, T>::Type;
+    using LayoutAttributeTypeT = typename LayoutAttributeType<attributeId, T>::Type;
 }
