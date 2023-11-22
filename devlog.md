@@ -5,6 +5,9 @@ Tasks:
 * Fill Buffers with mapped data
 * Batch rendering
 
+* Reimplement MatrixCalculator using static polymorphism
+* Reimplement EntityRepository using static polymorphism, no virtual class interfaces
+* Reimplement ServiceLocator
 * Generalize core type of Matricies, so that it can support also double
 * Render Meshes
 * Camera Control
