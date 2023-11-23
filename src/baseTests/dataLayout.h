@@ -13,11 +13,8 @@ namespace dory
     };
 
     template<typename... Ts>
-    struct Layout;
-
-    template<auto id, typename T, auto... ids, typename... Ts>
-    struct Layout<Attribute<id, T>, Attribute<ids, Ts>...>
-    {
+    struct Layout
+    {        
     };
 
     template<typename T>

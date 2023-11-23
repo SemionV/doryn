@@ -4,11 +4,6 @@
 
 namespace dory
 {
-    struct TypeMap
-    {
-        //TODO...
-    };
-
     template<typename T, int Idx>
     struct TrivialMembersType;
 

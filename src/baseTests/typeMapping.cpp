@@ -1,5 +1,6 @@
 #include "dependencies.h"
 #include "dataLayout.h"
+#include "typeMap.h"
 
 struct TextureCoordinates
 {
@@ -314,6 +315,18 @@ TEST_CASE( "Layout serialization test", "[typeMapping]" )
     testAttributeDescriptor<LayoutMap, VertexAttributeType<Point>, float, AttributeId::normal, 3, 32>();
     testAttributeDescriptor<LayoutMap, VertexAttributeType<TextureCoordinates>, int, AttributeId::textureCoordinates, 2, 44>();
     testAttributeDescriptor<LayoutMap, VertexAttributeType<DoublePoint>, float, AttributeId::doublePoint, 6, 52>();
+}
+
+using TypeMap = dory::TypeMap<dory::TypeAssigment<dory::TypePair<Point, VertexAttributeType<Point>>>,
+    dory::TypeAssigment<dory::TypePair<Color, VertexAttributeType<Color>>>,
+    dory::TypeAssigment<dory::TypePair<TextureCoordinates, VertexAttributeType<TextureCoordinates>>>>;
+
+TEST_CASE( "Type Map", "[typeMapping]" )
+{
+    REQUIRE(std::is_same_v<dory::MappedTypeToRightT<Point, TypeMap>, VertexAttributeType<Point>>);
+    REQUIRE(std::is_same_v<dory::MappedTypeToRightT<Color, TypeMap>, VertexAttributeType<Color>>);
+    REQUIRE(std::is_same_v<dory::MappedTypeToRightT<TextureCoordinates, TypeMap>, VertexAttributeType<TextureCoordinates>>);
+    REQUIRE(std::is_same_v<dory::MappedTypeToRightT<DoublePoint, TypeMap>, DoublePoint>);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
