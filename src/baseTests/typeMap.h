@@ -4,14 +4,12 @@
 
 namespace dory
 {
-    template<typename TLeft, typename TRight>
+    template<typename TKey, typename T>
     struct TypePair
     {
-        using LeftType = TLeft;
-        using RightType = TRight;
     };
 
-    template<typename TTypePair, typename TConverter = void>
+    template<typename TTypePair, typename TForwardConverter = void, typename TBackwardConverter = void>
     struct TypeAssigment
     {
     };
@@ -21,28 +19,35 @@ namespace dory
     {
     };
 
-    template<typename T, typename TMap>
-    struct MappedTypeToRight;
+    template<typename TSearch, typename TMap>
+    struct MappedType;
 
-    template<typename T, typename TLeft, typename TRight, typename TConverter, typename... TLefts, typename... TRights, typename... TConverters>
-    struct MappedTypeToRight<T, TypeMap<TypeAssigment<TypePair<TLeft, TRight>, TConverter>,  TypeAssigment<TypePair<TLefts, TRights>, TConverters>...>>
+    template<typename TSearch, typename TKey, typename T, typename TForwardConverter, typename TBackwardConverter, 
+        typename... TKeys, typename... Ts, typename... TForwardConverters, typename... TBackwardConverters>
+    struct MappedType<TSearch, TypeMap<TypeAssigment<TypePair<TKey, T>, TForwardConverter, TBackwardConverter>,  
+                                       TypeAssigment<TypePair<TKeys, Ts>, TForwardConverters, TBackwardConverters>...>>
     {
-        using Type = std::conditional_t<std::is_same_v<TLeft, T>,
-            TRight,
-            typename MappedTypeToRight<T, TypeMap<TypeAssigment<TypePair<TLefts, TRights>, TConverters>...>>::Type>;
+        using Type = std::conditional_t<std::is_same_v<TKey, TSearch>,
+            T,
+            typename MappedType<TSearch, TypeMap<TypeAssigment<TypePair<TKeys, Ts>, TForwardConverters, TBackwardConverters>...>>::Type>;
 
-        using ConverterType = std::conditional_t<std::is_same_v<TLeft, T>,
-                TConverter,
-                typename MappedTypeToRight<T, TypeMap<TypeAssigment<TypePair<TLefts, TRights>, TConverters>...>>::ConverterType>;
+        using ForwardConverterType = std::conditional_t<std::is_same_v<TKey, TSearch>,
+                TForwardConverter,
+                typename MappedType<TSearch, TypeMap<TypeAssigment<TypePair<TKeys, Ts>, TForwardConverters, TBackwardConverters>...>>::ForwardConverterType>;
+        
+        using BackwardConverterType = std::conditional_t<std::is_same_v<TKey, TSearch>,
+                TBackwardConverter,
+                typename MappedType<TSearch, TypeMap<TypeAssigment<TypePair<TKeys, Ts>, TForwardConverters, TBackwardConverters>...>>::BackwardConverterType>;
     };
 
-    template<typename T>
-    struct MappedTypeToRight<T, TypeMap<>>
+    template<typename TSearch>
+    struct MappedType<TSearch, TypeMap<>>
     {
-        using Type = T;
-        using ConverterType = void;
+        using Type = TSearch;
+        using ForwardConverterType = void;
+        using BackwardConverterType = void;
     };
 
-    template<typename T, typename TMap>
-    using MappedTypeToRightT = typename MappedTypeToRight<T, TMap>::Type;
+    template<typename TSearch, typename TMap>
+    using MappedTypeT = typename MappedType<TSearch, TMap>::Type;
 }
