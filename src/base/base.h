@@ -1,5 +1,7 @@
 #pragma once
 
+using Byte = std::uint8_t;
+
 #include "compileTimeTypes.h"
 #include "configuration/configuration.h"
 #include "serviceLocator.h"

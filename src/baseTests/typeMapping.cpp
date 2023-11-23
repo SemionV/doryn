@@ -1,6 +1,8 @@
 #include "dependencies.h"
+#include "base/base.h"
 #include "dataLayout.h"
 #include "typeMap.h"
+#include "serialization/objectSerializer.h"
 
 struct TextureCoordinates
 {
@@ -75,8 +77,6 @@ REFL_TYPE(VertexAttributeType<DoublePoint>)
     REFL_FIELD(p1)
     REFL_FIELD(p2)
 REFL_END
-
-using Byte = std::uint8_t;
 
 template<typename TLayout>
 struct VertexSerializer
