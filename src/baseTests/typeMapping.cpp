@@ -317,7 +317,22 @@ TEST_CASE( "Layout serialization test", "[typeMapping]" )
     testAttributeDescriptor<LayoutMap, VertexAttributeType<DoublePoint>, float, AttributeId::doublePoint, 6, 52>();
 }
 
-using TypeMap = dory::TypeMap<dory::TypeAssigment<dory::TypePair<Point, VertexAttributeType<Point>>>,
+class PointConverter
+{
+    public:
+        static VertexAttributeType<Point> toRight(Point point)
+        {
+            return VertexAttributeType<Point>{ point.x, point.y, point.z + 1};
+        }
+};
+
+template<typename TRight, typename TConverter, typename TLeft>
+TRight convertToRight(TLeft value)
+{
+    return TConverter::toRight(value);
+}
+
+using TypeMap = dory::TypeMap<dory::TypeAssigment<dory::TypePair<Point, VertexAttributeType<Point>>, PointConverter>,
     dory::TypeAssigment<dory::TypePair<Color, VertexAttributeType<Color>>>,
     dory::TypeAssigment<dory::TypePair<TextureCoordinates, VertexAttributeType<TextureCoordinates>>>>;
 
@@ -327,6 +342,15 @@ TEST_CASE( "Type Map", "[typeMapping]" )
     REQUIRE(std::is_same_v<dory::MappedTypeToRightT<Color, TypeMap>, VertexAttributeType<Color>>);
     REQUIRE(std::is_same_v<dory::MappedTypeToRightT<TextureCoordinates, TypeMap>, VertexAttributeType<TextureCoordinates>>);
     REQUIRE(std::is_same_v<dory::MappedTypeToRightT<DoublePoint, TypeMap>, DoublePoint>);
+
+    using DestinationType = typename dory::MappedTypeToRight<Point, TypeMap>::Type;
+    using ConverterType = typename dory::MappedTypeToRight<Point, TypeMap>::ConverterType;
+
+    Point point = {1, 2, 3};
+    auto vertexPoint = convertToRight<DestinationType, ConverterType>(point);
+    REQUIRE(vertexPoint.x == 1);
+    REQUIRE(vertexPoint.y == 2);
+    REQUIRE(vertexPoint.z == 4);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
