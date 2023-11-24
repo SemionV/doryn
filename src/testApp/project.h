@@ -63,7 +63,7 @@ namespace testApp
 
                 auto viewIdFactory = serviceLocator->getViewIdFactory();
                 auto viewRepository = serviceLocator->getViewRepository();
-                auto view = viewRepository->store(dory::domain::entity::View(viewIdFactory->generate(), window.id, viewControllerNode.id, camera.id, viewport));
+                viewRepository->store(dory::domain::entity::View(viewIdFactory->generate(), window.id, viewControllerNode.id, camera.id, viewport));
 
                 viewController->initialize(viewControllerNode.id, context);
 

@@ -31,7 +31,7 @@ namespace dory::domain
 
         double ToMilliseconds() const
         {
-            return (duration / (double)unitsPerSecond) * UnitScale::Milli;
+            return (duration / (double)unitsPerSecond) * (double)UnitScale::Milli;
         }
     };
 
@@ -40,7 +40,7 @@ namespace dory::domain
         public:
             static double ToMilliseconds(TimeSpan timeSpan)
             {
-                return (timeSpan.duration / (double)timeSpan.unitsPerSecond) * UnitScale::Milli;
+                return (timeSpan.duration / (double)timeSpan.unitsPerSecond) * (double)UnitScale::Milli;
             }
     };
 

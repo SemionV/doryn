@@ -368,6 +368,12 @@ TEST_CASE( "Type Map", "[typeMapping]" )
     REQUIRE(pointBack.z == point.z);
 }
 
+TEST_CASE( "Print reflected object", "[typeMapping]" )
+{
+    VertexAttributeType<DoublePoint> dPoint { Point{9, 10, 11}, Point{12, 13, 14}};
+    dory::serialization::ObjectPrinter::print(dPoint);
+}
+
 //-------------------------------------------------------------------------------------------------------------------------
 
 template <class T>
@@ -389,9 +395,6 @@ template <class T>
 struct MemberType : MemberPointerType<typename std::remove_cv<T>::type> 
 {    
 };
-
-template <class T>
-using member_type_t = typename MemberType<T>::type;
 
 template<typename TMemberPointer, TMemberPointer memberPointer>
 struct MemberMapping
@@ -661,7 +664,7 @@ void serialize(std::ostream& os, T&& value, const std::string& indent = "")
     });
 }
 
-TEST_CASE( "refl-cpp serialization test", "[typeMapping]" )
+TEST_CASE( "refl-cpp serialization test", "[.][typeMapping]" )
 {
     Point point {1, 2, 3};
 

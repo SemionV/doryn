@@ -1,62 +1,103 @@
 #pragma once
 
+#include "baseTests/dependencies.h"
+
 namespace dory::serialization
 {
-    template<typename TLayout>
     class ObjectProcessor
     {
     private:
-        template<typename T, typename TDescriptor, template<typename, typename> class TTrivialMemberPolicy>
-        static std::size_t processComplexValue(const T& attributeValue, Byte* buffer, TDescriptor typeDescriptor)
+        template<template<typename> class TTrivialValuePolicy, typename TMemberPolicy, typename T>
+        static std::size_t processCompoundObject(T& object, Byte* buffer)
         {
             std::size_t offset = {};
 
-            for_each(typeDescriptor.members, [&](auto member)
+            for_each(refl::reflect(object).members, [&](auto member)
             {
                 if constexpr (is_readable(member))
                 {
                     using MemberDescriptorType = decltype(member);
+                    auto& memberValue = object.*MemberDescriptorType::pointer;
 
-                    if constexpr (std::is_trivial_v<typename MemberDescriptorType::value_type>)
+                    if constexpr (!std::is_same_v<TMemberPolicy, void>)
                     {
-                        offset += TTrivialMemberPolicy<T, MemberDescriptorType>::process(attributeValue, member);
+                        TMemberPolicy::process((std::string)MemberDescriptorType::name);
                     }
-                    else
-                    {
-                        refl::descriptor::type_descriptor<typename MemberDescriptorType::value_type> typeDescriptor{};
-                        offset += processComplexValue(member(attributeValue), buffer + offset, typeDescriptor);
-                    }
+
+                    offset += process<TTrivialValuePolicy, TMemberPolicy>(memberValue, buffer + offset);
                 }
             });
 
             return offset;
         }
-    };
 
-    template<typename T, typename TMemberDescriptor>
-    struct WriteTrivialMemberBinary
-    {
-        static std::size_t process(const T& object, TMemberDescriptor& memberDescriptor, Byte* buffer)
+    public:
+        template<template<typename> class TTrivialValuePolicy, typename TMemberPolicy = void, typename T>
+        static std::size_t process(T& object, Byte* buffer)
         {
-            auto size = sizeof(typename TMemberDescriptor::value_type);
-            memcpy(buffer, &memberDescriptor(object), size);
+            std::size_t size;
+
+            if constexpr (std::is_trivial_v<T>)
+            {
+                size = sizeof(object);
+                TTrivialValuePolicy<T>::process(object, size, buffer);
+            }
+            else
+            {
+                size = processCompoundObject<TTrivialValuePolicy, TMemberPolicy>(object, buffer);
+            }
+
             return size;
         }
     };
 
-    template<typename T, typename TMemberDescriptor>
-    struct ReadTrivialMemberBinary
+    template<typename T>
+    struct WriteValueBinary
     {
-        static std::size_t process(const T& object, TMemberDescriptor& memberDescriptor, Byte* buffer)
+        static void process(T& value, std::size_t size, Byte* buffer)
         {
-            auto size = sizeof(typename TMemberDescriptor::value_type);
-            memcpy(&memberDescriptor(object), buffer, size);
-            return size;
+            memcpy(buffer, &value, size);
         }
     };
 
-    class ObjectSerializerBinary
+    template<typename T>
+    struct ReadValueBinary
+    {
+        static void process(T& value, std::size_t size, Byte* buffer)
+        {
+            memcpy(&value, buffer, size);
+        }
+    };
+
+    class ObjectBinarySerializer
     {
         
+    };
+
+    struct PrintMemberName
+    {
+        static void process(const std::string& memberName)
+        {
+            std::cout << memberName << ": ";
+        }
+    };
+
+    template<typename T>
+    struct PrintValue
+    {
+        static void process(T& value, std::size_t size, Byte* buffer)
+        {
+            std::cout << value << std::endl;
+        }
+    };
+
+    class ObjectPrinter
+    {
+    public:
+        template<typename T>
+        static void print(T& object)
+        {
+            ObjectProcessor::process<PrintValue, PrintMemberName>(object, nullptr);
+        }
     };
 }

@@ -26,7 +26,7 @@ namespace basics_foldtraverse_cpp
         int value;
         Node* left;
         Node* right;
-        Node(int i = 0) : value(i), left(nullptr), right(nullptr) {}
+        explicit Node(int i = 0) : value(i), left(nullptr), right(nullptr) {}
         //...
     };
     //Member pointers to Node
