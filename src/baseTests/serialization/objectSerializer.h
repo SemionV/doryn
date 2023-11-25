@@ -8,7 +8,7 @@ namespace dory::serialization
     {
     private:
         template<template<typename> class TTrivialValuePolicy, typename TMemberPolicy, typename T>
-        static std::size_t processCompoundObject(T& object, Byte* buffer)
+        static std::size_t processCompoundObject(T&& object, Byte* buffer)
         {
             std::size_t offset = {};
 
@@ -33,18 +33,20 @@ namespace dory::serialization
 
     public:
         template<template<typename> class TTrivialValuePolicy, typename TMemberPolicy = void, typename T>
-        static std::size_t process(T& object, Byte* buffer)
+        static std::size_t process(T&& object, Byte* buffer)
         {
             std::size_t size;
 
-            if constexpr (std::is_trivial_v<T>)
+            using ValueType = std::remove_reference_t<T>;
+
+            if constexpr (std::is_trivial_v<ValueType>)
             {
                 size = sizeof(object);
-                TTrivialValuePolicy<T>::process(object, size, buffer);
+                TTrivialValuePolicy<T>::process(std::forward<T>(object), size, buffer);
             }
             else
             {
-                size = processCompoundObject<TTrivialValuePolicy, TMemberPolicy>(object, buffer);
+                size = processCompoundObject<TTrivialValuePolicy, TMemberPolicy>(std::forward<T>(object), buffer);
             }
 
             return size;
@@ -54,7 +56,7 @@ namespace dory::serialization
     template<typename T>
     struct WriteValueBinary
     {
-        static void process(T& value, std::size_t size, Byte* buffer)
+        static void process(T&& value, std::size_t size, Byte* buffer)
         {
             memcpy(buffer, &value, size);
         }
@@ -63,7 +65,7 @@ namespace dory::serialization
     template<typename T>
     struct ReadValueBinary
     {
-        static void process(T& value, std::size_t size, Byte* buffer)
+        static void process(T&& value, std::size_t size, Byte* buffer)
         {
             memcpy(&value, buffer, size);
         }
@@ -85,7 +87,7 @@ namespace dory::serialization
     template<typename T>
     struct PrintValue
     {
-        static void process(T& value, std::size_t size, Byte* buffer)
+        static void process(T&& value, std::size_t size, Byte* buffer)
         {
             std::cout << value << std::endl;
         }
@@ -95,9 +97,9 @@ namespace dory::serialization
     {
     public:
         template<typename T>
-        static void print(T& object)
+        static void print(T&& object)
         {
-            ObjectProcessor::process<PrintValue, PrintMemberName>(object, nullptr);
+            ObjectProcessor::process<PrintValue, PrintMemberName>(std::forward<T>(object), nullptr);
         }
     };
 }
