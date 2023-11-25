@@ -372,6 +372,7 @@ TEST_CASE( "Print reflected object", "[typeMapping]" )
 {
     VertexAttributeType<DoublePoint> dPoint { Point{9, 10, 11}, Point{12, 13, 14}};
     dory::serialization::ObjectPrinter::print(dPoint);
+    dory::serialization::ObjectPrinter::print(VertexAttributeType<DoublePoint>{ Point{9, 10, 11}, Point{12, 13, 14}});
 
     dory::serialization::ObjectPrinter::print(999);
 }
