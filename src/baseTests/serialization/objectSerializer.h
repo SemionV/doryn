@@ -7,11 +7,9 @@ namespace dory::serialization
     class ObjectProcessor
     {
     private:
-        template<template<typename> class TTrivialValuePolicy, typename TMemberPolicy, typename T>
-        static std::size_t processCompoundObject(T&& object, Byte* buffer)
+        template<template<typename> class TTrivialValuePolicy, typename TMemberPolicy, typename T, typename TContext>
+        static void processCompoundObject(T&& object, TContext& context)
         {
-            std::size_t offset = {};
-
             for_each(refl::reflect(object).members, [&](auto member)
             {
                 if constexpr (is_readable(member))
@@ -21,75 +19,72 @@ namespace dory::serialization
 
                     if constexpr (!std::is_same_v<TMemberPolicy, void>)
                     {
-                        TMemberPolicy::process((std::string)MemberDescriptorType::name);
+                        TMemberPolicy::process((std::string)MemberDescriptorType::name, context);
                     }
 
-                    offset += process<TTrivialValuePolicy, TMemberPolicy>(memberValue, buffer + offset);
+                    process<TTrivialValuePolicy, TMemberPolicy>(memberValue, context);
                 }
             });
-
-            return offset;
         }
 
     public:
-        template<template<typename> class TTrivialValuePolicy, typename TMemberPolicy = void, typename T>
-        static std::size_t process(T&& object, Byte* buffer)
+        template<template<typename> class TTrivialValuePolicy, typename TMemberPolicy = void, typename T, typename TContext>
+        static void process(T&& object, TContext& context)
         {
-            std::size_t size;
-
             using ValueType = std::remove_reference_t<T>;
 
             if constexpr (std::is_trivial_v<ValueType>)
             {
-                size = sizeof(object);
-                TTrivialValuePolicy<T>::process(std::forward<T>(object), size, buffer);
+                TTrivialValuePolicy<T>::process(std::forward<T>(object), context);
             }
             else
             {
-                size = processCompoundObject<TTrivialValuePolicy, TMemberPolicy>(std::forward<T>(object), buffer);
+                processCompoundObject<TTrivialValuePolicy, TMemberPolicy>(std::forward<T>(object), context);
             }
-
-            return size;
         }
+    };
+
+    struct BufferContext
+    {
+        Byte* buffer;
     };
 
     template<typename T>
     struct WriteValueBinary
     {
-        static void process(T&& value, std::size_t size, Byte* buffer)
+        static void process(T&& value, BufferContext& context)
         {
-            memcpy(buffer, &value, size);
+            auto size = sizeof(value);
+            memcpy(context.buffer, &value, size);
+            context.buffer += size;
         }
     };
 
     template<typename T>
     struct ReadValueBinary
     {
-        static void process(T&& value, std::size_t size, Byte* buffer)
+        static void process(T&& value, BufferContext& context)
         {
-            memcpy(&value, buffer, size);
+            auto size = sizeof(value);
+            memcpy(&value, context.buffer, size);
+            context.buffer += size;
         }
-    };
-
-    class ObjectBinarySerializer
-    {
-        
     };
 
     struct PrintMemberName
     {
-        static void process(const std::string& memberName)
+        static void process(const std::string& memberName, std::ostream& stream)
         {
-            std::cout << memberName << ": ";
+            stream << memberName << ": ";
         }
     };
 
     template<typename T>
     struct PrintValue
     {
-        static void process(T&& value, std::size_t size, Byte* buffer)
+        static void process(T&& value, std::ostream& stream)
         {
-            std::cout << value << std::endl;
+            stream << value << std::endl;
         }
     };
 
@@ -99,7 +94,7 @@ namespace dory::serialization
         template<typename T>
         static void print(T&& object)
         {
-            ObjectProcessor::process<PrintValue, PrintMemberName>(std::forward<T>(object), nullptr);
+            ObjectProcessor::process<PrintValue, PrintMemberName>(std::forward<T>(object), std::cout);
         }
     };
 }
