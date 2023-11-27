@@ -7,9 +7,11 @@ namespace dory::serialization
     class ObjectProcessor
     {
     private:
-        template<template<typename> class TTrivialValuePolicy, typename TMemberPolicy, typename T, typename TContext>
+        template<typename T, typename TContext>
         static void processCompoundObject(T&& object, TContext& context)
         {
+            context.processBeginObject(object);
+
             for_each(refl::reflect(object).members, [&](auto member)
             {
                 if constexpr (is_readable(member))
@@ -17,74 +19,67 @@ namespace dory::serialization
                     using MemberDescriptorType = decltype(member);
                     auto& memberValue = object.*MemberDescriptorType::pointer;
 
-                    if constexpr (!std::is_same_v<TMemberPolicy, void>)
-                    {
-                        TMemberPolicy::process((std::string)MemberDescriptorType::name, context);
-                    }
+                    context.processMemberName((std::string)MemberDescriptorType::name);
 
-                    process<TTrivialValuePolicy, TMemberPolicy>(memberValue, context);
+                    process(memberValue, context);
                 }
             });
+
+            context.processEndObject();
         }
 
     public:
-        template<template<typename> class TTrivialValuePolicy, typename TMemberPolicy = void, typename T, typename TContext>
+        template<typename T, typename TContext>
         static void process(T&& object, TContext& context)
         {
             using ValueType = std::remove_reference_t<T>;
 
             if constexpr (std::is_trivial_v<ValueType>)
             {
-                TTrivialValuePolicy<T>::process(std::forward<T>(object), context);
+                context.processValue(std::forward<T>(object));
             }
             else
             {
-                processCompoundObject<TTrivialValuePolicy, TMemberPolicy>(std::forward<T>(object), context);
+                processCompoundObject(std::forward<T>(object), context);
             }
         }
     };
 
-    struct BufferContext
+    class ObjectPrintingProcessor
     {
-        Byte* buffer;
-    };
+    private:
+        std::ostream& stream;
+        unsigned int nestingLevel {};
 
-    template<typename T>
-    struct WriteValueBinary
-    {
-        static void process(T&& value, BufferContext& context)
-        {
-            auto size = sizeof(value);
-            memcpy(context.buffer, &value, size);
-            context.buffer += size;
-        }
-    };
+    public:
+        explicit ObjectPrintingProcessor(std::ostream &stream) :
+                stream(stream) {}
 
-    template<typename T>
-    struct ReadValueBinary
-    {
-        static void process(T&& value, BufferContext& context)
+        void processMemberName(const std::string& memberName)
         {
-            auto size = sizeof(value);
-            memcpy(&value, context.buffer, size);
-            context.buffer += size;
-        }
-    };
-
-    struct PrintMemberName
-    {
-        static void process(const std::string& memberName, std::ostream& stream)
-        {
+            for(std::size_t i = 0; i < nestingLevel - 1; ++i)
+            {
+                stream << "    ";
+            }
             stream << memberName << ": ";
         }
-    };
 
-    template<typename T>
-    struct PrintValue
-    {
-        static void process(T&& value, std::ostream& stream)
+        template<typename T>
+        void processValue(T&& value)
         {
             stream << value << std::endl;
+        }
+
+        template<typename T>
+        void processBeginObject(T& object)
+        {
+            ++nestingLevel;
+            stream << std::endl;
+        }
+
+        void processEndObject()
+        {
+            --nestingLevel;
         }
     };
 
@@ -94,7 +89,9 @@ namespace dory::serialization
         template<typename T>
         static void print(T&& object)
         {
-            ObjectProcessor::process<PrintValue, PrintMemberName>(std::forward<T>(object), std::cout);
+            ObjectPrintingProcessor printingProcessor(std::cout);
+
+            ObjectProcessor::process(std::forward<T>(object), printingProcessor);
         }
     };
 }
