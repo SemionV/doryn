@@ -57,11 +57,8 @@ namespace dory::serialization
 
         void processMemberName(const std::string& memberName)
         {
-            for(std::size_t i = 0; i < nestingLevel - 1; ++i)
-            {
-                stream << "    ";
-            }
-            stream << memberName << ": ";
+            printIndent();
+            stream << "\"" << memberName << "\"" << ": ";
         }
 
         template<typename T>
@@ -73,13 +70,29 @@ namespace dory::serialization
         template<typename T>
         void processBeginObject(T& object)
         {
+            if(nestingLevel > 0)
+            {
+                stream << std::endl;
+            }
+            printIndent();
+            stream << "{" << std::endl;
             ++nestingLevel;
-            stream << std::endl;
         }
 
         void processEndObject()
         {
             --nestingLevel;
+            printIndent();
+            stream << "}" << std::endl;
+        }
+
+    private:
+        void printIndent()
+        {
+            for(std::size_t i = 0; i < nestingLevel; ++i)
+            {
+                stream << "    ";
+            }
         }
     };
 
