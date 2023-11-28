@@ -79,6 +79,10 @@ namespace dory::serialization
         void processValue(T&& value)
         {
             stream << value;
+            if(nestingLevel == 0)
+            {
+                stream << std::endl;
+            }
         }
 
         template<typename T>
@@ -99,7 +103,7 @@ namespace dory::serialization
             stream << std::endl;
             printIndent();
             stream << "}";
-            
+
             if(nestingLevel == 0)
             {
                 stream << std::endl;
