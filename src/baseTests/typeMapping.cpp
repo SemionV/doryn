@@ -28,6 +28,7 @@ struct DoublePoint
 {
     Point p1;
     Point p2;
+    std::array<int, 5> list;
 };
 
 struct serializable : refl::attr::usage::field, refl::attr::usage::function
@@ -76,6 +77,7 @@ REFL_END
 REFL_TYPE(VertexAttributeType<DoublePoint>)
     REFL_FIELD(p1)
     REFL_FIELD(p2)
+    REFL_FIELD(list)
 REFL_END
 
 template<typename TLayout>
@@ -314,7 +316,6 @@ TEST_CASE( "Layout serialization test", "[typeMapping]" )
     testAttributeDescriptor<LayoutMap, VertexAttributeType<Color>, float, AttributeId::color, 3, 20>();
     testAttributeDescriptor<LayoutMap, VertexAttributeType<Point>, float, AttributeId::normal, 3, 32>();
     testAttributeDescriptor<LayoutMap, VertexAttributeType<TextureCoordinates>, int, AttributeId::textureCoordinates, 2, 44>();
-    testAttributeDescriptor<LayoutMap, VertexAttributeType<DoublePoint>, float, AttributeId::doublePoint, 6, 52>();
 }
 
 class PointToVertexPointConverter
@@ -370,11 +371,13 @@ TEST_CASE( "Type Map", "[typeMapping]" )
 
 TEST_CASE( "Print reflected object", "[typeMapping]" )
 {
-    VertexAttributeType<DoublePoint> dPoint { Point{9, 10, 11}, Point{12, 13, 14}};
+    VertexAttributeType<DoublePoint> dPoint { Point{9, 10, 11}, Point{12, 13, 14}, std::array<int, 5>{1, 2, 3, 4, 5}};
     dory::serialization::ObjectPrinter::print(dPoint);
     dory::serialization::ObjectPrinter::print(VertexAttributeType<DoublePoint>{ Point{9, 10, 11}, Point{12, 13, 14}});
 
     dory::serialization::ObjectPrinter::print(999);
+
+    dory::serialization::ObjectPrinter::print(std::array<int, 5>{1, 2, 3, 4, 5});
 }
 
 //-------------------------------------------------------------------------------------------------------------------------

@@ -4,95 +4,159 @@
 
 namespace dory::serialization
 {
-    class ObjectProcessor
+    class ObjectVisitor
     {
     private:
+        template<typename T>
+        static std::size_t getClassMemberCount(refl::descriptor::type_descriptor<T> typeDescriptor)
+        {
+            std::size_t count {};
+            visitClassMembers(typeDescriptor, [&count](auto memberDescriptor) {
+                ++count;
+            });
+
+            return count;
+        }
+
+        template<typename T, typename F>
+        static void visitClassMembers(refl::descriptor::type_descriptor<T> typeDescriptor, F functor)
+        {
+            for_each(typeDescriptor.members, [&](auto memberDescriptor)
+            {
+                //so far only for fields, possible to add support for member functions
+                if constexpr (is_readable(memberDescriptor) && is_field(memberDescriptor))
+                {
+                    functor(memberDescriptor);
+                }
+            });
+        }
+
         template<typename T, typename TContext>
-        static void processCompoundObject(T&& object, TContext& context)
+        static void visitClassMember(T& memberValue, const std::string& memberName, const std::size_t i, const std::size_t memberCount, TContext& context)
+        {
+            context.processBeginMember(memberName, i);
+            visit(memberValue, context);
+            context.processEndMember(i == memberCount - 1);
+        }
+
+        template<typename T, auto N, typename TContext>
+        static void visitArray(std::array<T, N>& object, TContext& context)
+        {
+            context.processBeginCollection();
+
+            for(std::size_t i {}; i < N; ++i)
+            {
+                context.processBeginCollectionItem(i);
+                context.processValue(object[i]);
+                context.processEndCollectionItem(i == N - 1);
+            }
+
+            context.processEndCollection();
+        }
+
+    public:
+        template<typename T, typename TContext>
+        requires(std::is_trivial_v<std::remove_reference_t<T>>)
+        static void visit(T&& object, TContext& context)
+        {
+            context.processValue(std::forward<T>(object));
+        }
+
+        template<typename T, typename TContext>
+        requires(std::is_class_v<std::remove_reference_t<T>>)
+        static void visit(T&& object, TContext& context)
         {
             context.processBeginObject(object);
-            bool firstMember = true;
+            auto typeDescriptor = refl::reflect(object);
+            const auto memberCount = getClassMemberCount(typeDescriptor);
+            std::size_t i = {};
 
-            for_each(refl::reflect(object).members, [&](auto member)
-            {
-                if constexpr (is_readable(member))
+            visitClassMembers(typeDescriptor, [&object, &context, &i, memberCount](auto memberDescriptor) {
+                if constexpr (is_field(memberDescriptor))
                 {
-                    using MemberDescriptorType = decltype(member);
+                    using MemberDescriptorType = decltype(memberDescriptor);
+
                     auto& memberValue = object.*MemberDescriptorType::pointer;
-
-                    context.processBeginMember((std::string)MemberDescriptorType::name, firstMember);
-
-                    process(memberValue, context);
-
-                    context.processEndMember();
-
-                    firstMember = false;
+                    const auto& memberName = (std::string) MemberDescriptorType::name;
+                    visitClassMember(memberValue, memberName, i, memberCount, context);
                 }
+
+                ++i;
             });
 
             context.processEndObject();
         }
 
-    public:
-        template<typename T, typename TContext>
-        static void process(T&& object, TContext& context)
+        template<typename T, auto N, typename TContext>
+        static void visit(std::array<T, N>& object, TContext& context)
         {
-            using ValueType = std::remove_reference_t<T>;
+            visitArray(object, context);
+        }
 
-            if constexpr (std::is_trivial_v<ValueType>)
-            {
-                context.processValue(std::forward<T>(object));
-            }
-            else
-            {
-                processCompoundObject(std::forward<T>(object), context);
-            }
+        template<typename T, auto N, typename TContext>
+        static void visit(std::array<T, N>&& object, TContext& context)
+        {
+            visitArray(object, context);
         }
     };
 
-    class ObjectPrintingProcessor
+    class ObjectJsonPrintingPolicy
     {
     private:
         std::ostream& stream;
         unsigned int nestingLevel {};
 
     public:
-        explicit ObjectPrintingProcessor(std::ostream &stream) :
+        explicit ObjectJsonPrintingPolicy(std::ostream &stream) :
                 stream(stream) {}
 
-        void processBeginMember(const std::string& memberName, bool firstMember)
+        void processBeginCollection()
         {
-            if(!firstMember)
+            stream << "[" << std::endl;
+            ++nestingLevel;
+        }
+
+        void processEndCollection()
+        {
+            --nestingLevel;
+            printIndent();
+            stream << "]";
+        }
+
+        void processBeginCollectionItem(std::size_t i)
+        {
+            printIndent();
+        }
+
+        void processEndCollectionItem(bool lastItem)
+        {
+            if(!lastItem)
             {
-                stream << "," << std::endl;
+                stream << ",";
             }
 
+            stream << std::endl;
+        }
+
+        void processBeginMember(const std::string& memberName, std::size_t i)
+        {
             printIndent();
             stream << "\"" << memberName << "\"" << ": ";
         }
 
-        void processEndMember()
+        void processEndMember(bool lastMember)
         {
-        }
-
-        template<typename T>
-        void processValue(T&& value)
-        {
-            stream << value;
-            if(nestingLevel == 0)
+            if(!lastMember)
             {
-                stream << std::endl;
+                stream << ",";
             }
+
+            stream << std::endl;
         }
 
         template<typename T>
         void processBeginObject(T& object)
         {
-            if(nestingLevel > 0)
-            {
-                stream << std::endl;
-            }
-            printIndent();
             stream << "{" << std::endl;
             ++nestingLevel;
         }
@@ -100,14 +164,14 @@ namespace dory::serialization
         void processEndObject()
         {
             --nestingLevel;
-            stream << std::endl;
             printIndent();
             stream << "}";
+        }
 
-            if(nestingLevel == 0)
-            {
-                stream << std::endl;
-            }
+        template<typename T>
+        void processValue(T&& value)
+        {
+            stream << value;
         }
 
     private:
@@ -126,9 +190,11 @@ namespace dory::serialization
         template<typename T>
         static void print(T&& object)
         {
-            ObjectPrintingProcessor printingProcessor(std::cout);
+            ObjectJsonPrintingPolicy printingPolicy(std::cout);
 
-            ObjectProcessor::process(std::forward<T>(object), printingProcessor);
+            ObjectVisitor::visit(std::forward<T>(object), printingPolicy);
+
+            std::cout << std::endl;
         }
     };
 }
