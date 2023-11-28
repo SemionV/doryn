@@ -11,6 +11,7 @@ namespace dory::serialization
         static void processCompoundObject(T&& object, TContext& context)
         {
             context.processBeginObject(object);
+            bool firstMember = true;
 
             for_each(refl::reflect(object).members, [&](auto member)
             {
@@ -19,9 +20,13 @@ namespace dory::serialization
                     using MemberDescriptorType = decltype(member);
                     auto& memberValue = object.*MemberDescriptorType::pointer;
 
-                    context.processMemberName((std::string)MemberDescriptorType::name);
+                    context.processBeginMember((std::string)MemberDescriptorType::name, firstMember);
 
                     process(memberValue, context);
+
+                    context.processEndMember();
+
+                    firstMember = false;
                 }
             });
 
@@ -55,16 +60,25 @@ namespace dory::serialization
         explicit ObjectPrintingProcessor(std::ostream &stream) :
                 stream(stream) {}
 
-        void processMemberName(const std::string& memberName)
+        void processBeginMember(const std::string& memberName, bool firstMember)
         {
+            if(!firstMember)
+            {
+                stream << "," << std::endl;
+            }
+
             printIndent();
             stream << "\"" << memberName << "\"" << ": ";
+        }
+
+        void processEndMember()
+        {
         }
 
         template<typename T>
         void processValue(T&& value)
         {
-            stream << value << std::endl;
+            stream << value;
         }
 
         template<typename T>
@@ -82,8 +96,14 @@ namespace dory::serialization
         void processEndObject()
         {
             --nestingLevel;
+            stream << std::endl;
             printIndent();
-            stream << "}" << std::endl;
+            stream << "}";
+            
+            if(nestingLevel == 0)
+            {
+                stream << std::endl;
+            }
         }
 
     private:
