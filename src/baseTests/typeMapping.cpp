@@ -209,7 +209,7 @@ enum class AttributeId
 };
 
 template<typename LayoutMap, typename T, typename TMembers, AttributeId attributeId, std::size_t membersCount, std::size_t offset>
-void testAttributeDescriptor()
+void testAttributeDescriptor(std::size_t customSize = 0)
 {
     const auto attributeSize = dory::LayoutAttributeSizeV<attributeId, LayoutMap>;
 
@@ -221,7 +221,7 @@ void testAttributeDescriptor()
     }
     else
     {
-        REQUIRE(attributeSize == sizeof(TMembers) * membersCount);
+        REQUIRE(attributeSize == (customSize != 0 ? customSize : sizeof(TMembers) * membersCount));
     }
     REQUIRE(dory::LayoutAttributeOffsetV<attributeId, LayoutMap> == offset);
     REQUIRE(dory::LayoutAttributeMemberCountV<attributeId, LayoutMap> == membersCount);
@@ -316,6 +316,7 @@ TEST_CASE( "Layout serialization test", "[typeMapping]" )
     testAttributeDescriptor<LayoutMap, VertexAttributeType<Color>, float, AttributeId::color, 3, 20>();
     testAttributeDescriptor<LayoutMap, VertexAttributeType<Point>, float, AttributeId::normal, 3, 32>();
     testAttributeDescriptor<LayoutMap, VertexAttributeType<TextureCoordinates>, int, AttributeId::textureCoordinates, 2, 44>();
+    testAttributeDescriptor<LayoutMap, VertexAttributeType<DoublePoint>, std::array<int, 5>, AttributeId::doublePoint, 7, 52>(44);
 }
 
 class PointToVertexPointConverter
