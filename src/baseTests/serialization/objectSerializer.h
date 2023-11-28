@@ -100,7 +100,49 @@ namespace dory::serialization
         }
     };
 
-    class ObjectJsonPrintingPolicy
+    class ObjectVisitorDefaultPolicy
+    {
+    public:
+        void processBeginCollection()
+        {
+        }
+
+        void processEndCollection()
+        {
+        }
+
+        void processBeginCollectionItem(std::size_t i)
+        {
+        }
+
+        void processEndCollectionItem(bool lastItem)
+        {
+        }
+
+        void processBeginMember(const std::string& memberName, std::size_t i)
+        {
+        }
+
+        void processEndMember(bool lastMember)
+        {
+        }
+
+        template<typename T>
+        void processBeginObject(T& object)
+        {
+        }
+
+        void processEndObject()
+        {
+        }
+
+        template<typename T>
+        void processValue(T&& value)
+        {
+        }
+    };
+
+    class ObjectJsonPrintingPolicy: public ObjectVisitorDefaultPolicy
     {
     private:
         std::ostream& stream;

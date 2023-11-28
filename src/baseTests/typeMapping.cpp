@@ -28,7 +28,6 @@ struct DoublePoint
 {
     Point p1;
     Point p2;
-    std::array<int, 5> list;
 };
 
 struct serializable : refl::attr::usage::field, refl::attr::usage::function
@@ -50,6 +49,11 @@ REFL_TYPE(Point)
     REFL_FIELD(x, serializable())
     REFL_FIELD(y, serializable())
     REFL_FIELD(z, serializable())
+REFL_END
+
+REFL_TYPE(DoublePoint)
+    REFL_FIELD(p1)
+    REFL_FIELD(p2)
 REFL_END
 
 template<typename T>
@@ -77,124 +81,79 @@ REFL_END
 REFL_TYPE(VertexAttributeType<DoublePoint>)
     REFL_FIELD(p1)
     REFL_FIELD(p2)
-    REFL_FIELD(list)
 REFL_END
 
-template<typename TLayout>
-struct VertexSerializer
+class ObjectBinaryPolicy: public dory::serialization::ObjectVisitorDefaultPolicy
 {
-    template<typename T>
-    static std::size_t writeTrivialValue(const T attributeValue, Byte* buffer)
+protected:
+    Byte* buffer;
+    std::size_t offset {};
+
+public:
+    explicit ObjectBinaryPolicy(Byte* buffer):
+            buffer(buffer) {}
+
+    [[nodiscard]] std::size_t getBytesCount() const
     {
-        auto size = sizeof(T);
-        memcpy(buffer, &attributeValue, size);
-        return size;
-    }
-
-    template<typename T>
-    static std::size_t readTrivialValue(T& attributeValue, Byte* buffer)
-    {
-        auto size = sizeof(T);
-        memcpy(&attributeValue, buffer, size);
-        return size;
-    }
-
-    template<typename T, typename TDescriptor>
-    static std::size_t writeComplexValue(const T& attributeValue, Byte* buffer, TDescriptor typeDescriptor)
-    {
-        std::size_t offset = {};
-
-        for_each(typeDescriptor.members, [&](auto member)
-        {
-            if constexpr (is_readable(member))
-            {
-                using memberType = decltype(member);
-
-                if constexpr (std::is_trivial_v<typename memberType::value_type>)
-                {
-                    offset += writeTrivialValue(member(attributeValue), buffer + offset);
-                }
-                else
-                {
-                    constexpr refl::descriptor::type_descriptor<typename memberType::value_type> typeDescriptor{};
-                    offset += writeComplexValue(member(attributeValue), buffer + offset, typeDescriptor);
-                }
-            }
-        });
-
         return offset;
     }
+};
 
-    template<typename T, typename TDescriptor>
-    static std::size_t readComplexValue(T& attributeValue, Byte* buffer, TDescriptor typeDescriptor)
+class ObjectBinarySerializationPolicy: public ObjectBinaryPolicy
+{
+public:
+    explicit ObjectBinarySerializationPolicy(Byte* buffer):
+            ObjectBinaryPolicy(buffer) {}
+
+    template<typename T>
+    void processValue(T&& value)
     {
-        std::size_t offset = {};
+        auto size = sizeof(T);
+        memcpy(buffer + offset, &value, size);
+        offset += size;
+    }
+};
 
-        for_each(typeDescriptor.members, [&](auto member)
-        {
-            if constexpr (is_readable(member))
-            {
-                using memberType = decltype(member);
+class ObjectBinaryDeserializationPolicy: public ObjectBinaryPolicy
+{
+public:
+    explicit ObjectBinaryDeserializationPolicy(Byte* buffer):
+            ObjectBinaryPolicy(buffer) {}
 
-                if constexpr (std::is_trivial_v<typename memberType::value_type>)
-                {
-                    offset += readTrivialValue(attributeValue.*memberType::pointer, buffer + offset);
-                }
-                else
-                {
-                    constexpr refl::descriptor::type_descriptor<typename memberType::value_type> typeDescriptor{};
-                    offset += readComplexValue(attributeValue.*memberType::pointer, buffer + offset, typeDescriptor);
-                }
-            }
-        });
+    template<typename T>
+    void processValue(T&& value)
+    {
+        auto size = sizeof(T);
+        memcpy(&value, buffer + offset, size);
+        offset += size;
+    }
+};
 
-        return offset;
+template<typename TLayout>
+class VertexSerializer
+{
+private:
+    template<auto Id, typename TProcessPolicy, typename T>
+    static std::size_t processAttribute(T&& attributeValue, Byte* buffer)
+    {
+        auto offset = dory::LayoutAttributeOffsetV<Id, TLayout>;
+        TProcessPolicy policy(buffer + offset);
+        dory::serialization::ObjectVisitor::visit(std::forward<T>(attributeValue), policy);
+
+        return policy.getBytesCount();
+    }
+
+public:
+    template<auto Id, typename T>
+    static std::size_t writeAttribute(T&& attributeValue, Byte* buffer)
+    {
+        return processAttribute<Id, ObjectBinarySerializationPolicy>(attributeValue, buffer);
     }
 
     template<auto Id, typename T>
-    static std::size_t writeAttribute(const T& attributeValue, Byte* buffer)
+    static std::size_t readAttribute(T&& attributeValue, Byte* buffer)
     {
-        std::size_t size = {};
-
-        auto offset = dory::LayoutAttributeOffsetV<Id, TLayout>;
-
-        if constexpr (std::is_trivial_v<T>)
-        {
-            size += writeTrivialValue(attributeValue, buffer + offset);
-        }
-        else
-        {
-            using AttributeType = dory::LayoutAttributeTypeT<Id, TLayout>;
-            auto typeDescriptor = refl::descriptor::type_descriptor<AttributeType> {};
-            size += writeComplexValue(attributeValue, buffer + offset, typeDescriptor);
-        }
-
-        std::cout << "Write Attribute: " << static_cast<unsigned int>(Id) << "; Offset: " << offset << ";" << " Size: " << size << std::endl;
-
-        return size;
-    }
-
-    template<auto Id, typename T>
-    static std::size_t readAttribute(T& attributeValue, Byte* buffer)
-    {
-        std::size_t size = {};
-
-        auto offset = dory::LayoutAttributeOffsetV<Id, TLayout>;
-
-        if constexpr (std::is_trivial_v<T>)
-        {
-            size += readTrivialValue(attributeValue, buffer + offset);
-        }
-        else
-        {
-            using AttributeType = dory::LayoutAttributeTypeT<Id, TLayout>;
-            auto typeDescriptor = refl::descriptor::type_descriptor<AttributeType> {};
-            size += readComplexValue(attributeValue, buffer + offset, typeDescriptor);
-        }
-
-        std::cout << "Read Attribute: " << static_cast<unsigned int>(Id) << "; Offset: " << offset << ";" << " Size: " << size << std::endl;
-
-        return size;
+        return processAttribute<Id, ObjectBinaryDeserializationPolicy>(attributeValue, buffer);
     }
 };
 
@@ -251,7 +210,6 @@ TEST_CASE( "Layout serialization test", "[typeMapping]" )
     const std::size_t& meshId = 12;
 
     constexpr std::size_t VertexSize = dory::LayoutSizeV<LayoutMap>;
-    constexpr std::size_t BufferSize = VertexSize * VerticesCount;
     Byte buffer[VertexSize * VerticesCount];
 
     Byte* cursor = buffer;
@@ -316,7 +274,7 @@ TEST_CASE( "Layout serialization test", "[typeMapping]" )
     testAttributeDescriptor<LayoutMap, VertexAttributeType<Color>, float, AttributeId::color, 3, 20>();
     testAttributeDescriptor<LayoutMap, VertexAttributeType<Point>, float, AttributeId::normal, 3, 32>();
     testAttributeDescriptor<LayoutMap, VertexAttributeType<TextureCoordinates>, int, AttributeId::textureCoordinates, 2, 44>();
-    testAttributeDescriptor<LayoutMap, VertexAttributeType<DoublePoint>, std::array<int, 5>, AttributeId::doublePoint, 7, 52>(44);
+    testAttributeDescriptor<LayoutMap, VertexAttributeType<DoublePoint>, float, AttributeId::doublePoint, 6, 52>();
 }
 
 class PointToVertexPointConverter
@@ -372,7 +330,7 @@ TEST_CASE( "Type Map", "[typeMapping]" )
 
 TEST_CASE( "Print reflected object", "[typeMapping]" )
 {
-    VertexAttributeType<DoublePoint> dPoint { Point{9, 10, 11}, Point{12, 13, 14}, std::array<int, 5>{1, 2, 3, 4, 5}};
+    VertexAttributeType<DoublePoint> dPoint { Point{9, 10, 11}, Point{12, 13, 14}};
     dory::serialization::ObjectPrinter::print(dPoint);
     dory::serialization::ObjectPrinter::print(VertexAttributeType<DoublePoint>{ Point{9, 10, 11}, Point{12, 13, 14}});
 
