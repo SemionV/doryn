@@ -83,77 +83,74 @@ REFL_TYPE(VertexAttributeType<DoublePoint>)
     REFL_FIELD(p2)
 REFL_END
 
-class ObjectBinaryPolicy: public dory::serialization::ObjectVisitorDefaultPolicy
+class ObjectBinaryContext: public dory::serialization::ObjectVisitorDefaultPolicy
 {
-protected:
+public:
     Byte* buffer;
     std::size_t offset {};
 
 public:
-    explicit ObjectBinaryPolicy(Byte* buffer):
+    explicit ObjectBinaryContext(Byte* buffer):
             buffer(buffer) {}
+};
 
-    [[nodiscard]] std::size_t getBytesCount() const
+struct WriteBinaryValuePolicy
+{
+    template<typename T, typename TContext>
+    inline static void processValue(T&& value, TContext& context)
     {
-        return offset;
+        auto size = sizeof(T);
+        memcpy(context.buffer + context.offset, &value, size);
+        context.offset += size;
     }
 };
 
-class ObjectBinarySerializationPolicy: public ObjectBinaryPolicy
+struct ReadBinaryValuePolicy
 {
-public:
-    explicit ObjectBinarySerializationPolicy(Byte* buffer):
-            ObjectBinaryPolicy(buffer) {}
-
-    template<typename T>
-    void processValue(T&& value)
+    template<typename T, typename TContext>
+    inline static void processValue(T&& value, TContext& context)
     {
         auto size = sizeof(T);
-        memcpy(buffer + offset, &value, size);
-        offset += size;
+        memcpy(&value, context.buffer + context.offset, size);
+        context.offset += size;
     }
 };
 
-class ObjectBinaryDeserializationPolicy: public ObjectBinaryPolicy
+struct WriteBinaryPolicies: public dory::serialization::VisitorDefaultPolicies
 {
-public:
-    explicit ObjectBinaryDeserializationPolicy(Byte* buffer):
-            ObjectBinaryPolicy(buffer) {}
+    using ValuePolicy = WriteBinaryValuePolicy;
+};
 
-    template<typename T>
-    void processValue(T&& value)
-    {
-        auto size = sizeof(T);
-        memcpy(&value, buffer + offset, size);
-        offset += size;
-    }
+struct ReadBinaryPolicies: public dory::serialization::VisitorDefaultPolicies
+{
+    using ValuePolicy = ReadBinaryValuePolicy;
 };
 
 template<typename TLayout>
 class VertexSerializer
 {
 private:
-    template<auto Id, typename TProcessPolicy, typename T>
+    template<auto Id, typename TContext, typename TPolicies, typename T>
     static std::size_t processAttribute(T&& attributeValue, Byte* buffer)
     {
         auto offset = dory::LayoutAttributeOffsetV<Id, TLayout>;
-        TProcessPolicy policy(buffer + offset);
-        dory::serialization::ObjectVisitor::visit(std::forward<T>(attributeValue), policy);
+        TContext context(buffer + offset);
+        dory::serialization::ObjectVisitor<TPolicies>::visit(std::forward<T>(attributeValue), context);
 
-        return policy.getBytesCount();
+        return context.offset;
     }
 
 public:
     template<auto Id, typename T>
     static std::size_t writeAttribute(T&& attributeValue, Byte* buffer)
     {
-        return processAttribute<Id, ObjectBinarySerializationPolicy>(std::forward<T>(attributeValue), buffer);
+        return processAttribute<Id, ObjectBinaryContext, WriteBinaryPolicies>(std::forward<T>(attributeValue), buffer);
     }
 
     template<auto Id, typename T>
     static std::size_t readAttribute(T&& attributeValue, Byte* buffer)
     {
-        return processAttribute<Id, ObjectBinaryDeserializationPolicy>(std::forward<T>(attributeValue), buffer);
+        return processAttribute<Id, ObjectBinaryContext, ReadBinaryPolicies>(std::forward<T>(attributeValue), buffer);
     }
 };
 

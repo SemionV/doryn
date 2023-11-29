@@ -4,6 +4,20 @@
 
 namespace dory::serialization
 {
+    struct DefaultValuePolicy
+    {
+        template<typename T, typename TContext>
+        inline static void processValue(T&& value, TContext& context)
+        {
+        }
+    };
+
+    struct VisitorDefaultPolicies
+    {
+        using ValuePolicy = DefaultValuePolicy;
+    };
+
+    template<typename TPolicies = VisitorDefaultPolicies>
     class ObjectVisitor
     {
     private:
@@ -47,7 +61,7 @@ namespace dory::serialization
             for(std::size_t i {}; i < N; ++i)
             {
                 context.processBeginCollectionItem(i);
-                context.processValue(object[i]);
+                visit(object[i], context);
                 context.processEndCollectionItem(i == N - 1);
             }
 
@@ -59,7 +73,7 @@ namespace dory::serialization
         requires(std::is_trivial_v<std::remove_reference_t<T>>)
         static void visit(T&& object, TContext& context)
         {
-            context.processValue(std::forward<T>(object));
+            TPolicies::ValuePolicy::processValue(std::forward<T>(object), context);
         }
 
         template<typename T, typename TContext>
@@ -135,16 +149,11 @@ namespace dory::serialization
         void processEndObject()
         {
         }
-
-        template<typename T>
-        void processValue(T&& value)
-        {
-        }
     };
 
     class ObjectJsonPrintingPolicy: public ObjectVisitorDefaultPolicy
     {
-    private:
+    public:
         std::ostream& stream;
         unsigned int nestingLevel {};
 
@@ -210,12 +219,6 @@ namespace dory::serialization
             stream << "}";
         }
 
-        template<typename T>
-        void processValue(T&& value)
-        {
-            stream << value;
-        }
-
     private:
         void printIndent()
         {
@@ -226,6 +229,20 @@ namespace dory::serialization
         }
     };
 
+    struct PrintValuePolicy
+    {
+        template<typename T, typename TContext>
+        inline static void processValue(T&& value, TContext& context)
+        {
+            context.stream << value;
+        }
+    };
+
+    struct PrintingPolicies: public VisitorDefaultPolicies
+    {
+        using ValuePolicy = PrintValuePolicy;
+    };
+
     class ObjectPrinter
     {
     public:
@@ -234,7 +251,7 @@ namespace dory::serialization
         {
             ObjectJsonPrintingPolicy printingPolicy(std::cout);
 
-            ObjectVisitor::visit(std::forward<T>(object), printingPolicy);
+            ObjectVisitor<PrintingPolicies>::visit(std::forward<T>(object), printingPolicy);
 
             std::cout << std::endl;
         }
