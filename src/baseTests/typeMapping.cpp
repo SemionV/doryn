@@ -147,13 +147,13 @@ public:
     template<auto Id, typename T>
     static std::size_t writeAttribute(T&& attributeValue, Byte* buffer)
     {
-        return processAttribute<Id, ObjectBinarySerializationPolicy>(attributeValue, buffer);
+        return processAttribute<Id, ObjectBinarySerializationPolicy>(std::forward<T>(attributeValue), buffer);
     }
 
     template<auto Id, typename T>
     static std::size_t readAttribute(T&& attributeValue, Byte* buffer)
     {
-        return processAttribute<Id, ObjectBinaryDeserializationPolicy>(attributeValue, buffer);
+        return processAttribute<Id, ObjectBinaryDeserializationPolicy>(std::forward<T>(attributeValue), buffer);
     }
 };
 

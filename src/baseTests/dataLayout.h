@@ -76,10 +76,10 @@ namespace dory
     template<auto attributeId, typename T, typename... Ts>
     struct LayoutAttributeType<attributeId, Layout<T, Ts...>>
     {
-        using AttributeType = typename T::Type;
+        using ChoosenType = std::conditional_t<attributeId == T::id,
+            T, LayoutAttributeType<attributeId, Layout<Ts...>>>;
 
-        using Type = std::conditional_t<attributeId == T::id,
-            AttributeType, typename LayoutAttributeType<attributeId, Layout<Ts...>>::Type>;
+        using Type = ChoosenType::Type;
     };
 
     template<auto attributeId>
@@ -99,9 +99,11 @@ namespace dory
     {
         using AttributeType = typename T::Type;
 
-        using Type = std::conditional_t<attributeId == T::id,
-            typename MemberTrivialType<AttributeType, std::is_trivial_v<AttributeType>, true>::Type, 
-            typename LayoutAttributeMemberType<attributeId, Layout<Ts...>>::Type>;
+        using ChoosenType = std::conditional_t<attributeId == T::id,
+            MemberTrivialType<AttributeType, std::is_trivial_v<AttributeType>, true>,
+            LayoutAttributeMemberType<attributeId, Layout<Ts...>>>;
+
+        using Type = ChoosenType::Type;
     };
 
     template<auto attributeId>

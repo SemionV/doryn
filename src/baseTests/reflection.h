@@ -34,12 +34,12 @@ namespace dory
     {
         private:
             using MemberValueType = typename refl::detail::member_info<T, Idx>::value_type;
-            using NestedMemberTrivialType = typename MemberTrivialType<MemberValueType, std::is_trivial_v<MemberValueType>, false>::Type;
+            using NestedMemberTrivialType = MemberTrivialType<MemberValueType, std::is_trivial_v<MemberValueType>, false>;
+            using ChoosenType = std::conditional_t<std::is_trivial_v<NestedMemberTrivialType>,
+                    NestedMemberTrivialType, TrivialMembersType<T, Idx - 1>>;
 
         public:
-            using Type = std::conditional_t<std::is_trivial_v<NestedMemberTrivialType>, 
-                    NestedMemberTrivialType, 
-                    typename TrivialMembersType<T, Idx - 1>::Type>;
+            using Type = ChoosenType::Type;
     };
 
     template<typename T>

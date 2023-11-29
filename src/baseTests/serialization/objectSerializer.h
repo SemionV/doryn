@@ -8,7 +8,7 @@ namespace dory::serialization
     {
     private:
         template<typename T>
-        static std::size_t getClassMemberCount(refl::descriptor::type_descriptor<T> typeDescriptor)
+        static constexpr std::size_t getClassMemberCount(refl::descriptor::type_descriptor<T> typeDescriptor)
         {
             std::size_t count {};
             visitClassMembers(typeDescriptor, [&count](auto memberDescriptor) {
@@ -19,7 +19,7 @@ namespace dory::serialization
         }
 
         template<typename T, typename F>
-        static void visitClassMembers(refl::descriptor::type_descriptor<T> typeDescriptor, F functor)
+        static constexpr void visitClassMembers(refl::descriptor::type_descriptor<T> typeDescriptor, F functor)
         {
             for_each(typeDescriptor.members, [&](auto memberDescriptor)
             {
@@ -67,8 +67,8 @@ namespace dory::serialization
         static void visit(T&& object, TContext& context)
         {
             context.processBeginObject(object);
-            auto typeDescriptor = refl::reflect(object);
-            const auto memberCount = getClassMemberCount(typeDescriptor);
+            auto constexpr typeDescriptor = refl::descriptor::type_descriptor<std::remove_reference_t<T>>{};
+            const constexpr auto memberCount = getClassMemberCount(typeDescriptor);
             std::size_t i = {};
 
             visitClassMembers(typeDescriptor, [&object, &context, &i, memberCount](auto memberDescriptor) {
