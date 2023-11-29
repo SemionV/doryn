@@ -1,9 +1,9 @@
 #pragma once
 
-#include "dependencies.h"
+#include "baseTests/dependencies.h"
 #include "reflection.h"
 
-namespace dory
+namespace dory::serialization
 {
     template<auto Id, typename T>
     struct Attribute

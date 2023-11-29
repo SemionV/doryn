@@ -1,8 +1,9 @@
 #include "dependencies.h"
 #include "base/base.h"
-#include "dataLayout.h"
-#include "typeMap.h"
-#include "serialization/objectSerializer.h"
+#include "baseTests/serialization/dataLayout.h"
+#include "baseTests/serialization/typeMap.h"
+#include "serialization/jsonPrinter.h"
+#include "serialization/binaryLayoutSerializer.h"
 
 struct TextureCoordinates
 {
@@ -83,77 +84,6 @@ REFL_TYPE(VertexAttributeType<DoublePoint>)
     REFL_FIELD(p2)
 REFL_END
 
-class ObjectBinaryContext: public dory::serialization::ObjectVisitorDefaultPolicy
-{
-public:
-    Byte* buffer;
-    std::size_t offset {};
-
-public:
-    explicit ObjectBinaryContext(Byte* buffer):
-            buffer(buffer) {}
-};
-
-struct WriteBinaryValuePolicy
-{
-    template<typename T, typename TContext>
-    inline static void processValue(T&& value, TContext& context)
-    {
-        auto size = sizeof(T);
-        memcpy(context.buffer + context.offset, &value, size);
-        context.offset += size;
-    }
-};
-
-struct ReadBinaryValuePolicy
-{
-    template<typename T, typename TContext>
-    inline static void processValue(T&& value, TContext& context)
-    {
-        auto size = sizeof(T);
-        memcpy(&value, context.buffer + context.offset, size);
-        context.offset += size;
-    }
-};
-
-struct WriteBinaryPolicies: public dory::serialization::VisitorDefaultPolicies
-{
-    using ValuePolicy = WriteBinaryValuePolicy;
-};
-
-struct ReadBinaryPolicies: public dory::serialization::VisitorDefaultPolicies
-{
-    using ValuePolicy = ReadBinaryValuePolicy;
-};
-
-template<typename TLayout>
-class VertexSerializer
-{
-private:
-    template<auto Id, typename TContext, typename TPolicies, typename T>
-    static std::size_t processAttribute(T&& attributeValue, Byte* buffer)
-    {
-        auto offset = dory::LayoutAttributeOffsetV<Id, TLayout>;
-        TContext context(buffer + offset);
-        dory::serialization::ObjectVisitor<TPolicies>::visit(std::forward<T>(attributeValue), context);
-
-        return context.offset;
-    }
-
-public:
-    template<auto Id, typename T>
-    static std::size_t writeAttribute(T&& attributeValue, Byte* buffer)
-    {
-        return processAttribute<Id, ObjectBinaryContext, WriteBinaryPolicies>(std::forward<T>(attributeValue), buffer);
-    }
-
-    template<auto Id, typename T>
-    static std::size_t readAttribute(T&& attributeValue, Byte* buffer)
-    {
-        return processAttribute<Id, ObjectBinaryContext, ReadBinaryPolicies>(std::forward<T>(attributeValue), buffer);
-    }
-};
-
 enum class AttributeId
 {
     meshId,
@@ -167,10 +97,10 @@ enum class AttributeId
 template<typename LayoutMap, typename T, typename TMembers, AttributeId attributeId, std::size_t membersCount, std::size_t offset>
 void testAttributeDescriptor(std::size_t customSize = 0)
 {
-    const auto attributeSize = dory::LayoutAttributeSizeV<attributeId, LayoutMap>;
+    const auto attributeSize = dory::serialization::LayoutAttributeSizeV<attributeId, LayoutMap>;
 
-    REQUIRE(std::is_same_v<dory::LayoutAttributeTypeT<attributeId, LayoutMap>, T>);
-    REQUIRE(std::is_same_v<dory::LayoutAttributeMemberTypeT<attributeId, LayoutMap>, TMembers>);
+    REQUIRE(std::is_same_v<dory::serialization::LayoutAttributeTypeT<attributeId, LayoutMap>, T>);
+    REQUIRE(std::is_same_v<dory::serialization::LayoutAttributeMemberTypeT<attributeId, LayoutMap>, TMembers>);
     if constexpr (std::is_same_v<TMembers, void>)
     {
         REQUIRE(attributeSize == sizeof(T));
@@ -179,23 +109,23 @@ void testAttributeDescriptor(std::size_t customSize = 0)
     {
         REQUIRE(attributeSize == (customSize != 0 ? customSize : sizeof(TMembers) * membersCount));
     }
-    REQUIRE(dory::LayoutAttributeOffsetV<attributeId, LayoutMap> == offset);
-    REQUIRE(dory::LayoutAttributeMemberCountV<attributeId, LayoutMap> == membersCount);
+    REQUIRE(dory::serialization::LayoutAttributeOffsetV<attributeId, LayoutMap> == offset);
+    REQUIRE(dory::serialization::LayoutAttributeMemberCountV<attributeId, LayoutMap> == membersCount);
 }
 
 TEST_CASE( "Layout serialization test", "[typeMapping]" )
 {
-    using LayoutMap = dory::Layout<dory::Attribute<AttributeId::meshId, std::size_t>,
-        dory::Attribute<AttributeId::position, VertexAttributeType<Point>>, 
-        dory::Attribute<AttributeId::color, VertexAttributeType<Color>>,
-        dory::Attribute<AttributeId::normal, VertexAttributeType<Point>>,
-        dory::Attribute<AttributeId::textureCoordinates, VertexAttributeType<TextureCoordinates>>,
-        dory::Attribute<AttributeId::doublePoint, VertexAttributeType<DoublePoint>>>;
+    using LayoutMap = dory::serialization::Layout<dory::serialization::Attribute<AttributeId::meshId, std::size_t>,
+        dory::serialization::Attribute<AttributeId::position, VertexAttributeType<Point>>,
+        dory::serialization::Attribute<AttributeId::color, VertexAttributeType<Color>>,
+        dory::serialization::Attribute<AttributeId::normal, VertexAttributeType<Point>>,
+        dory::serialization::Attribute<AttributeId::textureCoordinates, VertexAttributeType<TextureCoordinates>>,
+        dory::serialization::Attribute<AttributeId::doublePoint, VertexAttributeType<DoublePoint>>>;
 
-    std::cout << "Attributes count: " << dory::LayoutCountV<LayoutMap> << std::endl; 
-    std::cout << "Vertex size: " << dory::LayoutSizeV<LayoutMap> << std::endl; 
+    std::cout << "Attributes count: " << dory::serialization::LayoutCountV<LayoutMap> << std::endl;
+    std::cout << "Vertex size: " << dory::serialization::LayoutSizeV<LayoutMap> << std::endl;
 
-    using VertexSerializer = VertexSerializer<LayoutMap>;
+    using VertexSerializer = dory::serialization::BinaryLayoutSerializer<LayoutMap>;
 
     constexpr std::size_t VerticesCount = 2;
 
@@ -206,7 +136,7 @@ TEST_CASE( "Layout serialization test", "[typeMapping]" )
     DoublePoint doublePoints[VerticesCount] = { DoublePoint{ Point{9, 10, 11}, Point{12, 13, 14}}, DoublePoint{ Point{9, 10, 11}, Point{12, 13, 14}} };
     const std::size_t& meshId = 12;
 
-    constexpr std::size_t VertexSize = dory::LayoutSizeV<LayoutMap>;
+    constexpr std::size_t VertexSize = dory::serialization::LayoutSizeV<LayoutMap>;
     Byte buffer[VertexSize * VerticesCount];
 
     Byte* cursor = buffer;
@@ -298,20 +228,20 @@ TRight convert(TLeft value)
     return TConverter::convert(value);
 }
 
-using TypeMap = dory::TypeMap<dory::TypeAssigment<dory::TypePair<Point, VertexAttributeType<Point>>, PointToVertexPointConverter, VertexPointToPointConverter>,
-    dory::TypeAssigment<dory::TypePair<Color, VertexAttributeType<Color>>>,
-    dory::TypeAssigment<dory::TypePair<TextureCoordinates, VertexAttributeType<TextureCoordinates>>>>;
+using TypeMap = dory::serialization::TypeMap<dory::serialization::TypeAssigment<dory::serialization::TypePair<Point, VertexAttributeType<Point>>, PointToVertexPointConverter, VertexPointToPointConverter>,
+    dory::serialization::TypeAssigment<dory::serialization::TypePair<Color, VertexAttributeType<Color>>>,
+    dory::serialization::TypeAssigment<dory::serialization::TypePair<TextureCoordinates, VertexAttributeType<TextureCoordinates>>>>;
 
 TEST_CASE( "Type Map", "[typeMapping]" )
 {
-    REQUIRE(std::is_same_v<dory::MappedTypeT<Point, TypeMap>, VertexAttributeType<Point>>);
-    REQUIRE(std::is_same_v<dory::MappedTypeT<Color, TypeMap>, VertexAttributeType<Color>>);
-    REQUIRE(std::is_same_v<dory::MappedTypeT<TextureCoordinates, TypeMap>, VertexAttributeType<TextureCoordinates>>);
-    REQUIRE(std::is_same_v<dory::MappedTypeT<DoublePoint, TypeMap>, DoublePoint>);
+    REQUIRE(std::is_same_v<dory::serialization::MappedTypeT<Point, TypeMap>, VertexAttributeType<Point>>);
+    REQUIRE(std::is_same_v<dory::serialization::MappedTypeT<Color, TypeMap>, VertexAttributeType<Color>>);
+    REQUIRE(std::is_same_v<dory::serialization::MappedTypeT<TextureCoordinates, TypeMap>, VertexAttributeType<TextureCoordinates>>);
+    REQUIRE(std::is_same_v<dory::serialization::MappedTypeT<DoublePoint, TypeMap>, DoublePoint>);
 
-    using DestinationType = typename dory::MappedType<Point, TypeMap>::Type;
-    using ForwardConverterType = typename dory::MappedType<Point, TypeMap>::ForwardConverterType;
-    using BackwardConverterType = typename dory::MappedType<Point, TypeMap>::BackwardConverterType;
+    using DestinationType = typename dory::serialization::MappedType<Point, TypeMap>::Type;
+    using ForwardConverterType = typename dory::serialization::MappedType<Point, TypeMap>::ForwardConverterType;
+    using BackwardConverterType = typename dory::serialization::MappedType<Point, TypeMap>::BackwardConverterType;
 
     Point point = {1, 2, 3};
     auto vertexPoint = convert<DestinationType, ForwardConverterType>(point);
@@ -335,136 +265,6 @@ TEST_CASE( "Print reflected object", "[typeMapping]" )
 
     dory::serialization::ObjectPrinter::print(std::array<int, 5>{1, 2, 3, 4, 5});
 }
-
-//-------------------------------------------------------------------------------------------------------------------------
-
-template <class T>
-struct MemberPointerType;
-
-template <class C, class T>
-struct MemberPointerType<T C::*> 
-{ 
-    using type = T;
-    using classType = C;
-
-    static constexpr std::size_t getSize()
-    {
-        return sizeof(T);
-    }
-};
-
-template <class T>
-struct MemberType : MemberPointerType<typename std::remove_cv<T>::type> 
-{    
-};
-
-template<typename TMemberPointer, TMemberPointer memberPointer>
-struct MemberMapping
-{
-    static constexpr std::size_t getSize()
-    {
-        return MemberType<TMemberPointer>::getSize();
-    }
-
-    static constexpr TMemberPointer getMemberPointer()
-    {
-        return memberPointer;
-    }
-};
-
-TEST_CASE( "Member Reflection test", "[typeMapping]" )
-{
-    constexpr auto xPointer = &Point::x;
-    using PointXMapping = MemberMapping<decltype(xPointer), xPointer>;
-
-    REQUIRE(PointXMapping::getSize() == sizeof(Point::x));
-
-    Point p {456, 2, 3};
-
-    REQUIRE(p.*PointXMapping::getMemberPointer() == 456);
-}
-
-template <typename C, typename... TMemberMappings>
-struct ClassMapping;
-
-template <typename C>
-struct ClassMapping<C>
-{
-    static constexpr std::size_t getSize()
-    {
-        return 0;
-    }
-
-    static constexpr std::size_t getCount()
-    {
-        return 0;
-    }
-};
-
-template<typename C, typename TMemberMapping, typename... TMemberMappings>
-struct ClassMapping<C, TMemberMapping, TMemberMappings...>: ClassMapping<C, TMemberMappings...>
-{
-    using ParentType = ClassMapping<C, TMemberMappings...>;
-
-    static constexpr std::size_t getSize()
-    {
-        auto size = TMemberMapping::getSize();
-        
-        if constexpr (sizeof...(TMemberMappings) > 0)
-        {
-            size += ParentType::getSize();
-        }
-
-        return size;
-    }
-
-    static constexpr std::size_t getCount()
-    {
-        return sizeof...(TMemberMappings) + 1;
-    }
-};
-
-template<typename C>
-struct ClassMappingType: ClassMapping<C>
-{
-};
-
-template<>
-struct ClassMappingType<Point>: ClassMapping<Point, 
-    MemberMapping<decltype(&Point::x), &Point::x>, 
-    MemberMapping<decltype(&Point::y), &Point::y>, 
-    MemberMapping<decltype(&Point::z), &Point::z>>
-{
-};
-
-/*#define EMPTY_CLASS_NAME
-#define CURRENT_CLASS_TYPE Point
-//#define SET_CURRENT_CLASS_TYPE(ClassName)(CURRENT_CLASS_TYPE=(ClassName))
-
-#define BEGIN_CLASS_MAP(ClassType)\
-template<>\
-struct ClassMappingType<CURRENT_CLASS_TYPE>: ClassMapping<CURRENT_CLASS_TYPE
-
-#define MAP_MEMBER(MemberName)\
-,MemberMapping<decltype(&CURRENT_CLASS_TYPE::MemberName), &CURRENT_CLASS_TYPE::MemberName>
-
-#define END_CLASS_MAP >{};
-
-BEGIN_CLASS_MAP(Point)
-    MAP_MEMBER(x)
-    MAP_MEMBER(y)
-    MAP_MEMBER(z)
-END_CLASS_MAP*/
-
-TEST_CASE( "Class Reflection test", "[.][typeMapping]" )
-{
-    std::cout << "Point Mapping size: " << ClassMappingType<Point>::getSize() << std::endl;
-    std::cout << "Point Mapping count: " << ClassMappingType<Point>::getCount() << std::endl;
-    std::cout << "Color Mapping size: " << ClassMappingType<Color>::getSize() << std::endl;
-    std::cout << "Color Mapping count: " << ClassMappingType<Color>::getCount() << std::endl;
-}
-
-//-------------------------------------------------------------------------------------------------------------------------
 
 /*namespace refl_impl::metadata 
 { 

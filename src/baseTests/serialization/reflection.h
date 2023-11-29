@@ -1,8 +1,8 @@
 #pragma once
 
-#include "dependencies.h"
+#include "baseTests/dependencies.h"
 
-namespace dory
+namespace dory::serialization
 {
     template<typename T, int Idx>
     struct TrivialMembersType;
