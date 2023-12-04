@@ -1,9 +1,8 @@
 #pragma once
 
-#include "baseTests/dependencies.h"
-#include "reflection.h"
+#include "templates/reflection.h"
 
-namespace dory::serialization
+namespace dory::dataLayout
 {
     template<auto Id, typename T>
     struct Attribute
@@ -14,7 +13,7 @@ namespace dory::serialization
 
     template<typename... Ts>
     struct Layout
-    {        
+    {
     };
 
     template<typename T>
@@ -35,8 +34,8 @@ namespace dory::serialization
     template<auto id, typename T, auto... ids, typename... Ts>
     struct LayoutSize<Layout<Attribute<id, T>, Attribute<ids, Ts>...>>
     {
-        static constexpr std::size_t value = TypeSize<T, std::is_trivial_v<T>>::value + 
-            LayoutSize<Layout<Attribute<ids, Ts>...>>::value;
+        static constexpr std::size_t value = reflection::TypeSize<T, std::is_trivial_v<T>>::value +
+        LayoutSize<Layout<Attribute<ids, Ts>...>>::value;
     };
 
     template<>
@@ -56,9 +55,9 @@ namespace dory::serialization
     {
         using AttributeType = typename T::Type;
 
-        static constexpr std::size_t value = attributeId == T::id ? 
-            TypeSize<AttributeType, std::is_trivial_v<AttributeType>>::value 
-            : LayoutAttributeSize<attributeId, Layout<Ts...>>::value;
+        static constexpr std::size_t value = attributeId == T::id ?
+                                             reflection::TypeSize<AttributeType, std::is_trivial_v<AttributeType>>::value
+        : LayoutAttributeSize<attributeId, Layout<Ts...>>::value;
     };
 
     template<auto attributeId>
@@ -77,7 +76,7 @@ namespace dory::serialization
     struct LayoutAttributeType<attributeId, Layout<T, Ts...>>
     {
         using ChoosenType = std::conditional_t<attributeId == T::id,
-            T, LayoutAttributeType<attributeId, Layout<Ts...>>>;
+                T, LayoutAttributeType<attributeId, Layout<Ts...>>>;
 
         using Type = ChoosenType::Type;
     };
@@ -100,8 +99,8 @@ namespace dory::serialization
         using AttributeType = typename T::Type;
 
         using ChoosenType = std::conditional_t<attributeId == T::id,
-            MemberTrivialType<AttributeType, std::is_trivial_v<AttributeType>, true>,
-            LayoutAttributeMemberType<attributeId, Layout<Ts...>>>;
+        reflection::MemberTrivialType<AttributeType, std::is_trivial_v<AttributeType>, true>,
+        LayoutAttributeMemberType<attributeId, Layout<Ts...>>>;
 
         using Type = ChoosenType::Type;
     };
@@ -123,9 +122,9 @@ namespace dory::serialization
     {
         using AttributeType = typename T::Type;
 
-        static constexpr std::size_t value = attributeId == T::id ? 
-            TypeCount<AttributeType, std::is_trivial_v<AttributeType>, true>::value 
-            : LayoutAttributeMemberCount<attributeId, Layout<Ts...>>::value;
+        static constexpr std::size_t value = attributeId == T::id ?
+                                             reflection::TypeCount<AttributeType, std::is_trivial_v<AttributeType>, true>::value
+                                                                  : LayoutAttributeMemberCount<attributeId, Layout<Ts...>>::value;
     };
 
     template<auto attributeId>
@@ -145,9 +144,9 @@ namespace dory::serialization
     {
         using AttributeType = typename T::Type;
 
-        static constexpr std::size_t value = attributeId == T::id ? 
-            offset 
-            : LayoutAttributeOffset<attributeId, Layout<Ts...>, offset + TypeSize<AttributeType, std::is_trivial_v<AttributeType>>::value>::value;
+        static constexpr std::size_t value = attributeId == T::id ?
+                     offset
+                     : LayoutAttributeOffset<attributeId, Layout<Ts...>, offset + reflection::TypeSize<AttributeType, std::is_trivial_v<AttributeType>>::value>::value;
     };
 
     template<auto attributeId, std::size_t offset>

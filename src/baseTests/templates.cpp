@@ -178,3 +178,210 @@ namespace test_fold_exprexxions
         REQUIRE(!isDefaultConstructible(type<int&>));
     }
 }
+
+template <typename... Elements>
+class Typelist {};
+
+template <typename List>
+class PopFrontT;
+
+template <typename Head, typename... Tail>
+class PopFrontT<Typelist<Head, Tail...>> {
+public:
+    using Type = Typelist<Tail...>;
+};
+
+template <typename List>
+using PopFront = typename PopFrontT<List>::Type;
+
+template <typename List>
+class FrontT;
+
+template <typename Head, typename... Tail>
+class FrontT<Typelist<Head, Tail...>> {
+public:
+    using Type = Head;
+};
+
+template <typename List>
+using Front = typename FrontT<List>::Type;
+
+template <typename List>
+class IsEmpty {
+public:
+    static constexpr bool value = false;
+};
+
+template <>
+class IsEmpty<Typelist<>> {
+public:
+    static constexpr bool value = true;
+};
+
+template <typename List, typename NewElement>
+class PushBackT;
+
+template <typename... Elements, typename NewElement>
+class PushBackT<Typelist<Elements...>, NewElement> {
+public:
+    using Type = Typelist<Elements..., NewElement>;
+};
+
+template <typename List, typename NewElement>
+using PushBack = typename PushBackT<List, NewElement>::Type;
+
+template <typename List, typename NewElement>
+class PushFrontT;
+
+template <typename... Elements, typename NewElement>
+class PushFrontT<Typelist<Elements...>, NewElement> {
+public:
+    using Type = Typelist<NewElement, Elements...>;
+};
+
+template <typename List, typename NewElement>
+using PushFront = typename PushFrontT<List, NewElement>::Type;
+
+template <typename List, template <typename X, typename Y> class F, typename I,
+        bool = IsEmpty<List>::value>
+class AccumulateT;
+
+// recursive case:
+template <typename List, template <typename X, typename Y> class F, typename I>
+class AccumulateT<List, F, I, false>
+        : public AccumulateT<PopFront<List>, F, typename F<I, Front<List>>::Type> {
+};
+
+// basis case:
+template <typename List, template <typename X, typename Y> class F, typename I>
+class AccumulateT<List, F, I, true> {
+public:
+    using Type = I;
+};
+
+template <typename List, template <typename X, typename Y> class F, typename I>
+using Accumulate = typename AccumulateT<List, F, I>::Type;
+
+template<typename TList, bool = IsEmpty<TList>::value>
+struct PrintTypeList;
+
+template<typename TList>
+struct PrintTypeList<TList, false>: PrintTypeList<PopFront<TList>>
+{
+    using TBase = PrintTypeList<PopFront<TList>>;
+
+    static void print()
+    {
+        using T = Front<TList>;
+        std::cout << typeid(T).name() << std::endl;
+
+        TBase::print();
+    }
+};
+
+template<typename TList>
+struct PrintTypeList<TList, true>
+{
+    static void print()
+    {
+    }
+};
+
+template<typename T, typename I>
+struct IsLess
+{
+    static constexpr bool value = sizeof(T) < sizeof(I);
+};
+
+template<typename T, typename I>
+struct IsGreather
+{
+    static constexpr bool value = sizeof(T) > sizeof(I);
+};
+
+template<typename T, typename I>
+struct LargerType
+{
+    using Type = std::conditional_t<IsGreather<T, I>::value, T, I>;
+};
+
+template<typename T, typename I>
+struct SmallerType
+{
+    using Type = std::conditional_t<IsLess<T, I>::value, T, I>;
+};
+
+//int, short, bool, float, double
+//int | short | bool, float, double
+
+template<typename TList, typename TList2>
+struct MergeT;
+
+template<typename... Ts, typename... Ts2>
+struct MergeT<Typelist<Ts...>, Typelist<Ts2...>>
+{
+    using Type = Typelist<Ts..., Ts2...>;
+};
+
+template<typename TList, typename TList2>
+using Merge = typename MergeT<TList, TList2>::Type;
+
+template<typename TList, typename T, template<typename, typename> class F, typename TPrecidingList = Typelist<>,
+            bool = IsEmpty<TList>::value>
+struct InsertBefore;
+
+template<typename TList, typename T, template<typename, typename> class F, typename TPrecidingList>
+struct InsertBefore<TList, T, F, TPrecidingList, false>
+{
+    using Type = std::conditional_t<F<Front<TList>, T>::value,
+            Merge<TPrecidingList, PushFront<TList, T>>,
+            typename InsertBefore<PopFront<TList>, T, F, PushBack<TPrecidingList, Front<TList>>>::Type>;
+};
+
+template<typename TList, bool = IsEmpty<TList>::value>
+struct SortAsc;
+
+template<typename TList>
+struct SortAsc<TList, false>:
+        public InsertBefore<typename SortAsc<PopFront<TList>>::Type, Front<TList>, IsGreather>
+{
+};
+
+template<typename TList>
+struct SortAsc<TList, true>
+{
+    using Type = TList;
+};
+
+template<typename TList, typename T, template<typename, typename> class F, typename TPrecidingList>
+struct InsertBefore<TList, T, F, TPrecidingList, true>
+{
+    using Type = PushBack<TPrecidingList, T>;
+};
+
+TEST_CASE( "Accumulate Typelist", "[templates]" )
+{
+    using InitialTypes = Typelist<int, double, short, long long, bool, float>;
+    std::cout << "Initial TypeList:" << std::endl;
+    PrintTypeList<InitialTypes>::print();
+
+    using MinTypes = Typelist<Accumulate<InitialTypes, SmallerType, Front<InitialTypes>>>;
+    std::cout << "Smallest type:" << std::endl;
+    PrintTypeList<MinTypes>::print();
+
+    using TypesReversed = Accumulate<InitialTypes, PushFrontT, Typelist<>>;
+    std::cout << "Reversed Typelist:" << std::endl;
+    PrintTypeList<TypesReversed>::print();
+
+    using InsertedTypes = typename InsertBefore<InitialTypes, long, IsGreather>::Type;
+    std::cout << "Inserted Type:" << std::endl;
+    PrintTypeList<InsertedTypes>::print();
+
+    using InsertedTypes = typename InsertBefore<InitialTypes, long, IsGreather>::Type;
+    std::cout << "Inserted Type:" << std::endl;
+    PrintTypeList<InsertedTypes>::print();
+
+    using SortedTypes = typename SortAsc<InitialTypes>::Type;
+    std::cout << "Sorted TypeList:" << std::endl;
+    PrintTypeList<SortedTypes>::print();
+}

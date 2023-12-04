@@ -1,8 +1,8 @@
 #pragma once
 
-#include "objectSerializer.h"
+#include "templates/objectVisitor.h"
 
-namespace dory::serialization
+namespace dory::typeMap
 {
     struct JsonPrintingContext
     {

@@ -96,6 +96,8 @@ namespace testApp
 
             void onInitializeEngine(TDataContext& context, const events::InitializeEngineEventData& eventData)
             {
+                std::cout << "Starting Engine..." << std::endl;
+
                 configurePipeline(context);
                 context.mainWindowId = newWindow(context);
             }

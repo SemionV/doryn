@@ -2,7 +2,7 @@
 
 #include "baseTests/dependencies.h"
 
-namespace dory::serialization
+namespace dory::typeMap
 {
     template<typename TKey, typename T>
     struct TypePair

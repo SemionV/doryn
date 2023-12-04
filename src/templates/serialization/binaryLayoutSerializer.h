@@ -1,10 +1,10 @@
 #pragma once
 
-#include "objectSerializer.h"
-#include "dataLayout.h"
+#include "templates/objectVisitor.h"
+#include "templates/structures/dataLayout.h"
 #include "base/base.h"
 
-namespace dory::serialization
+namespace dory::typeMap
 {
     struct BinarySerializationContext
     {
@@ -37,12 +37,12 @@ namespace dory::serialization
         }
     };
 
-    struct WriteBinaryPolicies: public dory::serialization::VisitorDefaultPolicies
+    struct WriteBinaryPolicies: public dory::typeMap::VisitorDefaultPolicies
     {
         using ValuePolicy = WriteBinaryValuePolicy;
     };
 
-    struct ReadBinaryPolicies: public dory::serialization::VisitorDefaultPolicies
+    struct ReadBinaryPolicies: public dory::typeMap::VisitorDefaultPolicies
     {
         using ValuePolicy = ReadBinaryValuePolicy;
     };
@@ -54,9 +54,9 @@ namespace dory::serialization
         template<auto Id, typename TPolicies, typename T>
         static std::size_t processAttribute(T&& attributeValue, Byte* buffer)
         {
-            auto offset = LayoutAttributeOffsetV<Id, TLayout>;
+            auto offset = dataLayout::LayoutAttributeOffsetV<Id, TLayout>;
             BinarySerializationContext context(buffer + offset);
-            dory::serialization::ObjectVisitor<TPolicies>::visit(std::forward<T>(attributeValue), context);
+            dory::typeMap::ObjectVisitor<TPolicies>::visit(std::forward<T>(attributeValue), context);
 
             return context.offset;
         }

@@ -2,7 +2,7 @@
 
 #include "baseTests/dependencies.h"
 
-namespace dory::serialization
+namespace dory::typeMap
 {
     struct DefaultValuePolicy
     {
