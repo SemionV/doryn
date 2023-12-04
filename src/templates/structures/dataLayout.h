@@ -34,7 +34,7 @@ namespace dory::dataLayout
     template<auto id, typename T, auto... ids, typename... Ts>
     struct LayoutSize<Layout<Attribute<id, T>, Attribute<ids, Ts>...>>
     {
-        static constexpr std::size_t value = reflection::TypeSize<T, std::is_trivial_v<T>>::value +
+        static constexpr std::size_t value = reflection::TypeSize<T>::value +
         LayoutSize<Layout<Attribute<ids, Ts>...>>::value;
     };
 
@@ -56,7 +56,7 @@ namespace dory::dataLayout
         using AttributeType = typename T::Type;
 
         static constexpr std::size_t value = attributeId == T::id ?
-                                             reflection::TypeSize<AttributeType, std::is_trivial_v<AttributeType>>::value
+                                             reflection::TypeSize<AttributeType>::value
         : LayoutAttributeSize<attributeId, Layout<Ts...>>::value;
     };
 
@@ -99,7 +99,7 @@ namespace dory::dataLayout
         using AttributeType = typename T::Type;
 
         using ChoosenType = std::conditional_t<attributeId == T::id,
-        reflection::MemberTrivialType<AttributeType, std::is_trivial_v<AttributeType>, true>,
+        reflection::MemberTrivialType<AttributeType, true>,
         LayoutAttributeMemberType<attributeId, Layout<Ts...>>>;
 
         using Type = ChoosenType::Type;
@@ -123,8 +123,8 @@ namespace dory::dataLayout
         using AttributeType = typename T::Type;
 
         static constexpr std::size_t value = attributeId == T::id ?
-                                             reflection::TypeCount<AttributeType, std::is_trivial_v<AttributeType>, true>::value
-                                                                  : LayoutAttributeMemberCount<attributeId, Layout<Ts...>>::value;
+                                             reflection::TypeCount<AttributeType, true>::value
+                                             : LayoutAttributeMemberCount<attributeId, Layout<Ts...>>::value;
     };
 
     template<auto attributeId>
@@ -146,7 +146,7 @@ namespace dory::dataLayout
 
         static constexpr std::size_t value = attributeId == T::id ?
                      offset
-                     : LayoutAttributeOffset<attributeId, Layout<Ts...>, offset + reflection::TypeSize<AttributeType, std::is_trivial_v<AttributeType>>::value>::value;
+                     : LayoutAttributeOffset<attributeId, Layout<Ts...>, offset + reflection::TypeSize<AttributeType>::value>::value;
     };
 
     template<auto attributeId, std::size_t offset>

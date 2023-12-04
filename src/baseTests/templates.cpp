@@ -359,7 +359,7 @@ struct InsertBefore<TList, T, F, TPrecidingList, true>
     using Type = PushBack<TPrecidingList, T>;
 };
 
-TEST_CASE( "Accumulate Typelist", "[templates]" )
+TEST_CASE( "Accumulate Typelist", "[.][templates]" )
 {
     using InitialTypes = Typelist<int, double, short, long long, bool, float>;
     std::cout << "Initial TypeList:" << std::endl;
