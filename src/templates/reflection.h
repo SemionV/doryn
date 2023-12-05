@@ -11,6 +11,15 @@ namespace dory::reflection
     template<typename T>
     constexpr int MemberCountV = MemberCount<T>::value;
 
+    template<typename T, unsigned Idx>
+    struct MemberValueType
+    {
+        using Type = typename refl::detail::member_info<T, Idx>::value_type;
+    };
+
+    template<typename T, unsigned Idx>
+    using MemberValueTypeT = typename MemberValueType<T, Idx>::Type;
+
     template<typename T, int Idx>
     struct TrivialMembersType;
 
@@ -40,7 +49,7 @@ namespace dory::reflection
     struct TrivialMembersType
     {
         private:
-            using MemberValueType = typename refl::detail::member_info<T, Idx>::value_type;
+            using MemberValueType = MemberValueTypeT<T, Idx>;
             using NestedMemberTrivialType = MemberTrivialType<MemberValueType, false>;
             using ChoosenType = std::conditional_t<std::is_trivial_v<NestedMemberTrivialType>,
                     NestedMemberTrivialType, TrivialMembersType<T, Idx - 1>>;
@@ -73,12 +82,7 @@ namespace dory::reflection
     template<typename T, int Idx>
     struct TypeMembersSize
     {
-        private:
-            using MemberValueType = typename refl::detail::member_info<T, Idx>::value_type;
-
-        public:
-            static constexpr std::size_t value = TypeSize<MemberValueType>::value +
-                TypeMembersSize<T, Idx - 1>::value;
+        static constexpr std::size_t value = TypeSize<MemberValueTypeT<T, Idx>>::value + TypeMembersSize<T, Idx - 1>::value;
     };
 
     template<typename T>
@@ -116,12 +120,7 @@ namespace dory::reflection
     template<typename T, int Idx>
     struct TypeTrivialMembersCount
     {
-        private:
-            using MemberValueType = typename refl::detail::member_info<T, Idx>::value_type;
-
-        public:
-            static constexpr std::size_t value = TypeCount<MemberValueType, false>::value +
-                TypeTrivialMembersCount<T, Idx - 1>::value;
+        static constexpr std::size_t value = TypeCount<MemberValueTypeT<T, Idx>, false>::value + TypeTrivialMembersCount<T, Idx - 1>::value;
     };
 
     template<typename T>

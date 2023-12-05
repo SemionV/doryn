@@ -1,8 +1,6 @@
 #pragma once
 
 #include "templates/objectVisitor.h"
-#include "templates/structures/dataLayout.h"
-#include "base/base.h"
 
 namespace dory::typeMap
 {

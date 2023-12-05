@@ -1,6 +1,6 @@
 #pragma once
 
-#include "baseTests/dependencies.h"
+#include "reflection.h"
 
 namespace dory::typeMap
 {
@@ -94,10 +94,10 @@ namespace dory::typeMap
     {
     private:
         template<typename T>
-        static constexpr std::size_t getClassMemberCount(refl::descriptor::type_descriptor<T> typeDescriptor)
+        static constexpr std::size_t getClassMemberCount()
         {
             std::size_t count {};
-            visitClassMembers(typeDescriptor, [&count](auto memberDescriptor) {
+            visitClassMembers<T>([&count](auto memberDescriptor) {
                 ++count;
             });
 
@@ -105,8 +105,9 @@ namespace dory::typeMap
         }
 
         template<typename T, typename F>
-        static constexpr void visitClassMembers(refl::descriptor::type_descriptor<T> typeDescriptor, F functor)
+        static constexpr void visitClassMembers(F functor)
         {
+            refl::descriptor::type_descriptor<std::remove_reference_t<T>> typeDescriptor {};
             for_each(typeDescriptor.members, [&](auto memberDescriptor)
             {
                 //so far only for fields, possible to add support for member functions
@@ -153,11 +154,10 @@ namespace dory::typeMap
         static void visit(T&& object, TContext& context)
         {
             TPolicies::BeginObjectPolicy::process(context);
-            auto constexpr typeDescriptor = refl::descriptor::type_descriptor<std::remove_reference_t<T>>{};
-            const constexpr auto memberCount = getClassMemberCount(typeDescriptor);
+            const constexpr auto memberCount = getClassMemberCount<T>();
             std::size_t i = {};
 
-            visitClassMembers(typeDescriptor, [&object, &context, &i, memberCount](auto memberDescriptor) {
+            visitClassMembers<T>([&object, &context, &i, memberCount](auto memberDescriptor) {
                 if constexpr (is_field(memberDescriptor))
                 {
                     using MemberDescriptorType = decltype(memberDescriptor);
