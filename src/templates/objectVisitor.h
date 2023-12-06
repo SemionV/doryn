@@ -93,39 +93,6 @@ namespace dory::typeMap
     class ObjectVisitor
     {
     private:
-        template<typename T>
-        static constexpr std::size_t getClassMemberCount()
-        {
-            std::size_t count {};
-            visitClassMembers<T>([&count](auto memberDescriptor) {
-                ++count;
-            });
-
-            return count;
-        }
-
-        template<typename T, typename F>
-        static constexpr void visitClassMembers(F functor)
-        {
-            refl::descriptor::type_descriptor<std::remove_reference_t<T>> typeDescriptor {};
-            for_each(typeDescriptor.members, [&](auto memberDescriptor)
-            {
-                //so far only for fields, possible to add support for member functions
-                if constexpr (is_readable(memberDescriptor) && is_field(memberDescriptor))
-                {
-                    functor(memberDescriptor);
-                }
-            });
-        }
-
-        template<typename T, typename TContext>
-        static void visitClassMember(T& memberValue, const std::string& memberName, const std::size_t i, const std::size_t memberCount, TContext& context)
-        {
-            TPolicies::BeginMemberPolicy::process(memberName, i, context);
-            visit(memberValue, context);
-            TPolicies::EndMemberPolicy::process(i == memberCount - 1, context);
-        }
-
         template<typename T, auto N, typename TContext>
         static void visitArray(std::array<T, N>& object, TContext& context)
         {
@@ -154,21 +121,14 @@ namespace dory::typeMap
         static void visit(T&& object, TContext& context)
         {
             TPolicies::BeginObjectPolicy::process(context);
-            const constexpr auto memberCount = getClassMemberCount<T>();
-            std::size_t i = {};
 
-            visitClassMembers<T>([&object, &context, &i, memberCount](auto memberDescriptor) {
-                if constexpr (is_field(memberDescriptor))
-                {
-                    using MemberDescriptorType = decltype(memberDescriptor);
-
-                    auto& memberValue = object.*MemberDescriptorType::pointer;
-                    const auto& memberName = (std::string) MemberDescriptorType::name;
-                    visitClassMember(memberValue, memberName, i, memberCount, context);
-                }
-
-                ++i;
-            });
+            reflection::visitClassFields(object, [](auto& memberValue,
+                    const std::string& memberName, const std::size_t i, const std::size_t memberCount, TContext& context)
+            {
+                TPolicies::BeginMemberPolicy::process(memberName, i, context);
+                visit(memberValue, context);
+                TPolicies::EndMemberPolicy::process(i == memberCount - 1, context);
+            }, context);
 
             TPolicies::EndObjectPolicy::process(context);
         }

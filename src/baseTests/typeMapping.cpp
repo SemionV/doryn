@@ -181,10 +181,10 @@ TEST_CASE( "Layout typeMap test", "[typeMapping]" )
 template<typename LayoutMap, typename T, typename TMembers, AttributeId attributeId, std::size_t membersCount, std::size_t offset>
 void testAttributeDescriptor(std::size_t customSize = 0)
 {
-    const auto attributeSize = dory::dataLayout::LayoutAttributeSizeV<attributeId, LayoutMap>;
-
     REQUIRE(std::is_same_v<dory::dataLayout::LayoutAttributeTypeT<attributeId, LayoutMap>, T>);
     REQUIRE(std::is_same_v<dory::dataLayout::LayoutAttributeMemberTypeT<attributeId, LayoutMap>, TMembers>);
+
+    const auto attributeSize = dory::dataLayout::LayoutAttributeSizeV<attributeId, LayoutMap>;
     if constexpr (std::is_same_v<TMembers, void>)
     {
         REQUIRE(attributeSize == sizeof(T));
@@ -242,7 +242,7 @@ TEST_CASE( "Type Map", "[typeMapping]" )
     REQUIRE(std::is_same_v<dory::typeMap::MappedTypeT<TextureCoordinates, TypeMap>, VertexAttributeType<TextureCoordinates>>);
     REQUIRE(std::is_same_v<dory::typeMap::MappedTypeT<DoublePoint, TypeMap>, DoublePoint>);
 
-    using DestinationType = typename dory::typeMap::MappedType<Point, TypeMap>::Type;
+    using DestinationType = dory::typeMap::MappedTypeT<Point, TypeMap>;
     using ForwardConverterType = typename dory::typeMap::MappedType<Point, TypeMap>::ForwardConverterType;
     using BackwardConverterType = typename dory::typeMap::MappedType<Point, TypeMap>::BackwardConverterType;
 

@@ -17,6 +17,44 @@ namespace dory::reflection
         using Type = typename refl::detail::member_info<T, Idx>::value_type;
     };
 
+    template<typename T>
+    struct FieldCount;
+
+    template<typename T, typename... Ts>
+    struct FieldCount<refl::util::type_list<T, Ts...>>
+    {
+        static constexpr const std::size_t value = (refl::trait::is_field_v<T> ? 1 : 0) + FieldCount<refl::util::type_list<Ts...>>::value;
+    };
+
+    template<>
+    struct FieldCount<refl::util::type_list<>>
+    {
+        static constexpr const std::size_t value = 0;
+    };
+
+    template<typename T>
+    static constexpr const auto ClassFieldCountV = FieldCount<typename refl::descriptor::type_descriptor<std::remove_reference_t<T>>::member_types>::value;
+
+    template<typename T, typename F, typename... Args>
+    constexpr void visitClassFields(T&& object, F functor, Args&&... args)
+    {
+        std::size_t i = {};
+        refl::descriptor::type_descriptor<std::remove_reference_t<T>> typeDescriptor {};
+        const auto memberCount = reflection::ClassFieldCountV<T>;
+
+        for_each(typeDescriptor.members, [&](auto memberDescriptor)
+        {
+            if constexpr (is_field(memberDescriptor))
+            {
+                using MemberDescriptorType = decltype(memberDescriptor);
+
+                auto& memberValue = object.*MemberDescriptorType::pointer;
+                const auto& memberName = (std::string) MemberDescriptorType::name;
+                functor(memberValue, memberName, i++, memberCount, std::forward<Args>(args)...);
+            }
+        });
+    }
+
     template<typename T, unsigned Idx>
     using MemberValueTypeT = typename MemberValueType<T, Idx>::Type;
 
