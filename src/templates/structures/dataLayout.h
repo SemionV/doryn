@@ -1,6 +1,7 @@
 #pragma once
 
 #include "templates/reflection.h"
+#include "typeMap.h"
 
 namespace dory::dataLayout
 {
@@ -28,24 +29,26 @@ namespace dory::dataLayout
     template<typename T>
     static constexpr auto LayoutCountV = LayoutCount<T>::value;
 
-    template<typename T>
+    template<typename T, typename TTypeMap = void>
     struct LayoutSize;
 
-    template<auto id, typename T, auto... ids, typename... Ts>
-    struct LayoutSize<Layout<Attribute<id, T>, Attribute<ids, Ts>...>>
+    template<auto id, typename T, typename TTypeMap, auto... ids, typename... Ts>
+    struct LayoutSize<Layout<Attribute<id, T>, Attribute<ids, Ts>...>, TTypeMap>
     {
-        static constexpr std::size_t value = reflection::TypeSize<T>::value +
-        LayoutSize<Layout<Attribute<ids, Ts>...>>::value;
+        using MappedType = typeMap::MappedTypeT<T, TTypeMap>;
+
+        static constexpr std::size_t value = reflection::TypeSize<MappedType>::value +
+        LayoutSize<Layout<Attribute<ids, Ts>...>, TTypeMap>::value;
     };
 
-    template<>
-    struct LayoutSize<Layout<>>
+    template<typename TTypeMap>
+    struct LayoutSize<Layout<>, TTypeMap>
     {
         static constexpr std::size_t value = 0;
     };
 
-    template<typename T>
-    static constexpr auto LayoutSizeV = LayoutSize<T>::value;
+    template<typename T, typename TTypeMap = void>
+    static constexpr auto LayoutSizeV = LayoutSize<T, TTypeMap>::value;
 
     template<auto attributeId, typename T>
     struct LayoutAttributeSize;
@@ -56,8 +59,8 @@ namespace dory::dataLayout
         using AttributeType = typename T::Type;
 
         static constexpr std::size_t value = attributeId == T::id ?
-                                             reflection::TypeSize<AttributeType>::value
-        : LayoutAttributeSize<attributeId, Layout<Ts...>>::value;
+                                         reflection::TypeSize<AttributeType>::value
+                                        : LayoutAttributeSize<attributeId, Layout<Ts...>>::value;
     };
 
     template<auto attributeId>

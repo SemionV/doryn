@@ -2,6 +2,15 @@
 
 namespace dory::typeMap
 {
+    template<typename T>
+    struct Identity
+    {
+        using Type = T;
+    };
+
+    template<typename T>
+    using IdentityT = Identity<T>;
+
     template<typename TKey, typename T>
     struct TypePair
     {
@@ -39,13 +48,18 @@ namespace dory::typeMap
     };
 
     template<typename TSearch>
-    struct MappedType<TSearch, TypeMap<>>
+    struct MappedType<TSearch, void>
     {
         using Type = TSearch;
         using ForwardConverterType = void;
         using BackwardConverterType = void;
     };
 
+    template<typename TSearch>
+    struct MappedType<TSearch, TypeMap<>>: MappedType<TSearch, void>
+    {
+    };
+
     template<typename TSearch, typename TMap>
-    using MappedTypeT = typename MappedType<TSearch, TMap>::Type;
+    using MappedTypeT =  typename MappedType<TSearch, TMap>::Type;
 }
