@@ -29,26 +29,24 @@ namespace dory::dataLayout
     template<typename T>
     static constexpr auto LayoutCountV = LayoutCount<T>::value;
 
-    template<typename T, typename TTypeMap = void>
+    template<typename T>
     struct LayoutSize;
 
-    template<auto id, typename T, typename TTypeMap, auto... ids, typename... Ts>
-    struct LayoutSize<Layout<Attribute<id, T>, Attribute<ids, Ts>...>, TTypeMap>
+    template<auto id, typename T, auto... ids, typename... Ts>
+    struct LayoutSize<Layout<Attribute<id, T>, Attribute<ids, Ts>...>>
     {
-        using MappedType = typeMap::MappedTypeT<T, TTypeMap>;
-
-        static constexpr std::size_t value = reflection::TypeSize<MappedType>::value +
-        LayoutSize<Layout<Attribute<ids, Ts>...>, TTypeMap>::value;
+        static constexpr std::size_t value = reflection::TypeSize<T>::value +
+        LayoutSize<Layout<Attribute<ids, Ts>...>>::value;
     };
 
-    template<typename TTypeMap>
-    struct LayoutSize<Layout<>, TTypeMap>
+    template<>
+    struct LayoutSize<Layout<>>
     {
         static constexpr std::size_t value = 0;
     };
 
-    template<typename T, typename TTypeMap = void>
-    static constexpr auto LayoutSizeV = LayoutSize<T, TTypeMap>::value;
+    template<typename T>
+    static constexpr auto LayoutSizeV = LayoutSize<T>::value;
 
     template<auto attributeId, typename T>
     struct LayoutAttributeSize;

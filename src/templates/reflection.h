@@ -1,7 +1,5 @@
 #pragma once
 
-#include "structures/typeMap.h"
-
 namespace dory::reflection
 {
     template<typename T>
@@ -104,30 +102,29 @@ namespace dory::reflection
         using Type = void;
     };
 
-    template<typename T, int Idx, typename TTypeMap = void>
+    template<typename T, int Idx>
     struct TypeMembersSize;
 
-    template<typename T, typename TTypeMap = void, bool isTrivialTypeMember = std::is_trivial_v<T>>
+    template<typename T, bool isTrivialTypeMember = std::is_trivial_v<T>>
     struct TypeSize
     {
         static constexpr std::size_t value = sizeof(T);
     };
 
-    template<typename T, typename TTypeMap>
-    struct TypeSize<T, TTypeMap, false>
+    template<typename T>
+    struct TypeSize<T, false>
     {
-        using MappedType = typeMap::MappedTypeT<T, TTypeMap>;
-        static constexpr std::size_t value = TypeMembersSize<MappedType, MemberCountV<MappedType> - 1>::value;
+        static constexpr std::size_t value = TypeMembersSize<T, MemberCountV<T> - 1>::value;
     };
 
-    template<typename T, int Idx, typename TTypeMap>
+    template<typename T, int Idx>
     struct TypeMembersSize
     {
-        static constexpr std::size_t value = TypeSize<MemberValueTypeT<T, Idx>, TTypeMap>::value + TypeMembersSize<T, Idx - 1, TTypeMap>::value;
+        static constexpr std::size_t value = TypeSize<MemberValueTypeT<T, Idx>>::value + TypeMembersSize<T, Idx - 1>::value;
     };
 
-    template<typename T, typename TTypeMap>
-    struct TypeMembersSize<T, -1, TTypeMap>
+    template<typename T>
+    struct TypeMembersSize<T, -1>
     {
         public:
             static constexpr std::size_t value = 0;

@@ -9,14 +9,15 @@ find_package(refl-cpp REQUIRED
             PATHS ${VENDOR_DIR} NO_DEFAULT_PATH)
 
 add_executable(baseTests linearAlgebra.cpp
-                         templates.cpp
-                         eventTests.cpp
-                         messagesTests.cpp
-                         repositoryTests.cpp
-                         typeMapping.cpp
-                         domain/geometry/matrixCalculatorTests.cpp
-                         domain/geometry/transformationCalculatorTests.cpp
-                         domain/services/pipelineServiceTests.cpp)
+        templates.cpp
+        eventTests.cpp
+        messagesTests.cpp
+        repositoryTests.cpp
+        typeMapping.cpp
+        domain/geometry/matrixCalculatorTests.cpp
+        domain/geometry/transformationCalculatorTests.cpp
+        domain/services/pipelineServiceTests.cpp
+        dataLayoutTests.cpp)
                          
 target_include_directories(baseTests PRIVATE "${CMAKE_SOURCE_DIR}")
 target_include_directories(baseTests PRIVATE ${VENDOR_DIR})
