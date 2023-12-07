@@ -182,7 +182,7 @@ template<typename LayoutMap, typename T, typename TMembers, AttributeId attribut
 void testAttributeDescriptor(std::size_t customSize = 0)
 {
     REQUIRE(std::is_same_v<dory::dataLayout::LayoutAttributeTypeT<attributeId, LayoutMap>, T>);
-    REQUIRE(std::is_same_v<dory::dataLayout::LayoutAttributeMemberTypeT<attributeId, LayoutMap>, TMembers>);
+    REQUIRE(std::is_same_v<dory::dataLayout::LayoutAttributeFieldTypeT<attributeId, LayoutMap>, TMembers>);
 
     const auto attributeSize = dory::dataLayout::LayoutAttributeSizeV<attributeId, LayoutMap>;
     if constexpr (std::is_same_v<TMembers, void>)
@@ -194,12 +194,12 @@ void testAttributeDescriptor(std::size_t customSize = 0)
         REQUIRE(attributeSize == (customSize != 0 ? customSize : sizeof(TMembers) * membersCount));
     }
     REQUIRE(dory::dataLayout::LayoutAttributeOffsetV<attributeId, LayoutMap> == offset);
-    REQUIRE(dory::dataLayout::LayoutAttributeMemberCountV<attributeId, LayoutMap> == membersCount);
+    REQUIRE(dory::dataLayout::LayoutAttributeFieldCountV<attributeId, LayoutMap> == membersCount);
 }
 
 TEST_CASE( "Layout attributes check", "[typeMapping]" )
 {
-    testAttributeDescriptor<LayoutMap, std::size_t, void, AttributeId::meshId, 0, 0>();
+    testAttributeDescriptor<LayoutMap, std::size_t, std::size_t, AttributeId::meshId, 1, 0>();
     testAttributeDescriptor<LayoutMap, VertexAttributeType<Point>, float, AttributeId::position, 3, 8>();
     testAttributeDescriptor<LayoutMap, VertexAttributeType<Color>, float, AttributeId::color, 3, 20>();
     testAttributeDescriptor<LayoutMap, VertexAttributeType<Point>, float, AttributeId::normal, 3, 32>();

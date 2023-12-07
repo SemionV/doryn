@@ -17,6 +17,9 @@ namespace dory::reflection
         using Type = typename refl::detail::member_info<T, Idx>::value_type;
     };
 
+    template<typename T, unsigned Idx>
+    using MemberValueTypeT = typename MemberValueType<T, Idx>::Type;
+
     template<typename T>
     struct FieldCount;
 
@@ -55,49 +58,52 @@ namespace dory::reflection
         });
     }
 
-    template<typename T, unsigned Idx>
-    using MemberValueTypeT = typename MemberValueType<T, Idx>::Type;
-
     template<typename T, int Idx>
-    struct TrivialMembersType;
+    struct TrivialMemberFieldsType;
 
     template<typename T, bool isRoot, bool isTrivialTypeMember = std::is_trivial_v<T>>
-    struct MemberTrivialType
+    struct MemberFieldTrivialType
     {
         using Type = T;
     };
 
     template<typename T, bool isTrivialTypeMember>
-    struct MemberTrivialType<T, true, isTrivialTypeMember>
+    struct MemberFieldTrivialType<T, true, isTrivialTypeMember>
     {
-        using Type = void;
+        using Type = T;
     };
 
     template<typename T>
-    struct MemberTrivialType<T, true, false>
+    struct MemberFieldTrivialType<T, true, false>
     {
-        using Type = typename TrivialMembersType<T, MemberCountV<T> - 1>::Type;
+        using Type = typename TrivialMemberFieldsType<T, MemberCountV<T> - 1>::Type;
+    };
+
+    template<typename T, auto N>
+    struct MemberFieldTrivialType<std::array<T, N>, true, false>
+    {
+        using Type = typename MemberFieldTrivialType<T, false>::Type;
     };
 
     template<typename T>
-    struct MemberTrivialType<T, false, false>: public MemberTrivialType<T, true, false>
+    struct MemberFieldTrivialType<T, false, false>: public MemberFieldTrivialType<T, true, false>
     {};
 
     template<typename T, int Idx>
-    struct TrivialMembersType
+    struct TrivialMemberFieldsType
     {
         private:
             using MemberValueType = MemberValueTypeT<T, Idx>;
-            using NestedMemberTrivialType = MemberTrivialType<MemberValueType, false>;
+            using NestedMemberTrivialType = MemberFieldTrivialType<MemberValueType, false>;
             using ChoosenType = std::conditional_t<std::is_trivial_v<NestedMemberTrivialType>,
-                    NestedMemberTrivialType, TrivialMembersType<T, Idx - 1>>;
+                    NestedMemberTrivialType, TrivialMemberFieldsType<T, Idx - 1>>;
 
         public:
             using Type = ChoosenType::Type;
     };
 
     template<typename T>
-    struct TrivialMembersType<T, -1>
+    struct TrivialMemberFieldsType<T, -1>
     {
         using Type = void;
     };
@@ -106,6 +112,12 @@ namespace dory::reflection
     struct TypeMembersSize;
 
     template<typename T, bool isTrivialTypeMember = std::is_trivial_v<T>>
+    struct TypeSize;
+
+    template<typename T>
+    static constexpr std::size_t TypeSizeV = TypeSize<T>::value;
+
+    template<typename T, bool isTrivialTypeMember>
     struct TypeSize
     {
         static constexpr std::size_t value = sizeof(T);
@@ -117,10 +129,19 @@ namespace dory::reflection
         static constexpr std::size_t value = TypeMembersSize<T, MemberCountV<T> - 1>::value;
     };
 
+    template<typename T, auto N>
+    struct TypeSize<std::array<T, N>, false>
+    {
+        static constexpr std::size_t value = TypeSizeV<T>* N;
+    };
+
+    template<typename T, int Idx>
+    static constexpr std::size_t TypeMembersSizeV = TypeMembersSize<T, Idx>::value;
+
     template<typename T, int Idx>
     struct TypeMembersSize
     {
-        static constexpr std::size_t value = TypeSize<MemberValueTypeT<T, Idx>>::value + TypeMembersSize<T, Idx - 1>::value;
+        static constexpr std::size_t value = TypeSizeV<MemberValueTypeT<T, Idx>> + TypeMembersSizeV<T, Idx - 1>;
     };
 
     template<typename T>
@@ -134,21 +155,35 @@ namespace dory::reflection
     struct TypeTrivialMembersCount;
 
     template<typename T, bool isRoot, bool isTrivialTypeMember = std::is_trivial_v<T>>
-    struct TypeCount
+    struct TypeCount;
+
+    template<typename T>
+    struct TypeCount<T, true, true>
     {
         static constexpr std::size_t value = 1;
     };
 
-    template<typename T, bool isTrivialTypeMember>
-    struct TypeCount<T, true, isTrivialTypeMember>
+    template<typename T, auto N>
+    struct TypeCount<std::array<T, N>, true, true>
     {
-        static constexpr std::size_t value = 0;
+        static constexpr std::size_t value = N;
+    };
+
+    template<typename T>
+    struct TypeCount<T, false, true>: public TypeCount<T, true, true>
+    {
     };
 
     template<typename T>
     struct TypeCount<T, true, false>
     {
         static constexpr std::size_t value = TypeTrivialMembersCount<T, MemberCountV<T> - 1>::value;
+    };
+
+    template<typename T, auto N>
+    struct TypeCount<std::array<T, N>, true, false>
+    {
+        static constexpr std::size_t value = TypeCount<T, false>::value * N;
     };
 
     template<typename T>
