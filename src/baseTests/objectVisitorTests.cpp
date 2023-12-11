@@ -193,52 +193,78 @@ namespace dory::typeMap
         using EndCollectionItemPolicy = EndCollectionItemPolicy;
     };
 
-    template<typename TValue, TValue... values>
-    struct ExpectationMember;
-
-    template<typename TValue>
-    struct ObjectRepresentationNode
+    template<typename T>
+    struct ValueExpected
     {
-
+        using Type = T;
+        const T value;
+        explicit ValueExpected(const T& value):
+            value(value)
+        {}
     };
 
-    /*template<typename TValue>
-    struct ExpectationNode<ObjectRepresentation, ExpectationMember<ExpectationNode<TValue>, values...>>
+    template<typename T, const std::string_view& name>
+    struct MemberValueExpected: public ValueExpected<T>
     {
+        static const constexpr decltype(name) memberName = name;
+        explicit MemberValueExpected(const T& value):
+                ValueExpected<T>(value)
+        {}
+    };
 
-    };*/
-
-    template<typename TValueExpected, typename... Ts>
-    bool checkValueNode(const std::shared_ptr<ValueNode>& node, std::tuple<Ts...> members)
+    template<typename... Ts>
+    void checkValue(const ObjectRepresentation& object,  std::tuple<Ts...> expectedValue)
     {
-        auto isValueTypeAsExpected = std::holds_alternative<TValueExpected>(node->value);
-
-        return isValueTypeAsExpected;
+        checkValue(std::begin(object), std::end(object), expectedValue);
     }
 
-    template<typename TValueExpected>
-    requires(std::is_same_v<TValueExpected, ObjectRepresentation>)
-    bool checkValueNode(const std::shared_ptr<ValueNode>& node)
+    //generalize
+    void checkValue(float value, float expected)
     {
-        auto isValueTypeAsExpected = std::holds_alternative<TValueExpected>(node->value);
+        REQUIRE(value == expected);
+    }
 
-        return isValueTypeAsExpected;
+    template<std::size_t i = 0, typename Iterator, typename... Ts>
+    //require that Iterator has first and second members
+    //require T has memberName
+    void checkValue(Iterator current, const Iterator& end, std::tuple<Ts...> expectedValue)
+    {
+        using Expected = std::tuple_element_t<i, std::tuple<Ts...>>;
+        using MemberTypeExpected = typename Expected::Type;
+        REQUIRE(current->first == Expected::memberName);
+        REQUIRE(std::holds_alternative<MemberTypeExpected>(current->second->value));
+        checkValue(std::get<MemberTypeExpected>(current->second->value), std::get<i>(expectedValue).value);
+
+        checkValue<i + 1>(++current, end, expectedValue);
+    }
+
+    template<std::size_t i, typename Iterator,  typename... Ts>
+    requires(i == sizeof...(Ts))
+    void checkValue(const Iterator current, const Iterator& end, std::tuple<Ts...>)
+    {
+        REQUIRE(current == end);
     }
 
     TEST_CASE( "Visit object tree", "[objectVisitor]" )
     {
-        Point point{1, 2, 3};
+        const Point point{1, 2, 3};
 
         auto rootValueNode = std::make_shared<ValueNode>(nullptr);
         VisitorContext context(rootValueNode);
         ObjectVisitor<VisitorPolicies>::visit(point, context);
 
-        REQUIRE(checkValueNode<ObjectRepresentation>(rootValueNode));
+        REQUIRE(std::holds_alternative<ObjectRepresentation>(rootValueNode->value));
         auto& pointRepresentation = std::get<ObjectRepresentation>(rootValueNode->value);
 
-        REQUIRE(pointRepresentation.contains("x"));
-        auto xValueNode = pointRepresentation["x"];
-        REQUIRE(std::holds_alternative<float>(xValueNode->value));
-        REQUIRE(std::get<float>(xValueNode->value) == 1);
+        static const constexpr std::string_view xMember = "x";
+        static const constexpr std::string_view yMember = "y";
+        static const constexpr std::string_view zMember = "z";
+
+        auto expected = std::tuple{
+            MemberValueExpected<float, xMember>(point.x),
+            MemberValueExpected<float, yMember>(point.y),
+            MemberValueExpected<float, zMember>(point.z)
+        };
+        checkValue(pointRepresentation, expected);
     }
 };
