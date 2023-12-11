@@ -11,3 +11,4 @@ build/cmake-artifacts-make/
 build/settings.sh
 .vscode/c_cpp_properties.json
 .vscode/launch.json
+src/cmake-build-cmake-build-ninja-coverage/

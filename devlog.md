@@ -5,6 +5,11 @@ Tasks:
 * Fill Buffers with mapped data
 * Batch rendering
 
+* ObjectVisitor unit tests
+* Binary Layout Serializer unit tests
+* YAML Serializer/Deserializer
+* JSON Serializer/Deserializer
+* Move to C++ Modules architecture istead of headers
 * Reimplement MatrixCalculator using static polymorphism
 * Reimplement EntityRepository using static polymorphism, no virtual class interfaces
 * Reimplement ServiceLocator

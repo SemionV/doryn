@@ -34,6 +34,27 @@ namespace dory::typeMap
         }
     };
 
+    struct PrintBeginObjectPolicy
+    {
+        template<typename TContext>
+        inline static void process(TContext& context)
+        {
+            context.stream << "{" << std::endl;
+            ++context.nestingLevel;
+        }
+    };
+
+    struct PrintEndObjectPolicy
+    {
+        template<typename TContext>
+        inline static void process(TContext& context)
+        {
+            --context.nestingLevel;
+            JsonFormatting::printIndent(context);
+            context.stream << "}";
+        }
+    };
+
     struct PrintBeginMemberPolicy
     {
         template<typename TContext>
@@ -58,6 +79,27 @@ namespace dory::typeMap
         }
     };
 
+    struct PrintBeginCollectionPolicy
+    {
+        template<typename T, auto N, typename TContext>
+        inline static void process(TContext& context)
+        {
+            context.stream << "[" << std::endl;
+            ++context.nestingLevel;
+        }
+    };
+
+    struct PrintEndCollectionPolicy
+    {
+        template<typename TContext>
+        inline static void process(TContext& context)
+        {
+            --context.nestingLevel;
+            JsonFormatting::printIndent(context);
+            context.stream << "]";
+        }
+    };
+
     struct PrintBeginCollectionItemPolicy
     {
         template<typename TContext>
@@ -78,48 +120,6 @@ namespace dory::typeMap
             }
 
             context.stream << std::endl;
-        }
-    };
-
-    struct PrintBeginCollectionPolicy
-    {
-        template<typename TContext>
-        inline static void process(TContext& context)
-        {
-            context.stream << "[" << std::endl;
-            ++context.nestingLevel;
-        }
-    };
-
-    struct PrintEndCollectionPolicy
-    {
-        template<typename TContext>
-        inline static void process(TContext& context)
-        {
-            --context.nestingLevel;
-            JsonFormatting::printIndent(context);
-            context.stream << "]";
-        }
-    };
-
-    struct PrintBeginObjectPolicy
-    {
-        template<typename TContext>
-        inline static void process(TContext& context)
-        {
-            context.stream << "{" << std::endl;
-            ++context.nestingLevel;
-        }
-    };
-
-    struct PrintEndObjectPolicy
-    {
-        template<typename TContext>
-        inline static void process(TContext& context)
-        {
-            --context.nestingLevel;
-            JsonFormatting::printIndent(context);
-            context.stream << "}";
         }
     };
 

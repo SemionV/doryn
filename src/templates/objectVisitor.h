@@ -12,6 +12,22 @@ namespace dory::typeMap
         }
     };
 
+    struct DefaultBeginObjectPolicy
+    {
+        template<typename TContext>
+        inline static void process(TContext& context)
+        {
+        }
+    };
+
+    struct DefaultEndObjectPolicy
+    {
+        template<typename TContext>
+        inline static void process(TContext& context)
+        {
+        }
+    };
+
     struct DefaultBeginMemberPolicy
     {
         template<typename TContext>
@@ -24,6 +40,22 @@ namespace dory::typeMap
     {
         template<typename TContext>
         inline static void process(const bool lastMember, TContext& context)
+        {
+        }
+    };
+
+    struct DefaultBeginCollectionPolicy
+    {
+        template<typename T, auto N, typename TContext>
+        inline static void process(TContext& context)
+        {
+        }
+    };
+
+    struct DefaultEndCollectionPolicy
+    {
+        template<typename TContext>
+        inline static void process(TContext& context)
         {
         }
     };
@@ -44,49 +76,17 @@ namespace dory::typeMap
         }
     };
 
-    struct DefaultBeginCollectionPolicy
-    {
-        template<typename TContext>
-        inline static void process(TContext& context)
-        {
-        }
-    };
-
-    struct DefaultEndCollectionPolicy
-    {
-        template<typename TContext>
-        inline static void process(TContext& context)
-        {
-        }
-    };
-
-    struct DefaultBeginObjectPolicy
-    {
-        template<typename TContext>
-        inline static void process(TContext& context)
-        {
-        }
-    };
-
-    struct DefaultEndObjectPolicy
-    {
-        template<typename TContext>
-        inline static void process(TContext& context)
-        {
-        }
-    };
-
     struct VisitorDefaultPolicies
     {
         using ValuePolicy = DefaultValuePolicy;
+        using BeginObjectPolicy = DefaultBeginObjectPolicy;
+        using EndObjectPolicy = DefaultEndObjectPolicy;
         using BeginMemberPolicy = DefaultBeginMemberPolicy;
         using EndMemberPolicy = DefaultEndMemberPolicy;
         using BeginCollectionPolicy = DefaultBeginCollectionPolicy;
         using EndCollectionPolicy = DefaultEndCollectionPolicy;
         using BeginCollectionItemPolicy = DefaultBeginCollectionItemPolicy;
         using EndCollectionItemPolicy = DefaultEndCollectionItemPolicy;
-        using BeginObjectPolicy = DefaultBeginObjectPolicy;
-        using EndObjectPolicy = DefaultEndObjectPolicy;
     };
 
     template<typename TPolicies = VisitorDefaultPolicies>
@@ -96,7 +96,7 @@ namespace dory::typeMap
         template<typename T, auto N, typename TContext>
         static void visitArray(std::array<T, N>& object, TContext& context)
         {
-            TPolicies::BeginCollectionPolicy::process(context);
+            TPolicies::BeginCollectionPolicy::template process<T, N>(context);
 
             for(std::size_t i {}; i < N; ++i)
             {
@@ -122,8 +122,8 @@ namespace dory::typeMap
         {
             TPolicies::BeginObjectPolicy::process(context);
 
-            reflection::visitClassFields(object, [](auto& memberValue,
-                    const std::string& memberName, const std::size_t i, const std::size_t memberCount, TContext& context)
+            reflection::visitClassFields(object, [](auto& memberValue, const std::string& memberName,
+                    const std::size_t i, const std::size_t memberCount, TContext& context)
             {
                 TPolicies::BeginMemberPolicy::process(memberName, i, context);
                 visit(memberValue, context);

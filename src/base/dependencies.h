@@ -20,3 +20,4 @@
 #include <optional>
 #include <list>
 #include <string_view>
+#include <variant>

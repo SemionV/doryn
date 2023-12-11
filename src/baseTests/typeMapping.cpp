@@ -258,7 +258,7 @@ TEST_CASE( "Type Map", "[typeMapping]" )
     REQUIRE(pointBack.z == point.z);
 }
 
-TEST_CASE( "Print reflected object", "[typeMapping]" )
+TEST_CASE( "Print reflected object", "[.][typeMapping]" )
 {
     VertexAttributeType<DoublePoint> dPoint { Point{9, 10, 11}, Point{12, 13, 14}};
     dory::typeMap::ObjectPrinter::print(dPoint);
