@@ -2,6 +2,12 @@
 
 namespace dory::reflection
 {
+    template <std::size_t N>
+    constexpr decltype(auto) makeConstString(const char(&str)[N]) noexcept
+    {
+        return refl::util::make_const_string(str);
+    }
+
     template<typename T>
     struct MemberCount
     {
