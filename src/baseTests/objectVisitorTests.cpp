@@ -212,42 +212,40 @@ namespace dory::typeMap
         {}
     };
 
-    template<typename... Ts>
-    void checkValue(const ObjectRepresentation& object,  std::tuple<Ts...> expectedValue)
-    {
-        checkValue(std::begin(object), std::end(object), expectedValue);
-    }
-
-    //generalize
-    void checkValue(float value, float expected)
+    template<typename T>
+    requires(std::is_trivial_v<T>)
+    void checkValue(T value, T expected)
     {
         REQUIRE(value == expected);
     }
 
-    template<std::size_t i = 0, typename Iterator, typename... Ts>
-    //require that Iterator has first and second members
-    //require T has memberName
-    void checkValue(Iterator current, const Iterator& end, std::tuple<Ts...> expectedValue)
+    template<typename... Ts>
+    void checkValue(const ObjectRepresentation& object,  std::tuple<Ts...> expectedValue)
     {
-        using Expected = std::tuple_element_t<i, std::tuple<Ts...>>;
-        using MemberTypeExpected = typename Expected::Type;
-        REQUIRE(current->first == Expected::memberName);
-        REQUIRE(std::holds_alternative<MemberTypeExpected>(current->second->value));
-        checkValue(std::get<MemberTypeExpected>(current->second->value), std::get<i>(expectedValue).value);
-
-        checkValue<i + 1>(++current, end, expectedValue);
+        checkValue(object, expectedValue, std::index_sequence_for<Ts...>{});
     }
 
-    template<std::size_t i, typename Iterator,  typename... Ts>
-    requires(i == sizeof...(Ts))
-    void checkValue(const Iterator current, const Iterator& end, std::tuple<Ts...>)
+    template<typename T, std::size_t... Is>
+    void checkValue(const ObjectRepresentation& object, T expectedValue, std::index_sequence<Is...>)
     {
-        REQUIRE(current == end);
+        (checkMemberValue<std::tuple_element_t<Is, T>>(object, std::get<Is>(expectedValue).value), ...);
+    }
+
+    template<typename TExpected, typename T>
+    void checkMemberValue(const ObjectRepresentation& object, T objectMemberValue)
+    {
+        using MemberTypeExpected = typename TExpected::Type;
+        auto memberIterator = object.find((std::string)TExpected::memberName);
+        REQUIRE(memberIterator != std::end(object));
+        assert(memberIterator->second);
+        auto& value = memberIterator->second->value;
+        REQUIRE(std::holds_alternative<MemberTypeExpected>(value));
+        checkValue(std::get<MemberTypeExpected>(value), objectMemberValue);
     }
 
     TEST_CASE( "Visit object tree", "[objectVisitor]" )
     {
-        const Point point{1, 2, 3};
+        const constexpr Point point{1, 2, 3};
 
         auto rootValueNode = std::make_shared<ValueNode>(nullptr);
         VisitorContext context(rootValueNode);
