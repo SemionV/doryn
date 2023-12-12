@@ -280,10 +280,15 @@ namespace dory::typeMap
                 T,
                 decltype(makeExpectation(std::declval<T>()))>;
 
-        auto expectation = std::array<ValueExpected<ExpectationItemType>, N>{};
+        //TODO: make expectation correctly, don't return just std::tuple<...>, but ValueExpected<...> insted
+        using ExpectationItemType2 = std::conditional_t<std::is_trivial_v<T>,
+                T,
+                ObjectRepresentation>;
+
+        auto expectation = std::array<ValueExpected<ExpectationItemType2, ExpectationItemType>, N>{};
         for(std::size_t i = 0; i < N; ++i)
         {
-            expectation[i] = ValueExpected<ExpectationItemType>(makeExpectation(collection[i]));
+            expectation[i] = ValueExpected<ExpectationItemType2, ExpectationItemType>(makeExpectation(collection[i]));
         }
 
         return expectation;
@@ -319,8 +324,8 @@ namespace dory::typeMap
 
         return std::tuple{
                 MemberValueExpected<reflection::makeConstString("translation"), ObjectRepresentation, decltype(translationExpectation)>(translationExpectation),
-                MemberValueExpected<reflection::makeConstString("rotation"), CollectionRepresentation, decltype(rotationExpectation)>(rotationExpectation)/*,
-                MemberValueExpected<reflection::makeConstString("axises"), CollectionRepresentation, decltype(axisesExpectation)>(axisesExpectation)*/
+                MemberValueExpected<reflection::makeConstString("rotation"), CollectionRepresentation, decltype(rotationExpectation)>(rotationExpectation),
+                MemberValueExpected<reflection::makeConstString("axises"), CollectionRepresentation, decltype(axisesExpectation)>(axisesExpectation)
         };
     }
 
