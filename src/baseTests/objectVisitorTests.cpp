@@ -222,13 +222,25 @@ namespace dory::typeMap
 
     template<typename T>
     requires(std::is_trivial_v<T>)
-    void checkValue(T value, T expected)
+    void checkValue(T value, const ValueExpected<T, T>& expectedValue)
     {
-        REQUIRE(value == expected);
+        REQUIRE(value == expectedValue.value);
+    }
+
+    template<typename TValue, typename TExpected>
+    void checkValue(const ObjectRepresentation& object,  const ValueExpected<TValue, TExpected>& expectedValue)
+    {
+        checkValue(object, expectedValue.value);
+    }
+
+    template<typename TValue, typename TExpected>
+    void checkValue(const CollectionRepresentation& object,  const ValueExpected<TValue, TExpected>& expectedValue)
+    {
+        checkValue(object, expectedValue.value);
     }
 
     template<typename... Ts>
-    void checkValue(const ObjectRepresentation& object,  std::tuple<Ts...> expectedValue)
+    void checkValue(const ObjectRepresentation& object,  const std::tuple<Ts...>& expectedValue)
     {
         checkValue(object, expectedValue, std::index_sequence_for<Ts...>{});
     }
@@ -262,74 +274,81 @@ namespace dory::typeMap
             const auto& nodeItem = collection[i];
             auto& value = nodeItem->value;
             REQUIRE(std::holds_alternative<MemberTypeExpected>(value));
-            checkValue(std::get<MemberTypeExpected>(value), expectedValue[i].value);
+            checkValue(std::get<MemberTypeExpected>(value), expectedValue[i]);
         }
     }
 
     template<typename T>
     requires(std::is_fundamental_v<T>)
-    auto makeExpectation(T expectedValue)
+    constexpr auto makeExpectation(T expectedValue)
     {
         return ValueExpected<T>(expectedValue);
     }
 
     template<typename T, auto N>
-    decltype(auto) makeExpectation(const std::array<T, N>& collection)
+    constexpr decltype(auto) makeExpectation(const std::array<T, N>& collection)
     {
-        using ExpectationItemType = std::conditional_t<std::is_trivial_v<T>,
-                T,
-                decltype(makeExpectation(std::declval<T>()))>;
+        using ExpectationType = decltype(makeExpectation(std::declval<T>()));
 
-        //TODO: make expectation correctly, don't return just std::tuple<...>, but ValueExpected<...> insted
-        using ExpectationItemType2 = std::conditional_t<std::is_trivial_v<T>,
-                T,
-                ObjectRepresentation>;
-
-        auto expectation = std::array<ValueExpected<ExpectationItemType2, ExpectationItemType>, N>{};
+        auto collectionExpectation = std::array<ExpectationType, N>{};
         for(std::size_t i = 0; i < N; ++i)
         {
-            expectation[i] = ValueExpected<ExpectationItemType2, ExpectationItemType>(makeExpectation(collection[i]));
+            collectionExpectation[i] = makeExpectation(collection[i]);
         }
 
-        return expectation;
+        return ValueExpected<CollectionRepresentation, decltype(collectionExpectation)>{collectionExpectation};
     }
 
-    decltype(auto) makeExpectation(const Point& point)
+    template<auto propertyName, typename T, typename TExpected = T>
+    requires(std::is_trivial_v<T> || !std::is_same_v<T, TExpected>)
+    constexpr decltype(auto) makeExpectation(const T& propertyValue)
     {
-        return std::tuple{
-                MemberValueExpected<reflection::makeConstString("x"), float>(point.x),
-                MemberValueExpected<reflection::makeConstString("y"), float>(point.y),
-                MemberValueExpected<reflection::makeConstString("z"), float>(point.z)
-        };
+        auto valueExpectation = makeExpectation(propertyValue);
+        return MemberValueExpected<propertyName, TExpected, decltype(valueExpectation)>(valueExpectation);
     }
 
-    decltype(auto) makeExpectation(const Axises& axises)
+    template<auto propertyName, typename T>
+    requires(std::is_class_v<T>)
+    constexpr decltype(auto) makeExpectation(const T& propertyValue)
     {
-        auto axisIExpectation = makeExpectation(axises.i);
-        auto axisJExpectation = makeExpectation(axises.j);
-        auto axisKExpectation = makeExpectation(axises.k);
-
-        return std::tuple{
-                MemberValueExpected<reflection::makeConstString("i"), ObjectRepresentation, decltype(axisIExpectation)>(axisIExpectation),
-                MemberValueExpected<reflection::makeConstString("j"), ObjectRepresentation, decltype(axisJExpectation)>(axisJExpectation),
-                MemberValueExpected<reflection::makeConstString("k"), ObjectRepresentation, decltype(axisKExpectation)>(axisKExpectation)
-        };
+        return makeExpectation<propertyName, T, ObjectRepresentation>(propertyValue);
     }
 
-    decltype(auto) makeExpectation(const AffineTransformation& transformation)
+    template<auto propertyName, typename T, auto N>
+    constexpr decltype(auto) makeExpectation(const std::array<T, N>& propertyValue)
     {
-        auto translationExpectation = makeExpectation(transformation.translation);
-        auto rotationExpectation = makeExpectation(transformation.rotation);
-        auto axisesExpectation = makeExpectation(transformation.axises);
-
-        return std::tuple{
-                MemberValueExpected<reflection::makeConstString("translation"), ObjectRepresentation, decltype(translationExpectation)>(translationExpectation),
-                MemberValueExpected<reflection::makeConstString("rotation"), CollectionRepresentation, decltype(rotationExpectation)>(rotationExpectation),
-                MemberValueExpected<reflection::makeConstString("axises"), CollectionRepresentation, decltype(axisesExpectation)>(axisesExpectation)
-        };
+        return makeExpectation<propertyName, std::array<T, N>, CollectionRepresentation>(propertyValue);
     }
 
-    TEST_CASE( "Visit object tree", "[objectVisitor]" )
+    template<typename... TPropertyExpecations>
+    constexpr decltype(auto) makeExpectation(TPropertyExpecations... propertyExpectations)
+    {
+        auto objectTuple = std::tuple{ propertyExpectations... };
+        return ValueExpected<ObjectRepresentation, decltype(objectTuple)>{objectTuple};
+    }
+
+    constexpr decltype(auto) makeExpectation(const Point& point)
+    {
+        return makeExpectation(makeExpectation<reflection::makeConstString("x")>(point.x),
+                               makeExpectation<reflection::makeConstString("y")>(point.y),
+                               makeExpectation<reflection::makeConstString("z")>(point.z));
+    }
+
+    constexpr decltype(auto) makeExpectation(const Axises& axises)
+    {
+        return makeExpectation(makeExpectation<reflection::makeConstString("i")>(axises.i),
+                               makeExpectation<reflection::makeConstString("j")>(axises.j),
+                               makeExpectation<reflection::makeConstString("k")>(axises.k));
+    }
+
+    constexpr decltype(auto) makeExpectation(const AffineTransformation& transformation)
+    {
+        return makeExpectation(makeExpectation<reflection::makeConstString("translation")>(transformation.translation),
+                               makeExpectation<reflection::makeConstString("rotation")>(transformation.rotation),
+                               makeExpectation<reflection::makeConstString("axises")>(transformation.axises));
+    }
+
+    TEST_CASE( "Visit object tree shallow", "[objectVisitor]" )
     {
         const constexpr Point point{1, 2, 3};
 
@@ -340,11 +359,7 @@ namespace dory::typeMap
         REQUIRE(std::holds_alternative<ObjectRepresentation>(rootValueNode->value));
         auto& pointRepresentation = std::get<ObjectRepresentation>(rootValueNode->value);
 
-        auto expected = std::tuple{
-            MemberValueExpected<reflection::makeConstString("x"), float>(point.x),
-            MemberValueExpected<reflection::makeConstString("y"), float>(point.y),
-            MemberValueExpected<reflection::makeConstString("z"), float>(point.z)
-        };
+        auto expected = makeExpectation(point);
         checkValue(pointRepresentation, expected);
     }
 
@@ -397,5 +412,38 @@ namespace dory::typeMap
 
         auto expected = makeExpectation(transformation);
         checkValue(transformationRepresentation, expected);
+    }
+
+    TEST_CASE( "Visit cellection of collections", "[objectVisitor]" )
+    {
+        auto pointX = std::array<float, 3>{1, 2, 3};
+        auto pointY = std::array<float, 3>{4, 5, 6};
+        auto pointZ = std::array<float, 3>{7, 8, 9};
+        auto collection = std::array<decltype(pointX), 3>{pointX, pointY, pointZ};
+
+        auto rootValueNode = std::make_shared<ValueNode>(nullptr);
+        VisitorContext context(rootValueNode);
+        ObjectVisitor<VisitorPolicies>::visit(collection, context);
+
+        REQUIRE(std::holds_alternative<CollectionRepresentation>(rootValueNode->value));
+        auto& representation = std::get<CollectionRepresentation>(rootValueNode->value);
+
+        auto expected = makeExpectation(collection);
+        checkValue(representation, expected);
+    }
+
+    TEST_CASE( "Visit primitive value", "[objectVisitor]" )
+    {
+        std::size_t value = 11;
+
+        auto rootValueNode = std::make_shared<ValueNode>(nullptr);
+        VisitorContext context(rootValueNode);
+        ObjectVisitor<VisitorPolicies>::visit(value, context);
+
+        REQUIRE(std::holds_alternative<decltype(value)>(rootValueNode->value));
+        auto& representation = std::get<decltype(value)>(rootValueNode->value);
+
+        auto expected = makeExpectation(value);
+        checkValue(representation, expected);
     }
 };
