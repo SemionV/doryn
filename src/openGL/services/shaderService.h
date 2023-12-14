@@ -33,9 +33,11 @@ namespace dory::openGL::services
     class ShaderService
     {
         public:
-            static void loadProgram(graphics::Program& program,
-                std::shared_ptr<configuration::IConfiguration> configuration, 
-                std::function<void(ShaderServiceError&)> errorHandler = 0)
+            template<typename TServiceLocator>
+            static void loadProgram(
+                    const TServiceLocator& serviceLocator,
+                    graphics::Program& program,
+                    std::function<void(ShaderServiceError&)> errorHandler = 0)
             {
                 program.id = glCreateProgram();
 
@@ -45,7 +47,7 @@ namespace dory::openGL::services
                 {
                     auto& shader = shaders[i];
 
-                    shader.sourceCode = configuration->getTextFileContent(shader.key);
+                    shader.sourceCode = serviceLocator.configuration.getTextFileContent(shader.key);
 
                     auto shaderId = shader.id = glCreateShader(shader.type);
                     const char* shaderSource = shader.sourceCode.c_str();

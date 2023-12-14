@@ -9,8 +9,7 @@ find_package(glfw3 REQUIRED
 
 set_source_files_properties(${VENDOR_DIR}GL/gl3w.c PROPERTIES LANGUAGE CXX )
 
-add_library(dory-openGL SHARED ${VENDOR_DIR}GL/gl3w.c
-                                renderer.cpp)
+add_library(dory-openGL SHARED ${VENDOR_DIR}GL/gl3w.c)
 
 set_target_properties(dory-openGL PROPERTIES PREFIX ""
                                             IMPORT_PREFIX ""

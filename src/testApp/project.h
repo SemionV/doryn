@@ -7,11 +7,14 @@ namespace testApp
     template<class TDataContext>
     class Project
     {
+        using ServiceLocator = ServiceLocator<TDataContext>;
+
         private:
-            std::shared_ptr<ServiceLocator<TDataContext>> serviceLocator;
+            //TODO: convert shared_ptr to const &
+            std::shared_ptr<ServiceLocator> serviceLocator;
 
         public:
-            Project(std::shared_ptr<ServiceLocator<TDataContext>> serviceLocator): serviceLocator(serviceLocator)
+            Project(std::shared_ptr<ServiceLocator> serviceLocator): serviceLocator(serviceLocator)
             {}
 
             void run(TDataContext& context)
@@ -54,10 +57,9 @@ namespace testApp
                 auto pipelineNodeIdFactory = serviceLocator->getPipelineNodeIdFactory();
                 auto pipelineNodeRepository = serviceLocator->getPipelineNodeRepository();
                 auto viewRepositoryReader = serviceLocator->getViewRepositoryReader();
-                auto configuration = serviceLocator->getConfiguration();
                 auto windowRepositoryReader = serviceLocator->getWindowRepositoryReader();
-                auto renderer = std::make_shared<dory::openGL::Renderer>();
-                auto viewController = std::make_shared<dory::openGL::ViewControllerOpenGL<TDataContext>>(viewRepositoryReader, configuration, windowRepositoryReader, renderer);
+                auto renderer = std::make_shared<dory::openGL::Renderer<ServiceLocator>>();
+                auto viewController = std::make_shared<dory::openGL::ViewControllerOpenGL<TDataContext, ServiceLocator>>(*serviceLocator, viewRepositoryReader, windowRepositoryReader, renderer);
                 auto viewControllerNode = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(pipelineNodeIdFactory->generate(), 
                     viewController, 0, context.outputGroupNodeId));
 

@@ -7,17 +7,18 @@
 
 namespace dory::domain
 {
-    template<class TDataContext, class TWindow>
+    template<class TDataContext, typename TServiceLocator>
     class ViewController: public Controller<TDataContext>
     {
-        protected:
-            std::shared_ptr<RepositoryReader<entity::View>> viewRepository;
-            std::shared_ptr<configuration::IConfiguration> configuration;
+    protected:
+        std::shared_ptr<RepositoryReader<entity::View>> viewRepository;
+        const TServiceLocator& serviceLocator;
 
-        public:
-            ViewController(std::shared_ptr<RepositoryReader<entity::View>> viewRepository, std::shared_ptr<configuration::IConfiguration> configuration):
-                viewRepository(viewRepository),
-                configuration(configuration)
-            {}
+    public:
+        ViewController(const TServiceLocator& serviceLocator,
+                std::shared_ptr<RepositoryReader<entity::View>> viewRepository):
+            viewRepository(viewRepository),
+            serviceLocator(serviceLocator)
+        {}
     };
 }

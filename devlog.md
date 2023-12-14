@@ -15,6 +15,7 @@ Tasks:
 * Reimplement ServiceLocator
 * Generalize core type of Matricies, so that it can support also double
 * Render Meshes
+* Use KD-Tree
 * Camera Control
 * Mouse picking
 * Animation

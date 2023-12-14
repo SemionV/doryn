@@ -5,14 +5,14 @@
 
 namespace dory::configuration
 {
-    class DORY_API FileSystemBasedConfiguration: public IConfiguration
+    class DORY_API FileSystemBasedConfiguration
     {
         private:
             std::filesystem::path configurationPath;
 
         public:
-            FileSystemBasedConfiguration(std::filesystem::path configurationPath);
+            explicit FileSystemBasedConfiguration(std::filesystem::path configurationPath);
 
-            std::string getTextFileContent(const std::filesystem::path& filename, std::function<void(ConfigurationError)> errorHandler = 0) override;
+            std::string getTextFileContent(const std::filesystem::path& filename, const std::function<void(ConfigurationError)>& errorHandler = 0) const;
     };
 }

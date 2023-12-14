@@ -190,7 +190,8 @@ namespace dory::openGL::services
                 }
             }
 
-            static void drawObject(const graphics::Program& program, const TrianglesVertexArray& vertexArray)
+            template<typename TVertexArray>
+            static void drawObject(const graphics::Program& program, const TVertexArray& vertexArray)
             {
                 useProgram(program);
                 useVertextArray(vertexArray);

@@ -10,99 +10,113 @@
 
 namespace dory
 {
-    template<class TDataContext>
+    template<typename T>
+    struct ServicePolicy
+    {
+        using Type = T;
+    };
+
+    struct DefaultServicePolicies
+    {
+        using ConfigurationServicePolicy = ServicePolicy<void>;
+    };
+
+    template<class TDataContext, typename TServicePolicies = DefaultServicePolicies>
     class ServiceLocator
     {
-        private:
-            std::shared_ptr<configuration::IConfiguration> configuration;
-            std::shared_ptr<domain::services::IFrameService<TDataContext>> frameService;
+    private:
+        std::shared_ptr<domain::services::IFrameService<TDataContext>> frameService;
 
-            std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> cameraIdFactory;
-            std::shared_ptr<domain::EntityRepository<domain::entity::Camera>> cameraRepository;
-            std::shared_ptr<domain::RepositoryReader<domain::entity::Camera>> cameraRepositoryReader;
+        std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> cameraIdFactory;
+        std::shared_ptr<domain::EntityRepository<domain::entity::Camera>> cameraRepository;
+        std::shared_ptr<domain::RepositoryReader<domain::entity::Camera>> cameraRepositoryReader;
 
-            std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> viewIdFactory;
-            std::shared_ptr<domain::EntityRepository<domain::entity::View>> viewRepository;
-            std::shared_ptr<domain::RepositoryReader<domain::entity::View>> viewRepositoryReader;
-            
-            std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> pipelineNodeIdFactory;
-            std::shared_ptr<domain::EntityRepository<domain::entity::PipelineNode>> pipelineNodeRepository;
-            std::shared_ptr<domain::RepositoryReader<domain::entity::PipelineNode>> pipelineNodeRepositoryReader;
+        std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> viewIdFactory;
+        std::shared_ptr<domain::EntityRepository<domain::entity::View>> viewRepository;
+        std::shared_ptr<domain::RepositoryReader<domain::entity::View>> viewRepositoryReader;
 
-            std::shared_ptr<domain::services::PipelineService> pipelineService;
+        std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> pipelineNodeIdFactory;
+        std::shared_ptr<domain::EntityRepository<domain::entity::PipelineNode>> pipelineNodeRepository;
+        std::shared_ptr<domain::RepositoryReader<domain::entity::PipelineNode>> pipelineNodeRepositoryReader;
 
-            std::shared_ptr<domain::events::EngineEventHubDispatcher<TDataContext>> engineEventHub;
-            std::shared_ptr<domain::events::SystemConsoleEventHubDispatcher<TDataContext>> consoleEventHub;
+        std::shared_ptr<domain::services::PipelineService> pipelineService;
 
-        protected:
-            virtual void configureServices() = 0;
+        std::shared_ptr<domain::events::EngineEventHubDispatcher<TDataContext>> engineEventHub;
+        std::shared_ptr<domain::events::SystemConsoleEventHubDispatcher<TDataContext>> consoleEventHub;
 
-            virtual std::shared_ptr<configuration::IConfiguration> buildConfiguration() = 0;
-            virtual std::shared_ptr<domain::services::IFrameService<TDataContext>> buildFrameService() = 0;
-            
-            virtual std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> buildCameraIdFactory() = 0;
-            virtual std::shared_ptr<domain::EntityRepository<domain::entity::Camera>> buildCameraRepository() = 0;
-            virtual std::shared_ptr<domain::RepositoryReader<domain::entity::Camera>> buildCameraRepositoryReader() = 0;
+    public:
+        TServicePolicies::ConfigurationServicePolicy::Type configuration;
 
-            virtual std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> buildViewIdFactory() = 0;
-            virtual std::shared_ptr<domain::EntityRepository<domain::entity::View>> buildViewRepository() = 0;
-            virtual std::shared_ptr<domain::RepositoryReader<domain::entity::View>> buildViewRepositoryReader() = 0;
+    protected:
+        virtual void configureServices() = 0;
 
-            virtual std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> buildPipelineNodeIdFactory() = 0;
-            virtual std::shared_ptr<domain::EntityRepository<domain::entity::PipelineNode>> buildPipelineNodeRepository() = 0;
-            virtual std::shared_ptr<domain::RepositoryReader<domain::entity::PipelineNode>> buildPipelineNodeRepositoryReader() = 0;
+        virtual std::shared_ptr<domain::services::IFrameService<TDataContext>> buildFrameService() = 0;
 
-            virtual std::shared_ptr<domain::services::PipelineService> buildPipelineService() = 0;
+        virtual std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> buildCameraIdFactory() = 0;
+        virtual std::shared_ptr<domain::EntityRepository<domain::entity::Camera>> buildCameraRepository() = 0;
+        virtual std::shared_ptr<domain::RepositoryReader<domain::entity::Camera>> buildCameraRepositoryReader() = 0;
 
-            virtual std::shared_ptr<domain::events::EngineEventHubDispatcher<TDataContext>> buildEngineEventHub() = 0;
-            virtual std::shared_ptr<domain::events::SystemConsoleEventHubDispatcher<TDataContext>> buildConsoleEventHub() = 0;
+        virtual std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> buildViewIdFactory() = 0;
+        virtual std::shared_ptr<domain::EntityRepository<domain::entity::View>> buildViewRepository() = 0;
+        virtual std::shared_ptr<domain::RepositoryReader<domain::entity::View>> buildViewRepositoryReader() = 0;
 
-        public:
-            virtual ~ServiceLocator() = default;
+        virtual std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> buildPipelineNodeIdFactory() = 0;
+        virtual std::shared_ptr<domain::EntityRepository<domain::entity::PipelineNode>> buildPipelineNodeRepository() = 0;
+        virtual std::shared_ptr<domain::RepositoryReader<domain::entity::PipelineNode>> buildPipelineNodeRepositoryReader() = 0;
 
-            void configure()
-            {
-                configuration = buildConfiguration();
-                frameService = buildFrameService();
-            
-                cameraIdFactory = buildCameraIdFactory();
-                cameraRepository = buildCameraRepository();
-                cameraRepositoryReader = buildCameraRepositoryReader();
+        virtual std::shared_ptr<domain::services::PipelineService> buildPipelineService() = 0;
 
-                viewIdFactory = buildViewIdFactory();
-                viewRepository = buildViewRepository();
-                viewRepositoryReader = buildViewRepositoryReader();
+        virtual std::shared_ptr<domain::events::EngineEventHubDispatcher<TDataContext>> buildEngineEventHub() = 0;
+        virtual std::shared_ptr<domain::events::SystemConsoleEventHubDispatcher<TDataContext>> buildConsoleEventHub() = 0;
 
-                pipelineNodeIdFactory = buildPipelineNodeIdFactory();
-                pipelineNodeRepository = buildPipelineNodeRepository();
-                pipelineNodeRepositoryReader = buildPipelineNodeRepositoryReader();
+    public:
+        ServiceLocator():
+                configuration(TServicePolicies::ConfigurationServicePolicy::create(*this))
+        {}
 
-                pipelineService = buildPipelineService();
+        virtual ~ServiceLocator() = default;
 
-                engineEventHub = buildEngineEventHub();
-                consoleEventHub = buildConsoleEventHub();
+        void configure()
+        {
+            frameService = buildFrameService();
 
-                configureServices();
-            }
+            cameraIdFactory = buildCameraIdFactory();
+            cameraRepository = buildCameraRepository();
+            cameraRepositoryReader = buildCameraRepositoryReader();
 
-            std::shared_ptr<configuration::IConfiguration> getConfiguration() { return configuration;}
-            std::shared_ptr<domain::services::IFrameService<TDataContext>> getFrameService() { return frameService;}
-            
-            std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> getCameraIdFactory() {return cameraIdFactory;}
-            std::shared_ptr<domain::EntityRepository<domain::entity::Camera>> getCameraRepository() {return cameraRepository;}
-            std::shared_ptr<domain::RepositoryReader<domain::entity::Camera>> getCameraRepositoryReader() {return cameraRepositoryReader;}
+            viewIdFactory = buildViewIdFactory();
+            viewRepository = buildViewRepository();
+            viewRepositoryReader = buildViewRepositoryReader();
 
-            std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> getViewIdFactory() {return viewIdFactory;};
-            std::shared_ptr<domain::EntityRepository<domain::entity::View>> getViewRepository() {return viewRepository;}
-            std::shared_ptr<domain::RepositoryReader<domain::entity::View>> getViewRepositoryReader() {return viewRepositoryReader;}
+            pipelineNodeIdFactory = buildPipelineNodeIdFactory();
+            pipelineNodeRepository = buildPipelineNodeRepository();
+            pipelineNodeRepositoryReader = buildPipelineNodeRepositoryReader();
 
-            std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> getPipelineNodeIdFactory() {return pipelineNodeIdFactory;}
-            std::shared_ptr<domain::EntityRepository<domain::entity::PipelineNode>> getPipelineNodeRepository() {return pipelineNodeRepository;}
-            std::shared_ptr<domain::RepositoryReader<domain::entity::PipelineNode>> getPipelineNodeRepositoryReader() {return pipelineNodeRepositoryReader;}
+            pipelineService = buildPipelineService();
 
-            std::shared_ptr<domain::services::PipelineService> getPipelineService() { return pipelineService;}
+            engineEventHub = buildEngineEventHub();
+            consoleEventHub = buildConsoleEventHub();
 
-            std::shared_ptr<domain::events::EngineEventHubDispatcher<TDataContext>> getEngineEventHub() { return engineEventHub;}
-            std::shared_ptr<domain::events::SystemConsoleEventHubDispatcher<TDataContext>> getConsoleEventHub() {return consoleEventHub;}
+            configureServices();
+        }
+
+        std::shared_ptr<domain::services::IFrameService<TDataContext>> getFrameService() { return frameService;}
+
+        std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> getCameraIdFactory() {return cameraIdFactory;}
+        std::shared_ptr<domain::EntityRepository<domain::entity::Camera>> getCameraRepository() {return cameraRepository;}
+        std::shared_ptr<domain::RepositoryReader<domain::entity::Camera>> getCameraRepositoryReader() {return cameraRepositoryReader;}
+
+        std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> getViewIdFactory() {return viewIdFactory;};
+        std::shared_ptr<domain::EntityRepository<domain::entity::View>> getViewRepository() {return viewRepository;}
+        std::shared_ptr<domain::RepositoryReader<domain::entity::View>> getViewRepositoryReader() {return viewRepositoryReader;}
+
+        std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> getPipelineNodeIdFactory() {return pipelineNodeIdFactory;}
+        std::shared_ptr<domain::EntityRepository<domain::entity::PipelineNode>> getPipelineNodeRepository() {return pipelineNodeRepository;}
+        std::shared_ptr<domain::RepositoryReader<domain::entity::PipelineNode>> getPipelineNodeRepositoryReader() {return pipelineNodeRepositoryReader;}
+
+        std::shared_ptr<domain::services::PipelineService> getPipelineService() { return pipelineService;}
+
+        std::shared_ptr<domain::events::EngineEventHubDispatcher<TDataContext>> getEngineEventHub() { return engineEventHub;}
+        std::shared_ptr<domain::events::SystemConsoleEventHubDispatcher<TDataContext>> getConsoleEventHub() {return consoleEventHub;}
     };
 }

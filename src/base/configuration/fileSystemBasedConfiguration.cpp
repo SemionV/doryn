@@ -4,11 +4,11 @@
 namespace dory::configuration
 {
     FileSystemBasedConfiguration::FileSystemBasedConfiguration(std::filesystem::path configurationPath):
-        configurationPath(configurationPath)
+        configurationPath(std::move(configurationPath))
     {
     }
 
-    std::string FileSystemBasedConfiguration::getTextFileContent(const std::filesystem::path& filename, std::function<void(ConfigurationError)> errorHandler)
+    std::string FileSystemBasedConfiguration::getTextFileContent(const std::filesystem::path& filename, const std::function<void(ConfigurationError)>& errorHandler) const
     {
         auto path = configurationPath / filename.c_str();
 
@@ -26,7 +26,7 @@ namespace dory::configuration
                 throw std::ios_base::failure("file does not exist");
             }
 
-            return std::string();
+            return {};
         }
 
         auto result = std::string();

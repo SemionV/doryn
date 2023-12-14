@@ -5,19 +5,19 @@
 
 namespace dory::openGL
 {
-    template<class TDataContext>
-    class ViewControllerOpenGL: public domain::ViewController<TDataContext, GlfwWindow>
+    template<typename TDataContext, typename TServiceLocator>
+    class ViewControllerOpenGL: public domain::ViewController<TDataContext, TServiceLocator>
     {
         private:
             std::shared_ptr<domain::RepositoryReader<GlfwWindow>> windowRespository;
-            std::shared_ptr<Renderer> renderer;
+            std::shared_ptr<Renderer<TServiceLocator>> renderer;
 
         public:
-            ViewControllerOpenGL(std::shared_ptr<domain::RepositoryReader<domain::entity::View>> viewRepository, 
-                    std::shared_ptr<configuration::IConfiguration> configuration,
+            ViewControllerOpenGL(const TServiceLocator& serviceLocator,
+                    std::shared_ptr<domain::RepositoryReader<domain::entity::View>> viewRepository,
                     std::shared_ptr<domain::RepositoryReader<GlfwWindow>> windowRespository,
-                    std::shared_ptr<Renderer> renderer):
-                domain::ViewController<TDataContext, GlfwWindow>(viewRepository, configuration),
+                    std::shared_ptr<Renderer<TServiceLocator>> renderer):
+                domain::ViewController<TDataContext, TServiceLocator>(serviceLocator, viewRepository),
                 windowRespository(windowRespository),
                 renderer(renderer)
             {
@@ -32,7 +32,7 @@ namespace dory::openGL
                 {
                     glfwMakeContextCurrent(windowHandler);
                     gl3wInit();
-                    renderer->initialize(this->configuration);
+                    renderer->initialize(this->serviceLocator);
                 }
 
                 return true;
