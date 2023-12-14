@@ -348,19 +348,44 @@ namespace dory::typeMap
                                makeExpectation<reflection::makeConstString("axises")>(transformation.axises));
     }
 
+    template<typename T, typename TRepresentation = T>
+    void checkVisitorRepresentation(T value)
+    {
+        auto rootValueNode = std::make_shared<ValueNode>(nullptr);
+        VisitorContext context(rootValueNode);
+        ObjectVisitor<VisitorPolicies>::visit(value, context);
+
+        REQUIRE(std::holds_alternative<TRepresentation>(rootValueNode->value));
+        auto& representation = std::get<TRepresentation>(rootValueNode->value);
+
+        auto expected = makeExpectation(value);
+        checkValue(representation, expected);
+    }
+
+    template<typename T>
+    requires(std::is_trivial_v<T>)
+    void checkVisitor(const T& value)
+    {
+        checkVisitorRepresentation<T>(value);
+    }
+
+    template<typename T>
+    requires(std::is_class_v<T>)
+    void checkVisitor(const T& value)
+    {
+        checkVisitorRepresentation<T, ObjectRepresentation>(value);
+    }
+
+    template<typename T, auto N>
+    void checkVisitor(const std::array<T, N>& value)
+    {
+        checkVisitorRepresentation<std::array<T, N>, CollectionRepresentation>(value);
+    }
+
     TEST_CASE( "Visit object tree shallow", "[objectVisitor]" )
     {
         const constexpr Point point{1, 2, 3};
-
-        auto rootValueNode = std::make_shared<ValueNode>(nullptr);
-        VisitorContext context(rootValueNode);
-        ObjectVisitor<VisitorPolicies>::visit(point, context);
-
-        REQUIRE(std::holds_alternative<ObjectRepresentation>(rootValueNode->value));
-        auto& pointRepresentation = std::get<ObjectRepresentation>(rootValueNode->value);
-
-        auto expected = makeExpectation(point);
-        checkValue(pointRepresentation, expected);
+        checkVisitor(point);
     }
 
     TEST_CASE( "Visit object tree deep", "[objectVisitor]" )
@@ -370,30 +395,13 @@ namespace dory::typeMap
         const constexpr Point axisK{7, 8, 9};
         const constexpr Axises axises{axisI, axisJ, axisK};
 
-        auto rootValueNode = std::make_shared<ValueNode>(nullptr);
-        VisitorContext context(rootValueNode);
-        ObjectVisitor<VisitorPolicies>::visit(axises, context);
-
-        REQUIRE(std::holds_alternative<ObjectRepresentation>(rootValueNode->value));
-        auto& axisesRepresentation = std::get<ObjectRepresentation>(rootValueNode->value);
-
-        auto expected = makeExpectation(axises);
-        checkValue(axisesRepresentation, expected);
+        checkVisitor(axises);
     }
 
     TEST_CASE( "Visit collection", "[objectVisitor]" )
     {
         std::array<float, 3> values = {1, 2, 3};
-
-        auto rootValueNode = std::make_shared<ValueNode>(nullptr);
-        VisitorContext context(rootValueNode);
-        ObjectVisitor<VisitorPolicies>::visit(values, context);
-
-        REQUIRE(std::holds_alternative<CollectionRepresentation>(rootValueNode->value));
-        auto& valuesRepresentation = std::get<CollectionRepresentation>(rootValueNode->value);
-
-        auto expected = makeExpectation(values);
-        checkValue(valuesRepresentation, expected);
+        checkVisitor(values);
     }
 
     TEST_CASE( "Visit object with collection members", "[objectVisitor]" )
@@ -403,15 +411,7 @@ namespace dory::typeMap
         auto axises = std::array<Point, 3>{Point{1, 2, 3}, Point{4, 5, 6}, Point{7, 8, 9}};
         auto transformation = AffineTransformation{translation, rotation, axises};
 
-        auto rootValueNode = std::make_shared<ValueNode>(nullptr);
-        VisitorContext context(rootValueNode);
-        ObjectVisitor<VisitorPolicies>::visit(transformation, context);
-
-        REQUIRE(std::holds_alternative<ObjectRepresentation>(rootValueNode->value));
-        auto& transformationRepresentation = std::get<ObjectRepresentation>(rootValueNode->value);
-
-        auto expected = makeExpectation(transformation);
-        checkValue(transformationRepresentation, expected);
+        checkVisitor(transformation);
     }
 
     TEST_CASE( "Visit cellection of collections", "[objectVisitor]" )
@@ -421,29 +421,12 @@ namespace dory::typeMap
         auto pointZ = std::array<float, 3>{7, 8, 9};
         auto collection = std::array<decltype(pointX), 3>{pointX, pointY, pointZ};
 
-        auto rootValueNode = std::make_shared<ValueNode>(nullptr);
-        VisitorContext context(rootValueNode);
-        ObjectVisitor<VisitorPolicies>::visit(collection, context);
-
-        REQUIRE(std::holds_alternative<CollectionRepresentation>(rootValueNode->value));
-        auto& representation = std::get<CollectionRepresentation>(rootValueNode->value);
-
-        auto expected = makeExpectation(collection);
-        checkValue(representation, expected);
+        checkVisitor(collection);
     }
 
     TEST_CASE( "Visit primitive value", "[objectVisitor]" )
     {
         std::size_t value = 11;
-
-        auto rootValueNode = std::make_shared<ValueNode>(nullptr);
-        VisitorContext context(rootValueNode);
-        ObjectVisitor<VisitorPolicies>::visit(value, context);
-
-        REQUIRE(std::holds_alternative<decltype(value)>(rootValueNode->value));
-        auto& representation = std::get<decltype(value)>(rootValueNode->value);
-
-        auto expected = makeExpectation(value);
-        checkValue(representation, expected);
+        checkVisitor(value);
     }
 };
