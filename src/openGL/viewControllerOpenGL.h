@@ -32,7 +32,7 @@ namespace dory::openGL
                 {
                     glfwMakeContextCurrent(windowHandler);
                     gl3wInit();
-                    renderer->initialize(this->serviceLocator);
+                    renderer->initialize();
                 }
 
                 return true;

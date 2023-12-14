@@ -16,12 +16,7 @@ namespace dory
         using Type = T;
     };
 
-    struct DefaultServicePolicies
-    {
-        using ConfigurationServicePolicy = ServicePolicy<void>;
-    };
-
-    template<class TDataContext, typename TServicePolicies = DefaultServicePolicies>
+    template<class TDataContext, typename TServicePolicies>
     class ServiceLocator
     {
     private:
