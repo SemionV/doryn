@@ -9,9 +9,9 @@ namespace testApp
         dory::domain::entity::IdType mainWindowId;
 
         ProjectDataContext():
-            inputGroupNodeId(dory::domain::entity::nullId),
-            outputGroupNodeId(dory::domain::entity::nullId),
-            mainWindowId(dory::domain::entity::nullId)
+            inputGroupNodeId(dory::entity::nullId),
+            outputGroupNodeId(dory::entity::nullId),
+            mainWindowId(dory::entity::nullId)
         {}
     };
 }

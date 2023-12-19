@@ -51,14 +51,14 @@ namespace dory::reflection
         refl::descriptor::type_descriptor<std::remove_reference_t<T>> typeDescriptor {};
         const auto memberCount = reflection::ClassFieldCountV<T>;
 
-        for_each(typeDescriptor.members, [&](auto memberDescriptor)
+        for_each(typeDescriptor.members, [&]<typename U>(U memberDescriptor)
         {
             if constexpr (is_field(memberDescriptor))
             {
-                using MemberDescriptorType = decltype(memberDescriptor);
+                using MemberDescriptorType = U;
 
                 auto& memberValue = object.*MemberDescriptorType::pointer;
-                const auto& memberName = (std::string) MemberDescriptorType::name;
+                const auto& memberName = static_cast<std::string>(MemberDescriptorType::name);
                 functor(memberValue, memberName, i++, memberCount, std::forward<Args>(args)...);
             }
         });

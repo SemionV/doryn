@@ -13,7 +13,7 @@ namespace dory::domain::services
 
         nodeReader->getTraverseIterator().forEach([this, &nodes](const entity::PipelineNode& nodeEntity)
         {
-            if(nodeEntity.parentNodeId == entity::nullId)
+            if(nodeEntity.parentNodeId == dory::entity::nullId)
             {
                 nodes.emplace_back(loadNode(nodeEntity));
             }

@@ -59,14 +59,14 @@ namespace dory::domain
             std::vector<TEntity> items;
 
         private:
-            template<typename T, typename F> 
-            inline bool matchEntry(const T& entry, const F& expression)
+            template<typename T, typename F>
+            static inline bool matchEntry(const T& entry, const F& expression)
             {
                 return expression(entry);
             }
 
-            template<typename T> 
-            inline bool matchEntry(const T& entry, const T& entity)
+            template<typename T>
+            static inline bool matchEntry(const T& entry, const T& entity)
             {
                 return entry.id == entity.id;
             }
@@ -88,9 +88,7 @@ namespace dory::domain
             }
 
         public:
-            EntityRepository()
-            {
-            }
+            EntityRepository() = default;
 
             EntityRepository(std::initializer_list<TEntity>&& data):
                 items(std::forward<std::vector<TEntity>>(data))

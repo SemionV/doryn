@@ -41,7 +41,7 @@ namespace testApp
             }
         
         private:
-            entity::IdType newWindow(TDataContext& context)
+            auto newWindow(TDataContext& context)
             {
                 auto windowRespository = serviceLocator->getWindowRepository();
                 auto windowIdFactory = serviceLocator->getWindowIdFactory();
@@ -78,8 +78,8 @@ namespace testApp
             {
                 auto pipelineNodeIdFactory = serviceLocator->getPipelineNodeIdFactory();
                 auto pipelineNodeRepository = serviceLocator->getPipelineNodeRepository();
-                auto inputGroupNode = pipelineNodeRepository->store(entity::PipelineNode(pipelineNodeIdFactory->generate(), nullptr, 0, entity::nullId, "input group"));
-                auto outputGroupNode = pipelineNodeRepository->store(entity::PipelineNode(pipelineNodeIdFactory->generate(), nullptr, 1, entity::nullId, "output group"));
+                auto inputGroupNode = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(pipelineNodeIdFactory->generate(), nullptr, 0, dory::entity::nullId, "input group"));
+                auto outputGroupNode = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(pipelineNodeIdFactory->generate(), nullptr, 1, dory::entity::nullId, "output group"));
                 context.inputGroupNodeId = inputGroupNode.id;
                 context.outputGroupNodeId = outputGroupNode.id;
 
@@ -145,7 +145,7 @@ namespace testApp
                     std::cout << "Close window(id " << windowId << ")" << std::endl;
 
                     auto pipelineNodeIdFactory = serviceLocator->getPipelineNodeIdFactory();
-                    entity::IdType viewControllerNodeId = pipelineNodeIdFactory->getNullId();
+                    auto viewControllerNodeId = pipelineNodeIdFactory->getNullId();
 
                     auto viewRepository = serviceLocator->getViewRepository();
                     auto windowRepository = serviceLocator->getWindowRepository();

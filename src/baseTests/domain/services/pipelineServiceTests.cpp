@@ -7,8 +7,8 @@ TEST_CASE( "Load Pipeline", "[pipelineService]" )
 {
     auto nodesRepository = std::make_shared<dory::domain::EntityRepository<entity::PipelineNode>>(
         std::initializer_list<entity::PipelineNode>{
-            entity::PipelineNode(2, nullptr, 1, entity::nullId),
-            entity::PipelineNode(1, nullptr, 0, entity::nullId),
+            entity::PipelineNode(2, nullptr, 1, dory::entity::nullId),
+            entity::PipelineNode(1, nullptr, 0, dory::entity::nullId),
             entity::PipelineNode(3, nullptr, 1, 1),
             entity::PipelineNode(4, nullptr, 0, 1),
             entity::PipelineNode(5, nullptr, 0, 4),

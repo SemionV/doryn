@@ -1,12 +1,10 @@
 #pragma once
 
-#include "dependencies.h"
-#include "configuration/configuration.h"
 #include "domain/engine.h"
 #include "domain/services/frameService.h"
-#include "domain/dataContext.h"
 #include "domain/events/systemConsoleEventHub.h"
 #include "domain/entityRepository.h"
+#include "engine/engine.h"
 
 namespace dory
 {
@@ -40,7 +38,7 @@ namespace dory
         std::shared_ptr<domain::events::SystemConsoleEventHubDispatcher<TDataContext>> consoleEventHub;
 
     public:
-        TServicePolicies::ConfigurationServicePolicy::Type configuration;
+        typename TServicePolicies::ConfigurationServicePolicy::Type configuration;
 
     protected:
         virtual void configureServices() = 0;

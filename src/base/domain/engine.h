@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "controller.h"
 #include "services/pipelineService.h"
 #include "events/engineEventHub.h"
@@ -16,7 +18,7 @@ namespace dory::domain
         public:
             Engine(std::shared_ptr<services::PipelineService> pipelineService,
                 std::shared_ptr<events::EngineEventHubDispatcher<TDataContext>> engineEventHub):
-                    pipelineService(pipelineService),
+                    pipelineService(std::move(pipelineService)),
                     engineEventHub(engineEventHub)
             {};
 
@@ -24,7 +26,7 @@ namespace dory::domain
             {
                 auto pipelineNodes = pipelineService->getPipeline();
 
-                touchPipelineNodes(pipelineNodes, context, [](std::shared_ptr<object::PipelineNode> node, TDataContext& context, const TimeSpan& timeStep)
+                touchPipelineNodes(pipelineNodes, context, [](const std::shared_ptr<object::PipelineNode>& node, TDataContext& context, const TimeSpan& timeStep)
                 {
                     auto controller = node->nodeEntity.attachedController;
                     if(controller)

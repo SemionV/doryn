@@ -26,7 +26,7 @@ namespace dory::domain
 
             TId getNullId() override
             {
-                return entity::nullId;;
+                return dory::entity::nullId;;
             }
     };
 }

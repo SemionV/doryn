@@ -1,12 +1,13 @@
 #include "dependencies.h"
 #include "base/base.h"
+#include "engine/entity.h"
 
 using namespace dory::domain;
 
-struct TestEntity: public entity::Entity<entity::IdType>
+struct TestEntity: public dory::entity::Entity<dory::entity::IdType>
 {
     TestEntity(entity::IdType id):
-        entity::Entity<entity::IdType>(id)
+        dory::entity::Entity<dory::entity::IdType>(id)
     {}
 };
 

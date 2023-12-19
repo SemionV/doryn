@@ -1,29 +1,20 @@
 #pragma once
 
 #include "base/dependencies.h"
+#include "engine/entity.h"
 
 namespace dory::domain::entity
 {
-    using IdType = unsigned int;
-    const IdType nullId = 0;
+    using IdType = dory::entity::IdType;
 
-    template<typename TId>
-    struct Entity
-    {
-        TId id;
-        Entity(TId id):
-            id(id)
-        {}
-    };
-
-    struct Camera: public Entity<IdType>
+    struct Camera: public dory::entity::Entity<dory::entity::IdType>
     {
         Camera(IdType id):
             Entity(id)
         {}
     };
 
-    struct Window: public Entity<IdType>
+    struct Window: public dory::entity::Entity<IdType>
     {
         Window(IdType id):
             Entity(id)
@@ -46,7 +37,7 @@ namespace dory::domain::entity
         }
     };
 
-    struct View: public Entity<IdType>
+    struct View: public dory::entity::Entity<IdType>
     {
         IdType windowId;
         IdType controllerNodeId;
@@ -62,14 +53,14 @@ namespace dory::domain::entity
         {}
     };
 
-    struct PipelineNode: Entity<IdType>
+    struct PipelineNode: dory::entity::Entity<IdType>
     {
         std::shared_ptr<void> attachedController;
         IdType parentNodeId;
         std::string name;
         int priority;
 
-        PipelineNode(IdType id, std::shared_ptr<void> attachedController = nullptr, int priority = 0, IdType parentNodeId = nullId, std::string name = ""):
+        PipelineNode(IdType id, std::shared_ptr<void> attachedController = nullptr, int priority = 0, IdType parentNodeId = dory::entity::nullId, std::string name = ""):
             Entity(id),
             attachedController(attachedController),
             parentNodeId(parentNodeId),

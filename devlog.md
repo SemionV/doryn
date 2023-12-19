@@ -5,17 +5,16 @@ Tasks:
 * Fill Buffers with mapped data
 * Batch rendering
 
-* ObjectVisitor unit tests
+* Reimplement EntityRepository using static polymorphism, no virtual class interfaces
+* Reimplement ServiceLocator
+* Rework project structure: engine should be a single static library unit, game logic can be a shared library(dll)
+* Reimplement MatrixCalculator using static polymorphism
+* Generalize core type of Matricies, so that it can support also double
+* Move to C++ Modules architecture istead of headers
 * Binary Layout Serializer unit tests
 * YAML Serializer/Deserializer
 * JSON Serializer/Deserializer
-* Move to C++ Modules architecture istead of headers
-* Reimplement MatrixCalculator using static polymorphism
-* Reimplement EntityRepository using static polymorphism, no virtual class interfaces
-* Reimplement ServiceLocator
-* Generalize core type of Matricies, so that it can support also double
 * Render Meshes
-* Use KD-Tree
 * Camera Control
 * Mouse picking
 * Animation
@@ -24,6 +23,7 @@ Tasks:
 * Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
 * Scene
 * Serialization of scene state
+* Investigate K-D-Tree
 * Spatial partition
 * Path finding
 * Networking/Mutliplayer
@@ -31,6 +31,9 @@ Tasks:
 * Build for MacOS
 * Implement dynamic linking(load) of the dll, so that compilation/linking time in development will be reduced(long linking time of testApp.exe)
 * Voice control
+
+**14.12.23**
+* Task done: ObjectVisitor unit tests
 
 **30.10.23**
 * Task done: Return const& from EntityRepository
