@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <ranges>
+#include <algorithm>
 #include "engine/entity.h"
 
 namespace dory::repository
@@ -10,8 +11,13 @@ namespace dory::repository
     class ControllerRepository
     {
     private:
-        using Storage =  std::vector<entity::PipelineNode<TController>>;
-        Storage storage;
+        std::vector<entity::PipelineNode<TController>> storage;
+
+    private:
+        void sort()
+        {
+            std::ranges::sort(storage, std::ranges::greater(), &entity::PipelineNode<TController>::priority);
+        }
 
     public:
         auto getAll()
