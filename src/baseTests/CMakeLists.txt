@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(dory-templates)
+project(dory-benchmarks)
 
 find_package(Catch2 3 REQUIRED)
 find_package(FakeIt REQUIRED

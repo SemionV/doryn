@@ -1,10 +1,6 @@
 # Development log
 
 Tasks:
-* Static mapping of Vertex Attributes
-* Fill Buffers with mapped data
-* Batch rendering
-
 * Reimplement EntityRepository using static polymorphism, no virtual class interfaces
 * Reimplement ServiceLocator
 * Rework project structure: engine should be a single static library unit, game logic can be a shared library(dll)
@@ -14,6 +10,9 @@ Tasks:
 * Binary Layout Serializer unit tests
 * YAML Serializer/Deserializer
 * JSON Serializer/Deserializer
+* Static mapping of Vertex Attributes
+* Fill Buffers with mapped data
+* Batch rendering
 * Render Meshes
 * Camera Control
 * Mouse picking
@@ -31,6 +30,9 @@ Tasks:
 * Build for MacOS
 * Implement dynamic linking(load) of the dll, so that compilation/linking time in development will be reduced(long linking time of testApp.exe)
 * Voice control
+
+**29.12.23**
+* Task done: Integrate Google Benchmark for microbenchmarking
 
 **14.12.23**
 * Task done: ObjectVisitor unit tests
