@@ -1,18 +1,44 @@
-#include <google-benchmark/include/benchmark/benchmark.h>
+#include "dependencies.h"
 
-static void BM_StringCreation(benchmark::State& state) {
-    for (auto _ : state)
-        std::string empty_string;
-}
-// Register the function as a benchmark
-BENCHMARK(BM_StringCreation);
+static const constexpr std::size_t largeDataCount = 10000;
+static const constexpr std::size_t smallDataCount = 10;
 
-// Define another benchmark
-static void BM_StringCopy(benchmark::State& state) {
-    std::string x = "hello";
+static void BM_stdSort(benchmark::State& state) {
+    auto data = dory::testing::getArray<int, smallDataCount>();
     for (auto _ : state)
-        std::string copy(x);
+    {
+        auto dataCopy = *data;
+        std::ranges::sort(dataCopy, std::ranges::less());
+    }
 }
-BENCHMARK(BM_StringCopy);
+BENCHMARK(BM_stdSort);
+
+static void BM_stdSortLarge(benchmark::State& state) {
+    auto data = dory::testing::getArray<int, largeDataCount>();
+    for (auto _ : state)
+    {
+        auto dataCopy = *data;
+        std::ranges::sort(dataCopy, std::ranges::less());
+    }
+}
+BENCHMARK(BM_stdSortLarge);
+
+static void BM_quickSort(benchmark::State& state) {
+    auto data = dory::testing::getList<int, smallDataCount>();
+    for (auto _ : state)
+    {
+        dory::testing::quickSort(data);
+    }
+}
+BENCHMARK(BM_quickSort);
+
+static void BM_quickSortLarge(benchmark::State& state) {
+    auto data = dory::testing::getList<int, largeDataCount>();
+    for (auto _ : state)
+    {
+        dory::testing::quickSort(data);
+    }
+}
+BENCHMARK(BM_quickSortLarge);
 
 BENCHMARK_MAIN();

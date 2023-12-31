@@ -27,4 +27,6 @@ target_include_directories(baseTests PRIVATE ${VENDOR_DIR})
 target_link_libraries(baseTests PRIVATE base Catch2::Catch2WithMain)
 target_link_libraries(baseTests PRIVATE FakeIt::FakeIt-catch)
 
+target_precompile_headers(baseTests PRIVATE dependencies.h)
+
 install(TARGETS baseTests DESTINATION . COMPONENT Tests)
