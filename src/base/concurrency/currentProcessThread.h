@@ -3,7 +3,7 @@
 #include "task.h"
 #include "processThread.h"
 
-namespace dory::multithreading
+namespace dory::concurrency
 {
     class DORY_API CurrentProcessThread: public ProcessThread
     {

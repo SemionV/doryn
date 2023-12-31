@@ -13,7 +13,7 @@ using Byte = std::uint8_t;
 #include "domain/controllers/viewController.h"
 #include "domain/geometry/transformation.h"
 #include "domain/geometry/mathFunctions.h"
-#include "multithreading/individualProcessThread.h"
+#include "concurrency/individualProcessThread.h"
 #include "domain/events/eventHub.h"
 #include "domain/events/systemConsoleEventHub.h"
 #include "domain/events/windowEventHub.h"

@@ -6,7 +6,7 @@ namespace dory::win32
     class ConsoleController: public domain::Controller<TDataContext>
     {
         private:
-            multithreading::IndividualProcessThread processThread;
+            concurrency::IndividualProcessThread processThread;
             std::shared_ptr<domain::events::SystemConsoleEventHubDispatcher<TDataContext>> eventHub;
 
         public:
@@ -24,7 +24,7 @@ namespace dory::win32
 
                 std::cout << "SystemConsole.connect()" << std::endl;
 
-                auto readInputTask = multithreading::allocateActionTask([this]() 
+                auto readInputTask = concurrency::allocateActionTask([this]()
                 {  
                     int inputKey = getch();
                     onKeyPressed(inputKey);

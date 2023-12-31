@@ -8,10 +8,10 @@ namespace dory::win32
     class WindowControllerParallel: public WindowController<TDataContext>
     {
         private:
-            std::shared_ptr<multithreading::IndividualProcessThread> windowsThread;
+            std::shared_ptr<concurrency::IndividualProcessThread> windowsThread;
 
         public:
-            WindowControllerParallel(std::shared_ptr<multithreading::IndividualProcessThread> windowsThread,
+            WindowControllerParallel(std::shared_ptr<concurrency::IndividualProcessThread> windowsThread,
                 std::shared_ptr<domain::events::WindowEventHubDispatcher<TDataContext>> eventHub,
                 std::shared_ptr<MessageBuffer> messageBuffer,
                 std::shared_ptr<domain::RepositoryReader<Window>> windowRepository):
@@ -22,7 +22,7 @@ namespace dory::win32
 
             bool initialize(domain::entity::IdType referenceId, TDataContext& context) override
             {
-                auto pumpMessagesTask = multithreading::allocateActionTask([this]() 
+                auto pumpMessagesTask = concurrency::allocateActionTask([this]()
                 {
                     this->pumpSystemMessages();
 

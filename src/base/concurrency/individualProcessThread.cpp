@@ -1,7 +1,7 @@
 #include "base/dependencies.h"
 #include "individualProcessThread.h"
 
-namespace dory::multithreading
+namespace dory::concurrency
 {
     IndividualProcessThread::IndividualProcessThread(std::shared_ptr<Task> regularTask):
         regularTask(regularTask),

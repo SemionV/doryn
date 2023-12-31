@@ -3,9 +3,9 @@ cmake_minimum_required(VERSION 3.22)
 project(dory-base)
 
 add_library(base SHARED configuration/fileSystemBasedConfiguration.cpp
-                        multithreading/task.cpp
-                        multithreading/currentProcessThread.cpp
-                        multithreading/individualProcessThread.cpp
+        concurrency/task.cpp
+        concurrency/currentProcessThread.cpp
+        concurrency/individualProcessThread.cpp
                         domain/services/matrixCalculatorService.cpp
                         domain/services/transformationCalculatorService.cpp
                         domain/services/pipelineService.cpp)

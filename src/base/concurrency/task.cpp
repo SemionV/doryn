@@ -1,7 +1,7 @@
 #include "base/dependencies.h"
 #include "task.h"
 
-namespace dory::multithreading
+namespace dory::concurrency
 {
     void Task::setDone(bool isDone)
     {

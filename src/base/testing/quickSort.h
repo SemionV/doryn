@@ -33,4 +33,34 @@ namespace dory::testing
 
         return collectionSorted;
     }
+
+    template<typename T>
+    std::list<T> quickSortParallel(std::list<T> collection)
+    {
+        if(collection.empty())
+        {
+            return collection;
+        }
+
+        auto collectionSorted = std::list<T>{};
+        collectionSorted.splice(collectionSorted.begin(), collection, collection.begin());
+
+        const auto& pivotValue = *collectionSorted.begin();
+
+        auto partitionRange = std::ranges::partition(collection, [&pivotValue](const T& item)
+        {
+            return item < pivotValue;
+        });
+
+        auto lowerHalfCollection = std::list<T>{};
+        lowerHalfCollection.splice(lowerHalfCollection.end(), collection, collection.begin(), partitionRange.begin());
+
+        auto lowerHalfCollectionSorted = quickSort(std::move(lowerHalfCollection));
+        auto higherHalfFuture = std::async(&quickSort<T>, std::move(collection));
+
+        collectionSorted.splice(collectionSorted.begin(), lowerHalfCollectionSorted);
+        collectionSorted.splice(collectionSorted.end(), higherHalfFuture.get());
+
+        return collectionSorted;
+    }
 }

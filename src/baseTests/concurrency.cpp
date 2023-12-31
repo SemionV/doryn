@@ -1,4 +1,5 @@
 #include "dependencies.h"
+#include "base/concurrency/threadPool.h"
 
 TEST_CASE( "Get number of CPU cores", "[.][concurrency]" )
 {
@@ -105,4 +106,9 @@ TEST_CASE( "std::ranges sort", "[concurrency]" )
     std::ranges::sort(data, std::ranges::less());
 
     print(data);
+}
+
+TEST_CASE( "worker", "[concurrency]" )
+{
+    auto worker = dory::concurrency::Worker<2, int>();
 }

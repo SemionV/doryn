@@ -41,4 +41,13 @@ static void BM_quickSortLarge(benchmark::State& state) {
 }
 BENCHMARK(BM_quickSortLarge);
 
+static void BM_quickSortLargeParallel(benchmark::State& state) {
+    auto data = dory::testing::getList<int, largeDataCount>();
+    for (auto _ : state)
+    {
+        dory::testing::quickSortParallel(data);
+    }
+}
+BENCHMARK(BM_quickSortLargeParallel);
+
 BENCHMARK_MAIN();
