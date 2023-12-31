@@ -55,11 +55,11 @@ namespace dory::testing
         auto lowerHalfCollection = std::list<T>{};
         lowerHalfCollection.splice(lowerHalfCollection.end(), collection, collection.begin(), partitionRange.begin());
 
-        auto lowerHalfCollectionSorted = quickSort(std::move(lowerHalfCollection));
-        auto higherHalfFuture = std::async(&quickSort<T>, std::move(collection));
+        auto lowerHalfFuture = std::async(&quickSort<T>, std::move(lowerHalfCollection));
+        auto higherHalffCollectionSorted = quickSort(std::move(collection));
 
-        collectionSorted.splice(collectionSorted.begin(), lowerHalfCollectionSorted);
-        collectionSorted.splice(collectionSorted.end(), higherHalfFuture.get());
+        collectionSorted.splice(collectionSorted.end(), higherHalffCollectionSorted);
+        collectionSorted.splice(collectionSorted.begin(), lowerHalfFuture.get());
 
         return collectionSorted;
     }
