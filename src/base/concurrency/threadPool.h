@@ -13,16 +13,10 @@ namespace dory::concurrency
         PackagedTask packagedTask;
         std::tuple<Ts...> arguments;
     public:
-        template<typename F>
         explicit Task(PackagedTask&& packagedTask, Ts&&... arguments):
-                packagedTask(std::forward<F>(packagedTask)),
+                packagedTask(std::move(packagedTask)),
                 arguments(std::forward<Ts>(arguments)...)
         {}
-
-        auto getFuture()
-        {
-            return packagedTask.get_future();
-        }
 
         auto operator()()
         {
@@ -89,10 +83,9 @@ namespace dory::concurrency
         template<typename F>
         std::future<T> addTask(F&& taskBody, Ts&&... arguments)
         {
-            auto packagedTask = std::packaged_task<T(Ts...)>(std::forward(taskBody));
+            auto packagedTask = std::packaged_task<T(Ts...)>(std::forward<F>(taskBody));
+            auto future = packagedTask.get_future();
             auto task = TaskType(std::move(packagedTask), std::forward<Ts>(arguments)...);
-            auto future = task.getFuture();
-
             {
                 auto lock = std::lock_guard<std::mutex>(tasksMutex);
                 tasks.emplace_back(std::move(task));

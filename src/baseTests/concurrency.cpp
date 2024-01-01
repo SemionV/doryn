@@ -1,5 +1,7 @@
 #include "dependencies.h"
 #include "base/concurrency/threadPool.h"
+#include "base/testing/dataGenerators.h"
+#include "base/testing/quickSort.h"
 
 TEST_CASE( "Get number of CPU cores", "[.][concurrency]" )
 {
@@ -91,24 +93,30 @@ TEST_CASE( "sequential quick sort", "[.][concurrency]" )
     std::cout << "time taken: " << std::chrono::duration_cast<std::chrono::microseconds>(duration).count() << " microseconds" << std::endl;
 }
 
-template<typename T>
-auto getDataForStdSort()
-{
-    return std::array<int, 10>{5, 7, 3, 4, 1, 9, 2, 8, 10, 6};
-}
-
 TEST_CASE( "std::ranges sort", "[concurrency]" )
 {
-    auto data = getDataForStdSort<int>();
+    auto data = dory::testing::getArray<int, 10>();
 
-    print(data);
+    print(*data);
 
-    std::ranges::sort(data, std::ranges::less());
+    std::ranges::sort(*data, std::ranges::less());
 
-    print(data);
+    print(*data);
+}
+
+void sort(std::array<int, 100000>& collection)
+{
+    std::ranges::sort(collection, std::ranges::less());
 }
 
 TEST_CASE( "worker", "[concurrency]" )
 {
-    auto worker = dory::concurrency::Worker<int>(1);
+    auto worker = dory::concurrency::Worker<void, std::array<int, 100000>&>(1);
+
+    auto data = dory::testing::getArray<int, 100000>();
+    auto data2 = dory::testing::getArray<int, 100000>();
+
+    worker.addTask(sort, *data2);
+
+    sort(*data);
 }
