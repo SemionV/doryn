@@ -30,34 +30,74 @@ namespace dory::concurrency
         }
     };
 
-    template<std::size_t NThreads, typename T, typename... Ts>
+    template<typename T, typename... Ts>
     class Worker
     {
     private:
-        using PackagedTask = std::packaged_task<T(Ts...)>;
         using TaskType = Task<T, Ts...>;
 
-        std::mutex mutex;
+        std::mutex tasksMutex;
+        std::condition_variable taskAdded;
         std::deque<TaskType> tasks;
+        std::vector<std::future<void>> exitTokens;
+        std::atomic<bool> running {true};
 
     private:
-        void threadBody()
+        void threadBody(std::promise<void> exitToken)
         {
+            while(running)
+            {
+                auto lock = std::unique_lock(tasksMutex);
+                taskAdded.wait(lock, [&]()
+                {
+                    return !tasks.empty();
+                });
 
+                auto& task = tasks.front();
+                tasks.pop_front();
+                lock.unlock();
+
+                task();
+            }
+
+            exitToken.set_value_at_thread_exit();
         }
 
     public:
+        explicit Worker(std::size_t threadsCount):
+                exitTokens(threadsCount)
+        {
+            for(std::size_t i = 0; i < threadsCount; ++i)
+            {
+                auto promise = std::promise<void>{};
+                exitTokens.emplace_back(promise.get_future());
+
+                auto thread = std::thread(&Worker::threadBody, this, std::move(promise));
+                thread.detach();
+            }
+        }
+
+        ~Worker()
+        {
+            running = false;
+            for(auto& exitToken : exitTokens)
+            {
+                exitToken.get();
+            }
+        }
+
         template<typename F>
         std::future<T> addTask(F&& taskBody, Ts&&... arguments)
         {
-            auto packagedTask = PackagedTask(std::forward(taskBody));
+            auto packagedTask = std::packaged_task<T(Ts...)>(std::forward(taskBody));
             auto task = TaskType(std::move(packagedTask), std::forward<Ts>(arguments)...);
             auto future = task.getFuture();
 
             {
-                auto lock = std::lock_guard<std::mutex>(mutex);
-                tasks.emplace_front(std::move(task));
+                auto lock = std::lock_guard<std::mutex>(tasksMutex);
+                tasks.emplace_back(std::move(task));
             }
+            taskAdded.notify_all();
 
             return future;
         }

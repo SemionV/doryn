@@ -110,5 +110,5 @@ TEST_CASE( "std::ranges sort", "[concurrency]" )
 
 TEST_CASE( "worker", "[concurrency]" )
 {
-    auto worker = dory::concurrency::Worker<2, int>();
+    auto worker = dory::concurrency::Worker<int>(1);
 }
