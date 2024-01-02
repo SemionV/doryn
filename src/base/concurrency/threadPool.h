@@ -60,14 +60,13 @@ namespace dory::concurrency
                 }
             }
 
-            exitToken.set_value();
+            exitToken.set_value_at_thread_exit();
             std::cout << std::this_thread::get_id() << ": threadBody end" << "\n";
         }
 
     public:
         explicit Worker(std::size_t threadsCount)
         {
-            std::cout << "exitTokens.size: " << exitTokens.size() << "\n";
             for(std::size_t i = 0; i < threadsCount; ++i)
             {
                 auto promise = std::promise<void>{};
@@ -76,8 +75,6 @@ namespace dory::concurrency
                 auto thread = std::thread(&Worker::threadBody, this, std::move(promise));
                 thread.detach();
             }
-
-            std::cout << "exitTokens.size: " << exitTokens.size() << "\n";
         }
 
         ~Worker()

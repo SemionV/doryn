@@ -123,6 +123,4 @@ TEST_CASE( "worker tets", "[concurrency]" )
     std::cout << std::this_thread::get_id() << ": get future start" << "\n";
     futureResult.get();
     std::cout << std::this_thread::get_id() << ": get future end" << "\n";
-
-    worker.stop();
 }
