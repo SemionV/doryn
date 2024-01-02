@@ -110,17 +110,29 @@ void sort(std::array<int, 100000>& collection)
     std::ranges::sort(collection, std::ranges::less());
 }
 
-TEST_CASE( "worker tets", "[concurrency]" )
+/*
+ * Proper number of threads running
+ * Threads are invoking tasks
+ * There can be more tasks than threads
+ * Task queue is properly handled
+ */
+
+TEST_CASE( "worker test", "[concurrency]" )
 {
-    auto worker = dory::concurrency::Worker<void, std::array<int, 100000>&>(1);
+    auto worker = dory::concurrency::Worker<void, std::array<int, 100000>&>(2);
 
     auto data = dory::testing::getArray<int, 100000>();
     auto data2 = dory::testing::getArray<int, 100000>();
+    auto data3 = dory::testing::getArray<int, 100000>();
 
     auto futureResult = worker.addTask(sort, *data2);
+    auto futureResult2 = worker.addTask(sort, *data3);
 
     sort(*data);
     std::cout << std::this_thread::get_id() << ": get future start" << "\n";
     futureResult.get();
     std::cout << std::this_thread::get_id() << ": get future end" << "\n";
+    std::cout << std::this_thread::get_id() << ": get future 2 start" << "\n";
+    futureResult2.get();
+    std::cout << std::this_thread::get_id() << ": get future 2 end" << "\n";
 }
