@@ -93,7 +93,7 @@ TEST_CASE( "sequential quick sort", "[.][concurrency]" )
     std::cout << "time taken: " << std::chrono::duration_cast<std::chrono::microseconds>(duration).count() << " microseconds" << std::endl;
 }
 
-TEST_CASE( "std::ranges sort", "[concurrency]" )
+TEST_CASE( "std::ranges sort", "[.][concurrency]" )
 {
     auto data = dory::testing::getArray<int, 10>();
 
@@ -106,17 +106,23 @@ TEST_CASE( "std::ranges sort", "[concurrency]" )
 
 void sort(std::array<int, 100000>& collection)
 {
+    std::cout << std::this_thread::get_id() << ": sort" << "\n";
     std::ranges::sort(collection, std::ranges::less());
 }
 
-TEST_CASE( "worker", "[concurrency]" )
+TEST_CASE( "worker tets", "[concurrency]" )
 {
     auto worker = dory::concurrency::Worker<void, std::array<int, 100000>&>(1);
 
     auto data = dory::testing::getArray<int, 100000>();
     auto data2 = dory::testing::getArray<int, 100000>();
 
-    worker.addTask(sort, *data2);
+    auto futureResult = worker.addTask(sort, *data2);
 
     sort(*data);
+    std::cout << std::this_thread::get_id() << ": get future start" << "\n";
+    futureResult.get();
+    std::cout << std::this_thread::get_id() << ": get future end" << "\n";
+
+    worker.stop();
 }

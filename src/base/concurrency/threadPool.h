@@ -13,7 +13,7 @@ namespace dory::concurrency
         PackagedTask packagedTask;
         std::tuple<Ts...> arguments;
     public:
-        explicit Task(PackagedTask&& packagedTask, Ts&&... arguments):
+        explicit Task(PackagedTask&& packagedTask, Ts&&... arguments) noexcept:
                 packagedTask(std::move(packagedTask)),
                 arguments(std::forward<Ts>(arguments)...)
         {}
@@ -31,7 +31,7 @@ namespace dory::concurrency
         using TaskType = Task<T, Ts...>;
 
         std::mutex tasksMutex;
-        std::condition_variable taskAdded;
+        std::condition_variable tasksUpdated;
         std::deque<TaskType> tasks;
         std::vector<std::future<void>> exitTokens;
         std::atomic<bool> running {true};
@@ -39,28 +39,35 @@ namespace dory::concurrency
     private:
         void threadBody(std::promise<void> exitToken)
         {
+            std::cout << std::this_thread::get_id() << ": threadBody start" << "\n";
             while(running)
             {
                 auto lock = std::unique_lock(tasksMutex);
-                taskAdded.wait(lock, [&]()
+                tasksUpdated.wait(lock, [&]()
                 {
-                    return !tasks.empty();
+                    return !tasks.empty() || !running;
                 });
 
-                auto& task = tasks.front();
-                tasks.pop_front();
-                lock.unlock();
+                if(!tasks.empty())
+                {
+                    auto task = std::move(tasks.front());
+                    tasks.pop_front();
+                    lock.unlock();
 
-                task();
+                    std::cout << std::this_thread::get_id() << ": start task" << "\n";
+                    task();
+                    std::cout << std::this_thread::get_id() << ": end task" << "\n";
+                }
             }
 
-            exitToken.set_value_at_thread_exit();
+            exitToken.set_value();
+            std::cout << std::this_thread::get_id() << ": threadBody end" << "\n";
         }
 
     public:
-        explicit Worker(std::size_t threadsCount):
-                exitTokens(threadsCount)
+        explicit Worker(std::size_t threadsCount)
         {
+            std::cout << "exitTokens.size: " << exitTokens.size() << "\n";
             for(std::size_t i = 0; i < threadsCount; ++i)
             {
                 auto promise = std::promise<void>{};
@@ -69,15 +76,22 @@ namespace dory::concurrency
                 auto thread = std::thread(&Worker::threadBody, this, std::move(promise));
                 thread.detach();
             }
+
+            std::cout << "exitTokens.size: " << exitTokens.size() << "\n";
         }
 
         ~Worker()
         {
+            std::cout << std::this_thread::get_id() << ": start stop Worker" << "\n";
             running = false;
-            for(auto& exitToken : exitTokens)
+            tasksUpdated.notify_all();
+            for(auto& exitFuture : exitTokens)
             {
-                exitToken.get();
+                std::cout << std::this_thread::get_id() << ": start get thread end future" << "\n";
+                exitFuture.get();
+                std::cout << std::this_thread::get_id() << ": end get thread end future" << "\n";
             }
+            std::cout << std::this_thread::get_id() << ": end stop Worker" << "\n";
         }
 
         template<typename F>
@@ -90,7 +104,7 @@ namespace dory::concurrency
                 auto lock = std::lock_guard<std::mutex>(tasksMutex);
                 tasks.emplace_back(std::move(task));
             }
-            taskAdded.notify_all();
+            tasksUpdated.notify_all();
 
             return future;
         }
