@@ -4,6 +4,41 @@
 
 namespace dory::concurrency
 {
+    template<typename TStream>
+    class Log
+    {
+    private:
+        std::mutex streamMutex;
+        TStream& stream;
+    public:
+        explicit Log(TStream& stream):
+            stream(stream)
+        {}
+
+        template<typename... Ts>
+        void print(const Ts... arguments)
+        {
+            std::lock_guard<std::mutex> lock(streamMutex);
+            (stream << ... << arguments);
+        }
+
+        template<typename... Ts>
+        void printLine(const Ts... arguments)
+        {
+            print(arguments..., "\n");
+        }
+
+        template<typename S, typename T>
+        friend Log<S>& operator << (Log<S>& log, const T& argument);
+    };
+
+    template<typename TStream, typename T>
+    Log<TStream>& operator << (Log<TStream>& log, const T& argument)
+    {
+        log.print(argument);
+        return log;
+    }
+
     template<typename T, typename... Ts>
     class Task
     {
@@ -24,7 +59,24 @@ namespace dory::concurrency
         }
     };
 
-    template<typename T, typename... Ts>
+    struct WorkerDefaultProfilePolicy
+    {
+        template<typename TLog>
+        inline static void print(TLog& log, const char* message)
+        {
+        }
+    };
+
+    struct WorkerLogProfilePolicy
+    {
+        template<typename TLog>
+        inline static void print(TLog& log, const char* message)
+        {
+            log.printLine(std::this_thread::get_id(), ": ", message);
+        }
+    };
+
+    template<typename TLog, typename TProfilePolicy, typename T, typename... Ts>
     class Worker
     {
     private:
@@ -35,11 +87,12 @@ namespace dory::concurrency
         std::deque<TaskType> tasks;
         std::vector<std::future<void>> exitTokens;
         std::atomic<bool> running {true};
+        TLog& log;
 
     private:
         void threadBody(std::promise<void> exitToken)
         {
-            std::cout << std::this_thread::get_id() << ": threadBody start" << "\n";
+            TProfilePolicy::print(log, "threadBody start");
             while(running)
             {
                 auto lock = std::unique_lock(tasksMutex);
@@ -54,18 +107,19 @@ namespace dory::concurrency
                     tasks.pop_front();
                     lock.unlock();
 
-                    std::cout << std::this_thread::get_id() << ": start task" << "\n";
+                    TProfilePolicy::print(log, "start task");
                     task();
-                    std::cout << std::this_thread::get_id() << ": end task" << "\n";
+                    TProfilePolicy::print(log, "end task");
                 }
             }
 
             exitToken.set_value_at_thread_exit();
-            std::cout << std::this_thread::get_id() << ": threadBody end" << "\n";
+            TProfilePolicy::print(log, "threadBody end");
         }
 
     public:
-        explicit Worker(std::size_t threadsCount)
+        explicit Worker(TLog& log, std::size_t threadsCount):
+            log(log)
         {
             for(std::size_t i = 0; i < threadsCount; ++i)
             {
@@ -79,16 +133,16 @@ namespace dory::concurrency
 
         ~Worker()
         {
-            std::cout << std::this_thread::get_id() << ": start stop Worker" << "\n";
+            TProfilePolicy::print(log, "start stop Worker");
             running = false;
             tasksUpdated.notify_all();
             for(auto& exitFuture : exitTokens)
             {
-                std::cout << std::this_thread::get_id() << ": start get thread end future" << "\n";
+                TProfilePolicy::print(log, "start get thread end future");
                 exitFuture.get();
-                std::cout << std::this_thread::get_id() << ": end get thread end future" << "\n";
+                TProfilePolicy::print(log, "end get thread end future");
             }
-            std::cout << std::this_thread::get_id() << ": end stop Worker" << "\n";
+            TProfilePolicy::print(log, "end stop Worker");
         }
 
         template<typename F>

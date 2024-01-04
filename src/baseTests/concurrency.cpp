@@ -119,20 +119,31 @@ void sort(std::array<int, 100000>& collection)
 
 TEST_CASE( "worker test", "[concurrency]" )
 {
-    auto worker = dory::concurrency::Worker<void, std::array<int, 100000>&>(2);
+    using Log = dory::concurrency::Log<decltype(std::cout)>;
+    auto log = Log(std::cout);
 
-    auto data = dory::testing::getArray<int, 100000>();
-    auto data2 = dory::testing::getArray<int, 100000>();
-    auto data3 = dory::testing::getArray<int, 100000>();
+
+#ifdef NDEBUG
+    using WorkerProfilePolicies = dory::concurrency::WorkerDefaultProfilePolicy;
+#else
+    using WorkerProfilePolicies = dory::concurrency::WorkerLogProfilePolicy;
+#endif
+
+    constexpr static const std::size_t elementsCount = 100000;
+    auto worker = dory::concurrency::Worker<Log, WorkerProfilePolicies, void, std::array<int, elementsCount>&>(log, 2);
+
+    auto data = dory::testing::getArray<int, elementsCount>();
+    auto data2 = dory::testing::getArray<int, elementsCount>();
+    auto data3 = dory::testing::getArray<int, elementsCount>();
 
     auto futureResult = worker.addTask(sort, *data2);
     auto futureResult2 = worker.addTask(sort, *data3);
 
     sort(*data);
-    std::cout << std::this_thread::get_id() << ": get future start" << "\n";
+    WorkerProfilePolicies::print(log, "get future start");
     futureResult.get();
-    std::cout << std::this_thread::get_id() << ": get future end" << "\n";
-    std::cout << std::this_thread::get_id() << ": get future 2 start" << "\n";
+    WorkerProfilePolicies::print(log, "get future end");
+    WorkerProfilePolicies::print(log, "get future 2 start");
     futureResult2.get();
-    std::cout << std::this_thread::get_id() << ": get future 2 end" << "\n";
+    WorkerProfilePolicies::print(log, "get future 2 end");
 }
