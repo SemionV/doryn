@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base/dependencies.h"
+#include "base/concurrency/threadPool.h"
 
 namespace dory::testing
 {
@@ -55,8 +56,8 @@ namespace dory::testing
         auto lowerHalfCollection = std::list<T>{};
         lowerHalfCollection.splice(lowerHalfCollection.end(), collection, collection.begin(), partitionRange.begin());
 
-        auto lowerHalfFuture = std::async(&quickSort<T>, std::move(lowerHalfCollection));
-        auto higherHalfCollectionSorted = quickSort(std::move(collection));
+        auto lowerHalfFuture = std::async(&quickSortParallel<T>, std::move(lowerHalfCollection));
+        auto higherHalfCollectionSorted = quickSortParallel(std::move(collection));
 
         collectionSorted.splice(collectionSorted.end(), higherHalfCollectionSorted);
         collectionSorted.splice(collectionSorted.begin(), lowerHalfFuture.get());

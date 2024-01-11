@@ -117,11 +117,10 @@ void sort(std::array<int, 100000>& collection)
  * Task queue is properly handled
  */
 
-TEST_CASE( "worker test", "[concurrency]" )
+TEST_CASE( "worker test", "[.][concurrency]" )
 {
     using Log = dory::concurrency::Log<decltype(std::cout)>;
     auto log = Log(std::cout);
-
 
 #ifdef NDEBUG
     using WorkerProfilePolicies = dory::concurrency::WorkerDefaultProfilePolicy;
