@@ -21,7 +21,7 @@ namespace dory::domain::events
             std::function<void(Ts...)> function;
 
         public:
-            CallableFunction(std::function<void(Ts...)>&& function):
+            explicit CallableFunction(std::function<void(Ts...)>&& function):
                 function(std::move(function))
             {}
 
@@ -71,7 +71,7 @@ namespace dory::domain::events
             template<typename F>
             KeyType operator+=(F&& function)
             {
-                return attachHandler(std::move(function));
+                return attachHandler(std::forward<F>(function));
             }
 
             KeyType attachHandler(std::function<void(Ts...)>&& functor)

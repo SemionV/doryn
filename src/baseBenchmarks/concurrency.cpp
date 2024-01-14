@@ -1,5 +1,4 @@
 #include "dependencies.h"
-#include "base/concurrency/threadPool.h"
 
 static const constexpr std::size_t largeDataCount = 10000;
 static const constexpr std::size_t smallDataCount = 10;
@@ -42,13 +41,13 @@ static void BM_quickSortLarge(benchmark::State& state) {
 }
 BENCHMARK(BM_quickSortLarge);
 
-static void BM_quickSortLargeParallel(benchmark::State& state) {
+/*static void BM_quickSortLargeParallel(benchmark::State& state) {
     auto data = dory::testing::getList<int, largeDataCount>();
     for (auto _ : state)
     {
         dory::testing::quickSortParallel(data);
     }
 }
-BENCHMARK(BM_quickSortLargeParallel);
+BENCHMARK(BM_quickSortLargeParallel);*/
 
 BENCHMARK_MAIN();

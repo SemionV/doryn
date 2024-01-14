@@ -1,5 +1,6 @@
 #include "dependencies.h"
 #include "base/concurrency/threadPool.h"
+#include "base/concurrency/log.h"
 #include "base/testing/dataGenerators.h"
 #include "base/testing/quickSort.h"
 
