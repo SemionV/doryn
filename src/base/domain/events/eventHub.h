@@ -36,18 +36,19 @@ namespace dory::domain::events
 
             void addCase(TEventData&& eventData)
             {
+                std::lock_guard<std::mutex> lock(mutex);
                 eventCasesBackBuffer->emplace_back(std::forward<TEventData>(eventData));
             }
 
             void submitCases(EventDispatcher<TDataContext&, TEventData&>& eventDispatcher, TDataContext& dataContext)
             {
-                {
-                    const std::lock_guard<std::mutex> lock(mutex);
+                std::unique_lock<std::mutex> lock(mutex);
 
-                    std::vector<TEventData>* temp = eventCases;             
-                    eventCases = eventCasesBackBuffer;
-                    eventCasesBackBuffer = temp;
-                }
+                std::vector<TEventData>* temp = eventCases;
+                eventCases = eventCasesBackBuffer;
+                eventCasesBackBuffer = temp;
+
+                lock.unlock();
 
                 for(std::size_t i = 0; i < eventCases->size(); ++i)
                 {

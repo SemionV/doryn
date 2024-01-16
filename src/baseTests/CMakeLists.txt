@@ -19,7 +19,8 @@ add_executable(baseTests linearAlgebra.cpp
         domain/services/pipelineServiceTests.cpp
         dataLayoutTests.cpp
         objectVisitorTests.cpp
-        concurrency.cpp)
+        concurrency.cpp
+        atm_book.cpp)
                          
 target_include_directories(baseTests PRIVATE "${CMAKE_SOURCE_DIR}")
 target_include_directories(baseTests PRIVATE ${VENDOR_DIR})

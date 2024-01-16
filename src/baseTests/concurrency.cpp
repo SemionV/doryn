@@ -45,36 +45,6 @@ TEST_CASE( "std::partition", "[.][concurrency]" )
     std::cout << "position: " << *position << std::endl;
 }
 
-template<typename T>
-std::list<T> quickSort(std::list<T> collection)
-{
-    if(collection.empty())
-    {
-        return collection;
-    }
-
-    auto collectionSorted = std::list<T>{};
-    collectionSorted.splice(collectionSorted.begin(), collection, collection.begin());
-
-    const auto& pivotValue = *collectionSorted.begin();
-
-    auto partitionRange = std::ranges::partition(collection, [&pivotValue](const T& item)
-    {
-        return item < pivotValue;
-    });
-
-    auto lowerHalfCollection = std::list<T>{};
-    lowerHalfCollection.splice(lowerHalfCollection.end(), collection, collection.begin(), partitionRange.begin());
-
-    auto lowerHalfCollectionSorted = quickSort(std::move(lowerHalfCollection));
-    auto higherHalffCollectionSorted = quickSort(std::move(collection));
-
-    collectionSorted.splice(collectionSorted.end(), higherHalffCollectionSorted);
-    collectionSorted.splice(collectionSorted.begin(), lowerHalfCollectionSorted);
-
-    return collectionSorted;
-}
-
 TEST_CASE( "sequential quick sort", "[.][concurrency]" )
 {
     auto data = std::list<int>{5, 7, 3, 4, 1, 9, 2, 8, 10, 6};
@@ -83,7 +53,7 @@ TEST_CASE( "sequential quick sort", "[.][concurrency]" )
 
     auto beginTime = std::chrono::high_resolution_clock::now();
 
-    auto dataSorted = quickSort(data);
+    auto dataSorted = dory::testing::quickSort(data);
 
     auto endTime = std::chrono::high_resolution_clock::now();
 
