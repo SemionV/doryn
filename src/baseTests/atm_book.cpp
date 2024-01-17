@@ -1,4 +1,5 @@
 #include "dependencies.h"
+#include "base/concurrency/log.h"
 #include "base/testing/atm_book.h"
 
 
@@ -6,12 +7,15 @@ using namespace dory::testing::atm_book;
 
 TEST_CASE( "run atm", "[atm_book]" )
 {
-    bank_machine bank;
-    interface_machine interface_hardware;
-    atm machine(bank.get_sender(),interface_hardware.get_sender());
-    std::thread bank_thread(&bank_machine::run,&bank);
-    std::thread if_thread(&interface_machine::run,&interface_hardware);
-    std::thread atm_thread(&atm::run,&machine);
+    using Log = dory::concurrency::Log<decltype(std::cout)>;
+    auto log = Log(std::cout);
+
+    bank_machine bank(log);
+    interface_machine interface_hardware(log);
+    atm machine(log, bank.get_sender(),interface_hardware.get_sender());
+    std::thread bank_thread(&bank_machine<Log>::run,&bank);
+    std::thread if_thread(&interface_machine<Log>::run,&interface_hardware);
+    std::thread atm_thread(&atm<Log>::run,&machine);
     dory::concurrency::messaging::sender atmqueue(machine.get_sender());
     bool quit_pressed=false;
     while(!quit_pressed)

@@ -20,12 +20,18 @@ namespace dory::concurrency::messaging
         {}
     };
 
+    template<typename TLog>
     class queue
     {
         std::mutex m;
         std::condition_variable c;
         std::queue<std::shared_ptr<message_base> > q;
+        TLog& log;
     public:
+        explicit queue(TLog& log):
+            log(log)
+        {}
+
         template<typename T>
         void push(T const& msg)
         {
@@ -43,22 +49,24 @@ namespace dory::concurrency::messaging
         }
     };
 
-    template<typename PreviousDispatcher,typename Msg,typename Func>
+    template<typename TLog, int RecieverType, typename PreviousDispatcher,typename Msg,typename Func>
     class TemplateDispatcher
     {
-        queue* q;
+        queue<TLog>* q;
         PreviousDispatcher* prev;
         Func f;
         bool chained;
+        TLog& log;
 
         TemplateDispatcher(TemplateDispatcher const&)=delete;
         TemplateDispatcher& operator=(TemplateDispatcher const&)=delete;
 
-        template<typename Dispatcher,typename OtherMsg,typename OtherFunc>
+        template<typename Log, int RType, typename Dispatcher,typename OtherMsg,typename OtherFunc>
         friend class TemplateDispatcher;
 
         void wait_and_dispatch()
         {
+            log.printLine("wait_and_dispatch(", RecieverType, "): ", typeid(Msg).name());
             for(;;)
             {
                 auto msg=q->wait_and_pop();
@@ -83,24 +91,24 @@ namespace dory::concurrency::messaging
     public:
         TemplateDispatcher(TemplateDispatcher&& other):
                 q(other.q),prev(other.prev),f(std::move(other.f)),
-                chained(other.chained)
+                chained(other.chained), log(other.log)
         {
             other.chained=true;
         }
 
-        TemplateDispatcher(queue* q_,PreviousDispatcher* prev_,Func&& f_):
-                q(q_),prev(prev_),f(std::forward<Func>(f_)),chained(false)
+        TemplateDispatcher(TLog& log, queue<TLog>* q_,PreviousDispatcher* prev_,Func&& f_):
+                log(log), q(q_),prev(prev_),f(std::forward<Func>(f_)),chained(false)
         {
             prev_->chained=true;
         }
 
-        template<typename OtherMsg,typename OtherFunc>
-        TemplateDispatcher<TemplateDispatcher,OtherMsg,OtherFunc>
+        template<typename OtherMsg, typename OtherFunc>
+        TemplateDispatcher<TLog, RecieverType, TemplateDispatcher, OtherMsg, OtherFunc>
         handle(OtherFunc&& of)
         {
-            return TemplateDispatcher<
+            return TemplateDispatcher<TLog, RecieverType,
                     TemplateDispatcher,OtherMsg,OtherFunc>(
-                    q,this,std::forward<OtherFunc>(of));
+                    log, q,this,std::forward<OtherFunc>(of));
         }
 
         ~TemplateDispatcher() noexcept(false)
@@ -115,15 +123,18 @@ namespace dory::concurrency::messaging
     class close_queue
     {};
 
+    template<typename TLog, int RecieverType>
     class dispatcher
     {
-        queue* q;
+        queue<TLog>* q;
         bool chained;
+        TLog& log;
 
         dispatcher(dispatcher const&)=delete;
         dispatcher& operator=(dispatcher const&)=delete;
 
-        template<
+        template<typename Log,
+                int RType,
                 typename Dispatcher,
                 typename Msg,
                 typename Func>
@@ -131,6 +142,7 @@ namespace dory::concurrency::messaging
 
         void wait_and_dispatch()
         {
+            log.printLine("wait_and_dispatch(", RecieverType, "): ", "root");
             for(;;)
             {
                 auto msg=q->wait_and_pop();
@@ -148,22 +160,22 @@ namespace dory::concurrency::messaging
             return false;
         }
     public:
-        dispatcher(dispatcher&& other):
-                q(other.q),chained(other.chained)
+        dispatcher(TLog& log, dispatcher&& other):
+                q(other.q),chained(other.chained), log(log)
         {
             other.chained=true;
         }
 
-        explicit dispatcher(queue* q_):
-                q(q_),chained(false)
+        explicit dispatcher(TLog& log, queue<TLog>* q_):
+                q(q_),chained(false), log(log)
         {}
 
         template<typename Message,typename Func>
-        TemplateDispatcher<dispatcher,Message,Func>
+        TemplateDispatcher<TLog, RecieverType, dispatcher,Message,Func>
         handle(Func&& f)
         {
-            return TemplateDispatcher<dispatcher,Message,Func>(
-                    q,this,std::forward<Func>(f));
+            return TemplateDispatcher<TLog, RecieverType, dispatcher,Message,Func>(
+                    log, q,this,std::forward<Func>(f));
         }
 
         ~dispatcher() noexcept(false)
@@ -175,15 +187,17 @@ namespace dory::concurrency::messaging
         }
     };
 
+    template<typename TLog>
     class sender
     {
-        queue*q;
+        queue<TLog>*q;
+        TLog& log;
     public:
-        sender():
-                q(nullptr)
+        sender(TLog& log):
+                log(log), q(nullptr)
         {}
-        explicit sender(queue*q_):
-                q(q_)
+        explicit sender(TLog& log, queue<TLog>*q_):
+                log(log), q(q_)
         {}
         template<typename Message>
         void send(Message const& msg)
@@ -195,17 +209,24 @@ namespace dory::concurrency::messaging
         }
     };
 
+    template<typename TLog, int RecieverType>
     class receiver
     {
-        queue q;
+        queue<TLog> q;
+        TLog& log;
     public:
-        operator sender()
+        receiver(TLog& log):
+            q(log), log(log)
         {
-            return sender(&q);
         }
-        dispatcher wait()
+
+        operator sender<TLog>()
         {
-            return dispatcher(&q);
+            return sender(log, &q);
+        }
+        dispatcher<TLog, RecieverType> wait()
+        {
+            return dispatcher<TLog, RecieverType>(log, &q);
         }
     };
 }

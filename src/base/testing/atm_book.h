@@ -5,14 +5,15 @@
 
 namespace dory::testing::atm_book
 {
+    template<typename TLog>
     struct withdraw
     {
         std::string account;
         unsigned amount;
-        mutable concurrency::messaging::sender atm_queue;
+        mutable concurrency::messaging::sender<TLog> atm_queue;
         withdraw(std::string const& account_,
                  unsigned amount_,
-                 concurrency::messaging::sender atm_queue_):
+                 concurrency::messaging::sender<TLog> atm_queue_):
                 account(account_),amount(amount_),
                 atm_queue(atm_queue_)
         {}
@@ -73,13 +74,15 @@ namespace dory::testing::atm_book
                 amount(amount_)
         {}
     };
+
+    template<typename TLog>
     struct verify_pin
     {
         std::string account;
         std::string pin;
-        mutable concurrency::messaging::sender atm_queue;
+        mutable concurrency::messaging::sender<TLog> atm_queue;
         verify_pin(std::string const& account_,std::string const& pin_,
-                   concurrency::messaging::sender atm_queue_):
+                   concurrency::messaging::sender<TLog> atm_queue_):
                 account(account_),pin(pin_),atm_queue(atm_queue_)
         {}
     };
@@ -99,11 +102,13 @@ namespace dory::testing::atm_book
     {};
     struct display_withdrawal_options
     {};
+
+    template<typename TLog>
     struct get_balance
     {
         std::string account;
-        mutable concurrency::messaging::sender atm_queue;
-        get_balance(std::string const& account_, concurrency::messaging::sender atm_queue_):
+        mutable concurrency::messaging::sender<TLog> atm_queue;
+        get_balance(std::string const& account_, concurrency::messaging::sender<TLog> atm_queue_):
                 account(account_),atm_queue(atm_queue_)
         {}
     };
@@ -124,11 +129,19 @@ namespace dory::testing::atm_book
     struct balance_pressed
     {};
 
+    enum class RecieverType
+    {
+        ATM = 1,
+        BANK = 2,
+        INTERFACE_HARDWARE = 3
+    };
+
+    template<typename TLog>
     class atm
     {
-        concurrency::messaging::receiver incoming;
-        concurrency::messaging::sender bank;
-        concurrency::messaging::sender interface_hardware;
+        concurrency::messaging::receiver<TLog, (int)RecieverType::ATM> incoming;
+        concurrency::messaging::sender<TLog> bank;
+        concurrency::messaging::sender<TLog> interface_hardware;
         void (atm::*state)();
         std::string account;
         unsigned withdrawal_amount;
@@ -136,7 +149,7 @@ namespace dory::testing::atm_book
         void process_withdrawal()
         {
             incoming.wait()
-                    .handle<withdraw_ok>(
+                    .template handle<withdraw_ok>(
                             [&](withdraw_ok const& msg)
                             {
                                 interface_hardware.send(
@@ -146,14 +159,14 @@ namespace dory::testing::atm_book
                                 state=&atm::done_processing;
                             }
                     )
-                    .handle<withdraw_denied>(
+                    .template handle<withdraw_denied>(
                             [&](withdraw_denied const& msg)
                             {
                                 interface_hardware.send(display_insufficient_funds());
                                 state=&atm::done_processing;
                             }
                     )
-                    .handle<cancel_pressed>(
+                    .template handle<cancel_pressed>(
                             [&](cancel_pressed const& msg)
                             {
                                 bank.send(
@@ -167,14 +180,14 @@ namespace dory::testing::atm_book
         void process_balance()
         {
             incoming.wait()
-                    .handle<balance>(
+                    .template handle<balance>(
                             [&](balance const& msg)
                             {
                                 interface_hardware.send(display_balance(msg.amount));
                                 state=&atm::wait_for_action;
                             }
                     )
-                    .handle<cancel_pressed>(
+                    .template handle<cancel_pressed>(
                             [&](cancel_pressed const& msg)
                             {
                                 state=&atm::done_processing;
@@ -185,22 +198,22 @@ namespace dory::testing::atm_book
         {
             interface_hardware.send(display_withdrawal_options());
             incoming.wait()
-                    .handle<withdraw_pressed>(
+                    .template handle<withdraw_pressed>(
                             [&](withdraw_pressed const& msg)
                             {
                                 withdrawal_amount=msg.amount;
-                                bank.send(withdraw(account,msg.amount,incoming));
+                                bank.send(withdraw<TLog>(account,msg.amount,incoming));
                                 state=&atm::process_withdrawal;
                             }
                     )
-                    .handle<balance_pressed>(
+                    .template handle<balance_pressed>(
                             [&](balance_pressed const& msg)
                             {
-                                bank.send(get_balance(account,incoming));
+                                bank.send(get_balance<TLog>(account,incoming));
                                 state=&atm::process_balance;
                             }
                     )
-                    .handle<cancel_pressed>(
+                    .template handle<cancel_pressed>(
                             [&](cancel_pressed const& msg)
                             {
                                 state=&atm::done_processing;
@@ -210,13 +223,13 @@ namespace dory::testing::atm_book
         void verifying_pin()
         {
             incoming.wait()
-                    .handle<pin_verified>(
+                    .template handle<pin_verified>(
                             [&](pin_verified const& msg)
                             {
                                 state=&atm::wait_for_action;
                             }
                     )
-                    .handle<pin_incorrect>(
+                    .template handle<pin_incorrect>(
                             [&](pin_incorrect const& msg)
                             {
                                 interface_hardware.send(
@@ -224,7 +237,7 @@ namespace dory::testing::atm_book
                                 state=&atm::done_processing;
                             }
                     )
-                    .handle<cancel_pressed>(
+                    .template handle<cancel_pressed>(
                             [&](cancel_pressed const& msg)
                             {
                                 state=&atm::done_processing;
@@ -234,19 +247,19 @@ namespace dory::testing::atm_book
         void getting_pin()
         {
             incoming.wait()
-                    .handle<digit_pressed>(
+                    .template handle<digit_pressed>(
                             [&](digit_pressed const& msg)
                             {
                                 unsigned const pin_length=4;
                                 pin+=msg.digit;
                                 if(pin.length()==pin_length)
                                 {
-                                    bank.send(verify_pin(account,pin,incoming));
+                                    bank.send(verify_pin<TLog>(account,pin,incoming));
                                     state=&atm::verifying_pin;
                                 }
                             }
                     )
-                    .handle<clear_last_pressed>(
+                    .template handle<clear_last_pressed>(
                             [&](clear_last_pressed const& msg)
                             {
                                 if(!pin.empty())
@@ -255,7 +268,7 @@ namespace dory::testing::atm_book
                                 }
                             }
                     )
-                    .handle<cancel_pressed>(
+                    .template handle<cancel_pressed>(
                             [&](cancel_pressed const& msg)
                             {
                                 state=&atm::done_processing;
@@ -266,7 +279,7 @@ namespace dory::testing::atm_book
         {
             interface_hardware.send(display_enter_card());
             incoming.wait()
-                    .handle<card_inserted>(
+                    .template handle<card_inserted>(
                             [&](card_inserted const& msg)
                             {
                                 account=msg.account;
@@ -284,9 +297,9 @@ namespace dory::testing::atm_book
         atm(atm const&)=delete;
         atm& operator=(atm const&)=delete;
     public:
-        atm(concurrency::messaging::sender bank_,
-            concurrency::messaging::sender interface_hardware_):
-                bank(bank_),interface_hardware(interface_hardware_)
+        atm(TLog& log, concurrency::messaging::sender<TLog> bank_,
+            concurrency::messaging::sender<TLog> interface_hardware_):
+            incoming(log), bank(bank_),interface_hardware(interface_hardware_)
         {}
         void done()
         {
@@ -306,19 +319,20 @@ namespace dory::testing::atm_book
             {
             }
         }
-        concurrency::messaging::sender get_sender()
+        concurrency::messaging::sender<TLog> get_sender()
         {
             return incoming;
         }
     };
 
+    template<typename TLog>
     class bank_machine
     {
-        concurrency::messaging::receiver incoming;
+        concurrency::messaging::receiver<TLog, (int)RecieverType::BANK> incoming;
         unsigned balance;
     public:
-        bank_machine():
-                balance(199)
+        bank_machine(TLog& log):
+            incoming(log), balance(199)
         {}
         void done()
         {
@@ -331,8 +345,8 @@ namespace dory::testing::atm_book
                 for(;;)
                 {
                     incoming.wait()
-                            .handle<verify_pin>(
-                                    [&](verify_pin const& msg)
+                            .template handle<verify_pin<TLog>>(
+                                    [&](verify_pin<TLog> const& msg)
                                     {
                                         if(msg.pin=="1234")
                                         {
@@ -344,8 +358,8 @@ namespace dory::testing::atm_book
                                         }
                                     }
                             )
-                            .handle<withdraw>(
-                                    [&](withdraw const& msg)
+                            .template handle<withdraw<TLog>>(
+                                    [&](withdraw<TLog> const& msg)
                                     {
                                         if(balance>=msg.amount)
                                         {
@@ -358,18 +372,18 @@ namespace dory::testing::atm_book
                                         }
                                     }
                             )
-                            .handle<get_balance>(
-                                    [&](get_balance const& msg)
+                            .template handle<get_balance<TLog>>(
+                                    [&](get_balance<TLog> const& msg)
                                     {
                                         msg.atm_queue.send(atm_book::balance(balance));
                                     }
                             )
-                            .handle<withdrawal_processed>(
+                            .template handle<withdrawal_processed>(
                                     [&](withdrawal_processed const& msg)
                                     {
                                     }
                             )
-                            .handle<cancel_withdrawal>(
+                            .template handle<cancel_withdrawal>(
                                     [&](cancel_withdrawal const& msg)
                                     {
                                     }
@@ -380,17 +394,22 @@ namespace dory::testing::atm_book
             {
             }
         }
-        concurrency::messaging::sender get_sender()
+        concurrency::messaging::sender<TLog> get_sender()
         {
             return incoming;
         }
     };
 
+    template<typename TLog>
     class interface_machine
     {
-        concurrency::messaging::receiver incoming;
+        concurrency::messaging::receiver<TLog, (int)RecieverType::INTERFACE_HARDWARE> incoming;
         std::mutex iom;
     public:
+        interface_machine(TLog& log):
+            incoming(log)
+        {}
+
         void done()
         {
             get_sender().send(concurrency::messaging::close_queue());
@@ -402,7 +421,7 @@ namespace dory::testing::atm_book
                 for(;;)
                 {
                     incoming.wait()
-                            .handle<issue_money>(
+                            .template handle<issue_money>(
                                     [&](issue_money const& msg)
                                     {
                                         {
@@ -412,7 +431,7 @@ namespace dory::testing::atm_book
                                         }
                                     }
                             )
-                            .handle<display_insufficient_funds>(
+                            .template handle<display_insufficient_funds>(
                                     [&](display_insufficient_funds const& msg)
                                     {
                                         {
@@ -421,7 +440,7 @@ namespace dory::testing::atm_book
                                         }
                                     }
                             )
-                            .handle<display_enter_pin>(
+                            .template handle<display_enter_pin>(
                                     [&](display_enter_pin const& msg)
                                     {
                                         {
@@ -432,7 +451,7 @@ namespace dory::testing::atm_book
                                         }
                                     }
                             )
-                            .handle<display_enter_card>(
+                            .template handle<display_enter_card>(
                                     [&](display_enter_card const& msg)
                                     {
                                         {
@@ -442,7 +461,7 @@ namespace dory::testing::atm_book
                                         }
                                     }
                             )
-                            .handle<display_balance>(
+                            .template handle<display_balance>(
                                     [&](display_balance const& msg)
                                     {
                                         {
@@ -453,7 +472,7 @@ namespace dory::testing::atm_book
                                         }
                                     }
                             )
-                            .handle<display_withdrawal_options>(
+                            .template handle<display_withdrawal_options>(
                                     [&](display_withdrawal_options const& msg)
                                     {
                                         {
@@ -465,7 +484,7 @@ namespace dory::testing::atm_book
                                         }
                                     }
                             )
-                            .handle<display_withdrawal_cancelled>(
+                            .template handle<display_withdrawal_cancelled>(
                                     [&](display_withdrawal_cancelled const& msg)
                                     {
                                         {
@@ -475,7 +494,7 @@ namespace dory::testing::atm_book
                                         }
                                     }
                             )
-                            .handle<display_pin_incorrect_message>(
+                            .template handle<display_pin_incorrect_message>(
                                     [&](display_pin_incorrect_message const& msg)
                                     {
                                         {
@@ -484,7 +503,7 @@ namespace dory::testing::atm_book
                                         }
                                     }
                             )
-                            .handle<eject_card>(
+                            .template handle<eject_card>(
                                     [&](eject_card const& msg)
                                     {
                                         {
@@ -499,7 +518,7 @@ namespace dory::testing::atm_book
             {
             }
         }
-        concurrency::messaging::sender get_sender()
+        concurrency::messaging::sender<TLog> get_sender()
         {
             return incoming;
         }
