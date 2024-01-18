@@ -7,7 +7,7 @@ using namespace dory::testing::atm_book;
 
 TEST_CASE( "run atm", "[.][atm_book]" )
 {
-    using Log = dory::concurrency::Log<decltype(std::cout)>;
+    using Log = dory::concurrency::logging::Log<decltype(std::cout)>;
     auto log = Log(std::cout);
 
     bank_machine bank(log);
@@ -62,7 +62,7 @@ TEST_CASE( "run atm", "[.][atm_book]" )
 
 TEST_CASE("send message", "[atm_book]")
 {
-    using Log = dory::concurrency::Log<decltype(std::cout)>;
+    using Log = dory::concurrency::logging::Log<decltype(std::cout)>;
     auto log = Log(std::cout);
 
     std::size_t counter = 0;

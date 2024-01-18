@@ -3,6 +3,7 @@
 #include "base/concurrency/log.h"
 #include "base/testing/dataGenerators.h"
 #include "base/testing/quickSort.h"
+#include "base/concurrency/messaging.h"
 
 TEST_CASE( "Get number of CPU cores", "[.][concurrency]" )
 {
@@ -90,7 +91,7 @@ void sort(std::array<int, 100000>& collection)
 
 TEST_CASE( "worker test", "[.][concurrency]" )
 {
-    using Log = dory::concurrency::Log<decltype(std::cout)>;
+    using Log = dory::concurrency::logging::Log<decltype(std::cout)>;
     auto log = Log(std::cout);
 
 #ifdef NDEBUG
@@ -116,4 +117,28 @@ TEST_CASE( "worker test", "[.][concurrency]" )
     WorkerProfilePolicies::print(log, "get future 2 start");
     futureResult2.get();
     WorkerProfilePolicies::print(log, "get future 2 end");
+}
+
+struct TestMessage
+{
+    int id;
+};
+
+TEST_CASE( "MessageQueue: basic flow", "[concurrency]" )
+{
+    dory::concurrency::messaging::MessageQueue<TestMessage> messageQueue;
+
+    int idResult = 0;
+
+    auto future = std::async(std::launch::async, [&idResult, &messageQueue]()
+    {
+        auto message = messageQueue.waitForMessage();
+        idResult = message.id;
+    });
+
+    messageQueue.pushMessage(TestMessage{ 1 });
+
+    future.wait_for(std::chrono::milliseconds(10));
+
+    REQUIRE(idResult == 1);
 }

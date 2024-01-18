@@ -2,8 +2,13 @@
 
 #include "base/dependencies.h"
 
-namespace dory::concurrency
+namespace dory::concurrency::logging
 {
+    struct EmptyLogPolicy
+    {
+        using TLogger = void;
+    };
+
     template<typename TStream>
     class Log
     {

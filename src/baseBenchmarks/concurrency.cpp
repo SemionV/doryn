@@ -53,7 +53,7 @@ BENCHMARK(BM_quickSortLarge);*/
 BENCHMARK(BM_quickSortLargeParallel);*/
 
 static void BM_sendMessage(benchmark::State& state) {
-    using Log = dory::concurrency::Log<decltype(std::cout)>;
+    using Log = dory::concurrency::logging::Log<decltype(std::cout)>;
     auto log = Log(std::cout);
 
     std::size_t counter = 0;
