@@ -5,7 +5,7 @@
 
 using namespace dory::testing::atm_book;
 
-TEST_CASE( "run atm", "[atm_book]" )
+TEST_CASE( "run atm", "[.][atm_book]" )
 {
     using Log = dory::concurrency::Log<decltype(std::cout)>;
     auto log = Log(std::cout);
@@ -58,4 +58,22 @@ TEST_CASE( "run atm", "[atm_book]" )
     atm_thread.join();
     bank_thread.join();
     if_thread.join();
+}
+
+TEST_CASE("send message", "[atm_book]")
+{
+    using Log = dory::concurrency::Log<decltype(std::cout)>;
+    auto log = Log(std::cout);
+
+    std::size_t counter = 0;
+    test_machine machine(log);
+    std::thread machine_thread(&test_machine<Log>::run, &machine);
+
+    auto machine_queue(machine.get_sender());
+    machine_queue.send(test_message(counter));
+    machine_queue.send(test_message(counter));
+
+    machine.done();
+    machine_thread.join();
+    REQUIRE(counter == 2);
 }

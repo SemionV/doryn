@@ -129,11 +129,65 @@ namespace dory::testing::atm_book
     struct balance_pressed
     {};
 
+    struct test_message
+    {
+        std::size_t& counter;
+
+        test_message(std::size_t& counter):
+            counter(counter)
+        {}
+    };
+
     enum class RecieverType
     {
         ATM = 1,
         BANK = 2,
-        INTERFACE_HARDWARE = 3
+        INTERFACE_HARDWARE = 3,
+        TEST_MACHINE = 4
+    };
+
+    template<typename TLog>
+    class test_machine
+    {
+        dory::concurrency::messaging::receiver<TLog, (int)RecieverType::TEST_MACHINE> incoming;
+
+        void subscribe()
+        {
+            incoming.wait()
+                .template handle<test_message>([this](test_message& message)
+                {
+                    ++message.counter;
+                });
+        }
+
+    public:
+        explicit test_machine(TLog& log):
+            incoming(log)
+        {}
+
+        void done()
+        {
+            get_sender().send(concurrency::messaging::close_queue());
+        }
+
+        void run()
+        {
+            try
+            {
+                while (true)
+                {
+                    subscribe();
+                }
+            }
+            catch(concurrency::messaging::close_queue const&)
+            {
+            }
+        }
+
+        concurrency::messaging::sender<TLog> get_sender()
+        {
+            return incoming;
+        }
     };
 
     template<typename TLog>

@@ -66,7 +66,7 @@ namespace dory::concurrency::messaging
 
         void wait_and_dispatch()
         {
-            log.printLine("wait_and_dispatch(", RecieverType, "): ", typeid(Msg).name());
+            //log.printLine("wait_and_dispatch(", RecieverType, "): ", typeid(Msg).name());
             for(;;)
             {
                 auto msg=q->wait_and_pop();
@@ -142,7 +142,7 @@ namespace dory::concurrency::messaging
 
         void wait_and_dispatch()
         {
-            log.printLine("wait_and_dispatch(", RecieverType, "): ", "root");
+            //log.printLine("wait_and_dispatch(", RecieverType, "): ", "root");
             for(;;)
             {
                 auto msg=q->wait_and_pop();
