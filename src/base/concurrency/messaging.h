@@ -5,58 +5,148 @@
 
 namespace dory::concurrency::messaging
 {
-    template<std::size_t milliseconds>
-    class TimeLimitiedConditionVariable
+    template<typename T>
+    class SingleElementQueue
     {
     private:
-        std::condition_variable conditionVariable;
+        std::optional<T> container = {};
 
     public:
-        void notify_one()
+        decltype(auto) emplace(T&& element)
         {
-            conditionVariable.notify_one();
+            return container.emplace(std::forward<T>(element));
         }
 
-        template<typename TLock, typename F>
-        auto wait(TLock&& lock, F&& functor)
+        decltype(auto) front()
         {
-            return conditionVariable.wait_for(std::forward<TLock>(lock), std::chrono::milliseconds(milliseconds), std::forward<F>(functor));
+            return container.value();
+        }
+
+        void pop()
+        {
+            container.reset();
+        }
+
+        bool empty()
+        {
+            return !container.has_value();
         }
     };
 
-    template<typename T, typename TLogPolicy = logging::EmptyLogPolicy, typename TConditionVariable = std::condition_variable>
-    class MessageQueue
+    template<typename TMessage>
+    using QueueType = std::queue<TMessage, std::deque<TMessage>>;
+
+    template<typename TQueue, typename TMessage>
+    class MessageSender
     {
-        std::mutex queueMutex;
-        TConditionVariable queueCondition;
-        std::queue<T> queue;
-        TLogPolicy::TLogger* logger;
-    public:
-        explicit MessageQueue(TLogPolicy::TLogger* logger):
-                logger(logger)
-        {}
+    private:
+        template<template<typename T> class TQ, typename... Ts>
+        friend class MessageSenderHub;
 
-        MessageQueue():
-            logger(nullptr)
-        {}
+        TQueue& queue;
+        std::mutex& senderMutex;
+        std::condition_variable& sendCondition;
 
-        void pushMessage(T&& message)
+        void sendMessage(TMessage&& message)
         {
-            std::lock_guard<std::mutex> lock(queueMutex);
-            queue.emplace(std::forward<T>(message));
-            queueCondition.notify_one();
+            std::lock_guard<std::mutex> lock(senderMutex);
+            queue.emplace(std::forward<TMessage>(message));
+            sendCondition.notify_one();
         }
-        T waitForMessage()
+
+    public:
+        explicit MessageSender(TQueue& queue, std::mutex& senderMutex, std::condition_variable& sendCondition):
+                queue(queue),
+                senderMutex(senderMutex),
+                sendCondition(sendCondition)
+        {}
+    };
+
+    template<template<typename T> class TQueue, typename... Ts>
+    class MessageSenderHub: public MessageSender<TQueue<Ts>, Ts>...
+    {
+    public:
+        explicit MessageSenderHub(TQueue<Ts>&... queue, std::mutex& senderMutex, std::condition_variable& sendCondition):
+                MessageSender<TQueue<Ts>, Ts>(queue, senderMutex, sendCondition)...
+        {}
+
+        template<typename T>
+        void send(T&& message)
         {
-            std::unique_lock<std::mutex> lock(queueMutex);
-            queueCondition.wait(lock, [&]
+            MessageSender<TQueue<T>, T>::sendMessage(std::forward<T>(message));
+        }
+    };
+
+    template<typename TQueue, typename TMessage>
+    class MessageReciever
+    {
+    private:
+        template<template<typename T> class TQ, typename... Ts>
+        friend class MessageRecieverHub;
+
+        TQueue queue;
+        std::function<bool(TMessage&&)> messageHandler;
+
+        bool notifySubscriber()
+        {
+            bool stop = false;
+
+            while(!queue.empty())
             {
-                return !queue.empty();
+                auto message = queue.front();
+                queue.pop();
+                if(messageHandler)
+                {
+                    if(!messageHandler(std::move(message)))
+                    {
+                        stop = true;
+                    }
+                }
+            }
+
+            return !stop;
+        }
+
+        template<typename F>
+        void subscribeHandler(F&& handler)
+        {
+            messageHandler = std::forward<F>(handler);
+        }
+
+        bool checkInbox()
+        {
+            return !queue.empty();
+        }
+    };
+
+    template<template<typename T> class TQueue, typename... Ts>
+    class MessageRecieverHub: public MessageReciever<TQueue<Ts>, Ts>...
+    {
+    private:
+        std::mutex recieverMutex;
+        std::condition_variable recieveCondition;
+
+    public:
+        MessageSenderHub<TQueue, Ts...> getSender()
+        {
+            return MessageSenderHub<TQueue, Ts...>(MessageReciever<TQueue<Ts>, Ts>::queue..., recieverMutex, recieveCondition);
+        }
+
+        template<typename T, typename F>
+        void subscribe(F&& handler)
+        {
+            MessageReciever<TQueue<T>, T>::subscribeHandler(std::forward<F>(handler));
+        }
+
+        bool wait()
+        {
+            std::unique_lock<std::mutex> lock(recieverMutex);
+            recieveCondition.wait(lock, [this]
+            {
+                return (MessageReciever<TQueue<Ts>, Ts>::checkInbox() || ...);
             });
 
-            auto message = queue.front();
-            queue.pop();
-            return message;
+            return (MessageReciever<TQueue<Ts>, Ts>::notifySubscriber() && ...);
         }
     };
 }

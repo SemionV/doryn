@@ -119,26 +119,86 @@ TEST_CASE( "worker test", "[.][concurrency]" )
     WorkerProfilePolicies::print(log, "get future 2 end");
 }
 
+struct QuitMessage
+{
+};
+
 struct TestMessage
 {
     int id;
 };
 
-TEST_CASE( "MessageQueue: basic flow", "[concurrency]" )
+TEST_CASE( "Single Element Queue", "[concurrency]" )
 {
-    dory::concurrency::messaging::MessageQueue<TestMessage> messageQueue;
+    dory::concurrency::messaging::SingleElementQueue<int> queue;
 
-    int idResult = 0;
+    REQUIRE(queue.empty());
 
-    auto future = std::async(std::launch::async, [&idResult, &messageQueue]()
+    queue.emplace(1);
+
+    REQUIRE(!queue.empty());
+
+    auto value = queue.front();
+
+    REQUIRE(value == 1);
+
+    queue.pop();
+
+    REQUIRE(queue.empty());
+
+}
+
+TEST_CASE( "Messaging main flow", "[concurrency]" )
+{
+    dory::concurrency::messaging::MessageRecieverHub<dory::concurrency::messaging::QueueType, TestMessage, QuitMessage> messageHub;
+
+    auto sender = messageHub.getSender();
+
+    sender.send(TestMessage{ 1 });
+    sender.send(TestMessage{ 2 });
+
+    bool firstMessageRecieved = false;
+    bool secondMessageRecieved = false;
+    bool thirdMessageRecieved = false;
+    bool quitMessageRecieved = false;
+
+    std::thread workerThread([&]()
     {
-        auto message = messageQueue.waitForMessage();
-        idResult = message.id;
+        messageHub.subscribe<TestMessage>([&](auto&& message)
+        {
+            if(message.id == 1)
+            {
+                firstMessageRecieved = true;
+            }
+            else if(message.id == 2)
+            {
+                secondMessageRecieved = true;
+            }
+            else if(message.id == 3)
+            {
+                thirdMessageRecieved = true;
+            }
+
+            return true;
+        });
+
+        messageHub.subscribe<QuitMessage>([&](auto&& message)
+        {
+            quitMessageRecieved = true;
+
+            return false;
+        });
+
+        while(messageHub.wait())
+        {}
     });
 
-    messageQueue.pushMessage(TestMessage{ 1 });
+    sender.send(TestMessage{ 3 });
+    sender.send(QuitMessage{});
+    workerThread.join();
 
-    future.wait_for(std::chrono::milliseconds(10));
-
-    REQUIRE(idResult == 1);
+    REQUIRE(firstMessageRecieved);
+    REQUIRE(secondMessageRecieved);
+    REQUIRE(thirdMessageRecieved);
+    REQUIRE(quitMessageRecieved);
 }

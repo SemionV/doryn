@@ -154,7 +154,7 @@ namespace dory::testing::atm_book
         void subscribe()
         {
             incoming.wait()
-                .template handle<test_message>([this](test_message& message)
+                .template handle<test_message>([](test_message& message)
                 {
                     ++message.counter;
                 });
