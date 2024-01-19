@@ -149,4 +149,10 @@ namespace dory::concurrency::messaging
             return (MessageReciever<TQueue<Ts>, Ts>::notifySubscriber() && ...);
         }
     };
+
+    template<typename... Ts>
+    using SingleMessageRecieverHub = MessageRecieverHub<SingleElementQueue, Ts...>;
+
+    template<typename... Ts>
+    using MultiMessageRecieverHub = MessageRecieverHub<QueueType, Ts...>;
 }

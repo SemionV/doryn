@@ -150,7 +150,7 @@ TEST_CASE( "Single Element Queue", "[concurrency]" )
 
 TEST_CASE( "Messaging main flow", "[concurrency]" )
 {
-    dory::concurrency::messaging::MessageRecieverHub<dory::concurrency::messaging::QueueType, TestMessage, QuitMessage> messageHub;
+    dory::concurrency::messaging::MultiMessageRecieverHub<TestMessage, QuitMessage> messageHub;
 
     auto sender = messageHub.getSender();
 

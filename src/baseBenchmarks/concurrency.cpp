@@ -69,7 +69,7 @@ struct TestMessage
 };
 
 static void BM_sendMessage(benchmark::State& state) {
-    dory::concurrency::messaging::MessageRecieverHub<dory::concurrency::messaging::SingleElementQueue, TestMessage, QuitMessage> messageHub;
+    dory::concurrency::messaging::SingleMessageRecieverHub<TestMessage, QuitMessage> messageHub;
     auto sender = messageHub.getSender();
     std::size_t counter = 0;
 
