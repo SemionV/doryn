@@ -39,6 +39,7 @@ static void BM_sendMessage_book(benchmark::State& state) {
     using Log = dory::concurrency::logging::Log<decltype(std::cout)>;
     auto log = Log(std::cout);
 
+    std::atomic<bool> processed = false;
     std::size_t counter = 0;
     dory::testing::atm_book::test_machine machine(log);
     std::thread machine_thread(&dory::testing::atm_book::test_machine<Log>::run, &machine);
@@ -47,7 +48,15 @@ static void BM_sendMessage_book(benchmark::State& state) {
 
     for (auto _ : state)
     {
-        machine_queue.send(dory::testing::atm_book::test_message(counter));
+        processed.store(false, std::memory_order::release);
+
+        machine_queue.send(dory::testing::atm_book::test_message(counter, processed));
+
+        bool expected = true;
+        while(!processed.compare_exchange_strong(expected, false, std::memory_order::acq_rel))
+        {
+            expected = true;
+        }
     }
 
     machine.done();
@@ -62,9 +71,11 @@ struct QuitMessage
 struct TestMessage
 {
     std::size_t& counter;
+    std::atomic<bool>& processed;
 
-    explicit TestMessage(std::size_t& counter):
-        counter(counter)
+    explicit TestMessage(std::size_t& counter, std::atomic<bool>& processed):
+        counter(counter),
+        processed(processed)
     {}
 };
 
@@ -78,6 +89,7 @@ static void BM_sendMessage(benchmark::State& state) {
          messageHub.subscribe<TestMessage>([&](auto&& message)
         {
             ++message.counter;
+            message.processed.store(true, std::memory_order::release);
             return true;
         });
 
@@ -90,9 +102,19 @@ static void BM_sendMessage(benchmark::State& state) {
         {}
     });
 
+    std::atomic<bool> processed;
+
     for (auto _ : state)
     {
-        sender.send(TestMessage(counter));
+        processed.store(false, std::memory_order::release);
+
+        sender.send(TestMessage(counter, processed));
+
+        bool expected = true;
+        while(!processed.compare_exchange_strong(expected, false, std::memory_order::acq_rel))
+        {
+            expected = true;
+        }
     }
 
     sender.send(QuitMessage{});

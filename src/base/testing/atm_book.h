@@ -132,9 +132,11 @@ namespace dory::testing::atm_book
     struct test_message
     {
         std::size_t& counter;
+        std::atomic<bool>& processed;
 
-        test_message(std::size_t& counter):
-            counter(counter)
+        test_message(std::size_t& counter, std::atomic<bool>& processed):
+            counter(counter),
+            processed(processed)
         {}
     };
 
@@ -157,6 +159,7 @@ namespace dory::testing::atm_book
                 .template handle<test_message>([](test_message& message)
                 {
                     ++message.counter;
+                    message.processed.store(true, std::memory_order::release);
                 });
         }
 

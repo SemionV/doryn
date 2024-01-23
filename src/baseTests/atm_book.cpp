@@ -69,9 +69,11 @@ TEST_CASE("send message", "[atm_book]")
     test_machine machine(log);
     std::thread machine_thread(&test_machine<Log>::run, &machine);
 
+    std::atomic<bool> processed;
+
     auto machine_queue(machine.get_sender());
-    machine_queue.send(test_message(counter));
-    machine_queue.send(test_message(counter));
+    machine_queue.send(test_message(counter, processed));
+    machine_queue.send(test_message(counter, processed));
 
     machine.done();
     machine_thread.join();
