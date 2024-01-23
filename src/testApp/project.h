@@ -49,10 +49,8 @@ namespace testApp
                 auto glfwWindowHandler = dory::openGL::GlfwWindowFactory::createWindow(glfwWindowParameters);
                 auto window = windowRespository->store(dory::openGL::GlfwWindow(windowIdFactory->generate(), glfwWindowHandler));
 
-                auto cameraRepository = serviceLocator->getCameraRepository();
-                auto cameraIdFactory = serviceLocator->getCameraIdFactory();
-                auto camera = cameraRepository->store(dory::domain::entity::Camera(cameraIdFactory->generate()));
-                dory::domain::entity::Viewport viewport(0, 0, 0, 0);
+                auto camera = dory::domain::entity::Camera(serviceLocator->cameraIdFactory.generate());
+                serviceLocator->cameraRepository.store(camera);
 
                 auto pipelineNodeIdFactory = serviceLocator->getPipelineNodeIdFactory();
                 auto pipelineNodeRepository = serviceLocator->getPipelineNodeRepository();
@@ -65,6 +63,7 @@ namespace testApp
 
                 auto viewIdFactory = serviceLocator->getViewIdFactory();
                 auto viewRepository = serviceLocator->getViewRepository();
+                dory::domain::entity::Viewport viewport(0, 0, 0, 0);
                 viewRepository->store(dory::domain::entity::View(viewIdFactory->generate(), window.id, viewControllerNode.id, camera.id, viewport));
 
                 viewController->initialize(viewControllerNode.id, context);

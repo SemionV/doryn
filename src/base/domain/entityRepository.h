@@ -36,7 +36,7 @@ namespace dory::domain
         }
 
         template<typename T>
-        void store(T&& entity)
+        T store(T&& entity)
         {
             auto position = std::ranges::find(container, entity.id, &std::remove_reference_t<T>::id);
             if(position != container.end()) //update
@@ -47,6 +47,8 @@ namespace dory::domain
             {
                 container.emplace_back(std::forward<T>(entity));
             }
+
+            return entity;
         }
 
         template<class TId>
