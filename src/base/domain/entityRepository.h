@@ -5,29 +5,6 @@
 
 namespace dory::domain
 {
-    template<typename TEntity, typename TRepository>
-    class NewRepositoryReader
-    {
-    private:
-        TRepository& repository;
-
-    public:
-        explicit NewRepositoryReader(TRepository& repository):
-            repository(repository)
-        {}
-
-        std::size_t count()
-        {
-            return repository.count();
-        }
-
-        template<class TId>
-        std::optional<TEntity> get(TId id)
-        {
-            repository.get(id);
-        }
-    };
-
     template<typename TEntity, template<typename T> class TContainer = std::vector>
     class NewEntityRepository
     {
@@ -35,6 +12,12 @@ namespace dory::domain
         TContainer<TEntity> container;
 
     public:
+        NewEntityRepository() = default;
+
+        NewEntityRepository(std::initializer_list<TEntity>&& entities):
+            container(std::move(entities))
+        {}
+
         std::size_t count()
         {
             return std::size(container);
@@ -74,6 +57,12 @@ namespace dory::domain
             {
                 container.erase(position);
             }
+        }
+
+        template<typename F>
+        void forEach(F&& functor)
+        {
+            std::ranges::for_each(container, std::forward<F>(functor));
         }
     };
 

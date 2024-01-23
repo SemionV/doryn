@@ -125,3 +125,27 @@ TEST_CASE( "create/count/get/update/remove entity", "[static poly repository]" )
         REQUIRE(!entityOptional.has_value());
     }
 }
+
+TEST_CASE( "forEach", "[static poly repository]" )
+{
+    auto repository = dory::domain::NewEntityRepository<TestEntity>(
+        {
+            TestEntity(1),
+            TestEntity(2)
+        });
+
+    REQUIRE(repository.count() == 2);
+
+    std::size_t count = 0;
+    dory::entity::IdType ids[2];
+
+    repository.forEach([&](const TestEntity& entity)
+    {
+        REQUIRE(count < 2);
+        ids[count++] = entity.id;
+    });
+
+    REQUIRE(count == 2);
+    REQUIRE(ids[0] == 1);
+    REQUIRE(ids[2] == 2);
+}
