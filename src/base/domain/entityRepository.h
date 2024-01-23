@@ -5,6 +5,78 @@
 
 namespace dory::domain
 {
+    template<typename TEntity, typename TRepository>
+    class NewRepositoryReader
+    {
+    private:
+        TRepository& repository;
+
+    public:
+        explicit NewRepositoryReader(TRepository& repository):
+            repository(repository)
+        {}
+
+        std::size_t count()
+        {
+            return repository.count();
+        }
+
+        template<class TId>
+        std::optional<TEntity> get(TId id)
+        {
+            repository.get(id);
+        }
+    };
+
+    template<typename TEntity, template<typename T> class TContainer = std::vector>
+    class NewEntityRepository
+    {
+    private:
+        TContainer<TEntity> container;
+
+    public:
+        std::size_t count()
+        {
+            return std::size(container);
+        }
+
+        template<class TId>
+        std::optional<TEntity> get(TId id)
+        {
+            auto position = std::ranges::find(container, id, &TEntity::id);
+            if(position != container.end())
+            {
+                return *position;
+            }
+
+            return {};
+        }
+
+        template<typename T>
+        void store(T&& entity)
+        {
+            auto position = std::ranges::find(container, entity.id, &std::remove_reference_t<T>::id);
+            if(position != container.end()) //update
+            {
+                *position = entity;
+            }
+            else //create
+            {
+                container.emplace_back(std::forward<T>(entity));
+            }
+        }
+
+        template<class TId>
+        void remove(TId id)
+        {
+            auto position = std::ranges::find(container, id, &TEntity::id);
+            if(position != container.end())
+            {
+                container.erase(position);
+            }
+        }
+    };
+
     template<class TEntity>
     class RepositoryTraverseIterator
     {

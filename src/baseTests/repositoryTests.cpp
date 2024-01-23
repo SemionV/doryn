@@ -6,6 +6,8 @@ using namespace dory::domain;
 
 struct TestEntity: public dory::entity::Entity<dory::entity::IdType>
 {
+    int counter = 0;
+
     TestEntity(entity::IdType id):
         dory::entity::Entity<dory::entity::IdType>(id)
     {}
@@ -79,4 +81,47 @@ TEST_CASE( "Remove", "[repository]" )
 
     REQUIRE(ids.size() == 1);
     REQUIRE(ids[0] == 2);
+}
+
+TEST_CASE( "create/count/get/update/remove entity", "[static poly repository]" )
+{
+    auto repository = dory::domain::NewEntityRepository<TestEntity>{};
+
+    repository.store(TestEntity(1));
+
+    REQUIRE(repository.count() == 1);
+
+    {
+        auto entityOptional = repository.get(1);
+        REQUIRE(entityOptional.has_value());
+        auto& entity = entityOptional.value();
+        REQUIRE(entity.id == 1);
+        REQUIRE(entity.counter == 0);
+
+        entity.counter = 1;
+        repository.store(entity);
+        REQUIRE(repository.count() == 1);
+    }
+
+    {
+        auto entityOptional = repository.get(1);
+        REQUIRE(entityOptional.has_value());
+        auto& entity = entityOptional.value();
+        REQUIRE(entity.id == 1);
+        REQUIRE(entity.counter == 1);
+
+        entity.id = 2;
+        entity.counter = 0;
+        repository.store(entity);
+        REQUIRE(repository.count() == 2);
+    }
+
+    {
+        repository.remove(2);
+
+        REQUIRE(repository.count() == 1);
+
+        auto entityOptional = repository.get(2);
+        REQUIRE(!entityOptional.has_value());
+    }
 }
