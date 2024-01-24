@@ -35,20 +35,22 @@ namespace dory::domain
             return {};
         }
 
-        template<typename T>
-        T store(T&& entity)
+        TEntity store(TEntity&& entity)
         {
-            auto position = std::ranges::find(container, entity.id, &std::remove_reference_t<T>::id);
+            return container.emplace_back(std::move(entity));
+        }
+
+        void store(TEntity& entity)
+        {
+            auto position = std::ranges::find(container, entity.id, &std::remove_reference_t<TEntity>::id);
             if(position != container.end()) //update
             {
                 *position = entity;
             }
             else //create
             {
-                container.emplace_back(std::forward<T>(entity));
+                container.push_back(entity);
             }
-
-            return entity;
         }
 
         template<class TId>
