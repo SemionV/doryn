@@ -1,6 +1,7 @@
 #include "dependencies.h"
 #include "base/concurrency/log.h"
 #include "base/concurrency/messaging.h"
+#include "base/concurrency/queue.h"
 #include "base/testing/atm_book.h"
 
 static const constexpr std::size_t largeDataCount = 10000;
@@ -121,5 +122,25 @@ static void BM_sendMessage(benchmark::State& state) {
     workerThread.join();
 }
 BENCHMARK(BM_sendMessage);
+
+static void BM_basicQueue(benchmark::State& state) {
+    auto queue = dory::concurrency::BoundedQueue<int, 3>();
+    for (auto _ : state)
+    {
+        queue.push(1);
+        queue.pop();
+    }
+}
+BENCHMARK(BM_basicQueue);
+
+static void BM_concurrentQueue(benchmark::State& state) {
+    auto queue = dory::concurrency::BoundedQueueConcurrent<int, 3>();
+    for (auto _ : state)
+    {
+        queue.push(1);
+        queue.pop();
+    }
+}
+BENCHMARK(BM_concurrentQueue);
 
 BENCHMARK_MAIN();

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "base/dependencies.h"
-#include "base/concurrency/threadPool.h"
+#include "base/concurrency/worker.h"
 
 namespace dory::testing
 {

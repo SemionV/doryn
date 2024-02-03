@@ -1,9 +1,10 @@
 #include "dependencies.h"
-#include "base/concurrency/threadPool.h"
+#include "base/concurrency/worker.h"
 #include "base/concurrency/log.h"
 #include "base/testing/dataGenerators.h"
 #include "base/testing/quickSort.h"
 #include "base/concurrency/messaging.h"
+#include "base/concurrency/queue.h"
 
 TEST_CASE( "Get number of CPU cores", "[.][concurrency]" )
 {
@@ -201,4 +202,46 @@ TEST_CASE( "Messaging main flow", "[concurrency]" )
     REQUIRE(secondMessageRecieved);
     REQUIRE(thirdMessageRecieved);
     REQUIRE(quitMessageRecieved);
+}
+
+template<typename TQueue>
+void testBoundedQueueInvariants(TQueue& queue)
+{
+    REQUIRE(queue.push(1));
+    REQUIRE(queue.push(2));
+    REQUIRE(queue.push(3));
+    REQUIRE(!queue.push(4));
+
+    auto value = queue.pop();
+    REQUIRE(value.has_value());
+    REQUIRE(value.value() == 1);
+
+    REQUIRE(queue.push(4));
+
+    value = queue.pop();
+    REQUIRE(value.has_value());
+    REQUIRE(value.value() == 2);
+
+    value = queue.pop();
+    REQUIRE(value.has_value());
+    REQUIRE(value.value() == 3);
+
+    value = queue.pop();
+    REQUIRE(value.has_value());
+    REQUIRE(value.value() == 4);
+
+    REQUIRE(queue.push(5));
+
+    value = queue.pop();
+    REQUIRE(value.has_value());
+    REQUIRE(value.value() == 5);
+}
+
+TEST_CASE( "BoundedQueue invariants", "[concurrency]" )
+{
+    auto queue = dory::concurrency::BoundedQueue<int, 3>();
+    testBoundedQueueInvariants(queue);
+
+    auto queueConcurrent = dory::concurrency::BoundedQueueConcurrent<int, 3>();
+    testBoundedQueueInvariants(queueConcurrent);
 }
