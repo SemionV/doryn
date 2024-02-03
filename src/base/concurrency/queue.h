@@ -103,6 +103,9 @@ namespace dory::concurrency
         std::mutex headIndexMutex;
         std::mutex tailIndexMutex;
 
+        std::condition_variable pushCondition;
+        std::condition_variable popCondition;
+
         void incrementIndex(std::size_t& index)
         {
             if(index < UpperBound - 1)
@@ -115,28 +118,8 @@ namespace dory::concurrency
             }
         }
 
-    public:
-        bool push(T value)
+        std::optional<T> popHead(std::unique_lock<std::mutex>& headIndexLock)
         {
-            std::unique_lock<std::mutex> tailIndexLock(tailIndexMutex);
-            auto& item = data[tailIndex];
-            std::lock_guard<std::mutex> cellLock(item.mutex);
-            if(!item.value.has_value())
-            {
-                incrementIndex(tailIndex);
-                tailIndexLock.unlock();
-
-                item.value = value;
-
-                return true;
-            }
-
-            return false;
-        }
-
-        std::optional<T> pop()
-        {
-            std::unique_lock<std::mutex> headIndexLock(headIndexMutex);
             auto& item = data[headIndex];
             std::lock_guard<std::mutex> cellLock(item.mutex);
             if(item.value.has_value())
@@ -146,11 +129,57 @@ namespace dory::concurrency
 
                 auto value = item.value.value();
                 item.value.reset();
+                popCondition.notify_one();
 
                 return value;
             }
 
             return {};
+        }
+
+        bool pushTail(T value, std::unique_lock<std::mutex>& tailIndexLock)
+        {
+            auto& item = data[tailIndex];
+            std::lock_guard<std::mutex> cellLock(item.mutex);
+            if(!item.value.has_value())
+            {
+                incrementIndex(tailIndex);
+                tailIndexLock.unlock();
+
+                item.value = value;
+                pushCondition.notify_one();
+
+                return true;
+            }
+
+            return false;
+        }
+
+    public:
+        bool push(T value)
+        {
+            std::unique_lock<std::mutex> tailIndexLock(tailIndexMutex);
+            return pushTail(value, tailIndexLock);
+        }
+
+        bool waitAndPush(T value)
+        {
+            std::unique_lock<std::mutex> tailIndexLock(tailIndexMutex);
+            popCondition.wait(tailIndexLock);
+            return pushTail(value, tailIndexLock);
+        }
+
+        std::optional<T> pop()
+        {
+            std::unique_lock<std::mutex> headIndexLock(headIndexMutex);
+            return popHead(headIndexLock);
+        }
+
+        std::optional<T> waitAndPop()
+        {
+            auto headIndexLock = std::unique_lock<std::mutex>(headIndexMutex);
+            pushCondition.wait(headIndexLock);
+            return popHead(headIndexLock);
         }
     };
 }
