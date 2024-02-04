@@ -123,7 +123,7 @@ static void BM_sendMessage(benchmark::State& state) {
 }
 BENCHMARK(BM_sendMessage);
 
-static void BM_basicQueue(benchmark::State& state) {
+static void BM_boudedQueue(benchmark::State& state) {
     auto queue = dory::concurrency::BoundedQueue<int, 3>();
     for (auto _ : state)
     {
@@ -131,16 +131,6 @@ static void BM_basicQueue(benchmark::State& state) {
         queue.pop();
     }
 }
-BENCHMARK(BM_basicQueue);
-
-static void BM_concurrentQueue(benchmark::State& state) {
-    auto queue = dory::concurrency::BoundedQueueConcurrent<int, 3>();
-    for (auto _ : state)
-    {
-        queue.push(1);
-        queue.pop();
-    }
-}
-BENCHMARK(BM_concurrentQueue);
+BENCHMARK(BM_boudedQueue);
 
 BENCHMARK_MAIN();

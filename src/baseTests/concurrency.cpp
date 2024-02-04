@@ -204,9 +204,10 @@ TEST_CASE( "Messaging main flow", "[concurrency]" )
     REQUIRE(quitMessageRecieved);
 }
 
-template<typename TQueue>
-void testBoundedQueueInvariants(TQueue& queue)
+TEST_CASE( "BoundedQueue invariants", "[concurrency]" )
 {
+    auto queue = dory::concurrency::BoundedQueue<int, 3>();
+
     REQUIRE(queue.push(1));
     REQUIRE(queue.push(2));
     REQUIRE(queue.push(3));
@@ -237,11 +238,47 @@ void testBoundedQueueInvariants(TQueue& queue)
     REQUIRE(value.value() == 5);
 }
 
-TEST_CASE( "BoundedQueue invariants", "[concurrency]" )
+TEST_CASE( "BoundedQueue concurrent usage", "[concurrency]" )
 {
-    auto queue = dory::concurrency::BoundedQueue<int, 3>();
-    testBoundedQueueInvariants(queue);
+    auto queue = dory::concurrency::BoundedQueue<int, 4>();
 
-    auto queueConcurrent = dory::concurrency::BoundedQueueConcurrent<int, 3>();
-    testBoundedQueueInvariants(queueConcurrent);
+    std::thread pushThread1([&]()
+    {
+        REQUIRE(queue.push(1));
+    });
+
+    std::thread pushThread2([&]()
+    {
+        REQUIRE(queue.push(2));
+    });
+
+    std::thread popThread1([&]()
+    {
+        std::set<int> values;
+
+        while(true)
+        {
+            auto head = queue.pop();
+            if(head.has_value())
+            {
+                auto result = values.insert(head.value());
+                REQUIRE(result.second);
+                if(values.size() == 2)
+                {
+                    break;
+                }
+            }
+        }
+
+        REQUIRE(values.size() == 2);
+        for(auto value : values)
+        {
+            auto condition = value == 1 || value == 2;
+            REQUIRE(condition);
+        }
+    });
+
+    pushThread1.join();
+    pushThread2.join();
+    popThread1.join();
 }
