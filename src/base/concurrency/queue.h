@@ -73,6 +73,22 @@ namespace dory::concurrency
             return false;
         }
 
+        bool isEmptyLocked(const std::unique_lock<std::mutex>& mutex)
+        {
+            auto& item = data[headIndex];
+            std::lock_guard<std::mutex> cellLock(item.mutex);
+
+            return !item.value.has_value();
+        }
+
+        bool isFullLocked(const std::unique_lock<std::mutex>& mutex)
+        {
+            auto& item = data[tailIndex];
+            std::lock_guard<std::mutex> cellLock(item.mutex);
+
+            return item.value.has_value();
+        }
+
     public:
         bool push(T value)
         {
@@ -83,7 +99,7 @@ namespace dory::concurrency
         bool waitAndPush(T value)
         {
             std::unique_lock<std::mutex> tailIndexLock(tailIndexMutex);
-            popCondition.wait(tailIndexLock);
+            popCondition.wait(tailIndexLock, [this, &tailIndexLock](){return !isFullLocked(tailIndexLock);});
             return pushTail(value, tailIndexLock);
         }
 
@@ -96,8 +112,20 @@ namespace dory::concurrency
         std::optional<T> waitAndPop()
         {
             auto headIndexLock = std::unique_lock<std::mutex>(headIndexMutex);
-            pushCondition.wait(headIndexLock);
+            pushCondition.wait(headIndexLock, [this, &headIndexLock](){return !isEmptyLocked(headIndexLock);});
             return popHead(headIndexLock);
+        }
+
+        bool isEmpty()
+        {
+            std::unique_lock<std::mutex> headIndexLock(headIndexMutex);
+            return isEmptyLocked(headIndexLock);
+        }
+
+        bool isFull()
+        {
+            std::unique_lock<std::mutex> tailIndexLock(tailIndexMutex);
+            return isFullLocked(tailIndexLock);
         }
     };
 }

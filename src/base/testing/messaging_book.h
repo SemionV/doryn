@@ -2,7 +2,7 @@
 
 #include "base/dependencies.h"
 
-namespace dory::concurrency::messaging
+namespace dory::testing::messaging
 {
     struct message_base
     {

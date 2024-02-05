@@ -1,7 +1,7 @@
 #pragma once
 
 #include "base/dependencies.h"
-#include "base/concurrency/messaging_book.h"
+#include "messaging_book.h"
 
 namespace dory::testing::atm_book
 {
@@ -10,10 +10,10 @@ namespace dory::testing::atm_book
     {
         std::string account;
         unsigned amount;
-        mutable concurrency::messaging::sender<TLog> atm_queue;
+        mutable messaging::sender<TLog> atm_queue;
         withdraw(std::string const& account_,
                  unsigned amount_,
-                 concurrency::messaging::sender<TLog> atm_queue_):
+                 messaging::sender<TLog> atm_queue_):
                 account(account_),amount(amount_),
                 atm_queue(atm_queue_)
         {}
@@ -80,9 +80,9 @@ namespace dory::testing::atm_book
     {
         std::string account;
         std::string pin;
-        mutable concurrency::messaging::sender<TLog> atm_queue;
+        mutable messaging::sender<TLog> atm_queue;
         verify_pin(std::string const& account_,std::string const& pin_,
-                   concurrency::messaging::sender<TLog> atm_queue_):
+                   messaging::sender<TLog> atm_queue_):
                 account(account_),pin(pin_),atm_queue(atm_queue_)
         {}
     };
@@ -107,8 +107,8 @@ namespace dory::testing::atm_book
     struct get_balance
     {
         std::string account;
-        mutable concurrency::messaging::sender<TLog> atm_queue;
-        get_balance(std::string const& account_, concurrency::messaging::sender<TLog> atm_queue_):
+        mutable messaging::sender<TLog> atm_queue;
+        get_balance(std::string const& account_, messaging::sender<TLog> atm_queue_):
                 account(account_),atm_queue(atm_queue_)
         {}
     };
@@ -151,7 +151,7 @@ namespace dory::testing::atm_book
     template<typename TLog>
     class test_machine
     {
-        dory::concurrency::messaging::receiver<TLog, (int)RecieverType::TEST_MACHINE> incoming;
+        dory::testing::messaging::receiver<TLog, (int)RecieverType::TEST_MACHINE> incoming;
 
         void subscribe()
         {
@@ -170,7 +170,7 @@ namespace dory::testing::atm_book
 
         void done()
         {
-            get_sender().send(concurrency::messaging::close_queue());
+            get_sender().send(messaging::close_queue());
         }
 
         void run()
@@ -182,12 +182,12 @@ namespace dory::testing::atm_book
                     subscribe();
                 }
             }
-            catch(concurrency::messaging::close_queue const&)
+            catch(messaging::close_queue const&)
             {
             }
         }
 
-        concurrency::messaging::sender<TLog> get_sender()
+        messaging::sender<TLog> get_sender()
         {
             return incoming;
         }
@@ -196,9 +196,9 @@ namespace dory::testing::atm_book
     template<typename TLog>
     class atm
     {
-        concurrency::messaging::receiver<TLog, (int)RecieverType::ATM> incoming;
-        concurrency::messaging::sender<TLog> bank;
-        concurrency::messaging::sender<TLog> interface_hardware;
+        messaging::receiver<TLog, (int)RecieverType::ATM> incoming;
+        messaging::sender<TLog> bank;
+        messaging::sender<TLog> interface_hardware;
         void (atm::*state)();
         std::string account;
         unsigned withdrawal_amount;
@@ -354,13 +354,13 @@ namespace dory::testing::atm_book
         atm(atm const&)=delete;
         atm& operator=(atm const&)=delete;
     public:
-        atm(TLog& log, concurrency::messaging::sender<TLog> bank_,
-            concurrency::messaging::sender<TLog> interface_hardware_):
+        atm(TLog& log, messaging::sender<TLog> bank_,
+            messaging::sender<TLog> interface_hardware_):
             incoming(log), bank(bank_),interface_hardware(interface_hardware_)
         {}
         void done()
         {
-            get_sender().send(concurrency::messaging::close_queue());
+            get_sender().send(messaging::close_queue());
         }
         void run()
         {
@@ -372,11 +372,11 @@ namespace dory::testing::atm_book
                     (this->*state)();
                 }
             }
-            catch(concurrency::messaging::close_queue const&)
+            catch(messaging::close_queue const&)
             {
             }
         }
-        concurrency::messaging::sender<TLog> get_sender()
+        messaging::sender<TLog> get_sender()
         {
             return incoming;
         }
@@ -385,7 +385,7 @@ namespace dory::testing::atm_book
     template<typename TLog>
     class bank_machine
     {
-        concurrency::messaging::receiver<TLog, (int)RecieverType::BANK> incoming;
+        messaging::receiver<TLog, (int)RecieverType::BANK> incoming;
         unsigned balance;
     public:
         bank_machine(TLog& log):
@@ -393,7 +393,7 @@ namespace dory::testing::atm_book
         {}
         void done()
         {
-            get_sender().send(concurrency::messaging::close_queue());
+            get_sender().send(messaging::close_queue());
         }
         void run()
         {
@@ -447,11 +447,11 @@ namespace dory::testing::atm_book
                             );
                 }
             }
-            catch(concurrency::messaging::close_queue const&)
+            catch(messaging::close_queue const&)
             {
             }
         }
-        concurrency::messaging::sender<TLog> get_sender()
+        messaging::sender<TLog> get_sender()
         {
             return incoming;
         }
@@ -460,7 +460,7 @@ namespace dory::testing::atm_book
     template<typename TLog>
     class interface_machine
     {
-        concurrency::messaging::receiver<TLog, (int)RecieverType::INTERFACE_HARDWARE> incoming;
+        messaging::receiver<TLog, (int)RecieverType::INTERFACE_HARDWARE> incoming;
         std::mutex iom;
     public:
         interface_machine(TLog& log):
@@ -469,7 +469,7 @@ namespace dory::testing::atm_book
 
         void done()
         {
-            get_sender().send(concurrency::messaging::close_queue());
+            get_sender().send(messaging::close_queue());
         }
         void run()
         {
@@ -571,11 +571,11 @@ namespace dory::testing::atm_book
                             );
                 }
             }
-            catch(concurrency::messaging::close_queue&)
+            catch(messaging::close_queue&)
             {
             }
         }
-        concurrency::messaging::sender<TLog> get_sender()
+        messaging::sender<TLog> get_sender()
         {
             return incoming;
         }

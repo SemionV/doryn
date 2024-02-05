@@ -16,7 +16,7 @@ TEST_CASE( "run atm", "[.][atm_book]" )
     std::thread bank_thread(&bank_machine<Log>::run,&bank);
     std::thread if_thread(&interface_machine<Log>::run,&interface_hardware);
     std::thread atm_thread(&atm<Log>::run,&machine);
-    dory::concurrency::messaging::sender atmqueue(machine.get_sender());
+    dory::testing::messaging::sender atmqueue(machine.get_sender());
     bool quit_pressed=false;
     while(!quit_pressed)
     {

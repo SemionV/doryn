@@ -238,6 +238,25 @@ TEST_CASE( "BoundedQueue invariants", "[concurrency]" )
     REQUIRE(value.value() == 5);
 }
 
+TEST_CASE( "BoundedQueue isEmpty", "[concurrency]" )
+{
+    auto queue = dory::concurrency::BoundedQueue<int, 4>();
+
+    REQUIRE(queue.isEmpty());
+}
+
+TEST_CASE( "BoundedQueue isFull", "[concurrency]" )
+{
+    auto queue = dory::concurrency::BoundedQueue<int, 4>();
+
+    queue.push(1);
+    queue.push(2);
+    queue.push(3);
+    queue.push(4);
+
+    REQUIRE(queue.isFull());
+}
+
 TEST_CASE( "BoundedQueue concurrent usage", "[concurrency]" )
 {
     auto queue = dory::concurrency::BoundedQueue<int, 4>();
@@ -258,7 +277,7 @@ TEST_CASE( "BoundedQueue concurrent usage", "[concurrency]" )
 
         while(true)
         {
-            auto head = queue.pop();
+            auto head = queue.waitAndPop();
             if(head.has_value())
             {
                 auto result = values.insert(head.value());
@@ -281,4 +300,78 @@ TEST_CASE( "BoundedQueue concurrent usage", "[concurrency]" )
     pushThread1.join();
     pushThread2.join();
     popThread1.join();
+}
+
+TEST_CASE( "BoundedQueue concurrent usage with many threads", "[concurrency]" )
+{
+    auto queue = dory::concurrency::BoundedQueue<int, 4>();
+    std::atomic<bool> startFlag;
+    std::condition_variable startCondition;
+    std::mutex startMutex;
+
+    std::thread pushThread1([&]()
+    {
+        std::unique_lock<std::mutex> lock(startMutex);
+        startCondition.wait(lock, [&](){return startFlag.load();});
+
+        REQUIRE(queue.waitAndPush(1));
+        REQUIRE(queue.waitAndPush(2));
+        REQUIRE(queue.waitAndPush(3));
+    });
+
+    std::thread pushThread2([&]()
+    {
+        std::unique_lock<std::mutex> lock(startMutex);
+        startCondition.wait(lock, [&](){return startFlag.load();});
+
+        REQUIRE(queue.waitAndPush(4));
+        REQUIRE(queue.waitAndPush(5));
+        REQUIRE(queue.waitAndPush(6));
+    });
+
+    std::array<bool, 6> values {false, false, false, false, false, false};
+    std::atomic<std::size_t> valuesCount = 0;
+
+    std::thread popThread1([&]()
+    {
+        while(valuesCount < 6)
+        {
+            auto head = queue.waitAndPop();
+            if(head.has_value())
+            {
+                auto value = head.value();
+                values[value - 1] = true;
+                valuesCount++;
+            }
+        }
+    });
+
+    std::thread popThread2([&]()
+    {
+       while(valuesCount < 6)
+       {
+           auto head = queue.waitAndPop();
+           if(head.has_value())
+           {
+               auto value = head.value();
+               values[value - 1] = true;
+               valuesCount++;
+           }
+       }
+    });
+
+    startFlag = true;
+    startCondition.notify_all();
+
+    pushThread1.join();
+    pushThread2.join();
+    popThread1.join();
+    popThread2.join();
+
+    for(auto value : values)
+    {
+        REQUIRE(value);
+    }
+
+    REQUIRE(queue.isEmpty());
 }
