@@ -9,7 +9,6 @@ add_library(base SHARED configuration/fileSystemBasedConfiguration.cpp
                         domain/services/matrixCalculatorService.cpp
                         domain/services/transformationCalculatorService.cpp
                         domain/services/pipelineService.cpp
-        concurrency/queue.h
 )
 
 set_target_properties(base PROPERTIES PREFIX ""

@@ -5,6 +5,8 @@
 #include "base/testing/quickSort.h"
 #include "base/concurrency/messaging.h"
 #include "base/concurrency/queue.h"
+#include "base/concurrency/stack.h"
+#include "base/testing/stack_lockfree.h"
 
 TEST_CASE( "Get number of CPU cores", "[.][concurrency]" )
 {
@@ -374,4 +376,14 @@ TEST_CASE( "BoundedQueue concurrent usage with many threads", "[concurrency]" )
     }
 
     REQUIRE(queue.isEmpty());
+}
+
+TEST_CASE( "Lockfree stack - book", "[concurrency]" )
+{
+    auto stack = dory::testing::lock_free_stack<int>();
+    stack.push(1);
+    auto value = stack.pop();
+
+    REQUIRE(value != nullptr);
+    REQUIRE(*value == 1);
 }
