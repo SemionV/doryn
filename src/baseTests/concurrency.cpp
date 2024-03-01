@@ -338,7 +338,7 @@ TEST_CASE( "BoundedQueue concurrent usage with many threads", "[concurrency]" )
     {
         while(valuesCount < 6)
         {
-            auto head = queue.waitAndPop();
+            auto head = queue.pop();
             if(head.has_value())
             {
                 auto value = head.value();
@@ -352,7 +352,7 @@ TEST_CASE( "BoundedQueue concurrent usage with many threads", "[concurrency]" )
     {
        while(valuesCount < 6)
        {
-           auto head = queue.waitAndPop();
+           auto head = queue.pop();
            if(head.has_value())
            {
                auto value = head.value();
