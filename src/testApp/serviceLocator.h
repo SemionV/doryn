@@ -20,9 +20,11 @@ namespace testApp
 
     struct ServicePolicies
     {
+
         using ConfigurationServicePolicy = ConfigurationServicePolicy;
-        using CameraRepositoryServicePolicy = DeafultServicePolicy<NewEntityRepository<dory::domain::entity::Camera>>;
-        using CameraIdFactoryServicePolicy = DeafultServicePolicy<NumberIdFactory<EntityId>>;
+        using IdFactoryServicePolicy = DefaultServicePolicy<NumberIdFactory<EntityId>>;
+        using CameraRepositoryServicePolicy = DefaultServicePolicy<NewEntityRepository<dory::domain::entity::Camera>>;
+        using ViewRepositoryServicePolicy = DefaultServicePolicy<NewEntityRepository<dory::domain::entity::View>>;
     };
 
     template<class TDataContext>
@@ -53,22 +55,6 @@ namespace testApp
         std::shared_ptr<domain::services::IFrameService<TDataContext>> buildFrameService() override
         {
             return std::make_shared<services::BasicFrameService<TDataContext>>();
-        }
-
-        std::shared_ptr<IIdFactory<dory::domain::entity::IdType>> buildViewIdFactory() override
-        {
-            return std::make_shared<NumberIdFactory<dory::domain::entity::IdType>>();
-        }
-
-        std::shared_ptr<EntityRepository<dory::domain::entity::View>> buildViewRepository() override
-        {
-            return std::make_shared<EntityRepository<dory::domain::entity::View>>();
-        }
-
-        std::shared_ptr<RepositoryReader<dory::domain::entity::View>> buildViewRepositoryReader() override
-        {
-            auto repository = this->getViewRepository();
-            return std::make_shared<RepositoryReader<dory::domain::entity::View>>(repository);
         }
 
         std::shared_ptr<IIdFactory<dory::domain::entity::IdType>> buildPipelineNodeIdFactory() override

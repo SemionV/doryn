@@ -15,7 +15,7 @@ namespace dory
     };
 
     template<typename T>
-    struct DeafultServicePolicy: public ServicePolicy<T>
+    struct DefaultServicePolicy: public ServicePolicy<T>
     {
         template<typename TServiceLocator>
         static T create(const TServiceLocator& serviceLocator)
@@ -30,10 +30,6 @@ namespace dory
     private:
         std::shared_ptr<domain::services::IFrameService<TDataContext>> frameService;
 
-        std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> viewIdFactory;
-        std::shared_ptr<domain::EntityRepository<domain::entity::View>> viewRepository;
-        std::shared_ptr<domain::RepositoryReader<domain::entity::View>> viewRepositoryReader;
-
         std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> pipelineNodeIdFactory;
         std::shared_ptr<domain::EntityRepository<domain::entity::PipelineNode>> pipelineNodeRepository;
         std::shared_ptr<domain::RepositoryReader<domain::entity::PipelineNode>> pipelineNodeRepositoryReader;
@@ -47,7 +43,10 @@ namespace dory
         typename TServicePolicies::ConfigurationServicePolicy::Type configuration;
 
         typename TServicePolicies::CameraRepositoryServicePolicy::Type cameraRepository;
-        typename TServicePolicies::CameraIdFactoryServicePolicy::Type cameraIdFactory;
+        typename TServicePolicies::IdFactoryServicePolicy::Type cameraIdFactory;
+
+        typename TServicePolicies::IdFactoryServicePolicy::Type viewIdFactory;
+        typename TServicePolicies::ViewRepositoryServicePolicy::Type viewRepository;
 
     protected:
         virtual void configureServices() = 0;
@@ -71,7 +70,9 @@ namespace dory
         ServiceLocator():
                 configuration(TServicePolicies::ConfigurationServicePolicy::create(*this)),
                 cameraRepository(TServicePolicies::CameraRepositoryServicePolicy::create(*this)),
-                cameraIdFactory(TServicePolicies::CameraIdFactoryServicePolicy::create(*this))
+                cameraIdFactory(TServicePolicies::IdFactoryServicePolicy::create(*this)),
+                viewRepository(TServicePolicies::ViewRepositoryServicePolicy::create(*this)),
+                viewIdFactory(TServicePolicies::IdFactoryServicePolicy::create(*this))
         {}
 
         virtual ~ServiceLocator() = default;
@@ -79,10 +80,6 @@ namespace dory
         void configure()
         {
             frameService = buildFrameService();
-
-            viewIdFactory = buildViewIdFactory();
-            viewRepository = buildViewRepository();
-            viewRepositoryReader = buildViewRepositoryReader();
 
             pipelineNodeIdFactory = buildPipelineNodeIdFactory();
             pipelineNodeRepository = buildPipelineNodeRepository();
@@ -97,10 +94,6 @@ namespace dory
         }
 
         std::shared_ptr<domain::services::IFrameService<TDataContext>> getFrameService() { return frameService;}
-
-        std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> getViewIdFactory() {return viewIdFactory;};
-        std::shared_ptr<domain::EntityRepository<domain::entity::View>> getViewRepository() {return viewRepository;}
-        std::shared_ptr<domain::RepositoryReader<domain::entity::View>> getViewRepositoryReader() {return viewRepositoryReader;}
 
         std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> getPipelineNodeIdFactory() {return pipelineNodeIdFactory;}
         std::shared_ptr<domain::EntityRepository<domain::entity::PipelineNode>> getPipelineNodeRepository() {return pipelineNodeRepository;}

@@ -57,6 +57,8 @@ namespace dory::openGL
         private:
             GLFWwindow* getWindowHandler(domain::entity::IdType referenceId)
             {
+                domain::ViewController<TDataContext, TServiceLocator>::serviceLocator->viewRepository.get(referenceId);
+
                 auto view = this->viewRepository->get(referenceId, [](const domain::entity::View& view, domain::entity::IdType referenceId)
                 {
                     return view.controllerNodeId == referenceId;
