@@ -11,13 +11,10 @@ namespace dory::domain
     class ViewController: public Controller<TDataContext>
     {
     protected:
-        std::shared_ptr<RepositoryReader<entity::View>> viewRepository;
-        const TServiceLocator& serviceLocator;
+        TServiceLocator& serviceLocator;
 
     public:
-        ViewController(const TServiceLocator& serviceLocator,
-                std::shared_ptr<RepositoryReader<entity::View>> viewRepository):
-            viewRepository(viewRepository),
+        explicit ViewController(TServiceLocator& serviceLocator):
             serviceLocator(serviceLocator)
         {}
     };

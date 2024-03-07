@@ -54,17 +54,15 @@ namespace testApp
 
                 auto pipelineNodeIdFactory = serviceLocator->getPipelineNodeIdFactory();
                 auto pipelineNodeRepository = serviceLocator->getPipelineNodeRepository();
-                auto viewRepositoryReader = serviceLocator->getViewRepositoryReader();
                 auto windowRepositoryReader = serviceLocator->getWindowRepositoryReader();
                 auto renderer = std::make_shared<dory::openGL::Renderer<ServiceLocator>>(*serviceLocator);
-                auto viewController = std::make_shared<dory::openGL::ViewControllerOpenGL<TDataContext, ServiceLocator>>(*serviceLocator, viewRepositoryReader, windowRepositoryReader, renderer);
+                auto viewController = std::make_shared<dory::openGL::ViewControllerOpenGL<TDataContext, ServiceLocator>>(*serviceLocator, windowRepositoryReader, renderer);
                 auto viewControllerNode = pipelineNodeRepository->store(dory::domain::entity::PipelineNode(pipelineNodeIdFactory->generate(), 
                     viewController, 0, context.outputGroupNodeId));
 
-                auto viewIdFactory = serviceLocator->getViewIdFactory();
-                auto viewRepository = serviceLocator->getViewRepository();
-                dory::domain::entity::Viewport viewport(0, 0, 0, 0);
-                viewRepository->store(dory::domain::entity::View(viewIdFactory->generate(), window.id, viewControllerNode.id, camera.id, viewport));
+                auto viewport = dory::domain::entity::Viewport(0, 0, 0, 0);
+                auto view = dory::domain::entity::View(serviceLocator->viewIdFactory.generate(), window.id, viewControllerNode.id, camera.id, viewport);
+                serviceLocator->viewRepository.store(view);
 
                 viewController->initialize(viewControllerNode.id, context);
 
@@ -133,7 +131,7 @@ namespace testApp
 
                 if(window.has_value())
                 {
-                    auto windowHandler = window.value().handler;
+                    auto windowHandler = window->handler;
 
                     dory::openGL::GlfwWindowFactory::closeWindow(windowHandler);
 
@@ -146,19 +144,19 @@ namespace testApp
                     auto pipelineNodeIdFactory = serviceLocator->getPipelineNodeIdFactory();
                     auto viewControllerNodeId = pipelineNodeIdFactory->getNullId();
 
-                    auto viewRepository = serviceLocator->getViewRepository();
                     auto windowRepository = serviceLocator->getWindowRepository();
-                    windowRepository->remove(window.value());
-                    viewRepository->remove([&windowId, &viewControllerNodeId](const dory::domain::entity::View& view)
-                    {
-                        if(view.windowId == windowId)
-                        {
-                            viewControllerNodeId = view.controllerNodeId;
-                            return true;
-                        }
+                    windowRepository->remove(*window);
 
-                        return false;
+                    auto view = serviceLocator->viewRepository.find([&windowId](const dory::domain::entity::View& view)
+                    {
+                        return view.windowId == windowId;
                     });
+
+                    if(view.has_value())
+                    {
+                        viewControllerNodeId = view->controllerNodeId;
+                        serviceLocator->viewRepository.remove(view->id);
+                    }
 
                     auto pipelineNodeRepository = serviceLocator->getPipelineNodeRepository();
                     if(viewControllerNodeId != pipelineNodeIdFactory->getNullId())

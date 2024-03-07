@@ -13,11 +13,10 @@ namespace dory::openGL
             std::shared_ptr<Renderer<TServiceLocator>> renderer;
 
         public:
-            ViewControllerOpenGL(const TServiceLocator& serviceLocator,
-                    std::shared_ptr<domain::RepositoryReader<domain::entity::View>> viewRepository,
+            ViewControllerOpenGL(TServiceLocator& serviceLocator,
                     std::shared_ptr<domain::RepositoryReader<GlfwWindow>> windowRespository,
                     std::shared_ptr<Renderer<TServiceLocator>> renderer):
-                domain::ViewController<TDataContext, TServiceLocator>(serviceLocator, viewRepository),
+                domain::ViewController<TDataContext, TServiceLocator>(serviceLocator),
                 windowRespository(windowRespository),
                 renderer(renderer)
             {
@@ -57,19 +56,17 @@ namespace dory::openGL
         private:
             GLFWwindow* getWindowHandler(domain::entity::IdType referenceId)
             {
-                domain::ViewController<TDataContext, TServiceLocator>::serviceLocator->viewRepository.get(referenceId);
-
-                auto view = this->viewRepository->get(referenceId, [](const domain::entity::View& view, domain::entity::IdType referenceId)
+                auto view = this->serviceLocator.viewRepository.find([&referenceId](const domain::entity::View& view)
                 {
                     return view.controllerNodeId == referenceId;
                 });
 
                 if(view.has_value())
                 {
-                    auto glfwWindow = windowRespository->get(view.value().windowId);
+                    auto glfwWindow = windowRespository->get(view->windowId);
                     if(glfwWindow.has_value())
                     {
-                        return glfwWindow.value().handler;
+                        return glfwWindow->handler;
                     }
                 }
 

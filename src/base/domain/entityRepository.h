@@ -68,6 +68,18 @@ namespace dory::domain
         {
             std::ranges::for_each(container, std::forward<F>(functor));
         }
+
+        template<typename F>
+        std::optional<TEntity> find(F&& predicate)
+        {
+            auto position = std::ranges::find_if(container, predicate);
+            if(position != container.end())
+            {
+                return *position;
+            }
+
+            return {};
+        }
     };
 
     template<class TEntity>

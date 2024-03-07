@@ -53,10 +53,6 @@ namespace dory
 
         virtual std::shared_ptr<domain::services::IFrameService<TDataContext>> buildFrameService() = 0;
 
-        virtual std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> buildViewIdFactory() = 0;
-        virtual std::shared_ptr<domain::EntityRepository<domain::entity::View>> buildViewRepository() = 0;
-        virtual std::shared_ptr<domain::RepositoryReader<domain::entity::View>> buildViewRepositoryReader() = 0;
-
         virtual std::shared_ptr<domain::IIdFactory<domain::entity::IdType>> buildPipelineNodeIdFactory() = 0;
         virtual std::shared_ptr<domain::EntityRepository<domain::entity::PipelineNode>> buildPipelineNodeRepository() = 0;
         virtual std::shared_ptr<domain::RepositoryReader<domain::entity::PipelineNode>> buildPipelineNodeRepositoryReader() = 0;
