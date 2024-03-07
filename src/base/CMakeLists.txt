@@ -8,7 +8,6 @@ add_library(base SHARED configuration/fileSystemBasedConfiguration.cpp
         concurrency/individualProcessThread.cpp
                         domain/services/matrixCalculatorService.cpp
                         domain/services/transformationCalculatorService.cpp
-                        domain/services/pipelineService.cpp
 )
 
 set_target_properties(base PROPERTIES PREFIX ""

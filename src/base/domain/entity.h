@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "base/dependencies.h"
 #include "engine/entity.h"
 
@@ -9,14 +11,14 @@ namespace dory::domain::entity
 
     struct Camera: public dory::entity::Entity<dory::entity::IdType>
     {
-        Camera(IdType id):
+        explicit Camera(IdType id):
             Entity(id)
         {}
     };
 
     struct Window: public dory::entity::Entity<IdType>
     {
-        Window(IdType id):
+        explicit Window(IdType id):
             Entity(id)
         {}
     };
@@ -53,19 +55,29 @@ namespace dory::domain::entity
         {}
     };
 
+    enum class PipelineNodePriority
+    {
+        Default = 0,
+        First = 1
+    };
+
     struct PipelineNode: dory::entity::Entity<IdType>
     {
         std::shared_ptr<void> attachedController;
         IdType parentNodeId;
         std::string name;
-        int priority;
+        PipelineNodePriority priority;
 
-        PipelineNode(IdType id, std::shared_ptr<void> attachedController = nullptr, int priority = 0, IdType parentNodeId = dory::entity::nullId, std::string name = ""):
+        explicit PipelineNode(IdType id,
+                              std::shared_ptr<void> attachedController = nullptr,
+                              PipelineNodePriority priority = PipelineNodePriority::Default,
+                              IdType parentNodeId = dory::entity::nullId,
+                              std::string name = ""):
             Entity(id),
-            attachedController(attachedController),
+            attachedController(std::move(attachedController)),
             parentNodeId(parentNodeId),
             priority(priority),
-            name(name)
+            name(std::move(name))
         {}
     };
 }

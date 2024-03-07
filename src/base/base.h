@@ -2,11 +2,12 @@
 
 using Byte = std::uint8_t;
 
+#include "domain/service.h"
 #include "compileTimeTypes.h"
 #include "configuration/configuration.h"
 #include "serviceLocator.h"
 #include "configuration/fileSystemBasedConfiguration.h"
-#include "domain/services/basicFrameService.h"
+#include "domain/services/frameService.h"
 #include "domain/services/matrixCalculatorService.h"
 #include "domain/services/transformationCalculatorService.h"
 #include "domain/services/pipelineService.h"

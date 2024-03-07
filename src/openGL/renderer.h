@@ -61,11 +61,9 @@ namespace dory::openGL
     };
 
     template<typename TServiceLocator>
-    class Renderer
+    class Renderer: public domain::Service<TServiceLocator>
     {
     private:
-        const TServiceLocator& serviceLocator;
-
         TrianglesProgram trianglesProgram;
         TrianglesVertexArray trianglesVertexArray;
         domain::Color clearScreenColor {0.0f, 0.0f, 0.0f};
@@ -90,13 +88,9 @@ namespace dory::openGL
             };
 
     public:
-        explicit Renderer(const TServiceLocator& serviceLocator):
-                serviceLocator(serviceLocator)
-        {}
-
         void initialize()
         {
-            services::ShaderService::loadProgram(serviceLocator, trianglesProgram, [](services::ShaderServiceError& error)
+            services::ShaderService::loadProgram(this->services, trianglesProgram, [](services::ShaderServiceError& error)
             {
                 if(error.shaderCompilationError)
                 {

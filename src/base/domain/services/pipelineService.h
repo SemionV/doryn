@@ -6,19 +6,48 @@
 
 namespace dory::domain::services
 {
-    class DORY_API PipelineService
+    bool compareNodes(const std::shared_ptr<object::PipelineNode>& a, const std::shared_ptr<object::PipelineNode>& b)
     {
-        private:
-            std::shared_ptr<RepositoryReader<entity::PipelineNode>> nodeReader;
+        return a->nodeEntity.priority < b->nodeEntity.priority;
+    }
 
-        public:
-            PipelineService(std::shared_ptr<RepositoryReader<entity::PipelineNode>> nodeReader):
-                nodeReader(nodeReader)
-            {}
+    template<typename TServiceLocator>
+    class PipelineService: Service<TServiceLocator>
+    {
+    public:
+        std::list<std::shared_ptr<object::PipelineNode>> getPipeline()
+        {
+            std::list<std::shared_ptr<object::PipelineNode>> nodes;
 
-            std::list<std::shared_ptr<object::PipelineNode>> getPipeline();
+            this->services.pipelineNodeRepository.forEach([this, &nodes](const entity::PipelineNode& nodeEntity)
+            {
+                if(nodeEntity.parentNodeId == dory::entity::nullId)
+                {
+                    nodes.emplace_back(loadNode(nodeEntity));
+                }
+            });
 
-        private:
-            std::shared_ptr<object::PipelineNode> loadNode(const entity::PipelineNode& nodeEntity);
+            nodes.sort(compareNodes);
+
+            return nodes;
+        }
+
+    private:
+        std::shared_ptr<object::PipelineNode> loadNode(const entity::PipelineNode& nodeEntity)
+        {
+            auto node = std::make_shared<object::PipelineNode>(nodeEntity);
+
+            this->services.pipelineNodeRepository.forEach([this, &node](const auto& nodeEntity)
+            {
+                if(nodeEntity.parentNodeId == node->nodeEntity.id)
+                {
+                    node->children.emplace_back(loadNode(nodeEntity));
+                }
+            });
+
+            node->children.sort(compareNodes);
+
+            return node;
+        }
     };
 }

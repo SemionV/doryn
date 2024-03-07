@@ -3,21 +3,31 @@
 
 using namespace dory::domain;
 
+class ServiceLocator
+{
+public:
+    dory::domain::NewEntityRepository<entity::PipelineNode>& pipelineNodeRepository;
+
+    explicit ServiceLocator(dory::domain::NewEntityRepository<entity::PipelineNode>& pipelineNodeRepository):
+            pipelineNodeRepository(pipelineNodeRepository)
+    {}
+};
+
 TEST_CASE( "Load Pipeline", "[pipelineService]" )
 {
-    auto nodesRepository = std::make_shared<dory::domain::EntityRepository<entity::PipelineNode>>(
+    auto nodesRepository = dory::domain::NewEntityRepository<entity::PipelineNode>(
         std::initializer_list<entity::PipelineNode>{
-            entity::PipelineNode(2, nullptr, 1, dory::entity::nullId),
-            entity::PipelineNode(1, nullptr, 0, dory::entity::nullId),
-            entity::PipelineNode(3, nullptr, 1, 1),
-            entity::PipelineNode(4, nullptr, 0, 1),
-            entity::PipelineNode(5, nullptr, 0, 4),
-            entity::PipelineNode(6, nullptr, 0, 2),
+            entity::PipelineNode(2, nullptr, entity::PipelineNodePriority::First, dory::entity::nullId),
+            entity::PipelineNode(1, nullptr, entity::PipelineNodePriority::Default, dory::entity::nullId),
+            entity::PipelineNode(3, nullptr, entity::PipelineNodePriority::First, 1),
+            entity::PipelineNode(4, nullptr, entity::PipelineNodePriority::Default, 1),
+            entity::PipelineNode(5, nullptr, entity::PipelineNodePriority::Default, 4),
+            entity::PipelineNode(6, nullptr, entity::PipelineNodePriority::Default, 2),
         });
-    auto nodesReader = std::make_shared<dory::domain::RepositoryReader<entity::PipelineNode>>(nodesRepository);
+    auto serviceLocator = ServiceLocator(nodesRepository);
 
-    auto pipelineService = std::make_shared<services::PipelineService>(nodesReader);
-    auto pipeline = pipelineService->getPipeline();
+    auto pipelineService = services::PipelineService<ServiceLocator>(serviceLocator);
+    auto pipeline = pipelineService.getPipeline();
 
     REQUIRE(pipeline.size() == 2);
     

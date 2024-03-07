@@ -1,17 +1,43 @@
 #pragma once
 
-#include "base/doryExport.h"
-#include "base/domain/engine.h"
+#include "base/domain/types.h"
 
 namespace dory::domain::services
 {
-    template<class TDataContext>
-    class IFrameService
+    template<class TDataContext, typename TServiceLocator>
+    class BasicFrameService: Service<TServiceLocator>
     {
-        public:
-            virtual ~IFrameService() = default;
+    private:
+        bool isStop;
 
-            virtual void startLoop(domain::Engine<TDataContext>& engine, TDataContext& context) = 0;
-            virtual void endLoop() = 0;
+    public:
+        void startLoop(TDataContext& context) override
+        {
+            isStop = false;
+            TimeSpan timeStep(UnitScale::Nano);
+
+            std::chrono::steady_clock::time_point lastTimestamp = std::chrono::steady_clock::now();
+            std::chrono::steady_clock::time_point currentTimestamp;
+            std::chrono::nanoseconds duration;
+
+            while(!isStop)
+            {
+                currentTimestamp = std::chrono::steady_clock::now();
+                duration = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTimestamp - lastTimestamp);
+
+                timeStep.duration = duration.count();
+
+                this->services.engine.update(context, timeStep);
+
+                lastTimestamp = currentTimestamp;
+            }
+
+            this->services.engine.stop(context);
+        }
+
+        void endLoop() override
+        {
+            isStop = true;
+        }
     };
 }
