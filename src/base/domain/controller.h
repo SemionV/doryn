@@ -6,14 +6,18 @@
 
 namespace dory::domain
 {
-    template<class TDataContext>
-    class Controller
+    template<class TDataContext, typename TServiceLocator>
+    class Controller: public Service<TServiceLocator>
     {
-        public:
-            virtual ~Controller() = default;
+    public:
+        explicit Controller(TServiceLocator& serviceLocator):
+                Service<TServiceLocator>(serviceLocator)
+        {}
 
-            virtual bool initialize(domain::entity::IdType referenceId, TDataContext& context) = 0;
-            virtual void stop(domain::entity::IdType referenceId, TDataContext& context) = 0;
-            virtual void update(domain::entity::IdType referenceId, const TimeSpan& timeStep, TDataContext& context) = 0;
+        virtual ~Controller() = default;
+
+        virtual bool initialize(domain::entity::IdType referenceId, TDataContext& context) = 0;
+        virtual void stop(domain::entity::IdType referenceId, TDataContext& context) = 0;
+        virtual void update(domain::entity::IdType referenceId, const TimeSpan& timeStep, TDataContext& context) = 0;
     };
 }

@@ -2,75 +2,71 @@
 
 #include "glfwWindow.h"
 #include "renderer.h"
+#include "base/domain/controller.h"
 
 namespace dory::openGL
 {
     template<typename TDataContext, typename TServiceLocator>
-    class ViewControllerOpenGL: public domain::ViewController<TDataContext, TServiceLocator>
+    class ViewControllerOpenGL: public domain::Controller<TDataContext, TServiceLocator>
     {
-        private:
-            std::shared_ptr<domain::RepositoryReader<GlfwWindow>> windowRespository;
-            std::shared_ptr<Renderer<TServiceLocator>> renderer;
+    private:
+        Renderer<TServiceLocator> renderer;
 
-        public:
-            ViewControllerOpenGL(TServiceLocator& serviceLocator,
-                    std::shared_ptr<domain::RepositoryReader<GlfwWindow>> windowRespository,
-                    std::shared_ptr<Renderer<TServiceLocator>> renderer):
-                domain::ViewController<TDataContext, TServiceLocator>(serviceLocator),
-                windowRespository(windowRespository),
-                renderer(renderer)
+    public:
+        explicit ViewControllerOpenGL(TServiceLocator& serviceLocator):
+            domain::Controller<TDataContext, TServiceLocator>(serviceLocator),
+            renderer(serviceLocator)
+        {
+        }
+
+        bool initialize(domain::entity::IdType referenceId, TDataContext& context) override
+        {
+            std::cout << "initialize: OpenGL Basic View" << std::endl;
+
+            auto windowHandler = getWindowHandler(referenceId);
+            if(windowHandler != nullptr)
             {
+                glfwMakeContextCurrent(windowHandler);
+                gl3wInit();
+                renderer.initialize();
             }
 
-            bool initialize(domain::entity::IdType referenceId, TDataContext& context) override
-            {
-                std::cout << "initialize: OpenGL Basic View" << std::endl;
+            return true;
+        }
 
-                auto windowHandler = getWindowHandler(referenceId);
-                if(windowHandler != nullptr)
+        void stop(domain::entity::IdType referenceId, TDataContext& context) override
+        {
+        }
+
+        void update(domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, TDataContext& context) override
+        {
+            auto windowHandler = getWindowHandler(referenceId);
+            if(windowHandler != nullptr)
+            {
+                glfwMakeContextCurrent(windowHandler);
+                renderer.draw();
+                glfwSwapBuffers(windowHandler);
+            }
+        }
+
+    private:
+        GLFWwindow* getWindowHandler(domain::entity::IdType referenceId)
+        {
+            auto view = this->services.viewRepository.find([&referenceId](const domain::entity::View& view)
+            {
+                return view.controllerNodeId == referenceId;
+            });
+
+            if(view.has_value())
+            {
+                auto glfwWindow = this->services.windowRepository.get(view->windowId);
+                if(glfwWindow.has_value())
                 {
-                    glfwMakeContextCurrent(windowHandler);
-                    gl3wInit();
-                    renderer->initialize();
+                    return glfwWindow->handler;
                 }
-
-                return true;
             }
 
-            void stop(domain::entity::IdType referenceId, TDataContext& context) override
-            {
-
-            }
-
-            void update(domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, TDataContext& context) override
-            {
-                auto windowHandler = getWindowHandler(referenceId);
-                if(windowHandler != nullptr)
-                {
-                    glfwMakeContextCurrent(windowHandler);
-                    renderer->draw();
-                    glfwSwapBuffers(windowHandler);
-                }
-            }
-
-        private:
-            GLFWwindow* getWindowHandler(domain::entity::IdType referenceId)
-            {
-                auto view = this->serviceLocator.viewRepository.find([&referenceId](const domain::entity::View& view)
-                {
-                    return view.controllerNodeId == referenceId;
-                });
-
-                if(view.has_value())
-                {
-                    auto glfwWindow = windowRespository->get(view->windowId);
-                    if(glfwWindow.has_value())
-                    {
-                        return glfwWindow->handler;
-                    }
-                }
-
-                return nullptr;
-            }
+            return nullptr;
+        }
     };
 }

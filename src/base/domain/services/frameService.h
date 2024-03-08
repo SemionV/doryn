@@ -8,10 +8,14 @@ namespace dory::domain::services
     class BasicFrameService: Service<TServiceLocator>
     {
     private:
-        bool isStop;
+        bool isStop = false;
 
     public:
-        void startLoop(TDataContext& context) override
+        explicit BasicFrameService(TServiceLocator& serviceLocator):
+            Service<TServiceLocator>(serviceLocator)
+        {}
+
+        void startLoop(TDataContext& context)
         {
             isStop = false;
             TimeSpan timeStep(UnitScale::Nano);
@@ -35,7 +39,7 @@ namespace dory::domain::services
             this->services.engine.stop(context);
         }
 
-        void endLoop() override
+        void endLoop()
         {
             isStop = true;
         }

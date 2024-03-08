@@ -11,7 +11,6 @@ using Byte = std::uint8_t;
 #include "domain/services/matrixCalculatorService.h"
 #include "domain/services/transformationCalculatorService.h"
 #include "domain/services/pipelineService.h"
-#include "domain/controllers/viewController.h"
 #include "domain/geometry/transformation.h"
 #include "domain/geometry/mathFunctions.h"
 #include "concurrency/individualProcessThread.h"

@@ -6,8 +6,8 @@
 
 namespace dory::win32
 {
-    template<class TDataContext>
-    class WindowController: public domain::Controller<TDataContext>
+    template<class TDataContext, typename TServiceLocator>
+    class WindowController: public domain::Controller<TDataContext, TServiceLocator>
     {
         private:
             std::shared_ptr<domain::events::WindowEventHubDispatcher<TDataContext>> eventHub;

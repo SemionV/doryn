@@ -2,88 +2,86 @@
 
 namespace dory::win32
 {
-    template<class TDataContext>
-    class ConsoleController: public domain::Controller<TDataContext>
+    template<class TDataContext, typename TServiceLocator>
+    class ConsoleController: public domain::Controller<TDataContext, TServiceLocator>
     {
-        private:
-            concurrency::IndividualProcessThread processThread;
-            std::shared_ptr<domain::events::SystemConsoleEventHubDispatcher<TDataContext>> eventHub;
+    private:
+        concurrency::IndividualProcessThread processThread;
 
-        public:
-            ConsoleController(std::shared_ptr<domain::events::SystemConsoleEventHubDispatcher<TDataContext>> eventHub):
-                eventHub(eventHub)
+    public:
+        explicit ConsoleController(TServiceLocator& serviceLocator):
+                domain::Controller<TDataContext, TServiceLocator>(serviceLocator)
+        {}
+
+        bool initialize(domain::entity::IdType referenceId, TDataContext& context) override
+        {
+            if(AllocConsole())
             {
+                bindStdHandlesToConsole();
             }
 
-            bool initialize(domain::entity::IdType referenceId, TDataContext& context) override
+            std::cout << "SystemConsole.connect()" << std::endl;
+
+            auto readInputTask = concurrency::allocateActionTask([this]()
             {
-                if(AllocConsole())
-                {
-                    bindStdHandlesToConsole();
-                }
+                int inputKey = getch();
+                onKeyPressed(inputKey);
+            });
+            processThread.setRegularTask(readInputTask);
 
-                std::cout << "SystemConsole.connect()" << std::endl;
+            processThread.run();
 
-                auto readInputTask = concurrency::allocateActionTask([this]()
-                {  
-                    int inputKey = getch();
-                    onKeyPressed(inputKey);
-                });
-                processThread.setRegularTask(readInputTask);
+            return true;
+        };
 
-                processThread.run();
+        void stop(domain::entity::IdType referenceId, TDataContext& context) override
+        {
+            processThread.stop();
+        };
 
-                return true;
-            };
+        void update(dory::domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, TDataContext& context) override
+        {
+            this->services.consoleEventHub.submit(context);
+        }
 
-            void stop(domain::entity::IdType referenceId, TDataContext& context) override
-            {
-                processThread.stop();
-            };
+    protected:
+        virtual void onKeyPressed(int key)
+        {
+            std::cout << std::this_thread::get_id() << ": add key pressed message: " << key << std::endl;
 
-            void update(dory::domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, TDataContext& context) override
-            {
-                eventHub->submit(context);
-            }
+            domain::events::KeyPressedEventData eventData(key);
+            this->services.consoleEventHub.addCase(std::forward<domain::events::KeyPressedEventData>(eventData));
+        }
 
-        protected:
-            virtual void onKeyPressed(int key)
-            {
-                std::cout << std::this_thread::get_id() << ": add key pressed message: " << key << std::endl;
+    private:
+        void bindStdHandlesToConsole()
+        {
+            //TODO: Add Error checking.
 
-                domain::events::KeyPressedEventData eventData(key);
-                eventHub->addCase(std::forward<domain::events::KeyPressedEventData>(eventData));
-            }
-        
-        private:
-            void bindStdHandlesToConsole()
-            {
-                //TODO: Add Error checking.
-                
-                // Redirect the CRT standard input, output, and error handles to the console
-                freopen("CONIN$", "r", stdin);
-                freopen("CONOUT$", "w", stderr);
-                freopen("CONOUT$", "w", stdout);
-                
-                // Note that there is no CONERR$ file
-                HANDLE hStdout = CreateFileA("CONOUT$",  GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
-                                            NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-                HANDLE hStdin = CreateFileA("CONIN$",  GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
-                                            NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-                
-                SetStdHandle(STD_OUTPUT_HANDLE,hStdout);
-                SetStdHandle(STD_ERROR_HANDLE,hStdout);
-                SetStdHandle(STD_INPUT_HANDLE,hStdin);
+            // Redirect the CRT standard input, output, and error handles to the console
+            freopen("CONIN$", "r", stdin);
+            freopen("CONOUT$", "w", stderr);
+            freopen("CONOUT$", "w", stdout);
 
-                //Clear the error state for each of the C++ standard stream objects. 
-                std::wclog.clear();
-                std::clog.clear();
-                std::wcout.clear();
-                std::cout.clear();
-                std::wcerr.clear();
-                std::cerr.clear();
-                std::wcin.clear();
-                std::cin.clear();
-            }
+            // Note that there is no CONERR$ file
+            HANDLE hStdout = CreateFileA("CONOUT$",  GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                        NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+            HANDLE hStdin = CreateFileA("CONIN$",  GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                        NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+            SetStdHandle(STD_OUTPUT_HANDLE,hStdout);
+            SetStdHandle(STD_ERROR_HANDLE,hStdout);
+            SetStdHandle(STD_INPUT_HANDLE,hStdin);
+
+            //Clear the error state for each of the C++ standard stream objects.
+            std::wclog.clear();
+            std::clog.clear();
+            std::wcout.clear();
+            std::cout.clear();
+            std::wcerr.clear();
+            std::cerr.clear();
+            std::wcin.clear();
+            std::cin.clear();
+        }
     };
 }

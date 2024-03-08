@@ -6,7 +6,8 @@
 
 namespace dory::domain::services
 {
-    bool compareNodes(const std::shared_ptr<object::PipelineNode>& a, const std::shared_ptr<object::PipelineNode>& b)
+    template<typename T>
+    bool compareNodes(const std::shared_ptr<T>& a, const std::shared_ptr<T>& b)
     {
         return a->nodeEntity.priority < b->nodeEntity.priority;
     }
@@ -15,6 +16,10 @@ namespace dory::domain::services
     class PipelineService: Service<TServiceLocator>
     {
     public:
+        explicit PipelineService(TServiceLocator& serviceLocator):
+                Service<TServiceLocator>(serviceLocator)
+        {}
+
         std::list<std::shared_ptr<object::PipelineNode>> getPipeline()
         {
             std::list<std::shared_ptr<object::PipelineNode>> nodes;
@@ -27,7 +32,7 @@ namespace dory::domain::services
                 }
             });
 
-            nodes.sort(compareNodes);
+            nodes.sort(compareNodes<object::PipelineNode>);
 
             return nodes;
         }
@@ -45,7 +50,7 @@ namespace dory::domain::services
                 }
             });
 
-            node->children.sort(compareNodes);
+            node->children.sort(compareNodes<object::PipelineNode>);
 
             return node;
         }

@@ -10,6 +10,10 @@ namespace dory::domain
     class Engine: Service<TServiceLocator>
     {
     public:
+        explicit Engine(TServiceLocator& serviceLocator):
+                Service<TServiceLocator>(serviceLocator)
+        {}
+
         void update(TDataContext& context, const TimeSpan& timeStep)
         {
             auto pipelineNodes = this->services.pipelineService.getPipeline();
@@ -19,7 +23,7 @@ namespace dory::domain
                 auto controller = node->nodeEntity.attachedController;
                 if(controller)
                 {
-                    std::static_pointer_cast<Controller<TDataContext>>(controller)->update(node->nodeEntity.id, timeStep, context);
+                    std::static_pointer_cast<Controller<TDataContext, TServiceLocator>>(controller)->update(node->nodeEntity.id, timeStep, context);
                 }
             }, timeStep);
         }

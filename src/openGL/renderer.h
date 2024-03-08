@@ -88,6 +88,11 @@ namespace dory::openGL
             };
 
     public:
+        explicit Renderer(TServiceLocator& serviceLocator):
+            domain::Service<TServiceLocator>(serviceLocator)
+        {
+        }
+
         void initialize()
         {
             services::ShaderService::loadProgram(this->services, trianglesProgram, [](services::ShaderServiceError& error)

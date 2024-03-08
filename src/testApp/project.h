@@ -2,12 +2,17 @@
 
 #include "serviceLocator.h"
 #include "projectDataContext.h"
+#include "win32/consoleController.h"
 
 namespace testApp
 {
     class Project: dory::domain::Service<ServiceLocator>
     {
         public:
+            explicit Project(ServiceLocator& serviceLocator):
+                    dory::domain::Service<ServiceLocator>(serviceLocator)
+            {}
+
             void run(ProjectDataContext& context)
             {
                 attachEventHandlers();
@@ -23,24 +28,21 @@ namespace testApp
                 this->services.engineEventHub.onStopEngine().attachHandler(this, &Project::onStopEngine);
 
                 this->services.consoleEventHub.onKeyPressed().attachHandler(this, &Project::onConsoleKeyPressed);
-                this->services.getGlfwWindowEventHub()->onCloseWindow().attachHandler(this, &Project::onCloseWindow);
+                this->services.windowEventHub.onCloseWindow().attachHandler(this, &Project::onCloseWindow);
             }
         
         private:
             auto newWindow(ProjectDataContext& context)
             {
-                auto windowRespository = this->services.getWindowRepository();
-                auto windowIdFactory = this->services.getWindowIdFactory();
                 dory::openGL::GlfwWindowParameters glfwWindowParameters;
                 auto glfwWindowHandler = dory::openGL::GlfwWindowFactory::createWindow(glfwWindowParameters);
-                auto window = windowRespository->store(dory::openGL::GlfwWindow(windowIdFactory->generate(), glfwWindowHandler));
+                auto window = dory::openGL::GlfwWindow(this->services.windowIdFactory.generate(), glfwWindowHandler);
+                this->services.windowRepository.store(window);
 
                 auto camera = dory::domain::entity::Camera(this->services.cameraIdFactory.generate());
                 this->services.cameraRepository.store(camera);
 
-                auto windowRepositoryReader = this->services.getWindowRepositoryReader();
-                auto renderer = std::make_shared<dory::openGL::Renderer<ServiceLocator>>(this->services);
-                auto viewController = std::make_shared<dory::openGL::ViewControllerOpenGL<ProjectDataContext, ServiceLocator>>(this->services, windowRepositoryReader, renderer);
+                auto viewController = std::make_shared<dory::openGL::ViewControllerOpenGL<ProjectDataContext, ServiceLocator>>(this->services);
                 auto viewControllerNode = dory::domain::entity::PipelineNode(this->services.pipelineNodeIdFactory.generate(),
                                                                              viewController,
                                                                              dory::domain::entity::PipelineNodePriority::Default,
@@ -78,7 +80,7 @@ namespace testApp
                 context.inputGroupNodeId = inputGroupNode.id;
                 context.outputGroupNodeId = outputGroupNode.id;
 
-                auto consoleController = std::make_shared<dory::win32::ConsoleController<ProjectDataContext>>(consoleEventHub);
+                auto consoleController = std::make_shared<dory::win32::ConsoleController<ProjectDataContext, ServiceLocator>>(this->services);
                 auto consoleControllerNode = dory::domain::entity::PipelineNode(this->services.pipelineNodeIdFactory.generate(),
                                                                                 consoleController,
                                                                                 dory::domain::entity::PipelineNodePriority::Default,
@@ -86,10 +88,7 @@ namespace testApp
                 this->services.pipelineNodeRepository.store(consoleControllerNode);
                 consoleController->initialize(consoleControllerNode.id, context);
 
-                auto windowRepositoryReader = this->services.getWindowRepositoryReader();
-                auto glfwWindowEventHub = this->services.getGlfwWindowEventHub();
-
-                auto windowController = std::make_shared<dory::openGL::GlfwWindowController<ProjectDataContext>>(windowRepositoryReader, glfwWindowEventHub);
+                auto windowController = std::make_shared<dory::openGL::GlfwWindowController<ProjectDataContext, ServiceLocator>>(this->services);
                 auto windowControllerNode = dory::domain::entity::PipelineNode(this->services.pipelineNodeIdFactory.generate(),
                                                                                windowController,
                                                                                dory::domain::entity::PipelineNodePriority::Default,
@@ -131,8 +130,7 @@ namespace testApp
             void onCloseWindow(ProjectDataContext& context, events::CloseWindowEventData& eventData)
             {
                 auto windowId = eventData.windowId;
-                auto windowRepositoryReader = this->services.getWindowRepositoryReader();
-                auto window = windowRepositoryReader->get(windowId);
+                auto window = this->services.windowRepository.get(windowId);
 
                 if(window.has_value())
                 {
@@ -146,11 +144,9 @@ namespace testApp
                     }
                     std::cout << "Close window(id " << windowId << ")" << std::endl;
 
-                    auto& pipelineNodeIdFactory = this->services.pipelineNodeIdFactory;
-                    auto viewControllerNodeId = pipelineNodeIdFactory.getNullId();
+                    auto viewControllerNodeId = decltype(this->services.pipelineNodeIdFactory)::nullId;
 
-                    auto windowRepository = this->services.getWindowRepository();
-                    windowRepository->remove(*window);
+                    this->services.windowRepository.remove(windowId);
 
                     auto view = this->services.viewRepository.find([&windowId](const dory::domain::entity::View& view)
                     {
@@ -163,7 +159,7 @@ namespace testApp
                         this->services.viewRepository.remove(view->id);
                     }
 
-                    if(viewControllerNodeId != pipelineNodeIdFactory.getNullId())
+                    if(viewControllerNodeId != decltype(this->services.pipelineNodeIdFactory)::nullId)
                     {
                         this->services.pipelineNodeRepository.remove(viewControllerNodeId);
                     }

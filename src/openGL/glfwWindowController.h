@@ -4,18 +4,12 @@
 
 namespace dory::openGL
 {
-    template<class TDataContext>
-    class GlfwWindowController: public domain::Controller<TDataContext>
+    template<class TDataContext, typename TServiceLocator>
+    class GlfwWindowController: public domain::Controller<TDataContext, TServiceLocator>
     {
-        private:
-            std::shared_ptr<domain::RepositoryReader<GlfwWindow>> windowRepository;
-            std::shared_ptr<domain::events::WindowEventHubDispatcher<TDataContext>> eventHub;
-
         public:
-             GlfwWindowController(std::shared_ptr<domain::RepositoryReader<GlfwWindow>> windowRepository,
-                std::shared_ptr<domain::events::WindowEventHubDispatcher<TDataContext>> eventHub):
-                    windowRepository(windowRepository),
-                    eventHub(eventHub)
+             explicit GlfwWindowController(TServiceLocator& serviceLocator):
+                     domain::Controller<TDataContext, TServiceLocator>(serviceLocator)
             {}
 
             bool initialize(domain::entity::IdType referenceId, TDataContext& context) override
@@ -32,16 +26,16 @@ namespace dory::openGL
             {
                 glfwPollEvents();
 
-                windowRepository->forEach([this](auto& window)
+                this->services.windowRepository.forEach([this](auto& window)
                 {
                     if(glfwWindowShouldClose(window.handler))
                     {
-                        eventHub->addCase(domain::events::CloseWindowEventData(window.id));
+                        this->services.windowEventHub.addCase(domain::events::CloseWindowEventData(window.id));
                         glfwSetWindowShouldClose(window.handler, 0);
                     }
                 });
 
-                eventHub->submit(context);
+                this->services.windowEventHub.submit(context);
             }
     };
 }
