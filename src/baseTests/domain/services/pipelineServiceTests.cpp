@@ -6,16 +6,16 @@ using namespace dory::domain;
 class ServiceLocator
 {
 public:
-    dory::domain::NewEntityRepository<entity::PipelineNode>& pipelineNodeRepository;
+    dory::domain::EntityRepository<entity::PipelineNode>& pipelineNodeRepository;
 
-    explicit ServiceLocator(dory::domain::NewEntityRepository<entity::PipelineNode>& pipelineNodeRepository):
+    explicit ServiceLocator(dory::domain::EntityRepository<entity::PipelineNode>& pipelineNodeRepository):
             pipelineNodeRepository(pipelineNodeRepository)
     {}
 };
 
 TEST_CASE( "Load Pipeline", "[pipelineService]" )
 {
-    auto nodesRepository = dory::domain::NewEntityRepository<entity::PipelineNode>(
+    auto nodesRepository = dory::domain::EntityRepository<entity::PipelineNode>(
         std::initializer_list<entity::PipelineNode>{
             entity::PipelineNode(2, nullptr, entity::PipelineNodePriority::First, dory::entity::nullId),
             entity::PipelineNode(1, nullptr, entity::PipelineNodePriority::Default, dory::entity::nullId),

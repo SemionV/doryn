@@ -36,9 +36,9 @@ namespace testApp
 
         using IdFactoryServicePolicy = DefaultServicePolicy<IdFactory<EntityId>>;
 
-        using CameraRepositoryServicePolicy = DefaultServicePolicy<NewEntityRepository<dory::domain::entity::Camera>>;
-        using ViewRepositoryServicePolicy = DefaultServicePolicy<NewEntityRepository<dory::domain::entity::View>>;
-        using PipelineNodeRepositoryServicePolicy = DefaultServicePolicy<NewEntityRepository<dory::domain::entity::PipelineNode>>;
-        using WindowRepositoryServicePolicy = DefaultServicePolicy<NewEntityRepository<dory::openGL::GlfwWindow>>;
+        using CameraRepositoryServicePolicy = DefaultServicePolicy<EntityRepository<dory::domain::entity::Camera>>;
+        using ViewRepositoryServicePolicy = DefaultServicePolicy<EntityRepository<dory::domain::entity::View>>;
+        using PipelineNodeRepositoryServicePolicy = DefaultServicePolicy<EntityRepository<dory::domain::entity::PipelineNode>>;
+        using WindowRepositoryServicePolicy = DefaultServicePolicy<EntityRepository<dory::openGL::GlfwWindow>>;
     };
 }
