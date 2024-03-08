@@ -6,7 +6,6 @@
 
 namespace testApp
 {
-    using EntityId = dory::domain::entity::IdType;
     using namespace dory;
     using namespace domain;
 
@@ -25,20 +24,20 @@ namespace testApp
     struct ServicePolicies
     {
         using ConfigurationServicePolicy = ConfigurationServicePolicy;
-        using EngineServicePolicy = ConstructServicePolicy<dory::domain::Engine<ProjectDataContext, ServiceLocator>>;
+        using EngineServicePolicy = ConstructServicePolicy<Engine<ProjectDataContext, ServiceLocator>>;
 
-        using FrameServiceServicePolicy = ConstructServicePolicy<dory::domain::services::BasicFrameService<ProjectDataContext, ServiceLocator>>;
-        using PipelineServiceServicePolicy = ConstructServicePolicy<dory::domain::services::PipelineService<ServiceLocator>>;
+        using FrameServiceServicePolicy = ConstructServicePolicy<services::BasicFrameService<ProjectDataContext, ServiceLocator>>;
+        using PipelineServiceServicePolicy = ConstructServicePolicy<services::PipelineService<ServiceLocator>>;
 
-        using EngineEventHubServicePolicy = DefaultServicePolicy<dory::domain::events::EngineEventHubDispatcher<ProjectDataContext>>;
-        using ConsoleEventHubServicePolicy = DefaultServicePolicy<dory::domain::events::SystemConsoleEventHubDispatcher<ProjectDataContext>>;
-        using WindowEventHubServicePolicy = DefaultServicePolicy<dory::domain::events::WindowEventHubDispatcher<ProjectDataContext>>;
+        using EngineEventHubServicePolicy = DefaultServicePolicy<events::EngineEventHubDispatcher<ProjectDataContext>>;
+        using ConsoleEventHubServicePolicy = DefaultServicePolicy<events::SystemConsoleEventHubDispatcher<ProjectDataContext>>;
+        using WindowEventHubServicePolicy = DefaultServicePolicy<events::WindowEventHubDispatcher<ProjectDataContext>>;
 
-        using IdFactoryServicePolicy = DefaultServicePolicy<IdFactory<EntityId>>;
+        using IdFactoryServicePolicy = DefaultServicePolicy<IdFactory<domain::entity::IdType>>;
 
-        using CameraRepositoryServicePolicy = DefaultServicePolicy<EntityRepository<dory::domain::entity::Camera>>;
-        using ViewRepositoryServicePolicy = DefaultServicePolicy<EntityRepository<dory::domain::entity::View>>;
-        using PipelineNodeRepositoryServicePolicy = DefaultServicePolicy<EntityRepository<dory::domain::entity::PipelineNode>>;
-        using WindowRepositoryServicePolicy = DefaultServicePolicy<EntityRepository<dory::openGL::GlfwWindow>>;
+        using CameraRepositoryServicePolicy = DefaultServicePolicy<EntityRepository<domain::entity::Camera>>;
+        using ViewRepositoryServicePolicy = DefaultServicePolicy<EntityRepository<domain::entity::View>>;
+        using PipelineNodeRepositoryServicePolicy = DefaultServicePolicy<EntityRepository<domain::entity::PipelineNode>>;
+        using WindowRepositoryServicePolicy = DefaultServicePolicy<EntityRepository<openGL::GlfwWindow>>;
     };
 }
