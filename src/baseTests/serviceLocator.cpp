@@ -11,7 +11,7 @@ struct ServiceInstantiator
 };
 
 template<typename TService>
-struct ServiceInstantiatorDefault
+struct ServiceInstantiator<TService>
 {
     template<typename TServiceLocator>
     static TService getInsatnce(TServiceLocator& services)
@@ -20,7 +20,17 @@ struct ServiceInstantiatorDefault
     }
 };
 
-template<typename TService, typename TServiceInstantiator = ServiceInstantiatorDefault<TService>>
+/*template<typename TService, typename... TDependencies>
+struct ServiceInstantiator
+{
+    template<typename TServiceLocator>
+    static TService getInsatnce(TServiceLocator& services)
+    {
+        return TService{(services.template get<TDependencies>(), ...)};
+    }
+};*/
+
+template<typename TService, typename TServiceInstantiator = ServiceInstantiator<TService>>
 struct ServiceDependency
 {
     using ServiceType = TService;
@@ -123,17 +133,7 @@ public:
 };
 
 using Service1Dependency = ServiceDependency<Service1>;
-
-template<typename TService>
-struct Service2Instantiator
-{
-    template<typename TServiceLocator>
-    static TService getInsatnce(TServiceLocator& services)
-    {
-        return TService{services.template get<Service1Dependency>()};
-    }
-};
-using Service2Dependency = ServiceDependency<Service2, /*ServiceInstantiator<Service2, Service1>*/Service2Instantiator<Service2>>;
+using Service2Dependency = ServiceDependency<Service2, ServiceInstantiator<Service2, Service1Dependency>>;
 
 template<typename TService>
 struct Service2PointerInstantiator
