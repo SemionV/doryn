@@ -144,39 +144,30 @@ using Service1Dependency = ServiceDependency<Service1>;
 using Service2TransientDependency = TransientServiceDependency<Service1, ServiceInstantiator<Service2, Service1Dependency>>;
 using Service2Dependency = ServiceDependency<Service2, ServiceInstantiator<Service2, Service1Dependency>>;
 using Service2PointerDependency = ServiceDependency<std::shared_ptr<Service2>, ServiceInstantiator<std::shared_ptr<Service2>, Service1Dependency>>;
+using Service2TransientPointerDependency = TransientServiceDependency<std::shared_ptr<Service2>, ServiceInstantiator<std::shared_ptr<Service2>, Service1Dependency>>;
+
+using ServiceLocatorType = ServiceLocator<Service1Dependency,
+        Service2Dependency,
+        Service2PointerDependency,
+        Service2TransientDependency,
+        Service2TransientPointerDependency>;
 
 TEST_CASE("Check concept", "Service Locator")
 {
-    auto services = ServiceLocator<Service1Dependency,
-                                        Service2Dependency,
-                                        Service2PointerDependency,
-                                        Service2TransientDependency>{};
+    auto services = ServiceLocatorType{};
 
     auto service1 = services.get<Service1Dependency>();
-    if(service1)
-    {
-        std::cout << "Service1 value: " << service1->value << "\n";
-    }
+    REQUIRE(service1);
+    REQUIRE(service1->value == 1);
 
     auto service2 = services.get<Service2Dependency>();
-    if(service2)
-    {
-        std::cout << "Service2 value: " << service2->value << "\n";
-        std::cout << "Service2->service1 value: " << service2->service1->value << "\n";
-    }
+    REQUIRE(service2);
+    REQUIRE(service2->value == 2);
 
     auto service2Pointer = services.get<Service2PointerDependency>();
-    if(service2Pointer)
-    {
-        service2Pointer->value = 3;
-    }
-
-    service2Pointer = services.get<Service2PointerDependency>();
-    if(service2Pointer)
-    {
-        std::cout << "Service2Pointer value: " << service2Pointer->value << "\n";
-        std::cout << "Service2Pointer->service1 value: " << service2Pointer->service1->value << "\n";
-    }
+    REQUIRE(service2Pointer);
+    REQUIRE(service2Pointer->value == 2);
+    REQUIRE(service2Pointer->service1->value == 1);
 
     auto service2Transient = services.get<Service2TransientDependency>();
     REQUIRE(service2Transient.value == 2);
@@ -184,4 +175,11 @@ TEST_CASE("Check concept", "Service Locator")
 
     service2Transient = services.get<Service2TransientDependency>();
     REQUIRE(service2Transient.value == 2);
+
+    auto service2TransientPointer = services.get<Service2TransientPointerDependency>();
+    REQUIRE(service2TransientPointer->value == 2);
+    service2TransientPointer->value = 4;
+
+    service2TransientPointer = services.get<Service2TransientPointerDependency>();
+    REQUIRE(service2TransientPointer->value == 2);
 }
