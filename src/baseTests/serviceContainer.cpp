@@ -21,11 +21,11 @@ public:
     int value = 2;
 };
 
-using Service1Dependency = Singleton<Service1, ServiceInstantiator<Service1>, Service1>;
-using Service2TransientDependency = Transient<Service2, ServiceInstantiator<Service2, Service1Dependency>, Service2, Service1Dependency>;
-using Service2Dependency = Singleton<Service2, ServiceInstantiator<Service2, Service1Dependency>, Service2, Service1Dependency>;
-using Service2PointerDependency = Singleton<std::shared_ptr<Service2>, ServiceInstantiator<std::shared_ptr<Service2>, Service1Dependency>, Service2, Service1Dependency>;
-using Service2TransientPointerDependency = Transient<std::shared_ptr<Service2>, ServiceInstantiator<std::shared_ptr<Service2>, Service1Dependency>, Service2, Service1Dependency>;
+using Service1Dependency = Singleton<Service1>;
+using Service2TransientDependency = Transient<Service2, Service2, Service1Dependency>;
+using Service2Dependency = Singleton<Service2, Service2, Service1Dependency>;
+using Service2PointerDependency = Singleton<std::shared_ptr<Service2>, Service2, Service1Dependency>;
+using Service2TransientPointerDependency = Transient<std::shared_ptr<Service2>, Service2, Service1Dependency>;
 
 using ServiceLocatorType = ServiceContainer<Service1Dependency,
         Service2Dependency,
@@ -147,12 +147,9 @@ struct ServiceDependencies
     using HelloServiceType = HelloService;
     using EngineServiceType = EngineService<PipelineServiceType, HelloServiceType>;
 
-    using PipelineService = Singleton<PipelineServiceType, ServiceInstantiator<PipelineServiceType>, IPipelineService<PipelineServiceType>>;
-    using HelloService = Singleton<std::shared_ptr<HelloServiceType>, ServiceInstantiator<std::shared_ptr<HelloServiceType>>, IHelloService<HelloServiceType>>;
-    using EngineService = Singleton<EngineServiceType,
-            ServiceInstantiator<EngineServiceType,
-                    PipelineService,
-                    HelloService>, EngineServiceType, PipelineService, HelloService>;
+    using PipelineService = Singleton<PipelineServiceType, IPipelineService<PipelineServiceType>>;
+    using HelloService = Singleton<std::shared_ptr<HelloServiceType>, IHelloService<HelloServiceType>>;
+    using EngineService = Singleton<EngineServiceType, EngineServiceType, PipelineService, HelloService>;
 
     using ServiceContainerType = ServiceContainer<PipelineService,
             HelloService,
