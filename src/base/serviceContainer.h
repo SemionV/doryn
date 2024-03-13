@@ -42,61 +42,56 @@ namespace dory
         }
     };
 
-    template<typename TDependency>
-    struct Singleton
-    {
-        using Type = TDependency;
-    };
-
-    template<typename TDependency>
-    struct Transient: Singleton<TDependency>
-    {
-    };
-
-    template<typename TService, typename TServiceInstantiator = ServiceInstantiator<TService>, typename TServiceFacade = TService, typename... TDependencies>
-    struct Dependency
+    template<typename TService, typename TServiceInstantiator = ServiceInstantiator<TService>, typename TServiceFacade = TService>
+    struct DependencyDescriptor
     {
         using ServiceType = TService;
         using ServiceFacadeType = TServiceFacade;
         using ServiceInstantiatorType = TServiceInstantiator;
+    };
 
+    template<typename TService, typename TServiceInstantiator = ServiceInstantiator<TService>, typename TServiceFacade = TService, typename... TDependencies>
+    struct Singleton: DependencyDescriptor<TService, TServiceInstantiator, TServiceFacade>
+    {
         template<typename TServiceContainer>
-        static ServiceType createInstance(TServiceContainer& services)
+        static TService createInstance(TServiceContainer& services)
         {
-            return ServiceType(services.template get<TDependencies>()...);
+            return TService(services.template get<TDependencies>()...);
         }
     };
 
     template<typename TService, typename TServiceInstantiator, typename TServiceFacade, typename... TDependencies>
-    struct Dependency<std::shared_ptr<TService>, TServiceInstantiator, TServiceFacade, TDependencies...>
+    struct Singleton<std::shared_ptr<TService>, TServiceInstantiator, TServiceFacade, TDependencies...>: DependencyDescriptor<std::shared_ptr<TService>, TServiceInstantiator, TServiceFacade>
     {
-        using ServiceType = std::shared_ptr<TService>;
-        using ServiceFacadeType = TServiceFacade;
-        using ServiceInstantiatorType = TServiceInstantiator;
-
         template<typename TServiceContainer>
-        static ServiceType createInstance(TServiceContainer& services)
+        static std::shared_ptr<TService> createInstance(TServiceContainer& services)
         {
             return std::make_shared<TService>(services.template get<TDependencies>()...);
         }
     };
 
     template<typename TService, typename TServiceInstantiator, typename TServiceFacade>
-    struct Dependency<std::shared_ptr<TService>, TServiceInstantiator, TServiceFacade>
+    struct Singleton<std::shared_ptr<TService>, TServiceInstantiator, TServiceFacade>: DependencyDescriptor<std::shared_ptr<TService>, TServiceInstantiator, TServiceFacade>
     {
-        using ServiceType = TService;
-        using ServiceFacadeType = TServiceFacade;
-        using ServiceInstantiatorType = TServiceInstantiator;
-
         template<typename TServiceContainer>
-        static ServiceType createInstance(TServiceContainer& services)
+        static std::shared_ptr<TService> createInstance(TServiceContainer& services)
         {
-            return ServiceType{};
+            return std::make_shared<TService>();
+        }
+    };
+
+    template<typename TService, typename TServiceInstantiator, typename TServiceFacade>
+    struct Singleton<TService, TServiceInstantiator, TServiceFacade>: DependencyDescriptor<TService, TServiceInstantiator, TServiceFacade>
+    {
+        template<typename TServiceContainer>
+        static TService createInstance(TServiceContainer& services)
+        {
+            return TService{};
         }
     };
 
     template<typename TService, typename TServiceInstantiator = ServiceInstantiator<TService>, typename TServiceFacade = TService, typename... TDependencies>
-    struct TransientDependency: Dependency<TService, TServiceInstantiator, TServiceFacade, TDependencies...>
+    struct Transient: Singleton<TService, TServiceInstantiator, TServiceFacade, TDependencies...>
     {
     };
 
@@ -106,7 +101,7 @@ namespace dory
         TDependency::ServiceType service;
 
         explicit DependencyController(TServiceContainer& services):
-                service(TDependency::template createInstance<TServiceContainer>(services))
+                service(TDependency::createInstance(services))
         {}
 
     protected:
@@ -116,16 +111,15 @@ namespace dory
         }
     };
 
-    template<typename TService, typename TServiceInstantiator, typename TServiceFacade, typename TServiceContainer>
-    struct DependencyController<Dependency<std::shared_ptr<TService>, TServiceInstantiator, TServiceFacade>, TServiceContainer>
+    template<typename TService, typename TServiceInstantiator, typename TServiceFacade, typename TServiceContainer, typename... TDependencies>
+    struct DependencyController<Singleton<std::shared_ptr<TService>, TServiceInstantiator, TServiceFacade, TDependencies...>, TServiceContainer>
     {
         using DependencyServiceType = std::shared_ptr<TService>;
-        using DependencyServiceInstantiatorType = TServiceInstantiator;
 
         DependencyServiceType service;
 
         explicit DependencyController(TServiceContainer& services):
-                service(DependencyServiceInstantiatorType::template getInstance<TServiceContainer>(services))
+                service(Singleton<std::shared_ptr<TService>, TServiceInstantiator, TServiceFacade, TDependencies...>::createInstance(services))
         {}
 
     protected:
@@ -136,7 +130,7 @@ namespace dory
     };
 
     template<typename TService, typename TServiceInstantiator, typename TServiceFacade, typename TServiceContainer, typename... TDependencies>
-    struct DependencyController<TransientDependency<TService, TServiceInstantiator, TServiceFacade, TDependencies...>, TServiceContainer>
+    struct DependencyController<Transient<TService, TServiceInstantiator, TServiceFacade, TDependencies...>, TServiceContainer>
     {
         explicit DependencyController(TServiceContainer& services)
         {}
@@ -144,7 +138,7 @@ namespace dory
     protected:
         decltype(auto) getInstance(TServiceContainer& services)
         {
-            return TransientDependency<TService, TServiceInstantiator, TServiceFacade, TDependencies...>::template createInstance<TServiceContainer>(services);
+            return Transient<TService, TServiceInstantiator, TServiceFacade, TDependencies...>::createInstance(services);
         }
     };
 
