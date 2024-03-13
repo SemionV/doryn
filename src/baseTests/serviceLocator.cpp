@@ -69,9 +69,9 @@ struct DependencyController
     {}
 
 protected:
-    decltype(auto) getInstance(TServiceLocator& services)
+    TDependency::ServiceType& getInstance(TServiceLocator& services)
     {
-        return &service;
+        return service;
     }
 };
 
@@ -88,9 +88,9 @@ struct DependencyController<ServiceDependency<std::shared_ptr<TService>, TServic
     {}
 
 protected:
-    decltype(auto) getInstance(TServiceLocator& services)
+    auto& getInstance(TServiceLocator& services)
     {
-        return service;
+        return *service;
     }
 };
 
@@ -114,11 +114,20 @@ struct ServiceLocator: public DependencyController<TDependencies, ServiceLocator
             DependencyController<TDependencies, ServiceLocator<TDependencies...>>(*this)...
     {}
 
+    ServiceLocator(const ServiceLocator&) = delete;
+    ServiceLocator& operator=(const ServiceLocator&) = delete;
+
     template<typename TDependency>
     decltype(auto) get()
     {
         return DependencyController<TDependency, ServiceLocator<TDependencies...>>::getInstance(*this);
     }
+};
+
+/*----------------------------------------------------------------------------------------------------------------*/
+
+class Service0
+{
 };
 
 class Service1
@@ -130,10 +139,10 @@ public:
 class Service2
 {
 public:
-    Service1* service1;
+    Service1& service1;
 
 public:
-    explicit Service2(Service1* service1):
+    explicit Service2(Service1& service1):
             service1(service1)
     {}
 
@@ -157,24 +166,21 @@ TEST_CASE("Check concept", "Service Locator")
     auto services = ServiceLocatorType{};
 
     auto service1 = services.get<Service1Dependency>();
-    REQUIRE(service1);
-    REQUIRE(service1->value == 1);
+    REQUIRE(service1.value == 1);
 
     auto service2 = services.get<Service2Dependency>();
-    REQUIRE(service2);
-    REQUIRE(service2->value == 2);
+    REQUIRE(service2.value == 2);
 
     auto service2Pointer = services.get<Service2PointerDependency>();
-    REQUIRE(service2Pointer);
-    REQUIRE(service2Pointer->value == 2);
-    REQUIRE(service2Pointer->service1->value == 1);
+    REQUIRE(service2Pointer.value == 2);
+    REQUIRE(service2Pointer.service1.value == 1);
 
     auto service2Transient = services.get<Service2TransientDependency>();
     REQUIRE(service2Transient.value == 2);
     service2Transient.value = 4;
 
-    service2Transient = services.get<Service2TransientDependency>();
-    REQUIRE(service2Transient.value == 2);
+    auto service2Transient2 {services.get<Service2TransientDependency>()};
+    REQUIRE(service2Transient2.value == 2);
 
     auto service2TransientPointer = services.get<Service2TransientPointerDependency>();
     REQUIRE(service2TransientPointer->value == 2);
@@ -182,4 +188,58 @@ TEST_CASE("Check concept", "Service Locator")
 
     service2TransientPointer = services.get<Service2TransientPointerDependency>();
     REQUIRE(service2TransientPointer->value == 2);
+}
+
+template<typename TImplementation>
+class IPipelineService
+{
+public:
+    auto getPipeline()
+    {
+        return static_cast<TImplementation*>(this)->getPipelineImpl();
+    }
+};
+
+class PipelineService: public IPipelineService<PipelineService>
+{
+private:
+    std::vector<int> pipeline = {1};
+
+public:
+    auto getPipelineImpl()
+    {
+        return pipeline;
+    }
+};
+
+template<typename TPipelineService>
+class EngineService
+{
+private:
+    IPipelineService<TPipelineService>& pipelineService;
+
+public:
+    explicit EngineService(IPipelineService<TPipelineService>& pipelineService):
+            pipelineService(pipelineService)
+    {}
+
+    void run()
+    {
+        auto pipeline = pipelineService.getPipeline();
+        std::cout << pipeline.at(0) << "\n";
+    }
+};
+
+using PipelineDependency = ServiceDependency<PipelineService>;
+using EngineDependency = ServiceDependency<EngineService<PipelineService>, ServiceInstantiator<EngineService<PipelineService>, PipelineDependency>>;
+
+using ProjectServiceLocatorType = ServiceLocator<PipelineDependency,
+        EngineDependency>;
+
+TEST_CASE("Check ServiceLocator usage", "Service Locator")
+{
+    auto services = ProjectServiceLocatorType{};
+
+    auto engine = services.get<EngineDependency>();
+    engine.run();
 }
