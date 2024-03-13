@@ -275,7 +275,7 @@ public:
 using PipelineServiceType = PipelineService2;
 
 using PipelineDependency = ServiceDependency<PipelineServiceType, ServiceInstantiator<PipelineServiceType>, IPipelineService<PipelineServiceType>>;
-using HelloServiceDependency = ServiceDependency<HelloService, ServiceInstantiator<HelloService>, IHelloService<HelloService>>;
+using HelloServiceDependency = ServiceDependency<std::shared_ptr<HelloService>, ServiceInstantiator<std::shared_ptr<HelloService>>, IHelloService<HelloService>>;
 using EngineDependency = ServiceDependency<EngineService<PipelineServiceType, HelloService>,
     ServiceInstantiator<EngineService<PipelineServiceType, HelloService>,
         PipelineDependency,
