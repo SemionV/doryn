@@ -121,15 +121,12 @@ class EngineService
 private:
     IPipelineService<TPipelineService>& pipelineService;
     std::shared_ptr<IHelloService<THelloService>> helloService;
-    Service1& service1;
 
 public:
     explicit EngineService(IPipelineService<TPipelineService>& pipelineService,
-                           std::shared_ptr<IHelloService<THelloService>> helloService,
-                           Service1& service1):
+                           std::shared_ptr<IHelloService<THelloService>> helloService):
             pipelineService(pipelineService),
-            helloService(std::move(helloService)),
-            service1(service1)
+            helloService(std::move(helloService))
     {}
 
     int value = 0;
@@ -141,38 +138,36 @@ public:
 
         REQUIRE(helloService);
         REQUIRE(helloService->sayHello() == 3);
-
-        REQUIRE(service1.value == 1);
     }
 };
 
 struct ServiceDependencies
 {
     using PipelineServiceType = PipelineService;
+    using HelloServiceType = HelloService;
+    using EngineServiceType = EngineService<PipelineServiceType, HelloServiceType>;
 
-    using PipelineDependency = ServiceDependency<PipelineServiceType, ServiceInstantiator<PipelineServiceType>, IPipelineService<PipelineServiceType>>;
-    using HelloServiceDependency = ServiceDependency<std::shared_ptr<HelloService>, ServiceInstantiator<std::shared_ptr<HelloService>>, IHelloService<HelloService>>;
-    using EngineDependency = ServiceDependency<EngineService<PipelineServiceType, HelloService>,
-            ServiceInstantiator<EngineService<PipelineServiceType, HelloService>,
-                    PipelineDependency,
-                    HelloServiceDependency,
-                    Service1Dependency>>;
+    using PipelineService = ServiceDependency<PipelineServiceType, ServiceInstantiator<PipelineServiceType>, IPipelineService<PipelineServiceType>>;
+    using HelloService = ServiceDependency<std::shared_ptr<HelloServiceType>, ServiceInstantiator<std::shared_ptr<HelloServiceType>>, IHelloService<HelloServiceType>>;
+    using EngineService = ServiceDependency<EngineServiceType,
+            ServiceInstantiator<EngineServiceType,
+                    PipelineService,
+                    HelloService>>;
 
-    using ServiceContainerType = ServiceContainer<ServiceDependencies::PipelineDependency,
-            ServiceDependencies::HelloServiceDependency,
-            Service1Dependency,
-            ServiceDependencies::EngineDependency>;
+    using ServiceContainerType = ServiceContainer<PipelineService,
+            HelloService,
+            EngineService>;
 };
 
 TEST_CASE("Check ServiceContainer usage", "Service Locator")
 {
     auto services = ServiceDependencies::ServiceContainerType{};
 
-    services.get<ServiceDependencies::PipelineDependency>().getPipeline();
+    services.get<ServiceDependencies::PipelineService>().getPipeline();
 
-    auto& engine = services.get<ServiceDependencies::EngineDependency>();
+    auto& engine = services.get<ServiceDependencies::EngineService>();
     engine.run();
     engine.value = 6;
 
-    REQUIRE(services.get<ServiceDependencies::EngineDependency>().value == 6);
+    REQUIRE(services.get<ServiceDependencies::EngineService>().value == 6);
 }
