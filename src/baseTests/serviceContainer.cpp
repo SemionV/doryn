@@ -21,11 +21,11 @@ public:
     int value = 2;
 };
 
-using Service1Dependency = ServiceDependency<Service1>;
-using Service2TransientDependency = TransientServiceDependency<Service2, ServiceInstantiator<Service2, Service1Dependency>>;
-using Service2Dependency = ServiceDependency<Service2, ServiceInstantiator<Service2, Service1Dependency>>;
-using Service2PointerDependency = ServiceDependency<std::shared_ptr<Service2>, ServiceInstantiator<std::shared_ptr<Service2>, Service1Dependency>, Service2>;
-using Service2TransientPointerDependency = TransientServiceDependency<std::shared_ptr<Service2>, ServiceInstantiator<std::shared_ptr<Service2>, Service1Dependency>>;
+using Service1Dependency = Dependency<Service1, ServiceInstantiator<Service1>, Service1>;
+using Service2TransientDependency = TransientDependency<Service2, ServiceInstantiator<Service2, Service1Dependency>, Service2, Service1Dependency>;
+using Service2Dependency = Dependency<Service2, ServiceInstantiator<Service2, Service1Dependency>, Service2, Service1Dependency>;
+using Service2PointerDependency = Dependency<std::shared_ptr<Service2>, ServiceInstantiator<std::shared_ptr<Service2>, Service1Dependency>, std::shared_ptr<Service2>, Service1Dependency>;
+using Service2TransientPointerDependency = TransientDependency<std::shared_ptr<Service2>, ServiceInstantiator<std::shared_ptr<Service2>, Service1Dependency>, std::shared_ptr<Service2>, Service1Dependency>;
 
 using ServiceLocatorType = ServiceContainer<Service1Dependency,
         Service2Dependency,
@@ -147,12 +147,12 @@ struct ServiceDependencies
     using HelloServiceType = HelloService;
     using EngineServiceType = EngineService<PipelineServiceType, HelloServiceType>;
 
-    using PipelineService = ServiceDependency<PipelineServiceType, ServiceInstantiator<PipelineServiceType>, IPipelineService<PipelineServiceType>>;
-    using HelloService = ServiceDependency<std::shared_ptr<HelloServiceType>, ServiceInstantiator<std::shared_ptr<HelloServiceType>>, IHelloService<HelloServiceType>>;
-    using EngineService = ServiceDependency<EngineServiceType,
+    using PipelineService = Dependency<PipelineServiceType, ServiceInstantiator<PipelineServiceType>, IPipelineService<PipelineServiceType>>;
+    using HelloService = Dependency<std::shared_ptr<HelloServiceType>, ServiceInstantiator<std::shared_ptr<HelloServiceType>>, IHelloService<HelloServiceType>>;
+    using EngineService = Dependency<EngineServiceType,
             ServiceInstantiator<EngineServiceType,
                     PipelineService,
-                    HelloService>>;
+                    HelloService>, EngineServiceType, PipelineService, HelloService>;
 
     using ServiceContainerType = ServiceContainer<PipelineService,
             HelloService,
