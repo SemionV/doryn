@@ -146,30 +146,33 @@ public:
     }
 };
 
-using PipelineServiceType = PipelineService;
+struct ServiceDependencies
+{
+    using PipelineServiceType = PipelineService;
 
-using PipelineDependency = ServiceDependency<PipelineServiceType, ServiceInstantiator<PipelineServiceType>, IPipelineService<PipelineServiceType>>;
-using HelloServiceDependency = ServiceDependency<std::shared_ptr<HelloService>, ServiceInstantiator<std::shared_ptr<HelloService>>, IHelloService<HelloService>>;
-using EngineDependency = ServiceDependency<EngineService<PipelineServiceType, HelloService>,
-    ServiceInstantiator<EngineService<PipelineServiceType, HelloService>,
-        PipelineDependency,
-        HelloServiceDependency,
-        Service1Dependency>>;
+    using PipelineDependency = ServiceDependency<PipelineServiceType, ServiceInstantiator<PipelineServiceType>, IPipelineService<PipelineServiceType>>;
+    using HelloServiceDependency = ServiceDependency<std::shared_ptr<HelloService>, ServiceInstantiator<std::shared_ptr<HelloService>>, IHelloService<HelloService>>;
+    using EngineDependency = ServiceDependency<EngineService<PipelineServiceType, HelloService>,
+            ServiceInstantiator<EngineService<PipelineServiceType, HelloService>,
+                    PipelineDependency,
+                    HelloServiceDependency,
+                    Service1Dependency>>;
 
-using ProjectServiceLocatorType = ServiceContainer<PipelineDependency,
-        HelloServiceDependency,
-        Service1Dependency,
-        EngineDependency>;
+    using ServiceContainerType = ServiceContainer<ServiceDependencies::PipelineDependency,
+            ServiceDependencies::HelloServiceDependency,
+            Service1Dependency,
+            ServiceDependencies::EngineDependency>;
+};
 
 TEST_CASE("Check ServiceContainer usage", "Service Locator")
 {
-    auto services = ProjectServiceLocatorType{};
+    auto services = ServiceDependencies::ServiceContainerType{};
 
-    services.get<PipelineDependency>().getPipeline();
+    services.get<ServiceDependencies::PipelineDependency>().getPipeline();
 
-    auto& engine = services.get<EngineDependency>();
+    auto& engine = services.get<ServiceDependencies::EngineDependency>();
     engine.run();
     engine.value = 6;
 
-    REQUIRE(services.get<EngineDependency>().value == 6);
+    REQUIRE(services.get<ServiceDependencies::EngineDependency>().value == 6);
 }
