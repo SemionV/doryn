@@ -268,6 +268,8 @@ public:
             service1(service1)
     {}
 
+    int value = 0;
+
     void run()
     {
         auto pipeline = pipelineService.getPipeline();
@@ -302,6 +304,9 @@ TEST_CASE("Check ServiceLocator usage", "Service Locator")
 
     auto engine = services.get<EngineDependency>();
     engine.run();
+    engine.value = 6;
+
+    REQUIRE(services.get<EngineDependency>().value == 6);
 
     services.get<HelloServiceDependency>()->sayHello();
 }
