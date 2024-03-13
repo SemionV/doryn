@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "dependencies.h"
 
 template<typename TService, typename... TDependencies>
@@ -90,9 +92,9 @@ struct DependencyController<ServiceDependency<std::shared_ptr<TService>, TServic
     {}
 
 protected:
-    auto& getInstance(TServiceLocator& services)
+    auto getInstance(TServiceLocator& services)
     {
-        return *service;
+        return std::static_pointer_cast<TServiceFacade>(service);
     }
 };
 
@@ -156,7 +158,7 @@ public:
 using Service1Dependency = ServiceDependency<Service1>;
 using Service2TransientDependency = TransientServiceDependency<Service2, ServiceInstantiator<Service2, Service1Dependency>>;
 using Service2Dependency = ServiceDependency<Service2, ServiceInstantiator<Service2, Service1Dependency>>;
-using Service2PointerDependency = ServiceDependency<std::shared_ptr<Service2>, ServiceInstantiator<std::shared_ptr<Service2>, Service1Dependency>>;
+using Service2PointerDependency = ServiceDependency<std::shared_ptr<Service2>, ServiceInstantiator<std::shared_ptr<Service2>, Service1Dependency>, Service2>;
 using Service2TransientPointerDependency = TransientServiceDependency<std::shared_ptr<Service2>, ServiceInstantiator<std::shared_ptr<Service2>, Service1Dependency>>;
 
 using ServiceLocatorType = ServiceLocator<Service1Dependency,
@@ -176,8 +178,8 @@ TEST_CASE("Check concept", "Service Locator")
     REQUIRE(service2.value == 2);
 
     auto service2Pointer = services.get<Service2PointerDependency>();
-    REQUIRE(service2Pointer.value == 2);
-    REQUIRE(service2Pointer.service1.value == 1);
+    REQUIRE(service2Pointer->value == 2);
+    REQUIRE(service2Pointer->service1.value == 1);
 
     auto service2Transient = services.get<Service2TransientDependency>();
     REQUIRE(service2Transient.value == 2);
@@ -254,13 +256,16 @@ class EngineService
 {
 private:
     IPipelineService<TPipelineService>& pipelineService;
-    IHelloService<THelloService>& helloService;
+    std::shared_ptr<IHelloService<THelloService>> helloService;
+    Service1& service1;
 
 public:
     explicit EngineService(IPipelineService<TPipelineService>& pipelineService,
-                           IHelloService<THelloService>& helloService):
+                           std::shared_ptr<IHelloService<THelloService>> helloService,
+                           Service1& service1):
             pipelineService(pipelineService),
-            helloService(helloService)
+            helloService(std::move(helloService)),
+            service1(service1)
     {}
 
     void run()
@@ -268,21 +273,25 @@ public:
         auto pipeline = pipelineService.getPipeline();
         std::cout << pipeline.at(0) << "\n";
 
-        helloService.sayHello();
+        helloService->sayHello();
+
+        std::cout << service1.value << "\n";
     }
 };
 
-using PipelineServiceType = PipelineService2;
+using PipelineServiceType = PipelineService;
 
 using PipelineDependency = ServiceDependency<PipelineServiceType, ServiceInstantiator<PipelineServiceType>, IPipelineService<PipelineServiceType>>;
 using HelloServiceDependency = ServiceDependency<std::shared_ptr<HelloService>, ServiceInstantiator<std::shared_ptr<HelloService>>, IHelloService<HelloService>>;
 using EngineDependency = ServiceDependency<EngineService<PipelineServiceType, HelloService>,
     ServiceInstantiator<EngineService<PipelineServiceType, HelloService>,
         PipelineDependency,
-        HelloServiceDependency>>;
+        HelloServiceDependency,
+        Service1Dependency>>;
 
 using ProjectServiceLocatorType = ServiceLocator<PipelineDependency,
         HelloServiceDependency,
+        Service1Dependency,
         EngineDependency>;
 
 TEST_CASE("Check ServiceLocator usage", "Service Locator")
@@ -293,4 +302,6 @@ TEST_CASE("Check ServiceLocator usage", "Service Locator")
 
     auto engine = services.get<EngineDependency>();
     engine.run();
+
+    services.get<HelloServiceDependency>()->sayHello();
 }
