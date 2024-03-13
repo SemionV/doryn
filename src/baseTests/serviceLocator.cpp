@@ -4,9 +4,9 @@ template<typename TService, typename... TDependencies>
 struct ServiceInstantiator
 {
     template<typename TServiceLocator>
-    static TService getInsatnce(TServiceLocator& services)
+    static TService getInstance(TServiceLocator& services)
     {
-        return TService{(services.template get<TDependencies>(), ...)};
+        return TService(services.template get<TDependencies>()...);
     }
 };
 
@@ -14,7 +14,7 @@ template<typename TService>
 struct ServiceInstantiator<TService>
 {
     template<typename TServiceLocator>
-    static TService getInsatnce(TServiceLocator& services)
+    static TService getInstance(TServiceLocator& services)
     {
         return TService{};
     }
@@ -24,9 +24,9 @@ template<typename TService, typename... TDependencies>
 struct ServiceInstantiator<std::shared_ptr<TService>, TDependencies...>
 {
     template<typename TServiceLocator>
-    static std::shared_ptr<TService> getInsatnce(TServiceLocator& services)
+    static std::shared_ptr<TService> getInstance(TServiceLocator& services)
     {
-        return std::make_shared<TService>((services.template get<TDependencies>(), ...));
+        return std::make_shared<TService>(services.template get<TDependencies>()...);
     }
 };
 
@@ -34,28 +34,30 @@ template<typename TService>
 struct ServiceInstantiator<std::shared_ptr<TService>>
 {
     template<typename TServiceLocator>
-    static std::shared_ptr<TService> getInsatnce(TServiceLocator& services)
+    static std::shared_ptr<TService> getInstance(TServiceLocator& services)
     {
         return std::make_shared<TService>();
     }
 };
 
-template<typename TService, typename TServiceInstantiator = ServiceInstantiator<TService>>
+template<typename TService, typename TServiceInstantiator = ServiceInstantiator<TService>, typename TServiceFacade = TService>
 struct ServiceDependency
 {
     using ServiceType = TService;
+    using ServiceFacadeType = TServiceFacade;
     using ServiceInstantiatorType = TServiceInstantiator;
 };
 
-template<typename TService, typename TServiceInstantiator>
-struct ServiceDependency<std::shared_ptr<TService>, TServiceInstantiator>
+template<typename TService, typename TServiceInstantiator, typename TServiceFacade>
+struct ServiceDependency<std::shared_ptr<TService>, TServiceInstantiator, TServiceFacade>
 {
     using ServiceType = std::shared_ptr<TService>;
+    using ServiceFacadeType = TServiceFacade;
     using ServiceInstantiatorType = TServiceInstantiator;
 };
 
-template<typename TService, typename TServiceInstantiator = ServiceInstantiator<TService>>
-struct TransientServiceDependency: ServiceDependency<TService, TServiceInstantiator>
+template<typename TService, typename TServiceInstantiator = ServiceInstantiator<TService>, typename TServiceFacade = TService>
+struct TransientServiceDependency: ServiceDependency<TServiceFacade, TService, TServiceInstantiator>
 {
 };
 
@@ -65,26 +67,26 @@ struct DependencyController
     TDependency::ServiceType service;
 
     explicit DependencyController(TServiceLocator& services):
-            service(TDependency::ServiceInstantiatorType::template getInsatnce<TServiceLocator>(services))
+            service(TDependency::ServiceInstantiatorType::template getInstance<TServiceLocator>(services))
     {}
 
 protected:
-    TDependency::ServiceType& getInstance(TServiceLocator& services)
+    TDependency::ServiceFacadeType& getInstance(TServiceLocator& services)
     {
-        return service;
+        return static_cast<typename TDependency::ServiceFacadeType&>(service);
     }
 };
 
-template<typename TService, typename TServiceInstantiator, typename TServiceLocator>
-struct DependencyController<ServiceDependency<std::shared_ptr<TService>, TServiceInstantiator>, TServiceLocator>
+template<typename TService, typename TServiceInstantiator, typename TServiceFacade, typename TServiceLocator>
+struct DependencyController<ServiceDependency<std::shared_ptr<TService>, TServiceInstantiator, TServiceFacade>, TServiceLocator>
 {
-    using DependencyServiceType = ServiceDependency<std::shared_ptr<TService>, TServiceInstantiator>::ServiceType;
-    using DependencyServiceInstantiatorType = ServiceDependency<TService, TServiceInstantiator>::ServiceInstantiatorType;
+    using DependencyServiceType = std::shared_ptr<TService>;
+    using DependencyServiceInstantiatorType = TServiceInstantiator;
 
     DependencyServiceType service;
 
     explicit DependencyController(TServiceLocator& services):
-            service(DependencyServiceInstantiatorType::template getInsatnce<TServiceLocator>(services))
+            service(DependencyServiceInstantiatorType::template getInstance<TServiceLocator>(services))
     {}
 
 protected:
@@ -94,8 +96,8 @@ protected:
     }
 };
 
-template<typename TService, typename TServiceInstantiator, typename TServiceLocator>
-struct DependencyController<TransientServiceDependency<TService, TServiceInstantiator>, TServiceLocator>
+template<typename TService, typename TServiceInstantiator, typename TServiceFacade, typename TServiceLocator>
+struct DependencyController<TransientServiceDependency<TService, TServiceInstantiator, TServiceFacade>, TServiceLocator>
 {
     explicit DependencyController(TServiceLocator& services)
     {}
@@ -103,15 +105,17 @@ struct DependencyController<TransientServiceDependency<TService, TServiceInstant
 protected:
     decltype(auto) getInstance(TServiceLocator& services)
     {
-        return TServiceInstantiator::template getInsatnce<TServiceLocator>(services);
+        return TServiceInstantiator::template getInstance<TServiceLocator>(services);
     }
 };
 
 template<typename... TDependencies>
 struct ServiceLocator: public DependencyController<TDependencies, ServiceLocator<TDependencies...>>...
 {
+    using ThisType = ServiceLocator<TDependencies...>;
+
     ServiceLocator():
-            DependencyController<TDependencies, ServiceLocator<TDependencies...>>(*this)...
+            DependencyController<TDependencies, ThisType>(*this)...
     {}
 
     ServiceLocator(const ServiceLocator&) = delete;
@@ -120,7 +124,7 @@ struct ServiceLocator: public DependencyController<TDependencies, ServiceLocator
     template<typename TDependency>
     decltype(auto) get()
     {
-        return DependencyController<TDependency, ServiceLocator<TDependencies...>>::getInstance(*this);
+        return DependencyController<TDependency, ThisType>::getInstance(*this);
     }
 };
 
@@ -150,7 +154,7 @@ public:
 };
 
 using Service1Dependency = ServiceDependency<Service1>;
-using Service2TransientDependency = TransientServiceDependency<Service1, ServiceInstantiator<Service2, Service1Dependency>>;
+using Service2TransientDependency = TransientServiceDependency<Service2, ServiceInstantiator<Service2, Service1Dependency>>;
 using Service2Dependency = ServiceDependency<Service2, ServiceInstantiator<Service2, Service1Dependency>>;
 using Service2PointerDependency = ServiceDependency<std::shared_ptr<Service2>, ServiceInstantiator<std::shared_ptr<Service2>, Service1Dependency>>;
 using Service2TransientPointerDependency = TransientServiceDependency<std::shared_ptr<Service2>, ServiceInstantiator<std::shared_ptr<Service2>, Service1Dependency>>;
@@ -194,7 +198,7 @@ template<typename TImplementation>
 class IPipelineService
 {
 public:
-    auto getPipeline()
+    std::vector<int> getPipeline()
     {
         return static_cast<TImplementation*>(this)->getPipelineImpl();
     }
@@ -208,37 +212,84 @@ private:
 public:
     auto getPipelineImpl()
     {
+        std::cout << "PipelineService impl" << "\n";
         return pipeline;
     }
 };
 
-template<typename TPipelineService>
+class PipelineService2: public IPipelineService<PipelineService2>
+{
+private:
+    std::vector<int> pipeline = {2};
+
+public:
+    auto getPipelineImpl()
+    {
+        std::cout << "PipelineService2 impl" << "\n";
+        return pipeline;
+    }
+};
+
+template<typename TImplementation>
+class IHelloService
+{
+public:
+    void sayHello()
+    {
+        return static_cast<TImplementation*>(this)->sayHelloImpl();
+    }
+};
+
+class HelloService: public IHelloService<HelloService>
+{
+public:
+    void sayHelloImpl()
+    {
+        std::cout << "Hello!" << "\n";
+    }
+};
+
+template<typename TPipelineService, typename THelloService>
 class EngineService
 {
 private:
     IPipelineService<TPipelineService>& pipelineService;
+    IHelloService<THelloService>& helloService;
 
 public:
-    explicit EngineService(IPipelineService<TPipelineService>& pipelineService):
-            pipelineService(pipelineService)
+    explicit EngineService(IPipelineService<TPipelineService>& pipelineService,
+                           IHelloService<THelloService>& helloService):
+            pipelineService(pipelineService),
+            helloService(helloService)
     {}
 
     void run()
     {
         auto pipeline = pipelineService.getPipeline();
         std::cout << pipeline.at(0) << "\n";
+
+        helloService.sayHello();
     }
 };
 
-using PipelineDependency = ServiceDependency<PipelineService>;
-using EngineDependency = ServiceDependency<EngineService<PipelineService>, ServiceInstantiator<EngineService<PipelineService>, PipelineDependency>>;
+using PipelineServiceType = PipelineService2;
+
+using PipelineDependency = ServiceDependency<PipelineServiceType, ServiceInstantiator<PipelineServiceType>, IPipelineService<PipelineServiceType>>;
+using HelloServiceDependency = ServiceDependency<HelloService, ServiceInstantiator<HelloService>, IHelloService<HelloService>>;
+using EngineDependency = ServiceDependency<EngineService<PipelineServiceType, HelloService>,
+    ServiceInstantiator<EngineService<PipelineServiceType, HelloService>,
+        PipelineDependency,
+        HelloServiceDependency>>;
 
 using ProjectServiceLocatorType = ServiceLocator<PipelineDependency,
+        HelloServiceDependency,
         EngineDependency>;
 
 TEST_CASE("Check ServiceLocator usage", "Service Locator")
 {
     auto services = ProjectServiceLocatorType{};
+
+    services.get<PipelineDependency>().getPipeline();
 
     auto engine = services.get<EngineDependency>();
     engine.run();
