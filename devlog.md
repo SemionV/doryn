@@ -2,7 +2,7 @@
 
 Tasks:
 * Reimplement EntityRepository using static polymorphism, no virtual class interfaces
-* Reimplement ServiceLocator
+* Reimplement ServiceContainer
 * Rework project structure: engine should be a single static library unit, game logic can be a shared library(dll)
 * Reimplement MatrixCalculator using static polymorphism
 * Generalize core type of Matricies, so that it can support also double

@@ -3,12 +3,12 @@
 
 using namespace dory::domain;
 
-class ServiceLocator
+class ServiceContainer
 {
 public:
     dory::domain::EntityRepository<entity::PipelineNode>& pipelineNodeRepository;
 
-    explicit ServiceLocator(dory::domain::EntityRepository<entity::PipelineNode>& pipelineNodeRepository):
+    explicit ServiceContainer(dory::domain::EntityRepository<entity::PipelineNode>& pipelineNodeRepository):
             pipelineNodeRepository(pipelineNodeRepository)
     {}
 };
@@ -24,9 +24,9 @@ TEST_CASE( "Load Pipeline", "[pipelineService]" )
             entity::PipelineNode(5, nullptr, entity::PipelineNodePriority::Default, 4),
             entity::PipelineNode(6, nullptr, entity::PipelineNodePriority::Default, 2),
         });
-    auto serviceLocator = ServiceLocator(nodesRepository);
+    auto serviceLocator = ServiceContainer(nodesRepository);
 
-    auto pipelineService = services::PipelineService<ServiceLocator>(serviceLocator);
+    auto pipelineService = services::PipelineService<ServiceContainer>(serviceLocator);
     auto pipeline = pipelineService.getPipeline();
 
     REQUIRE(pipeline.size() == 2);
