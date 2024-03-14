@@ -105,15 +105,10 @@ namespace dory
         {}
 
         template<typename TServiceFacade = TDependency::ServiceFacadeType>
-        decltype(auto) getInstance(TServiceContainer& services)
+        TServiceFacade& getInstance(TServiceContainer& services)
         {
             SingletonDependencyController<TDependency, TServiceContainer>::assertInstance();
-
-            if constexpr (!std::is_same_v<TServiceFacade, typename TDependency::ServiceFacadeType>)
-            {
-                return static_cast<TServiceFacade&>(SingletonDependencyController<TDependency, TServiceContainer>::service);
-            }
-            return static_cast<TDependency::ServiceFacadeType&>(SingletonDependencyController<TDependency, TServiceContainer>::service);
+            return SingletonDependencyController<TDependency, TServiceContainer>::service;
         }
     };
 
@@ -132,13 +127,7 @@ namespace dory
         auto getInstance(TServiceContainer& services)
         {
             SingletonDependencyController<DependencyType, TServiceContainer>::assertInstance();
-
-            if constexpr (!std::is_same_v<TGetServiceFacade, TServiceFacade>)
-            {
-                return std::static_pointer_cast<TGetServiceFacade>(SingletonDependencyController<DependencyType, TServiceContainer>::service);
-            }
-
-            return std::static_pointer_cast<TServiceFacade>(SingletonDependencyController<DependencyType, TServiceContainer>::service);
+            return std::static_pointer_cast<TGetServiceFacade>(SingletonDependencyController<DependencyType, TServiceContainer>::service);
         }
     };
 
@@ -152,11 +141,7 @@ namespace dory
         template<typename TGetServiceFacade = TServiceFacade>
         auto getInstance(TServiceContainer& services)
         {
-            if constexpr (!std::is_same_v<TGetServiceFacade, TServiceFacade>)
-            {
-                return static_cast<TGetServiceFacade>(Transient<TService, TServiceFacade, TDependencies...>::createInstance(services));
-            }
-            return Transient<TService, TServiceFacade, TDependencies...>::createInstance(services);
+            return static_cast<TGetServiceFacade>(Transient<TService, TServiceFacade, TDependencies...>::createInstance(services));
         }
     };
 
@@ -170,12 +155,7 @@ namespace dory
         template<typename TGetServiceFacade = TServiceFacade>
         decltype(auto) getInstance(TServiceContainer& services)
         {
-            if constexpr (!std::is_same_v<TGetServiceFacade, TServiceFacade>)
-            {
-                return std::static_pointer_cast<TGetServiceFacade>(Transient<std::shared_ptr<TService>, TServiceFacade, TDependencies...>::createInstance(services));
-            }
-
-            return std::static_pointer_cast<TServiceFacade>(Transient<std::shared_ptr<TService>, TServiceFacade, TDependencies...>::createInstance(services));
+            return std::static_pointer_cast<TGetServiceFacade>(Transient<std::shared_ptr<TService>, TServiceFacade, TDependencies...>::createInstance(services));
         }
     };
 
@@ -189,7 +169,7 @@ namespace dory
         template<typename TGetServiceFacade = TServiceFacade>
         decltype(auto) getInstance(TServiceContainer& services)
         {
-            return services.template get<TDependency, TServiceFacade>();
+            return services.template get<TDependency, TGetServiceFacade>();
         }
     };
 
