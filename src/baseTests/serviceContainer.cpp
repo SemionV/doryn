@@ -165,10 +165,15 @@ struct ServiceDependencies
     using EngineServiceType = EngineService<PipelineServiceType, HelloServiceType>;
 
     using PipelineService = Singleton<PipelineServiceType, IPipelineService<PipelineServiceType>>;
+    using PipelineServiceImpl = Reference<PipelineService, PipelineServiceType>;
     using HelloService = Singleton<std::shared_ptr<HelloServiceType>, IHelloService<HelloServiceType>>;
-    using EngineService = Singleton<EngineServiceType, EngineServiceType, PipelineService, HelloService>;
+    using EngineService = Singleton<EngineServiceType, EngineServiceType,
+                                                    PipelineService,
+                                                    HelloService>;
 
-    using ServiceContainerType = ServiceContainer<PipelineService,
+    using ServiceContainerType = ServiceContainer<
+            PipelineService,
+            PipelineServiceImpl,
             HelloService,
             EngineService>;
 };
@@ -189,15 +194,18 @@ namespace dory
 
 TEST_CASE("Check ServiceContainer usage", "Service Locator")
 {
-    using Deps = ServiceDependencies;
+    using Services = ServiceDependencies;
 
-    auto services = Deps::ServiceContainerType{};
+    auto services = Services::ServiceContainerType{};
 
-    services.get<Deps::PipelineService>().getPipeline();
+    services.get<Services::PipelineService>().getPipeline();
 
-    auto& engine = services.get<Deps::EngineService>();
+    auto& engine = services.get<Services::EngineService>();
     engine.run();
     engine.value = 6;
 
-    REQUIRE(services.get<Deps::EngineService>().value == 6);
+    REQUIRE(services.get<Services::EngineService>().value == 6);
+
+    auto& psImpl = services.get<Services::PipelineServiceImpl>();
+    psImpl.getPipelineImpl();
 }

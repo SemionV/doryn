@@ -63,6 +63,12 @@ namespace dory
     {
     };
 
+    template<typename TDependency, typename TServiceFacade = TDependency::ServiceFacadeType>
+    requires(!std::is_copy_constructible_v<TServiceFacade>)
+    struct Reference: public DependencyDescriptor<typename TDependency::ServiceType, TServiceFacade>
+    {
+    };
+
     template<typename TService, typename TServiceFacade = TService, typename... TDependencies>
     requires(std::is_copy_constructible_v<TServiceFacade>)
     struct Transient: public DependencyDescriptor<TService, TServiceFacade, TDependencies...>
@@ -98,10 +104,16 @@ namespace dory
                 SingletonDependencyController<TDependency, TServiceContainer>(services)
         {}
 
-        TDependency::ServiceFacadeType& getInstance(TServiceContainer& services)
+        template<typename TServiceFacade = TDependency::ServiceFacadeType>
+        auto& getInstance(TServiceContainer& services)
         {
             SingletonDependencyController<TDependency, TServiceContainer>::assertInstance();
-            return SingletonDependencyController<TDependency, TServiceContainer>::service;
+
+            if constexpr (!std::is_same_v<TServiceFacade, typename TDependency::ServiceFacadeType>)
+            {
+                return static_cast<TServiceFacade&>(SingletonDependencyController<TDependency, TServiceContainer>::service);
+            }
+            return static_cast<TDependency::ServiceFacadeType&>(SingletonDependencyController<TDependency, TServiceContainer>::service);
         }
     };
 
@@ -116,9 +128,16 @@ namespace dory
         {}
 
     protected:
+        template<typename TGetServiceFacade = TServiceFacade>
         auto getInstance(TServiceContainer& services)
         {
             SingletonDependencyController<DependencyType, TServiceContainer>::assertInstance();
+
+            if constexpr (!std::is_same_v<TGetServiceFacade, TServiceFacade>)
+            {
+                return std::static_pointer_cast<TGetServiceFacade>(SingletonDependencyController<DependencyType, TServiceContainer>::service);
+            }
+
             return std::static_pointer_cast<TServiceFacade>(SingletonDependencyController<DependencyType, TServiceContainer>::service);
         }
     };
@@ -130,9 +149,46 @@ namespace dory
         {}
 
     protected:
+        template<typename TGetServiceFacade = TServiceFacade>
+        auto getInstance(TServiceContainer& services)
+        {
+            if constexpr (!std::is_same_v<TGetServiceFacade, TServiceFacade>)
+            {
+                return static_cast<TGetServiceFacade>(Transient<TService, TServiceFacade, TDependencies...>::createInstance(services));
+            }
+            return Transient<TService, TServiceFacade, TDependencies...>::createInstance(services);
+        }
+    };
+
+    template<typename TService, typename TServiceFacade, typename TServiceContainer, typename... TDependencies>
+    struct DependencyController<Transient<std::shared_ptr<TService>, TServiceFacade, TDependencies...>, TServiceContainer>
+    {
+        explicit DependencyController(TServiceContainer& services)
+        {}
+
+    protected:
+        template<typename TGetServiceFacade = TServiceFacade>
         decltype(auto) getInstance(TServiceContainer& services)
         {
-            return Transient<TService, TServiceFacade, TDependencies...>::createInstance(services);
+            if constexpr (!std::is_same_v<TGetServiceFacade, TServiceFacade>)
+            {
+                return std::static_pointer_cast<TGetServiceFacade>(Transient<std::shared_ptr<TService>, TServiceFacade, TDependencies...>::createInstance(services));
+            }
+
+            return std::static_pointer_cast<TServiceFacade>(Transient<std::shared_ptr<TService>, TServiceFacade, TDependencies...>::createInstance(services));
+        }
+    };
+
+    template<typename TDependency, typename TServiceFacade, typename TServiceContainer>
+    struct DependencyController<Reference<TDependency, TServiceFacade>, TServiceContainer>
+    {
+        explicit DependencyController(TServiceContainer& services)
+        {}
+
+    protected:
+        decltype(auto) getInstance(TServiceContainer& services)
+        {
+            return services.template get<TDependency, TServiceFacade>();
         }
     };
 
@@ -145,7 +201,7 @@ namespace dory
                 DependencyController<TDependencies, ThisType>(*this)...
         {}
 
-        template<typename TDependency>
+        template<typename TDependency, typename TServiceFacade = TDependency::ServiceFacadeType>
         decltype(auto) get()
         {
             return DependencyController<TDependency, ThisType>::getInstance(*this);
