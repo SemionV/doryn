@@ -32,8 +32,8 @@ namespace dory
     class ServiceLocator
     {
     public:
-        typename TServicePolicies::ConfigurationServicePolicy::Type configuration /*= TServicePolicies::ConfigurationServicePolicy::create(*this)*/;
-        typename TServicePolicies::EngineServicePolicy::Type engine /*= TServicePolicies::EngineServicePolicy::create(*this)*/;
+        typename TServicePolicies::ConfigurationServicePolicy::Type configuration;
+        typename TServicePolicies::EngineServicePolicy::Type engine;
         typename TServicePolicies::FrameServiceServicePolicy::Type frameService;
         typename TServicePolicies::PipelineServiceServicePolicy::Type pipelineService;
 

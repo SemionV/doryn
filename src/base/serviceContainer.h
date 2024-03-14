@@ -1,4 +1,6 @@
+#include <cassert>
 #include "dependencies.h"
+#include "typeComponents.h"
 
 namespace dory
 {
@@ -68,36 +70,56 @@ namespace dory
     };
 
     template<typename TDependency, typename TServiceContainer>
-    struct DependencyController
+    struct SingletonDependencyController
     {
         TDependency::ServiceType service;
+        bool isInstantiated = false;
 
+        explicit SingletonDependencyController(TServiceContainer& services):
+            service(TDependency::createInstance(services))
+        {
+            isInstantiated = true;
+        }
+
+        void assertInstance()
+        {
+            if(!isInstantiated)
+            {
+                std::cout << "Dependency is required before it is instantiated: [" << typeid(typename TDependency::ServiceType).name() << "]" << "\n";
+                assert(false);
+            }
+        }
+    };
+
+    template<typename TDependency, typename TServiceContainer>
+    struct DependencyController: public SingletonDependencyController<TDependency, TServiceContainer>
+    {
         explicit DependencyController(TServiceContainer& services):
-                service(TDependency::createInstance(services))
+                SingletonDependencyController<TDependency, TServiceContainer>(services)
         {}
 
-    protected:
         TDependency::ServiceFacadeType& getInstance(TServiceContainer& services)
         {
-            return service;
+            SingletonDependencyController<TDependency, TServiceContainer>::assertInstance();
+            return SingletonDependencyController<TDependency, TServiceContainer>::service;
         }
     };
 
     template<typename TService, typename TServiceFacade, typename TServiceContainer, typename... TDependencies>
-    struct DependencyController<Singleton<std::shared_ptr<TService>, TServiceFacade, TDependencies...>, TServiceContainer>
+    struct DependencyController<Singleton<std::shared_ptr<TService>, TServiceFacade, TDependencies...>, TServiceContainer>:
+            public SingletonDependencyController<Singleton<std::shared_ptr<TService>, TServiceFacade, TDependencies...>, TServiceContainer>
     {
-        using ServiceType = std::shared_ptr<TService>;
-
-        ServiceType service;
+        using DependencyType = Singleton<std::shared_ptr<TService>, TServiceFacade, TDependencies...>;
 
         explicit DependencyController(TServiceContainer& services):
-                service(Singleton<ServiceType, TServiceFacade, TDependencies...>::createInstance(services))
+                SingletonDependencyController<DependencyType, TServiceContainer>(services)
         {}
 
     protected:
         auto getInstance(TServiceContainer& services)
         {
-            return std::static_pointer_cast<TServiceFacade>(service);
+            SingletonDependencyController<DependencyType, TServiceContainer>::assertInstance();
+            return std::static_pointer_cast<TServiceFacade>(SingletonDependencyController<DependencyType, TServiceContainer>::service);
         }
     };
 
@@ -115,16 +137,13 @@ namespace dory
     };
 
     template<typename... TDependencies>
-    struct ServiceContainer: public DependencyController<TDependencies, ServiceContainer<TDependencies...>>...
+    struct ServiceContainer: Uncopyable, public DependencyController<TDependencies, ServiceContainer<TDependencies...>>...
     {
         using ThisType = ServiceContainer<TDependencies...>;
 
         ServiceContainer():
                 DependencyController<TDependencies, ThisType>(*this)...
         {}
-
-        ServiceContainer(const ServiceContainer&) = delete;
-        ServiceContainer& operator=(const ServiceContainer&) = delete;
 
         template<typename TDependency>
         decltype(auto) get()
