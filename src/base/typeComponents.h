@@ -2,7 +2,7 @@
 
 #include "dependencies.h"
 
-namespace dory::compileTime
+namespace dory
 {
     constexpr std::size_t getStringLength(const char* string)
     {
@@ -38,4 +38,13 @@ namespace dory::compileTime
 
     template <std::string_view const&... Strs>
     static constexpr auto JoinStringLiterals = JoinStrings<Strs...>::value;
+
+    class Uncopyable
+    {
+    public:
+        Uncopyable(const Uncopyable&) = delete;
+        Uncopyable& operator=(const Uncopyable&) = delete;
+
+        Uncopyable() = default;
+    };
 }

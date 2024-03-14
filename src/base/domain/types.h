@@ -12,7 +12,7 @@ namespace dory::domain
         Nano = 1000000000
     };
 
-    struct DORY_API TimeSpan
+    struct TimeSpan
     {
         long duration;
         UnitScale unitsPerSecond;
@@ -23,19 +23,19 @@ namespace dory::domain
         {
         };
 
-        TimeSpan(UnitScale unitsPerSecond):
+        explicit TimeSpan(UnitScale unitsPerSecond):
             duration(0),
             unitsPerSecond(unitsPerSecond)
         {
         };
 
-        double ToMilliseconds() const
+        [[nodiscard]] double ToMilliseconds() const
         {
             return (duration / (double)unitsPerSecond) * (double)UnitScale::Milli;
         }
     };
 
-    class DORY_API TimeConverter
+    class TimeConverter
     {
         public:
             static double ToMilliseconds(TimeSpan timeSpan)

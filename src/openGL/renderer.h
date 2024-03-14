@@ -33,7 +33,7 @@ namespace dory::openGL
     {
         static constexpr std::string_view pointLiteral = ".";
         static constexpr std::string_view blockNameLiteral = "ColorsBlock";
-        static constexpr std::string_view prefixLiteral = dory::compileTime::JoinStringLiterals<blockNameLiteral, pointLiteral>;
+        static constexpr std::string_view prefixLiteral = dory::JoinStringLiterals<blockNameLiteral, pointLiteral>;
 
         static constexpr std::string_view brightColorLiteral = "brightColor";
         static constexpr std::string_view hippieColorLiteral = "hippieColor";
@@ -41,9 +41,9 @@ namespace dory::openGL
 
         ColorsUniformBlock():
             graphics::ArrayUniformBlock<3>(blockNameLiteral, 
-                dory::compileTime::JoinStringLiterals<prefixLiteral, brightColorLiteral>, 
-                dory::compileTime::JoinStringLiterals<prefixLiteral, hippieColorLiteral>, 
-                dory::compileTime::JoinStringLiterals<prefixLiteral, darkColorLiteral>)
+                dory::JoinStringLiterals<prefixLiteral, brightColorLiteral>,
+                dory::JoinStringLiterals<prefixLiteral, hippieColorLiteral>,
+                dory::JoinStringLiterals<prefixLiteral, darkColorLiteral>)
         {}
     };
 

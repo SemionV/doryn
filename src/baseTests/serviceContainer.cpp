@@ -1,4 +1,5 @@
 #include "base/serviceContainer.h"
+#include "base/typeComponents.h"
 
 using namespace dory;
 
@@ -7,6 +8,9 @@ class Service1
 public:
     int value = 1;
 };
+
+class Service1Uncopiable: Uncopyable, public Service1
+{};
 
 class Service2
 {
@@ -21,10 +25,18 @@ public:
     int value = 2;
 };
 
-using Service1Dependency = Singleton<Service1>;
+class Service2Uncopiable: Uncopyable, public Service2
+{
+public:
+    explicit Service2Uncopiable(Service1& service1):
+            Service2(service1)
+    {}
+};
+
+using Service1Dependency = Singleton<Service1Uncopiable>;
 using Service2TransientDependency = Transient<Service2, Service2, Service1Dependency>;
-using Service2Dependency = Singleton<Service2, Service2, Service1Dependency>;
-using Service2PointerDependency = Singleton<std::shared_ptr<Service2>, Service2, Service1Dependency>;
+using Service2Dependency = Singleton<Service2Uncopiable, Service2Uncopiable, Service1Dependency>;
+using Service2PointerDependency = Singleton<std::shared_ptr<Service2Uncopiable>, Service2Uncopiable, Service1Dependency>;
 using Service2TransientPointerDependency = Transient<std::shared_ptr<Service2>, Service2, Service1Dependency>;
 
 using ServiceLocatorType = ServiceContainer<Service1Dependency,
@@ -37,15 +49,16 @@ TEST_CASE("Check concept", "Service Locator")
 {
     auto services = ServiceLocatorType{};
 
-    auto service1 = services.get<Service1Dependency>();
+    auto& service1 = services.get<Service1Dependency>();
     REQUIRE(service1.value == 1);
+    service1.value = 2;
 
-    auto service2 = services.get<Service2Dependency>();
+    auto& service2 = services.get<Service2Dependency>();
     REQUIRE(service2.value == 2);
 
     auto service2Pointer = services.get<Service2PointerDependency>();
     REQUIRE(service2Pointer->value == 2);
-    REQUIRE(service2Pointer->service1.value == 1);
+    REQUIRE(service2Pointer->service1.value == 2);
 
     auto service2Transient = services.get<Service2TransientDependency>();
     REQUIRE(service2Transient.value == 2);
@@ -63,7 +76,7 @@ TEST_CASE("Check concept", "Service Locator")
 }
 
 template<typename TImplementation>
-class IPipelineService
+class IPipelineService: Uncopyable
 {
 public:
     int getPipeline()
@@ -97,7 +110,7 @@ public:
 };
 
 template<typename TImplementation>
-class IHelloService
+class IHelloService: Uncopyable
 {
 public:
     int sayHello()
@@ -116,7 +129,7 @@ public:
 };
 
 template<typename TPipelineService, typename THelloService>
-class EngineService
+class EngineService: public Uncopyable
 {
 private:
     IPipelineService<TPipelineService>& pipelineService;
@@ -158,13 +171,15 @@ struct ServiceDependencies
 
 TEST_CASE("Check ServiceContainer usage", "Service Locator")
 {
-    auto services = ServiceDependencies::ServiceContainerType{};
+    using Deps = ServiceDependencies;
 
-    services.get<ServiceDependencies::PipelineService>().getPipeline();
+    auto services = Deps::ServiceContainerType{};
 
-    auto& engine = services.get<ServiceDependencies::EngineService>();
+    services.get<Deps::PipelineService>().getPipeline();
+
+    auto& engine = services.get<Deps::EngineService>();
     engine.run();
     engine.value = 6;
 
-    REQUIRE(services.get<ServiceDependencies::EngineService>().value == 6);
+    REQUIRE(services.get<Deps::EngineService>().value == 6);
 }

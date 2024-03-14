@@ -2,8 +2,17 @@
 
 using Byte = std::uint8_t;
 
+class Uncopyable
+{
+public:
+    Uncopyable(const Uncopyable&) = delete;
+    Uncopyable& operator=(const Uncopyable&) = delete;
+
+    Uncopyable() = default;
+};
+
 #include "domain/service.h"
-#include "compileTimeTypes.h"
+#include "typeComponents.h"
 #include "configuration/configuration.h"
 #include "serviceLocator.h"
 #include "configuration/fileSystemBasedConfiguration.h"
