@@ -95,8 +95,6 @@ public:
             pipeline(pipeline)
     {}
 
-    PipelineService() = default;
-
     auto getPipelineImpl()
     {
         return pipeline;
