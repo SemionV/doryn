@@ -2,10 +2,11 @@
 
 #include "configuration.h"
 #include "base/doryExport.h"
+#include "base/typeComponents.h"
 
 namespace dory::configuration
 {
-    class DORY_API FileSystemBasedConfiguration
+    class DORY_API FileSystemBasedConfiguration: Uncopyable
     {
         private:
             std::filesystem::path configurationPath;

@@ -5,6 +5,8 @@
 #include "project.h"
 #include "projectDataContext.h"
 
+#include "project2.h"
+
 namespace testApp
 {
     int runProject()
@@ -19,6 +21,15 @@ namespace testApp
 
         return 0;
     }
+
+    int runProject2()
+    {
+        using Services = ServiceDependencies<ProjectDataContext>;
+
+        auto services = Services::ServiceContainerType{};
+
+        return 0;
+    }
 }
 
 //linux entry point
@@ -29,5 +40,6 @@ namespace testApp
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 {
+    testApp::runProject2();
     return testApp::runProject();
 }

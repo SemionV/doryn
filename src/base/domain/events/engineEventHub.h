@@ -3,6 +3,7 @@
 #include "base/dependencies.h"
 #include "event.h"
 #include "eventHub.h"
+#include "base/typeComponents.h"
 
 namespace dory::domain::events
 {
@@ -15,7 +16,7 @@ namespace dory::domain::events
     };
 
     template<class TDataContext>
-    class EngineEventHub
+    class EngineEventHub: Uncopyable
     {
         private:
             EventDispatcher<TDataContext&, const InitializeEngineEventData&> initializeEngineEvent;

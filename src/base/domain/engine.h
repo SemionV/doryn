@@ -1,8 +1,8 @@
 #pragma once
 
-#include <utility>
 #include "controller.h"
 #include "events/engineEventHub.h"
+#include "base/typeComponents.h"
 
 namespace dory::domain
 {
@@ -62,5 +62,17 @@ namespace dory::domain
                 touchNode(*i, context, functor, arguments...);
             }
         }
+    };
+
+    template<typename TDataContext>
+    class Engine2: Uncopyable
+    {
+    private:
+        events::EngineEventHubDispatcher<TDataContext>& engineEventHub;
+
+    public:
+        explicit Engine2(events::EngineEventHubDispatcher<TDataContext>& engineEventHub):
+                engineEventHub(engineEventHub)
+        {}
     };
 }
