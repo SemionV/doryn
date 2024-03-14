@@ -91,6 +91,12 @@ private:
     int pipeline = {1};
 
 public:
+    explicit PipelineService(int pipeline):
+            pipeline(pipeline)
+    {}
+
+    PipelineService() = default;
+
     auto getPipelineImpl()
     {
         return pipeline;
@@ -147,7 +153,7 @@ public:
     void run()
     {
         auto pipeline = pipelineService.getPipeline();
-        REQUIRE(pipeline == 1);
+        REQUIRE(pipeline == -1);
 
         REQUIRE(helloService);
         REQUIRE(helloService->sayHello() == 3);
@@ -168,6 +174,20 @@ struct ServiceDependencies
             HelloService,
             EngineService>;
 };
+
+namespace dory
+{
+    /*custom instance factory*/
+    template<>
+    struct ServiceInstantiator<PipelineService>
+    {
+        template<typename TServiceContainer>
+        static decltype(auto) createInstance(TServiceContainer& services)
+        {
+            return PipelineService{-1};
+        }
+    };
+}
 
 TEST_CASE("Check ServiceContainer usage", "Service Locator")
 {
