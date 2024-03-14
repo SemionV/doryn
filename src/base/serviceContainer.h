@@ -105,7 +105,7 @@ namespace dory
         {}
 
         template<typename TServiceFacade = TDependency::ServiceFacadeType>
-        auto& getInstance(TServiceContainer& services)
+        decltype(auto) getInstance(TServiceContainer& services)
         {
             SingletonDependencyController<TDependency, TServiceContainer>::assertInstance();
 
@@ -186,6 +186,7 @@ namespace dory
         {}
 
     protected:
+        template<typename TGetServiceFacade = TServiceFacade>
         decltype(auto) getInstance(TServiceContainer& services)
         {
             return services.template get<TDependency, TServiceFacade>();
@@ -204,7 +205,7 @@ namespace dory
         template<typename TDependency, typename TServiceFacade = TDependency::ServiceFacadeType>
         decltype(auto) get()
         {
-            return DependencyController<TDependency, ThisType>::getInstance(*this);
+            return DependencyController<TDependency, ThisType>::template getInstance<TServiceFacade>(*this);
         }
     };
 }
