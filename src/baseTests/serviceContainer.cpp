@@ -34,10 +34,10 @@ public:
 };
 
 using Service1Dependency = Singleton<Service1Uncopiable>;
-using Service2TransientDependency = Transient<Service2, Service2, Service1Dependency>;
-using Service2Dependency = Singleton<Service2Uncopiable, Service2Uncopiable, Service1Dependency>;
-using Service2PointerDependency = Singleton<std::shared_ptr<Service2Uncopiable>, Service2Uncopiable, Service1Dependency>;
-using Service2TransientPointerDependency = Transient<std::shared_ptr<Service2>, Service2, Service1Dependency>;
+using Service2TransientDependency = Transient<Service2, Service2, DependencyList<Service1Dependency>>;
+using Service2Dependency = Singleton<Service2Uncopiable, Service2Uncopiable, DependencyList<Service1Dependency>>;
+using Service2PointerDependency = Singleton<std::shared_ptr<Service2Uncopiable>, Service2Uncopiable, DependencyList<Service1Dependency>>;
+using Service2TransientPointerDependency = Transient<std::shared_ptr<Service2>, Service2, DependencyList<Service1Dependency>>;
 
 using ServiceLocatorType = ServiceContainer<Service1Dependency,
         Service2Dependency,
@@ -167,15 +167,23 @@ struct ServiceDependencies
     using PipelineService = Singleton<PipelineServiceType, IPipelineService<PipelineServiceType>>;
     using PipelineServiceImpl = Reference<PipelineService, PipelineServiceType>;
     using HelloService = Singleton<std::shared_ptr<HelloServiceType>, IHelloService<HelloServiceType>>;
-    using EngineService = Singleton<EngineServiceType, EngineServiceType,
-                                                    PipelineService,
-                                                    HelloService>;
+    using EngineService = Singleton<EngineServiceType, EngineServiceType, DependencyList<PipelineService, HelloService>>;
+
+    using RepeatServiceType = Service1Uncopiable;
+
+    struct RepeatService1Tag{};
+    struct RepeatService2Tag{};
+
+    using RepeatService1 = dory::Singleton<RepeatServiceType, RepeatServiceType, DependencyList<>, RepeatService1Tag>;
+    using RepeatService2 = dory::Singleton<RepeatServiceType, RepeatServiceType, DependencyList<>, RepeatService2Tag>;
 
     using ServiceContainerType = ServiceContainer<
             PipelineService,
             PipelineServiceImpl,
             HelloService,
-            EngineService>;
+            EngineService,
+            RepeatService1,
+            RepeatService2>;
 };
 
 namespace dory

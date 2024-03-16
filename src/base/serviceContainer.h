@@ -44,8 +44,15 @@ namespace dory
         }
     };
 
-    template<typename TService, typename TServiceFacade = TService, typename... TDependencies>
-    struct DependencyDescriptor
+    template<typename... TDependencies>
+    struct DependencyList
+    {};
+
+    template<typename TService, typename TServiceFacade = TService, typename TDependencyList = DependencyList<>, typename TRegistrationTag = void>
+    struct DependencyDescriptor;
+
+    template<typename TService, typename TServiceFacade, typename... TDependencies, typename TRegistrationTag>
+    struct DependencyDescriptor<TService, TServiceFacade, DependencyList<TDependencies...>, TRegistrationTag>
     {
         using ServiceType = TService;
         using ServiceFacadeType = TServiceFacade;
@@ -57,21 +64,21 @@ namespace dory
         }
     };
 
-    template<typename TService, typename TServiceFacade = TService, typename... TDependencies>
+    template<typename TService, typename TServiceFacade = TService, typename TDependencyList = DependencyList<>, typename TRegistrationTag = void>
     requires(!std::is_copy_constructible_v<TServiceFacade>)
-    struct Singleton: public DependencyDescriptor<TService, TServiceFacade, TDependencies...>
+    struct Singleton: public DependencyDescriptor<TService, TServiceFacade, TDependencyList, TRegistrationTag>
     {
     };
 
-    template<typename TDependency, typename TServiceFacade = TDependency::ServiceFacadeType>
+    template<typename TDependency, typename TServiceFacade = TDependency::ServiceFacadeType, typename TRegistrationTag = void>
     requires(!std::is_copy_constructible_v<TServiceFacade>)
-    struct Reference: public DependencyDescriptor<typename TDependency::ServiceType, TServiceFacade>
+    struct Reference: public DependencyDescriptor<typename TDependency::ServiceType, TServiceFacade, DependencyList<>, TRegistrationTag>
     {
     };
 
-    template<typename TService, typename TServiceFacade = TService, typename... TDependencies>
+    template<typename TService, typename TServiceFacade = TService, typename TDependencyList = DependencyList<>, typename TRegistrationTag = void>
     requires(std::is_copy_constructible_v<TServiceFacade>)
-    struct Transient: public DependencyDescriptor<TService, TServiceFacade, TDependencies...>
+    struct Transient: public DependencyDescriptor<TService, TServiceFacade, TDependencyList, TRegistrationTag>
     {
     };
 
@@ -97,7 +104,7 @@ namespace dory
         }
     };
 
-    template<typename TDependency, typename TServiceContainer>
+    template<typename TDependency, typename TServiceContainer, std::size_t DependencyId = 0>
     struct DependencyController: public SingletonDependencyController<TDependency, TServiceContainer>
     {
         explicit DependencyController(TServiceContainer& services):
