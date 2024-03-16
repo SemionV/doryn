@@ -20,4 +20,13 @@ namespace dory::domain
         virtual void stop(domain::entity::IdType referenceId, TDataContext& context) = 0;
         virtual void update(domain::entity::IdType referenceId, const TimeSpan& timeStep, TDataContext& context) = 0;
     };
+
+    template<class TDataContext>
+    class Controller2
+    {
+    public:
+        virtual bool initialize(domain::entity::IdType referenceId, TDataContext& context) = 0;
+        virtual void stop(domain::entity::IdType referenceId, TDataContext& context) = 0;
+        virtual void update(domain::entity::IdType referenceId, const TimeSpan& timeStep, TDataContext& context) = 0;
+    };
 }

@@ -1,9 +1,11 @@
 #pragma once
 
+#include "base/typeComponents.h"
+
 namespace dory::domain
 {
     template<typename TId>
-    class IdFactory
+    class IdFactory: Uncopyable
     {
     private:
         TId counter;

@@ -64,15 +64,86 @@ namespace dory::domain
         }
     };
 
-    template<typename TDataContext>
-    class Engine2: Uncopyable
+    template<typename TImplementation, typename TDataContext>
+    class IEngine: Uncopyable, public StaticInterface<TImplementation>
+    {
+        void update(TDataContext& context, const TimeSpan& timeStep)
+        {
+            this->toImplementation()->updateImpl(context, timeStep);
+        }
+
+        void initialize(TDataContext& context)
+        {
+            this->toImplementation()->initializeImpl(context);
+        };
+
+        void stop(TDataContext& context)
+        {
+            this->toImplementation()->stopImpl(context);
+        }
+    };
+
+    template<typename TDataContext, typename TPipelineService>
+    class Engine2: public IEngine<Engine2<TDataContext, TPipelineService>, TDataContext>
     {
     private:
         events::EngineEventHubDispatcher<TDataContext>& engineEventHub;
+        services::IPipelineService<TPipelineService>& pipelineService;
 
     public:
-        explicit Engine2(events::EngineEventHubDispatcher<TDataContext>& engineEventHub):
-                engineEventHub(engineEventHub)
+        explicit Engine2(events::EngineEventHubDispatcher<TDataContext>& engineEventHub,
+                         services::IPipelineService<TPipelineService>& pipelineService):
+                engineEventHub(engineEventHub),
+                pipelineService(pipelineService)
         {}
+
+        void updateImpl(TDataContext& context, const TimeSpan& timeStep)
+        {
+            auto pipelineNodes = pipelineService.getPipeline();
+
+            touchPipelineNodes(pipelineNodes, context, [](const std::shared_ptr<object::PipelineNode>& node, TDataContext& context, const TimeSpan& timeStep)
+            {
+                auto controller = node->nodeEntity.attachedController;
+                if(controller)
+                {
+                    std::static_pointer_cast<Controller2<TDataContext>>(controller)->update(node->nodeEntity.id, timeStep, context);
+                }
+            }, timeStep);
+        }
+
+        void initializeImpl(TDataContext& context)
+        {
+            engineEventHub.fire(context, events::InitializeEngineEventData());
+        };
+
+        void stopImpl(TDataContext& context)
+        {
+            engineEventHub.fire(context, events::StopEngineEventData());
+        }
+
+    private:
+        template<typename F, typename... Ts>
+        static void touchPipelineNodes(std::list<std::shared_ptr<object::PipelineNode>> pipelineNodes, TDataContext& context, F functor, Ts... arguments)
+        {
+            auto end = pipelineNodes.end();
+
+            for(auto i = pipelineNodes.begin(); i != end; ++i)
+            {
+                touchNode(*i, context, functor, arguments...);
+            }
+        }
+
+        template<typename F, typename... Ts>
+        static void touchNode(std::shared_ptr<object::PipelineNode> node, TDataContext& context, F functor, Ts... arguments)
+        {
+            functor(node, context, arguments...);
+
+            auto end = node->children.end();
+
+            for(auto i = node->children.begin(); i != end; ++i)
+            {
+                touchNode(*i, context, functor, arguments...);
+            }
+        }
     };
 }

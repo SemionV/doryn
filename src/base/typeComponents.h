@@ -47,4 +47,14 @@ namespace dory
 
         Uncopyable() = default;
     };
+
+    template<typename TImpelementation>
+    class StaticInterface
+    {
+    protected:
+        TImpelementation* toImplementation()
+        {
+            return static_cast<TImpelementation*>(this);
+        }
+    };
 }
