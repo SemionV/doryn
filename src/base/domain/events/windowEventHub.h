@@ -1,6 +1,7 @@
 #pragma once
 
 #include "event.h"
+#include "base/typeComponents.h"
 
 namespace dory::domain::events
 {
@@ -8,46 +9,46 @@ namespace dory::domain::events
     {
         const int windowId;
 
-        CloseWindowEventData(int windowId):
+        explicit CloseWindowEventData(int windowId):
             windowId(windowId)
         {
         }
     };
 
     template<class TDataContext>
-    class WindowEventHub
+    class WindowEventHub: Uncopyable
     {
-        private:
-            EventDispatcher<TDataContext&, CloseWindowEventData&> closeWindowEvent;
+    private:
+        EventDispatcher<TDataContext&, CloseWindowEventData&> closeWindowEvent;
 
-        protected:
-            EventDispatcher<TDataContext&, CloseWindowEventData&>& onCloseWindowDispatcher()
-            {
-                return closeWindowEvent;
-            }
+    protected:
+        EventDispatcher<TDataContext&, CloseWindowEventData&>& onCloseWindowDispatcher()
+        {
+            return closeWindowEvent;
+        }
 
-        public:
-            Event<TDataContext&, CloseWindowEventData&>& onCloseWindow()
-            {
-                return closeWindowEvent;
-            }
+    public:
+        Event<TDataContext&, CloseWindowEventData&>& onCloseWindow()
+        {
+            return closeWindowEvent;
+        }
     };
 
     template<class TDataContext>
     class WindowEventHubDispatcher: public EventHubDispatcher<TDataContext>, public WindowEventHub<TDataContext>
     {
-        private:
-            EventBuffer<TDataContext, CloseWindowEventData> closeWindowEventBuffer;
+    private:
+        EventBuffer<TDataContext, CloseWindowEventData> closeWindowEventBuffer;
 
-        public:
-            void addCase(CloseWindowEventData&& closeWindowData)
-            {
-                closeWindowEventBuffer.addCase(std::forward<CloseWindowEventData>(closeWindowData));
-            }
+    public:
+        void addCase(CloseWindowEventData&& closeWindowData)
+        {
+            closeWindowEventBuffer.addCase(std::forward<CloseWindowEventData>(closeWindowData));
+        }
 
-            void submit(TDataContext& context) override
-            {
-                closeWindowEventBuffer.submitCases(this->onCloseWindowDispatcher(), context);
-            }
+        void submit(TDataContext& context) override
+        {
+            closeWindowEventBuffer.submitCases(this->onCloseWindowDispatcher(), context);
+        }
     };
 }

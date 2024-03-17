@@ -3,6 +3,7 @@
 #include "base/dependencies.h"
 #include "event.h"
 #include "eventHub.h"
+#include "base/typeComponents.h"
 
 namespace dory::domain::events
 {
@@ -10,46 +11,46 @@ namespace dory::domain::events
     {
         const char keyPressed;
         
-        KeyPressedEventData(char keyPressed):
+        explicit KeyPressedEventData(char keyPressed):
             keyPressed(keyPressed)
         {
         }
     };
 
     template<class TDataContext>
-    class SystemConsoleEventHub
+    class SystemConsoleEventHub: Uncopyable
     {
-        private:
-            EventDispatcher<TDataContext&, KeyPressedEventData&> keyPressedEvent;
+    private:
+        EventDispatcher<TDataContext&, KeyPressedEventData&> keyPressedEvent;
 
-        protected:
-            EventDispatcher<TDataContext&, KeyPressedEventData&>& onKeyPressedDispatcher()
-            {
-                return keyPressedEvent;
-            }
+    protected:
+        EventDispatcher<TDataContext&, KeyPressedEventData&>& onKeyPressedDispatcher()
+        {
+            return keyPressedEvent;
+        }
 
-        public:
-            Event<TDataContext&, KeyPressedEventData&>& onKeyPressed()
-            {
-                return keyPressedEvent;
-            }
+    public:
+        Event<TDataContext&, KeyPressedEventData&>& onKeyPressed()
+        {
+            return keyPressedEvent;
+        }
     };
 
     template<class TDataContext>
     class SystemConsoleEventHubDispatcher: public EventHubDispatcher<TDataContext>, public SystemConsoleEventHub<TDataContext>
     {
-        private:
-            EventBuffer<TDataContext, KeyPressedEventData> keyPressedEventBuffer;
+    private:
+        EventBuffer<TDataContext, KeyPressedEventData> keyPressedEventBuffer;
 
-        public:
-            void addCase(KeyPressedEventData&& keyPressedData)
-            {
-                keyPressedEventBuffer.addCase(std::forward<KeyPressedEventData>(keyPressedData));
-            }
+    public:
+        void addCase(KeyPressedEventData&& keyPressedData)
+        {
+            keyPressedEventBuffer.addCase(std::forward<KeyPressedEventData>(keyPressedData));
+        }
 
-            void submit(TDataContext& context) override
-            {
-                keyPressedEventBuffer.submitCases(this->onKeyPressedDispatcher(), context);
-            }
+        void submit(TDataContext& context) override
+        {
+            keyPressedEventBuffer.submitCases(this->onKeyPressedDispatcher(), context);
+        }
     };
 }

@@ -40,8 +40,13 @@ namespace testApp
         using EngineType = domain::Engine2<TDataContext, PipelineServiceType>;
 
         using ConfigurationService = dory::Singleton<dory::configuration::FileSystemBasedConfiguration>;
-        using EngineEventHubDispatcher = dory::Singleton<domain::events::EngineEventHubDispatcher<TDataContext>>;
-        using EngineEventHub = dory::Reference<EngineEventHubDispatcher, domain::events::EngineEventHub<TDataContext>>;
+
+        using EngineEventHubDispatcher = dory::Singleton<events::EngineEventHubDispatcher<TDataContext>>;
+        using EngineEventHub = dory::Reference<EngineEventHubDispatcher, events::EngineEventHub<TDataContext>>;
+        using ConsoleEventHubDispatcher = dory::Singleton<events::SystemConsoleEventHubDispatcher<TDataContext>>;
+        using ConsoleEventHub = dory::Reference<ConsoleEventHubDispatcher, events::SystemConsoleEventHub<TDataContext>>;
+        using WindowEventHubDispatcher = dory::Singleton<events::WindowEventHubDispatcher<TDataContext>>;
+        using WindowEventHub = dory::Reference<WindowEventHubDispatcher, events::WindowEventHub<TDataContext>>;
 
         using PipelineNodeRepository = dory::Singleton<PipelineNodeRepositoryType, domain::IEntityRepository<PipelineNodeRepositoryType, entity::PipelineNode, IdType>>;
         using CameraRepository = dory::Singleton<CameraRepositoryType, domain::IEntityRepository<CameraRepositoryType, entity::Camera, IdType>>;
@@ -56,6 +61,10 @@ namespace testApp
                 ConfigurationService,
                 EngineEventHubDispatcher,
                 EngineEventHub,
+                ConsoleEventHubDispatcher,
+                ConsoleEventHub,
+                WindowEventHubDispatcher,
+                WindowEventHub,
                 PipelineNodeRepository,
                 CameraRepository,
                 ViewRepository,
