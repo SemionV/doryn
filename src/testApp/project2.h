@@ -9,6 +9,7 @@
 #include "base/domain/engine.h"
 #include "openGL/glfwWindow.h"
 #include "base/domain/services/frameService.h"
+#include "win32/consoleController.h"
 
 namespace dory
 {
@@ -40,6 +41,7 @@ namespace testApp
         using PipelineRepositoryType = domain::services::PipelineRepository<entity::PipelineNode, IdType>;
         using EngineType = domain::Engine2<TDataContext, PipelineRepositoryType>;
         using FrameServiceType = services::BasicFrameService2<TDataContext, EngineType>;
+        using ConsoleControllerType = dory::win32::ConsoleController2<TDataContext>;
 
         using ConfigurationService = dory::Singleton<ConfigurationServiceType>;
 
@@ -58,6 +60,8 @@ namespace testApp
         using Engine = dory::Singleton<EngineType, domain::IEngine<EngineType, TDataContext>, DependencyList<EngineEventHubDispatcher, PipelineRepository>>;
         using FrameService = dory::Singleton<FrameServiceType, services::IFrameService<FrameServiceType, TDataContext>, DependencyList<Engine>>;
 
+        using ConsoleController = dory::Transient<std::shared_ptr<ConsoleControllerType>, domain::Controller2<TDataContext>, DependencyList<ConsoleEventHubDispatcher>>;
+
         using ServiceContainerType = dory::ServiceContainer<
                 ConfigurationService,
                 EngineEventHubDispatcher,
@@ -71,7 +75,49 @@ namespace testApp
                 ViewRepository,
                 WindowRepository,
                 Engine,
-                FrameService>;
+                FrameService,
+                ConsoleController>;
+    };
+
+    class PipelineManager
+    {
+    private:
+        using Services = ServiceDependencies<ProjectDataContext>;
+
+        Services::ServiceContainerType& services;
+
+    public:
+        explicit PipelineManager(Services::ServiceContainerType &services):
+                services(services)
+        {}
+
+        void configurePipeline(ProjectDataContext&  context)
+        {
+            auto& pipelineRepository = services.get<Services::PipelineRepository>();
+
+            auto inputGroupNode = pipelineRepository.store(entity::PipelineNode(entity::nullId,
+                                                                                nullptr,
+                                                                                entity::PipelineNodePriority::Default,
+                                                                                entity::nullId,
+                                                                                "input group"));
+
+            auto outputGroupNode = pipelineRepository.store(entity::PipelineNode(entity::nullId,
+                                                                                 nullptr,
+                                                                                 entity::PipelineNodePriority::First,
+                                                                                 entity::nullId,
+                                                                                 "output group"));
+
+            context.inputGroupNodeId = inputGroupNode.id;
+            context.outputGroupNodeId = outputGroupNode.id;
+
+            auto consoleController = services.get<Services::ConsoleController>();
+            auto consoleControllerNode = pipelineRepository.store(entity::PipelineNode(entity::nullId,
+                                                                                 consoleController,
+                                                                                 entity::PipelineNodePriority::Default,
+                                                                                 inputGroupNode.id));
+            consoleController->initialize(consoleControllerNode.id, context);
+
+        }
     };
 
     class Project2
@@ -80,10 +126,12 @@ namespace testApp
         using Services = ServiceDependencies<ProjectDataContext>;
 
         Services::ServiceContainerType& services;
+        PipelineManager pipelineManager;
 
     public:
         explicit Project2(Services::ServiceContainerType &services):
-            services(services)
+            services(services),
+            pipelineManager(services)
         {
             attachEventHandlers();
         }
@@ -112,8 +160,8 @@ namespace testApp
         {
             std::cout << "Starting Engine..." << std::endl;
 
-            /*configurePipeline(context);
-            context.mainWindowId = newWindow(context);*/
+            pipelineManager.configurePipeline(context);
+            //context.mainWindowId = newWindow(context);
         }
 
         void onStopEngine(ProjectDataContext& context, const events::StopEngineEventData& eventData)

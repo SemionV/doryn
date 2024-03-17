@@ -42,6 +42,6 @@ namespace testApp
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 {
-    //testApp::runProject2();
-    return testApp::runProject();
+    return testApp::runProject2();
+    //return testApp::runProject();
 }

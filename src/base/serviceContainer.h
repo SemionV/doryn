@@ -77,7 +77,6 @@ namespace dory
     };
 
     template<typename TService, typename TServiceFacade = TService, typename TDependencyList = DependencyList<>, typename TRegistrationTag = void>
-    requires(std::is_copy_constructible_v<TServiceFacade>)
     struct Transient: public DependencyDescriptor<TService, TServiceFacade, TDependencyList, TRegistrationTag>
     {
     };
@@ -104,7 +103,7 @@ namespace dory
         }
     };
 
-    template<typename TDependency, typename TServiceContainer, std::size_t DependencyId = 0>
+    template<typename TDependency, typename TServiceContainer>
     struct DependencyController: public SingletonDependencyController<TDependency, TServiceContainer>
     {
         explicit DependencyController(TServiceContainer& services):
@@ -119,11 +118,11 @@ namespace dory
         }
     };
 
-    template<typename TService, typename TServiceFacade, typename TServiceContainer, typename... TDependencies>
-    struct DependencyController<Singleton<std::shared_ptr<TService>, TServiceFacade, TDependencies...>, TServiceContainer>:
-            public SingletonDependencyController<Singleton<std::shared_ptr<TService>, TServiceFacade, TDependencies...>, TServiceContainer>
+    template<typename TService, typename TServiceFacade, typename TServiceContainer, typename TDependencyList, typename TRegistrationTag>
+    struct DependencyController<Singleton<std::shared_ptr<TService>, TServiceFacade, TDependencyList, TRegistrationTag>, TServiceContainer>:
+            public SingletonDependencyController<Singleton<std::shared_ptr<TService>, TServiceFacade, TDependencyList, TRegistrationTag>, TServiceContainer>
     {
-        using DependencyType = Singleton<std::shared_ptr<TService>, TServiceFacade, TDependencies...>;
+        using DependencyType = Singleton<std::shared_ptr<TService>, TServiceFacade, TDependencyList, TRegistrationTag>;
 
         explicit DependencyController(TServiceContainer& services):
                 SingletonDependencyController<DependencyType, TServiceContainer>(services)
@@ -138,8 +137,8 @@ namespace dory
         }
     };
 
-    template<typename TService, typename TServiceFacade, typename TServiceContainer, typename... TDependencies>
-    struct DependencyController<Transient<TService, TServiceFacade, TDependencies...>, TServiceContainer>
+    template<typename TService, typename TServiceFacade, typename TServiceContainer, typename TDependencyList, typename TRegistrationTag>
+    struct DependencyController<Transient<TService, TServiceFacade, TDependencyList, TRegistrationTag>, TServiceContainer>
     {
         explicit DependencyController(TServiceContainer& services)
         {}
@@ -148,21 +147,29 @@ namespace dory
         template<typename TGetServiceFacade = TServiceFacade>
         auto getInstance(TServiceContainer& services)
         {
-            return static_cast<TGetServiceFacade>(Transient<TService, TServiceFacade, TDependencies...>::createInstance(services));
+            return static_cast<TGetServiceFacade>(Transient<TService, TServiceFacade, TDependencyList, TRegistrationTag>::createInstance(services));
         }
     };
 
-    template<typename TService, typename TServiceFacade, typename TServiceContainer, typename... TDependencies>
-    struct DependencyController<Transient<std::shared_ptr<TService>, TServiceFacade, TDependencies...>, TServiceContainer>
+    template<typename TService, typename TServiceFacade, typename TServiceContainer, typename TDependencyList, typename TRegistrationTag>
+    struct DependencyController<Transient<std::shared_ptr<TService>, TServiceFacade, TDependencyList, TRegistrationTag>, TServiceContainer>
     {
         explicit DependencyController(TServiceContainer& services)
         {}
 
     protected:
         template<typename TGetServiceFacade = TServiceFacade>
+        requires(!std::is_same_v<TGetServiceFacade, std::shared_ptr<TService>>)
         decltype(auto) getInstance(TServiceContainer& services)
         {
-            return std::static_pointer_cast<TGetServiceFacade>(Transient<std::shared_ptr<TService>, TServiceFacade, TDependencies...>::createInstance(services));
+            return std::static_pointer_cast<TGetServiceFacade>(Transient<std::shared_ptr<TService>, TServiceFacade, TDependencyList, TRegistrationTag>::createInstance(services));
+        }
+
+        template<typename TGetServiceFacade = TServiceFacade>
+        requires(std::is_same_v<TGetServiceFacade, std::shared_ptr<TService>>)
+        decltype(auto) getInstance(TServiceContainer& services)
+        {
+            return Transient<std::shared_ptr<TService>, TServiceFacade, TDependencyList, TRegistrationTag>::createInstance(services);
         }
     };
 

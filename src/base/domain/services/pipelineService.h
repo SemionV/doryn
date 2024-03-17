@@ -112,36 +112,4 @@ namespace dory::domain::services
             return node;
         }
     };
-
-    template<typename TImplementation>
-    class IPipelineManager: Uncopyable, public StaticInterface<TImplementation>
-    {
-    public:
-        void configurePipeline()
-        {
-            return this->toImplementation()->configurePipelineImpl();
-        }
-    };
-
-    template<typename TDataContext, typename TPipelineNodeRepository>
-    class PipelineManager: IPipelineManager<PipelineManager<TDataContext, TPipelineNodeRepository>>
-    {
-    private:
-        using PipelineNodeRepository = IEntityRepository<TPipelineNodeRepository, entity::PipelineNode, entity::IdType>;
-        PipelineNodeRepository& pipelineRepository;
-
-    public:
-        explicit PipelineManager(PipelineNodeRepository& pipelineRepository):
-                pipelineRepository(pipelineRepository)
-        {}
-
-        void configurePipelineImpl()
-        {
-            auto inputGroupNode = dory::domain::entity::PipelineNode(entity::nullId,
-                                                                     nullptr,
-                                                                     dory::domain::entity::PipelineNodePriority::Default,
-                                                                     entity::nullId,
-                                                                     "input group");
-        }
-    };
 }
