@@ -24,12 +24,11 @@ namespace testApp
 
     int runProject2()
     {
-        using Services = ServiceDependencies<ProjectDataContext>;
+        auto services = ServiceDependencies<ProjectDataContext>::ServiceContainerType{};
+        auto context = ProjectDataContext{};
+        auto project = Project2(services);
 
-        auto services = Services::ServiceContainerType{};
-
-        ProjectDataContext context;
-        services.get<Services::FrameService>().startLoop(context);
+        project.run(context);
 
         return 0;
     }
@@ -43,6 +42,6 @@ namespace testApp
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 {
-    testApp::runProject2();
+    //testApp::runProject2();
     return testApp::runProject();
 }

@@ -81,11 +81,70 @@ namespace testApp
     class Project2
     {
     private:
-        ServiceDependencies<ProjectDataContext>::ServiceContainerType& services;
+        using Services = ServiceDependencies<ProjectDataContext>;
+
+        Services::ServiceContainerType& services;
 
     public:
-        explicit Project2(ServiceDependencies<ProjectDataContext>::ServiceContainerType &services):
+        explicit Project2(Services::ServiceContainerType &services):
             services(services)
-        {}
+        {
+            attachEventHandlers();
+        }
+
+        void run(ProjectDataContext& context)
+        {
+            services.get<Services::Engine>().initialize(context);
+            services.get<Services::FrameService>().startLoop(context);
+        }
+
+    private:
+        void attachEventHandlers()
+        {
+            auto& engineEventHub = services.get<Services::EngineEventHub>();
+            engineEventHub.onInitializeEngine().attachHandler(this, &Project2::onInitializeEngine);
+            engineEventHub.onStopEngine().attachHandler(this, &Project2::onStopEngine);
+
+            auto& consoleEventHub = services.get<Services::ConsoleEventHub>();
+            consoleEventHub.onKeyPressed().attachHandler(this, &Project2::onConsoleKeyPressed);
+
+            auto& windowEventHub = services.get<Services::WindowEventHub>();
+            windowEventHub.onCloseWindow().attachHandler(this, &Project2::onCloseWindow);
+        }
+
+        void onInitializeEngine(ProjectDataContext& context, const events::InitializeEngineEventData& eventData)
+        {
+            std::cout << "Starting Engine..." << std::endl;
+
+            /*configurePipeline(context);
+            context.mainWindowId = newWindow(context);*/
+        }
+
+        void onStopEngine(ProjectDataContext& context, const events::StopEngineEventData& eventData)
+        {
+            std::cout << "Stopping Engine..." << std::endl;
+        }
+
+        void onConsoleKeyPressed(ProjectDataContext& context, events::KeyPressedEventData& eventData)
+        {
+            if(eventData.keyPressed == 27)
+            {
+                services.get<Services::FrameService>().endLoop();
+                std::cout << std::this_thread::get_id() << ": ESC" << std::endl;
+            }
+            else if(eventData.keyPressed == 119)
+            {
+                //newWindow(context);
+            }
+            else if(eventData.keyPressed != 0)
+            {
+                std::cout << std::this_thread::get_id() << ": key pressed: " << eventData.keyPressed << std::endl;
+            }
+        }
+
+        void onCloseWindow(ProjectDataContext& context, events::CloseWindowEventData& eventData)
+        {
+
+        }
     };
 }

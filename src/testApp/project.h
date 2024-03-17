@@ -66,14 +66,14 @@ namespace testApp
                 auto inputGroupNode = dory::domain::entity::PipelineNode(this->services.pipelineNodeIdFactory.generate(),
                                                                          nullptr,
                                                                          dory::domain::entity::PipelineNodePriority::Default,
-                                                                         dory::entity::nullId,
+                                                                         entity::nullId,
                                                                          "input group");
                 this->services.pipelineNodeRepository.store(inputGroupNode);
 
                 auto outputGroupNode = dory::domain::entity::PipelineNode(this->services.pipelineNodeIdFactory.generate(),
                                                                           nullptr,
                                                                           dory::domain::entity::PipelineNodePriority::First,
-                                                                          dory::entity::nullId,
+                                                                          entity::nullId,
                                                                           "output group");
                 this->services.pipelineNodeRepository.store(outputGroupNode);
 

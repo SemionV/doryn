@@ -1,5 +1,7 @@
 #pragma once
 
+#include "base/domain//entity.h"
+
 namespace testApp
 {
     struct ProjectDataContext: public dory::domain::DataContext
@@ -9,9 +11,9 @@ namespace testApp
         dory::domain::entity::IdType mainWindowId;
 
         ProjectDataContext():
-            inputGroupNodeId(dory::entity::nullId),
-            outputGroupNodeId(dory::entity::nullId),
-            mainWindowId(dory::entity::nullId)
+            inputGroupNodeId(dory::domain::entity::nullId),
+            outputGroupNodeId(dory::domain::entity::nullId),
+            mainWindowId(dory::domain::entity::nullId)
         {}
     };
 }

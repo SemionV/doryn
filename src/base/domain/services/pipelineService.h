@@ -28,7 +28,7 @@ namespace dory::domain::services
 
             this->services.pipelineNodeRepository.forEach([this, &nodes](const entity::PipelineNode& nodeEntity)
             {
-                if(nodeEntity.parentNodeId == dory::entity::nullId)
+                if(nodeEntity.parentNodeId == entity::nullId)
                 {
                     nodes.emplace_back(loadNode(nodeEntity));
                 }
@@ -86,7 +86,7 @@ namespace dory::domain::services
 
             pipelineNodeRepository.forEach([this, &nodes](const entity::PipelineNode& nodeEntity)
                                                           {
-                                                              if(nodeEntity.parentNodeId == dory::entity::nullId)
+                                                              if(nodeEntity.parentNodeId == entity::nullId)
                                                               {
                                                                   nodes.emplace_back(loadNode(nodeEntity));
                                                               }
@@ -113,6 +113,44 @@ namespace dory::domain::services
             node->children.sort(compareNodes<object::PipelineNode>);
 
             return node;
+        }
+    };
+
+    /*template<typename TImplementation >
+    class IPipelineRepository
+    {
+
+    };*/
+
+    template<typename TImplementation>
+    class IPipelineManager: Uncopyable, public StaticInterface<TImplementation>
+    {
+    public:
+        void configurePipeline()
+        {
+            return this->toImplementation()->configurePipelineImpl();
+        }
+    };
+
+    template<typename TDataContext, typename TPipelineNodeRepository>
+    class PipelineManager: IPipelineManager<PipelineManager<TDataContext, TPipelineNodeRepository>>
+    {
+    private:
+        using PipelineNodeRepository = IEntityRepository<TPipelineNodeRepository, entity::PipelineNode, entity::IdType>;
+        PipelineNodeRepository& pipelineRepository;
+
+    public:
+        explicit PipelineManager(PipelineNodeRepository& pipelineRepository):
+                pipelineRepository(pipelineRepository)
+        {}
+
+        void configurePipelineImpl()
+        {
+            auto inputGroupNode = dory::domain::entity::PipelineNode(entity::nullId,
+                                                                     nullptr,
+                                                                     dory::domain::entity::PipelineNodePriority::Default,
+                                                                     entity::nullId,
+                                                                     "input group");
         }
     };
 }

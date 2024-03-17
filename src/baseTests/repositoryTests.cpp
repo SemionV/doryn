@@ -1,15 +1,15 @@
 #include "dependencies.h"
 #include "base/base.h"
-#include "engine/entity.h"
+#include "base/domain/entity.h"
 
 using namespace dory::domain;
 
-struct TestEntity: public dory::entity::Entity<dory::entity::IdType>
+struct TestEntity: public entity::Entity<entity::IdType>
 {
     int counter = 0;
 
     TestEntity(entity::IdType id):
-        dory::entity::Entity<dory::entity::IdType>(id)
+        entity::Entity<entity::IdType>(id)
     {}
 };
 
@@ -132,7 +132,7 @@ TEST_CASE( "forEach", "[static poly repository]" )
     REQUIRE(repository.count() == 2);
 
     std::size_t count = 0;
-    dory::entity::IdType ids[2];
+    entity::IdType ids[2];
 
     repository.forEach([&](const TestEntity& entity)
     {

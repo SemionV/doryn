@@ -3,20 +3,29 @@
 #include <utility>
 
 #include "base/dependencies.h"
-#include "engine/entity.h"
 
 namespace dory::domain::entity
 {
-    using IdType = dory::entity::IdType;
+    using IdType = unsigned int;
+    constexpr static const IdType nullId = 0;
 
-    struct Camera: public dory::entity::Entity<dory::entity::IdType>
+    template<typename T = IdType>
+    struct Entity
+    {
+        T id;
+        explicit Entity(T id):
+                id(id)
+        {}
+    };
+
+    struct Camera: public Entity<IdType>
     {
         explicit Camera(IdType id):
             Entity(id)
         {}
     };
 
-    struct Window: public dory::entity::Entity<IdType>
+    struct Window: public Entity<IdType>
     {
         explicit Window(IdType id):
             Entity(id)
@@ -39,7 +48,7 @@ namespace dory::domain::entity
         }
     };
 
-    struct View: public dory::entity::Entity<IdType>
+    struct View: public Entity<IdType>
     {
         IdType windowId;
         IdType controllerNodeId;
@@ -61,7 +70,7 @@ namespace dory::domain::entity
         First = 1
     };
 
-    struct PipelineNode: dory::entity::Entity<IdType>
+    struct PipelineNode: Entity<IdType>
     {
         std::shared_ptr<void> attachedController;
         IdType parentNodeId;
@@ -71,7 +80,7 @@ namespace dory::domain::entity
         explicit PipelineNode(IdType id,
                               std::shared_ptr<void> attachedController = nullptr,
                               PipelineNodePriority priority = PipelineNodePriority::Default,
-                              IdType parentNodeId = dory::entity::nullId,
+                              IdType parentNodeId = nullId,
                               std::string name = ""):
             Entity(id),
             attachedController(std::move(attachedController)),

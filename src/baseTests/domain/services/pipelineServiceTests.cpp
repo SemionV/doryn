@@ -17,8 +17,8 @@ TEST_CASE( "Load Pipeline", "[pipelineService]" )
 {
     auto nodesRepository = dory::domain::EntityRepository<entity::PipelineNode>(
         std::initializer_list<entity::PipelineNode>{
-            entity::PipelineNode(2, nullptr, entity::PipelineNodePriority::First, dory::entity::nullId),
-            entity::PipelineNode(1, nullptr, entity::PipelineNodePriority::Default, dory::entity::nullId),
+            entity::PipelineNode(2, nullptr, entity::PipelineNodePriority::First, entity::nullId),
+            entity::PipelineNode(1, nullptr, entity::PipelineNodePriority::Default, entity::nullId),
             entity::PipelineNode(3, nullptr, entity::PipelineNodePriority::First, 1),
             entity::PipelineNode(4, nullptr, entity::PipelineNodePriority::Default, 1),
             entity::PipelineNode(5, nullptr, entity::PipelineNodePriority::Default, 4),

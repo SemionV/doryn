@@ -55,6 +55,11 @@ namespace dory::domain::services
         {
             this->toImplementation()->startLoopImpl(context);
         }
+
+        void endLoop()
+        {
+            this->toImplementation()->endLoopImpl();
+        }
     };
 
     template<class TDataContext, typename TEngine>
@@ -95,7 +100,7 @@ namespace dory::domain::services
             engine.stop(context);
         }
 
-        void endLoop()
+        void endLoopImpl()
         {
             isStop = true;
         }
