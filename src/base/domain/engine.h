@@ -3,6 +3,8 @@
 #include "controller.h"
 #include "events/engineEventHub.h"
 #include "base/typeComponents.h"
+#include "object.h"
+#include "services/pipelineService.h"
 
 namespace dory::domain
 {
@@ -67,6 +69,7 @@ namespace dory::domain
     template<typename TImplementation, typename TDataContext>
     class IEngine: Uncopyable, public StaticInterface<TImplementation>
     {
+    public:
         void update(TDataContext& context, const TimeSpan& timeStep)
         {
             this->toImplementation()->updateImpl(context, timeStep);

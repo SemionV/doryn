@@ -8,6 +8,7 @@
 #include "base/domain/entityRepository.h"
 #include "base/domain/engine.h"
 #include "openGL/glfwWindow.h"
+#include "base/domain/services/frameService.h"
 
 namespace dory
 {
@@ -32,14 +33,16 @@ namespace testApp
     struct ServiceDependencies
     {
         using IdType = entity::IdType;
+        using ConfigurationServiceType = dory::configuration::FileSystemBasedConfiguration;
         using PipelineNodeRepositoryType = domain::EntityRepository2<entity::PipelineNode, IdType>;
         using CameraRepositoryType = domain::EntityRepository2<entity::Camera, IdType>;
         using ViewRepositoryType = domain::EntityRepository2<entity::View, IdType>;
         using WindowRepositoryType = domain::EntityRepository2<dory::openGL::GlfwWindow, IdType>;
         using PipelineServiceType = domain::services::PipelineService2<PipelineNodeRepositoryType>;
         using EngineType = domain::Engine2<TDataContext, PipelineServiceType>;
+        using FrameServiceType = services::BasicFrameService2<TDataContext, EngineType>;
 
-        using ConfigurationService = dory::Singleton<dory::configuration::FileSystemBasedConfiguration>;
+        using ConfigurationService = dory::Singleton<ConfigurationServiceType>;
 
         using EngineEventHubDispatcher = dory::Singleton<events::EngineEventHubDispatcher<TDataContext>>;
         using EngineEventHub = dory::Reference<EngineEventHubDispatcher, events::EngineEventHub<TDataContext>>;
@@ -56,6 +59,7 @@ namespace testApp
         using PipelineService = dory::Singleton<PipelineServiceType, services::IPipelineService<PipelineServiceType>, DependencyList<PipelineNodeRepository>>;
 
         using Engine = dory::Singleton<EngineType, domain::IEngine<EngineType, TDataContext>, DependencyList<EngineEventHubDispatcher, PipelineService>>;
+        using FrameService = dory::Singleton<FrameServiceType, services::IFrameService<FrameServiceType, TDataContext>, DependencyList<Engine>>;
 
         using ServiceContainerType = dory::ServiceContainer<
                 ConfigurationService,
@@ -70,6 +74,18 @@ namespace testApp
                 ViewRepository,
                 WindowRepository,
                 PipelineService,
-                Engine>;
+                Engine,
+                FrameService>;
+    };
+
+    class Project2
+    {
+    private:
+        ServiceDependencies<ProjectDataContext>::ServiceContainerType& services;
+
+    public:
+        explicit Project2(ServiceDependencies<ProjectDataContext>::ServiceContainerType &services):
+            services(services)
+        {}
     };
 }

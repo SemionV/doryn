@@ -28,6 +28,9 @@ namespace testApp
 
         auto services = Services::ServiceContainerType{};
 
+        ProjectDataContext context;
+        services.get<Services::FrameService>().startLoop(context);
+
         return 0;
     }
 }
