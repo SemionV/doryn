@@ -13,7 +13,7 @@ public:
     {}
 };
 
-TEST_CASE( "Load Pipeline", "[pipelineService]" )
+TEST_CASE( "Load Pipeline", "[pipelineRepository]" )
 {
     auto nodesRepository = dory::domain::EntityRepository<entity::PipelineNode>(
         std::initializer_list<entity::PipelineNode>{

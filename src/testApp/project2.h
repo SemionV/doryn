@@ -34,12 +34,11 @@ namespace testApp
     {
         using IdType = entity::IdType;
         using ConfigurationServiceType = dory::configuration::FileSystemBasedConfiguration;
-        using PipelineNodeRepositoryType = domain::EntityRepository2<entity::PipelineNode, IdType>;
         using CameraRepositoryType = domain::EntityRepository2<entity::Camera, IdType>;
         using ViewRepositoryType = domain::EntityRepository2<entity::View, IdType>;
         using WindowRepositoryType = domain::EntityRepository2<dory::openGL::GlfwWindow, IdType>;
-        using PipelineServiceType = domain::services::PipelineService2<PipelineNodeRepositoryType>;
-        using EngineType = domain::Engine2<TDataContext, PipelineServiceType>;
+        using PipelineRepositoryType = domain::services::PipelineRepository<entity::PipelineNode, IdType>;
+        using EngineType = domain::Engine2<TDataContext, PipelineRepositoryType>;
         using FrameServiceType = services::BasicFrameService2<TDataContext, EngineType>;
 
         using ConfigurationService = dory::Singleton<ConfigurationServiceType>;
@@ -51,14 +50,12 @@ namespace testApp
         using WindowEventHubDispatcher = dory::Singleton<events::WindowEventHubDispatcher<TDataContext>>;
         using WindowEventHub = dory::Reference<WindowEventHubDispatcher, events::WindowEventHub<TDataContext>>;
 
-        using PipelineNodeRepository = dory::Singleton<PipelineNodeRepositoryType, domain::IEntityRepository<PipelineNodeRepositoryType, entity::PipelineNode, IdType>>;
+        using PipelineRepository = dory::Singleton<PipelineRepositoryType, services::IPipelineRepository<PipelineRepositoryType>>;
         using CameraRepository = dory::Singleton<CameraRepositoryType, domain::IEntityRepository<CameraRepositoryType, entity::Camera, IdType>>;
         using ViewRepository = dory::Singleton<ViewRepositoryType, domain::IEntityRepository<ViewRepositoryType, entity::View, IdType>>;
         using WindowRepository = dory::Singleton<WindowRepositoryType, domain::IEntityRepository<WindowRepositoryType, dory::openGL::GlfwWindow, IdType>>;
 
-        using PipelineService = dory::Singleton<PipelineServiceType, services::IPipelineService<PipelineServiceType>, DependencyList<PipelineNodeRepository>>;
-
-        using Engine = dory::Singleton<EngineType, domain::IEngine<EngineType, TDataContext>, DependencyList<EngineEventHubDispatcher, PipelineService>>;
+        using Engine = dory::Singleton<EngineType, domain::IEngine<EngineType, TDataContext>, DependencyList<EngineEventHubDispatcher, PipelineRepository>>;
         using FrameService = dory::Singleton<FrameServiceType, services::IFrameService<FrameServiceType, TDataContext>, DependencyList<Engine>>;
 
         using ServiceContainerType = dory::ServiceContainer<
@@ -69,11 +66,10 @@ namespace testApp
                 ConsoleEventHub,
                 WindowEventHubDispatcher,
                 WindowEventHub,
-                PipelineNodeRepository,
+                PipelineRepository,
                 CameraRepository,
                 ViewRepository,
                 WindowRepository,
-                PipelineService,
                 Engine,
                 FrameService>;
     };

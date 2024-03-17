@@ -86,23 +86,23 @@ namespace dory::domain
         }
     };
 
-    template<typename TDataContext, typename TPipelineService>
-    class Engine2: public IEngine<Engine2<TDataContext, TPipelineService>, TDataContext>
+    template<typename TDataContext, typename TPipelineRepository>
+    class Engine2: public IEngine<Engine2<TDataContext, TPipelineRepository>, TDataContext>
     {
     private:
         events::EngineEventHubDispatcher<TDataContext>& engineEventHub;
-        services::IPipelineService<TPipelineService>& pipelineService;
+        services::IPipelineRepository<TPipelineRepository>& pipelineRepository;
 
     public:
         explicit Engine2(events::EngineEventHubDispatcher<TDataContext>& engineEventHub,
-                         services::IPipelineService<TPipelineService>& pipelineService):
+                         services::IPipelineRepository<TPipelineRepository>& pipelineRepository):
                 engineEventHub(engineEventHub),
-                pipelineService(pipelineService)
+                pipelineRepository(pipelineRepository)
         {}
 
         void updateImpl(TDataContext& context, const TimeSpan& timeStep)
         {
-            auto pipelineNodes = pipelineService.getPipeline();
+            auto pipelineNodes = pipelineRepository.getPipeline();
 
             touchPipelineNodes(pipelineNodes, context, [](const std::shared_ptr<object::PipelineNode>& node, TDataContext& context, const TimeSpan& timeStep)
             {

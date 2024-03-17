@@ -59,7 +59,7 @@ namespace dory::domain::services
     };
 
     template<typename TImplementation>
-    class IPipelineService: Uncopyable, public StaticInterface<TImplementation>
+    class IPipelineRepository: public IEntityRepository<TImplementation, entity::PipelineNode, entity::IdType>
     {
     public:
         std::list<std::shared_ptr<object::PipelineNode>> getPipeline()
@@ -68,29 +68,26 @@ namespace dory::domain::services
         }
     };
 
-    template<typename TPipelineNodeRepository>
-    class PipelineService2: public IPipelineService<PipelineService2<TPipelineNodeRepository>>
+    template<typename TEntity, typename TIdType>
+    class PipelineRepository:
+            public IPipelineRepository<PipelineRepository<TEntity, TIdType>>,
+            public EntityRepository2<TEntity, TIdType>
     {
     private:
-        using PipelineNodeReposytoryType = IEntityRepository<TPipelineNodeRepository, domain::entity::PipelineNode, domain::entity::IdType>;
-        PipelineNodeReposytoryType& pipelineNodeRepository;
+        using InterfaceType = IPipelineRepository<PipelineRepository<TEntity, TIdType>>;
 
     public:
-        explicit PipelineService2(PipelineNodeReposytoryType& pipelineNodeRepository):
-            pipelineNodeRepository(pipelineNodeRepository)
-        {}
-
         std::list<std::shared_ptr<object::PipelineNode>> getPipelineImpl()
         {
             std::list<std::shared_ptr<object::PipelineNode>> nodes;
 
-            pipelineNodeRepository.forEach([this, &nodes](const entity::PipelineNode& nodeEntity)
-                                                          {
-                                                              if(nodeEntity.parentNodeId == entity::nullId)
-                                                              {
-                                                                  nodes.emplace_back(loadNode(nodeEntity));
-                                                              }
-                                                          });
+            InterfaceType::forEach([this, &nodes](const TEntity& nodeEntity)
+                                           {
+                                               if(nodeEntity.parentNodeId == entity::nullId)
+                                               {
+                                                   nodes.emplace_back(loadNode(nodeEntity));
+                                               }
+                                           });
 
             nodes.sort(compareNodes<object::PipelineNode>);
 
@@ -98,29 +95,23 @@ namespace dory::domain::services
         }
 
     private:
-        std::shared_ptr<object::PipelineNode> loadNode(const entity::PipelineNode& nodeEntity)
+        std::shared_ptr<object::PipelineNode> loadNode(const TEntity& nodeEntity)
         {
             auto node = std::make_shared<object::PipelineNode>(nodeEntity);
 
-            pipelineNodeRepository.forEach([this, &node](const auto& nodeEntity)
-                                                          {
-                                                              if(nodeEntity.parentNodeId == node->nodeEntity.id)
-                                                              {
-                                                                  node->children.emplace_back(loadNode(nodeEntity));
-                                                              }
-                                                          });
+            InterfaceType::forEach([this, &node](const auto& nodeEntity)
+                                           {
+                                               if(nodeEntity.parentNodeId == node->nodeEntity.id)
+                                               {
+                                                   node->children.emplace_back(loadNode(nodeEntity));
+                                               }
+                                           });
 
             node->children.sort(compareNodes<object::PipelineNode>);
 
             return node;
         }
     };
-
-    /*template<typename TImplementation >
-    class IPipelineRepository
-    {
-
-    };*/
 
     template<typename TImplementation>
     class IPipelineManager: Uncopyable, public StaticInterface<TImplementation>
