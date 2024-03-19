@@ -57,4 +57,35 @@ namespace dory
             return static_cast<TImpelementation*>(this);
         }
     };
+
+    template<typename TImplementation>
+    class IServiceFactory: Uncopyable, public StaticInterface<TImplementation>
+    {
+    public:
+        auto createInstance()
+        {
+            return this->toImplementation()->createInstanceImpl();
+        }
+    };
+
+    template<typename TService, typename TServiceInterface = TService>
+    class ServiceFactory: public IServiceFactory<ServiceFactory<TService, TServiceInterface>>
+    {
+    public:
+        auto createInstanceImpl()
+        {
+            return TService{};
+        }
+    };
+
+    template<typename TService, typename TServiceInterface>
+    class ServiceFactory<std::shared_ptr<TService>, TServiceInterface>:
+            public IServiceFactory<ServiceFactory<std::shared_ptr<TService>, TServiceInterface>>
+    {
+    public:
+        auto createInstanceImpl()
+        {
+            return std::static_pointer_cast<TServiceInterface>(std::make_shared<TService>());
+        }
+    };
 }

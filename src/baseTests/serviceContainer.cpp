@@ -1,4 +1,5 @@
 #include "base/serviceContainer.h"
+#include "base/domain/service.h"
 #include "base/typeComponents.h"
 
 using namespace dory;
@@ -33,6 +34,15 @@ public:
     {}
 };
 
+class Service3: public Service1
+{
+public:
+    int getValue()
+    {
+        return Service1::value;
+    }
+};
+
 using Service1Dependency = Singleton<Service1Uncopiable>;
 using Service2TransientDependency = Transient<Service2, Service2, DependencyList<Service1Dependency>>;
 using Service2Dependency = Singleton<Service2Uncopiable, Service2Uncopiable, DependencyList<Service1Dependency>>;
@@ -45,7 +55,7 @@ using ServiceLocatorType = ServiceContainer<Service1Dependency,
         Service2TransientDependency,
         Service2TransientPointerDependency>;
 
-TEST_CASE("Check concept", "Service Locator")
+TEST_CASE("Check concept", "Service Container")
 {
     auto services = ServiceLocatorType{};
 
@@ -200,7 +210,7 @@ namespace dory
     };
 }
 
-TEST_CASE("Check ServiceContainer usage", "Service Locator")
+TEST_CASE("Check ServiceContainer usage", "Service Container")
 {
     using Services = ServiceDependencies;
 
@@ -216,4 +226,30 @@ TEST_CASE("Check ServiceContainer usage", "Service Locator")
 
     auto& psImpl = services.get<Services::PipelineServiceImpl>();
     psImpl.getPipelineImpl();
+}
+
+struct ServiceDependencies2
+{
+    using ServiceFactoryType = dory::ServiceFactory<Service3>;
+    using ServiceFactoryHeapType = dory::ServiceFactory<std::shared_ptr<Service3>, Service3>;
+
+    using ServiceFactory = Singleton<ServiceFactoryType, dory::IServiceFactory<ServiceFactoryType>>;
+    using ServiceFactoryHeap = Singleton<ServiceFactoryHeapType, dory::IServiceFactory<ServiceFactoryHeapType>>;
+
+    using ServiceContainerType = ServiceContainer<
+            ServiceFactory,
+            ServiceFactoryHeap>;
+};
+
+TEST_CASE("Service factory", "Service Container")
+{
+    using Services = ServiceDependencies2;
+
+    auto services = Services::ServiceContainerType{};
+
+    auto service = services.get<Services::ServiceFactory>().createInstance();
+    REQUIRE(service.getValue() == 1);
+
+    auto serviceHeap = services.get<Services::ServiceFactoryHeap>().createInstance();
+    REQUIRE(serviceHeap->getValue() == 1);
 }

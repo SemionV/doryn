@@ -112,4 +112,57 @@ namespace dory::domain::services
             return node;
         }
     };
+
+    template<typename TImplementation, typename TDataContext>
+    class IPipelineManager: Uncopyable, public StaticInterface<TImplementation>
+    {
+    public:
+        void configurePipeline(TDataContext&  context)
+        {
+            this->toImplementation()->configurePipelineImpl(context);
+        }
+    };
+
+    template<typename TDataContext, typename TConsoleControllerFactory, typename TPipelineRepository>
+    class PipelineManager: public IPipelineManager<PipelineManager<TDataContext, TConsoleControllerFactory, TPipelineRepository>, TDataContext>
+    {
+    private:
+        using ConsoleControllerFactoryType = dory::IServiceFactory<TConsoleControllerFactory>;
+        ConsoleControllerFactoryType& consoleControllerFactory;
+
+        using PipelineRepositoryType = services::IPipelineRepository<TPipelineRepository>;
+        PipelineRepositoryType& pipelineRepository;
+
+    public:
+        explicit PipelineManager(ConsoleControllerFactoryType& consoleControllerFactory,
+                                 PipelineRepositoryType& pipelineRepository):
+                consoleControllerFactory(consoleControllerFactory),
+                pipelineRepository(pipelineRepository)
+        {}
+
+        void configurePipelineImpl(TDataContext&  context)
+        {
+            auto inputGroupNode = pipelineRepository.store(entity::PipelineNode(entity::nullId,
+                                                                                nullptr,
+                                                                                entity::PipelineNodePriority::Default,
+                                                                                entity::nullId,
+                                                                                "input group"));
+
+            auto outputGroupNode = pipelineRepository.store(entity::PipelineNode(entity::nullId,
+                                                                                 nullptr,
+                                                                                 entity::PipelineNodePriority::First,
+                                                                                 entity::nullId,
+                                                                                 "output group"));
+
+            context.inputGroupNodeId = inputGroupNode.id;
+            context.outputGroupNodeId = outputGroupNode.id;
+
+            auto consoleController = consoleControllerFactory.createInstance();
+            auto consoleControllerNode = pipelineRepository.store(entity::PipelineNode(entity::nullId,
+                                                                                       consoleController,
+                                                                                       entity::PipelineNodePriority::Default,
+                                                                                       inputGroupNode.id));
+            consoleController->initialize(consoleControllerNode.id, context);
+        }
+    };
 }
