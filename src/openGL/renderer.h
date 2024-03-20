@@ -139,4 +139,84 @@ namespace dory::openGL
             services::OpenglService::drawObject(trianglesProgram, trianglesVertexArray);
         }
     };
+
+    template<typename TServiceLocator>
+    class Renderer2: public domain::Service<TServiceLocator>
+    {
+    private:
+        TrianglesProgram trianglesProgram;
+        TrianglesVertexArray trianglesVertexArray;
+        domain::Color clearScreenColor {0.0f, 0.0f, 0.0f};
+
+        float colorDelta = 0.0001f;
+        float hippieColorDelta = colorDelta;
+
+        ColorsBufferInterface colorsUniformData {
+                domain::Color(0.7f, 0.7f, 0.7f, 1.0f),
+                domain::Color(0.2f, 0.2, 0.f, 1.0f),
+                domain::Color(0.2f, 0.2f, 0.2f, 1.0f)
+        };
+
+        std::array<GLfloat, 12> verticesData = {
+                -0.90f, -0.90f,
+                0.85f, -0.90f,
+                -0.90f,  0.85f,
+
+                0.90f, -0.85f,
+                0.90f,  0.90f,
+                -0.85f,  0.90f
+        };
+
+    public:
+        explicit Renderer2(TServiceLocator& serviceLocator):
+                domain::Service<TServiceLocator>(serviceLocator)
+        {
+        }
+
+        void initialize()
+        {
+            services::ShaderService::loadProgram(this->services, trianglesProgram, [](services::ShaderServiceError& error)
+            {
+                if(error.shaderCompilationError)
+                {
+                    std::cerr << "Shader compilation error(" << error.shaderCompilationError->shaderIdentifier << "): "
+                              << error.shaderCompilationError->compilationLog << std::endl;
+                }
+                else if(error.shaderProgramLinkingError)
+                {
+                    std::cerr << "Shader program linking error: " << error.shaderProgramLinkingError->linkingLog << std::endl;
+                }
+            });
+
+            services::OpenglService::loadUniformBlock(trianglesProgram.id, trianglesProgram.colorsUniformBlock);
+            services::OpenglService::setUniformBlockData(trianglesProgram.colorsUniformBlock, &colorsUniformData, sizeof(colorsUniformData));
+
+            services::OpenglService::loadVertexArray(trianglesVertexArray);
+            services::OpenglService::setVertexArrayData(trianglesVertexArray, verticesData.data(), sizeof(verticesData));
+        }
+
+        void draw()
+        {
+            services::OpenglService::clearViewport(clearScreenColor);
+
+            auto& hippieColor = colorsUniformData.hippieColor;
+
+            if(hippieColor.r >= 1.f || hippieColor.g  >= 1.f || hippieColor.b  >= 1.f)
+            {
+                hippieColorDelta = -colorDelta;
+            }
+            else if(hippieColor.r <= 0.f || hippieColor.g <= 0.f || hippieColor.b <= 0.f)
+            {
+                hippieColorDelta = colorDelta;
+            }
+
+            hippieColor.r += hippieColorDelta;
+            hippieColor.g += hippieColorDelta;
+            hippieColor.b += hippieColorDelta;
+
+            services::OpenglService::setUniformBlockData(trianglesProgram.colorsUniformBlock, &colorsUniformData, sizeof(colorsUniformData));
+
+            services::OpenglService::drawObject(trianglesProgram, trianglesVertexArray);
+        }
+    };
 }

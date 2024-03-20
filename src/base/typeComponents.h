@@ -72,7 +72,7 @@ namespace dory
     class ServiceFactory: public IServiceFactory<ServiceFactory<TService, TServiceInterface>>
     {
     public:
-        auto createInstanceImpl()
+        TServiceInterface createInstanceImpl()
         {
             return TService{};
         }
@@ -83,7 +83,7 @@ namespace dory
             public IServiceFactory<ServiceFactory<std::shared_ptr<TService>, TServiceInterface>>
     {
     public:
-        auto createInstanceImpl()
+        std::shared_ptr<TServiceInterface> createInstanceImpl()
         {
             return std::static_pointer_cast<TServiceInterface>(std::make_shared<TService>());
         }

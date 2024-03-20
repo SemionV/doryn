@@ -8,6 +8,7 @@
 #include "base/domain/entityRepository.h"
 #include "base/domain/engine.h"
 #include "openGL/glfwWindow.h"
+#include "openGL/glfwWindowController.h"
 #include "base/domain/services/frameService.h"
 #include "win32/consoleController.h"
 
@@ -17,12 +18,12 @@ namespace dory
     namespace services = dory::domain::services;
 
     template<>
-    struct ServiceInstantiator<dory::configuration::FileSystemBasedConfiguration>
+    struct ServiceInstantiator<dory::configuration::FileSystemBasedConfiguration2>
     {
         template<typename TServiceContainer>
         static decltype(auto) createInstance(TServiceContainer& services)
         {
-            return dory::configuration::FileSystemBasedConfiguration{"configuration"};
+            return dory::configuration::FileSystemBasedConfiguration2{"configuration"};
         }
     };
 
@@ -39,9 +40,33 @@ namespace dory
                 consoleEventDispatcher(consoleEventDispatcher)
         {}
 
-        auto createInstanceImpl()
+        std::shared_ptr<TControllerInterface> createInstanceImpl()
         {
             return std::static_pointer_cast<TControllerInterface>(std::make_shared<dory::win32::ConsoleController2<TDataContext>>(consoleEventDispatcher));
+        }
+    };
+
+    template<typename TDataContext, typename TControllerInterface, typename TWindowRepository>
+    class ServiceFactory<dory::openGL::GlfwWindowController2<TDataContext, TWindowRepository>, TControllerInterface>:
+            public IServiceFactory<ServiceFactory<dory::openGL::GlfwWindowController2<TDataContext, TWindowRepository>, TControllerInterface>>
+    {
+    private:
+        using WindowRepositoryType = domain::IEntityRepository<TWindowRepository, openGL::GlfwWindow, domain::entity::IdType>;
+        WindowRepositoryType& windowRepository;
+
+        using WindowEventHubType = domain::events::WindowEventHubDispatcher<TDataContext>;
+        WindowEventHubType& windowEventHubDispatcher;
+
+    public:
+        explicit ServiceFactory(WindowRepositoryType& windowRepository, WindowEventHubType& windowEventHubDispatcher):
+                windowRepository(windowRepository),
+                windowEventHubDispatcher(windowEventHubDispatcher)
+        {}
+
+        std::shared_ptr<TControllerInterface> createInstanceImpl()
+        {
+            return std::static_pointer_cast<TControllerInterface>(
+                    std::make_shared<dory::openGL::GlfwWindowController2<TDataContext, TWindowRepository>>(windowRepository, windowEventHubDispatcher));
         }
     };
 }
@@ -55,7 +80,7 @@ namespace testApp
     struct ServiceDependencies
     {
         using IdType = entity::IdType;
-        using ConfigurationServiceType = dory::configuration::FileSystemBasedConfiguration;
+        using ConfigurationServiceType = dory::configuration::FileSystemBasedConfiguration2;
         using CameraRepositoryType = domain::EntityRepository2<entity::Camera, IdType>;
         using ViewRepositoryType = domain::EntityRepository2<entity::View, IdType>;
         using WindowRepositoryType = domain::EntityRepository2<dory::openGL::GlfwWindow, IdType>;
@@ -64,10 +89,13 @@ namespace testApp
         using FrameServiceType = services::BasicFrameService2<TDataContext, EngineType>;
         using ControllerInterfaceType = domain::Controller2<TDataContext>;
         using ConsoleControllerType = dory::win32::ConsoleController2<TDataContext>;
+        using WindowControllerType = dory::openGL::GlfwWindowController2<TDataContext, WindowRepositoryType>;
         using ConsoleControllerFactoryType = dory::ServiceFactory<ConsoleControllerType, ControllerInterfaceType>;
-        using PipelineManagerType = services::PipelineManager<TDataContext, ConsoleControllerFactoryType, PipelineRepositoryType>;
+        using WindowControllerFactoryType = dory::ServiceFactory<WindowControllerType, ControllerInterfaceType>;
+        using PipelineManagerType = services::PipelineManager<TDataContext, ConsoleControllerFactoryType, WindowControllerFactoryType, PipelineRepositoryType>;
+        //using OpenGLRendererType =
 
-        using ConfigurationService = dory::Singleton<ConfigurationServiceType>;
+        using ConfigurationService = dory::Singleton<ConfigurationServiceType, dory::configuration::IConfiguration<ConfigurationServiceType>>;
 
         using EngineEventHubDispatcher = dory::Singleton<events::EngineEventHubDispatcher<TDataContext>>;
         using EngineEventHub = dory::Reference<EngineEventHubDispatcher, events::EngineEventHub<TDataContext>>;
@@ -85,7 +113,10 @@ namespace testApp
         using FrameService = dory::Singleton<FrameServiceType, services::IFrameService<FrameServiceType, TDataContext>, DependencyList<Engine>>;
 
         using ConsoleControllerFactory = dory::Singleton<ConsoleControllerFactoryType, dory::IServiceFactory<ConsoleControllerFactoryType>, DependencyList<ConsoleEventHubDispatcher>>;
-        using PipelineManager = dory::Singleton<PipelineManagerType, services::IPipelineManager<PipelineManagerType, TDataContext>, DependencyList<ConsoleControllerFactory, PipelineRepository>>;
+        using WindowControllerFactory = dory::Singleton<WindowControllerFactoryType, dory::IServiceFactory<WindowControllerFactoryType>, DependencyList<WindowRepository, WindowEventHubDispatcher>>;
+
+        using PipelineManager = dory::Singleton<PipelineManagerType, services::IPipelineManager<PipelineManagerType, TDataContext>,
+            DependencyList<ConsoleControllerFactory, WindowControllerFactory, PipelineRepository>>;
 
         using ServiceContainerType = dory::ServiceContainer<
                 ConfigurationService,
@@ -102,6 +133,7 @@ namespace testApp
                 Engine,
                 FrameService,
                 ConsoleControllerFactory,
+                WindowControllerFactory,
                 PipelineManager>;
     };
 
