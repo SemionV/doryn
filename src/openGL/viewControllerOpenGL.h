@@ -3,6 +3,8 @@
 #include "glfwWindow.h"
 #include "renderer.h"
 #include "base/domain/controller.h"
+#include "base/domain/entityRepository.h"
+#include "base/domain/entity.h"
 
 namespace dory::openGL
 {
@@ -70,18 +72,25 @@ namespace dory::openGL
         }
     };
 
-    template<typename TDataContext, typename TServiceLocator>
-    class ViewControllerOpenGL2: public domain::Controller<TDataContext, TServiceLocator>
+    template<typename TDataContext, typename TRenderer, typename TViewRepository, typename TWindowRepository>
+    class ViewControllerOpenGL2: public domain::Controller2<TDataContext>
     {
     private:
-        Renderer<TServiceLocator> renderer;
+        using RendererType = IRenderer<TRenderer>;
+        RendererType& renderer;
+
+        using ViewRepositoryType = domain::IEntityRepository<TViewRepository, domain::entity::View, domain::entity::IdType>;
+        ViewRepositoryType& viewRepository;
+
+        using WindowRepositoryType = domain::IEntityRepository<TWindowRepository, GlfwWindow, domain::entity::IdType>;
+        WindowRepositoryType& windowRepository;
 
     public:
-        explicit ViewControllerOpenGL2(TServiceLocator& serviceLocator):
-                domain::Controller<TDataContext, TServiceLocator>(serviceLocator),
-                renderer(serviceLocator)
-        {
-        }
+        explicit ViewControllerOpenGL2(RendererType& renderer, ViewRepositoryType& viewRepository, WindowRepositoryType& windowRepository):
+                renderer(renderer),
+                viewRepository(viewRepository),
+                windowRepository(windowRepository)
+        {}
 
         bool initialize(domain::entity::IdType referenceId, TDataContext& context) override
         {
@@ -116,14 +125,14 @@ namespace dory::openGL
     private:
         GLFWwindow* getWindowHandler(domain::entity::IdType referenceId)
         {
-            auto view = this->services.viewRepository.find([&referenceId](const domain::entity::View& view)
-                                                           {
-                                                               return view.controllerNodeId == referenceId;
-                                                           });
+            auto view = viewRepository.find([&referenceId](const domain::entity::View& view)
+            {
+                return view.controllerNodeId == referenceId;
+            });
 
             if(view.has_value())
             {
-                auto glfwWindow = this->services.windowRepository.get(view->windowId);
+                auto glfwWindow = windowRepository.get(view->windowId);
                 if(glfwWindow.has_value())
                 {
                     return glfwWindow->handler;
