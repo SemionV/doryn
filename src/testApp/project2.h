@@ -1,16 +1,17 @@
 #pragma once
 
 #include "base/serviceContainer.h"
-#include "base/configuration/fileSystemBasedConfiguration.h"
+#include "base/domain/configuration.h"
 #include "base/domain/events/engineEventHub.h"
 #include "base/domain/entity.h"
 #include "base/domain/idFactory.h"
 #include "base/domain/entityRepository.h"
 #include "base/domain/engine.h"
-#include "openGL/glfwWindow.h"
-#include "openGL/glfwWindowController.h"
 #include "base/domain/services/frameService.h"
 #include "win32/consoleController.h"
+#include "openGL/glfwWindow.h"
+#include "openGL/glfwWindowController.h"
+#include "openGL/services/shaderService.h"
 
 namespace dory
 {
@@ -93,9 +94,13 @@ namespace testApp
         using ConsoleControllerFactoryType = dory::ServiceFactory<ConsoleControllerType, ControllerInterfaceType>;
         using WindowControllerFactoryType = dory::ServiceFactory<WindowControllerType, ControllerInterfaceType>;
         using PipelineManagerType = services::PipelineManager<TDataContext, ConsoleControllerFactoryType, WindowControllerFactoryType, PipelineRepositoryType>;
-        //using OpenGLRendererType =
+        using OpenGLShaderServiceType = dory::openGL::services::ShaderService2<ConfigurationServiceType>;
+        using OpenGLRendererType = dory::openGL::Renderer2<OpenGLShaderServiceType>;
 
         using ConfigurationService = dory::Singleton<ConfigurationServiceType, dory::configuration::IConfiguration<ConfigurationServiceType>>;
+
+        using OpenGLShaderService = dory::Singleton<OpenGLShaderServiceType, dory::openGL::services::IShaderService<OpenGLShaderServiceType>, DependencyList<ConfigurationService>>;
+        using OpenGLRenderer = dory::Singleton<OpenGLRendererType, dory::openGL::IRenderer<OpenGLRendererType>, DependencyList<OpenGLShaderService>>;
 
         using EngineEventHubDispatcher = dory::Singleton<events::EngineEventHubDispatcher<TDataContext>>;
         using EngineEventHub = dory::Reference<EngineEventHubDispatcher, events::EngineEventHub<TDataContext>>;
@@ -120,6 +125,8 @@ namespace testApp
 
         using ServiceContainerType = dory::ServiceContainer<
                 ConfigurationService,
+                OpenGLShaderService,
+                OpenGLRenderer,
                 EngineEventHubDispatcher,
                 EngineEventHub,
                 ConsoleEventHubDispatcher,

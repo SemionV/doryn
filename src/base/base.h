@@ -13,7 +13,6 @@ public:
 
 #include "domain/service.h"
 #include "typeComponents.h"
-#include "configuration/configuration.h"
 #include "serviceLocator.h"
 #include "configuration/fileSystemBasedConfiguration.h"
 #include "domain/services/frameService.h"

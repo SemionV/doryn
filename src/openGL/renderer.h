@@ -140,10 +140,28 @@ namespace dory::openGL
         }
     };
 
-    template<typename TServiceLocator>
-    class Renderer2: public domain::Service<TServiceLocator>
+    template<typename TImplementation>
+    class IRenderer: Uncopyable, public StaticInterface<TImplementation>
+    {
+    public:
+        void initialize()
+        {
+             this->toImplementation()->initializeImpl();
+        }
+
+        void draw()
+        {
+            this->toImplementation()->drawImpl();
+        }
+    };
+
+    template<typename TShaderService>
+    class Renderer2: public IRenderer<Renderer2<TShaderService>>
     {
     private:
+        using ShaderServiceType = services::IShaderService<TShaderService>;
+        ShaderServiceType& shaderService;
+
         TrianglesProgram trianglesProgram;
         TrianglesVertexArray trianglesVertexArray;
         domain::Color clearScreenColor {0.0f, 0.0f, 0.0f};
@@ -168,14 +186,13 @@ namespace dory::openGL
         };
 
     public:
-        explicit Renderer2(TServiceLocator& serviceLocator):
-                domain::Service<TServiceLocator>(serviceLocator)
-        {
-        }
+        explicit Renderer2(ShaderServiceType& shaderService):
+                shaderService(shaderService)
+        {}
 
-        void initialize()
+        void initializeImpl()
         {
-            services::ShaderService::loadProgram(this->services, trianglesProgram, [](services::ShaderServiceError& error)
+            shaderService.loadProgram(trianglesProgram, [](services::ShaderServiceError& error)
             {
                 if(error.shaderCompilationError)
                 {
@@ -195,7 +212,7 @@ namespace dory::openGL
             services::OpenglService::setVertexArrayData(trianglesVertexArray, verticesData.data(), sizeof(verticesData));
         }
 
-        void draw()
+        void drawImpl()
         {
             services::OpenglService::clearViewport(clearScreenColor);
 

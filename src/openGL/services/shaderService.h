@@ -1,6 +1,8 @@
 #pragma once
 
 #include "openGL/graphics/program.h"
+#include "base/domain/configuration.h"
+#include "base/typeComponents.h"
 
 namespace dory::openGL::services
 {
@@ -107,14 +109,29 @@ namespace dory::openGL::services
         }
     };
 
-    class ShaderService2
+    template<typename TImplementation>
+    class IShaderService: Uncopyable, public StaticInterface<TImplementation>
     {
     public:
-        template<typename TServiceLocator>
-        static void loadProgram(
-                const TServiceLocator& serviceLocator,
-                graphics::Program& program,
-                std::function<void(ShaderServiceError&)> errorHandler = 0)
+        void loadProgram(graphics::Program& program, const std::function<void(ShaderServiceError&)>& errorHandler = nullptr)
+        {
+            this->toImplementation()->loadProgramImpl(program, errorHandler);
+        }
+    };
+
+    template<typename TConfiguration>
+    class ShaderService2: public IShaderService<ShaderService2<TConfiguration>>
+    {
+    private:
+        using ConfigurationType = dory::configuration::IConfiguration<TConfiguration>;
+        ConfigurationType& configuration;
+
+    public:
+        explicit ShaderService2(ConfigurationType& configuration):
+            configuration(configuration)
+        {}
+
+        void loadProgramImpl(graphics::Program& program, const std::function<void(ShaderServiceError&)>& errorHandler)
         {
             program.id = glCreateProgram();
 
@@ -124,7 +141,7 @@ namespace dory::openGL::services
             {
                 auto& shader = shaders[i];
 
-                shader.sourceCode = serviceLocator.configuration.getTextFileContent(shader.key);
+                shader.sourceCode = configuration.getTextFileContent(shader.key);
 
                 auto shaderId = shader.id = glCreateShader(shader.type);
                 const char* shaderSource = shader.sourceCode.c_str();
