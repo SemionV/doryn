@@ -75,7 +75,17 @@ namespace dory::openGL
     template<typename T>
     class ViewControllerFactory;
 
+    template<typename TDataContext, typename TRenderer, typename TViewRepository, typename TWindowRepository>
+    struct ViewControllerDependencies
+    {
+        using DataContextType = TDataContext;
+        using RendererType = TRenderer;
+        using ViewRepositoryType = TViewRepository;
+        using WindowRepositoryType = TWindowRepository;
+    };
+
     template<typename T>
+    requires(is_instance_v<T, ViewControllerDependencies>)
     class ViewControllerOpenGL2: public domain::Controller2<typename T::DataContextType>
     {
     private:
