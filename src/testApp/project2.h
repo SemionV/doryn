@@ -71,31 +71,56 @@ namespace dory
         }
     };
 
-    template<typename TDataContext, typename TControllerInterface, typename TRenderer, typename TViewRepository, typename TWindowRepository>
-    class ServiceFactory<dory::openGL::ViewControllerOpenGL2<TDataContext, TRenderer, TViewRepository, TWindowRepository>, TControllerInterface>:
-            public IServiceFactory<ServiceFactory<dory::openGL::ViewControllerOpenGL2<TDataContext, TRenderer, TViewRepository, TWindowRepository>, TControllerInterface>>
+    template<template<typename TDataContext, typename TRenderer, typename TViewRepository, typename TWindowRepository> class TController, typename TRendererFactory>
+    struct ViewControllerFactoryDefinition
+    {};
+
+    template<typename TControllerInterface, typename TRendererFactory,
+            template<typename TDataContext, typename TRenderer, typename TViewRepository, typename TWindowRepository> class TController>
+    class ServiceFactory<ViewControllerFactoryDefinition<TController<TDataContext, TRenderer, TViewRepository, TWindowRepository>, TRendererFactory>, TControllerInterface>:
+            public IServiceFactory<ServiceFactory<ViewControllerFactoryDefinition<TDataContext, TController, TRenderer, TRendererFactory, TViewRepository, TWindowRepository>, TControllerInterface>>
     {
     private:
-        //TODO: define RendererFactory, because we need a transient instance hier
-        using RendererType = IRenderer<TRenderer>;
-        RendererType& renderer;
+        using RendererFactoryType = dory::IServiceFactory<TRenderer>;
+        RendererFactoryType& rendererFactory;
 
         using ViewRepositoryType = domain::IEntityRepository<TViewRepository, domain::entity::View, domain::entity::IdType>;
         ViewRepositoryType& viewRepository;
 
-        using WindowRepositoryType = domain::IEntityRepository<TWindowRepository, GlfwWindow, domain::entity::IdType>;
+        using WindowRepositoryType = domain::IEntityRepository<TWindowRepository, openGL::GlfwWindow, domain::entity::IdType>;
         WindowRepositoryType& windowRepository;
 
     public:
-        explicit ServiceFactory(WindowRepositoryType& windowRepository, WindowEventHubType& windowEventHubDispatcher):
-                windowRepository(windowRepository),
-                windowEventHubDispatcher(windowEventHubDispatcher)
+        explicit ServiceFactory(RendererFactoryType& rendererFactory, ViewRepositoryType& viewRepository, WindowRepositoryType& windowRepository):
+                rendererFactory(rendererFactory),
+                viewRepository(viewRepository),
+                windowRepository(windowRepository)
         {}
 
         std::shared_ptr<TControllerInterface> createInstanceImpl()
         {
             return std::static_pointer_cast<TControllerInterface>(
-                    std::make_shared<dory::openGL::GlfwWindowController2<TDataContext, TWindowRepository>>(windowRepository, windowEventHubDispatcher));
+                    std::make_shared<TController<TDataContext, TRenderer, TViewRepository, TWindowRepository>>
+                    (rendererFactory.createInstance(), viewRepository, windowRepository));
+        }
+    };
+
+    template<typename TRendererInterface, typename TShaderService>
+    class ServiceFactory<dory::openGL::Renderer2<TShaderService>, TRendererInterface>:
+            public IServiceFactory<ServiceFactory<dory::openGL::Renderer2<TShaderService>, TRendererInterface>>
+    {
+    private:
+        using ShaderServiceType = dory::openGL::services::IShaderService<TShaderService>;
+        ShaderServiceType& shaderService;
+
+    public:
+        explicit ServiceFactory(ShaderServiceType& shaderService):
+                shaderService(shaderService)
+        {}
+
+        decltype(auto) createInstanceImpl()
+        {
+            return static_cast<TRendererInterface>(dory::openGL::Renderer2<TShaderService>{ shaderService });
         }
     };
 }
@@ -124,13 +149,9 @@ namespace testApp
         using PipelineManagerType = services::PipelineManager<TDataContext, ConsoleControllerFactoryType, WindowControllerFactoryType, PipelineRepositoryType>;
         using OpenGLShaderServiceType = dory::openGL::services::ShaderService2<ConfigurationServiceType>;
         using OpenGLRendererType = dory::openGL::Renderer2<OpenGLShaderServiceType>;
+        using RendererFactoryType = dory::ServiceFactory<OpenGLRendererType, dory::openGL::IRenderer<OpenGLRendererType>>;
         using OpenGLViewControllerType = dory::openGL::ViewControllerOpenGL2<TDataContext, OpenGLRendererType, ViewRepositoryType, WindowRepositoryType>;
         using OpenGLViewControllerFactoryType = dory::ServiceFactory<OpenGLViewControllerType, ControllerInterfaceType>;
-
-        using ConfigurationService = dory::Singleton<ConfigurationServiceType, dory::configuration::IConfiguration<ConfigurationServiceType>>;
-
-        using OpenGLShaderService = dory::Singleton<OpenGLShaderServiceType, dory::openGL::services::IShaderService<OpenGLShaderServiceType>, DependencyList<ConfigurationService>>;
-        using OpenGLRenderer = dory::Singleton<OpenGLRendererType, dory::openGL::IRenderer<OpenGLRendererType>, DependencyList<OpenGLShaderService>>;
 
         using EngineEventHubDispatcher = dory::Singleton<events::EngineEventHubDispatcher<TDataContext>>;
         using EngineEventHub = dory::Reference<EngineEventHubDispatcher, events::EngineEventHub<TDataContext>>;
@@ -146,10 +167,13 @@ namespace testApp
 
         using Engine = dory::Singleton<EngineType, domain::IEngine<EngineType, TDataContext>, DependencyList<EngineEventHubDispatcher, PipelineRepository>>;
         using FrameService = dory::Singleton<FrameServiceType, services::IFrameService<FrameServiceType, TDataContext>, DependencyList<Engine>>;
+        using ConfigurationService = dory::Singleton<ConfigurationServiceType, dory::configuration::IConfiguration<ConfigurationServiceType>>;
+        using OpenGLShaderService = dory::Singleton<OpenGLShaderServiceType, dory::openGL::services::IShaderService<OpenGLShaderServiceType>, DependencyList<ConfigurationService>>;
 
         using ConsoleControllerFactory = dory::Singleton<ConsoleControllerFactoryType, dory::IServiceFactory<ConsoleControllerFactoryType>, DependencyList<ConsoleEventHubDispatcher>>;
         using WindowControllerFactory = dory::Singleton<WindowControllerFactoryType, dory::IServiceFactory<WindowControllerFactoryType>, DependencyList<WindowRepository, WindowEventHubDispatcher>>;
-        using OpenGLViewControllerFactory = dory::Singleton<OpenGLViewControllerFactoryType, dory::IServiceFactory<OpenGLViewControllerFactoryType>, DependencyList<OpenGLRenderer, ViewRepository, WindowRepository>>;
+        using RendererFactoryDep = dory::Singleton<RendererFactoryType, dory::IServiceFactory<RendererFactoryType>, DependencyList<OpenGLShaderService>>;
+        using OpenGLViewControllerFactory = dory::Singleton<OpenGLViewControllerFactoryType, dory::IServiceFactory<OpenGLViewControllerFactoryType>, DependencyList<RendererFactoryDep, ViewRepository, WindowRepository>>;
 
         using PipelineManager = dory::Singleton<PipelineManagerType, services::IPipelineManager<PipelineManagerType, TDataContext>,
             DependencyList<ConsoleControllerFactory, WindowControllerFactory, PipelineRepository>>;
@@ -157,7 +181,6 @@ namespace testApp
         using ServiceContainerType = dory::ServiceContainer<
                 ConfigurationService,
                 OpenGLShaderService,
-                OpenGLRenderer,
                 EngineEventHubDispatcher,
                 EngineEventHub,
                 ConsoleEventHubDispatcher,
@@ -173,6 +196,7 @@ namespace testApp
                 ConsoleControllerFactory,
                 WindowControllerFactory,
                 OpenGLViewControllerFactory,
+                RendererFactoryDep,
                 PipelineManager>;
     };
 

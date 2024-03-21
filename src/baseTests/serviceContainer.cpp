@@ -177,7 +177,7 @@ struct ServiceDependencies
     using PipelineService = Singleton<PipelineServiceType, IPipelineService<PipelineServiceType>>;
     using PipelineServiceImpl = Reference<PipelineService, PipelineServiceType>;
     using HelloServiceDep = Singleton<std::shared_ptr<HelloServiceType>, IHelloService<HelloServiceType>>;
-    using EngineServiceDep = Singleton<EngineServiceType, EngineServiceType, DependencyList<PipelineService, HelloService>>;
+    using EngineServiceDep = Singleton<EngineServiceType, EngineServiceType, DependencyList<PipelineService, HelloServiceDep>>;
 
     using RepeatServiceType = Service1Uncopiable;
 
@@ -218,11 +218,11 @@ TEST_CASE("Check ServiceContainer usage", "Service Container")
 
     services.get<Services::PipelineService>().getPipeline();
 
-    auto& engine = services.get<Services::EngineService>();
+    auto& engine = services.get<Services::EngineServiceDep>();
     engine.run();
     engine.value = 6;
 
-    REQUIRE(services.get<Services::EngineService>().value == 6);
+    REQUIRE(services.get<Services::EngineServiceDep>().value == 6);
 
     auto& psImpl = services.get<Services::PipelineServiceImpl>();
     psImpl.getPipelineImpl();

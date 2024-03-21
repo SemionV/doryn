@@ -28,6 +28,8 @@ namespace testApp
         auto context = ProjectDataContext{};
         auto project = Project2(services);
 
+        auto controller = services.get<ServiceDependencies<ProjectDataContext>::OpenGLViewControllerFactory>().createInstance();
+
         project.run(context);
 
         return 0;
