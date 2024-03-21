@@ -176,8 +176,8 @@ struct ServiceDependencies
 
     using PipelineService = Singleton<PipelineServiceType, IPipelineService<PipelineServiceType>>;
     using PipelineServiceImpl = Reference<PipelineService, PipelineServiceType>;
-    using HelloService = Singleton<std::shared_ptr<HelloServiceType>, IHelloService<HelloServiceType>>;
-    using EngineService = Singleton<EngineServiceType, EngineServiceType, DependencyList<PipelineService, HelloService>>;
+    using HelloServiceDep = Singleton<std::shared_ptr<HelloServiceType>, IHelloService<HelloServiceType>>;
+    using EngineServiceDep = Singleton<EngineServiceType, EngineServiceType, DependencyList<PipelineService, HelloService>>;
 
     using RepeatServiceType = Service1Uncopiable;
 
@@ -190,8 +190,8 @@ struct ServiceDependencies
     using ServiceContainerType = ServiceContainer<
             PipelineService,
             PipelineServiceImpl,
-            HelloService,
-            EngineService,
+            HelloServiceDep,
+            EngineServiceDep,
             RepeatService1,
             RepeatService2>;
 };
