@@ -72,27 +72,32 @@ namespace dory::openGL
         }
     };
 
-    template<typename TDataContext, typename TRenderer, typename TViewRepository, typename TWindowRepository>
-    class ViewControllerOpenGL2: public domain::Controller2<TDataContext>
+    template<typename T>
+    class ViewControllerFactory;
+
+    template<typename T>
+    class ViewControllerOpenGL2: public domain::Controller2<typename T::DataContextType>
     {
     private:
-        using RendererType = IRenderer<TRenderer>;
+        using RendererType = IRenderer<typename T::RendererType>;
         RendererType& renderer;
 
-        using ViewRepositoryType = domain::IEntityRepository<TViewRepository, domain::entity::View, domain::entity::IdType>;
+        using ViewRepositoryType = domain::IEntityRepository<typename T::ViewRepositoryType, domain::entity::View, domain::entity::IdType>;
         ViewRepositoryType& viewRepository;
 
-        using WindowRepositoryType = domain::IEntityRepository<TWindowRepository, GlfwWindow, domain::entity::IdType>;
+        using WindowRepositoryType = domain::IEntityRepository<typename T::WindowRepositoryType, GlfwWindow, domain::entity::IdType>;
         WindowRepositoryType& windowRepository;
 
     public:
+        using FactoryType = ViewControllerFactory<T>;
+
         explicit ViewControllerOpenGL2(RendererType& renderer, ViewRepositoryType& viewRepository, WindowRepositoryType& windowRepository):
                 renderer(renderer),
                 viewRepository(viewRepository),
                 windowRepository(windowRepository)
         {}
 
-        bool initialize(domain::entity::IdType referenceId, TDataContext& context) override
+        bool initialize(domain::entity::IdType referenceId, T::DataContextType& context) override
         {
             std::cout << "initialize: OpenGL Basic View" << std::endl;
 
@@ -107,11 +112,11 @@ namespace dory::openGL
             return true;
         }
 
-        void stop(domain::entity::IdType referenceId, TDataContext& context) override
+        void stop(domain::entity::IdType referenceId, T::DataContextType& context) override
         {
         }
 
-        void update(domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, TDataContext& context) override
+        void update(domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, T::DataContextType& context) override
         {
             auto windowHandler = getWindowHandler(referenceId);
             if(windowHandler != nullptr)
@@ -140,6 +145,35 @@ namespace dory::openGL
             }
 
             return nullptr;
+        }
+    };
+
+    template<typename T>
+    class ViewControllerFactory: public IServiceFactory<ViewControllerFactory<T>>
+    {
+    private:
+        using ControllerInterfaceType = domain::Controller2<typename T::DataContextType>;
+
+        using RendererFactoryType = IServiceFactory<typename T::RendererType>;
+        RendererFactoryType& rendererFactory;
+
+        using ViewRepositoryType = domain::IEntityRepository<typename T::ViewRepositoryType, domain::entity::View, domain::entity::IdType>;
+        ViewRepositoryType& viewRepository;
+
+        using WindowRepositoryType = domain::IEntityRepository<typename T::WindowRepositoryType, GlfwWindow, domain::entity::IdType>;
+        WindowRepositoryType& windowRepository;
+
+    public:
+        explicit ViewControllerFactory(RendererFactoryType& rendererFactory, ViewRepositoryType& viewRepository, WindowRepositoryType& windowRepository):
+                rendererFactory(rendererFactory),
+                viewRepository(viewRepository),
+                windowRepository(windowRepository)
+        {}
+
+        std::shared_ptr<ControllerInterfaceType> createInstanceImpl()
+        {
+            return std::static_pointer_cast<ControllerInterfaceType>(std::make_shared<ViewControllerOpenGL2<T>>
+                (rendererFactory.createInstance(), viewRepository, windowRepository));
         }
     };
 }

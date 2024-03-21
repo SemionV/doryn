@@ -155,11 +155,14 @@ namespace dory::openGL
         }
     };
 
-    template<typename TShaderService>
-    class Renderer2: public IRenderer<Renderer2<TShaderService>>
+    template<typename T>
+    class RendererFactory;
+
+    template<typename T>
+    class Renderer2: public IRenderer<Renderer2<typename T::ShaderServiceType>>
     {
     private:
-        using ShaderServiceType = services::IShaderService<TShaderService>;
+        using ShaderServiceType = services::IShaderService<typename T::ShaderService>;
         ShaderServiceType& shaderService;
 
         TrianglesProgram trianglesProgram;
@@ -186,6 +189,8 @@ namespace dory::openGL
         };
 
     public:
+        using FactoryType = RendererFactory<T>;
+
         explicit Renderer2(ShaderServiceType& shaderService):
                 shaderService(shaderService)
         {}
@@ -234,6 +239,26 @@ namespace dory::openGL
             services::OpenglService::setUniformBlockData(trianglesProgram.colorsUniformBlock, &colorsUniformData, sizeof(colorsUniformData));
 
             services::OpenglService::drawObject(trianglesProgram, trianglesVertexArray);
+        }
+    };
+
+    template<typename T>
+    class RendererFactory: public IServiceFactory<RendererFactory<T>>
+    {
+    private:
+        using RendererInterfaceType = IRenderer<Renderer2<typename T::ShaderServiceType>>;
+
+        using ShaderServiceType = services::IShaderService<typename T::ShaderService>;
+        ShaderServiceType& shaderService;
+
+    public:
+        explicit RendererFactory(ShaderServiceType& shaderService):
+                shaderService(shaderService)
+        {}
+
+        RendererInterfaceType createInstanceImpl()
+        {
+            return static_cast<RendererInterfaceType>(Renderer2<T>{shaderService});
         }
     };
 }
