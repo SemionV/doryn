@@ -7,6 +7,7 @@
 #include "graphics/vertexArray.h"
 #include "services/openglService.h"
 #include "services/shaderService.h"
+#include "base/typeComponents.h"
 
 namespace dory::openGL
 {
@@ -141,7 +142,7 @@ namespace dory::openGL
     };
 
     template<typename TImplementation>
-    class IRenderer: Uncopyable, public StaticInterface<TImplementation>
+    class IRenderer: public StaticInterface<TImplementation>
     {
     public:
         void initialize()
@@ -158,11 +159,18 @@ namespace dory::openGL
     template<typename T>
     class RendererFactory;
 
+    template<typename TShaderService>
+    struct RendererDependencies
+    {
+        using ShaderServiceType = TShaderService;
+    };
+
     template<typename T>
-    class Renderer2: public IRenderer<Renderer2<typename T::ShaderServiceType>>
+    requires(is_instance_v<T, RendererDependencies>)
+    class Renderer2: public IRenderer<Renderer2<T>>
     {
     private:
-        using ShaderServiceType = services::IShaderService<typename T::ShaderService>;
+        using ShaderServiceType = services::IShaderService<typename T::ShaderServiceType>;
         ShaderServiceType& shaderService;
 
         TrianglesProgram trianglesProgram;
@@ -246,9 +254,7 @@ namespace dory::openGL
     class RendererFactory: public IServiceFactory<RendererFactory<T>>
     {
     private:
-        using RendererInterfaceType = IRenderer<Renderer2<typename T::ShaderServiceType>>;
-
-        using ShaderServiceType = services::IShaderService<typename T::ShaderService>;
+        using ShaderServiceType = services::IShaderService<typename T::ShaderServiceType>;
         ShaderServiceType& shaderService;
 
     public:
@@ -256,9 +262,9 @@ namespace dory::openGL
                 shaderService(shaderService)
         {}
 
-        RendererInterfaceType createInstanceImpl()
+        IRenderer<Renderer2<T>> createInstanceImpl()
         {
-            return static_cast<RendererInterfaceType>(Renderer2<T>{shaderService});
+            return Renderer2<T>{shaderService};
         }
     };
 }

@@ -22,7 +22,7 @@ namespace dory::domain
 
         std::optional<TEntity> get(TId id)
         {
-            return this->toImplementation()->getImpl();
+            return this->toImplementation()->getImpl(id);
         }
 
         TEntity store(TEntity&& entity)

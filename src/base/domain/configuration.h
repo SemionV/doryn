@@ -14,9 +14,9 @@ namespace dory::configuration
     class IConfiguration: Uncopyable, public StaticInterface<TImplementation>
     {
     public:
-        std::string getTextFileContent(const std::filesystem::path& filename, const std::function<void(ConfigurationError)>& errorHandler = nullptr) const
+        std::string getTextFileContent(const std::filesystem::path& filename, const std::function<void(ConfigurationError)>& errorHandler = nullptr)
         {
-            return this->toImplementation()->getTextFileContentImpl();
+            return this->toImplementation()->getTextFileContentImpl(filename, errorHandler);
         }
     };
 
@@ -30,7 +30,7 @@ namespace dory::configuration
                 configurationPath(std::move(configurationPath))
         {}
 
-        std::string getTextFileContentImpl(const std::filesystem::path& filename, const std::function<void(ConfigurationError)>& errorHandler = nullptr) const
+        std::string getTextFileContentImpl(const std::filesystem::path& filename, const std::function<void(ConfigurationError)>& errorHandler = nullptr)
         {
             auto path = configurationPath / filename.c_str();
 

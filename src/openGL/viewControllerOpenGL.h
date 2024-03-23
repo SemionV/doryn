@@ -75,13 +75,14 @@ namespace dory::openGL
     template<typename T>
     class ViewControllerFactory;
 
-    template<typename TDataContext, typename TRenderer, typename TViewRepository, typename TWindowRepository>
+    template<typename TDataContext, typename TRenderer, typename TViewRepository, typename TWindowRepository, typename TRendererFactory>
     struct ViewControllerDependencies
     {
         using DataContextType = TDataContext;
         using RendererType = TRenderer;
         using ViewRepositoryType = TViewRepository;
         using WindowRepositoryType = TWindowRepository;
+        using RendererFactoryType = TRendererFactory;
     };
 
     template<typename T>
@@ -90,7 +91,7 @@ namespace dory::openGL
     {
     private:
         using RendererType = IRenderer<typename T::RendererType>;
-        RendererType& renderer;
+        RendererType renderer;
 
         using ViewRepositoryType = domain::IEntityRepository<typename T::ViewRepositoryType, domain::entity::View, domain::entity::IdType>;
         ViewRepositoryType& viewRepository;
@@ -101,7 +102,7 @@ namespace dory::openGL
     public:
         using FactoryType = ViewControllerFactory<T>;
 
-        explicit ViewControllerOpenGL2(RendererType& renderer, ViewRepositoryType& viewRepository, WindowRepositoryType& windowRepository):
+        explicit ViewControllerOpenGL2(RendererType renderer, ViewRepositoryType& viewRepository, WindowRepositoryType& windowRepository):
                 renderer(renderer),
                 viewRepository(viewRepository),
                 windowRepository(windowRepository)
@@ -164,7 +165,7 @@ namespace dory::openGL
     private:
         using ControllerInterfaceType = domain::Controller2<typename T::DataContextType>;
 
-        using RendererFactoryType = IServiceFactory<typename T::RendererType>;
+        using RendererFactoryType = IServiceFactory<typename T::RendererFactoryType>;
         RendererFactoryType& rendererFactory;
 
         using ViewRepositoryType = domain::IEntityRepository<typename T::ViewRepositoryType, domain::entity::View, domain::entity::IdType>;

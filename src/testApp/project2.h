@@ -114,11 +114,11 @@ namespace testApp
         using WindowControllerFactoryType = dory::ServiceFactory<WindowControllerType, ControllerInterfaceType>;
         using PipelineManagerType = services::PipelineManager<TDataContext, ConsoleControllerFactoryType, WindowControllerFactoryType, PipelineRepositoryType>;
         using OpenGLShaderServiceType = dory::openGL::services::ShaderService2<ConfigurationServiceType>;
-        using OpenGLRendererType = dory::openGL::Renderer2<OpenGLShaderServiceType>;
-        using RendererFactoryType = dory::ServiceFactory<OpenGLRendererType, dory::openGL::IRenderer<OpenGLRendererType>>;
-        using OpenGLViewControllerType = dory::openGL::ViewControllerOpenGL2<
-                openGL::ViewControllerDependencies<TDataContext, OpenGLRendererType, ViewRepositoryType, WindowRepositoryType>>;
-        using OpenGLViewControllerFactoryType = OpenGLViewControllerType::FactoryType;
+        using RendererType = dory::openGL::Renderer2<openGL::RendererDependencies<OpenGLShaderServiceType>>;
+        using RendererFactoryType = RendererType::FactoryType;
+        using ViewControllerType = dory::openGL::ViewControllerOpenGL2<
+                openGL::ViewControllerDependencies<TDataContext, RendererType, ViewRepositoryType, WindowRepositoryType, RendererFactoryType>>;
+        using ViewControllerFactoryType = ViewControllerType::FactoryType;
 
         using EngineEventHubDispatcher = dory::Singleton<events::EngineEventHubDispatcher<TDataContext>>;
         using EngineEventHub = dory::Reference<EngineEventHubDispatcher, events::EngineEventHub<TDataContext>>;
@@ -135,19 +135,19 @@ namespace testApp
         using Engine = dory::Singleton<EngineType, domain::IEngine<EngineType, TDataContext>, DependencyList<EngineEventHubDispatcher, PipelineRepository>>;
         using FrameService = dory::Singleton<FrameServiceType, services::IFrameService<FrameServiceType, TDataContext>, DependencyList<Engine>>;
         using ConfigurationService = dory::Singleton<ConfigurationServiceType, dory::configuration::IConfiguration<ConfigurationServiceType>>;
-        using OpenGLShaderService = dory::Singleton<OpenGLShaderServiceType, dory::openGL::services::IShaderService<OpenGLShaderServiceType>, DependencyList<ConfigurationService>>;
+        using ShaderService = dory::Singleton<OpenGLShaderServiceType, dory::openGL::services::IShaderService<OpenGLShaderServiceType>, DependencyList<ConfigurationService>>;
 
         using ConsoleControllerFactory = dory::Singleton<ConsoleControllerFactoryType, dory::IServiceFactory<ConsoleControllerFactoryType>, DependencyList<ConsoleEventHubDispatcher>>;
         using WindowControllerFactory = dory::Singleton<WindowControllerFactoryType, dory::IServiceFactory<WindowControllerFactoryType>, DependencyList<WindowRepository, WindowEventHubDispatcher>>;
-        using RendererFactoryDep = dory::Singleton<RendererFactoryType, dory::IServiceFactory<RendererFactoryType>, DependencyList<OpenGLShaderService>>;
-        using OpenGLViewControllerFactory = dory::Singleton<OpenGLViewControllerFactoryType, dory::IServiceFactory<OpenGLViewControllerFactoryType>, DependencyList<RendererFactoryDep, ViewRepository, WindowRepository>>;
+        using RendererFactoryDep = dory::Singleton<RendererFactoryType, dory::IServiceFactory<RendererFactoryType>, DependencyList<ShaderService>>;
+        using ViewControllerFactory = dory::Singleton<ViewControllerFactoryType, dory::IServiceFactory<ViewControllerFactoryType>, DependencyList<RendererFactoryDep, ViewRepository, WindowRepository>>;
 
         using PipelineManager = dory::Singleton<PipelineManagerType, services::IPipelineManager<PipelineManagerType, TDataContext>,
             DependencyList<ConsoleControllerFactory, WindowControllerFactory, PipelineRepository>>;
 
         using ServiceContainerType = dory::ServiceContainer<
                 ConfigurationService,
-                OpenGLShaderService,
+                ShaderService,
                 EngineEventHubDispatcher,
                 EngineEventHub,
                 ConsoleEventHubDispatcher,
@@ -162,8 +162,8 @@ namespace testApp
                 FrameService,
                 ConsoleControllerFactory,
                 WindowControllerFactory,
-                OpenGLViewControllerFactory,
                 RendererFactoryDep,
+                ViewControllerFactory,
                 PipelineManager>;
     };
 
