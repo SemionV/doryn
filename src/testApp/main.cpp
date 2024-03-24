@@ -5,6 +5,7 @@
 #include "project.h"
 #include "projectDataContext.h"
 
+#include "registry.h"
 #include "project2.h"
 
 namespace testApp
@@ -24,11 +25,12 @@ namespace testApp
 
     int runProject2()
     {
-        auto services = ServiceDependencies<ProjectDataContext>::ServiceContainerType{};
-        auto context = ProjectDataContext{};
-        auto project = Project2(services);
+        using Services = ServiceDependencies<ProjectDataContext>;
 
-        project.run(context);
+        auto services = Services::ServiceContainerType{};
+        auto context = ProjectDataContext{};
+
+        services.get<Services::ProjectDep>().run(context);
 
         return 0;
     }
