@@ -14,6 +14,7 @@
 #include "openGL/viewControllerOpenGL.h"
 #include "openGL/services/shaderService.h"
 #include "openGL/renderer.h"
+#include "openGL/windowService.h"
 #include "project2.h"
 
 namespace dory
@@ -114,13 +115,15 @@ namespace testApp::registry
     using ConsoleEventHubType = events::SystemConsoleEventHub<DataContextType>;
     using WindowEventHubDispatcherType = events::WindowEventHubDispatcher<DataContextType>;
     using WindowEventHubType = events::WindowEventHub<DataContextType>;
+    using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<WindowRepositoryType >>;
     using ProjectType = testApp::Project2<testApp::ProjectDependencies<DataContextType,
             EngineType,
             FrameServiceType,
             EngineEventHubType,
             ConsoleEventHubType,
             WindowEventHubType,
-            PipelineManagerType>>;
+            PipelineManagerType,
+            WindowServiceType>>;
 
     using EngineEventHubDispatcherDep = dory::Singleton<EngineEventDispatcherType>;
     using EngineEventHubDep = dory::Reference<EngineEventHubDispatcherDep, EngineEventHubType>;
@@ -146,13 +149,15 @@ namespace testApp::registry
 
     using PipelineManagerDep = dory::Singleton<PipelineManagerType, services::IPipelineManager<PipelineManagerType, DataContextType>,
             dory::DependencyList<ConsoleControllerFactoryDep, WindowControllerFactoryDep, PipelineRepositoryDep>>;
+    using WindowServiceDep = dory::Singleton<WindowServiceType, services::IWindowService<WindowServiceType>, DependencyList<WindowRepositoryDep>>;
 
     using ProjectDep = dory::Singleton<ProjectType, ProjectType, dory::DependencyList<EngineDep,
             FrameServiceDep,
             EngineEventHubDep,
             ConsoleEventHubDep,
             WindowEventHubDep,
-            PipelineManagerDep>>;
+            PipelineManagerDep,
+            WindowServiceDep>>;
 
     using ServiceContainerType = dory::ServiceContainer<
             ConfigurationServiceDep,
@@ -174,5 +179,6 @@ namespace testApp::registry
             RendererFactoryDep,
             ViewControllerFactoryDep,
             PipelineManagerDep,
+            WindowServiceDep,
             ProjectDep>;
 }

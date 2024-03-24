@@ -12,7 +12,8 @@ namespace testApp
             typename TEngineEventHub,
             typename TConsoleEventHub,
             typename TWindowEventHub,
-            typename TPipelineManager>
+            typename TPipelineManager,
+            typename TWindowService>
     struct ProjectDependencies
     {
         using DataContextType = TDataContext;
@@ -22,6 +23,7 @@ namespace testApp
         using ConsoleEventHubType = TConsoleEventHub;
         using WindowEventHubType = TWindowEventHub;
         using PipelineManagerType = TPipelineManager;
+        using WindowServiceType = TWindowService;
     };
 
     template<typename T>
@@ -49,19 +51,24 @@ namespace testApp
         using PipelineManagerType = services::IPipelineManager<typename T::PipelineManagerType, DataContextType>;
         PipelineManagerType& pipelineManager;
 
+        using WindowServiceType = services::IWindowService<typename T::WindowServiceType>;
+        WindowServiceType& windowService;
+
     public:
         explicit Project2(EngineType& engine,
                           FrameServiceType& frameService,
                           EngineEventHubType& engineEventHub,
                           ConsoleEventHubType& consoleEventHub,
                           WindowEventHubType& windowEventHub,
-                          PipelineManagerType& pipelineManager):
+                          PipelineManagerType& pipelineManager,
+                          WindowServiceType& windowService):
             engine(engine),
             frameService(frameService),
             engineEventHub(engineEventHub),
             consoleEventHub(consoleEventHub),
             windowEventHub(windowEventHub),
-            pipelineManager(pipelineManager)
+            pipelineManager(pipelineManager),
+            windowService(windowService)
         {
             attachEventHandlers();
         }
@@ -86,6 +93,7 @@ namespace testApp
             std::cout << "Starting Engine..." << std::endl;
 
             pipelineManager.configurePipeline(context);
+            auto window = windowService.createWindow();
             //context.mainWindowId = newWindow(context);
         }
 

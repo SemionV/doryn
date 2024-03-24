@@ -1,0 +1,21 @@
+#pragma once
+
+#include "base/typeComponents.h"
+
+namespace dory::domain::services
+{
+    template<typename TImplementation>
+    class IWindowService: Uncopyable, public StaticInterface<TImplementation>
+    {
+    public:
+        auto createWindow()
+        {
+            return this->toImplementation()->createWindowImpl();
+        }
+
+        void createWindow(auto& window)
+        {
+            this->toImplementation()->createWindowImpl(window);
+        }
+    };
+}
