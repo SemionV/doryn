@@ -8,6 +8,7 @@
 #include "base/domain/entityRepository.h"
 #include "base/domain/engine.h"
 #include "base/domain/services/frameService.h"
+#include "base/domain/services/viewService.h"
 #include "win32/consoleController.h"
 #include "openGL/glfwWindow.h"
 #include "openGL/glfwWindowController.h"
@@ -31,6 +32,7 @@ namespace dory
         }
     };
 
+    //TODO: make inplace factory implementation next to the Controller
     template<typename TDataContext, typename TControllerInterface>
     class ServiceFactory<dory::win32::ConsoleController2<TDataContext>, TControllerInterface>:
             public IServiceFactory<ServiceFactory<dory::win32::ConsoleController2<TDataContext>, TControllerInterface>>
@@ -50,6 +52,7 @@ namespace dory
         }
     };
 
+    //TODO: make inplace factory implementation next to the Controller
     template<typename TDataContext, typename TControllerInterface, typename TWindowRepository>
     class ServiceFactory<dory::openGL::GlfwWindowController2<TDataContext, TWindowRepository>, TControllerInterface>:
             public IServiceFactory<ServiceFactory<dory::openGL::GlfwWindowController2<TDataContext, TWindowRepository>, TControllerInterface>>
@@ -116,6 +119,11 @@ namespace testApp::registry
     using WindowEventHubDispatcherType = events::WindowEventHubDispatcher<DataContextType>;
     using WindowEventHubType = events::WindowEventHub<DataContextType>;
     using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<WindowRepositoryType >>;
+    using ViewServiceType = services::ViewService<services::ViewServiceDependencies<DataContextType,
+                                                                                    ViewRepositoryType,
+                                                                                    PipelineRepositoryType,
+                                                                                    CameraRepositoryType,
+                                                                                    ViewControllerFactoryType>>;
     using ProjectType = testApp::Project2<testApp::ProjectDependencies<DataContextType,
             EngineType,
             FrameServiceType,
@@ -123,7 +131,8 @@ namespace testApp::registry
             ConsoleEventHubType,
             WindowEventHubType,
             PipelineManagerType,
-            WindowServiceType>>;
+            WindowServiceType,
+            ViewServiceType>>;
 
     using EngineEventHubDispatcherDep = dory::Singleton<EngineEventDispatcherType>;
     using EngineEventHubDep = dory::Reference<EngineEventHubDispatcherDep, EngineEventHubType>;
@@ -150,6 +159,7 @@ namespace testApp::registry
     using PipelineManagerDep = dory::Singleton<PipelineManagerType, services::IPipelineManager<PipelineManagerType, DataContextType>,
             dory::DependencyList<ConsoleControllerFactoryDep, WindowControllerFactoryDep, PipelineRepositoryDep>>;
     using WindowServiceDep = dory::Singleton<WindowServiceType, services::IWindowService<WindowServiceType>, DependencyList<WindowRepositoryDep>>;
+    using ViewServiceDep = dory::Singleton<ViewServiceType, services::IViewService<ViewServiceType, DataContextType>, DependencyList<ViewRepositoryDep, PipelineRepositoryDep, CameraRepositoryDep, ViewControllerFactoryDep>>;
 
     using ProjectDep = dory::Singleton<ProjectType, ProjectType, dory::DependencyList<EngineDep,
             FrameServiceDep,
@@ -157,7 +167,8 @@ namespace testApp::registry
             ConsoleEventHubDep,
             WindowEventHubDep,
             PipelineManagerDep,
-            WindowServiceDep>>;
+            WindowServiceDep,
+            ViewServiceDep>>;
 
     using ServiceContainerType = dory::ServiceContainer<
             ConfigurationServiceDep,
@@ -180,5 +191,6 @@ namespace testApp::registry
             ViewControllerFactoryDep,
             PipelineManagerDep,
             WindowServiceDep,
+            ViewServiceDep,
             ProjectDep>;
 }

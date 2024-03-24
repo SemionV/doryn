@@ -37,9 +37,16 @@ namespace dory::openGL
             return window;
         }
 
-        void closeWindowImpl(GlfwWindow& window)
+        void closeWindowImpl(domain::entity::IdType windowId)
         {
-            glfwDestroyWindow(window.handler);
+            auto window = windowRepository.get(windowId);
+
+            windowRepository.remove(windowId);
+
+            if(window)
+            {
+                glfwDestroyWindow(window->handler);
+            }
         }
     };
 }

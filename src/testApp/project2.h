@@ -3,6 +3,7 @@
 #include "base/domain/events/engineEventHub.h"
 #include "base/domain/engine.h"
 #include "base/domain/services/frameService.h"
+#include "base/domain/services/viewService.h"
 
 namespace testApp
 {
@@ -13,7 +14,8 @@ namespace testApp
             typename TConsoleEventHub,
             typename TWindowEventHub,
             typename TPipelineManager,
-            typename TWindowService>
+            typename TWindowService,
+            typename TViewService>
     struct ProjectDependencies
     {
         using DataContextType = TDataContext;
@@ -24,6 +26,7 @@ namespace testApp
         using WindowEventHubType = TWindowEventHub;
         using PipelineManagerType = TPipelineManager;
         using WindowServiceType = TWindowService;
+        using ViewServiceType = TViewService;
     };
 
     template<typename T>
@@ -54,6 +57,9 @@ namespace testApp
         using WindowServiceType = services::IWindowService<typename T::WindowServiceType>;
         WindowServiceType& windowService;
 
+        using ViewServiceType = services::IViewService<typename T::ViewServiceType, DataContextType>;
+        ViewServiceType& viewService;
+
     public:
         explicit Project2(EngineType& engine,
                           FrameServiceType& frameService,
@@ -61,14 +67,16 @@ namespace testApp
                           ConsoleEventHubType& consoleEventHub,
                           WindowEventHubType& windowEventHub,
                           PipelineManagerType& pipelineManager,
-                          WindowServiceType& windowService):
+                          WindowServiceType& windowService,
+                          ViewServiceType& viewService):
             engine(engine),
             frameService(frameService),
             engineEventHub(engineEventHub),
             consoleEventHub(consoleEventHub),
             windowEventHub(windowEventHub),
             pipelineManager(pipelineManager),
-            windowService(windowService)
+            windowService(windowService),
+            viewService(viewService)
         {
             attachEventHandlers();
         }
@@ -94,6 +102,7 @@ namespace testApp
 
             pipelineManager.configurePipeline(context);
             auto window = windowService.createWindow();
+            viewService.createView(context, window.id, context.outputGroupNodeId);
             //context.mainWindowId = newWindow(context);
         }
 
@@ -111,6 +120,7 @@ namespace testApp
             }
             else if(eventData.keyPressed == 119)
             {
+                windowService.createWindow();
                 //newWindow(context);
             }
             else if(eventData.keyPressed != 0)
@@ -121,7 +131,7 @@ namespace testApp
 
         void onCloseWindow(DataContextType& context, events::CloseWindowEventData& eventData)
         {
-
+            windowService.closeWindow(eventData.windowId);
         }
     };
 }

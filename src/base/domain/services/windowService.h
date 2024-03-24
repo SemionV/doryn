@@ -13,9 +13,9 @@ namespace dory::domain::services
             return this->toImplementation()->createWindowImpl();
         }
 
-        void createWindow(auto& window)
+        void closeWindow(entity::IdType windowId)
         {
-            this->toImplementation()->createWindowImpl(window);
+            this->toImplementation()->closeWindowImpl(windowId);
         }
     };
 }
