@@ -25,12 +25,10 @@ namespace testApp
 
     int runProject2()
     {
-        using Services = ServiceDependencies<ProjectDataContext>;
+        auto services = registry::ServiceContainerType{};
+        auto dataContext = registry::DataContextType{};
 
-        auto services = Services::ServiceContainerType{};
-        auto context = ProjectDataContext{};
-
-        services.get<Services::ProjectDep>().run(context);
+        services.get<registry::ProjectDep>().run(dataContext);
 
         return 0;
     }
