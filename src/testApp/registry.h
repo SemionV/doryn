@@ -193,4 +193,16 @@ namespace testApp::registry
             WindowServiceDep,
             ViewServiceDep,
             ProjectDep>;
+
+    class Services
+    {
+    public:
+        EngineEventDispatcherType engineEventDispatcher;
+        PipelineRepositoryType pipelineRepository;
+        EngineType engine = EngineType{ engineEventDispatcher, pipelineRepository };
+        FrameServiceType frameService = FrameServiceType{ engine };
+
+    public:
+
+    };
 }

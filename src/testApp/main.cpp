@@ -28,6 +28,9 @@ namespace testApp
         auto services = registry::ServiceContainerType{};
         auto dataContext = registry::DataContextType{};
 
+        auto serviceContainer = registry::Services{};
+        serviceContainer.frameService.startLoop(dataContext);
+
         services.get<registry::ProjectDep>().run(dataContext);
 
         return 0;
