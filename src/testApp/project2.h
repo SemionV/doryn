@@ -101,9 +101,10 @@ namespace testApp
             std::cout << "Starting Engine..." << std::endl;
 
             pipelineManager.configurePipeline(context);
+
             auto window = windowService.createWindow();
+            context.mainWindowId = window.id;
             viewService.createView(context, window.id, context.outputGroupNodeId);
-            //context.mainWindowId = newWindow(context);
         }
 
         void onStopEngine(DataContextType& context, const events::StopEngineEventData& eventData)
@@ -120,8 +121,8 @@ namespace testApp
             }
             else if(eventData.keyPressed == 119)
             {
-                windowService.createWindow();
-                //newWindow(context);
+                auto window = windowService.createWindow();
+                viewService.createView(context, window.id, context.outputGroupNodeId);
             }
             else if(eventData.keyPressed != 0)
             {
@@ -132,6 +133,12 @@ namespace testApp
         void onCloseWindow(DataContextType& context, events::CloseWindowEventData& eventData)
         {
             windowService.closeWindow(eventData.windowId);
+            viewService.destroyView(eventData.windowId);
+
+            if(eventData.windowId == context.mainWindowId)
+            {
+                frameService.endLoop();
+            }
         }
     };
 }

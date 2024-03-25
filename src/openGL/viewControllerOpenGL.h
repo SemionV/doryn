@@ -110,8 +110,6 @@ namespace dory::openGL
 
         bool initialize(domain::entity::IdType referenceId, T::DataContextType& context) override
         {
-            std::cout << "initialize: OpenGL Basic View" << std::endl;
-
             auto windowHandler = getWindowHandler(referenceId);
             if(windowHandler != nullptr)
             {

@@ -88,7 +88,17 @@ namespace dory::domain::services
 
         void destroyViewImpl(entity::IdType windowId)
         {
+            auto view = viewRepository.find([&windowId](const entity::View& view)
+            {
+                return view.windowId == windowId;
+            });
 
+            if(view)
+            {
+                pipelineRepository.remove(view->controllerNodeId);
+                cameraRepository.remove(view->cameraId);
+                viewRepository.remove(view->id);
+            }
         }
     };
 }
