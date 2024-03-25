@@ -262,7 +262,7 @@ namespace dory::openGL
                 shaderService(shaderService)
         {}
 
-        IRenderer<Renderer2<T>> createInstanceImpl()
+        auto createInstanceImpl()
         {
             return Renderer2<T>{shaderService};
         }

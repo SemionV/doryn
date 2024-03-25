@@ -103,8 +103,8 @@ namespace testApp::registry
     using ConsoleControllerFactoryType = dory::ServiceFactory<ConsoleControllerType, ControllerInterfaceType>;
     using WindowControllerFactoryType = dory::ServiceFactory<WindowControllerType, ControllerInterfaceType>;
     using PipelineManagerType = services::PipelineManager<DataContextType, ConsoleControllerFactoryType, WindowControllerFactoryType, PipelineRepositoryType>;
-    using OpenGLShaderServiceType = openGL::services::ShaderService2<ConfigurationServiceType>;
-    using RendererType = openGL::Renderer2<openGL::RendererDependencies<OpenGLShaderServiceType>>;
+    using ShaderServiceType = openGL::services::ShaderService2<ConfigurationServiceType>;
+    using RendererType = openGL::Renderer2<openGL::RendererDependencies<ShaderServiceType>>;
     using RendererFactoryType = RendererType::FactoryType;
     using ViewControllerType = openGL::ViewControllerOpenGL2<openGL::ViewControllerDependencies<DataContextType,
             RendererType,
@@ -149,7 +149,7 @@ namespace testApp::registry
     using EngineDep = dory::Singleton<EngineType, domain::IEngine<EngineType, DataContextType>, dory::DependencyList<EngineEventHubDispatcherDep, PipelineRepositoryDep>>;
     using FrameServiceDep = dory::Singleton<FrameServiceType, services::IFrameService<FrameServiceType, DataContextType>, dory::DependencyList<EngineDep>>;
     using ConfigurationServiceDep = dory::Singleton<ConfigurationServiceType, configuration::IConfiguration<ConfigurationServiceType>>;
-    using ShaderServiceDep = dory::Singleton<OpenGLShaderServiceType, openGL::services::IShaderService<OpenGLShaderServiceType>, dory::DependencyList<ConfigurationServiceDep>>;
+    using ShaderServiceDep = dory::Singleton<ShaderServiceType, openGL::services::IShaderService<ShaderServiceType>, dory::DependencyList<ConfigurationServiceDep>>;
 
     using ConsoleControllerFactoryDep = dory::Singleton<ConsoleControllerFactoryType, dory::IServiceFactory<ConsoleControllerFactoryType>, dory::DependencyList<ConsoleEventHubDispatcherDep>>;
     using WindowControllerFactoryDep = dory::Singleton<WindowControllerFactoryType, dory::IServiceFactory<WindowControllerFactoryType>, dory::DependencyList<WindowRepositoryDep, WindowEventHubDispatcherDep>>;

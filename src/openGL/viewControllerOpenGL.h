@@ -90,7 +90,7 @@ namespace dory::openGL
     class ViewControllerOpenGL2: public domain::Controller2<typename T::DataContextType>
     {
     private:
-        using RendererType = IRenderer<typename T::RendererType>;
+        using RendererType = T::RendererType;
         RendererType renderer;
 
         using ViewRepositoryType = domain::IEntityRepository<typename T::ViewRepositoryType, domain::entity::View, domain::entity::IdType>;
