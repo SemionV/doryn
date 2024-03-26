@@ -25,13 +25,10 @@ namespace testApp
 
     int runProject2()
     {
-        auto services = registry::ServiceContainerType{};
+        auto services = registry::ServicesLocal{};
         auto dataContext = registry::DataContextType{};
 
-        auto serviceContainer = registry::Services{};
-        serviceContainer.frameService.startLoop(dataContext);
-
-        services.get<registry::ProjectDep>().run(dataContext);
+        services.project.run(dataContext);
 
         return 0;
     }

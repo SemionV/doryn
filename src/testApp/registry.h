@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "base/serviceContainer.h"
 #include "base/domain/configuration.h"
 #include "base/domain/events/engineEventHub.h"
@@ -21,16 +23,6 @@
 namespace dory
 {
     namespace entity = dory::domain::entity;
-
-    template<>
-    struct ServiceInstantiator<dory::configuration::FileSystemBasedConfiguration2>
-    {
-        template<typename TServiceContainer>
-        static decltype(auto) createInstance(TServiceContainer& services)
-        {
-            return dory::configuration::FileSystemBasedConfiguration2{"configuration"};
-        }
-    };
 
     //TODO: make inplace factory implementation next to the Controller
     template<typename TDataContext, typename TControllerInterface>
@@ -134,75 +126,40 @@ namespace testApp::registry
             WindowServiceType,
             ViewServiceType>>;
 
-    using EngineEventHubDispatcherDep = dory::Singleton<EngineEventDispatcherType>;
-    using EngineEventHubDep = dory::Reference<EngineEventHubDispatcherDep, EngineEventHubType>;
-    using ConsoleEventHubDispatcherDep = dory::Singleton<ConsoleEventDispatcherType>;
-    using ConsoleEventHubDep = dory::Reference<ConsoleEventHubDispatcherDep, ConsoleEventHubType>;
-    using WindowEventHubDispatcherDep = dory::Singleton<WindowEventHubDispatcherType>;
-    using WindowEventHubDep = dory::Reference<WindowEventHubDispatcherDep, WindowEventHubType>;
-
-    using PipelineRepositoryDep = dory::Singleton<PipelineRepositoryType, services::IPipelineRepository<PipelineRepositoryType>>;
-    using CameraRepositoryDep = dory::Singleton<CameraRepositoryType, domain::IEntityRepository<CameraRepositoryType, entity::Camera, IdType>>;
-    using ViewRepositoryDep = dory::Singleton<ViewRepositoryType, domain::IEntityRepository<ViewRepositoryType, entity::View, IdType>>;
-    using WindowRepositoryDep = dory::Singleton<WindowRepositoryType, domain::IEntityRepository<WindowRepositoryType, dory::openGL::GlfwWindow, IdType>>;
-
-    using EngineDep = dory::Singleton<EngineType, domain::IEngine<EngineType, DataContextType>, dory::DependencyList<EngineEventHubDispatcherDep, PipelineRepositoryDep>>;
-    using FrameServiceDep = dory::Singleton<FrameServiceType, services::IFrameService<FrameServiceType, DataContextType>, dory::DependencyList<EngineDep>>;
-    using ConfigurationServiceDep = dory::Singleton<ConfigurationServiceType, configuration::IConfiguration<ConfigurationServiceType>>;
-    using ShaderServiceDep = dory::Singleton<ShaderServiceType, openGL::services::IShaderService<ShaderServiceType>, dory::DependencyList<ConfigurationServiceDep>>;
-
-    using ConsoleControllerFactoryDep = dory::Singleton<ConsoleControllerFactoryType, dory::IServiceFactory<ConsoleControllerFactoryType>, dory::DependencyList<ConsoleEventHubDispatcherDep>>;
-    using WindowControllerFactoryDep = dory::Singleton<WindowControllerFactoryType, dory::IServiceFactory<WindowControllerFactoryType>, dory::DependencyList<WindowRepositoryDep, WindowEventHubDispatcherDep>>;
-    using RendererFactoryDep = dory::Singleton<RendererFactoryType, dory::IServiceFactory<RendererFactoryType>, dory::DependencyList<ShaderServiceDep>>;
-    using ViewControllerFactoryDep = dory::Singleton<ViewControllerFactoryType, dory::IServiceFactory<ViewControllerFactoryType>, dory::DependencyList<RendererFactoryDep, ViewRepositoryDep, WindowRepositoryDep>>;
-
-    using PipelineManagerDep = dory::Singleton<PipelineManagerType, services::IPipelineManager<PipelineManagerType, DataContextType>,
-            dory::DependencyList<ConsoleControllerFactoryDep, WindowControllerFactoryDep, PipelineRepositoryDep>>;
-    using WindowServiceDep = dory::Singleton<WindowServiceType, services::IWindowService<WindowServiceType>, DependencyList<WindowRepositoryDep>>;
-    using ViewServiceDep = dory::Singleton<ViewServiceType, services::IViewService<ViewServiceType, DataContextType>, DependencyList<ViewRepositoryDep, PipelineRepositoryDep, CameraRepositoryDep, ViewControllerFactoryDep>>;
-
-    using ProjectDep = dory::Singleton<ProjectType, ProjectType, dory::DependencyList<EngineDep,
-            FrameServiceDep,
-            EngineEventHubDep,
-            ConsoleEventHubDep,
-            WindowEventHubDep,
-            PipelineManagerDep,
-            WindowServiceDep,
-            ViewServiceDep>>;
-
-    using ServiceContainerType = dory::ServiceContainer<
-            ConfigurationServiceDep,
-            ShaderServiceDep,
-            EngineEventHubDispatcherDep,
-            EngineEventHubDep,
-            ConsoleEventHubDispatcherDep,
-            ConsoleEventHubDep,
-            WindowEventHubDispatcherDep,
-            WindowEventHubDep,
-            PipelineRepositoryDep,
-            CameraRepositoryDep,
-            ViewRepositoryDep,
-            WindowRepositoryDep,
-            EngineDep,
-            FrameServiceDep,
-            ConsoleControllerFactoryDep,
-            WindowControllerFactoryDep,
-            RendererFactoryDep,
-            ViewControllerFactoryDep,
-            PipelineManagerDep,
-            WindowServiceDep,
-            ViewServiceDep,
-            ProjectDep>;
-
     class Services
     {
     public:
         EngineEventDispatcherType engineEventDispatcher;
+        ConsoleEventDispatcherType consoleEventDispatcher;
+        WindowEventHubDispatcherType windowEventDispatcher;
         PipelineRepositoryType pipelineRepository;
+        CameraRepositoryType cameraRepository;
+        ViewRepositoryType viewRepository;
+        WindowRepositoryType windowRepository;
         EngineType engine = EngineType{ engineEventDispatcher, pipelineRepository };
         FrameServiceType frameService = FrameServiceType{ engine };
+        std::string configurationPath;
+        ConfigurationServiceType configurationService = ConfigurationServiceType{ configurationPath };
+        ShaderServiceType shaderService = ShaderServiceType{ configurationService };
+        ConsoleControllerFactoryType consoleControllerFactory = ConsoleControllerFactoryType{ consoleEventDispatcher };
+        WindowControllerFactoryType windowControllerFactory = WindowControllerFactoryType {windowRepository, windowEventDispatcher};
+        RendererFactoryType rendererFactory = RendererFactoryType { shaderService };
+        ViewControllerFactoryType viewControllerFactory = ViewControllerFactoryType{ rendererFactory, viewRepository, windowRepository };
+        PipelineManagerType pipelineManager = PipelineManagerType{ consoleControllerFactory, windowControllerFactory, pipelineRepository };
+        WindowServiceType windowService = WindowServiceType{ windowRepository };
+        ViewServiceType viewService = ViewServiceType{ viewRepository, pipelineRepository, cameraRepository, viewControllerFactory };
+        ProjectType project = ProjectType{ engine, frameService, engineEventDispatcher, consoleEventDispatcher, windowEventDispatcher, pipelineManager, windowService, viewService };
 
+        explicit Services(std::string configurationPath):
+                configurationPath(std::move(configurationPath))
+        {}
+    };
+
+    class ServicesLocal: public Services
+    {
     public:
-
+        ServicesLocal():
+                Services("configuration")
+        {}
     };
 }
