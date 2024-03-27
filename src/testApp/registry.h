@@ -17,7 +17,6 @@
 #include "openGL/services/shaderService.h"
 #include "openGL/renderer.h"
 #include "openGL/windowService.h"
-#include "project.h"
 #include "projectDataContext.h"
 
 namespace testApp::registry
@@ -64,22 +63,16 @@ namespace testApp::registry
                                                                                     PipelineRepositoryType,
                                                                                     CameraRepositoryType,
                                                                                     ViewControllerFactoryType>>;
-    using ProjectType = testApp::Project<testApp::ProjectDependencies<DataContextType,
-            EngineType,
-            FrameServiceType,
-            EngineEventHubType,
-            ConsoleEventHubType,
-            WindowEventHubType,
-            PipelineManagerType,
-            WindowServiceType,
-            ViewServiceType>>;
 
     class Services
     {
     public:
         EngineEventDispatcherType engineEventDispatcher;
+        EngineEventHubType& engineEventHub = engineEventDispatcher;
         ConsoleEventDispatcherType consoleEventDispatcher;
+        ConsoleEventHubType& consoleEventHub = consoleEventDispatcher;
         WindowEventHubDispatcherType windowEventDispatcher;
+        WindowEventHubType& windowEventHub = windowEventDispatcher;
         PipelineRepositoryType pipelineRepository;
         CameraRepositoryType cameraRepository;
         ViewRepositoryType viewRepository;
@@ -96,7 +89,6 @@ namespace testApp::registry
         PipelineManagerType pipelineManager = PipelineManagerType{ consoleControllerFactory, windowControllerFactory, pipelineRepository };
         WindowServiceType windowService = WindowServiceType{ windowRepository };
         ViewServiceType viewService = ViewServiceType{ viewRepository, pipelineRepository, cameraRepository, viewControllerFactory };
-        ProjectType project = ProjectType{ engine, frameService, engineEventDispatcher, consoleEventDispatcher, windowEventDispatcher, pipelineManager, windowService, viewService };
 
         explicit Services(std::string configurationPath):
                 configurationPath(std::move(configurationPath))
