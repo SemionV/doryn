@@ -36,7 +36,7 @@ namespace testApp::registry
     using WindowRepositoryType = domain::EntityRepository<openGL::GlfwWindow>;
     using PipelineRepositoryType = domain::services::PipelineRepository<entity::PipelineNode>;
     using EngineType = domain::Engine<DataContextType, PipelineRepositoryType>;
-    using FrameServiceType = services::BasicFrameService<DataContextType, EngineType>;
+    using FrameServiceType = services::BasicFrameService;
     using ConsoleControllerType = win32::ConsoleController<DataContextType>;
     using WindowControllerType = openGL::GlfwWindowController<DataContextType, WindowRepositoryType>;
     using ConsoleControllerFactoryType = ConsoleControllerType::FactoryType;
@@ -77,8 +77,6 @@ namespace testApp::registry
         CameraRepositoryType cameraRepository;
         ViewRepositoryType viewRepository;
         WindowRepositoryType windowRepository;
-        EngineType engine = EngineType{ engineEventDispatcher, pipelineRepository };
-        FrameServiceType frameService = FrameServiceType{ engine };
         std::string configurationPath;
         ConfigurationServiceType configurationService = ConfigurationServiceType{ configurationPath };
         ShaderServiceType shaderService = ShaderServiceType{ configurationService };

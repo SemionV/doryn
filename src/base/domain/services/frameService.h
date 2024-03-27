@@ -6,13 +6,14 @@
 
 namespace dory::domain::services
 {
-    template<typename TImplementation, typename TDataContext>
+    template<typename TImplementation>
     class IFrameService: Uncopyable, public StaticInterface<TImplementation>
     {
     public:
-        void startLoop(TDataContext& context)
+        template<typename TDataContext, typename TEngine>
+        void startLoop(TDataContext& context, IEngine<TEngine, TDataContext>& engine)
         {
-            this->toImplementation()->startLoopImpl(context);
+            this->toImplementation()->startLoopImpl(context, engine);
         }
 
         void endLoop()
@@ -21,22 +22,18 @@ namespace dory::domain::services
         }
     };
 
-    template<class TDataContext, typename TEngine>
-    class BasicFrameService: public IFrameService<BasicFrameService<TDataContext, TEngine>, TDataContext>
+    class BasicFrameService: public IFrameService<BasicFrameService>
     {
     private:
         bool isStop = false;
 
-        using EngineType = IEngine<TEngine, TDataContext>;
-        EngineType& engine;
-
     public:
-        explicit BasicFrameService(EngineType& engine):
-                engine(engine)
-        {}
 
-        void startLoopImpl(TDataContext& context)
+        template<typename TDataContext, typename TEngine>
+        void startLoopImpl(TDataContext& context, IEngine<TEngine, TDataContext>& engine)
         {
+            engine.initialize(context);
+
             isStop = false;
             TimeSpan timeStep(UnitScale::Nano);
 

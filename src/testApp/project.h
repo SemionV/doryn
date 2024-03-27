@@ -11,6 +11,7 @@ namespace testApp
     private:
         using DataContextType = typename registry::DataContextType;
         registry::ServicesLocal services;
+        registry::FrameServiceType frameService;
 
     public:
         int run()
@@ -18,9 +19,9 @@ namespace testApp
             attachEventHandlers();
 
             DataContextType context;
-
-            services.engine.initialize(context);
-            services.frameService.startLoop(context);
+            auto engine = registry::EngineType { services.engineEventDispatcher, services.pipelineRepository };
+            
+            frameService.startLoop(context, engine);
 
             return 0;
         }
@@ -54,7 +55,7 @@ namespace testApp
         {
             if(eventData.keyPressed == 27)
             {
-                services.frameService.endLoop();
+                frameService.endLoop();
                 std::cout << std::this_thread::get_id() << ": ESC" << std::endl;
             }
             else if(eventData.keyPressed == 119)
@@ -75,7 +76,7 @@ namespace testApp
 
             if(eventData.windowId == context.mainWindowId)
             {
-                services.frameService.endLoop();
+                frameService.endLoop();
             }
         }
     };
