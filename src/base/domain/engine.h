@@ -29,15 +29,15 @@ namespace dory::domain
     };
 
     template<typename TDataContext, typename TPipelineRepository>
-    class Engine2: public IEngine<Engine2<TDataContext, TPipelineRepository>, TDataContext>
+    class Engine: public IEngine<Engine<TDataContext, TPipelineRepository>, TDataContext>
     {
     private:
         events::EngineEventHubDispatcher<TDataContext>& engineEventHub;
         services::IPipelineRepository<TPipelineRepository>& pipelineRepository;
 
     public:
-        explicit Engine2(events::EngineEventHubDispatcher<TDataContext>& engineEventHub,
-                         services::IPipelineRepository<TPipelineRepository>& pipelineRepository):
+        explicit Engine(events::EngineEventHubDispatcher<TDataContext>& engineEventHub,
+                        services::IPipelineRepository<TPipelineRepository>& pipelineRepository):
                 engineEventHub(engineEventHub),
                 pipelineRepository(pipelineRepository)
         {}
@@ -51,7 +51,7 @@ namespace dory::domain
                 auto controller = node->nodeEntity.attachedController;
                 if(controller)
                 {
-                    std::static_pointer_cast<Controller2<TDataContext>>(controller)->update(node->nodeEntity.id, timeStep, context);
+                    std::static_pointer_cast<Controller<TDataContext>>(controller)->update(node->nodeEntity.id, timeStep, context);
                 }
             }, timeStep);
         }

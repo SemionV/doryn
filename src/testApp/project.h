@@ -40,7 +40,7 @@ namespace testApp
 
     template<typename T>
     requires(dory::is_instance_v<T, ProjectDependencies>)
-    class Project2: dory::Uncopyable
+    class Project: dory::Uncopyable
     {
     private:
         using DataContextType = typename T::DataContextType;
@@ -70,14 +70,14 @@ namespace testApp
         ViewServiceType& viewService;
 
     public:
-        explicit Project2(EngineType& engine,
-                          FrameServiceType& frameService,
-                          EngineEventHubType& engineEventHub,
-                          ConsoleEventHubType& consoleEventHub,
-                          WindowEventHubType& windowEventHub,
-                          PipelineManagerType& pipelineManager,
-                          WindowServiceType& windowService,
-                          ViewServiceType& viewService):
+        explicit Project(EngineType& engine,
+                         FrameServiceType& frameService,
+                         EngineEventHubType& engineEventHub,
+                         ConsoleEventHubType& consoleEventHub,
+                         WindowEventHubType& windowEventHub,
+                         PipelineManagerType& pipelineManager,
+                         WindowServiceType& windowService,
+                         ViewServiceType& viewService):
             engine(engine),
             frameService(frameService),
             engineEventHub(engineEventHub),
@@ -99,10 +99,10 @@ namespace testApp
     private:
         void attachEventHandlers()
         {
-            engineEventHub.onInitializeEngine().attachHandler(this, &Project2::onInitializeEngine);
-            engineEventHub.onStopEngine().attachHandler(this, &Project2::onStopEngine);
-            consoleEventHub.onKeyPressed().attachHandler(this, &Project2::onConsoleKeyPressed);
-            windowEventHub.onCloseWindow().attachHandler(this, &Project2::onCloseWindow);
+            engineEventHub.onInitializeEngine().attachHandler(this, &Project::onInitializeEngine);
+            engineEventHub.onStopEngine().attachHandler(this, &Project::onStopEngine);
+            consoleEventHub.onKeyPressed().attachHandler(this, &Project::onConsoleKeyPressed);
+            windowEventHub.onCloseWindow().attachHandler(this, &Project::onCloseWindow);
         }
 
         void onInitializeEngine(DataContextType& context, const events::InitializeEngineEventData& eventData)

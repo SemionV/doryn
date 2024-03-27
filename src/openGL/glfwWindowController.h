@@ -7,7 +7,10 @@
 namespace dory::openGL
 {
     template<class TDataContext, typename TWindowRepository>
-    class GlfwWindowController2: public domain::Controller2<TDataContext>
+    class GlfwWindowControllerFactory;
+
+    template<class TDataContext, typename TWindowRepository>
+    class GlfwWindowController: public domain::Controller<TDataContext>
     {
     private:
         using WindowRepositoryType = domain::IEntityRepository<TWindowRepository, openGL::GlfwWindow, domain::entity::IdType>;
@@ -17,8 +20,10 @@ namespace dory::openGL
         WindowEventHubType& windowEventHubDispatcher;
 
     public:
-        explicit GlfwWindowController2(WindowRepositoryType& windowRepository,
-                                       WindowEventHubType& windowEventHubDispatcher):
+        using FactoryType = GlfwWindowControllerFactory<TDataContext, TWindowRepository>;
+
+        explicit GlfwWindowController(WindowRepositoryType& windowRepository,
+                                      WindowEventHubType& windowEventHubDispatcher):
                 windowRepository(windowRepository),
                 windowEventHubDispatcher(windowEventHubDispatcher)
         {}
@@ -47,6 +52,31 @@ namespace dory::openGL
             });
 
             windowEventHubDispatcher.submit(context);
+        }
+    };
+
+    template<class TDataContext, typename TWindowRepository>
+    class GlfwWindowControllerFactory: public IServiceFactory<GlfwWindowControllerFactory<TDataContext, TWindowRepository>>
+    {
+    private:
+        using ControllerInterfaceType = domain::Controller<TDataContext>;
+
+        using WindowRepositoryType = domain::IEntityRepository<TWindowRepository, openGL::GlfwWindow, domain::entity::IdType>;
+        WindowRepositoryType& windowRepository;
+
+        using WindowEventHubType = domain::events::WindowEventHubDispatcher<TDataContext>;
+        WindowEventHubType& windowEventHubDispatcher;
+
+    public:
+        explicit GlfwWindowControllerFactory(WindowRepositoryType& windowRepository,
+                                             WindowEventHubType& windowEventHubDispatcher):
+                windowRepository(windowRepository),
+                windowEventHubDispatcher(windowEventHubDispatcher)
+        {}
+
+        std::shared_ptr<ControllerInterfaceType> createInstanceImpl()
+        {
+            return std::static_pointer_cast<ControllerInterfaceType>(std::make_shared<GlfwWindowController<TDataContext, TWindowRepository>>(windowRepository, windowEventHubDispatcher));
         }
     };
 }

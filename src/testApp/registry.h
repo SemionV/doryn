@@ -1,11 +1,11 @@
 #pragma once
 
-#include <utility>
+#include "dependencies.h"
+
 #include "base/serviceContainer.h"
 #include "base/domain/configuration.h"
 #include "base/domain/events/engineEventHub.h"
 #include "base/domain/entity.h"
-#include "base/domain/idFactory.h"
 #include "base/domain/entityRepository.h"
 #include "base/domain/engine.h"
 #include "base/domain/services/frameService.h"
@@ -20,56 +20,6 @@
 #include "project.h"
 #include "projectDataContext.h"
 
-namespace dory
-{
-    namespace entity = dory::domain::entity;
-
-    //TODO: make inplace factory implementation next to the Controller
-    template<typename TDataContext, typename TControllerInterface>
-    class ServiceFactory<dory::win32::ConsoleController2<TDataContext>, TControllerInterface>:
-            public IServiceFactory<ServiceFactory<dory::win32::ConsoleController2<TDataContext>, TControllerInterface>>
-    {
-    private:
-        using ConsoleEventDispatcherType = dory::domain::events::SystemConsoleEventHubDispatcher<TDataContext>;
-        ConsoleEventDispatcherType& consoleEventDispatcher;
-
-    public:
-        explicit ServiceFactory(ConsoleEventDispatcherType& consoleEventDispatcher):
-                consoleEventDispatcher(consoleEventDispatcher)
-        {}
-
-        std::shared_ptr<TControllerInterface> createInstanceImpl()
-        {
-            return std::static_pointer_cast<TControllerInterface>(std::make_shared<dory::win32::ConsoleController2<TDataContext>>(consoleEventDispatcher));
-        }
-    };
-
-    //TODO: make inplace factory implementation next to the Controller
-    template<typename TDataContext, typename TControllerInterface, typename TWindowRepository>
-    class ServiceFactory<dory::openGL::GlfwWindowController2<TDataContext, TWindowRepository>, TControllerInterface>:
-            public IServiceFactory<ServiceFactory<dory::openGL::GlfwWindowController2<TDataContext, TWindowRepository>, TControllerInterface>>
-    {
-    private:
-        using WindowRepositoryType = domain::IEntityRepository<TWindowRepository, openGL::GlfwWindow, entity::IdType>;
-        WindowRepositoryType& windowRepository;
-
-        using WindowEventHubType = domain::events::WindowEventHubDispatcher<TDataContext>;
-        WindowEventHubType& windowEventHubDispatcher;
-
-    public:
-        explicit ServiceFactory(WindowRepositoryType& windowRepository, WindowEventHubType& windowEventHubDispatcher):
-                windowRepository(windowRepository),
-                windowEventHubDispatcher(windowEventHubDispatcher)
-        {}
-
-        std::shared_ptr<TControllerInterface> createInstanceImpl()
-        {
-            return std::static_pointer_cast<TControllerInterface>(
-                    std::make_shared<dory::openGL::GlfwWindowController2<TDataContext, TWindowRepository>>(windowRepository, windowEventHubDispatcher));
-        }
-    };
-}
-
 namespace testApp::registry
 {
     namespace domain = dory::domain;
@@ -81,24 +31,22 @@ namespace testApp::registry
     namespace win32 = dory::win32;
 
     using DataContextType = ProjectDataContext;
-    using IdType = entity::IdType;
-    using ConfigurationServiceType = configuration::FileSystemBasedConfiguration2;
-    using CameraRepositoryType = domain::EntityRepository2<entity::Camera, IdType>;
-    using ViewRepositoryType = domain::EntityRepository2<entity::View, IdType>;
-    using WindowRepositoryType = domain::EntityRepository2<openGL::GlfwWindow, IdType>;
-    using PipelineRepositoryType = domain::services::PipelineRepository<entity::PipelineNode, IdType>;
-    using EngineType = domain::Engine2<DataContextType, PipelineRepositoryType>;
-    using FrameServiceType = services::BasicFrameService2<DataContextType, EngineType>;
-    using ControllerInterfaceType = domain::Controller2<DataContextType>;
-    using ConsoleControllerType = win32::ConsoleController2<DataContextType>;
-    using WindowControllerType = openGL::GlfwWindowController2<DataContextType, WindowRepositoryType>;
-    using ConsoleControllerFactoryType = dory::ServiceFactory<ConsoleControllerType, ControllerInterfaceType>;
-    using WindowControllerFactoryType = dory::ServiceFactory<WindowControllerType, ControllerInterfaceType>;
+    using ConfigurationServiceType = configuration::FileSystemBasedConfiguration;
+    using CameraRepositoryType = domain::EntityRepository<entity::Camera>;
+    using ViewRepositoryType = domain::EntityRepository<entity::View>;
+    using WindowRepositoryType = domain::EntityRepository<openGL::GlfwWindow>;
+    using PipelineRepositoryType = domain::services::PipelineRepository<entity::PipelineNode>;
+    using EngineType = domain::Engine<DataContextType, PipelineRepositoryType>;
+    using FrameServiceType = services::BasicFrameService<DataContextType, EngineType>;
+    using ConsoleControllerType = win32::ConsoleController<DataContextType>;
+    using WindowControllerType = openGL::GlfwWindowController<DataContextType, WindowRepositoryType>;
+    using ConsoleControllerFactoryType = ConsoleControllerType::FactoryType;
+    using WindowControllerFactoryType = WindowControllerType::FactoryType;
     using PipelineManagerType = services::PipelineManager<DataContextType, ConsoleControllerFactoryType, WindowControllerFactoryType, PipelineRepositoryType>;
-    using ShaderServiceType = openGL::services::ShaderService2<ConfigurationServiceType>;
-    using RendererType = openGL::Renderer2<openGL::RendererDependencies<ShaderServiceType>>;
+    using ShaderServiceType = openGL::services::ShaderService<ConfigurationServiceType>;
+    using RendererType = openGL::Renderer<openGL::RendererDependencies<ShaderServiceType>>;
     using RendererFactoryType = RendererType::FactoryType;
-    using ViewControllerType = openGL::ViewControllerOpenGL2<openGL::ViewControllerDependencies<DataContextType,
+    using ViewControllerType = openGL::ViewControllerOpenGL<openGL::ViewControllerDependencies<DataContextType,
             RendererType,
             ViewRepositoryType,
             WindowRepositoryType,
@@ -116,7 +64,7 @@ namespace testApp::registry
                                                                                     PipelineRepositoryType,
                                                                                     CameraRepositoryType,
                                                                                     ViewControllerFactoryType>>;
-    using ProjectType = testApp::Project2<testApp::ProjectDependencies<DataContextType,
+    using ProjectType = testApp::Project<testApp::ProjectDependencies<DataContextType,
             EngineType,
             FrameServiceType,
             EngineEventHubType,

@@ -23,7 +23,7 @@ namespace dory::openGL
 
     template<typename T>
     requires(is_instance_v<T, ViewControllerDependencies>)
-    class ViewControllerOpenGL2: public domain::Controller2<typename T::DataContextType>
+    class ViewControllerOpenGL: public domain::Controller<typename T::DataContextType>
     {
     private:
         using RendererType = T::RendererType;
@@ -38,7 +38,7 @@ namespace dory::openGL
     public:
         using FactoryType = ViewControllerFactory<T>;
 
-        explicit ViewControllerOpenGL2(RendererType renderer, ViewRepositoryType& viewRepository, WindowRepositoryType& windowRepository):
+        explicit ViewControllerOpenGL(RendererType renderer, ViewRepositoryType& viewRepository, WindowRepositoryType& windowRepository):
                 renderer(renderer),
                 viewRepository(viewRepository),
                 windowRepository(windowRepository)
@@ -97,7 +97,7 @@ namespace dory::openGL
     class ViewControllerFactory: public IServiceFactory<ViewControllerFactory<T>>
     {
     private:
-        using ControllerInterfaceType = domain::Controller2<typename T::DataContextType>;
+        using ControllerInterfaceType = domain::Controller<typename T::DataContextType>;
 
         using RendererFactoryType = IServiceFactory<typename T::RendererFactoryType>;
         RendererFactoryType& rendererFactory;
@@ -117,7 +117,7 @@ namespace dory::openGL
 
         std::shared_ptr<ControllerInterfaceType> createInstanceImpl()
         {
-            return std::static_pointer_cast<ControllerInterfaceType>(std::make_shared<ViewControllerOpenGL2<T>>
+            return std::static_pointer_cast<ControllerInterfaceType>(std::make_shared<ViewControllerOpenGL<T>>
                 (rendererFactory.createInstance(), viewRepository, windowRepository));
         }
     };

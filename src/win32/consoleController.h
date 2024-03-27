@@ -5,8 +5,11 @@
 
 namespace dory::win32
 {
+    template<typename TDataContext>
+    class ConsoleControllerFactory;
+
     template<class TDataContext>
-    class ConsoleController2: public domain::Controller2<TDataContext>
+    class ConsoleController: public domain::Controller<TDataContext>
     {
     private:
         concurrency::IndividualProcessThread processThread;
@@ -15,7 +18,9 @@ namespace dory::win32
         EventHubDispatcherType& consoleEventHub;
 
     public:
-        explicit ConsoleController2(EventHubDispatcherType& consoleEventHub):
+        using FactoryType = ConsoleControllerFactory<TDataContext>;
+
+        explicit ConsoleController(EventHubDispatcherType& consoleEventHub):
                 consoleEventHub(consoleEventHub)
         {}
 
@@ -88,6 +93,26 @@ namespace dory::win32
             std::cerr.clear();
             std::wcin.clear();
             std::cin.clear();
+        }
+    };
+
+    template<typename TDataContext>
+    class ConsoleControllerFactory: public IServiceFactory<ConsoleControllerFactory<TDataContext>>
+    {
+    private:
+        using ControllerInterfaceType = domain::Controller<TDataContext>;
+
+        using EventHubDispatcherType = domain::events::SystemConsoleEventHubDispatcher<TDataContext>;
+        EventHubDispatcherType& consoleEventHub;
+
+    public:
+        explicit ConsoleControllerFactory(EventHubDispatcherType& consoleEventHub):
+                consoleEventHub(consoleEventHub)
+        {}
+
+        std::shared_ptr<ControllerInterfaceType> createInstanceImpl()
+        {
+            return std::static_pointer_cast<ControllerInterfaceType>(std::make_shared<ConsoleController<TDataContext>>(consoleEventHub));
         }
     };
 }

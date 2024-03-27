@@ -1,12 +1,12 @@
 #pragma once
 
 #include "base/dependencies.h"
-#include "idFactory.h"
 #include "base/typeComponents.h"
+#include "base/domain/entity.h"
 
 namespace dory::domain
 {
-    template<typename TImpelementation, typename TEntity, typename TId>
+    template<typename TImpelementation, typename TEntity, typename TId = entity::IdType>
     class IEntityRepository: Uncopyable, public StaticInterface<TImpelementation>
     {
     public:
@@ -53,17 +53,17 @@ namespace dory::domain
         }
     };
 
-    template<typename TEntity, typename TId, template<typename T> class TContainer = std::vector>
-    class EntityRepository2: public IEntityRepository<EntityRepository2<TEntity, TId, TContainer>, TEntity, TId>
+    template<typename TEntity, typename TId = entity::IdType, template<typename T> class TContainer = std::vector>
+    class EntityRepository: public IEntityRepository<EntityRepository<TEntity, TId, TContainer>, TEntity, TId>
     {
     private:
         TContainer<TEntity> container;
         TId counter;
 
     public:
-        EntityRepository2() = default;
+        EntityRepository() = default;
 
-        EntityRepository2(std::initializer_list<TEntity>&& entities):
+        EntityRepository(std::initializer_list<TEntity>&& entities):
                 container(std::move(entities))
         {}
 
@@ -124,83 +124,6 @@ namespace dory::domain
 
         template<typename F>
         std::optional<TEntity> findImpl(F&& predicate)
-        {
-            auto position = std::ranges::find_if(container, predicate);
-            if(position != container.end())
-            {
-                return *position;
-            }
-
-            return {};
-        }
-    };
-
-    template<typename TEntity, template<typename T> class TContainer = std::vector>
-    class EntityRepository: Uncopyable
-    {
-    private:
-        TContainer<TEntity> container;
-
-    public:
-        EntityRepository() = default;
-
-        EntityRepository(std::initializer_list<TEntity>&& entities):
-            container(std::move(entities))
-        {}
-
-        std::size_t count()
-        {
-            return std::size(container);
-        }
-
-        template<class TId>
-        std::optional<TEntity> get(TId id)
-        {
-            auto position = std::ranges::find(container, id, &TEntity::id);
-            if(position != container.end())
-            {
-                return *position;
-            }
-
-            return {};
-        }
-
-        TEntity store(TEntity&& entity)
-        {
-            return container.emplace_back(std::move(entity));
-        }
-
-        void store(TEntity& entity)
-        {
-            auto position = std::ranges::find(container, entity.id, &std::remove_reference_t<TEntity>::id);
-            if(position != container.end()) //update
-            {
-                *position = entity;
-            }
-            else //create
-            {
-                container.push_back(entity);
-            }
-        }
-
-        template<class TId>
-        void remove(TId id)
-        {
-            auto position = std::ranges::find(container, id, &TEntity::id);
-            if(position != container.end())
-            {
-                container.erase(position);
-            }
-        }
-
-        template<typename F>
-        void forEach(F&& functor)
-        {
-            std::ranges::for_each(container, std::forward<F>(functor));
-        }
-
-        template<typename F>
-        std::optional<TEntity> find(F&& predicate)
         {
             auto position = std::ranges::find_if(container, predicate);
             if(position != container.end())

@@ -22,7 +22,7 @@ namespace dory::domain::services
     };
 
     template<class TDataContext, typename TEngine>
-    class BasicFrameService2: public IFrameService<BasicFrameService2<TDataContext, TEngine>, TDataContext>
+    class BasicFrameService: public IFrameService<BasicFrameService<TDataContext, TEngine>, TDataContext>
     {
     private:
         bool isStop = false;
@@ -31,7 +31,7 @@ namespace dory::domain::services
         EngineType& engine;
 
     public:
-        explicit BasicFrameService2(EngineType& engine):
+        explicit BasicFrameService(EngineType& engine):
                 engine(engine)
         {}
 

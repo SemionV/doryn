@@ -20,13 +20,13 @@ namespace dory::configuration
         }
     };
 
-    class FileSystemBasedConfiguration2: public IConfiguration<FileSystemBasedConfiguration2>
+    class FileSystemBasedConfiguration: public IConfiguration<FileSystemBasedConfiguration>
     {
     private:
         const std::filesystem::path configurationPath;
 
     public:
-        explicit FileSystemBasedConfiguration2(std::filesystem::path configurationPath):
+        explicit FileSystemBasedConfiguration(std::filesystem::path configurationPath):
                 configurationPath(std::move(configurationPath))
         {}
 

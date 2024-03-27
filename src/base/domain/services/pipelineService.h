@@ -24,10 +24,10 @@ namespace dory::domain::services
         }
     };
 
-    template<typename TEntity, typename TIdType>
+    template<typename TEntity, typename TIdType = entity::IdType>
     class PipelineRepository:
             public IPipelineRepository<PipelineRepository<TEntity, TIdType>>,
-            public EntityRepository2<TEntity, TIdType>
+            public EntityRepository<TEntity, TIdType>
     {
     private:
         using InterfaceType = IPipelineRepository<PipelineRepository<TEntity, TIdType>>;
@@ -36,7 +36,7 @@ namespace dory::domain::services
         PipelineRepository() = default;
 
         PipelineRepository(std::initializer_list<TEntity>&& entities):
-                EntityRepository2<TEntity, TIdType>(std::move(entities))
+                EntityRepository<TEntity, TIdType>(std::move(entities))
         {}
 
         std::list<std::shared_ptr<object::PipelineNode>> getPipelineImpl()

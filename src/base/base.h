@@ -2,18 +2,8 @@
 
 using Byte = std::uint8_t;
 
-class Uncopyable
-{
-public:
-    Uncopyable(const Uncopyable&) = delete;
-    Uncopyable& operator=(const Uncopyable&) = delete;
-
-    Uncopyable() = default;
-};
-
 #include "domain/service.h"
 #include "typeComponents.h"
-#include "serviceLocator.h"
 #include "domain/services/frameService.h"
 #include "domain/services/matrixCalculatorService.h"
 #include "domain/services/transformationCalculatorService.h"
