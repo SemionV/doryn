@@ -18,9 +18,9 @@ namespace testApp
         {
             attachEventHandlers();
 
-            DataContextType context;
+            auto context = DataContextType{};
             auto engine = registry::EngineType { services.engineEventDispatcher, services.pipelineRepository };
-            
+
             frameService.startLoop(context, engine);
 
             return 0;
