@@ -14,7 +14,6 @@ public:
 #include "domain/service.h"
 #include "typeComponents.h"
 #include "serviceLocator.h"
-#include "configuration/fileSystemBasedConfiguration.h"
 #include "domain/services/frameService.h"
 #include "domain/services/matrixCalculatorService.h"
 #include "domain/services/transformationCalculatorService.h"

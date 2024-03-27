@@ -1,32 +1,20 @@
 #include "baseTests/dependencies.h"
-#include "base/base.h"
+#include "base/domain/entity.h"
+#include "base/domain/services/pipelineService.h"
 
 using namespace dory::domain;
 
-class ServiceContainer
-{
-public:
-    dory::domain::EntityRepository<entity::PipelineNode>& pipelineNodeRepository;
-
-    explicit ServiceContainer(dory::domain::EntityRepository<entity::PipelineNode>& pipelineNodeRepository):
-            pipelineNodeRepository(pipelineNodeRepository)
-    {}
-};
-
 TEST_CASE( "Load Pipeline", "[pipelineRepository]" )
 {
-    auto nodesRepository = dory::domain::EntityRepository<entity::PipelineNode>(
-        std::initializer_list<entity::PipelineNode>{
-            entity::PipelineNode(2, nullptr, entity::PipelineNodePriority::First, entity::nullId),
-            entity::PipelineNode(1, nullptr, entity::PipelineNodePriority::Default, entity::nullId),
-            entity::PipelineNode(3, nullptr, entity::PipelineNodePriority::First, 1),
-            entity::PipelineNode(4, nullptr, entity::PipelineNodePriority::Default, 1),
-            entity::PipelineNode(5, nullptr, entity::PipelineNodePriority::Default, 4),
-            entity::PipelineNode(6, nullptr, entity::PipelineNodePriority::Default, 2),
-        });
-    auto serviceLocator = ServiceContainer(nodesRepository);
-
-    auto pipelineService = services::PipelineService<ServiceContainer>(serviceLocator);
+    auto pipelineService = services::PipelineRepository<entity::PipelineNode, entity::IdType>(
+            std::initializer_list<entity::PipelineNode>{
+                entity::PipelineNode(2, nullptr, entity::PipelineNodePriority::First, entity::nullId),
+                entity::PipelineNode(1, nullptr, entity::PipelineNodePriority::Default, entity::nullId),
+                entity::PipelineNode(3, nullptr, entity::PipelineNodePriority::First, 1),
+                entity::PipelineNode(4, nullptr, entity::PipelineNodePriority::Default, 1),
+                entity::PipelineNode(5, nullptr, entity::PipelineNodePriority::Default, 4),
+                entity::PipelineNode(6, nullptr, entity::PipelineNodePriority::Default, 2),
+            });
     auto pipeline = pipelineService.getPipeline();
 
     REQUIRE(pipeline.size() == 2);

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <utility>
-
 #include "base/serviceContainer.h"
 #include "base/domain/configuration.h"
 #include "base/domain/events/engineEventHub.h"
@@ -18,7 +17,8 @@
 #include "openGL/services/shaderService.h"
 #include "openGL/renderer.h"
 #include "openGL/windowService.h"
-#include "project2.h"
+#include "project.h"
+#include "projectDataContext.h"
 
 namespace dory
 {
