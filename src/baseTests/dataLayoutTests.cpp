@@ -1,5 +1,5 @@
 #include "baseTests/dependencies.h"
-#include "templates/structures/dataLayout.h"
+#include "base/structures/dataLayout.h"
 
 struct Point
 {

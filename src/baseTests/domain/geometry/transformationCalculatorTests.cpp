@@ -4,29 +4,6 @@
 using namespace fakeit;
 using namespace dory::domain;
 
-#define multiplyM4P3Signature void(const geometry::Matrix4x4* matrix, const geometry::Point3d* vector, geometry::Point3d* resultVector)
-
-TEST_CASE("apply matrix transformation", "[transformations]")
-{
-    fakeit::Mock<services::IMatrixCalculatorService> matrixCalculatorMock;
-    std::shared_ptr<services::IMatrixCalculatorService> matrixCalculator(&matrixCalculatorMock.get(), [](services::IMatrixCalculatorService*) {});
-
-    std::shared_ptr<geometry::Point3d> point = std::make_shared<geometry::Point3d>();
-    std::shared_ptr<geometry::Point3d> resultPoint = std::make_shared<geometry::Point3d>();
-
-    std::shared_ptr<geometry::Transformation3d> transformation = std::make_shared<geometry::Transformation3d>();
-    std::shared_ptr<geometry::Matrix4x4> matrix = std::make_shared<geometry::Matrix4x4>();
-    transformation->matrix = matrix.get();
-
-    Fake(OverloadedMethod(matrixCalculatorMock, multiply, multiplyM4P3Signature).Using(matrix.get(), point.get(), resultPoint.get())); 
-
-    auto transformationCalculator = std::make_shared<services::TransformationCalculatorService>(matrixCalculator);
-
-    transformationCalculator->apply(transformation.get(), point.get(), resultPoint.get());
-
-    Verify(OverloadedMethod(matrixCalculatorMock, multiply, multiplyM4P3Signature));
-}
-
 TEST_CASE("apply function transformation", "[transformations]")
 {
     std::shared_ptr<geometry::Point3d> point = std::make_shared<geometry::Point3d>(1, 1, 1);

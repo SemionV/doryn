@@ -23,8 +23,8 @@ TEST_CASE("get entry position 4x4", "[matricies]")
 
 TEST_CASE( "setToIdentity 4x4", "[matricies]" ) 
 {
-    std::shared_ptr<services::IMatrixCalculatorService> calculator = std::make_shared<services::MatrixCalculatorService>();
-    std::shared_ptr<geometry::Matrix4x4> matrix = std::make_shared<geometry::Matrix4x4>();
+    auto calculator = std::make_shared<services::MatrixCalculatorService>();
+    auto matrix = std::make_shared<geometry::Matrix4x4>();
 
     const int matrixSize = 16;
     const int columnsSize = 4;
@@ -66,9 +66,9 @@ TEST_CASE( "setToIdentity 4x4", "[matricies]" )
 
 TEST_CASE( "copy entries", "[matricies]" ) 
 {
-    std::shared_ptr<services::IMatrixCalculatorService> calculator = std::make_shared<services::MatrixCalculatorService>();
-    std::shared_ptr<geometry::Matrix4x4> matrix = std::make_shared<geometry::Matrix4x4>();
-    std::shared_ptr<geometry::Matrix4x4> matrix2 = std::make_shared<geometry::Matrix4x4>();
+    auto calculator = std::make_shared<services::MatrixCalculatorService>();
+    auto matrix = std::make_shared<geometry::Matrix4x4>();
+    auto matrix2 = std::make_shared<geometry::Matrix4x4>();
 
     const int matrixSize = 16;
 
@@ -87,8 +87,8 @@ TEST_CASE( "copy entries", "[matricies]" )
 
 TEST_CASE("multiply vector by matrix", "[matricies]")
 {
-    std::shared_ptr<services::IMatrixCalculatorService> calculator = std::make_shared<services::MatrixCalculatorService>();
-    std::shared_ptr<geometry::Matrix4x4> matrix = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
+    auto calculator = std::make_shared<services::MatrixCalculatorService>();
+    auto matrix = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
         1, 2, 1, 3,
         6, 2, 2, 1,
         2, 5, 1, 1,
@@ -115,20 +115,20 @@ TEST_CASE("multiply vector by matrix", "[matricies]")
 
 TEST_CASE("multiply matrix by matrix", "[matricies]")
 {
-    std::shared_ptr<services::IMatrixCalculatorService> calculator = std::make_shared<services::MatrixCalculatorService>();
-    std::shared_ptr<geometry::Matrix4x4> matrixLeft = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
+    auto calculator = std::make_shared<services::MatrixCalculatorService>();
+    auto matrixLeft = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
         1, 2, 1, 3,
         6, 2, 2, 1,
         2, 5, 1, 1,
         5, 8, 1, 1
     });
-    std::shared_ptr<geometry::Matrix4x4> matrixRight = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
+    auto matrixRight = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
         1, 6, 2, 5,
         2, 2, 5, 8,
         1, 2, 1, 1,
         3, 1, 1, 1
     });
-    std::shared_ptr<geometry::Matrix4x4> resultMatrix = std::make_shared<geometry::Matrix4x4>();
+    auto resultMatrix = std::make_shared<geometry::Matrix4x4>();
 
     calculator->multiply(matrixLeft.get(), matrixRight.get(), resultMatrix.get());
 
@@ -139,7 +139,7 @@ TEST_CASE("multiply matrix by matrix", "[matricies]")
     25 49 52 91
     */
 
-   std::shared_ptr<geometry::Matrix4x4> matrixRequire = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
+    auto matrixRequire = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
         15, 15, 16, 25,
         15, 45, 25, 49,
         16, 25, 31, 52,
@@ -151,18 +151,18 @@ TEST_CASE("multiply matrix by matrix", "[matricies]")
 
 TEST_CASE("inverse matrix", "[matricies]")
 {
-    std::shared_ptr<services::IMatrixCalculatorService> calculator = std::make_shared<services::MatrixCalculatorService>();
-    std::shared_ptr<geometry::Matrix4x4> matrix = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
+    auto calculator = std::make_shared<services::MatrixCalculatorService>();
+    auto matrix = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
         1, 2, 1, 3,
         6, 2, 2, 1,
         2, 5, 1, 1,
         5, 8, 1, 1
     });
-    std::shared_ptr<geometry::Matrix4x4> resultMatrix = std::make_shared<geometry::Matrix4x4>();
+    auto resultMatrix = std::make_shared<geometry::Matrix4x4>();
     
     calculator->invert(matrix.get(), resultMatrix.get());
 
-    std::shared_ptr<geometry::Matrix4x4> matrixRequire = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
+    auto matrixRequire = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
         45, 90, -516, 287,
         -46, -91, 181, 45,
         -319, 363, 1606, -1016,
@@ -177,8 +177,8 @@ TEST_CASE("inverse matrix", "[matricies]")
 
 TEST_CASE("build translate matrix", "[matricies]")
 {
-    std::shared_ptr<services::IMatrixCalculatorService> calculator = std::make_shared<services::MatrixCalculatorService>();
-    std::shared_ptr<geometry::Matrix4x4> matrix = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
+    auto calculator = std::make_shared<services::MatrixCalculatorService>();
+    auto matrix = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
         1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0,
@@ -187,8 +187,8 @@ TEST_CASE("build translate matrix", "[matricies]")
 
     calculator->translate(matrix.get(), 1, 1, 1);
 
-    std::shared_ptr<geometry::Point3d> resultPoint = std::make_shared<geometry::Point3d>(0, 0, 0);
-    std::shared_ptr<geometry::Point3d> point = std::make_shared<geometry::Point3d>(1, 1, 1);
+    auto resultPoint = std::make_shared<geometry::Point3d>(0, 0, 0);
+    auto point = std::make_shared<geometry::Point3d>(1, 1, 1);
     calculator->multiply(matrix.get(), point.get(), resultPoint.get());
 
     REQUIRE(resultPoint->x == 2);
@@ -198,7 +198,7 @@ TEST_CASE("build translate matrix", "[matricies]")
 
 TEST_CASE("build scale matrix", "[matricies]")
 {
-    std::shared_ptr<services::IMatrixCalculatorService> calculator = std::make_shared<services::MatrixCalculatorService>();
+    auto calculator = std::make_shared<services::MatrixCalculatorService>();
     std::shared_ptr<geometry::Matrix4x4> matrix = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
         1, 0, 0, 0,
         0, 1, 0, 0,
@@ -208,8 +208,8 @@ TEST_CASE("build scale matrix", "[matricies]")
 
     calculator->scale(matrix.get(), 2, 2, 2);
 
-    std::shared_ptr<geometry::Point3d> resultPoint = std::make_shared<geometry::Point3d>(0, 0, 0);
-    std::shared_ptr<geometry::Point3d> point = std::make_shared<geometry::Point3d>(1, 1, 1);
+    auto resultPoint = std::make_shared<geometry::Point3d>(0, 0, 0);
+    auto point = std::make_shared<geometry::Point3d>(1, 1, 1);
     calculator->multiply(matrix.get(), point.get(), resultPoint.get());
 
     REQUIRE(resultPoint->x == 2);
@@ -219,8 +219,8 @@ TEST_CASE("build scale matrix", "[matricies]")
 
 TEST_CASE("build rotate X matrix", "[matricies]")
 {
-    std::shared_ptr<services::IMatrixCalculatorService> calculator = std::make_shared<services::MatrixCalculatorService>();
-    std::shared_ptr<geometry::Matrix4x4> matrix = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
+    auto calculator = std::make_shared<services::MatrixCalculatorService>();
+    auto matrix = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
         1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0,
@@ -240,8 +240,8 @@ TEST_CASE("build rotate X matrix", "[matricies]")
 
 TEST_CASE("build rotate Y matrix", "[matricies]")
 {
-    std::shared_ptr<services::IMatrixCalculatorService> calculator = std::make_shared<services::MatrixCalculatorService>();
-    std::shared_ptr<geometry::Matrix4x4> matrix = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
+    auto calculator = std::make_shared<services::MatrixCalculatorService>();
+    auto matrix = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
         1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0,
@@ -261,8 +261,8 @@ TEST_CASE("build rotate Y matrix", "[matricies]")
 
 TEST_CASE("build rotate Z matrix", "[matricies]")
 {
-    std::shared_ptr<services::IMatrixCalculatorService> calculator = std::make_shared<services::MatrixCalculatorService>();
-    std::shared_ptr<geometry::Matrix4x4> matrix = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
+    auto calculator = std::make_shared<services::MatrixCalculatorService>();
+    auto matrix = std::make_shared<geometry::Matrix4x4>(geometry::Matrix4x4::EntriesArray {
         1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0,
@@ -271,8 +271,8 @@ TEST_CASE("build rotate Z matrix", "[matricies]")
 
     calculator->rotateZ(matrix.get(), geometry::MathFunctions::getRadians(90.f));
 
-    std::shared_ptr<geometry::Point3d> resultPoint = std::make_shared<geometry::Point3d>(0, 0, 0);
-    std::shared_ptr<geometry::Point3d> point = std::make_shared<geometry::Point3d>(1, 0, 0);
+    auto resultPoint = std::make_shared<geometry::Point3d>(0, 0, 0);
+    auto point = std::make_shared<geometry::Point3d>(1, 0, 0);
     calculator->multiply(matrix.get(), point.get(), resultPoint.get());
 
     REQUIRE((int)resultPoint->x == 0);

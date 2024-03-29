@@ -36,7 +36,7 @@ namespace dory::concurrency
         {
             return isErrorFlag;
         }
-        
+
         void reset()
         {
             setDone(false);
@@ -68,14 +68,14 @@ namespace dory::concurrency
             std::tuple<Ts...> arguments;
 
         protected:
-            virtual void invoke() override
+            void invoke() override
             {    
                 std::apply(function, arguments);            
             }
 
         public:
             template <typename F>
-            ActionTask(F&& function, Ts&&... arguments):
+            explicit ActionTask(F&& function, Ts&&... arguments):
                 function(std::forward<F>(function)),
                 arguments(std::forward<Ts>(arguments)...)
             {
@@ -91,14 +91,14 @@ namespace dory::concurrency
             TResult result;
 
         protected:
-            virtual void invoke() override
+            void invoke() override
             {          
                 result = std::apply(function, arguments);
             }
 
         public:
             template <typename F>
-            FunctionTask(F&& function, Ts&&... arguments):
+            explicit FunctionTask(F&& function, Ts&&... arguments):
                 function(std::forward<F>(function)),
                 arguments(std::forward<Ts>(arguments)...)
             {

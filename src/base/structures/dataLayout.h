@@ -1,6 +1,6 @@
 #pragma once
 
-#include "templates/reflection.h"
+#include "base/reflection.h"
 #include "typeMap.h"
 
 namespace dory::dataLayout

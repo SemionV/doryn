@@ -1,7 +1,7 @@
 #include <utility>
 
 #include "baseTests/dependencies.h"
-#include "templates/objectVisitor.h"
+#include "base/objectVisitor.h"
 
 namespace dory::typeMap
 {
