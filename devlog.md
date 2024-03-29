@@ -1,13 +1,8 @@
 # Development log
 
 Tasks:
-* Reimplement EntityRepository using static polymorphism, no virtual class interfaces
-* Reimplement ServiceContainer
-* Rework project structure: engine should be a single static library unit, game logic can be a shared library(dll)
 * Reimplement MatrixCalculator using static polymorphism
 * Generalize core type of Matricies, so that it can support also double
-* Move to C++ Modules architecture istead of headers
-* Binary Layout Serializer unit tests
 * YAML Serializer/Deserializer
 * JSON Serializer/Deserializer
 * Static mapping of Vertex Attributes
@@ -30,6 +25,13 @@ Tasks:
 * Build for MacOS
 * Implement dynamic linking(load) of the dll, so that compilation/linking time in development will be reduced(long linking time of testApp.exe)
 * Voice control
+
+**29.03.24**
+Update for last  months
+* Task done: Reimplement EntityRepository using static polymorphism, no virtual class interfaces
+* Task done: Reimplement ServiceContainer
+* Task done: Rework project structure: engine should be a single static library unit, game logic can be a shared library(dll)
+* Task done: Binary Layout Serializer unit tests
 
 **29.12.23**
 * Task done: Integrate Google Benchmark for microbenchmarking

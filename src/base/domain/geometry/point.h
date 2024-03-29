@@ -2,37 +2,37 @@
 
 namespace dory::domain::geometry
 {
-    struct Point2d
+    template<typename T, typename U>
+    struct Point;
+
+    template<typename T, std::size_t N>
+    struct Point<T, std::integral_constant<T, N>>
+    {};
+
+    template<typename T>
+    struct Point<T, std::integral_constant<T, 2>>
     {
-        float x {};
-        float y {};
+        T x = {};
+        T y = {};
 
-        Point2d(float x, float y):
-            x(x), 
-            y(y)
-        {            
-        }
-
-        Point2d():
-            x(0), 
-            y(0)
-        {            
+        Point(T x, T y):
+                x(x),
+                y(y)
+        {
         }
     };
 
-    struct Point3d: public Point2d
+    template<typename T>
+    struct Point<T, std::integral_constant<T, 3>>: Point<T, std::integral_constant<T, 2>>
     {
-        float z {};
+        T z = {};
 
-        Point3d(float x, float y, float z):
-            Point2d(x, y),
-            z(z)
-        {            
-        }
-
-        Point3d():
-            z(0)
-        {            
-        }
+        Point(T x, T y, T z):
+                Point<T, std::integral_constant<T, 2>>(x, y),
+                z(z)
+        {}
     };
+
+    using Point2f = Point<float, std::integral_constant<std::size_t, 2>>;
+    using Point3f = Point<float, std::integral_constant<std::size_t, 3>>;
 }

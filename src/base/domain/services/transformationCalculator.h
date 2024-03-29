@@ -3,12 +3,12 @@
 #include <utility>
 
 #include "base/domain/geometry/transformation.h"
-#include "matrixCalculatorService.h"
+#include "linearAlgebra.h"
 #include "base/doryExport.h"
 
 namespace dory::domain::services
 {
-    class TransformationCalculatorService
+    class TransformationCalculator
     {
     private:
         std::shared_ptr<MatrixCalculatorService> matrixCalculator;
