@@ -1,6 +1,6 @@
 #pragma once
 
-namespace dory::typeMap
+namespace dory::serialization
 {
     template<typename T>
     struct Identity

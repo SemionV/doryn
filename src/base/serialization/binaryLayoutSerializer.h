@@ -1,8 +1,9 @@
 #pragma once
 
-#include "base/objectVisitor.h"
+#include "objectVisitor.h"
+#include "structures/dataLayout.h"
 
-namespace dory::typeMap
+namespace dory::serialization
 {
     struct BinarySerializationContext
     {
@@ -52,7 +53,7 @@ namespace dory::typeMap
         template<auto Id, typename TPolicies, typename T>
         static std::size_t processAttribute(T&& attributeValue, Byte* buffer)
         {
-            auto offset = dataLayout::LayoutAttributeOffsetV<Id, TLayout>;
+            auto offset = LayoutAttributeOffsetV<Id, TLayout>;
             BinarySerializationContext context(buffer + offset);
             dory::typeMap::ObjectVisitor<TPolicies>::visit(std::forward<T>(attributeValue), context);
 

@@ -1,7 +1,7 @@
 #include "dependencies.h"
 #include "base/base.h"
-#include "base/structures/dataLayout.h"
-#include "base/structures/typeMap.h"
+#include "base/serialization/structures/dataLayout.h"
+#include "base/serialization/structures/typeMap.h"
 #include "base/serialization/jsonPrinter.h"
 #include "base/serialization/binaryLayoutSerializer.h"
 
@@ -95,9 +95,9 @@ enum class AttributeId
 };
 
 template<auto Id, typename T>
-using LayoutAttribute = dory::dataLayout::Attribute<Id, T>;
+using LayoutAttribute = dory::serialization::Attribute<Id, T>;
 
-using LayoutMap = dory::dataLayout::Layout<LayoutAttribute<AttributeId::meshId, std::size_t>,
+using LayoutMap = dory::serialization::Layout<LayoutAttribute<AttributeId::meshId, std::size_t>,
         LayoutAttribute<AttributeId::position, VertexAttributeType<Point>>,
         LayoutAttribute<AttributeId::color, VertexAttributeType<Color>>,
         LayoutAttribute<AttributeId::normal, VertexAttributeType<Point>>,
@@ -106,7 +106,7 @@ using LayoutMap = dory::dataLayout::Layout<LayoutAttribute<AttributeId::meshId, 
 
 TEST_CASE( "Layout typeMap test", "[typeMapping]" )
 {
-    using VertexSerializer = dory::typeMap::BinaryLayoutSerializer<LayoutMap>;
+    using VertexSerializer = dory::serialization::BinaryLayoutSerializer<LayoutMap>;
 
     constexpr std::size_t VerticesCount = 2;
 
@@ -117,7 +117,7 @@ TEST_CASE( "Layout typeMap test", "[typeMapping]" )
     DoublePoint doublePoints[VerticesCount] = { DoublePoint{ Point{9, 10, 11}, Point{12, 13, 14}}, DoublePoint{ Point{9, 10, 11}, Point{12, 13, 14}} };
     const std::size_t& meshId = 12;
 
-    constexpr std::size_t VertexSize = dory::dataLayout::LayoutSizeV<LayoutMap>;
+    constexpr std::size_t VertexSize = dory::serialization::LayoutSizeV<LayoutMap>;
     Byte buffer[VertexSize * VerticesCount];
 
     Byte* cursor = buffer;
@@ -181,10 +181,10 @@ TEST_CASE( "Layout typeMap test", "[typeMapping]" )
 template<typename LayoutMap, typename T, typename TMembers, AttributeId attributeId, std::size_t membersCount, std::size_t offset>
 void testAttributeDescriptor(std::size_t customSize = 0)
 {
-    REQUIRE(std::is_same_v<dory::dataLayout::LayoutAttributeTypeT<attributeId, LayoutMap>, T>);
-    REQUIRE(std::is_same_v<dory::dataLayout::LayoutAttributeFieldTypeT<attributeId, LayoutMap>, TMembers>);
+    REQUIRE(std::is_same_v<dory::serialization::LayoutAttributeTypeT<attributeId, LayoutMap>, T>);
+    REQUIRE(std::is_same_v<dory::serialization::LayoutAttributeFieldTypeT<attributeId, LayoutMap>, TMembers>);
 
-    const auto attributeSize = dory::dataLayout::LayoutAttributeSizeV<attributeId, LayoutMap>;
+    const auto attributeSize = dory::serialization::LayoutAttributeSizeV<attributeId, LayoutMap>;
     if constexpr (std::is_same_v<TMembers, void>)
     {
         REQUIRE(attributeSize == sizeof(T));
@@ -193,8 +193,8 @@ void testAttributeDescriptor(std::size_t customSize = 0)
     {
         REQUIRE(attributeSize == (customSize != 0 ? customSize : sizeof(TMembers) * membersCount));
     }
-    REQUIRE(dory::dataLayout::LayoutAttributeOffsetV<attributeId, LayoutMap> == offset);
-    REQUIRE(dory::dataLayout::LayoutAttributeFieldCountV<attributeId, LayoutMap> == membersCount);
+    REQUIRE(dory::serialization::LayoutAttributeOffsetV<attributeId, LayoutMap> == offset);
+    REQUIRE(dory::serialization::LayoutAttributeFieldCountV<attributeId, LayoutMap> == membersCount);
 }
 
 TEST_CASE( "Layout attributes check", "[typeMapping]" )
@@ -231,20 +231,20 @@ TRight convert(TLeft value)
     return TConverter::convert(value);
 }
 
-using TypeMap = dory::typeMap::TypeMap<dory::typeMap::TypeAssigment<dory::typeMap::TypePair<Point, VertexAttributeType<Point>>, PointToVertexPointConverter, VertexPointToPointConverter>,
-    dory::typeMap::TypeAssigment<dory::typeMap::TypePair<Color, VertexAttributeType<Color>>>,
-    dory::typeMap::TypeAssigment<dory::typeMap::TypePair<TextureCoordinates, VertexAttributeType<TextureCoordinates>>>>;
+using TypeMap = dory::serialization::TypeMap<dory::serialization::TypeAssigment<dory::serialization::TypePair<Point, VertexAttributeType<Point>>, PointToVertexPointConverter, VertexPointToPointConverter>,
+    dory::serialization::TypeAssigment<dory::serialization::TypePair<Color, VertexAttributeType<Color>>>,
+    dory::serialization::TypeAssigment<dory::serialization::TypePair<TextureCoordinates, VertexAttributeType<TextureCoordinates>>>>;
 
 TEST_CASE( "Type Map", "[typeMapping]" )
 {
-    REQUIRE(std::is_same_v<dory::typeMap::MappedTypeT<Point, TypeMap>, VertexAttributeType<Point>>);
-    REQUIRE(std::is_same_v<dory::typeMap::MappedTypeT<Color, TypeMap>, VertexAttributeType<Color>>);
-    REQUIRE(std::is_same_v<dory::typeMap::MappedTypeT<TextureCoordinates, TypeMap>, VertexAttributeType<TextureCoordinates>>);
-    REQUIRE(std::is_same_v<dory::typeMap::MappedTypeT<DoublePoint, TypeMap>, DoublePoint>);
+    REQUIRE(std::is_same_v<dory::serialization::MappedTypeT<Point, TypeMap>, VertexAttributeType<Point>>);
+    REQUIRE(std::is_same_v<dory::serialization::MappedTypeT<Color, TypeMap>, VertexAttributeType<Color>>);
+    REQUIRE(std::is_same_v<dory::serialization::MappedTypeT<TextureCoordinates, TypeMap>, VertexAttributeType<TextureCoordinates>>);
+    REQUIRE(std::is_same_v<dory::serialization::MappedTypeT<DoublePoint, TypeMap>, DoublePoint>);
 
-    using DestinationType = dory::typeMap::MappedTypeT<Point, TypeMap>;
-    using ForwardConverterType = typename dory::typeMap::MappedType<Point, TypeMap>::ForwardConverterType;
-    using BackwardConverterType = typename dory::typeMap::MappedType<Point, TypeMap>::BackwardConverterType;
+    using DestinationType = dory::serialization::MappedTypeT<Point, TypeMap>;
+    using ForwardConverterType = typename dory::serialization::MappedType<Point, TypeMap>::ForwardConverterType;
+    using BackwardConverterType = typename dory::serialization::MappedType<Point, TypeMap>::BackwardConverterType;
 
     Point point = {1, 2, 3};
     auto vertexPoint = convert<DestinationType, ForwardConverterType>(point);

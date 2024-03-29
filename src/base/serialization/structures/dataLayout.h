@@ -1,9 +1,9 @@
 #pragma once
 
-#include "base/reflection.h"
+#include "base/serialization/reflection.h"
 #include "typeMap.h"
 
-namespace dory::dataLayout
+namespace dory::serialization
 {
     template<auto Id, typename T>
     struct Attribute

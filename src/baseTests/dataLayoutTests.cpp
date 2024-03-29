@@ -1,5 +1,5 @@
 #include "baseTests/dependencies.h"
-#include "base/structures/dataLayout.h"
+#include "base/serialization/structures/dataLayout.h"
 
 struct Point
 {
@@ -81,9 +81,9 @@ enum class AttributeId
 };
 
 template<auto Id, typename T>
-using Attribute = dory::dataLayout::Attribute<Id, T>;
+using Attribute = dory::serialization::Attribute<Id, T>;
 
-using LayoutMap = dory::dataLayout::Layout<
+using LayoutMap = dory::serialization::Layout<
         Attribute<AttributeId::meshId, std::size_t>,
         Attribute<AttributeId::position, Point>,
         Attribute<AttributeId::color, Color>,
@@ -100,60 +100,60 @@ TEST_CASE( "Layout size check", "[dataLayout]" )
             + pointSize
             + affineTransformationSize;
 
-    REQUIRE(dory::dataLayout::LayoutSizeV<LayoutMap> == expectedSize);
+    REQUIRE(dory::serialization::LayoutSizeV<LayoutMap> == expectedSize);
 }
 
 TEST_CASE( "Layout attributes count check", "[dataLayout]" )
 {
-    REQUIRE(dory::dataLayout::LayoutCountV<LayoutMap> == 6);
+    REQUIRE(dory::serialization::LayoutCountV<LayoutMap> == 6);
 }
 
 TEST_CASE( "Layout attributes size check", "[dataLayout]" )
 {
-    REQUIRE(dory::dataLayout::LayoutAttributeSizeV<AttributeId::meshId, LayoutMap> == meshIdSize);
-    REQUIRE(dory::dataLayout::LayoutAttributeSizeV<AttributeId::position, LayoutMap> == pointSize);
-    REQUIRE(dory::dataLayout::LayoutAttributeSizeV<AttributeId::color, LayoutMap> == colorSize);
-    REQUIRE(dory::dataLayout::LayoutAttributeSizeV<AttributeId::axises, LayoutMap> == axisesSize);
-    REQUIRE(dory::dataLayout::LayoutAttributeSizeV<AttributeId::normal, LayoutMap> == pointSize);
-    REQUIRE(dory::dataLayout::LayoutAttributeSizeV<AttributeId::transformation, LayoutMap> == affineTransformationSize);
+    REQUIRE(dory::serialization::LayoutAttributeSizeV<AttributeId::meshId, LayoutMap> == meshIdSize);
+    REQUIRE(dory::serialization::LayoutAttributeSizeV<AttributeId::position, LayoutMap> == pointSize);
+    REQUIRE(dory::serialization::LayoutAttributeSizeV<AttributeId::color, LayoutMap> == colorSize);
+    REQUIRE(dory::serialization::LayoutAttributeSizeV<AttributeId::axises, LayoutMap> == axisesSize);
+    REQUIRE(dory::serialization::LayoutAttributeSizeV<AttributeId::normal, LayoutMap> == pointSize);
+    REQUIRE(dory::serialization::LayoutAttributeSizeV<AttributeId::transformation, LayoutMap> == affineTransformationSize);
 }
 
 TEST_CASE( "Layout attributes type check", "[dataLayout]" )
 {
-    REQUIRE(std::is_same_v<dory::dataLayout::LayoutAttributeTypeT<AttributeId::meshId, LayoutMap>, std::size_t>);
-    REQUIRE(std::is_same_v<dory::dataLayout::LayoutAttributeTypeT<AttributeId::position, LayoutMap>, Point>);
-    REQUIRE(std::is_same_v<dory::dataLayout::LayoutAttributeTypeT<AttributeId::color, LayoutMap>, Color>);
-    REQUIRE(std::is_same_v<dory::dataLayout::LayoutAttributeTypeT<AttributeId::axises, LayoutMap>, Axises>);
-    REQUIRE(std::is_same_v<dory::dataLayout::LayoutAttributeTypeT<AttributeId::normal, LayoutMap>, Point>);
-    REQUIRE(std::is_same_v<dory::dataLayout::LayoutAttributeTypeT<AttributeId::transformation, LayoutMap>, AffineTransformation>);
+    REQUIRE(std::is_same_v<dory::serialization::LayoutAttributeTypeT<AttributeId::meshId, LayoutMap>, std::size_t>);
+    REQUIRE(std::is_same_v<dory::serialization::LayoutAttributeTypeT<AttributeId::position, LayoutMap>, Point>);
+    REQUIRE(std::is_same_v<dory::serialization::LayoutAttributeTypeT<AttributeId::color, LayoutMap>, Color>);
+    REQUIRE(std::is_same_v<dory::serialization::LayoutAttributeTypeT<AttributeId::axises, LayoutMap>, Axises>);
+    REQUIRE(std::is_same_v<dory::serialization::LayoutAttributeTypeT<AttributeId::normal, LayoutMap>, Point>);
+    REQUIRE(std::is_same_v<dory::serialization::LayoutAttributeTypeT<AttributeId::transformation, LayoutMap>, AffineTransformation>);
 }
 
 TEST_CASE( "Layout attributes field type check", "[dataLayout]" )
 {
-    REQUIRE(std::is_same_v<dory::dataLayout::LayoutAttributeFieldTypeT<AttributeId::meshId, LayoutMap>, std::size_t>);
-    REQUIRE(std::is_same_v<dory::dataLayout::LayoutAttributeFieldTypeT<AttributeId::position, LayoutMap>, float>);
-    REQUIRE(std::is_same_v<dory::dataLayout::LayoutAttributeFieldTypeT<AttributeId::color, LayoutMap>, float>);
-    REQUIRE(std::is_same_v<dory::dataLayout::LayoutAttributeFieldTypeT<AttributeId::axises, LayoutMap>, float>);
-    REQUIRE(std::is_same_v<dory::dataLayout::LayoutAttributeFieldTypeT<AttributeId::normal, LayoutMap>, float>);
-    REQUIRE(std::is_same_v<dory::dataLayout::LayoutAttributeFieldTypeT<AttributeId::transformation, LayoutMap>, float>);
+    REQUIRE(std::is_same_v<dory::serialization::LayoutAttributeFieldTypeT<AttributeId::meshId, LayoutMap>, std::size_t>);
+    REQUIRE(std::is_same_v<dory::serialization::LayoutAttributeFieldTypeT<AttributeId::position, LayoutMap>, float>);
+    REQUIRE(std::is_same_v<dory::serialization::LayoutAttributeFieldTypeT<AttributeId::color, LayoutMap>, float>);
+    REQUIRE(std::is_same_v<dory::serialization::LayoutAttributeFieldTypeT<AttributeId::axises, LayoutMap>, float>);
+    REQUIRE(std::is_same_v<dory::serialization::LayoutAttributeFieldTypeT<AttributeId::normal, LayoutMap>, float>);
+    REQUIRE(std::is_same_v<dory::serialization::LayoutAttributeFieldTypeT<AttributeId::transformation, LayoutMap>, float>);
 }
 
 TEST_CASE( "Layout attributes field count check", "[dataLayout]" )
 {
-    REQUIRE(dory::dataLayout::LayoutAttributeFieldCountV<AttributeId::meshId, LayoutMap> == meshIdFieldCount);
-    REQUIRE(dory::dataLayout::LayoutAttributeFieldCountV<AttributeId::position, LayoutMap> == pointFieldCount);
-    REQUIRE(dory::dataLayout::LayoutAttributeFieldCountV<AttributeId::color, LayoutMap> == colorFieldCount);
-    REQUIRE(dory::dataLayout::LayoutAttributeFieldCountV<AttributeId::axises, LayoutMap> == axisesFieldCount);
-    REQUIRE(dory::dataLayout::LayoutAttributeFieldCountV<AttributeId::normal, LayoutMap> == pointFieldCount);
-    REQUIRE(dory::dataLayout::LayoutAttributeFieldCountV<AttributeId::transformation, LayoutMap> == affineTransformationFieldCount);
+    REQUIRE(dory::serialization::LayoutAttributeFieldCountV<AttributeId::meshId, LayoutMap> == meshIdFieldCount);
+    REQUIRE(dory::serialization::LayoutAttributeFieldCountV<AttributeId::position, LayoutMap> == pointFieldCount);
+    REQUIRE(dory::serialization::LayoutAttributeFieldCountV<AttributeId::color, LayoutMap> == colorFieldCount);
+    REQUIRE(dory::serialization::LayoutAttributeFieldCountV<AttributeId::axises, LayoutMap> == axisesFieldCount);
+    REQUIRE(dory::serialization::LayoutAttributeFieldCountV<AttributeId::normal, LayoutMap> == pointFieldCount);
+    REQUIRE(dory::serialization::LayoutAttributeFieldCountV<AttributeId::transformation, LayoutMap> == affineTransformationFieldCount);
 }
 
 TEST_CASE( "Layout attributes offset check", "[dataLayout]" )
 {
-    REQUIRE(dory::dataLayout::LayoutAttributeOffsetV<AttributeId::meshId, LayoutMap> == 0);
-    REQUIRE(dory::dataLayout::LayoutAttributeOffsetV<AttributeId::position, LayoutMap> == meshIdSize);
-    REQUIRE(dory::dataLayout::LayoutAttributeOffsetV<AttributeId::color, LayoutMap> == meshIdSize + pointSize);
-    REQUIRE(dory::dataLayout::LayoutAttributeOffsetV<AttributeId::axises, LayoutMap> == meshIdSize + pointSize + colorSize);
-    REQUIRE(dory::dataLayout::LayoutAttributeOffsetV<AttributeId::normal, LayoutMap> == meshIdSize + pointSize + colorSize + axisesSize);
-    REQUIRE(dory::dataLayout::LayoutAttributeOffsetV<AttributeId::transformation, LayoutMap> == meshIdSize + pointSize + colorSize + axisesSize + pointSize);
+    REQUIRE(dory::serialization::LayoutAttributeOffsetV<AttributeId::meshId, LayoutMap> == 0);
+    REQUIRE(dory::serialization::LayoutAttributeOffsetV<AttributeId::position, LayoutMap> == meshIdSize);
+    REQUIRE(dory::serialization::LayoutAttributeOffsetV<AttributeId::color, LayoutMap> == meshIdSize + pointSize);
+    REQUIRE(dory::serialization::LayoutAttributeOffsetV<AttributeId::axises, LayoutMap> == meshIdSize + pointSize + colorSize);
+    REQUIRE(dory::serialization::LayoutAttributeOffsetV<AttributeId::normal, LayoutMap> == meshIdSize + pointSize + colorSize + axisesSize);
+    REQUIRE(dory::serialization::LayoutAttributeOffsetV<AttributeId::transformation, LayoutMap> == meshIdSize + pointSize + colorSize + axisesSize + pointSize);
 }

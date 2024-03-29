@@ -1,6 +1,6 @@
 #pragma once
 
-#include "base/objectVisitor.h"
+#include "objectVisitor.h"
 
 namespace dory::typeMap
 {
