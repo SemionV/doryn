@@ -4,25 +4,57 @@
 
 namespace dory::concurrency
 {
-    class DORY_API Task
+    class Task
     {
-        private:
-            bool isDoneFlag{};
-            bool isErrorFlag{};
+    private:
+        bool isDoneFlag{};
+        bool isErrorFlag{};
 
-        protected:
-            void setDone(bool isDone);
-            void setError(bool isError);
-            virtual void invoke() = 0;
+    protected:
+        void setDone(bool isDone)
+        {
+            isDoneFlag = isDone;
+        }
 
-        public:
-            Task();
-            virtual ~Task() = default;
+        void setError(bool isError)
+        {
+            isErrorFlag = false;
+        }
 
-            bool getDone();
-            bool getError();
-            void reset();
-            virtual void operator()();
+        virtual void invoke() = 0;
+
+    public:
+        Task() = default;
+        virtual ~Task() = default;
+
+        [[nodiscard]] bool getDone() const
+        {
+            return isDoneFlag;
+        }
+
+        [[nodiscard]] bool getError() const
+        {
+            return isErrorFlag;
+        }
+        
+        void reset()
+        {
+            setDone(false);
+            setError(false);
+        }
+
+        virtual void operator()()
+        {
+            try
+            {
+                invoke();
+                setDone(true);
+            }
+            catch(...)
+            {
+                setError(true);
+            }
+        }
     };
 
     /*
