@@ -10,7 +10,7 @@
 #include "base/domain/engine.h"
 #include "base/domain/services/frameService.h"
 #include "base/domain/services/viewService.h"
-#include "win32/consoleController.h"
+#include "base/win32/consoleController.h"
 #include "openGL/glfwWindow.h"
 #include "openGL/glfwWindowController.h"
 #include "openGL/viewControllerOpenGL.h"
