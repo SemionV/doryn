@@ -1,8 +1,6 @@
 # Development log
 
 Tasks:
-* Reimplement MatrixCalculator using static polymorphism
-* Generalize core type of Matricies, so that it can support also double
 * Build for Linux
 * YAML Serializer/Deserializer
 * JSON Serializer/Deserializer
@@ -23,6 +21,10 @@ Tasks:
 * Networking/Mutliplayer
 * Build for MacOS
 * Voice control
+
+**30.03.24**
+* Task done: Reimplement MatrixCalculator using  static polymorphism
+* Task done: Generalize core type of Matricies, so that it can support also double
 
 **29.03.24**
 Update for last  months
