@@ -3,5 +3,6 @@
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 {
-    return testApp::Project{}.run();
+    auto project = testApp::Project{};
+    return project.run();
 }

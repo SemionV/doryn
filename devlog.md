@@ -3,6 +3,7 @@
 Tasks:
 * Reimplement MatrixCalculator using static polymorphism
 * Generalize core type of Matricies, so that it can support also double
+* Build for Linux
 * YAML Serializer/Deserializer
 * JSON Serializer/Deserializer
 * Static mapping of Vertex Attributes
@@ -17,13 +18,10 @@ Tasks:
 * Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
 * Scene
 * Serialization of scene state
-* Investigate K-D-Tree
-* Spatial partition
+* Spatial partition: https://youtube.com/watch?v=eED4bSkYCB8&si=uOxianrO-zNMLAG3, https://youtu.be/MzUxOe5x24w?si=3PLIEqPTq8w8RLet, https://youtu.be/4r_EvmPKOvY?si=iINNvyGsoYzdaftY, https://youtu.be/6BIfqfC1i7U?si=rJSwRj3xuANSJZ4o
 * Path finding
 * Networking/Mutliplayer
-* Build for Linux
 * Build for MacOS
-* Implement dynamic linking(load) of the dll, so that compilation/linking time in development will be reduced(long linking time of testApp.exe)
 * Voice control
 
 **29.03.24**

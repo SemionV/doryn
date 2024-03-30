@@ -1,21 +1,27 @@
 #pragma once
 
+#include <utility>
+
 #include "base/dependencies.h"
 #include "point.h"
 #include "matrix.h"
 
 namespace dory::domain::geometry
 {
-    template<typename TPoint, typename TMatrix>
+    template<typename TPreviousTransformation>
     struct Transformation
     {
-        Transformation<TPoint, TMatrix>* previous;
-        TPoint* translation;
-        TMatrix* matrix;
-        std::function<void(const TPoint*, TPoint*)>* function;
+        TPreviousTransformation previous;
     };
 
-    struct Transformation3d: public Transformation<Point3d, Matrix4x4>
+    template<>
+    struct Transformation<void>
     {
+    };
+
+    template<typename TMatrix, typename TPreviousTransformation = void>
+    struct MatrixTransformation: public Transformation<TPreviousTransformation>
+    {
+        TMatrix matrix;
     };
 }

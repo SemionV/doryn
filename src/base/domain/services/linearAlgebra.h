@@ -206,6 +206,12 @@ namespace dory::domain::services
             return true;
         }
 
+        template<typename TTransformation, typename TPoint>
+        auto apply()
+        {
+
+        }
+
         void apply(geometry::Transformation<geometry::Point3d, geometry::Matrix4x4>* transformation, const geometry::Point3d* point, geometry::Point3d* resultPoint)
         {
             const geometry::Point3d* inputPoint = point;
