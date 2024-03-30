@@ -1,9 +1,9 @@
 #include "dependencies.h"
-#include "base/base.h"
 #include "base/serialization/structures/dataLayout.h"
 #include "base/serialization/structures/typeMap.h"
 #include "base/serialization/jsonPrinter.h"
 #include "base/serialization/binaryLayoutSerializer.h"
+#include "base/typeComponents.h"
 
 struct TextureCoordinates
 {
@@ -118,9 +118,9 @@ TEST_CASE( "Layout typeMap test", "[typeMapping]" )
     const std::size_t& meshId = 12;
 
     constexpr std::size_t VertexSize = dory::serialization::LayoutSizeV<LayoutMap>;
-    Byte buffer[VertexSize * VerticesCount];
+    dory::Byte buffer[VertexSize * VerticesCount];
 
-    Byte* cursor = buffer;
+    dory::Byte* cursor = buffer;
     for(std::size_t i = 0; i < VerticesCount; ++i)
     {
         VertexSerializer::writeAttribute<AttributeId::meshId>(meshId, cursor);

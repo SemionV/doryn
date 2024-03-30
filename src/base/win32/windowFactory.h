@@ -1,15 +1,16 @@
 #pragma once
 
-#include "base/base.h"
+#include "base/dependencies.h"
 #include "windowParameters.h"
 #include "window.h"
 #include "messageBuffer.h"
+#include "base/concurrency/individualProcessThread.h"
 
 namespace dory::win32
 {
     LRESULT WINAPI windowProcedure(HWND hWnd, UINT WindowsMessage, WPARAM wParam, LPARAM lParam);
 
-    class DORY_API WindowFactory
+    class WindowFactory
     {
         public:
             static HWND createWindow(WindowParameters windowParameters, MessageBuffer* messageBuffer)

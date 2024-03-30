@@ -1,6 +1,6 @@
 #include "dependencies.h"
-#include "base/base.h"
 #include "base/domain/entity.h"
+#include "base/domain/entityRepository.h"
 
 using namespace dory::domain;
 

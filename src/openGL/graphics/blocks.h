@@ -1,7 +1,6 @@
 #pragma once
 
 #include "openGL/dependencies.h"
-#include "base/base.h"
 
 namespace dory::openGL::graphics
 {

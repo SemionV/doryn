@@ -9,54 +9,125 @@ namespace dory::math
     using Dimensions2 = std::integral_constant<std::size_t, 2>;
     using Dimensions1 = std::integral_constant<std::size_t, 1>;
 
-    template<typename T, typename U>
-    struct Vector;
-
-    template<typename T, std::size_t N>
-    struct Vector<T, std::integral_constant<T, N>>
+    template<std::size_t N>
+    struct AbstractVector
     {
         static constexpr std::size_t Dimensions = N;
     };
 
+    template<typename T, typename U>
+    struct Vector
+    {};
+
+    template<typename T, std::size_t N>
+    struct Vector<T, std::integral_constant<T, N>>: public AbstractVector<N>
+    {
+    };
+
     template<typename T>
-    struct Vector<T, std::integral_constant<T, 2>>
+    struct Vector<T, Dimensions1>: public AbstractVector<Dimensions1::value>
+    {
+        T x = {};
+
+        Vector() = default;
+
+        explicit Vector(T x): x(x)
+        {}
+
+        template<typename TVector>
+        requires(TVector::Dimensions == Dimensions1::value)
+        decltype(auto) operator+(const TVector& right)
+        {
+            return Vector{x + right.x};
+        }
+
+        template<typename TVector>
+        requires(TVector::Dimensions == Dimensions1::value)
+        decltype(auto) operator*(const TVector& right)
+        {
+            return x * right.x;
+        }
+    };
+
+    template<typename T>
+    struct Vector<T, Dimensions2>: public AbstractVector<Dimensions2::value>
     {
         T x = {};
         T y = {};
 
         Vector() = default;
 
-        Vector(T x, T y):
-                x(x),
-                y(y)
+        Vector(T x, T y): x(x), y(y)
+        {}
+
+        template<typename TVector>
+        requires(TVector::Dimensions == Dimensions2::value)
+        decltype(auto) operator+(const TVector& right)
         {
+            return Vector{ x + right.x, y + right.y };
+        }
+
+        template<typename TVector>
+        requires(TVector::Dimensions == Dimensions2::value)
+        decltype(auto) operator*(const TVector& right)
+        {
+            return x * right.x + y * right.y;
         }
     };
 
     template<typename T>
-    struct Vector<T, std::integral_constant<T, 3>>: Vector<T, std::integral_constant<T, 2>>
+    struct Vector<T, Dimensions3>: public AbstractVector<Dimensions3::value>
     {
+        T x = {};
+        T y = {};
         T z = {};
 
         Vector() = default;
 
-        Vector(T x, T y, T z):
-                Vector<T, std::integral_constant<T, 2>>(x, y),
-                z(z)
+        Vector(T x, T y, T z): x(x), y(y), z(z)
         {}
+
+        template<typename TVector>
+        requires(TVector::Dimensions == Dimensions3::value)
+        decltype(auto) operator+(const TVector& right)
+        {
+            return Vector{ x + right.x, y + right.y, z + right.z };
+        }
+
+        template<typename TVector>
+        requires(TVector::Dimensions == Dimensions3::value)
+        decltype(auto) operator*(const TVector& right)
+        {
+            return x * right.x + y * right.y + z * right.z;
+        }
     };
 
     template<typename T>
-    struct Vector<T, std::integral_constant<T, 4>>: Vector<T, std::integral_constant<T, 3>>
+    struct Vector<T, Dimensions4>: public AbstractVector<Dimensions4::value>
     {
+        T x = {};
+        T y = {};
+        T z = {};
         T w = {};
 
         Vector() = default;
 
-        Vector(T x, T y, T z, T w):
-                Vector<T, std::integral_constant<T, 3>>(x, y, z),
-                w(w)
+        Vector(T x, T y, T z, T w): x(x), y(y), z(z), w(w)
         {}
+
+        template<typename TVector>
+        requires(TVector::Dimensions == Dimensions4::value)
+        decltype(auto) operator+(const TVector& right)
+        {
+            return Vector{ x + right.x, y + right.y, z + right.z, w + right.w };
+        }
+
+        template<typename TVector>
+        requires(TVector::Dimensions == Dimensions4::value)
+        decltype(auto) operator*(const TVector& right)
+        {
+            return  Vector<T, Dimensions3>::x * right.x + Vector<T, Dimensions3>::y * right.y + Vector<T, Dimensions3>::z * right.z + w * right.w;
+        }
     };
 
     using Vector2f = Vector<float, Dimensions2>;
@@ -75,11 +146,15 @@ namespace dory::math
         }
     };
 
-    template<typename T, std::size_t N>
+    template<typename T, std::size_t RowsCount, std::size_t ColumnsCount>
     class GeneralMatrix
     {
     public:
-        using EntriesArray = std::array<T, N>;
+        static constexpr std::size_t ColumnDimensions = RowsCount;
+        static constexpr std::size_t RowDimensions = ColumnsCount;
+        static constexpr std::size_t EntriesCount = RowsCount * ColumnsCount;
+
+        using EntriesArray = std::array<T, EntriesCount>;
         EntriesArray entries;
 
         explicit GeneralMatrix(EntriesArray&& initEntries):
@@ -101,6 +176,7 @@ namespace dory::math
         GeneralMatrix& operator=(GeneralMatrix&& other) noexcept
         {
             entries = std::move(other.entries);
+            return *this;
         }
 
         GeneralMatrix& operator=(const GeneralMatrix& other)
@@ -109,6 +185,8 @@ namespace dory::math
             {
                 entries = other.entries;
             }
+
+            return *this;
         }
 
         void set(EntriesArray&& newEntries)
@@ -118,7 +196,7 @@ namespace dory::math
 
         bool isEqual(const GeneralMatrix& other)
         {
-            for(int i = 0; i < N; ++i)
+            for(int i = 0; i < EntriesCount; ++i)
             {
                 if(entries[i] != other.entries[i])
                 {
@@ -141,10 +219,10 @@ namespace dory::math
     };
 
     template<typename T>
-    class Matrix<T, Dimensions4, Dimensions4> : public GeneralMatrix<T, Dimensions4::value * Dimensions4::value>
+    class Matrix<T, Dimensions4, Dimensions4> : public GeneralMatrix<T, Dimensions4::value, Dimensions4::value>
     {
-    private:
-        using ParentType = GeneralMatrix<T, Dimensions4::value * Dimensions4::value>;
+    public:
+        using ParentType = GeneralMatrix<T, Dimensions4::value, Dimensions4::value>;
 
         explicit Matrix(ParentType::EntriesArray&& initEntries):
                 ParentType(std::move(initEntries))
@@ -162,12 +240,17 @@ namespace dory::math
 
         Matrix& operator=(Matrix&& other) noexcept
         {
-        return ParentType::operator=(std::move(other));
+            ParentType::entries = std::move(other.entries);
+            return *this;
         }
 
         Matrix& operator=(const Matrix& other)
         {
-            return ParentType::operator=(other);
+            if(other.entries.data() != ParentType::entries.data())
+            {
+                ParentType::entries = other.entries;
+            }
+            return *this;
         }
 
         EntryPosition getPositionByIndex(const std::size_t index)
@@ -194,9 +277,10 @@ namespace dory::math
             entries[12] = f0; entries[13] = f0; entries[14] = f0; entries[15] = f1;
         }
 
-        template<typename TOtherMatrix>
-        requires(TOtherMatrix::ColumnDimensions == Dimensions4::value && TOtherMatrix::RowDimensions == Dimensions4::value)
-        decltype(auto) multiply(const TOtherMatrix& right)
+        template<typename TMatrix>
+        requires(std::is_base_of_v<GeneralMatrix<T, Dimensions4::value, Dimensions4::value>, TMatrix>
+                && TMatrix::ColumnDimensions == Dimensions4::value && TMatrix::RowDimensions == Dimensions4::value)
+        decltype(auto) multiply(const TMatrix& right)
         {
             const auto& lhs = ParentType::entries;
             const auto& rhs = right.entries;
@@ -242,15 +326,8 @@ namespace dory::math
             return result;
         }
 
-        template<typename TOtherMatrix>
-        requires(TOtherMatrix::ColumnDimensions == Dimensions4::value && TOtherMatrix::RowDimensions == Dimensions4::value)
-        decltype(auto) operator*(const TOtherMatrix& right)
-        {
-            return multiply(right);
-        }
-
         template<typename TVector>
-        requires(TVector::Dimensions == Dimensions3::value)
+        requires(std::is_base_of_v<AbstractVector<Dimensions3::value>, TVector> && TVector::Dimensions == Dimensions3::value)
         decltype(auto) multiply(const TVector& vector)
         {
             const auto& entries = ParentType::entries;
@@ -263,14 +340,14 @@ namespace dory::math
         }
 
         template<typename TVector>
-        requires(TVector::Dimensions == Dimensions3::value)
+        requires(std::is_base_of_v<AbstractVector<Dimensions3::value>, TVector> && TVector::Dimensions == Dimensions3::value)
         decltype(auto) operator*(const TVector& vector)
         {
             return multiply(vector);
         }
 
         template<typename TVector>
-        requires(TVector::Dimensions == Dimensions4::value)
+        requires(std::is_base_of_v<AbstractVector<Dimensions4::value>, TVector> && TVector::Dimensions == Dimensions4::value)
         decltype(auto) multiply(const TVector& vector)
         {
             const auto& entries = ParentType::entries;
@@ -284,7 +361,7 @@ namespace dory::math
         }
 
         template<typename TVector>
-        requires(TVector::Dimensions == Dimensions4::value)
+        requires(std::is_base_of_v<AbstractVector<Dimensions4::value>, TVector> && TVector::Dimensions == Dimensions4::value)
         decltype(auto) operator*(const TVector& vector)
         {
             return multiply(vector);
@@ -336,20 +413,26 @@ namespace dory::math
                 resultData[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
                 resultData[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
             }
+
+            return result;
         }
 
-        void translate(T dx, T dy, T dz)
+        template<typename TVector>
+        requires(TVector::Dimensions == Dimensions3::value)
+        void translate(const TVector& vector)
         {
-            ParentType::entries[3] = dx;
-            ParentType::entries[7] = dy;
-            ParentType::entries[11] = dz;
+            ParentType::entries[3] = vector.x;
+            ParentType::entries[7] = vector.y;
+            ParentType::entries[11] = vector.z;
         }
 
-        void scale(T x, T y, T z)
+        template<typename TVector>
+        requires(TVector::Dimensions == Dimensions3::value)
+        void scale(const TVector& vector)
         {
-            ParentType::entries[0] = x;
-            ParentType::entries[5] = y;
-            ParentType::entries[10] = z;
+            ParentType::entries[0] = vector.x;
+            ParentType::entries[5] = vector.y;
+            ParentType::entries[10] = vector.z;
         }
 
         template<typename TRadians>

@@ -14,9 +14,8 @@ add_executable(baseTests linearAlgebra.cpp
         messagesTests.cpp
         repositoryTests.cpp
         typeMapping.cpp
-        domain/geometry/matrixCalculatorTests.cpp
-        domain/geometry/transformationCalculatorTests.cpp
-        domain/services/pipelineServiceTests.cpp
+        matrixCalculatorTests.cpp
+        pipelineServiceTests.cpp
         dataLayoutTests.cpp
         objectVisitorTests.cpp
         concurrency.cpp

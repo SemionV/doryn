@@ -1,7 +1,6 @@
 #pragma once
 
 #include "dependencies.h"
-#include "base/base.h"
 #include "graphics/program.h"
 #include "graphics/blocks.h"
 #include "graphics/vertexArray.h"

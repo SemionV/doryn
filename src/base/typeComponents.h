@@ -4,6 +4,8 @@
 
 namespace dory
 {
+    using Byte = std::uint8_t;
+
     template <class, template <class, class...> class>
     struct is_instance : public std::false_type {};
 

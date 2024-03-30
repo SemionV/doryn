@@ -1,7 +1,5 @@
 #pragma once
 
-#include "base/doryExport.h"
-
 namespace dory::domain
 {
     enum UnitScale

@@ -1,6 +1,7 @@
 #include "dependencies.h"
-#include "base/base.h"
 #include "base/domain/dataContext.h"
+#include "base/domain/events/eventHub.h"
+#include "base/domain/entity.h"
 
 using namespace dory::domain;
 

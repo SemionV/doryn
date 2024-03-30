@@ -1,5 +1,5 @@
 #include "dependencies.h"
-#include "base/base.h"
+#include "base/domain/events/event.h"
 
 using namespace dory::domain::events;
 

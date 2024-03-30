@@ -1,7 +1,6 @@
 #pragma once
 
 #include "openGL/dependencies.h"
-#include "base/base.h"
 #include "openGL/graphics/blocks.h"
 
 namespace dory::openGL::services

@@ -2,7 +2,6 @@
 
 #include "base/domain/object.h"
 #include "base/domain/entityRepository.h"
-#include "base/doryExport.h"
 #include "base/domain/entity.h"
 #include "base/typeComponents.h"
 

@@ -2,6 +2,7 @@
 
 #include "objectVisitor.h"
 #include "structures/dataLayout.h"
+#include "base/typeComponents.h"
 
 namespace dory::serialization
 {
