@@ -1,9 +1,11 @@
 #pragma once
 
-#include "base/domain/events/systemConsoleEventHub.h"
+#include "base/domain/controller.h"
 #include "base/concurrency/individualProcessThread.h"
+#include "base/domain/events/eventHub.h"
+#include "base/domain/events/systemConsoleEventHub.h"
 
-namespace dory::win32
+namespace dory::unix
 {
     template<typename TDataContext>
     class ConsoleControllerFactory;
@@ -26,18 +28,21 @@ namespace dory::win32
 
         bool initialize(domain::entity::IdType referenceId, TDataContext& context) override
         {
-            if(AllocConsole())
+            processThread.invokeTask(concurrency::allocateActionTask([this]()
             {
-                bindStdHandlesToConsole();
-            }
+                initscr();
+                cbreak();
+                keypad(stdscr, TRUE);
+                noecho();
+            }));
 
             std::cout << "SystemConsole.connect()" << std::endl;
 
             auto readInputTask = concurrency::allocateActionTask([this]()
-                                                                 {
-                                                                     int inputKey = getch();
-                                                                     onKeyPressed(inputKey);
-                                                                 });
+            {
+                int inputKey = getch();
+                onKeyPressed(inputKey);
+            });
             processThread.setRegularTask(readInputTask);
 
             processThread.run();
@@ -48,6 +53,10 @@ namespace dory::win32
         void stop(domain::entity::IdType referenceId, TDataContext& context) override
         {
             processThread.stop();
+            processThread.invokeTask(concurrency::allocateActionTask([this]()
+            {
+                endwin();
+            }));
         };
 
         void update(dory::domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, TDataContext& context) override
@@ -62,37 +71,6 @@ namespace dory::win32
 
             domain::events::KeyPressedEventData eventData(key);
             consoleEventHub.addCase(std::forward<domain::events::KeyPressedEventData>(eventData));
-        }
-
-    private:
-        void bindStdHandlesToConsole()
-        {
-            //TODO: Add Error checking.
-
-            // Redirect the CRT standard input, output, and error handles to the console
-            freopen("CONIN$", "r", stdin);
-            freopen("CONOUT$", "w", stderr);
-            freopen("CONOUT$", "w", stdout);
-
-            // Note that there is no CONERR$ file
-            HANDLE hStdout = CreateFileA("CONOUT$",  GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
-                                         NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-            HANDLE hStdin = CreateFileA("CONIN$",  GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
-                                        NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-
-            SetStdHandle(STD_OUTPUT_HANDLE,hStdout);
-            SetStdHandle(STD_ERROR_HANDLE,hStdout);
-            SetStdHandle(STD_INPUT_HANDLE,hStdin);
-
-            //Clear the error state for each of the C++ standard stream objects.
-            std::wclog.clear();
-            std::clog.clear();
-            std::wcout.clear();
-            std::cout.clear();
-            std::wcerr.clear();
-            std::cerr.clear();
-            std::wcin.clear();
-            std::cin.clear();
         }
     };
 
