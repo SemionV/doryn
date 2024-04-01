@@ -34,7 +34,12 @@ namespace testApp::registry
     namespace events = domain::events;
     namespace openGL = dory::openGL;
     namespace configuration = dory::configuration;
+#ifdef WIN32
     namespace win32 = dory::win32;
+#endif
+#ifdef UNIX
+    namespace unix = dory::unix;
+#endif
 
     using DataContextType = ProjectDataContext;
     using ConfigurationServiceType = configuration::FileSystemBasedConfiguration;
