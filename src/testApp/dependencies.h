@@ -7,6 +7,6 @@
 #include "base/win32/dependencies.h"
 #endif
 
-#ifdef UNIX
+#ifdef __unix__
 #include "base/unix/dependencies.h"
 #endif

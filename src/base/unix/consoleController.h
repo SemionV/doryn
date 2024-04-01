@@ -5,7 +5,7 @@
 #include "base/domain/events/eventHub.h"
 #include "base/domain/events/systemConsoleEventHub.h"
 
-namespace dory::unix
+namespace dory::nunix
 {
     template<typename TDataContext>
     class ConsoleControllerFactory;

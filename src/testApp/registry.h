@@ -22,7 +22,7 @@
 #include "base/win32/consoleController.h"
 #endif
 
-#ifdef UNIX
+#ifdef __unix__
 #include "base/unix/consoleController.h"
 #endif
 
@@ -37,9 +37,6 @@ namespace testApp::registry
 #ifdef WIN32
     namespace win32 = dory::win32;
 #endif
-#ifdef UNIX
-    namespace unix = dory::unix;
-#endif
 
     using DataContextType = ProjectDataContext;
     using ConfigurationServiceType = configuration::FileSystemBasedConfiguration;
@@ -53,8 +50,8 @@ namespace testApp::registry
     using ConsoleControllerType = win32::ConsoleController<DataContextType>;
     using ConsoleControllerFactoryType = ConsoleControllerType::FactoryType;
 #endif
-#ifdef UNIX
-    using ConsoleControllerType = unix::ConsoleController<DataContextType>;
+#ifdef __unix__
+    using ConsoleControllerType = dory::nunix::ConsoleController<DataContextType>;
     using ConsoleControllerFactoryType = ConsoleControllerType::FactoryType;
 #endif
     using WindowControllerType = openGL::GlfwWindowController<DataContextType, WindowRepositoryType>;
