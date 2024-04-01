@@ -1,4 +1,4 @@
-source ./build/settings.sh
+. build/settings.sh
 
 if [[ -n "$2" ]]; then
     BUILD_CONFIG="$2"
