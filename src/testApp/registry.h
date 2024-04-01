@@ -46,14 +46,17 @@ namespace testApp::registry
     using PipelineRepositoryType = domain::services::PipelineRepository<entity::PipelineNode>;
     using EngineType = domain::Engine<DataContextType, PipelineRepositoryType>;
     using FrameServiceType = services::BasicFrameService;
+
 #ifdef WIN32
     using ConsoleControllerType = win32::ConsoleController<DataContextType>;
     using ConsoleControllerFactoryType = ConsoleControllerType::FactoryType;
 #endif
+
 #ifdef __unix__
     using ConsoleControllerType = dory::nunix::ConsoleController<DataContextType>;
     using ConsoleControllerFactoryType = ConsoleControllerType::FactoryType;
 #endif
+
     using WindowControllerType = openGL::GlfwWindowController<DataContextType, WindowRepositoryType>;
     using WindowControllerFactoryType = WindowControllerType::FactoryType;
     using PipelineManagerType = services::PipelineManager<DataContextType, ConsoleControllerFactoryType, WindowControllerFactoryType, PipelineRepositoryType>;
