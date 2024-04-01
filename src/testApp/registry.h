@@ -10,7 +10,6 @@
 #include "base/domain/engine.h"
 #include "base/domain/services/frameService.h"
 #include "base/domain/services/viewService.h"
-#include "base/win32/consoleController.h"
 #include "openGL/glfwWindow.h"
 #include "openGL/glfwWindowController.h"
 #include "openGL/viewControllerOpenGL.h"
@@ -18,6 +17,14 @@
 #include "openGL/renderer.h"
 #include "openGL/windowService.h"
 #include "projectDataContext.h"
+
+#ifdef WIN32
+#include "base/win32/consoleController.h"
+#endif
+
+#ifdef UNIX
+#include "base/unix/consoleController.h"
+#endif
 
 namespace testApp::registry
 {
@@ -37,9 +44,15 @@ namespace testApp::registry
     using PipelineRepositoryType = domain::services::PipelineRepository<entity::PipelineNode>;
     using EngineType = domain::Engine<DataContextType, PipelineRepositoryType>;
     using FrameServiceType = services::BasicFrameService;
+#ifdef WIN32
     using ConsoleControllerType = win32::ConsoleController<DataContextType>;
-    using WindowControllerType = openGL::GlfwWindowController<DataContextType, WindowRepositoryType>;
     using ConsoleControllerFactoryType = ConsoleControllerType::FactoryType;
+#endif
+#ifdef UNIX
+    using ConsoleControllerType = unix::ConsoleController<DataContextType>;
+    using ConsoleControllerFactoryType = ConsoleControllerType::FactoryType;
+#endif
+    using WindowControllerType = openGL::GlfwWindowController<DataContextType, WindowRepositoryType>;
     using WindowControllerFactoryType = WindowControllerType::FactoryType;
     using PipelineManagerType = services::PipelineManager<DataContextType, ConsoleControllerFactoryType, WindowControllerFactoryType, PipelineRepositoryType>;
     using ShaderServiceType = openGL::services::ShaderService<ConfigurationServiceType>;
