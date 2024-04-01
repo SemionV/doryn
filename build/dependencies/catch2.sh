@@ -1,4 +1,4 @@
-source "./build/settings.sh"
+. "build/settings.sh"
 printInstallDependency "Catch2"
 
 CATCH2_DIR=${LIB_DIR}Catch2/

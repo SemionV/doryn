@@ -1,4 +1,4 @@
-source "./build/settings.sh"
+. "build/settings.sh"
 printInstallDependency "gl3w"
 
 GL3W_DIR=${LIB_DIR}gl3w/

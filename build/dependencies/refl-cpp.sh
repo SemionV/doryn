@@ -1,4 +1,4 @@
-source "./build/settings.sh"
+. "build/settings.sh"
 printInstallDependency "refl-cpp"
 
 REFL_CPP_DIR=${LIB_DIR}refl-cpp/

@@ -1,4 +1,4 @@
-source "./build/settings.sh"
+. "build/settings.sh"
 printInstallDependency "FakeIt"
 
 FAKEIT_DIR=${LIB_DIR}FakeIt/

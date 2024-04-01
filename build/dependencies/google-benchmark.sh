@@ -1,4 +1,4 @@
-source "./build/settings.sh"
+. "build/settings.sh"
 printInstallDependency "Google benchmark"
 
 GB_BUILD_CONFIG=Release

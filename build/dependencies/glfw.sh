@@ -1,4 +1,4 @@
-source "./build/settings.sh"
+. "build/settings.sh"
 printInstallDependency "GLFW"
 
 GLFW_DIR=${LIB_DIR}glfw/
