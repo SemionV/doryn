@@ -31,7 +31,7 @@ namespace testApp
         {
             services.engineEventHub.onInitializeEngine().attachHandler(this, &Project::onInitializeEngine);
             services.engineEventHub.onStopEngine().attachHandler(this, &Project::onStopEngine);
-            //services.consoleEventHub.onKeyPressed().attachHandler(this, &Project::onConsoleKeyPressed);
+            services.applicationEventHub.onExit().attachHandler(this, &Project::onApplicationExit);
             services.windowEventHub.onCloseWindow().attachHandler(this, &Project::onCloseWindow);
         }
 
@@ -70,6 +70,11 @@ namespace testApp
                 std::cout << std::this_thread::get_id() << ": key pressed: " << eventData.keyPressed << std::endl;
             }
         }*/
+
+        void onApplicationExit(DataContextType& context, const events::ApplicationExitEventData& eventData)
+        {
+            frameService.endLoop();
+        }
 
         void onCloseWindow(DataContextType& context, events::CloseWindowEventData& eventData)
         {

@@ -5,6 +5,7 @@
 #include "base/serviceContainer.h"
 #include "base/domain/configuration.h"
 #include "base/domain/events/engineEventHub.h"
+#include "base/domain/events/applicationEventHub.h"
 #include "base/domain/entity.h"
 #include "base/domain/entityRepository.h"
 #include "base/domain/engine.h"
@@ -37,9 +38,6 @@ namespace testApp::registry
     namespace events = domain::events;
     namespace openGL = dory::openGL;
     namespace configuration = dory::configuration;
-#ifdef WIN32
-    namespace win32 = dory::win32;
-#endif
 
     using DataContextType = ProjectDataContext;
     using ConfigurationServiceType = configuration::FileSystemBasedConfiguration;
@@ -51,7 +49,7 @@ namespace testApp::registry
     using FrameServiceType = services::BasicFrameService;
     using TerminalType = services::Terminal<decltype(std::cout)>;
 #ifdef WIN32
-    using ConsoleControllerType = win32::ConsoleController<DataContextType>;
+    using ConsoleControllerType = dory::win32::ConsoleController<DataContextType>;
     using ConsoleControllerFactoryType = ConsoleControllerType::FactoryType;
 #endif
 #ifdef __unix__
@@ -76,6 +74,8 @@ namespace testApp::registry
     using ConsoleEventHubType = events::SystemConsoleEventHub<DataContextType>;
     using WindowEventHubDispatcherType = events::WindowEventHubDispatcher<DataContextType>;
     using WindowEventHubType = events::WindowEventHub<DataContextType>;
+    using ApplicationEventDispatcherType = events::ApplicationEventHubDispatcher<DataContextType>;
+    using ApplicationEventHubType = events::ApplicationEventHub<DataContextType>;
     using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<WindowRepositoryType >>;
     using ViewServiceType = services::ViewService<services::ViewServiceDependencies<DataContextType,
                                                                                     ViewRepositoryType,
@@ -94,6 +94,8 @@ namespace testApp::registry
         ConsoleEventHubType& consoleEventHub = consoleEventDispatcher;
         WindowEventHubDispatcherType windowEventDispatcher;
         WindowEventHubType& windowEventHub = windowEventDispatcher;
+        ApplicationEventDispatcherType applicationEventDispatcher;
+        ApplicationEventHubType& applicationEventHub = applicationEventDispatcher;
         PipelineRepositoryType pipelineRepository;
         CameraRepositoryType cameraRepository;
         ViewRepositoryType viewRepository;
@@ -108,7 +110,7 @@ namespace testApp::registry
         PipelineManagerType pipelineManager = PipelineManagerType{ consoleControllerFactory, windowControllerFactory, pipelineRepository };
         WindowServiceType windowService = WindowServiceType{ windowRepository };
         ViewServiceType viewService = ViewServiceType{ viewRepository, pipelineRepository, cameraRepository, viewControllerFactory };
-        CliManagerType cliManager = CliManagerType(terminal, consoleEventHub);
+        CliManagerType cliManager = CliManagerType(terminal, consoleEventHub, applicationEventDispatcher);
 
         explicit Services(std::string configurationPath):
                 configurationPath(std::move(configurationPath))

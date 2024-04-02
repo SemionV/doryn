@@ -2,6 +2,7 @@
 
 #include "base/domain/services/terminal.h"
 #include "base/domain/events/systemConsoleEventHub.h"
+#include "base/domain/events/applicationEventHub.h"
 
 namespace dory::domain::logic
 {
@@ -29,9 +30,12 @@ namespace dory::domain::logic
         using TerminalEventHubType = events::SystemConsoleEventHub<TDataContext>;
         TerminalEventHubType& terminalEventHub;
 
+        using ApplicationEventDispatcherType = events::ApplicationEventHubDispatcher<TDataContext>;
+        ApplicationEventDispatcherType& applicationEventDispatcher;
+
     public:
-        explicit CliManager(TerminalType& terminal, TerminalEventHubType& terminalEventHub):
-                terminal(terminal), terminalEventHub(terminalEventHub)
+        explicit CliManager(TerminalType& terminal, TerminalEventHubType& terminalEventHub, ApplicationEventDispatcherType& applicationEventDispatcher):
+                terminal(terminal), terminalEventHub(terminalEventHub), applicationEventDispatcher(applicationEventDispatcher)
         {}
 
         void initializeImpl(TDataContext& dataContext)
@@ -50,14 +54,18 @@ namespace dory::domain::logic
     private:
         void onKeyPressed(TDataContext& context, events::KeyPressedEventData& eventData)
         {
-            if(eventData.keyPressed == 27)
+            if(eventData.keyPressed == 3)//CTRL+C
+            {
+                applicationEventDispatcher.fire(context, events::ApplicationExitEventData{});
+            }
+            if(eventData.keyPressed == 27)//ESC
             {
                 if(terminal.isCommandMode())
                 {
                     terminal.clearCurrentCommand();
                 }
             }
-            if(eventData.keyPressed == 13)
+            if(eventData.keyPressed == 13)//ENTER
             {
                 if(terminal.isCommandMode())
                 {
@@ -67,6 +75,7 @@ namespace dory::domain::logic
                     if(command == "exit")
                     {
                         terminal.writeLine("-\u001B[31mexit\u001B[0m-");
+                        applicationEventDispatcher.fire(context, events::ApplicationExitEventData{});
                     }
 
                     terminal.enterCommandMode();
