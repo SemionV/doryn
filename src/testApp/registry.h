@@ -10,6 +10,8 @@
 #include "base/domain/engine.h"
 #include "base/domain/services/frameService.h"
 #include "base/domain/services/viewService.h"
+#include "base/domain/services/terminal.h"
+#include "base/domain/logic/cliManager.h"
 #include "openGL/glfwWindow.h"
 #include "openGL/glfwWindowController.h"
 #include "openGL/viewControllerOpenGL.h"
@@ -31,6 +33,7 @@ namespace testApp::registry
     namespace domain = dory::domain;
     namespace entity = domain::entity;
     namespace services = domain::services;
+    namespace logic = domain::logic;
     namespace events = domain::events;
     namespace openGL = dory::openGL;
     namespace configuration = dory::configuration;
@@ -46,6 +49,7 @@ namespace testApp::registry
     using PipelineRepositoryType = domain::services::PipelineRepository<entity::PipelineNode>;
     using EngineType = domain::Engine<DataContextType, PipelineRepositoryType>;
     using FrameServiceType = services::BasicFrameService;
+    using TerminalType = services::Terminal<decltype(std::cout)>;
 #ifdef WIN32
     using ConsoleControllerType = win32::ConsoleController<DataContextType>;
     using ConsoleControllerFactoryType = ConsoleControllerType::FactoryType;
@@ -78,10 +82,12 @@ namespace testApp::registry
                                                                                     PipelineRepositoryType,
                                                                                     CameraRepositoryType,
                                                                                     ViewControllerFactoryType>>;
+    using CliManagerType = logic::CliManager<DataContextType, TerminalType>;
 
     class Services
     {
     public:
+        TerminalType terminal = TerminalType(std::cout);
         EngineEventDispatcherType engineEventDispatcher;
         EngineEventHubType& engineEventHub = engineEventDispatcher;
         ConsoleEventDispatcherType consoleEventDispatcher;
@@ -102,6 +108,7 @@ namespace testApp::registry
         PipelineManagerType pipelineManager = PipelineManagerType{ consoleControllerFactory, windowControllerFactory, pipelineRepository };
         WindowServiceType windowService = WindowServiceType{ windowRepository };
         ViewServiceType viewService = ViewServiceType{ viewRepository, pipelineRepository, cameraRepository, viewControllerFactory };
+        CliManagerType cliManager = CliManagerType(terminal, consoleEventHub);
 
         explicit Services(std::string configurationPath):
                 configurationPath(std::move(configurationPath))

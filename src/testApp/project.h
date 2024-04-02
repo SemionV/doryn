@@ -31,7 +31,7 @@ namespace testApp
         {
             services.engineEventHub.onInitializeEngine().attachHandler(this, &Project::onInitializeEngine);
             services.engineEventHub.onStopEngine().attachHandler(this, &Project::onStopEngine);
-            services.consoleEventHub.onKeyPressed().attachHandler(this, &Project::onConsoleKeyPressed);
+            //services.consoleEventHub.onKeyPressed().attachHandler(this, &Project::onConsoleKeyPressed);
             services.windowEventHub.onCloseWindow().attachHandler(this, &Project::onCloseWindow);
         }
 
@@ -39,6 +39,7 @@ namespace testApp
         {
             std::cout << "Starting Engine..." << std::endl;
 
+            services.cliManager.initialize(context);
             services.pipelineManager.configurePipeline(context);
 
             auto window = services.windowService.createWindow();
@@ -48,10 +49,10 @@ namespace testApp
 
         void onStopEngine(DataContextType& context, const events::StopEngineEventData& eventData)
         {
-            std::cout << "Stopping Engine..." << std::endl;
+            std::cout << "Stopping Engine...";
         }
 
-        void onConsoleKeyPressed(DataContextType& context, events::KeyPressedEventData& eventData)
+        /*void onConsoleKeyPressed(DataContextType& context, events::KeyPressedEventData& eventData)
         {
             if(eventData.keyPressed == 27)
             {
@@ -67,7 +68,7 @@ namespace testApp
             {
                 std::cout << std::this_thread::get_id() << ": key pressed: " << eventData.keyPressed << std::endl;
             }
-        }
+        }*/
 
         void onCloseWindow(DataContextType& context, events::CloseWindowEventData& eventData)
         {

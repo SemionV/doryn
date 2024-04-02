@@ -26,12 +26,10 @@ namespace dory::win32
 
         bool initialize(domain::entity::IdType referenceId, TDataContext& context) override
         {
-            if(AllocConsole())
+            /*if(AllocConsole())
             {
                 bindStdHandlesToConsole();
-            }
-
-            std::cout << "SystemConsole.connect()" << std::endl;
+            }*/
 
             auto readInputTask = concurrency::allocateActionTask([this]()
                                                                  {
@@ -58,14 +56,12 @@ namespace dory::win32
     protected:
         void onKeyPressed(int key)
         {
-            std::cout << std::this_thread::get_id() << ": add key pressed message: " << key << std::endl;
-
             domain::events::KeyPressedEventData eventData(key);
             consoleEventHub.addCase(std::forward<domain::events::KeyPressedEventData>(eventData));
         }
 
     private:
-        void bindStdHandlesToConsole()
+        /*void bindStdHandlesToConsole()
         {
             //TODO: Add Error checking.
 
@@ -93,7 +89,7 @@ namespace dory::win32
             std::cerr.clear();
             std::wcin.clear();
             std::cin.clear();
-        }
+        }*/
     };
 
     template<typename TDataContext>
