@@ -1,7 +1,6 @@
 #pragma once
 
 #include "base/domain/events/systemConsoleEventHub.h"
-#include "base/concurrency/individualProcessThread.h"
 
 namespace dory::win32
 {
@@ -12,7 +11,7 @@ namespace dory::win32
     class ConsoleController: public domain::Controller<TDataContext>
     {
     private:
-        concurrency::IndividualProcessThread processThread;
+        std::jthread pollingThread;
 
         using EventHubDispatcherType = domain::events::SystemConsoleEventHubDispatcher<TDataContext>;
         EventHubDispatcherType& consoleEventHub;
@@ -31,21 +30,30 @@ namespace dory::win32
                 bindStdHandlesToConsole();
             }*/
 
-            auto readInputTask = concurrency::allocateActionTask([this]()
-                                                                 {
-                                                                     int inputKey = getchar();
-                                                                     onKeyPressed(inputKey);
-                                                                 });
-            processThread.setRegularTask(readInputTask);
+            pollingThread = std::jthread([this](const std::stop_token& stoken)
+            {
+                while(true)
+                {
+                    if(stoken.stop_requested()) {
+                        std::cout << "Sleepy worker is requested to stop\n";
+                        return;
+                    }
 
-            processThread.run();
+                    int inputKey = getchar();
+                    onKeyPressed(inputKey);
+
+                    std::this_thread::yield();
+                }
+            });
+
+            pollingThread.detach();
 
             return true;
         };
 
         void stop(domain::entity::IdType referenceId, TDataContext& context) override
         {
-            processThread.stop();
+            pollingThread.request_stop();
         };
 
         void update(dory::domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, TDataContext& context) override

@@ -64,6 +64,17 @@ namespace dory::domain
         void stopImpl(TDataContext& context)
         {
             engineEventHub.fire(context, events::StopEngineEventData());
+
+            auto pipelineNodes = pipelineRepository.getPipeline();
+
+            touchPipelineNodes(pipelineNodes, context, [](const std::shared_ptr<object::PipelineNode>& node, TDataContext& context)
+            {
+                auto controller = node->nodeEntity.attachedController;
+                if(controller)
+                {
+                    std::static_pointer_cast<Controller<TDataContext>>(controller)->stop(node->nodeEntity.id, context);
+                }
+            });
         }
 
     private:

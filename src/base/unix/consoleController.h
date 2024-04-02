@@ -2,7 +2,6 @@
 
 #include "base/unix/dependencies.h"
 #include "base/domain/controller.h"
-#include "base/concurrency/individualProcessThread.h"
 #include "base/domain/events/eventHub.h"
 #include "base/domain/events/systemConsoleEventHub.h"
 
@@ -17,7 +16,7 @@ namespace dory::nunix
     class ConsoleController: public domain::Controller<TDataContext>
     {
     private:
-        concurrency::IndividualProcessThread processThread;
+        std::jthread pollingThread;
 
         using EventHubDispatcherType = domain::events::SystemConsoleEventHubDispatcher<TDataContext>;
         EventHubDispatcherType& consoleEventHub;
@@ -38,14 +37,23 @@ namespace dory::nunix
             currentt.c_lflag &= ~ECHO; /* set no echo mode */
             tcsetattr(STDIN_FILENO, TCSANOW, &currentt);
 
-            auto readInputTask = concurrency::allocateActionTask([this]()
+            pollingThread = std::jthread([this](const std::stop_token& stoken)
             {
-                int inputKey = getchar();
-                onKeyPressed(inputKey);
-            });
-            processThread.setRegularTask(readInputTask);
+                while(true)
+                {
+                    if(stoken.stop_requested()) {
+                        std::cout << "Sleepy worker is requested to stop\n";
+                        return;
+                    }
 
-            processThread.run();
+                    int inputKey = getchar();
+                    onKeyPressed(inputKey);
+
+                    std::this_thread::yield();
+                }
+            });
+
+            pollingThread.detach();
 
             return true;
         };
@@ -53,7 +61,7 @@ namespace dory::nunix
         void stop(domain::entity::IdType referenceId, TDataContext& context) override
         {
             tcsetattr(0, TCSANOW, &oldt);
-            processThread.stop();
+            pollingThread.request_stop();
         };
 
         void update(dory::domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, TDataContext& context) override
