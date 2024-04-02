@@ -113,14 +113,22 @@ namespace dory::domain::services
 
         void clearCurrentCommandImpl()
         {
-            ostream << "\r";
-            auto count = currentCommand.size() + commandModePrefix.size();
+            auto count = currentCommand.size();
+
+            for(std::size_t i = 0; i < count; ++i)
+            {
+                ostream << "\b";
+            }
             for(std::size_t i = 0; i < count; ++i)
             {
                 ostream << " ";
             }
-            ostream << "\r";
-            enterCommandModeImpl();
+            for(std::size_t i = 0; i < count; ++i)
+            {
+                ostream << "\b";
+            }
+
+            currentCommand = "";
         }
 
         bool isCommandModeImpl()
