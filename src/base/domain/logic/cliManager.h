@@ -54,6 +54,9 @@ namespace dory::domain::logic
     private:
         void onKeyPressed(TDataContext& context, events::KeyPressedEventData& eventData)
         {
+            std::cout << (int)eventData.keyPressed << "\n";
+            return;
+
             if(eventData.keyPressed == 3)//CTRL+C
             {
                 applicationEventDispatcher.fire(context, events::ApplicationExitEventData{});

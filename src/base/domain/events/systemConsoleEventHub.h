@@ -9,9 +9,9 @@ namespace dory::domain::events
 {
     struct KeyPressedEventData
     {
-        const char keyPressed;
+        const int keyPressed;
         
-        explicit KeyPressedEventData(char keyPressed):
+        explicit KeyPressedEventData(int keyPressed):
             keyPressed(keyPressed)
         {
         }

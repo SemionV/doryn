@@ -33,7 +33,7 @@ namespace dory::win32
 
             auto readInputTask = concurrency::allocateActionTask([this]()
                                                                  {
-                                                                     int inputKey = getch();
+                                                                     int inputKey = getchar();
                                                                      onKeyPressed(inputKey);
                                                                  });
             processThread.setRegularTask(readInputTask);
@@ -54,7 +54,7 @@ namespace dory::win32
         }
 
     protected:
-        void onKeyPressed(int key)
+        void onKeyPressed(unsigned char key)
         {
             domain::events::KeyPressedEventData eventData(key);
             consoleEventHub.addCase(std::forward<domain::events::KeyPressedEventData>(eventData));

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base/unix/dependencies.h"
 #include "base/domain/controller.h"
 #include "base/concurrency/individualProcessThread.h"
 #include "base/domain/events/eventHub.h"
@@ -9,6 +10,8 @@ namespace dory::nunix
 {
     template<typename TDataContext>
     class ConsoleControllerFactory;
+
+    static struct termios oldt, currentt;
 
     template<class TDataContext>
     class ConsoleController: public domain::Controller<TDataContext>
@@ -28,19 +31,18 @@ namespace dory::nunix
 
         bool initialize(domain::entity::IdType referenceId, TDataContext& context) override
         {
-            processThread.invokeTask(concurrency::allocateActionTask([this]()
-            {
-                initscr();
-                cbreak();
-                keypad(stdscr, TRUE);
-                noecho();
-            }));
-
             std::cout << "SystemConsole.connect()" << std::endl;
+
+            //see https://stackoverflow.com/questions/7469139/what-is-the-equivalent-to-getch-getche-in-linux
+            tcgetattr(STDIN_FILENO, &oldt);
+            currentt = oldt;
+            currentt.c_lflag &= ~ICANON; /* disable buffered i/o */
+            currentt.c_lflag &= ~ECHO; /* set no echo mode */
+            tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 
             auto readInputTask = concurrency::allocateActionTask([this]()
             {
-                int inputKey = getch();
+                int inputKey = getchar();
                 onKeyPressed(inputKey);
             });
             processThread.setRegularTask(readInputTask);
@@ -52,11 +54,8 @@ namespace dory::nunix
 
         void stop(domain::entity::IdType referenceId, TDataContext& context) override
         {
+            tcsetattr(0, TCSANOW, &oldt);
             processThread.stop();
-            processThread.invokeTask(concurrency::allocateActionTask([this]()
-            {
-                endwin();
-            }));
         };
 
         void update(dory::domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, TDataContext& context) override
@@ -67,8 +66,6 @@ namespace dory::nunix
     protected:
         void onKeyPressed(int key)
         {
-            std::cout << std::this_thread::get_id() << ": add key pressed message: " << key << std::endl;
-
             domain::events::KeyPressedEventData eventData(key);
             consoleEventHub.addCase(std::forward<domain::events::KeyPressedEventData>(eventData));
         }
