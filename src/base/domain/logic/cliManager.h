@@ -58,14 +58,18 @@ namespace dory::domain::logic
             {
                 applicationEventDispatcher.fire(context, events::ApplicationExitEventData{});
             }
-            if(eventData.keyPressed == 27)//ESC
+            else if(eventData.keyPressed == 27)//ESC
             {
                 if(terminal.isCommandMode())
                 {
                     terminal.clearCurrentCommand();
                 }
             }
-            if(eventData.keyPressed == 13)//ENTER
+            else if(eventData.keyPressed == 8)//BACKSPACE
+            {
+                terminal.backspace();
+            }
+            else if(eventData.keyPressed == 13)//ENTER
             {
                 if(terminal.isCommandMode())
                 {
@@ -77,8 +81,10 @@ namespace dory::domain::logic
                         terminal.writeLine("-\u001B[31mexit\u001B[0m-");
                         applicationEventDispatcher.fire(context, events::ApplicationExitEventData{});
                     }
-
-                    terminal.enterCommandMode();
+                    else
+                    {
+                        terminal.enterCommandMode();
+                    }
                 }
             }
             else if(eventData.keyPressed != 0)

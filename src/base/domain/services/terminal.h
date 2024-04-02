@@ -20,6 +20,11 @@ namespace dory::domain::services
             this->toImplementation()->writeImpl(message);
         }
 
+        void backspace()
+        {
+            this->toImplementation()->backspaceImpl();
+        }
+
         void enterCommandMode()
         {
             this->toImplementation()->enterCommandModeImpl();
@@ -75,6 +80,15 @@ namespace dory::domain::services
         void writeImpl(T message)
         {
             ostream << message;
+        }
+
+        void backspaceImpl()
+        {
+            if(commandMode && !currentCommand.empty())
+            {
+                currentCommand.erase(currentCommand.end() - 1);
+                ostream << "\b \b";
+            }
         }
 
         void enterCommandModeImpl()
