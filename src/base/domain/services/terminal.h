@@ -8,17 +8,14 @@ namespace dory::domain::services
     template<typename TImplementation>
     struct ITerminal: Uncopyable, public StaticInterface<TImplementation>
     {
-        void writeLine(std::string_view message)
+        template<typename T>
+        void writeLine(T message)
         {
             this->toImplementation()->writeLineImpl(message);
         }
 
-        void write(char symbol)
-        {
-            this->toImplementation()->writeImpl(symbol);
-        }
-
-        void write(std::string_view message)
+        template<typename T>
+        void write(T message)
         {
             this->toImplementation()->writeImpl(message);
         }
@@ -26,6 +23,11 @@ namespace dory::domain::services
         void enterCommandMode()
         {
             this->toImplementation()->enterCommandModeImpl();
+        }
+
+        void exitCommandMode()
+        {
+            this->toImplementation()->exitCommandModeImpl();
         }
 
         void clearCurrentCommand()
@@ -37,6 +39,16 @@ namespace dory::domain::services
         {
             this->toImplementation()->appendToCurrentCommandImpl(symbol);
         }
+
+        bool isCommandMode()
+        {
+            return this->toImplementation()->isCommandModeImpl();
+        }
+
+        std::string getCurrentCommand()
+        {
+            return this->toImplementation()->getCurrentCommandImpl();
+        }
     };
 
     template<typename TOutputStream>
@@ -46,31 +58,37 @@ namespace dory::domain::services
         const std::string_view commandModePrefix = "> ";
         TOutputStream& ostream;
         std::string currentCommand;
+        bool commandMode = false;
 
     public:
         explicit Terminal(TOutputStream& ostream):
                 ostream(ostream)
         {}
 
-        void writeLineImpl(std::string_view message)
+        template<typename T>
+        void writeLineImpl(T message)
         {
             ostream << message << "\n";
         }
 
-        void writeImpl(std::string_view message)
+        template<typename T>
+        void writeImpl(T message)
         {
             ostream << message;
-        }
-
-        void writeImpl(char symbol)
-        {
-            ostream << symbol;
         }
 
         void enterCommandModeImpl()
         {
             ostream << commandModePrefix;
             currentCommand = "";
+            commandMode = true;
+        }
+
+        void exitCommandModeImpl()
+        {
+            currentCommand = "";
+            commandMode = false;
+            ostream << "\n";
         }
 
         void appendToCurrentCommandImpl(char symbol)
@@ -89,6 +107,16 @@ namespace dory::domain::services
             }
             ostream << "\r";
             enterCommandModeImpl();
+        }
+
+        bool isCommandModeImpl()
+        {
+            return commandMode;
+        }
+
+        std::string getCurrentCommandImpl()
+        {
+            return currentCommand;
         }
     };
 }

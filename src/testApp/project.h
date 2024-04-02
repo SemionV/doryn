@@ -49,6 +49,7 @@ namespace testApp
 
         void onStopEngine(DataContextType& context, const events::StopEngineEventData& eventData)
         {
+            services.cliManager.stop(context);
             std::cout << "Stopping Engine...";
         }
 

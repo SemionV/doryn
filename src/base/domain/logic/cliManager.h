@@ -12,6 +12,11 @@ namespace dory::domain::logic
         {
             this->toImplementation()->initializeImpl(dataContext);
         }
+        void stop(TDataContext& dataContext)
+        {
+            this->toImplementation()->stopImpl(dataContext);
+        }
+
     };
 
     template<typename TDataContext, typename TTerminal>
@@ -34,17 +39,45 @@ namespace dory::domain::logic
             terminalEventHub.onKeyPressed().attachHandler(this, &CliManager::onKeyPressed);
             terminal.enterCommandMode();
         }
+        void stopImpl(TDataContext& dataContext)
+        {
+            if(terminal.isCommandMode())
+            {
+                terminal.exitCommandMode();
+            }
+        }
 
     private:
         void onKeyPressed(TDataContext& context, events::KeyPressedEventData& eventData)
         {
             if(eventData.keyPressed == 27)
             {
-                terminal.clearCurrentCommand();
+                if(terminal.isCommandMode())
+                {
+                    terminal.clearCurrentCommand();
+                }
+            }
+            if(eventData.keyPressed == 13)
+            {
+                if(terminal.isCommandMode())
+                {
+                    auto command = terminal.getCurrentCommand();
+                    terminal.exitCommandMode();
+
+                    if(command == "exit")
+                    {
+                        terminal.writeLine("-exit-");
+                    }
+
+                    terminal.enterCommandMode();
+                }
             }
             else if(eventData.keyPressed != 0)
             {
-                terminal.appendToCurrentCommand((char)eventData.keyPressed);
+                if(terminal.isCommandMode())
+                {
+                    terminal.appendToCurrentCommand((char)eventData.keyPressed);
+                }
             }
         }
     };
