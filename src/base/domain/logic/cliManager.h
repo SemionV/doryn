@@ -54,8 +54,8 @@ namespace dory::domain::logic
     private:
         void onKeyPressed(TDataContext& context, events::KeyPressedEventData& eventData)
         {
-            std::cout << (int)eventData.keyPressed << "\n";
-            return;
+            /*std::cout << (int)eventData.keyPressed << "\n";
+            return;*/
 
             if(eventData.keyPressed == 3)//CTRL+C
             {
@@ -68,11 +68,11 @@ namespace dory::domain::logic
                     terminal.clearCurrentCommand();
                 }
             }
-            else if(eventData.keyPressed == 8)//BACKSPACE
+            else if(eventData.keyPressed == 127)//BACKSPACE
             {
                 terminal.backspace();
             }
-            else if(eventData.keyPressed == 13)//ENTER
+            else if(eventData.keyPressed == 10)//ENTER
             {
                 if(terminal.isCommandMode())
                 {

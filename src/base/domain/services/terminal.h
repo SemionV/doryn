@@ -88,6 +88,7 @@ namespace dory::domain::services
             {
                 currentCommand.erase(currentCommand.end() - 1);
                 ostream << "\b \b";
+                ostream.flush();
             }
         }
 
@@ -96,6 +97,7 @@ namespace dory::domain::services
             ostream << commandModePrefix;
             currentCommand = "";
             commandMode = true;
+            ostream.flush();
         }
 
         void exitCommandModeImpl()
@@ -103,12 +105,14 @@ namespace dory::domain::services
             currentCommand = "";
             commandMode = false;
             ostream << "\n";
+            ostream.flush();
         }
 
         void appendToCurrentCommandImpl(char symbol)
         {
             currentCommand += symbol;
             ostream << symbol;
+            ostream.flush();
         }
 
         void clearCurrentCommandImpl()
@@ -129,6 +133,7 @@ namespace dory::domain::services
             }
 
             currentCommand = "";
+            ostream.flush();
         }
 
         bool isCommandModeImpl()

@@ -174,10 +174,10 @@ struct ServiceDependencies
     using HelloServiceType = HelloService;
     using EngineServiceType = EngineService<PipelineServiceType, HelloServiceType>;
 
-    using PipelineService = Singleton<PipelineServiceType, IPipelineService<PipelineServiceType>>;
-    using PipelineServiceImpl = Reference<PipelineService, PipelineServiceType>;
+    using PipelineServiceDep = Singleton<PipelineServiceType, IPipelineService<PipelineServiceType>>;
+    using PipelineServiceImpl = Reference<PipelineServiceDep, PipelineServiceType>;
     using HelloServiceDep = Singleton<std::shared_ptr<HelloServiceType>, IHelloService<HelloServiceType>>;
-    using EngineServiceDep = Singleton<EngineServiceType, EngineServiceType, DependencyList<PipelineService, HelloServiceDep>>;
+    using EngineServiceDep = Singleton<EngineServiceType, EngineServiceType, DependencyList<PipelineServiceDep, HelloServiceDep>>;
 
     using RepeatServiceType = Service1Uncopiable;
 
@@ -188,7 +188,7 @@ struct ServiceDependencies
     using RepeatService2 = dory::Singleton<RepeatServiceType, RepeatServiceType, DependencyList<>, RepeatService2Tag>;
 
     using ServiceContainerType = ServiceContainer<
-            PipelineService,
+            PipelineServiceDep,
             PipelineServiceImpl,
             HelloServiceDep,
             EngineServiceDep,
@@ -216,7 +216,7 @@ TEST_CASE("Check ServiceContainer usage", "Service Container")
 
     auto services = Services::ServiceContainerType{};
 
-    services.get<Services::PipelineService>().getPipeline();
+    services.get<Services::PipelineServiceDep>().getPipeline();
 
     auto& engine = services.get<Services::EngineServiceDep>();
     engine.run();

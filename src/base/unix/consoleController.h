@@ -31,14 +31,12 @@ namespace dory::nunix
 
         bool initialize(domain::entity::IdType referenceId, TDataContext& context) override
         {
-            std::cout << "SystemConsole.connect()" << std::endl;
-
             //see https://stackoverflow.com/questions/7469139/what-is-the-equivalent-to-getch-getche-in-linux
             tcgetattr(STDIN_FILENO, &oldt);
             currentt = oldt;
             currentt.c_lflag &= ~ICANON; /* disable buffered i/o */
             currentt.c_lflag &= ~ECHO; /* set no echo mode */
-            tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+            tcsetattr(STDIN_FILENO, TCSANOW, &currentt);
 
             auto readInputTask = concurrency::allocateActionTask([this]()
             {
