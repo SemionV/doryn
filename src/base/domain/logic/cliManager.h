@@ -66,7 +66,7 @@ namespace dory::domain::logic
 
                     if(command == "exit")
                     {
-                        terminal.writeLine("-exit-");
+                        terminal.writeLine("-\u001B[31mexit\u001B[0m-");
                     }
 
                     terminal.enterCommandMode();
