@@ -10,9 +10,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 #endif
 
 #ifdef __unix__
-int main()
+void main()
 {
     auto project = testApp::Project{};
-    return project.run();
+    auto code = project.run();
+
+    exit(code);
 }
 #endif
