@@ -41,12 +41,12 @@ namespace dory::domain::events
         EventBuffer<TDataContext, CloseWindowEventData> closeWindowEventBuffer;
 
     public:
-        void addCase(CloseWindowEventData&& closeWindowData)
+        void addCase(const CloseWindowEventData& closeWindowData)
         {
-            closeWindowEventBuffer.addCase(std::forward<CloseWindowEventData>(closeWindowData));
+            closeWindowEventBuffer.addCase(closeWindowData);
         }
 
-        void submit(TDataContext& context) override
+        void submit(TDataContext& context)
         {
             closeWindowEventBuffer.submitCases(this->onCloseWindowDispatcher(), context);
         }

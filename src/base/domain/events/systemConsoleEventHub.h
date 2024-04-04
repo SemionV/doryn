@@ -43,12 +43,12 @@ namespace dory::domain::events
         EventBuffer<TDataContext, KeyPressedEventData> keyPressedEventBuffer;
 
     public:
-        void addCase(KeyPressedEventData&& keyPressedData)
+        void addCase(const KeyPressedEventData& keyPressedData)
         {
-            keyPressedEventBuffer.addCase(std::forward<KeyPressedEventData>(keyPressedData));
+            keyPressedEventBuffer.addCase(keyPressedData);
         }
 
-        void submit(TDataContext& context) override
+        void submit(TDataContext& context)
         {
             keyPressedEventBuffer.submitCases(this->onKeyPressedDispatcher(), context);
         }
