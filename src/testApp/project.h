@@ -37,7 +37,7 @@ namespace testApp
 
         void onInitializeEngine(DataContextType& context, const events::InitializeEngineEventData& eventData)
         {
-            std::cout << "Starting Engine..." << std::endl;
+            services.terminal.writeLine("Starting Engine...");
 
             services.cliManager.initialize(context);
             services.pipelineManager.configurePipeline(context);
@@ -77,7 +77,7 @@ namespace testApp
         void onStopEngine(DataContextType& context, const events::StopEngineEventData& eventData)
         {
             services.cliManager.stop(context);
-            std::cout << "Stopping Engine...";
+            services.terminal.writeLine("Stopping Engine...");
         }
 
         /*void onConsoleKeyPressed(DataContextType& context, events::KeyPressedEventData& eventData)

@@ -71,6 +71,7 @@ namespace dory::domain::devices
         void disconnectImpl(TDataContext& context)
         {
             pollingThread.request_stop();
+            pollingThread.detach();
         }
     };
 }
