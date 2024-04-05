@@ -1,18 +1,12 @@
 #pragma once
 
 #include "base/typeComponents.h"
-#include "base/domain/events/eventHub.h"
+#include "base/domain/events/eventBuffer.h"
 
 namespace dory::domain::events
 {
-    template<typename T>
-    struct IOEvent
-    {
-        T value;
-    };
-
     template<class TDataContext, typename TInputEventData, typename TOutputEventData>
-    class StandartInputOutputEventHub: Uncopyable
+    class IOEventHub: Uncopyable
     {
     private:
         EventDispatcher<TDataContext&, const TInputEventData&> inputEvent;
@@ -42,7 +36,7 @@ namespace dory::domain::events
     };
 
     template<class TDataContext, typename TInputEventData, typename TOutputEventData>
-    class StandartInputOutputEventHubDispatcher: public StandartInputOutputEventHub<TDataContext, TInputEventData, TOutputEventData>
+    class IOEventHubDispatcher: public IOEventHub<TDataContext, TInputEventData, TOutputEventData>
     {
     private:
         EventBuffer<TDataContext, TInputEventData> inputEventBuffer;
@@ -59,9 +53,13 @@ namespace dory::domain::events
             outputEventBuffer.addCase(outputEventData);
         }
 
-        void submit(TDataContext& context)
+        void submitInput(TDataContext& context)
         {
             inputEventBuffer.submitCases(this->onInputDispatcher(), context);
+        }
+
+        void submitOutput(TDataContext& context)
+        {
             outputEventBuffer.submitCases(this->onOutputDispatcher(), context);
         }
     };

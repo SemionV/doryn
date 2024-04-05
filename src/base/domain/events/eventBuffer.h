@@ -17,22 +17,15 @@ namespace dory::domain::events
     class EventBuffer
     {
         private:
-            std::vector<TEventData>* eventCases;
-            std::vector<TEventData>* eventCasesBackBuffer;
+            std::shared_ptr<std::vector<TEventData>> eventCases;
+            std::shared_ptr<std::vector<TEventData>> eventCasesBackBuffer;
             std::mutex mutex;
 
         public:
             EventBuffer():
-                eventCases(new std::vector<TEventData>()),
-                eventCasesBackBuffer(new std::vector<TEventData>())
-            {                
-            }
-
-            virtual ~EventBuffer()
-            {       
-                delete eventCases;     
-                delete eventCasesBackBuffer;     
-            }
+                eventCases(std::make_shared<std::vector<TEventData>>()),
+                eventCasesBackBuffer(std::make_shared<std::vector<TEventData>>())
+            {}
 
             void addCase(const TEventData& eventData)
             {
@@ -44,7 +37,7 @@ namespace dory::domain::events
             {
                 std::lock_guard lock{mutex};
 
-                std::vector<TEventData>* temp = eventCases;
+                std::shared_ptr<std::vector<TEventData>> temp = eventCases;
                 eventCases = eventCasesBackBuffer;
                 eventCasesBackBuffer = temp;
 

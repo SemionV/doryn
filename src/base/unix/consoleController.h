@@ -2,7 +2,7 @@
 
 #include "base/unix/dependencies.h"
 #include "base/domain/controller.h"
-#include "base/domain/events/eventHub.h"
+#include "base/domain/events/eventBuffer.h"
 #include "base/domain/events/systemConsoleEventHub.h"
 
 namespace dory::nunix

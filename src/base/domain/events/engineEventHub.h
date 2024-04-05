@@ -2,7 +2,7 @@
 
 #include "base/dependencies.h"
 #include "event.h"
-#include "eventHub.h"
+#include "eventBuffer.h"
 #include "base/typeComponents.h"
 
 namespace dory::domain::events
