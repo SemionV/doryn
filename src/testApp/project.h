@@ -44,18 +44,30 @@ namespace testApp
 
             services.standartIODevice.connectImpl(context);
 
+            auto flushInputEvents = [this](auto referenceId, const auto& timeStep, DataContextType& context)
+            {
+                services.standartIoEventDispatcher.submitInput(context);
+            };
+
             auto flushOutputEvents = [this](auto referenceId, const auto& timeStep, DataContextType& context)
             {
                 services.standartIoEventDispatcher.submitOutput(context);
+                services.standartIoEventDispatcher.fire(context, events::FlushOutputBuffer{});
             };
 
             registry::services::IPipelineRepository<registry::PipelineRepositoryType, DataContextType>& pipelineRepository = services.pipelineRepository;
+
+            pipelineRepository.store(dory::domain::entity::PipelineNode<DataContextType> {
+                    flushInputEvents,
+                    dory::domain::entity::PipelineNodePriority::Default,
+                    context.inputGroupNodeId});
+
             pipelineRepository.store(dory::domain::entity::PipelineNode<DataContextType> {
                 flushOutputEvents,
                 dory::domain::entity::PipelineNodePriority::Default,
                 context.outputGroupNodeId});
 
-            services.standartIoEventDispatcher.addCase("hello!");
+            services.terminal.writeLine("hello!");
 
             auto window = services.windowService.createWindow();
             context.mainWindowId = window.id;

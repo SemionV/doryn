@@ -49,7 +49,7 @@ namespace testApp::registry
     using PipelineRepositoryType = domain::services::PipelineRepository<DataContextType, entity::PipelineNode<DataContextType>>;
     using EngineType = domain::Engine<DataContextType, PipelineRepositoryType>;
     using FrameServiceType = services::BasicFrameService;
-    using TerminalType = services::Terminal<decltype(std::cout)>;
+    using TerminalType = services::Terminal<DataContextType, int, std::string>;
 #ifdef WIN32
     using ConsoleControllerType = dory::win32::ConsoleController<DataContextType>;
     using ConsoleControllerFactoryType = ConsoleControllerType::FactoryType;
@@ -92,7 +92,6 @@ namespace testApp::registry
     class Services
     {
     public:
-        TerminalType terminal = TerminalType(std::cout);
         EngineEventDispatcherType engineEventDispatcher;
         EngineEventHubType& engineEventHub = engineEventDispatcher;
         ConsoleEventDispatcherType consoleEventDispatcher;
@@ -102,6 +101,7 @@ namespace testApp::registry
         ApplicationEventDispatcherType applicationEventDispatcher;
         ApplicationEventHubType& applicationEventHub = applicationEventDispatcher;
         StandartIOEventDispatcherType standartIoEventDispatcher;
+        TerminalType terminal = TerminalType(standartIoEventDispatcher);
         PipelineRepositoryType pipelineRepository;
         CameraRepositoryType cameraRepository;
         ViewRepositoryType viewRepository;

@@ -39,6 +39,11 @@ namespace dory::domain::devices
             std::cout << eventData;
         }
 
+        void onFlush(TDataContext& context, const events::FlushOutputBuffer flushOutputBuffer)
+        {
+            std::cout.flush();
+        }
+
     public:
         explicit StandartInputOutputDeviceWin32(IOEventHubDispatcherType& eventHubDispatcher):
                 eventHubDispatcher(eventHubDispatcher)
@@ -60,6 +65,7 @@ namespace dory::domain::devices
             });
 
             eventHubDispatcher.onOutput().attachHandler(this, &StandartInputOutputDeviceWin32::onOutput);
+            eventHubDispatcher.onFlush().attachHandler(this, &StandartInputOutputDeviceWin32::onFlush);
         }
 
         void disconnectImpl(TDataContext& context)

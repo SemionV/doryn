@@ -2,7 +2,7 @@
 
 #include "base/dependencies.h"
 #include "base/typeComponents.h"
-
+#include "base/domain/events/ioEventHub.h"
 
 namespace dory::domain::services
 {
@@ -57,32 +57,41 @@ namespace dory::domain::services
         }
     };
 
-    template<typename TOutputStream>
-    class Terminal: public ITerminal<Terminal<TOutputStream>>
+    template<typename TDataContext, typename TInputEventData, typename TOutputEventData>
+    class Terminal: public ITerminal<Terminal<TDataContext, TInputEventData, TOutputEventData>>
     {
     private:
-        const std::string_view commandModePrefix = "> ";
-        TOutputStream& ostream;
+        using IOEventHubDispatcherType = events::IOEventHubDispatcher<TDataContext, TInputEventData, TOutputEventData>;
+        IOEventHubDispatcherType& ioEventDispatcher;
+
+        const std::string commandModePrefix = "> ";
         std::string currentCommand;
         bool commandMode = false;
 
+        void sendToOutputDevice(const TOutputEventData& data)
+        {
+            ioEventDispatcher.addCase(data);
+        }
+
     public:
-        explicit Terminal(TOutputStream& ostream):
-                ostream(ostream)
+        explicit Terminal(IOEventHubDispatcherType& ioEventDispatcher):
+                ioEventDispatcher(ioEventDispatcher)
         {}
 
         template<typename T>
         void writeLineImpl(T message)
         {
+            auto data = std::string{message} + "\n";
+
             if(commandMode)
             {
                 exitCommandModeImpl();
-                ostream << message << "\n";
+                sendToOutputDevice(data);
                 enterCommandModeImpl();
             }
             else
             {
-                ostream << message << "\n";
+                sendToOutputDevice(data);
             }
         }
 
@@ -92,12 +101,12 @@ namespace dory::domain::services
             if(commandMode)
             {
                 exitCommandModeImpl();
-                ostream << message;
+                sendToOutputDevice(message);
                 enterCommandModeImpl();
             }
             else
             {
-                ostream << message;
+                sendToOutputDevice(message);
             }
         }
 
@@ -106,53 +115,50 @@ namespace dory::domain::services
             if(commandMode && !currentCommand.empty())
             {
                 currentCommand.erase(currentCommand.end() - 1);
-                ostream << "\b \b";
-                ostream.flush();
+                sendToOutputDevice("\b \b");
             }
         }
 
         void enterCommandModeImpl()
         {
-            ostream << commandModePrefix;
+            sendToOutputDevice(commandModePrefix);
             currentCommand = "";
             commandMode = true;
-            ostream.flush();
         }
 
         void exitCommandModeImpl()
         {
             currentCommand = "";
             commandMode = false;
-            ostream << "\n";
-            ostream.flush();
+            sendToOutputDevice("\n");
         }
 
         void appendToCurrentCommandImpl(char symbol)
         {
             currentCommand += symbol;
-            ostream << symbol;
-            ostream.flush();
+            sendToOutputDevice(std::string{symbol});
         }
 
         void clearCurrentCommandImpl()
         {
             auto count = currentCommand.size();
 
+            std::string message;
             for(std::size_t i = 0; i < count; ++i)
             {
-                ostream << "\b";
+                message += "\b";
             }
             for(std::size_t i = 0; i < count; ++i)
             {
-                ostream << " ";
+                message += " ";
             }
             for(std::size_t i = 0; i < count; ++i)
             {
-                ostream << "\b";
+                message += "\b";
             }
 
+            sendToOutputDevice(message);
             currentCommand = "";
-            ostream.flush();
         }
 
         bool isCommandModeImpl()

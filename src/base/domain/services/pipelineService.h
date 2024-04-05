@@ -129,12 +129,12 @@ namespace dory::domain::services
             context.inputGroupNodeId = inputGroupNode.id;
             context.outputGroupNodeId = outputGroupNode.id;
 
-            auto consoleController = consoleControllerFactory.createInstance();
+            /*auto consoleController = consoleControllerFactory.createInstance();
             auto consoleControllerNode = pipelineRepository.store(PipelineNodeType(entity::nullId,
                                                                                        consoleController,
                                                                                        entity::PipelineNodePriority::Default,
                                                                                        inputGroupNode.id));
-            consoleController->initialize(consoleControllerNode.id, context);
+            consoleController->initialize(consoleControllerNode.id, context);*/
 
             auto windowController = windowControllerFactory.createInstance();
             auto windowControllerNode = pipelineRepository.store(PipelineNodeType(entity::nullId,
