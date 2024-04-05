@@ -3,6 +3,7 @@
 #include <utility>
 
 #include "base/dependencies.h"
+#include "types.h"
 
 namespace dory::domain::entity
 {
@@ -70,9 +71,11 @@ namespace dory::domain::entity
         First = 1
     };
 
+    template<typename TDataContext>
     struct PipelineNode: Entity<IdType>
     {
         std::shared_ptr<void> attachedController;
+        std::function<void(IdType referenceId, const TimeSpan& timeStep, TDataContext& context)> update;
         IdType parentNodeId;
         std::string name;
         PipelineNodePriority priority;
@@ -87,6 +90,19 @@ namespace dory::domain::entity
             parentNodeId(parentNodeId),
             priority(priority),
             name(std::move(name))
+        {}
+
+        template<typename F>
+        explicit PipelineNode(F&& update,
+                              PipelineNodePriority priority = PipelineNodePriority::Default,
+                              IdType parentNodeId = nullId,
+                              std::string name = ""):
+                Entity(nullId),
+                update(std::forward<F>(update)),
+                attachedController(nullptr),
+                parentNodeId(parentNodeId),
+                priority(priority),
+                name(std::move(name))
         {}
     };
 }

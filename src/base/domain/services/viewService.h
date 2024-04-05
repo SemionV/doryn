@@ -45,7 +45,7 @@ namespace dory::domain::services
         using ViewRepositoryType = IEntityRepository<typename T::ViewRepositoryType, entity::View, entity::IdType>;
         ViewRepositoryType& viewRepository;
 
-        using PipelineRepositoryType = IPipelineRepository<typename T::PipelineRepositoryType>;
+        using PipelineRepositoryType = IPipelineRepository<typename T::PipelineRepositoryType, typename T::DataContextType>;
         PipelineRepositoryType& pipelineRepository;
 
         using CameraRepositoryType = IEntityRepository<typename T::CameraRepositoryType, entity::Camera, entity::IdType>;
@@ -70,7 +70,7 @@ namespace dory::domain::services
             auto camera = cameraRepository.store(entity::Camera{entity::nullId});
 
             auto viewController = viewControllerFactory.createInstance();
-            auto viewControllerNode = pipelineRepository.store(entity::PipelineNode{entity::nullId,
+            auto viewControllerNode = pipelineRepository.store(entity::PipelineNode<DataContextType>{entity::nullId,
                                                                                     viewController,
                                                                                     entity::PipelineNodePriority::Default,
                                                                                     parentPipelineNodeId});

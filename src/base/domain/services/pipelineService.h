@@ -13,23 +13,23 @@ namespace dory::domain::services
         return a->nodeEntity.priority < b->nodeEntity.priority;
     }
 
-    template<typename TImplementation>
-    class IPipelineRepository: public IEntityRepository<TImplementation, entity::PipelineNode, entity::IdType>
+    template<typename TImplementation, typename TDataContext>
+    class IPipelineRepository: public IEntityRepository<TImplementation, entity::PipelineNode<TDataContext>, entity::IdType>
     {
     public:
-        std::list<std::shared_ptr<object::PipelineNode>> getPipeline()
+        std::list<std::shared_ptr<object::PipelineNode<TDataContext>>> getPipeline()
         {
             return this->toImplementation()->getPipelineImpl();
         }
     };
 
-    template<typename TEntity, typename TIdType = entity::IdType>
+    template<typename TDataContext, typename TEntity, typename TIdType = entity::IdType>
     class PipelineRepository:
-            public IPipelineRepository<PipelineRepository<TEntity, TIdType>>,
+            public IPipelineRepository<PipelineRepository<TDataContext, TEntity, TIdType>, TDataContext>,
             public EntityRepository<TEntity, TIdType>
     {
     private:
-        using InterfaceType = IPipelineRepository<PipelineRepository<TEntity, TIdType>>;
+        using InterfaceType = IPipelineRepository<PipelineRepository<TDataContext, TEntity, TIdType>, TDataContext>;
 
     public:
         PipelineRepository() = default;
@@ -38,9 +38,9 @@ namespace dory::domain::services
                 EntityRepository<TEntity, TIdType>(std::move(entities))
         {}
 
-        std::list<std::shared_ptr<object::PipelineNode>> getPipelineImpl()
+        std::list<std::shared_ptr<object::PipelineNode<TDataContext>>> getPipelineImpl()
         {
-            std::list<std::shared_ptr<object::PipelineNode>> nodes;
+            std::list<std::shared_ptr<object::PipelineNode<TDataContext>>> nodes;
 
             InterfaceType::forEach([this, &nodes](const TEntity& nodeEntity)
                                            {
@@ -50,15 +50,15 @@ namespace dory::domain::services
                                                }
                                            });
 
-            nodes.sort(compareNodes<object::PipelineNode>);
+            nodes.sort(compareNodes<object::PipelineNode<TDataContext>>);
 
             return nodes;
         }
 
     private:
-        std::shared_ptr<object::PipelineNode> loadNode(const TEntity& nodeEntity)
+        std::shared_ptr<object::PipelineNode<TDataContext>> loadNode(const TEntity& nodeEntity)
         {
-            auto node = std::make_shared<object::PipelineNode>(nodeEntity);
+            auto node = std::make_shared<object::PipelineNode<TDataContext>>(nodeEntity);
 
             InterfaceType::forEach([this, &node](const auto& nodeEntity)
                                            {
@@ -68,7 +68,7 @@ namespace dory::domain::services
                                                }
                                            });
 
-            node->children.sort(compareNodes<object::PipelineNode>);
+            node->children.sort(compareNodes<object::PipelineNode<TDataContext>>);
 
             return node;
         }
@@ -92,13 +92,15 @@ namespace dory::domain::services
             TConsoleControllerFactory, TWindowControllerFactory, TPipelineRepository>, TDataContext>
     {
     private:
+        using PipelineNodeType = entity::PipelineNode<TDataContext>;
+
         using ConsoleControllerFactoryType = dory::IServiceFactory<TConsoleControllerFactory>;
         ConsoleControllerFactoryType& consoleControllerFactory;
 
         using WindowControllerFactoryType = dory::IServiceFactory<TWindowControllerFactory>;
         WindowControllerFactoryType& windowControllerFactory;
 
-        using PipelineRepositoryType = services::IPipelineRepository<TPipelineRepository>;
+        using PipelineRepositoryType = services::IPipelineRepository<TPipelineRepository, TDataContext>;
         PipelineRepositoryType& pipelineRepository;
 
     public:
@@ -112,13 +114,13 @@ namespace dory::domain::services
 
         void configurePipelineImpl(TDataContext&  context)
         {
-            auto inputGroupNode = pipelineRepository.store(entity::PipelineNode(entity::nullId,
+            auto inputGroupNode = pipelineRepository.store(PipelineNodeType(entity::nullId,
                                                                                 nullptr,
                                                                                 entity::PipelineNodePriority::Default,
                                                                                 entity::nullId,
                                                                                 "input group"));
 
-            auto outputGroupNode = pipelineRepository.store(entity::PipelineNode(entity::nullId,
+            auto outputGroupNode = pipelineRepository.store(PipelineNodeType(entity::nullId,
                                                                                  nullptr,
                                                                                  entity::PipelineNodePriority::First,
                                                                                  entity::nullId,
@@ -128,14 +130,14 @@ namespace dory::domain::services
             context.outputGroupNodeId = outputGroupNode.id;
 
             auto consoleController = consoleControllerFactory.createInstance();
-            auto consoleControllerNode = pipelineRepository.store(entity::PipelineNode(entity::nullId,
+            auto consoleControllerNode = pipelineRepository.store(PipelineNodeType(entity::nullId,
                                                                                        consoleController,
                                                                                        entity::PipelineNodePriority::Default,
                                                                                        inputGroupNode.id));
             consoleController->initialize(consoleControllerNode.id, context);
 
             auto windowController = windowControllerFactory.createInstance();
-            auto windowControllerNode = pipelineRepository.store(entity::PipelineNode(entity::nullId,
+            auto windowControllerNode = pipelineRepository.store(PipelineNodeType(entity::nullId,
                                                                                       windowController,
                                                                                       entity::PipelineNodePriority::Default,
                                                                                       inputGroupNode.id));

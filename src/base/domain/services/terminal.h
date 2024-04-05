@@ -3,6 +3,7 @@
 #include "base/dependencies.h"
 #include "base/typeComponents.h"
 
+
 namespace dory::domain::services
 {
     template<typename TImplementation>
@@ -73,13 +74,31 @@ namespace dory::domain::services
         template<typename T>
         void writeLineImpl(T message)
         {
-            ostream << message << "\n";
+            if(commandMode)
+            {
+                exitCommandModeImpl();
+                ostream << message << "\n";
+                enterCommandModeImpl();
+            }
+            else
+            {
+                ostream << message << "\n";
+            }
         }
 
         template<typename T>
         void writeImpl(T message)
         {
-            ostream << message;
+            if(commandMode)
+            {
+                exitCommandModeImpl();
+                ostream << message;
+                enterCommandModeImpl();
+            }
+            else
+            {
+                ostream << message;
+            }
         }
 
         void backspaceImpl()

@@ -6,14 +6,16 @@ using namespace dory::domain;
 
 TEST_CASE( "Load Pipeline", "[pipelineRepository]" )
 {
-    auto pipelineService = services::PipelineRepository<entity::PipelineNode, entity::IdType>(
-            std::initializer_list<entity::PipelineNode>{
-                entity::PipelineNode(2, nullptr, entity::PipelineNodePriority::First, entity::nullId),
-                entity::PipelineNode(1, nullptr, entity::PipelineNodePriority::Default, entity::nullId),
-                entity::PipelineNode(3, nullptr, entity::PipelineNodePriority::First, 1),
-                entity::PipelineNode(4, nullptr, entity::PipelineNodePriority::Default, 1),
-                entity::PipelineNode(5, nullptr, entity::PipelineNodePriority::Default, 4),
-                entity::PipelineNode(6, nullptr, entity::PipelineNodePriority::Default, 2),
+    using PipelineNodeType = entity::PipelineNode<int>;
+
+    auto pipelineService = services::PipelineRepository<int, PipelineNodeType, entity::IdType>(
+            std::initializer_list<PipelineNodeType>{
+                    PipelineNodeType(2, nullptr, entity::PipelineNodePriority::First, entity::nullId),
+                    PipelineNodeType(1, nullptr, entity::PipelineNodePriority::Default, entity::nullId),
+                    PipelineNodeType(3, nullptr, entity::PipelineNodePriority::First, 1),
+                    PipelineNodeType(4, nullptr, entity::PipelineNodePriority::Default, 1),
+                    PipelineNodeType(5, nullptr, entity::PipelineNodePriority::Default, 4),
+                    PipelineNodeType(6, nullptr, entity::PipelineNodePriority::Default, 2),
             });
     auto pipeline = pipelineService.getPipeline();
 

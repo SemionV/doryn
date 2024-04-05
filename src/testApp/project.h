@@ -42,6 +42,21 @@ namespace testApp
             services.cliManager.initialize(context);
             services.pipelineManager.configurePipeline(context);
 
+            services.standartIODevice.connectImpl(context);
+
+            auto flushOutputEvents = [this](auto referenceId, const auto& timeStep, DataContextType& context)
+            {
+                services.standartIoEventDispatcher.submitOutput(context);
+            };
+
+            registry::services::IPipelineRepository<registry::PipelineRepositoryType, DataContextType>& pipelineRepository = services.pipelineRepository;
+            pipelineRepository.store(dory::domain::entity::PipelineNode<DataContextType> {
+                flushOutputEvents,
+                dory::domain::entity::PipelineNodePriority::Default,
+                context.outputGroupNodeId});
+
+            services.standartIoEventDispatcher.addCase("hello!");
+
             auto window = services.windowService.createWindow();
             context.mainWindowId = window.id;
             services.viewService.createView(context, window.id, context.outputGroupNodeId);

@@ -8,28 +8,17 @@ namespace dory::domain::events
     template<class TDataContext, typename TInputEventData, typename TOutputEventData>
     class IOEventHub: Uncopyable
     {
-    private:
-        EventDispatcher<TDataContext&, const TInputEventData&> inputEvent;
-        EventDispatcher<TDataContext&, const TOutputEventData&> outputEvent;
-
     protected:
-        EventDispatcher<TDataContext&, const TInputEventData&>& onInputDispatcher()
-        {
-            return inputEvent;
-        }
-
-        EventDispatcher<TDataContext&, const TOutputEventData&>& onOutputDispatcher()
-        {
-            return outputEvent;
-        }
+        EventDispatcher<TDataContext&, TInputEventData&> inputEvent;
+        EventDispatcher<TDataContext&, TOutputEventData&> outputEvent;
 
     public:
-        Event<TDataContext&, const TInputEventData&>& onInput()
+        Event<TDataContext&, TInputEventData&>& onInput()
         {
             return inputEvent;
         }
 
-        Event<TDataContext&, const TOutputEventData&>& onOutput()
+        Event<TDataContext&, TOutputEventData&>& onOutput()
         {
             return outputEvent;
         }
@@ -55,12 +44,12 @@ namespace dory::domain::events
 
         void submitInput(TDataContext& context)
         {
-            inputEventBuffer.submitCases(this->onInputDispatcher(), context);
+            inputEventBuffer.submitCases(this->inputEvent, context);
         }
 
         void submitOutput(TDataContext& context)
         {
-            outputEventBuffer.submitCases(this->onOutputDispatcher(), context);
+            outputEventBuffer.submitCases(this->outputEvent, context);
         }
     };
 }

@@ -34,7 +34,7 @@ namespace dory::domain::devices
             eventHubDispatcher.addCase(key);
         }
 
-        void onOutput(TDataContext& context, const std::string& eventData)
+        void onOutput(TDataContext& context, std::string& eventData)
         {
             std::cout << eventData;
         }

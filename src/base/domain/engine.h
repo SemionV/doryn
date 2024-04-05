@@ -33,11 +33,11 @@ namespace dory::domain
     {
     private:
         events::EngineEventHubDispatcher<TDataContext>& engineEventHub;
-        services::IPipelineRepository<TPipelineRepository>& pipelineRepository;
+        services::IPipelineRepository<TPipelineRepository, TDataContext>& pipelineRepository;
 
     public:
         explicit Engine(events::EngineEventHubDispatcher<TDataContext>& engineEventHub,
-                        services::IPipelineRepository<TPipelineRepository>& pipelineRepository):
+                        services::IPipelineRepository<TPipelineRepository, TDataContext>& pipelineRepository):
                 engineEventHub(engineEventHub),
                 pipelineRepository(pipelineRepository)
         {}
@@ -46,12 +46,16 @@ namespace dory::domain
         {
             auto pipelineNodes = pipelineRepository.getPipeline();
 
-            touchPipelineNodes(pipelineNodes, context, [](const std::shared_ptr<object::PipelineNode>& node, TDataContext& context, const TimeSpan& timeStep)
+            touchPipelineNodes(pipelineNodes, context, [](const std::shared_ptr<object::PipelineNode<TDataContext>>& node, TDataContext& context, const TimeSpan& timeStep)
             {
                 auto controller = node->nodeEntity.attachedController;
                 if(controller)
                 {
                     std::static_pointer_cast<Controller<TDataContext>>(controller)->update(node->nodeEntity.id, timeStep, context);
+                }
+                else if(node->nodeEntity.update)
+                {
+                    node->nodeEntity.update(node->nodeEntity.id, timeStep, context);
                 }
             }, timeStep);
         }
@@ -67,7 +71,7 @@ namespace dory::domain
 
             auto pipelineNodes = pipelineRepository.getPipeline();
 
-            touchPipelineNodes(pipelineNodes, context, [](const std::shared_ptr<object::PipelineNode>& node, TDataContext& context)
+            touchPipelineNodes(pipelineNodes, context, [](const std::shared_ptr<object::PipelineNode<TDataContext>>& node, TDataContext& context)
             {
                 auto controller = node->nodeEntity.attachedController;
                 if(controller)
@@ -79,7 +83,7 @@ namespace dory::domain
 
     private:
         template<typename F, typename... Ts>
-        static void touchPipelineNodes(std::list<std::shared_ptr<object::PipelineNode>> pipelineNodes, TDataContext& context, F functor, Ts... arguments)
+        static void touchPipelineNodes(std::list<std::shared_ptr<object::PipelineNode<TDataContext>>> pipelineNodes, TDataContext& context, F functor, Ts... arguments)
         {
             auto end = pipelineNodes.end();
 
@@ -90,7 +94,7 @@ namespace dory::domain
         }
 
         template<typename F, typename... Ts>
-        static void touchNode(std::shared_ptr<object::PipelineNode> node, TDataContext& context, F functor, Ts... arguments)
+        static void touchNode(std::shared_ptr<object::PipelineNode<TDataContext>> node, TDataContext& context, F functor, Ts... arguments)
         {
             functor(node, context, arguments...);
 

@@ -4,13 +4,14 @@
 
 namespace dory::domain::object
 {
+    template<typename TDataContext>
     struct PipelineNode
     {
 
-        entity::PipelineNode nodeEntity;
-        std::list<std::shared_ptr<object::PipelineNode>> children;
+        entity::PipelineNode<TDataContext> nodeEntity;
+        std::list<std::shared_ptr<object::PipelineNode<TDataContext>>> children;
 
-        PipelineNode(const entity::PipelineNode& nodeEntity):
+        explicit PipelineNode(const entity::PipelineNode<TDataContext>& nodeEntity):
             nodeEntity(nodeEntity)
         {}
     };

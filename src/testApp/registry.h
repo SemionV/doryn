@@ -13,6 +13,7 @@
 #include "base/domain/services/viewService.h"
 #include "base/domain/services/terminal.h"
 #include "base/domain/logic/cliManager.h"
+#include "base/domain/devices/standartIoDevice.h"
 #include "openGL/glfwWindow.h"
 #include "openGL/glfwWindowController.h"
 #include "openGL/viewControllerOpenGL.h"
@@ -36,6 +37,7 @@ namespace testApp::registry
     namespace services = domain::services;
     namespace logic = domain::logic;
     namespace events = domain::events;
+    namespace devices = domain::devices;
     namespace openGL = dory::openGL;
     namespace configuration = dory::configuration;
 
@@ -44,7 +46,7 @@ namespace testApp::registry
     using CameraRepositoryType = domain::EntityRepository<entity::Camera>;
     using ViewRepositoryType = domain::EntityRepository<entity::View>;
     using WindowRepositoryType = domain::EntityRepository<openGL::GlfwWindow>;
-    using PipelineRepositoryType = domain::services::PipelineRepository<entity::PipelineNode>;
+    using PipelineRepositoryType = domain::services::PipelineRepository<DataContextType, entity::PipelineNode<DataContextType>>;
     using EngineType = domain::Engine<DataContextType, PipelineRepositoryType>;
     using FrameServiceType = services::BasicFrameService;
     using TerminalType = services::Terminal<decltype(std::cout)>;
@@ -76,6 +78,8 @@ namespace testApp::registry
     using WindowEventHubType = events::WindowEventHub<DataContextType>;
     using ApplicationEventDispatcherType = events::ApplicationEventHubDispatcher<DataContextType>;
     using ApplicationEventHubType = events::ApplicationEventHub<DataContextType>;
+    using StandartIOEventDispatcherType = events::IOEventHubDispatcher<DataContextType, int, std::string>;
+    using StandartIOEventHubType = events::IOEventHub<DataContextType, int, std::string>;
     using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<WindowRepositoryType >>;
     using ViewServiceType = services::ViewService<services::ViewServiceDependencies<DataContextType,
                                                                                     ViewRepositoryType,
@@ -83,6 +87,7 @@ namespace testApp::registry
                                                                                     CameraRepositoryType,
                                                                                     ViewControllerFactoryType>>;
     using CliManagerType = logic::CliManager<DataContextType, TerminalType>;
+    using StandartIODeviceType = devices::StandartInputOutputDeviceWin32<DataContextType>;
 
     class Services
     {
@@ -96,6 +101,7 @@ namespace testApp::registry
         WindowEventHubType& windowEventHub = windowEventDispatcher;
         ApplicationEventDispatcherType applicationEventDispatcher;
         ApplicationEventHubType& applicationEventHub = applicationEventDispatcher;
+        StandartIOEventDispatcherType standartIoEventDispatcher;
         PipelineRepositoryType pipelineRepository;
         CameraRepositoryType cameraRepository;
         ViewRepositoryType viewRepository;
@@ -110,7 +116,8 @@ namespace testApp::registry
         PipelineManagerType pipelineManager = PipelineManagerType{ consoleControllerFactory, windowControllerFactory, pipelineRepository };
         WindowServiceType windowService = WindowServiceType{ windowRepository };
         ViewServiceType viewService = ViewServiceType{ viewRepository, pipelineRepository, cameraRepository, viewControllerFactory };
-        CliManagerType cliManager = CliManagerType(terminal, consoleEventHub, applicationEventDispatcher);
+        CliManagerType cliManager = CliManagerType{terminal, consoleEventHub, applicationEventDispatcher};
+        StandartIODeviceType standartIODevice = StandartIODeviceType{standartIoEventDispatcher};
 
         explicit Services(std::string configurationPath):
                 configurationPath(std::move(configurationPath))
