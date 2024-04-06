@@ -1,26 +1,12 @@
 #pragma once
 
-#include "base/typeComponents.h"
+#include "device.h"
 #include "base/domain/events/ioEventHub.h"
 
 namespace dory::domain::devices
 {
-    template<typename TImplementation, typename TDataContext>
-    struct IDevice: Uncopyable, public StaticInterface<TImplementation>
-    {
-        void connect(TDataContext& context)
-        {
-            this->toImplementation()->connectImpl();
-        }
-
-        void disconnect(TDataContext& context)
-        {
-            this->toImplementation()->disconnectImpl();
-        }
-    };
-
     template<typename TDataContext>
-    class StandartInputOutputDeviceWin32
+    class StandartInputOutputDeviceWin32: public IDevice<StandartInputOutputDeviceWin32<TDataContext>, TDataContext>
     {
     private:
         using IOEventHubDispatcherType =  events::IOEventHubDispatcher<TDataContext, int, std::string>;

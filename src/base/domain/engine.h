@@ -35,8 +35,17 @@ namespace dory::domain
         events::EngineEventHubDispatcher<TDataContext>& engineEventHub;
         services::IPipelineRepository<TPipelineRepository, TDataContext>& pipelineRepository;
 
-        void updateNodes(TDataContext& context, const TimeSpan& timeStep, const std::list<std::shared_ptr<object::PipelineNode<TDataContext>>>& pipelineNodes)
+    public:
+        explicit Engine(events::EngineEventHubDispatcher<TDataContext>& engineEventHub,
+                        services::IPipelineRepository<TPipelineRepository, TDataContext>& pipelineRepository):
+                engineEventHub(engineEventHub),
+                pipelineRepository(pipelineRepository)
+        {}
+
+        void updateImpl(TDataContext& context, const TimeSpan& timeStep)
         {
+            auto pipelineNodes = pipelineRepository.getPipeline();
+
             touchPipelineNodes(pipelineNodes, context, [](const std::shared_ptr<object::PipelineNode<TDataContext>>& node, TDataContext& context, const TimeSpan& timeStep)
             {
                 auto controller = node->nodeEntity.attachedController;
@@ -51,18 +60,6 @@ namespace dory::domain
             }, timeStep);
         }
 
-    public:
-        explicit Engine(events::EngineEventHubDispatcher<TDataContext>& engineEventHub,
-                        services::IPipelineRepository<TPipelineRepository, TDataContext>& pipelineRepository):
-                engineEventHub(engineEventHub),
-                pipelineRepository(pipelineRepository)
-        {}
-
-        void updateImpl(TDataContext& context, const TimeSpan& timeStep)
-        {
-            updateNodes(context, timeStep, pipelineRepository.getPipeline());
-        }
-
         void initializeImpl(TDataContext& context)
         {
             engineEventHub.fire(context, events::InitializeEngineEventData());
@@ -73,9 +70,6 @@ namespace dory::domain
             engineEventHub.fire(context, events::StopEngineEventData());
 
             auto pipelineNodes = pipelineRepository.getPipeline();
-
-            //last update in order to flush message buffers after the last event, time step is 0 in order to not trigger any animations
-            updateNodes(context, TimeSpan{}, pipelineNodes);
 
             touchPipelineNodes(pipelineNodes, context, [](const std::shared_ptr<object::PipelineNode<TDataContext>>& node, TDataContext& context)
             {

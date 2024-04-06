@@ -42,7 +42,7 @@ namespace testApp
             services.cliManager.initialize(context);
             services.pipelineManager.configurePipeline(context);
 
-            services.standartIODevice.connectImpl(context);
+            services.standartIODevice.connect(context);
 
             auto flushInputEvents = [this](auto referenceId, const auto& timeStep, DataContextType& context)
             {
@@ -77,7 +77,7 @@ namespace testApp
         void onStopEngine(DataContextType& context, const events::StopEngineEventData& eventData)
         {
             services.cliManager.stop(context);
-            services.terminal.writeLine("Stopping Engine...");
+            services.standartIODevice.disconnect(context);
         }
 
         /*void onConsoleKeyPressed(DataContextType& context, events::KeyPressedEventData& eventData)
@@ -100,6 +100,8 @@ namespace testApp
 
         void onApplicationExit(DataContextType& context, const events::ApplicationExitEventData& eventData)
         {
+            services.terminal.exitCommandMode();
+            services.terminal.writeLine("Stopping Engine...");
             frameService.endLoop();
         }
 
@@ -110,7 +112,7 @@ namespace testApp
 
             if(eventData.windowId == context.mainWindowId)
             {
-                frameService.endLoop();
+                services.applicationEventDispatcher.fire(context, events::ApplicationExitEventData{});
             }
         }
     };
