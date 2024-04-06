@@ -2,7 +2,7 @@
 
 #include "base/dependencies.h"
 #include "base/typeComponents.h"
-#include "base/domain/events/ioEventHub.h"
+#include "base/domain/events/inputEventHub.h"
 
 namespace dory::domain::services
 {
@@ -61,7 +61,7 @@ namespace dory::domain::services
     class Terminal: public ITerminal<Terminal<TDataContext, TInputEventData, TOutputEventData>>
     {
     private:
-        using IOEventHubDispatcherType = events::IOEventHubDispatcher<TDataContext, TInputEventData, TOutputEventData>;
+        using IOEventHubDispatcherType = events::InputEventDispatcher<TDataContext, TInputEventData, TOutputEventData>;
         IOEventHubDispatcherType& ioEventDispatcher;
 
         const std::string commandModePrefix = "> ";

@@ -78,8 +78,8 @@ namespace testApp::registry
     using WindowEventHubType = events::WindowEventHub<DataContextType>;
     using ApplicationEventDispatcherType = events::ApplicationEventHubDispatcher<DataContextType>;
     using ApplicationEventHubType = events::ApplicationEventHub<DataContextType>;
-    using StandartIOEventDispatcherType = events::IOEventHubDispatcher<DataContextType, int, std::string>;
-    using StandartIOEventHubType = events::IOEventHub<DataContextType, int, std::string>;
+    using StandartInputEventDispatcherType = events::InputEventDispatcher<DataContextType, int, std::string>;
+    using StandartInputEventHubType = events::InputEventHub<DataContextType, int, std::string>;
     using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<WindowRepositoryType >>;
     using ViewServiceType = services::ViewService<services::ViewServiceDependencies<DataContextType,
                                                                                     ViewRepositoryType,
@@ -87,7 +87,7 @@ namespace testApp::registry
                                                                                     CameraRepositoryType,
                                                                                     ViewControllerFactoryType>>;
     using CliManagerType = logic::CliManager<DataContextType, TerminalType>;
-    using StandartIODeviceType = devices::StandartInputOutputDeviceWin32<DataContextType>;
+    using StandartIODeviceType = devices::ConsoleIODeviceWin32<DataContextType>;
 
     class Services
     {
@@ -100,7 +100,7 @@ namespace testApp::registry
         WindowEventHubType& windowEventHub = windowEventDispatcher;
         ApplicationEventDispatcherType applicationEventDispatcher;
         ApplicationEventHubType& applicationEventHub = applicationEventDispatcher;
-        StandartIOEventDispatcherType standartIoEventDispatcher;
+        StandartInputEventDispatcherType standartIoEventDispatcher;
         TerminalType terminal = TerminalType(standartIoEventDispatcher);
         PipelineRepositoryType pipelineRepository;
         CameraRepositoryType cameraRepository;

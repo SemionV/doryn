@@ -4,17 +4,31 @@
 
 namespace dory::domain::devices
 {
-    template<typename TImplementation, typename TDataContext>
-    struct IDevice: Uncopyable, public StaticInterface<TImplementation>
+    template<typename TImpelementation, typename TDataContext>
+    struct IDevice
     {
         void connect(TDataContext& context)
         {
-            this->toImplementation()->connectImpl(context);
+            toImplementation<TImpelementation>(this)->connectImpl(context);
         }
 
         void disconnect(TDataContext& context)
         {
-            this->toImplementation()->disconnectImpl(context);
+            toImplementation<TImpelementation>(this)->disconnectImpl(context);
+        }
+    };
+
+    template<typename TImpelementation, typename TOutputData>
+    struct IStandartOutputDevice
+    {
+        void out(const TOutputData& data)
+        {
+            toImplementation<TImpelementation>(this)->outImpl(data);
+        }
+
+        void flush()
+        {
+            toImplementation<TImpelementation>(this)->flushImpl();
         }
     };
 }

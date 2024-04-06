@@ -33,7 +33,8 @@ namespace dory::domain::events
                 eventCasesBackBuffer->emplace_back(std::move(eventData));
             }
 
-            void submitCases(EventDispatcher<TDataContext&, TEventData&>& eventDispatcher, TDataContext& dataContext)
+            template<typename TDispatcher>
+            void submitCases(TDispatcher& eventDispatcher, TDataContext& dataContext)
             {
                 std::lock_guard lock{mutex};
 

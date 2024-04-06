@@ -69,6 +69,12 @@ namespace dory
         }
     };
 
+    template<typename TImpelementation>
+    TImpelementation* toImplementation(void* implementation)
+    {
+        return static_cast<TImpelementation*>(implementation);
+    }
+
     template<typename TImplementation>
     class IServiceFactory: Uncopyable, public StaticInterface<TImplementation>
     {

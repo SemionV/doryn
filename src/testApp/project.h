@@ -37,12 +37,11 @@ namespace testApp
 
         void onInitializeEngine(DataContextType& context, const events::InitializeEngineEventData& eventData)
         {
-            services.terminal.writeLine("Starting Engine...");
-
-            services.cliManager.initialize(context);
-            services.pipelineManager.configurePipeline(context);
-
             services.standartIODevice.connect(context);
+            services.standartIODevice.out("Starting Engine...\n");
+
+            services.pipelineManager.configurePipeline(context);
+            //services.cliManager.initialize(context);
 
             auto flushInputEvents = [this](auto referenceId, const auto& timeStep, DataContextType& context)
             {
@@ -52,7 +51,7 @@ namespace testApp
             auto flushOutputEvents = [this](auto referenceId, const auto& timeStep, DataContextType& context)
             {
                 services.standartIoEventDispatcher.submitOutput(context);
-                services.standartIoEventDispatcher.fire(context, events::FlushOutputBuffer{});
+                services.standartIoEventDispatcher.fire(context, events::io::FlushOutputBufferEventData{});
             };
 
             registry::services::IPipelineRepository<registry::PipelineRepositoryType, DataContextType>& pipelineRepository = services.pipelineRepository;
@@ -67,7 +66,7 @@ namespace testApp
                 dory::domain::entity::PipelineNodePriority::Default,
                 context.outputGroupNodeId});
 
-            services.terminal.writeLine("hello!");
+            //services.terminal.writeLine("hello!");
 
             auto window = services.windowService.createWindow();
             context.mainWindowId = window.id;
@@ -76,7 +75,7 @@ namespace testApp
 
         void onStopEngine(DataContextType& context, const events::StopEngineEventData& eventData)
         {
-            services.cliManager.stop(context);
+            services.standartIODevice.out("Stopping Engine...\n");
             services.standartIODevice.disconnect(context);
         }
 
@@ -100,8 +99,7 @@ namespace testApp
 
         void onApplicationExit(DataContextType& context, const events::ApplicationExitEventData& eventData)
         {
-            services.terminal.exitCommandMode();
-            services.terminal.writeLine("Stopping Engine...");
+            /*services.cliManager.stop(context);*/
             frameService.endLoop();
         }
 
