@@ -7,101 +7,72 @@ namespace dory::domain::events
 {
     namespace io
     {
-        struct FlushOutputBufferEventData
-        {};
-
         struct PressEscapeEventData
         {};
 
         struct PressEnterEventData
         {};
+
+        struct PressSymbolEventData
+        {
+            int symbol;
+        };
     }
 
-    template<class TDataContext, typename TInputEventData, typename TOutputEventData>
+    template<class TDataContext>
     class InputEventHub: Uncopyable
     {
     protected:
-        EventDispatcher<TDataContext&, TInputEventData&> inputEvent;
-        EventDispatcher<TDataContext&, TOutputEventData&> outputEvent;
-        EventDispatcher<TDataContext&, io::FlushOutputBufferEventData> flushBufferEvent;
-
         EventDispatcher<TDataContext&, io::PressEscapeEventData> pressEscapeEvent;
         EventDispatcher<TDataContext&, io::PressEnterEventData> pressEnterEvent;
+        EventDispatcher<TDataContext&, io::PressSymbolEventData> pressSymbolEvent;
 
     public:
-        Event<TDataContext&, TInputEventData&>& onInput()
-        {
-            return inputEvent;
-        }
-
-        Event<TDataContext&, TOutputEventData&>& onOutput()
-        {
-            return outputEvent;
-        }
-
-        Event<TDataContext&, io::FlushOutputBufferEventData>& onFlush()
-        {
-            return flushBufferEvent;
-        }
-
         Event<TDataContext&, io::PressEscapeEventData>& onPressEscape()
         {
             return pressEscapeEvent;
         }
+
         Event<TDataContext&, io::PressEnterEventData>& onPressEnter()
         {
             return pressEnterEvent;
         }
 
+        Event<TDataContext&, io::PressSymbolEventData>& onPressSymbol()
+        {
+            return pressSymbolEvent;
+        }
     };
 
-    template<class TDataContext, typename TInputEventData, typename TOutputEventData>
-    class InputEventDispatcher: public InputEventHub<TDataContext, TInputEventData, TOutputEventData>
+    template<class TDataContext>
+    class InputEventDispatcher: public InputEventHub<TDataContext>
     {
     private:
-        EventBuffer<TDataContext, TInputEventData> inputEventBuffer;
-        EventBuffer<TDataContext, TOutputEventData> outputEventBuffer;
-
         EventBuffer<TDataContext, io::PressEscapeEventData> pressEscaspeEventBuffer;
         EventBuffer<TDataContext, io::PressEnterEventData> pressEnterEventBuffer;
+        EventBuffer<TDataContext, io::PressSymbolEventData> pressSymbolEventBuffer;
 
     public:
-        void addCase(const TInputEventData& inputEventData)
-        {
-            inputEventBuffer.addCase(inputEventData);
-        }
-
-        void addCase(const TOutputEventData& outputEventData)
-        {
-            outputEventBuffer.addCase(outputEventData);
-        }
-
-        void addCase(const io::PressEscapeEventData eventData)
+        void addCase(const TDataContext& context, const io::PressEscapeEventData eventData)
         {
             pressEscaspeEventBuffer.addCase(eventData);
         }
 
-        void addCase(const io::PressEnterEventData eventData)
+        void addCase(const TDataContext& context, const io::PressEnterEventData eventData)
         {
             pressEnterEventBuffer.addCase(eventData);
         }
 
-        void submitInput(TDataContext& context)
+        void addCase(const TDataContext& context, const io::PressSymbolEventData eventData)
         {
-            inputEventBuffer.submitCases(this->inputEvent, context);
+            pressSymbolEventBuffer.addCase(eventData);
+        }
 
+        void submit(TDataContext& context)
+        {
             pressEscaspeEventBuffer.submitCases(this->pressEscapeEvent, context);
             pressEnterEventBuffer.submitCases(this->pressEnterEvent, context);
-        }
-
-        void submitOutput(TDataContext& context)
-        {
-            outputEventBuffer.submitCases(this->outputEvent, context);
-        }
-
-        void fire(TDataContext& context, const io::FlushOutputBufferEventData flushEventData)
-        {
-            this->flushBufferEvent(context, flushEventData);
+            pressSymbolEventBuffer.submitCases(this->pressSymbolEvent, context);
         }
     };
 }

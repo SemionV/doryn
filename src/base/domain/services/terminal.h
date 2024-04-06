@@ -61,7 +61,7 @@ namespace dory::domain::services
     class Terminal: public ITerminal<Terminal<TDataContext, TInputEventData, TOutputEventData>>
     {
     private:
-        using IOEventHubDispatcherType = events::InputEventDispatcher<TDataContext, TInputEventData, TOutputEventData>;
+        using IOEventHubDispatcherType = events::InputEventDispatcher<TDataContext>;
         IOEventHubDispatcherType& ioEventDispatcher;
 
         const std::string commandModePrefix = "> ";

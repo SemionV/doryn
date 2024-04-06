@@ -46,7 +46,7 @@ namespace testApp
 
             auto supmitInputEvents = [this](auto referenceId, const auto& timeStep, DataContextType& context)
             {
-                services.standartIoEventDispatcher.submitInput(context);
+                services.standartIoEventDispatcher.submit(context);
             };
 
             auto flushOutput = [this](auto referenceId, const auto& timeStep, DataContextType& context)

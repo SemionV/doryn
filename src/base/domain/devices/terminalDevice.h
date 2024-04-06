@@ -2,7 +2,6 @@
 
 #include "device.h"
 #include "base/domain/events/inputEventHub.h"
-//#include "base/domain/devices/device.h"
 
 namespace dory::domain::devices
 {
@@ -43,9 +42,13 @@ namespace dory::domain::devices
         using OutputDeviceType = IStandartOutputDevice<TOutputDevice, std::string>;
         OutputDeviceType& outputDevice;
 
+        using InputEventHubType = events::InputEventHub<TDataContext>;
+        InputEventHubType& inputEventHub;
+
     public:
-        explicit TerminalDevice(OutputDeviceType& outputDevice):
-            outputDevice(outputDevice)
+        explicit TerminalDevice(OutputDeviceType& outputDevice, InputEventHubType& inputEventHub):
+            outputDevice(outputDevice),
+            inputEventHub(inputEventHub)
         {}
 
         template<typename T>
@@ -82,6 +85,8 @@ namespace dory::domain::devices
 
         void connectImpl(TDataContext& context)
         {
+            inputEventHub.onPressEnter().attachHandler(this, &TerminalDevice::onPressEnter);
+            inputEventHub.onPressSymbol().attachHandler(this, &TerminalDevice::onPressSymbol);
         }
 
         void disconnectImpl(TDataContext& context)
@@ -100,6 +105,37 @@ namespace dory::domain::devices
             currentCommand = "";
             commandMode = false;
             outputDevice.out("\n");
+        }
+
+    private:
+        void appendToCurrentCommand(char symbol)
+        {
+            currentCommand += symbol;
+            outputDevice.out(std::string{symbol});
+        }
+
+        void onPressEnter(TDataContext& context, events::io::PressEnterEventData eventData)
+        {
+            if(commandMode)
+            {
+                auto command = currentCommand;
+                exitCommandModeImpl();
+
+                if(command == "exit")
+                {
+                    outputDevice.out("-\u001B[31mexit\u001B[0m-\n");
+                }
+
+                enterCommandModeImpl();
+            }
+        }
+
+        void onPressSymbol(TDataContext& context, events::io::PressSymbolEventData eventData)
+        {
+            if(commandMode)
+            {
+                appendToCurrentCommand(eventData.symbol);
+            }
         }
     };
 }

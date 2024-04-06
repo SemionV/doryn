@@ -77,8 +77,8 @@ namespace testApp::registry
     using WindowEventHubType = events::WindowEventHub<DataContextType>;
     using ApplicationEventDispatcherType = events::ApplicationEventHubDispatcher<DataContextType>;
     using ApplicationEventHubType = events::ApplicationEventHub<DataContextType>;
-    using StandartInputEventDispatcherType = events::InputEventDispatcher<DataContextType, int, std::string>;
-    using StandartInputEventHubType = events::InputEventHub<DataContextType, int, std::string>;
+    using StandartInputEventDispatcherType = events::InputEventDispatcher<DataContextType>;
+    using StandartInputEventHubType = events::InputEventHub<DataContextType>;
     using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<WindowRepositoryType >>;
     using ViewServiceType = services::ViewService<services::ViewServiceDependencies<DataContextType,
                                                                                     ViewRepositoryType,
@@ -87,7 +87,6 @@ namespace testApp::registry
                                                                                     ViewControllerFactoryType>>;
     using StandartIODeviceType = devices::ConsoleIODeviceWin32<DataContextType>;
     using TerminalDeviceType = devices::TerminalDevice<DataContextType, StandartIODeviceType>;
-    //using CliManagerType = logic::CliManager<DataContextType, TerminalDeviceType>;
 
     class Services
     {
@@ -101,6 +100,7 @@ namespace testApp::registry
         ApplicationEventDispatcherType applicationEventDispatcher;
         ApplicationEventHubType& applicationEventHub = applicationEventDispatcher;
         StandartInputEventDispatcherType standartIoEventDispatcher;
+        StandartInputEventHubType& standartInputEventHub = standartIoEventDispatcher;
         PipelineRepositoryType pipelineRepository;
         CameraRepositoryType cameraRepository;
         ViewRepositoryType viewRepository;
@@ -116,8 +116,7 @@ namespace testApp::registry
         WindowServiceType windowService = WindowServiceType{ windowRepository };
         ViewServiceType viewService = ViewServiceType{ viewRepository, pipelineRepository, cameraRepository, viewControllerFactory };
         StandartIODeviceType standartIODevice = StandartIODeviceType{standartIoEventDispatcher};
-        TerminalDeviceType terminalDevice = TerminalDeviceType{standartIODevice};
-        //CliManagerType cliManager = CliManagerType{terminal, consoleEventHub, applicationEventDispatcher};
+        TerminalDeviceType terminalDevice = TerminalDeviceType{standartIODevice, standartInputEventHub};
 
         explicit Services(std::string configurationPath):
                 configurationPath(std::move(configurationPath))

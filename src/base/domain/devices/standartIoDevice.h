@@ -2,6 +2,7 @@
 
 #include "device.h"
 #include "base/domain/events/inputEventHub.h"
+#include "base/win32/dependencies.h"
 
 namespace dory::domain::devices
 {
@@ -11,7 +12,7 @@ namespace dory::domain::devices
             public IStandartOutputDevice<ConsoleIODeviceWin32<TDataContext>, std::string>
     {
     private:
-        using InputEventDispatcherType =  events::InputEventDispatcher<TDataContext, int, std::string>;
+        using InputEventDispatcherType =  events::InputEventDispatcher<TDataContext>;
         InputEventDispatcherType& inputEventDispatcher;
 
         std::jthread pollingThread;
@@ -47,9 +48,27 @@ namespace dory::domain::devices
             std::cin.clear();
         }
 
-        void onKeyPressed(int key)
+        void onKeyPressed(TDataContext& context, int key)
         {
-            inputEventDispatcher.addCase(key);
+            if(key == 3)//CTRL+C
+            {
+
+            }
+            else if(key == 27)//ESC
+            {
+                inputEventDispatcher.addCase(context, events::io::PressEscapeEventData{});
+            }
+            else if(key == 8)//BACKSPACE
+            {
+            }
+            else if(key == 13)//ENTER
+            {
+                inputEventDispatcher.addCase(context, events::io::PressEnterEventData{});
+            }
+            else if(key != 0)// Character
+            {
+                inputEventDispatcher.addCase(context, events::io::PressSymbolEventData{ key });
+            }
         }
 
     public:
@@ -86,17 +105,17 @@ namespace dory::domain::devices
                 HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
                 DWORD mode = 0;
                 GetConsoleMode(hStdin, &mode);
-                SetConsoleMode(hStdin, mode & (~ENABLE_ECHO_INPUT));
+                SetConsoleMode(hStdin, mode & (~ENABLE_ECHO_INPUT) & (~ENABLE_LINE_INPUT));
 
-                pollingThread = std::jthread([this](const std::stop_token& stoken)
+                pollingThread = std::jthread([this, &context](const std::stop_token& stoken)
                 {
                     while(!stoken.stop_requested())
                     {
-                        int inputKey = getchar();
+                        int inputKey = _getchar_nolock();
 
                         if(!stoken.stop_requested() && inputKey != EOF)
                         {
-                            onKeyPressed(inputKey);
+                            onKeyPressed(context, inputKey);
                         }
                         else
                         {
