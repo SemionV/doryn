@@ -18,6 +18,16 @@ namespace dory::domain::devices
         {
             toImplementation<TImpelementation>(this)->writeLineImpl(data);
         }
+
+        void enterCommandMode()
+        {
+            toImplementation<TImpelementation>(this)->enterCommandModeImpl();
+        }
+
+        void exitCommandMode()
+        {
+            toImplementation<TImpelementation>(this)->exitCommandModeImpl();
+        }
     };
 
     template<typename TDataContext, typename TOutputDevice>
@@ -33,20 +43,6 @@ namespace dory::domain::devices
         using OutputDeviceType = IStandartOutputDevice<TOutputDevice, std::string>;
         OutputDeviceType& outputDevice;
 
-        void enterCommandMode()
-        {
-            outputDevice.out(commandModePrefix);
-            currentCommand = "";
-            commandMode = true;
-        }
-
-        void exitCommandMode()
-        {
-            currentCommand = "";
-            commandMode = false;
-            outputDevice.out("\n");
-        }
-
     public:
         explicit TerminalDevice(OutputDeviceType& outputDevice):
             outputDevice(outputDevice)
@@ -57,9 +53,9 @@ namespace dory::domain::devices
         {
             if(commandMode)
             {
-                exitCommandMode();
+                exitCommandModeImpl();
                 outputDevice.out(message);
-                enterCommandMode();
+                enterCommandModeImpl();
             }
             else
             {
@@ -74,14 +70,36 @@ namespace dory::domain::devices
 
             if(commandMode)
             {
-                exitCommandMode();
+                exitCommandModeImpl();
                 outputDevice.out(data);
-                enterCommandMode();
+                enterCommandModeImpl();
             }
             else
             {
                 outputDevice.out(data);
             }
+        }
+
+        void connectImpl(TDataContext& context)
+        {
+        }
+
+        void disconnectImpl(TDataContext& context)
+        {
+        }
+
+        void enterCommandModeImpl()
+        {
+            outputDevice.out(commandModePrefix);
+            currentCommand = "";
+            commandMode = true;
+        }
+
+        void exitCommandModeImpl()
+        {
+            currentCommand = "";
+            commandMode = false;
+            outputDevice.out("\n");
         }
     };
 }

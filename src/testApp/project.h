@@ -38,35 +38,33 @@ namespace testApp
         void onInitializeEngine(DataContextType& context, const events::InitializeEngineEventData& eventData)
         {
             services.standartIODevice.connect(context);
-            services.standartIODevice.out("Starting Engine...\n");
+            services.terminalDevice.connect(context);
+            services.terminalDevice.writeLine("Starting Engine...");
+            services.terminalDevice.enterCommandMode();
 
             services.pipelineManager.configurePipeline(context);
-            //services.cliManager.initialize(context);
 
-            auto flushInputEvents = [this](auto referenceId, const auto& timeStep, DataContextType& context)
+            auto supmitInputEvents = [this](auto referenceId, const auto& timeStep, DataContextType& context)
             {
                 services.standartIoEventDispatcher.submitInput(context);
             };
 
-            auto flushOutputEvents = [this](auto referenceId, const auto& timeStep, DataContextType& context)
+            auto flushOutput = [this](auto referenceId, const auto& timeStep, DataContextType& context)
             {
-                services.standartIoEventDispatcher.submitOutput(context);
-                services.standartIoEventDispatcher.fire(context, events::io::FlushOutputBufferEventData{});
+                services.standartIODevice.flush();
             };
 
             registry::services::IPipelineRepository<registry::PipelineRepositoryType, DataContextType>& pipelineRepository = services.pipelineRepository;
 
             pipelineRepository.store(dory::domain::entity::PipelineNode<DataContextType> {
-                    flushInputEvents,
+                    supmitInputEvents,
                     dory::domain::entity::PipelineNodePriority::Default,
                     context.inputGroupNodeId});
 
             pipelineRepository.store(dory::domain::entity::PipelineNode<DataContextType> {
-                flushOutputEvents,
+                flushOutput,
                 dory::domain::entity::PipelineNodePriority::Default,
                 context.outputGroupNodeId});
-
-            //services.terminal.writeLine("hello!");
 
             auto window = services.windowService.createWindow();
             context.mainWindowId = window.id;
@@ -75,31 +73,13 @@ namespace testApp
 
         void onStopEngine(DataContextType& context, const events::StopEngineEventData& eventData)
         {
-            services.standartIODevice.out("Stopping Engine...\n");
             services.standartIODevice.disconnect(context);
         }
 
-        /*void onConsoleKeyPressed(DataContextType& context, events::KeyPressedEventData& eventData)
-        {
-            if(eventData.keyPressed == 27)
-            {
-                frameService.endLoop();
-                std::cout << std::this_thread::get_id() << ": ESC" << std::endl;
-            }
-            else if(eventData.keyPressed == 119)
-            {
-                auto window = services.windowService.createWindow();
-                services.viewService.createView(context, window.id, context.outputGroupNodeId);
-            }
-            else if(eventData.keyPressed != 0)
-            {
-                std::cout << std::this_thread::get_id() << ": key pressed: " << eventData.keyPressed << std::endl;
-            }
-        }*/
-
         void onApplicationExit(DataContextType& context, const events::ApplicationExitEventData& eventData)
         {
-            /*services.cliManager.stop(context);*/
+            services.terminalDevice.exitCommandMode();
+            services.terminalDevice.writeLine("Stopping Engine...");
             frameService.endLoop();
         }
 

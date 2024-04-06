@@ -15,6 +15,7 @@ namespace dory::domain::devices
         InputEventDispatcherType& inputEventDispatcher;
 
         std::jthread pollingThread;
+        bool connected = false;
 
         void bindStdHandlesToConsole()
         {
@@ -58,49 +59,64 @@ namespace dory::domain::devices
 
         void outImpl(const std::string& data)
         {
-            std::cout << data;
+            if(connected)
+            {
+                std::cout << data;
+            }
         }
 
         void flushImpl()
         {
-            std::cout.flush();
+            if(connected)
+            {
+                std::cout.flush();
+            }
         }
 
         void connectImpl(TDataContext& context)
         {
-            if(AllocConsole())
+            if(!connected)
             {
-                bindStdHandlesToConsole();
-            }
-
-            //disable echo: https://forums.codeguru.com/showthread.php?466009-Reading-from-stdin-(without-echo)
-            HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
-            DWORD mode = 0;
-            GetConsoleMode(hStdin, &mode);
-            SetConsoleMode(hStdin, mode & (~ENABLE_ECHO_INPUT));
-
-            pollingThread = std::jthread([this](const std::stop_token& stoken)
-            {
-                while(!stoken.stop_requested())
+                if(AllocConsole())
                 {
-                    int inputKey = getchar();
-
-                    if(!stoken.stop_requested() && inputKey != EOF)
-                    {
-                        onKeyPressed(inputKey);
-                    }
-                    else
-                    {
-                        break;
-                    }
+                    bindStdHandlesToConsole();
                 }
-            });
+
+                //disable echo: https://forums.codeguru.com/showthread.php?466009-Reading-from-stdin-(without-echo)
+                HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+                DWORD mode = 0;
+                GetConsoleMode(hStdin, &mode);
+                SetConsoleMode(hStdin, mode & (~ENABLE_ECHO_INPUT));
+
+                pollingThread = std::jthread([this](const std::stop_token& stoken)
+                {
+                    while(!stoken.stop_requested())
+                    {
+                        int inputKey = getchar();
+
+                        if(!stoken.stop_requested() && inputKey != EOF)
+                        {
+                            onKeyPressed(inputKey);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                });
+
+                connected = true;
+            }
         }
 
         void disconnectImpl(TDataContext& context)
         {
-            pollingThread.request_stop();
-            pollingThread.detach();
+            if(connected)
+            {
+                pollingThread.request_stop();
+                pollingThread.join();
+                connected = false;
+            }
         }
     };
 }
