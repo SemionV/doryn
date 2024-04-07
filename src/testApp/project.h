@@ -40,7 +40,7 @@ namespace testApp
         {
             services.standartIODevice.connect(context);
             services.terminalDevice.connect(context);
-            services.terminalDevice.writeLine("Starting Engine...");
+            services.terminalDevice.writeLine("Start Engine...");
             services.terminalDevice.enterCommandMode();
 
             services.scriptService.addScript("exit", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
@@ -81,7 +81,7 @@ namespace testApp
         void onStopEngine(DataContextType& context, const events::StopEngineEventData& eventData)
         {
             services.terminalDevice.exitCommandMode();
-            services.terminalDevice.writeLine("Stopping Engine...");
+            services.terminalDevice.writeLine("Stop Engine...");
             services.terminalDevice.disconnect(context);
             services.standartIODevice.disconnect(context);
         }

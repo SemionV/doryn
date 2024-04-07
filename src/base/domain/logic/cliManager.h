@@ -30,7 +30,7 @@ namespace dory::domain::logic
         using TerminalEventHubType = events::SystemConsoleEventHub<TDataContext>;
         TerminalEventHubType& terminalEventHub;
 
-        using ApplicationEventDispatcherType = events::ApplicationEventHubDispatcher<TDataContext>;
+        using ApplicationEventDispatcherType = events::ApplicationEventDispatcher<TDataContext>;
         ApplicationEventDispatcherType& applicationEventDispatcher;
 
     public:

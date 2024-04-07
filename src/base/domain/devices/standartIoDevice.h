@@ -50,9 +50,9 @@ namespace dory::domain::devices
 
         void onKeyPressed(TDataContext& context, INPUT_RECORD inputRecord)
         {
-            if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 3)//CTRL+C
+            if(inputRecord.Event.KeyEvent.uChar.AsciiChar == 3)//CTRL+C
             {
-
+                inputEventDispatcher.addCase(context, events::io::PressTerminateEventData{});
             }
             else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 27)//ESC
             {

@@ -16,6 +16,9 @@ namespace dory::domain::events
         struct PressBackspaceEventData
         {};
 
+        struct PressTerminateEventData
+        {};
+
         struct PressSymbolEventData
         {
             int symbol;
@@ -29,6 +32,7 @@ namespace dory::domain::events
         EventDispatcher<TDataContext&, io::PressEscapeEventData> pressEscapeEvent;
         EventDispatcher<TDataContext&, io::PressEnterEventData> pressReturnEvent;
         EventDispatcher<TDataContext&, io::PressBackspaceEventData> pressBackspaceEvent;
+        EventDispatcher<TDataContext&, io::PressTerminateEventData> pressTerminateEvent;
         EventDispatcher<TDataContext&, io::PressSymbolEventData> enterSymbolEvent;
 
     public:
@@ -47,6 +51,11 @@ namespace dory::domain::events
             return pressBackspaceEvent;
         }
 
+        Event<TDataContext&, io::PressTerminateEventData>& onPressTerminate()
+        {
+            return pressTerminateEvent;
+        }
+
         Event<TDataContext&, io::PressSymbolEventData>& onEnterSymbol()
         {
             return enterSymbolEvent;
@@ -60,6 +69,7 @@ namespace dory::domain::events
         EventBuffer<TDataContext, io::PressEscapeEventData> pressEscaspeEventBuffer;
         EventBuffer<TDataContext, io::PressEnterEventData> pressReturnEventBuffer;
         EventBuffer<TDataContext, io::PressBackspaceEventData> pressBackspaceEventBuffer;
+        EventBuffer<TDataContext, io::PressTerminateEventData> pressTerminateEventBuffer;
         EventBuffer<TDataContext, io::PressSymbolEventData> enterSymbolEventBuffer;
 
     public:
@@ -78,6 +88,11 @@ namespace dory::domain::events
             pressBackspaceEventBuffer.addCase(eventData);
         }
 
+        void addCase(const TDataContext& context, const io::PressTerminateEventData eventData)
+        {
+            pressTerminateEventBuffer.addCase(eventData);
+        }
+
         void addCase(const TDataContext& context, const io::PressSymbolEventData eventData)
         {
             enterSymbolEventBuffer.addCase(eventData);
@@ -88,6 +103,7 @@ namespace dory::domain::events
             pressEscaspeEventBuffer.submitCases(this->pressEscapeEvent, context);
             pressReturnEventBuffer.submitCases(this->pressReturnEvent, context);
             pressBackspaceEventBuffer.submitCases(this->pressBackspaceEvent, context);
+            pressTerminateEventBuffer.submitCases(this->pressTerminateEvent, context);
             enterSymbolEventBuffer.submitCases(this->enterSymbolEvent, context);
         }
     };

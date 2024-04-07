@@ -77,7 +77,7 @@ namespace testApp::registry
     using ConsoleEventHubType = events::SystemConsoleEventHub<DataContextType>;
     using WindowEventHubDispatcherType = events::WindowEventHubDispatcher<DataContextType>;
     using WindowEventHubType = events::WindowEventHub<DataContextType>;
-    using ApplicationEventDispatcherType = events::ApplicationEventHubDispatcher<DataContextType>;
+    using ApplicationEventDispatcherType = events::ApplicationEventDispatcher<DataContextType>;
     using ApplicationEventHubType = events::ApplicationEventHub<DataContextType>;
     using StandartInputEventDispatcherType = events::InputEventDispatcher<DataContextType>;
     using StandartInputEventHubType = events::InputEventHub<DataContextType>;
@@ -123,7 +123,7 @@ namespace testApp::registry
         WindowServiceType windowService = WindowServiceType{ windowRepository };
         ViewServiceType viewService = ViewServiceType{ viewRepository, pipelineRepository, cameraRepository, viewControllerFactory };
         StandartIODeviceType standartIODevice = StandartIODeviceType{standartIoEventDispatcher};
-        TerminalDeviceType terminalDevice = TerminalDeviceType{standartIODevice, standartInputEventHub, scriptEventDispatcher};
+        TerminalDeviceType terminalDevice = TerminalDeviceType{standartIODevice, standartInputEventHub, scriptEventDispatcher, applicationEventDispatcher};
         ScriptServiceType scriptService = ScriptServiceType{};
 
         explicit Services(std::string configurationPath):

@@ -29,7 +29,7 @@ namespace dory::domain::events
     };
 
     template<class TDataContext>
-    class ApplicationEventHubDispatcher: public ApplicationEventHub<TDataContext>
+    class ApplicationEventDispatcher: public ApplicationEventHub<TDataContext>
     {
     public:
         void fire(TDataContext& context, const ApplicationExitEventData& exitEventData)

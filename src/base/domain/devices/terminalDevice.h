@@ -3,6 +3,7 @@
 #include "device.h"
 #include "base/domain/events/inputEventHub.h"
 #include "base/domain/events/scriptEventHub.h"
+#include "base/domain/events/applicationEventHub.h"
 
 namespace dory::domain::devices
 {
@@ -49,11 +50,18 @@ namespace dory::domain::devices
         using ScriptEventDispatcherType = events::ScriptEventDispatcher<TDataContext>;
         ScriptEventDispatcherType& scriptEventDispatcher;
 
+        using ApplicationEventDispatcherType = events::ApplicationEventDispatcher<TDataContext>;
+        ApplicationEventDispatcherType& applicationEventDispatcher;
+
     public:
-        explicit TerminalDevice(OutputDeviceType& outputDevice, InputEventHubType& inputEventHub, ScriptEventDispatcherType& scriptEventDispatcher):
+        explicit TerminalDevice(OutputDeviceType& outputDevice,
+                                InputEventHubType& inputEventHub,
+                                ScriptEventDispatcherType& scriptEventDispatcher,
+                                ApplicationEventDispatcherType& applicationEventDispatcher):
             outputDevice(outputDevice),
             inputEventHub(inputEventHub),
-            scriptEventDispatcher(scriptEventDispatcher)
+            scriptEventDispatcher(scriptEventDispatcher),
+            applicationEventDispatcher(applicationEventDispatcher)
         {}
 
         template<typename T>
@@ -93,6 +101,7 @@ namespace dory::domain::devices
             inputEventHub.onPressReturn().attachHandler(this, &TerminalDevice::onPressReturn);
             inputEventHub.onPressEscape().attachHandler(this, &TerminalDevice::onPressEscape);
             inputEventHub.onPressBackspace().attachHandler(this, &TerminalDevice::onPressBackspace);
+            inputEventHub.onPressTerminate().attachHandler(this, &TerminalDevice::onPressTerminate);
             inputEventHub.onEnterSymbol().attachHandler(this, &TerminalDevice::onEnterSymbol);
         }
 
@@ -171,6 +180,11 @@ namespace dory::domain::devices
                 currentCommand.erase(currentCommand.end() - 1);
                 outputDevice.out("\b \b");
             }
+        }
+
+        void onPressTerminate(TDataContext& context, events::io::PressTerminateEventData eventData)
+        {
+            applicationEventDispatcher.fire(context, events::ApplicationExitEventData{});
         }
 
         void onEnterSymbol(TDataContext& context, events::io::PressSymbolEventData eventData)
