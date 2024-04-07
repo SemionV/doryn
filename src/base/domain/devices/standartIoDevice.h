@@ -105,21 +105,24 @@ namespace dory::domain::devices
                 HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
                 DWORD mode = 0;
                 GetConsoleMode(hStdin, &mode);
-                SetConsoleMode(hStdin, mode & (~ENABLE_ECHO_INPUT) & (~ENABLE_LINE_INPUT));
+                SetConsoleMode(hStdin, mode & (~ENABLE_ECHO_INPUT) & (~ENABLE_LINE_INPUT) & (~ENABLE_PROCESSED_INPUT));
 
-                pollingThread = std::jthread([this, &context](const std::stop_token& stoken)
+                pollingThread = std::jthread([this, &context, hStdin](const std::stop_token& stoken)
                 {
                     while(!stoken.stop_requested())
                     {
-                        int inputKey = _getchar_nolock();
-
-                        if(!stoken.stop_requested() && inputKey != EOF)
+                        int key = 0;
+                        long unsigned int keys_read = 0;
+                        if(ReadConsoleA(hStdin, &key, 1, &keys_read, nullptr))
                         {
-                            onKeyPressed(context, inputKey);
-                        }
-                        else
-                        {
-                            break;
+                            if(!stoken.stop_requested() && key != EOF)
+                            {
+                                onKeyPressed(context, key);
+                            }
+                            else
+                            {
+                                break;
+                            }
                         }
                     }
                 });
