@@ -85,17 +85,12 @@ namespace dory::domain::services
     };
 
     template<typename TDataContext,
-            typename TConsoleControllerFactory,
             typename TWindowControllerFactory,
             typename TPipelineRepository>
-    class PipelineManager: public IPipelineManager<PipelineManager<TDataContext,
-            TConsoleControllerFactory, TWindowControllerFactory, TPipelineRepository>, TDataContext>
+    class PipelineManager: public IPipelineManager<PipelineManager<TDataContext, TWindowControllerFactory, TPipelineRepository>, TDataContext>
     {
     private:
         using PipelineNodeType = entity::PipelineNode<TDataContext>;
-
-        using ConsoleControllerFactoryType = dory::IServiceFactory<TConsoleControllerFactory>;
-        ConsoleControllerFactoryType& consoleControllerFactory;
 
         using WindowControllerFactoryType = dory::IServiceFactory<TWindowControllerFactory>;
         WindowControllerFactoryType& windowControllerFactory;
@@ -104,10 +99,8 @@ namespace dory::domain::services
         PipelineRepositoryType& pipelineRepository;
 
     public:
-        explicit PipelineManager(ConsoleControllerFactoryType& consoleControllerFactory,
-                                 WindowControllerFactoryType& windowControllerFactory,
+        explicit PipelineManager(WindowControllerFactoryType& windowControllerFactory,
                                  PipelineRepositoryType& pipelineRepository):
-                consoleControllerFactory(consoleControllerFactory),
                 windowControllerFactory(windowControllerFactory),
                 pipelineRepository(pipelineRepository)
         {}
@@ -128,13 +121,6 @@ namespace dory::domain::services
 
             context.inputGroupNodeId = inputGroupNode.id;
             context.outputGroupNodeId = outputGroupNode.id;
-
-            /*auto consoleController = consoleControllerFactory.createInstance();
-            auto consoleControllerNode = pipelineRepository.store(PipelineNodeType(entity::nullId,
-                                                                                       consoleController,
-                                                                                       entity::PipelineNodePriority::Default,
-                                                                                       inputGroupNode.id));
-            consoleController->initialize(consoleControllerNode.id, context);*/
 
             auto windowController = windowControllerFactory.createInstance();
             auto windowControllerNode = pipelineRepository.store(PipelineNodeType(entity::nullId,

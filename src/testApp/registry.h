@@ -13,8 +13,7 @@
 #include "base/domain/services/frameService.h"
 #include "base/domain/services/viewService.h"
 #include "base/domain/devices/terminalDevice.h"
-#include "base/domain/logic/cliManager.h"
-#include "base/domain/devices/standartIoDevice.h"
+#include "base/domain/devices/standartIoDeviceWin32.h"
 #include "base/domain/services/scriptService.h"
 #include "openGL/glfwWindow.h"
 #include "openGL/glfwWindowController.h"
@@ -25,11 +24,11 @@
 #include "projectDataContext.h"
 
 #ifdef WIN32
-#include "base/win32/consoleController.h"
+#include "base/domain/devices/standartIoDeviceWin32.h"
 #endif
 
 #ifdef __unix__
-#include "base/unix/consoleController.h"
+#include "base/domain/devices/standartIoDeviceUnix.h"
 #endif
 
 namespace testApp::registry
@@ -37,7 +36,6 @@ namespace testApp::registry
     namespace domain = dory::domain;
     namespace entity = domain::entity;
     namespace services = domain::services;
-    namespace logic = domain::logic;
     namespace events = domain::events;
     namespace devices = domain::devices;
     namespace openGL = dory::openGL;
@@ -51,17 +49,9 @@ namespace testApp::registry
     using PipelineRepositoryType = domain::services::PipelineRepository<DataContextType, entity::PipelineNode<DataContextType>>;
     using EngineType = domain::Engine<DataContextType, PipelineRepositoryType>;
     using FrameServiceType = services::BasicFrameService;
-#ifdef WIN32
-    using ConsoleControllerType = dory::win32::ConsoleController<DataContextType>;
-    using ConsoleControllerFactoryType = ConsoleControllerType::FactoryType;
-#endif
-#ifdef __unix__
-    using ConsoleControllerType = dory::nunix::ConsoleController<DataContextType>;
-    using ConsoleControllerFactoryType = ConsoleControllerType::FactoryType;
-#endif
     using WindowControllerType = openGL::GlfwWindowController<DataContextType, WindowRepositoryType>;
     using WindowControllerFactoryType = WindowControllerType::FactoryType;
-    using PipelineManagerType = services::PipelineManager<DataContextType, ConsoleControllerFactoryType, WindowControllerFactoryType, PipelineRepositoryType>;
+    using PipelineManagerType = services::PipelineManager<DataContextType, WindowControllerFactoryType, PipelineRepositoryType>;
     using ShaderServiceType = openGL::services::ShaderService<ConfigurationServiceType>;
     using RendererType = openGL::Renderer<openGL::RendererDependencies<ShaderServiceType>>;
     using RendererFactoryType = RendererType::FactoryType;
@@ -73,8 +63,6 @@ namespace testApp::registry
     using ViewControllerFactoryType = ViewControllerType::FactoryType;
     using EngineEventDispatcherType = events::EngineEventHubDispatcher<DataContextType>;
     using EngineEventHubType = events::EngineEventHub<DataContextType>;
-    using ConsoleEventDispatcherType = events::SystemConsoleEventHubDispatcher<DataContextType>;
-    using ConsoleEventHubType = events::SystemConsoleEventHub<DataContextType>;
     using WindowEventHubDispatcherType = events::WindowEventHubDispatcher<DataContextType>;
     using WindowEventHubType = events::WindowEventHub<DataContextType>;
     using ApplicationEventDispatcherType = events::ApplicationEventDispatcher<DataContextType>;
@@ -89,7 +77,12 @@ namespace testApp::registry
                                                                                     PipelineRepositoryType,
                                                                                     CameraRepositoryType,
                                                                                     ViewControllerFactoryType>>;
+#ifdef WIN32
     using StandartIODeviceType = devices::ConsoleIODeviceWin32<DataContextType>;
+#endif
+#ifdef __unix__
+    using StandartIODeviceType = devices::ConsoleIODeviceUnix<DataContextType>;
+#endif
     using TerminalDeviceType = devices::TerminalDevice<DataContextType, StandartIODeviceType>;
     using ScriptServiceType = services::ScriptService<DataContextType>;
 
@@ -98,8 +91,6 @@ namespace testApp::registry
     public:
         EngineEventDispatcherType engineEventDispatcher;
         EngineEventHubType& engineEventHub = engineEventDispatcher;
-        ConsoleEventDispatcherType consoleEventDispatcher;
-        ConsoleEventHubType& consoleEventHub = consoleEventDispatcher;
         WindowEventHubDispatcherType windowEventDispatcher;
         WindowEventHubType& windowEventHub = windowEventDispatcher;
         ApplicationEventDispatcherType applicationEventDispatcher;
@@ -115,11 +106,10 @@ namespace testApp::registry
         std::string configurationPath;
         ConfigurationServiceType configurationService = ConfigurationServiceType{ configurationPath };
         ShaderServiceType shaderService = ShaderServiceType{ configurationService };
-        ConsoleControllerFactoryType consoleControllerFactory = ConsoleControllerFactoryType{ consoleEventDispatcher };
         WindowControllerFactoryType windowControllerFactory = WindowControllerFactoryType {windowRepository, windowEventDispatcher};
         RendererFactoryType rendererFactory = RendererFactoryType { shaderService };
         ViewControllerFactoryType viewControllerFactory = ViewControllerFactoryType{ rendererFactory, viewRepository, windowRepository };
-        PipelineManagerType pipelineManager = PipelineManagerType{ consoleControllerFactory, windowControllerFactory, pipelineRepository };
+        PipelineManagerType pipelineManager = PipelineManagerType{ windowControllerFactory, pipelineRepository };
         WindowServiceType windowService = WindowServiceType{ windowRepository };
         ViewServiceType viewService = ViewServiceType{ viewRepository, pipelineRepository, cameraRepository, viewControllerFactory };
         StandartIODeviceType standartIODevice = StandartIODeviceType{standartIoEventDispatcher};
