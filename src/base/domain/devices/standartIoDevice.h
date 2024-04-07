@@ -52,23 +52,27 @@ namespace dory::domain::devices
         {
             if(inputRecord.Event.KeyEvent.uChar.AsciiChar == 3)//CTRL+C
             {
-                inputEventDispatcher.addCase(context, events::io::PressTerminateEventData{});
+                inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Terminate });
             }
             else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 27)//ESC
             {
-                inputEventDispatcher.addCase(context, events::io::PressEscapeEventData{});
+                inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Escape });
             }
             else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 8)//BACKSPACE
             {
-                inputEventDispatcher.addCase(context, events::io::PressBackspaceEventData{});
+                inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Backspace });
             }
             else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 13)//RETURN
             {
-                inputEventDispatcher.addCase(context, events::io::PressEnterEventData{});
+                inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Return });
             }
             else if(inputRecord.Event.KeyEvent.uChar.AsciiChar != 0)// Character
             {
-                inputEventDispatcher.addCase(context, events::io::PressSymbolEventData{ inputRecord.Event.KeyEvent.uChar.AsciiChar });
+                inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Character, inputRecord.Event.KeyEvent.uChar.AsciiChar });
+            }
+            else
+            {
+                inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Unknown });
             }
         }
 
@@ -112,12 +116,11 @@ namespace dory::domain::devices
                 pollingThread = std::jthread([this, &context, hStdin, oldMode](const std::stop_token& stoken)
                 {
                     INPUT_RECORD inputRecord;
-                    long unsigned int keys_read = 0;
-                    int key = 0;
+                    long unsigned int recordsRead = 0;
 
                     while(!stoken.stop_requested())
                     {
-                        if(ReadConsoleInputA(hStdin, &inputRecord, 1, &keys_read) && keys_read > 0)
+                        if(ReadConsoleInputA(hStdin, &inputRecord, 1, &recordsRead))
                         {
                             if(stoken.stop_requested())
                             {

@@ -7,21 +7,20 @@ namespace dory::domain::events
 {
     namespace io
     {
-        struct PressEscapeEventData
-        {};
-
-        struct PressEnterEventData
-        {};
-
-        struct PressBackspaceEventData
-        {};
-
-        struct PressTerminateEventData
-        {};
-
-        struct PressSymbolEventData
+        enum class KeyCode
         {
-            int symbol;
+            Unknown,
+            Escape,
+            Return,
+            Backspace,
+            Terminate,
+            Character
+        };
+
+        struct KeyPressEvent
+        {
+            KeyCode keyCode = KeyCode::Unknown;
+            int character = 0;
         };
     }
 
@@ -29,36 +28,12 @@ namespace dory::domain::events
     class InputEventHub: Uncopyable
     {
     protected:
-        EventDispatcher<TDataContext&, io::PressEscapeEventData> pressEscapeEvent;
-        EventDispatcher<TDataContext&, io::PressEnterEventData> pressReturnEvent;
-        EventDispatcher<TDataContext&, io::PressBackspaceEventData> pressBackspaceEvent;
-        EventDispatcher<TDataContext&, io::PressTerminateEventData> pressTerminateEvent;
-        EventDispatcher<TDataContext&, io::PressSymbolEventData> enterSymbolEvent;
+        EventDispatcher<TDataContext&, io::KeyPressEvent> keyPressEvent;
 
     public:
-        Event<TDataContext&, io::PressEscapeEventData>& onPressEscape()
+        Event<TDataContext&, io::KeyPressEvent>& onKeyPress()
         {
-            return pressEscapeEvent;
-        }
-
-        Event<TDataContext&, io::PressEnterEventData>& onPressReturn()
-        {
-            return pressReturnEvent;
-        }
-
-        Event<TDataContext&, io::PressBackspaceEventData>& onPressBackspace()
-        {
-            return pressBackspaceEvent;
-        }
-
-        Event<TDataContext&, io::PressTerminateEventData>& onPressTerminate()
-        {
-            return pressTerminateEvent;
-        }
-
-        Event<TDataContext&, io::PressSymbolEventData>& onEnterSymbol()
-        {
-            return enterSymbolEvent;
+            return keyPressEvent;
         }
     };
 
@@ -66,45 +41,17 @@ namespace dory::domain::events
     class InputEventDispatcher: public InputEventHub<TDataContext>
     {
     private:
-        EventBuffer<TDataContext, io::PressEscapeEventData> pressEscaspeEventBuffer;
-        EventBuffer<TDataContext, io::PressEnterEventData> pressReturnEventBuffer;
-        EventBuffer<TDataContext, io::PressBackspaceEventData> pressBackspaceEventBuffer;
-        EventBuffer<TDataContext, io::PressTerminateEventData> pressTerminateEventBuffer;
-        EventBuffer<TDataContext, io::PressSymbolEventData> enterSymbolEventBuffer;
+        EventBuffer<TDataContext, io::KeyPressEvent> keyPressEventBuffer;
 
     public:
-        void addCase(const TDataContext& context, const io::PressEscapeEventData eventData)
+        void addCase(const TDataContext& context, const io::KeyPressEvent eventData)
         {
-            pressEscaspeEventBuffer.addCase(eventData);
-        }
-
-        void addCase(const TDataContext& context, const io::PressEnterEventData eventData)
-        {
-            pressReturnEventBuffer.addCase(eventData);
-        }
-
-        void addCase(const TDataContext& context, const io::PressBackspaceEventData eventData)
-        {
-            pressBackspaceEventBuffer.addCase(eventData);
-        }
-
-        void addCase(const TDataContext& context, const io::PressTerminateEventData eventData)
-        {
-            pressTerminateEventBuffer.addCase(eventData);
-        }
-
-        void addCase(const TDataContext& context, const io::PressSymbolEventData eventData)
-        {
-            enterSymbolEventBuffer.addCase(eventData);
+            keyPressEventBuffer.addCase(eventData);
         }
 
         void submit(TDataContext& context)
         {
-            pressEscaspeEventBuffer.submitCases(this->pressEscapeEvent, context);
-            pressReturnEventBuffer.submitCases(this->pressReturnEvent, context);
-            pressBackspaceEventBuffer.submitCases(this->pressBackspaceEvent, context);
-            pressTerminateEventBuffer.submitCases(this->pressTerminateEvent, context);
-            enterSymbolEventBuffer.submitCases(this->enterSymbolEvent, context);
+            keyPressEventBuffer.submitCases(this->keyPressEvent, context);
         }
     };
 }

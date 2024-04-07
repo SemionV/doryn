@@ -98,11 +98,7 @@ namespace dory::domain::devices
 
         void connectImpl(TDataContext& context)
         {
-            inputEventHub.onPressReturn().attachHandler(this, &TerminalDevice::onPressReturn);
-            inputEventHub.onPressEscape().attachHandler(this, &TerminalDevice::onPressEscape);
-            inputEventHub.onPressBackspace().attachHandler(this, &TerminalDevice::onPressBackspace);
-            inputEventHub.onPressTerminate().attachHandler(this, &TerminalDevice::onPressTerminate);
-            inputEventHub.onEnterSymbol().attachHandler(this, &TerminalDevice::onEnterSymbol);
+            inputEventHub.onKeyPress().attachHandler(this, &TerminalDevice::onKeyPress);
         }
 
         void disconnectImpl(TDataContext& context)
@@ -152,7 +148,7 @@ namespace dory::domain::devices
             currentCommand = "";
         }
 
-        void onPressReturn(TDataContext& context, events::io::PressEnterEventData eventData)
+        void onPressReturn(TDataContext& context, events::io::KeyPressEvent eventData)
         {
             if(commandMode)
             {
@@ -165,7 +161,7 @@ namespace dory::domain::devices
             }
         }
 
-        void onPressEscape(TDataContext& context, events::io::PressEscapeEventData eventData)
+        void onPressEscape(TDataContext& context, events::io::KeyPressEvent eventData)
         {
             if(commandMode)
             {
@@ -173,7 +169,7 @@ namespace dory::domain::devices
             }
         }
 
-        void onPressBackspace(TDataContext& context, events::io::PressBackspaceEventData eventData)
+        void onPressBackspace(TDataContext& context, events::io::KeyPressEvent eventData)
         {
             if(commandMode && !currentCommand.empty())
             {
@@ -182,16 +178,51 @@ namespace dory::domain::devices
             }
         }
 
-        void onPressTerminate(TDataContext& context, events::io::PressTerminateEventData eventData)
+        void onPressTerminate(TDataContext& context, events::io::KeyPressEvent eventData)
         {
             applicationEventDispatcher.fire(context, events::ApplicationExitEventData{});
         }
 
-        void onEnterSymbol(TDataContext& context, events::io::PressSymbolEventData eventData)
+        void onEnterSymbol(TDataContext& context, events::io::KeyPressEvent eventData)
         {
             if(commandMode)
             {
-                appendToCurrentCommand(eventData.symbol);
+                appendToCurrentCommand(eventData.character);
+            }
+        }
+
+        void onKeyPress(TDataContext& context, events::io::KeyPressEvent eventData)
+        {
+            switch(eventData.keyCode)
+            {
+                case events::io::KeyCode::Return:
+                {
+                    onPressReturn(context, eventData);
+                    break;
+                }
+                case events::io::KeyCode::Backspace:
+                {
+                    onPressBackspace(context, eventData);
+                    break;
+                }
+                case events::io::KeyCode::Escape:
+                {
+                    onPressEscape(context, eventData);
+                    break;
+                }
+                case events::io::KeyCode::Terminate:
+                {
+                    onPressTerminate(context, eventData);
+                    break;
+                }
+                case events::io::KeyCode::Character:
+                {
+                    onEnterSymbol(context, eventData);
+                    break;
+                }
+                case events::io::KeyCode::Unknown:
+                default:
+                    break;
             }
         }
     };
