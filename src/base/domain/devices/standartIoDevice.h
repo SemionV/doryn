@@ -136,7 +136,24 @@ namespace dory::domain::devices
             if(connected)
             {
                 pollingThread.request_stop();
-                pollingThread.join();
+
+                HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+                INPUT_RECORD eventData;
+                eventData.EventType = KEY_EVENT;
+                eventData.Event.KeyEvent.bKeyDown = true;
+                eventData.Event.KeyEvent.uChar.AsciiChar = VK_RETURN;
+                eventData.Event.KeyEvent.dwControlKeyState = 0;
+                eventData.Event.KeyEvent.wRepeatCount = 0;
+                eventData.Event.KeyEvent.wVirtualKeyCode = 0;
+                long unsigned int keys_written = 0;
+                if(WriteConsoleInputA(hStdin, &eventData, 1, &keys_written))
+                {
+                    pollingThread.join();
+                }
+                else
+                {
+                    pollingThread.detach();
+                }
                 connected = false;
             }
         }

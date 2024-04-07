@@ -85,7 +85,7 @@ namespace dory::domain::devices
 
         void connectImpl(TDataContext& context)
         {
-            inputEventHub.onPressEnter().attachHandler(this, &TerminalDevice::onPressEnter);
+            inputEventHub.onPressReturn().attachHandler(this, &TerminalDevice::onPressReturn);
             inputEventHub.onPressSymbol().attachHandler(this, &TerminalDevice::onPressSymbol);
         }
 
@@ -114,7 +114,7 @@ namespace dory::domain::devices
             outputDevice.out(std::string{symbol});
         }
 
-        void onPressEnter(TDataContext& context, events::io::PressEnterEventData eventData)
+        void onPressReturn(TDataContext& context, events::io::PressEnterEventData eventData)
         {
             if(commandMode)
             {

@@ -24,7 +24,7 @@ namespace dory::domain::events
     {
     protected:
         EventDispatcher<TDataContext&, io::PressEscapeEventData> pressEscapeEvent;
-        EventDispatcher<TDataContext&, io::PressEnterEventData> pressEnterEvent;
+        EventDispatcher<TDataContext&, io::PressEnterEventData> pressReturnEvent;
         EventDispatcher<TDataContext&, io::PressSymbolEventData> pressSymbolEvent;
 
     public:
@@ -33,9 +33,9 @@ namespace dory::domain::events
             return pressEscapeEvent;
         }
 
-        Event<TDataContext&, io::PressEnterEventData>& onPressEnter()
+        Event<TDataContext&, io::PressEnterEventData>& onPressReturn()
         {
-            return pressEnterEvent;
+            return pressReturnEvent;
         }
 
         Event<TDataContext&, io::PressSymbolEventData>& onPressSymbol()
@@ -49,7 +49,7 @@ namespace dory::domain::events
     {
     private:
         EventBuffer<TDataContext, io::PressEscapeEventData> pressEscaspeEventBuffer;
-        EventBuffer<TDataContext, io::PressEnterEventData> pressEnterEventBuffer;
+        EventBuffer<TDataContext, io::PressEnterEventData> pressReturnEventBuffer;
         EventBuffer<TDataContext, io::PressSymbolEventData> pressSymbolEventBuffer;
 
     public:
@@ -60,7 +60,7 @@ namespace dory::domain::events
 
         void addCase(const TDataContext& context, const io::PressEnterEventData eventData)
         {
-            pressEnterEventBuffer.addCase(eventData);
+            pressReturnEventBuffer.addCase(eventData);
         }
 
         void addCase(const TDataContext& context, const io::PressSymbolEventData eventData)
@@ -71,7 +71,7 @@ namespace dory::domain::events
         void submit(TDataContext& context)
         {
             pressEscaspeEventBuffer.submitCases(this->pressEscapeEvent, context);
-            pressEnterEventBuffer.submitCases(this->pressEnterEvent, context);
+            pressReturnEventBuffer.submitCases(this->pressReturnEvent, context);
             pressSymbolEventBuffer.submitCases(this->pressSymbolEvent, context);
         }
     };
