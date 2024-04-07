@@ -1,11 +1,6 @@
 # Development log
 
 Tasks:
-* Build for Linux
-  * Cancel getchcar() on waiting
-  * Do polling only if stdin is connected to a terminal
-  * InputDevice per OS. Input/Output event hubs, concurrent polling, Open new Terminal
-  * Generalize TerminalControllers
 * YAML Serializer/Deserializer
 * JSON Serializer/Deserializer
 * Static mapping of Vertex Attributes
@@ -25,6 +20,13 @@ Tasks:
 * Networking/Mutliplayer
 * Build for MacOS
 * Voice control
+
+**07.04.24**
+* Task done: Build for Linux
+  * Cancel getchcar() on waiting
+  * Do polling only if stdin is connected to a terminal
+  * InputDevice per OS. Input/Output event hubs, concurrent polling, Open new Terminal
+  * Generalize TerminalControllers
 
 **30.03.24**
 * Task done: Reimplement MatrixCalculator using  static polymorphism

@@ -19,7 +19,7 @@ namespace dory::domain::devices
 
         std::jthread pollingThread;
         bool connected = false;
-        //int pipes[2];
+        int pipes[2];
 
         void onKeyPressed(TDataContext& context, int key)
         {
@@ -31,7 +31,7 @@ namespace dory::domain::devices
             {
                 inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Escape });
             }
-            else if(key == 8)//BACKSPACE
+            else if(key == 127)//BACKSPACE
             {
                 inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Backspace });
             }
@@ -80,23 +80,35 @@ namespace dory::domain::devices
                 currentt.c_lflag &= ~ECHO; /* set no echo mode */
                 tcsetattr(STDIN_FILENO, TCSANOW, &currentt);
 
-                //pipe(pipes);
+                pipe(pipes);
 
-                pollingThread = std::jthread([this, &context](const std::stop_token& stoken)
+                pollingThread = std::jthread([this, &context](const std::stop_token& stoken, void* pipe)
                 {
+                    //see more about this thread unblocking technic here: https://stackoverflow.com/questions/11513593/cancelling-getchar
+                    int readPipe = *(int*)pipe;
+                    fd_set rfds;
+                    int inputKey;
+
                     while(!stoken.stop_requested())
                     {
-                        if(stoken.stop_requested()) {
-                            std::cout << "Sleepy worker is requested to stop\n";
-                            return;
+                        FD_ZERO(&rfds);
+                        FD_SET(STDIN_FILENO, &rfds);
+                        FD_SET(readPipe, &rfds);
+
+                        while (select(readPipe + 1, &rfds, NULL, NULL, NULL) == 0);
+
+                        if (FD_ISSET(readPipe, &rfds)) {
+                            close(readPipe);
+                            break;
                         }
 
-                        int inputKey = getchar();
-                        if(!stoken.stop_requested()) {
-                            onKeyPressed(context, inputKey);
+                        if (FD_ISSET(STDIN_FILENO, &rfds)) {
+                            if (read(STDIN_FILENO, &inputKey, sizeof(inputKey)) > 0 && !stoken.stop_requested()) {
+                                onKeyPressed(context, inputKey);
+                            }
                         }
                     }
-                });
+                }, &pipes[0]);
 
                 connected = true;
             }
@@ -108,7 +120,7 @@ namespace dory::domain::devices
             {
                 tcsetattr(0, TCSANOW, &oldt);
                 pollingThread.request_stop();
-                //close(pipes[1]);
+                close(pipes[1]);
                 pollingThread.join();
                 connected = false;
             }
