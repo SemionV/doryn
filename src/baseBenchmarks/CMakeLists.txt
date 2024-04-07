@@ -5,7 +5,8 @@ project(dory-benchmarks)
 find_package(benchmark REQUIRED
         PATHS ${VENDOR_DIR}google-benchmark NO_DEFAULT_PATH)
 
-add_executable(baseBenchmarks concurrency.cpp)
+add_executable(baseBenchmarks concurrency.cpp
+        ../base/domain/events/scriptEventHub.h)
 
 target_include_directories(baseBenchmarks PRIVATE "${CMAKE_SOURCE_DIR}")
 target_include_directories(baseBenchmarks PRIVATE ${VENDOR_DIR})

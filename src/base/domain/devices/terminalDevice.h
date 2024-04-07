@@ -2,6 +2,7 @@
 
 #include "device.h"
 #include "base/domain/events/inputEventHub.h"
+#include "base/domain/events/scriptEventHub.h"
 
 namespace dory::domain::devices
 {
@@ -45,10 +46,14 @@ namespace dory::domain::devices
         using InputEventHubType = events::InputEventHub<TDataContext>;
         InputEventHubType& inputEventHub;
 
+        using ScriptEventDispatcherType = events::ScriptEventDispatcher<TDataContext>;
+        ScriptEventDispatcherType& scriptEventDispatcher;
+
     public:
-        explicit TerminalDevice(OutputDeviceType& outputDevice, InputEventHubType& inputEventHub):
+        explicit TerminalDevice(OutputDeviceType& outputDevice, InputEventHubType& inputEventHub, ScriptEventDispatcherType& scriptEventDispatcher):
             outputDevice(outputDevice),
-            inputEventHub(inputEventHub)
+            inputEventHub(inputEventHub),
+            scriptEventDispatcher(scriptEventDispatcher)
         {}
 
         template<typename T>
@@ -145,10 +150,7 @@ namespace dory::domain::devices
                 auto command = currentCommand;
                 exitCommandModeImpl();
 
-                if(command == "exit")
-                {
-                    outputDevice.out("-\u001B[31mexit\u001B[0m-\n");
-                }
+                scriptEventDispatcher.fire(context, events::script::RunScriptEventData{command});
 
                 enterCommandModeImpl();
             }

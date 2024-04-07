@@ -33,6 +33,7 @@ namespace testApp
             services.engineEventHub.onStopEngine().attachHandler(this, &Project::onStopEngine);
             services.applicationEventHub.onExit().attachHandler(this, &Project::onApplicationExit);
             services.windowEventHub.onCloseWindow().attachHandler(this, &Project::onCloseWindow);
+            services.scriptEventHub.onRunScript().attachHandler(this, &Project::onRunScript);
         }
 
         void onInitializeEngine(DataContextType& context, const events::InitializeEngineEventData& eventData)
@@ -41,6 +42,12 @@ namespace testApp
             services.terminalDevice.connect(context);
             services.terminalDevice.writeLine("Starting Engine...");
             services.terminalDevice.enterCommandMode();
+
+            services.scriptService.addScript("exit", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
+            {
+                services.terminalDevice.writeLine("-\u001B[31mexit\u001B[0m-");
+                services.applicationEventDispatcher.fire(context, events::ApplicationExitEventData{});
+            });
 
             services.pipelineManager.configurePipeline(context);
 
@@ -73,13 +80,14 @@ namespace testApp
 
         void onStopEngine(DataContextType& context, const events::StopEngineEventData& eventData)
         {
+            services.terminalDevice.exitCommandMode();
+            services.terminalDevice.writeLine("Stopping Engine...");
+            services.terminalDevice.disconnect(context);
             services.standartIODevice.disconnect(context);
         }
 
         void onApplicationExit(DataContextType& context, const events::ApplicationExitEventData& eventData)
         {
-            services.terminalDevice.exitCommandMode();
-            services.terminalDevice.writeLine("Stopping Engine...");
             frameService.endLoop();
         }
 
@@ -92,6 +100,11 @@ namespace testApp
             {
                 services.applicationEventDispatcher.fire(context, events::ApplicationExitEventData{});
             }
+        }
+
+        void onRunScript(DataContextType& context, const events::script::RunScriptEventData& eventData)
+        {
+            services.scriptService.runScript(context, eventData.scriptKey, eventData.arguments);
         }
     };
 }

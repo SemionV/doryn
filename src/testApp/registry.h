@@ -6,6 +6,7 @@
 #include "base/domain/configuration.h"
 #include "base/domain/events/engineEventHub.h"
 #include "base/domain/events/applicationEventHub.h"
+#include "base/domain/events/scriptEventHub.h"
 #include "base/domain/entity.h"
 #include "base/domain/entityRepository.h"
 #include "base/domain/engine.h"
@@ -14,6 +15,7 @@
 #include "base/domain/devices/terminalDevice.h"
 #include "base/domain/logic/cliManager.h"
 #include "base/domain/devices/standartIoDevice.h"
+#include "base/domain/services/scriptService.h"
 #include "openGL/glfwWindow.h"
 #include "openGL/glfwWindowController.h"
 #include "openGL/viewControllerOpenGL.h"
@@ -79,6 +81,8 @@ namespace testApp::registry
     using ApplicationEventHubType = events::ApplicationEventHub<DataContextType>;
     using StandartInputEventDispatcherType = events::InputEventDispatcher<DataContextType>;
     using StandartInputEventHubType = events::InputEventHub<DataContextType>;
+    using ScriptEventDispatcherType = events::ScriptEventDispatcher<DataContextType>;
+    using ScriptEventHubType = events::ScriptEventHub<DataContextType>;
     using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<WindowRepositoryType >>;
     using ViewServiceType = services::ViewService<services::ViewServiceDependencies<DataContextType,
                                                                                     ViewRepositoryType,
@@ -87,6 +91,7 @@ namespace testApp::registry
                                                                                     ViewControllerFactoryType>>;
     using StandartIODeviceType = devices::ConsoleIODeviceWin32<DataContextType>;
     using TerminalDeviceType = devices::TerminalDevice<DataContextType, StandartIODeviceType>;
+    using ScriptServiceType = services::ScriptService<DataContextType>;
 
     class Services
     {
@@ -101,6 +106,8 @@ namespace testApp::registry
         ApplicationEventHubType& applicationEventHub = applicationEventDispatcher;
         StandartInputEventDispatcherType standartIoEventDispatcher;
         StandartInputEventHubType& standartInputEventHub = standartIoEventDispatcher;
+        ScriptEventDispatcherType scriptEventDispatcher;
+        ScriptEventHubType& scriptEventHub = scriptEventDispatcher;
         PipelineRepositoryType pipelineRepository;
         CameraRepositoryType cameraRepository;
         ViewRepositoryType viewRepository;
@@ -116,7 +123,8 @@ namespace testApp::registry
         WindowServiceType windowService = WindowServiceType{ windowRepository };
         ViewServiceType viewService = ViewServiceType{ viewRepository, pipelineRepository, cameraRepository, viewControllerFactory };
         StandartIODeviceType standartIODevice = StandartIODeviceType{standartIoEventDispatcher};
-        TerminalDeviceType terminalDevice = TerminalDeviceType{standartIODevice, standartInputEventHub};
+        TerminalDeviceType terminalDevice = TerminalDeviceType{standartIODevice, standartInputEventHub, scriptEventDispatcher};
+        ScriptServiceType scriptService = ScriptServiceType{};
 
         explicit Services(std::string configurationPath):
                 configurationPath(std::move(configurationPath))
