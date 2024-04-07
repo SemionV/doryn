@@ -13,6 +13,9 @@ namespace dory::domain::events
         struct PressEnterEventData
         {};
 
+        struct PressBackspaceEventData
+        {};
+
         struct PressSymbolEventData
         {
             int symbol;
@@ -25,7 +28,8 @@ namespace dory::domain::events
     protected:
         EventDispatcher<TDataContext&, io::PressEscapeEventData> pressEscapeEvent;
         EventDispatcher<TDataContext&, io::PressEnterEventData> pressReturnEvent;
-        EventDispatcher<TDataContext&, io::PressSymbolEventData> pressSymbolEvent;
+        EventDispatcher<TDataContext&, io::PressBackspaceEventData> pressBackspaceEvent;
+        EventDispatcher<TDataContext&, io::PressSymbolEventData> enterSymbolEvent;
 
     public:
         Event<TDataContext&, io::PressEscapeEventData>& onPressEscape()
@@ -38,9 +42,14 @@ namespace dory::domain::events
             return pressReturnEvent;
         }
 
-        Event<TDataContext&, io::PressSymbolEventData>& onPressSymbol()
+        Event<TDataContext&, io::PressBackspaceEventData>& onPressBackspace()
         {
-            return pressSymbolEvent;
+            return pressBackspaceEvent;
+        }
+
+        Event<TDataContext&, io::PressSymbolEventData>& onEnterSymbol()
+        {
+            return enterSymbolEvent;
         }
     };
 
@@ -50,7 +59,8 @@ namespace dory::domain::events
     private:
         EventBuffer<TDataContext, io::PressEscapeEventData> pressEscaspeEventBuffer;
         EventBuffer<TDataContext, io::PressEnterEventData> pressReturnEventBuffer;
-        EventBuffer<TDataContext, io::PressSymbolEventData> pressSymbolEventBuffer;
+        EventBuffer<TDataContext, io::PressBackspaceEventData> pressBackspaceEventBuffer;
+        EventBuffer<TDataContext, io::PressSymbolEventData> enterSymbolEventBuffer;
 
     public:
         void addCase(const TDataContext& context, const io::PressEscapeEventData eventData)
@@ -63,16 +73,22 @@ namespace dory::domain::events
             pressReturnEventBuffer.addCase(eventData);
         }
 
+        void addCase(const TDataContext& context, const io::PressBackspaceEventData eventData)
+        {
+            pressBackspaceEventBuffer.addCase(eventData);
+        }
+
         void addCase(const TDataContext& context, const io::PressSymbolEventData eventData)
         {
-            pressSymbolEventBuffer.addCase(eventData);
+            enterSymbolEventBuffer.addCase(eventData);
         }
 
         void submit(TDataContext& context)
         {
             pressEscaspeEventBuffer.submitCases(this->pressEscapeEvent, context);
             pressReturnEventBuffer.submitCases(this->pressReturnEvent, context);
-            pressSymbolEventBuffer.submitCases(this->pressSymbolEvent, context);
+            pressBackspaceEventBuffer.submitCases(this->pressBackspaceEvent, context);
+            enterSymbolEventBuffer.submitCases(this->enterSymbolEvent, context);
         }
     };
 }

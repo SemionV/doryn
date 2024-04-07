@@ -48,26 +48,27 @@ namespace dory::domain::devices
             std::cin.clear();
         }
 
-        void onKeyPressed(TDataContext& context, int key)
+        void onKeyPressed(TDataContext& context, INPUT_RECORD inputRecord)
         {
-            if(key == 3)//CTRL+C
+            if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 3)//CTRL+C
             {
 
             }
-            else if(key == 27)//ESC
+            else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 27)//ESC
             {
                 inputEventDispatcher.addCase(context, events::io::PressEscapeEventData{});
             }
-            else if(key == 8)//BACKSPACE
+            else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 8)//BACKSPACE
             {
+                inputEventDispatcher.addCase(context, events::io::PressBackspaceEventData{});
             }
-            else if(key == 13)//ENTER
+            else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 13)//RETURN
             {
                 inputEventDispatcher.addCase(context, events::io::PressEnterEventData{});
             }
-            else if(key != 0)// Character
+            else if(inputRecord.Event.KeyEvent.uChar.AsciiChar != 0)// Character
             {
-                inputEventDispatcher.addCase(context, events::io::PressSymbolEventData{ key });
+                inputEventDispatcher.addCase(context, events::io::PressSymbolEventData{ inputRecord.Event.KeyEvent.uChar.AsciiChar });
             }
         }
 
@@ -103,28 +104,49 @@ namespace dory::domain::devices
 
                 //disable echo: https://forums.codeguru.com/showthread.php?466009-Reading-from-stdin-(without-echo)
                 HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
-                DWORD mode = 0;
-                GetConsoleMode(hStdin, &mode);
+                DWORD oldMode = 0;
+                GetConsoleMode(hStdin, &oldMode);
+                DWORD mode = oldMode;
                 SetConsoleMode(hStdin, mode & (~ENABLE_ECHO_INPUT) & (~ENABLE_LINE_INPUT) & (~ENABLE_PROCESSED_INPUT));
 
-                pollingThread = std::jthread([this, &context, hStdin](const std::stop_token& stoken)
+                pollingThread = std::jthread([this, &context, hStdin, oldMode](const std::stop_token& stoken)
                 {
+                    INPUT_RECORD inputRecord;
+                    long unsigned int keys_read = 0;
+                    int key = 0;
+
                     while(!stoken.stop_requested())
                     {
-                        int key = 0;
-                        long unsigned int keys_read = 0;
-                        if(ReadConsoleA(hStdin, &key, 1, &keys_read, nullptr))
+                        if(ReadConsoleInputA(hStdin, &inputRecord, 1, &keys_read) && keys_read > 0)
                         {
-                            if(!stoken.stop_requested() && key != EOF)
-                            {
-                                onKeyPressed(context, key);
-                            }
-                            else
+                            if(stoken.stop_requested())
                             {
                                 break;
                             }
+
+                            switch(inputRecord.EventType)
+                            {
+                                case KEY_EVENT:
+                                    if(inputRecord.Event.KeyEvent.bKeyDown)
+                                    {
+                                        onKeyPressed(context, inputRecord);
+                                    }
+                                    break;
+                                case MOUSE_EVENT:
+                                case WINDOW_BUFFER_SIZE_EVENT:
+                                case FOCUS_EVENT:
+                                case MENU_EVENT:
+                                default:
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            break;
                         }
                     }
+
+                    SetConsoleMode(hStdin, oldMode);
                 });
 
                 connected = true;
@@ -137,6 +159,7 @@ namespace dory::domain::devices
             {
                 pollingThread.request_stop();
 
+                //Send input to console to unblock the polling thread
                 HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
                 INPUT_RECORD eventData;
                 eventData.EventType = KEY_EVENT;

@@ -86,7 +86,9 @@ namespace dory::domain::devices
         void connectImpl(TDataContext& context)
         {
             inputEventHub.onPressReturn().attachHandler(this, &TerminalDevice::onPressReturn);
-            inputEventHub.onPressSymbol().attachHandler(this, &TerminalDevice::onPressSymbol);
+            inputEventHub.onPressEscape().attachHandler(this, &TerminalDevice::onPressEscape);
+            inputEventHub.onPressBackspace().attachHandler(this, &TerminalDevice::onPressBackspace);
+            inputEventHub.onEnterSymbol().attachHandler(this, &TerminalDevice::onEnterSymbol);
         }
 
         void disconnectImpl(TDataContext& context)
@@ -114,6 +116,28 @@ namespace dory::domain::devices
             outputDevice.out(std::string{symbol});
         }
 
+        void clearCurrentCommand()
+        {
+            auto count = currentCommand.size();
+
+            std::string message;
+            for(std::size_t i = 0; i < count; ++i)
+            {
+                message += "\b";
+            }
+            for(std::size_t i = 0; i < count; ++i)
+            {
+                message += " ";
+            }
+            for(std::size_t i = 0; i < count; ++i)
+            {
+                message += "\b";
+            }
+
+            outputDevice.out(message);
+            currentCommand = "";
+        }
+
         void onPressReturn(TDataContext& context, events::io::PressEnterEventData eventData)
         {
             if(commandMode)
@@ -130,7 +154,24 @@ namespace dory::domain::devices
             }
         }
 
-        void onPressSymbol(TDataContext& context, events::io::PressSymbolEventData eventData)
+        void onPressEscape(TDataContext& context, events::io::PressEscapeEventData eventData)
+        {
+            if(commandMode)
+            {
+                clearCurrentCommand();
+            }
+        }
+
+        void onPressBackspace(TDataContext& context, events::io::PressBackspaceEventData eventData)
+        {
+            if(commandMode && !currentCommand.empty())
+            {
+                currentCommand.erase(currentCommand.end() - 1);
+                outputDevice.out("\b \b");
+            }
+        }
+
+        void onEnterSymbol(TDataContext& context, events::io::PressSymbolEventData eventData)
         {
             if(commandMode)
             {
