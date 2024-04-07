@@ -6,6 +6,8 @@
 
 namespace dory::domain::devices
 {
+    static struct termios oldt, currentt;
+
     template<typename TDataContext>
     class ConsoleIODeviceUnix: Uncopyable,
                                 public IDevice<ConsoleIODeviceUnix<TDataContext>, TDataContext>,
@@ -17,7 +19,7 @@ namespace dory::domain::devices
 
         std::jthread pollingThread;
         bool connected = false;
-        static struct termios oldt, currentt;
+        //int pipes[2];
 
         void onKeyPressed(TDataContext& context, int key)
         {
@@ -78,6 +80,8 @@ namespace dory::domain::devices
                 currentt.c_lflag &= ~ECHO; /* set no echo mode */
                 tcsetattr(STDIN_FILENO, TCSANOW, &currentt);
 
+                //pipe(pipes);
+
                 pollingThread = std::jthread([this, &context](const std::stop_token& stoken)
                 {
                     while(!stoken.stop_requested())
@@ -102,7 +106,10 @@ namespace dory::domain::devices
         {
             if(connected)
             {
+                tcsetattr(0, TCSANOW, &oldt);
                 pollingThread.request_stop();
+                //close(pipes[1]);
+                pollingThread.join();
                 connected = false;
             }
         }

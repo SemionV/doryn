@@ -13,7 +13,6 @@
 #include "base/domain/services/frameService.h"
 #include "base/domain/services/viewService.h"
 #include "base/domain/devices/terminalDevice.h"
-#include "base/domain/devices/standartIoDeviceWin32.h"
 #include "base/domain/services/scriptService.h"
 #include "openGL/glfwWindow.h"
 #include "openGL/glfwWindowController.h"

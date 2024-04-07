@@ -2,6 +2,10 @@
 
 Tasks:
 * Build for Linux
+  * Cancel getchcar() on waiting
+  * Do polling only if stdin is connected to a terminal
+  * InputDevice per OS. Input/Output event hubs, concurrent polling, Open new Terminal
+  * Generalize TerminalControllers
 * YAML Serializer/Deserializer
 * JSON Serializer/Deserializer
 * Static mapping of Vertex Attributes

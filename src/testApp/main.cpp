@@ -15,7 +15,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 #endif
 
 #ifdef __unix__
-void main()
+int main()
 {
     return run();
 }
