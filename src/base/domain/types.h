@@ -1,4 +1,4 @@
-#pragma once* Build for Linux
+#pragma once
 
 
 namespace dory::domain
