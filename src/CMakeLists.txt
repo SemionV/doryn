@@ -16,6 +16,7 @@ else()
 set(PLATFORM "")
 endif()
 
+add_subdirectory(base)
 add_subdirectory(baseTests)
 add_subdirectory(baseBenchmarks)
 add_subdirectory(openGL)

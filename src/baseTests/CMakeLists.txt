@@ -21,13 +21,16 @@ add_executable(baseTests linearAlgebra.cpp
         concurrency.cpp
         atm_book.cpp
         serviceContainer.cpp
-        scriptService.cpp)
+        scriptService.cpp
+        jsonTests.cpp
+)
                          
 target_include_directories(baseTests PRIVATE "${CMAKE_SOURCE_DIR}")
 target_include_directories(baseTests PRIVATE ${VENDOR_DIR})
 
 target_link_libraries(baseTests PRIVATE Catch2::Catch2WithMain)
 target_link_libraries(baseTests PRIVATE FakeIt::FakeIt-catch)
+target_link_libraries(baseTests PRIVATE base)
 
 target_precompile_headers(baseTests PRIVATE dependencies.h)
 

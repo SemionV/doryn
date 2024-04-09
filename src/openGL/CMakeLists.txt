@@ -22,6 +22,7 @@ target_include_directories(dory-openGL PRIVATE ${VENDOR_DIR})
 target_precompile_headers(dory-openGL PRIVATE dependencies.h)
 
 target_link_libraries(dory-openGL glfw ${OPENGL_LIBRARIES})
+target_link_libraries(dory-openGL base)
 
 install(TARGETS dory-openGL
         RUNTIME DESTINATION ${INSTALL_LIBRARIES_DESTINATION} COMPONENT Engine
