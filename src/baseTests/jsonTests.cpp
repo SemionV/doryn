@@ -59,11 +59,11 @@ REFL_END
 
 struct Mesh
 {
-    std::vector<Vector> vertecies;
+    std::vector<Vector> vertices;
 };
 
 REFL_TYPE(Mesh)
-    REFL_FIELD(vertecies)
+    REFL_FIELD(vertices)
 REFL_END
 
 struct Entity
@@ -82,11 +82,13 @@ struct Scene
 TEST_CASE( "Deserialize vector of objects", "[json]" )
 {
     std::string meshJson = R"(
-    [
-        {"x": 1, "y": 1, "z": 1},
-        {"x": 2, "y": 2, "z": 2}
-    ])";
+    {
+        "vertices": [
+            {"x": 1, "y": 1, "z": 1},
+            {"x": 2, "y": 2, "z": 2}
+        ]
+    })";
 
     auto mesh = dory::typeMap::json::JsonDeserializer::deserialize<Mesh>(meshJson);
-    REQUIRE(mesh.vertecies.size() == 2);
+    REQUIRE(mesh.vertices.size() == 2);
 }
