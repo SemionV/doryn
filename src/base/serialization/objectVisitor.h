@@ -79,6 +79,11 @@ namespace dory::typeMap
 
     struct DefaultDynamicCollectionPolicy
     {
+        template<typename TContext>
+        inline static void beginCollection(TContext& context)
+        {
+        }
+
         template<typename T, typename TContext>
         inline static std::optional<T> getNextItem(std::vector<T>& collection, TContext& context)
         {
@@ -87,6 +92,11 @@ namespace dory::typeMap
 
         template<typename T, typename TContext>
         inline static void processItem(T& item, std::vector<T>& collection, TContext& context)
+        {
+        }
+
+        template<typename TContext>
+        inline static void endCollection(TContext& context)
         {
         }
     };
@@ -132,6 +142,18 @@ namespace dory::typeMap
             TPolicies::ValuePolicy::process(std::forward<T>(object), context);
         }
 
+        template<typename TContext>
+        static void visit(std::string&& object, TContext& context)
+        {
+            TPolicies::ValuePolicy::process(std::move(object), context);
+        }
+
+        template<typename TContext>
+        static void visit(std::string& object, TContext& context)
+        {
+            TPolicies::ValuePolicy::process(object, context);
+        }
+
         template<typename T, typename TContext>
         requires(std::is_class_v<std::remove_reference_t<T>>)
         static void visit(T&& object, TContext& context)
@@ -164,7 +186,7 @@ namespace dory::typeMap
         template<typename T, typename TContext>
         static void visit(std::vector<T>& object, TContext& context)
         {
-            TPolicies::BeginCollectionPolicy::template process<T, 0>(context);
+            TPolicies::DynamicCollectionPolicyType::beginCollection(context);
 
             auto item = TPolicies::DynamicCollectionPolicyType::getNextItem(object, context);
             while(item)
@@ -176,7 +198,7 @@ namespace dory::typeMap
                 item = TPolicies::DynamicCollectionPolicyType::getNextItem(object, context);
             }
 
-            TPolicies::EndCollectionPolicy::process(context);
+            TPolicies::DynamicCollectionPolicyType::endCollection(context);
         }
     };
 }

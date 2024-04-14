@@ -13,6 +13,7 @@ namespace dory::typeMap::json
     {
         std::stack<json*> current;
         std::size_t dynamicCollectionIndex = 0;
+        std::size_t previousDynamicCollectionIndex = 0;
 
         explicit JsonContext(json* data)
         {
@@ -68,6 +69,12 @@ namespace dory::typeMap::json
 
     struct DeserializerDynamicCollectionPolicy
     {
+        inline static void beginCollection(JsonContext& context)
+        {
+            context.previousDynamicCollectionIndex = context.dynamicCollectionIndex;
+            context.dynamicCollectionIndex = 0;
+        }
+
         template<typename T>
         inline static std::optional<T> getNextItem(std::vector<T>& collection, JsonContext& context)
         {
@@ -99,6 +106,12 @@ namespace dory::typeMap::json
         {
             collection.push_back(item);
             context.current.pop();
+        }
+
+        inline static void endCollection(JsonContext& context)
+        {
+            context.dynamicCollectionIndex = context.previousDynamicCollectionIndex;
+            context.previousDynamicCollectionIndex = 0;
         }
     };
 
