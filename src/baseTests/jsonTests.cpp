@@ -173,3 +173,49 @@ TEST_CASE( "Deserialize complex object", "[json]" )
     REQUIRE(scene.entities[1].mesh.vertices[1][1] == 6);
     REQUIRE(scene.entities[1].mesh.vertices[1][2] == 6);
 }
+
+TEST_CASE( "Deserialize with missing fileds", "[json]" )
+{
+    std::string json = R"(
+    {
+        "name": "scene1",
+        "entities":[
+            {
+                "name": "entity1",
+                "position": [1, 1, 1],
+                "mesh": {
+                    "vertices": [
+                        [2, 2, 2],
+                        [3, 3, 3]
+                    ]
+                }
+            },
+            {
+                "position": [4, 4, 4],
+                "mesh": {
+                }
+            }
+        ]
+    })";
+
+    auto scene = dory::typeMap::json::JsonDeserializer::deserialize<Scene>(json);
+    REQUIRE(scene.name == "scene1");
+    REQUIRE(scene.entities.size() == 2);
+    REQUIRE(scene.entities[0].name == "entity1");
+    REQUIRE(scene.entities[0].position[0] == 1);
+    REQUIRE(scene.entities[0].position[1] == 1);
+    REQUIRE(scene.entities[0].position[2] == 1);
+    REQUIRE(scene.entities[0].mesh.vertices.size() == 2);
+    REQUIRE(scene.entities[0].mesh.vertices[0][0] == 2);
+    REQUIRE(scene.entities[0].mesh.vertices[0][1] == 2);
+    REQUIRE(scene.entities[0].mesh.vertices[0][2] == 2);
+    REQUIRE(scene.entities[0].mesh.vertices[1][0] == 3);
+    REQUIRE(scene.entities[0].mesh.vertices[1][1] == 3);
+    REQUIRE(scene.entities[0].mesh.vertices[1][2] == 3);
+    REQUIRE(scene.entities[1].name.empty());
+    REQUIRE(scene.entities[1].position[0] == 4);
+    REQUIRE(scene.entities[1].position[1] == 4);
+    REQUIRE(scene.entities[1].position[2] == 4);
+    REQUIRE(scene.entities[1].mesh.vertices.empty());
+
+}

@@ -12,6 +12,7 @@ namespace dory::typeMap::json
     struct JsonContext
     {
         std::stack<json*> current;
+        json emptyJson = {};
         std::size_t dynamicCollectionIndex = 0;
         std::size_t previousDynamicCollectionIndex = 0;
 
@@ -27,7 +28,10 @@ namespace dory::typeMap::json
         inline static void process(T& value, JsonContext& context)
         {
             auto* currentJson = context.current.top();
-            value = currentJson->get<T>();
+            if(!currentJson->empty())
+            {
+                value = currentJson->get<T>();
+            }
         }
     };
 
@@ -36,8 +40,15 @@ namespace dory::typeMap::json
         inline static void process(const std::string& memberName, const std::size_t i, JsonContext& context)
         {
             auto* currentJson = context.current.top();
-            auto& memberJson = currentJson->at(memberName);
-            context.current.push(&memberJson);
+            if(currentJson->contains(memberName))
+            {
+                auto& memberJson = currentJson->at(memberName);
+                context.current.push(&memberJson);
+            }
+            else
+            {
+                context.current.push(&context.emptyJson);
+            }
         }
     };
 
