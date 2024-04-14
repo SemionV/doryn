@@ -1,6 +1,7 @@
 #pragma once
 
 #include "reflection.h"
+#include "base/typeComponents.h"
 
 namespace dory::typeMap
 {
@@ -76,6 +77,20 @@ namespace dory::typeMap
         }
     };
 
+    struct DefaultDynamicCollectionPolicy
+    {
+        template<typename T, typename TContext>
+        inline static std::optional<T> getNextItem(std::vector<T>& collection, TContext& context)
+        {
+            return {};
+        }
+
+        template<typename T, typename TContext>
+        inline static void processItem(T& item, std::vector<T>& collection, TContext& context)
+        {
+        }
+    };
+
     struct VisitorDefaultPolicies
     {
         using ValuePolicy = DefaultValuePolicy;
@@ -87,6 +102,7 @@ namespace dory::typeMap
         using EndCollectionPolicy = DefaultEndCollectionPolicy;
         using BeginCollectionItemPolicy = DefaultBeginCollectionItemPolicy;
         using EndCollectionItemPolicy = DefaultEndCollectionItemPolicy;
+        using DynamicCollectionPolicyType = DefaultDynamicCollectionPolicy;
     };
 
     template<typename TPolicies = VisitorDefaultPolicies>
@@ -110,7 +126,7 @@ namespace dory::typeMap
 
     public:
         template<typename T, typename TContext>
-        requires(std::is_trivial_v<std::remove_reference_t<T>>)
+        requires(std::is_fundamental_v<std::remove_reference_t<T>>)
         static void visit(T&& object, TContext& context)
         {
             TPolicies::ValuePolicy::process(std::forward<T>(object), context);
@@ -143,6 +159,22 @@ namespace dory::typeMap
         static void visit(std::array<T, N>&& object, TContext& context)
         {
             visitArray(object, context);
+        }
+
+        template<typename T, typename TContext>
+        static void visit(std::vector<T>& object, TContext& context)
+        {
+            TPolicies::BeginCollectionPolicy::template process<T, 0>(context);
+
+            auto item = TPolicies::DynamicCollectionPolicyType::getNextItem(object, context);
+            while(item)
+            {
+                visit(*item, context);
+                TPolicies::DynamicCollectionPolicyType::processItem(*item, object, context);
+                item = TPolicies::DynamicCollectionPolicyType::getNextItem(object, context);
+            }
+
+            TPolicies::EndCollectionPolicy::process(context);
         }
     };
 }

@@ -1,0 +1,78 @@
+#pragma once
+
+#include <utility>
+
+#include "objectVisitor.h"
+#include "base/dependencies.h"
+
+namespace dory::typeMap::json
+{
+    using json = nlohmann::json;
+
+    struct JsonContext
+    {
+        std::stack<json*> current;
+        std::size_t dynamicCollectionIndex = 0;
+
+        explicit JsonContext(json* data)
+        {
+            current.push(data);
+        }
+    };
+
+    struct DeserializerDynamicCollectionPolicy
+    {
+        template<typename T>
+        inline static std::optional<T> getNextItem(std::vector<T>& collection, JsonContext& context)
+        {
+            auto* currentJson = context.current.top();
+
+            if(currentJson->is_array())
+            {
+                if(context.dynamicCollectionIndex < currentJson->size())
+                {
+                    auto& itemJson = currentJson->at(context.dynamicCollectionIndex);
+                    ++context.dynamicCollectionIndex;
+
+                    context.current.push(currentJson);
+
+                    if(itemJson.is_object() || itemJson.is_array())
+                    {
+                        return std::optional<T>{T{}};
+                    }
+
+                    return std::optional<T>{itemJson};
+                }
+            }
+
+            return {};
+        }
+
+        template<typename T>
+        inline static void processItem(T& item, std::vector<T>& collection, JsonContext& context)
+        {
+            collection.push_back(item);
+            context.current.pop();
+        }
+    };
+
+    struct JsonDeserializationPolicies: public VisitorDefaultPolicies
+    {
+        using DynamicCollectionPolicyType = DeserializerDynamicCollectionPolicy;
+    };
+
+    class JsonDeserializer
+    {
+    public:
+        template<typename T>
+        static T deserialize(std::string source)
+        {
+            auto data = json::parse(source);
+            JsonContext context(&data);
+            auto object = T{};
+            ObjectVisitor<JsonDeserializationPolicies>::visit(object, context);
+
+            return object;
+        }
+    };
+}

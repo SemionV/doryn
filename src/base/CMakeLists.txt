@@ -4,6 +4,7 @@ project(dory-base)
 
 find_package(nlohmann_json 3.2.0 PATHS ${VENDOR_DIR}nlohmann-json NO_DEFAULT_PATH REQUIRED)
 
-add_library(base INTERFACE)
+add_library(base INTERFACE
+        serialization/jsonDeserializer.h)
 
 target_link_libraries(base INTERFACE nlohmann_json::nlohmann_json)
