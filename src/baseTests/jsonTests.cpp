@@ -41,37 +41,30 @@ TEST_CASE( "Basic collection", "[.][json]" )
     }
 }
 
-struct Vector
-{
-    float x;
-    float y;
-    float z;
-};
-
-REFL_TYPE(Vector)
-    REFL_FIELD(x)
-    REFL_FIELD(y)
-    REFL_FIELD(z)
-REFL_END
-
-REFL_TYPE(std::vector<Vector>)
-REFL_END
-
 struct Mesh
 {
-    std::vector<Vector> vertices;
+    std::vector<std::array<float, 3>> vertices;
 };
 
 REFL_TYPE(Mesh)
     REFL_FIELD(vertices)
 REFL_END
 
+REFL_TYPE(std::optional<Mesh>)
+REFL_END
+
 struct Entity
 {
     std::string name;
-    Vector position;
+    std::array<float, 3> position;
     std::optional<Mesh> mesh;
 };
+
+REFL_TYPE(Entity)
+        REFL_FIELD(name)
+        REFL_FIELD(position)
+        REFL_FIELD(mesh)
+REFL_END
 
 struct Scene
 {
@@ -79,16 +72,30 @@ struct Scene
     std::vector<Entity> entities;
 };
 
+REFL_TYPE(std::vector<Entity>)
+REFL_END
+
+REFL_TYPE(Scene)
+        REFL_FIELD(name)
+        REFL_FIELD(entities)
+REFL_END
+
 TEST_CASE( "Deserialize vector of objects", "[json]" )
 {
     std::string meshJson = R"(
     {
         "vertices": [
-            {"x": 1, "y": 1, "z": 1},
-            {"x": 2, "y": 2, "z": 2}
+            [1, 1, 1],
+            [2, 2, 2]
         ]
     })";
 
     auto mesh = dory::typeMap::json::JsonDeserializer::deserialize<Mesh>(meshJson);
     REQUIRE(mesh.vertices.size() == 2);
+    REQUIRE(mesh.vertices[0][0] == 1);
+    REQUIRE(mesh.vertices[0][1] == 1);
+    REQUIRE(mesh.vertices[0][2] == 1);
+    REQUIRE(mesh.vertices[1][0] == 2);
+    REQUIRE(mesh.vertices[1][1] == 2);
+    REQUIRE(mesh.vertices[1][2] == 2);
 }

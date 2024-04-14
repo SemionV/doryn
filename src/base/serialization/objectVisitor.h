@@ -169,8 +169,10 @@ namespace dory::typeMap
             auto item = TPolicies::DynamicCollectionPolicyType::getNextItem(object, context);
             while(item)
             {
-                visit(*item, context);
-                TPolicies::DynamicCollectionPolicyType::processItem(*item, object, context);
+                auto& value = *item;
+
+                visit(value, context);
+                TPolicies::DynamicCollectionPolicyType::processItem(value, object, context);
                 item = TPolicies::DynamicCollectionPolicyType::getNextItem(object, context);
             }
 

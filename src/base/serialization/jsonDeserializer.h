@@ -48,6 +48,24 @@ namespace dory::typeMap::json
         }
     };
 
+    struct DeserializerBeginCollectionItemPolicy
+    {
+        inline static void process(const std::size_t i, JsonContext& context)
+        {
+            auto* currentJson = context.current.top();
+            auto& memberJson = currentJson->at(i);
+            context.current.push(&memberJson);
+        }
+    };
+
+    struct DeserializerEndCollectionItemPolicy
+    {
+        inline static void process(const bool lastItem, JsonContext& context)
+        {
+            context.current.pop();
+        }
+    };
+
     struct DeserializerDynamicCollectionPolicy
     {
         template<typename T>
@@ -89,6 +107,8 @@ namespace dory::typeMap::json
         using ValuePolicy = DeserializerValuePolicy;
         using BeginMemberPolicy = DeserializerBeginMemberPolicy;
         using EndMemberPolicy = DeserializerEndMemberPolicy;
+        using BeginCollectionItemPolicy = DeserializerBeginCollectionItemPolicy;
+        using EndCollectionItemPolicy = DeserializerEndCollectionItemPolicy;
         using DynamicCollectionPolicyType = DeserializerDynamicCollectionPolicy;
     };
 
