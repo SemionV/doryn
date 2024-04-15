@@ -65,8 +65,15 @@ namespace dory::typeMap::json
         inline static void process(const std::size_t i, JsonContext& context)
         {
             auto* currentJson = context.current.top();
-            auto& memberJson = currentJson->at(i);
-            context.current.push(&memberJson);
+            if(i < currentJson->size())
+            {
+                auto& itemJson = currentJson->at(i);
+                context.current.push(&itemJson);
+            }
+            else
+            {
+                context.current.push(&context.emptyJson);
+            }
         }
     };
 
