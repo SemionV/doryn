@@ -223,7 +223,14 @@ TEST_CASE( "Deserialize with missing fileds", "[json]" )
 
 TEST_CASE( "Serialize plaijn object", "[json]" )
 {
-    auto entity = Entity{"test", {1, 2, 3}};
+    auto entity = Entity{"test", {1, 2, 3}, Mesh
+         {
+             {
+                 {1, 1, 1},
+                 {2, 2, 2},
+                 {3, 3, 3}
+             }
+         }};
 
     auto json = dory::typeMap::json::JsonSerializer::serialize(entity, 4);
 

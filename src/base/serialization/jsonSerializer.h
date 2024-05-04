@@ -102,6 +102,48 @@ namespace dory::typeMap::json
         }
     };
 
+    struct SerializerDynamicCollectionPolicy
+    {
+        template<typename T>
+        inline static void beginCollection(std::vector<T>& collection, JsonSerializationContext& context)
+        {
+            context.previousDynamicCollectionIndex = context.dynamicCollectionIndex;
+            context.dynamicCollectionIndex = 0;
+        }
+
+        template<typename T>
+        inline static std::optional<T> getNextItem(std::vector<T>& collection, JsonSerializationContext& context)
+        {
+            auto* currentJson = context.current.top();
+            if(context.dynamicCollectionIndex < collection.size())
+            {
+                auto& item = collection[context.dynamicCollectionIndex];
+
+                auto& itemJson = currentJson->operator[](context.dynamicCollectionIndex);
+                context.current.push(&itemJson);
+
+                ++context.dynamicCollectionIndex;
+
+                return item;
+            }
+
+            return {};
+        }
+
+        template<typename T>
+        inline static void processItem(T& item, std::vector<T>& collection, JsonSerializationContext& context)
+        {
+            context.current.pop();
+        }
+
+        template<typename T>
+        inline static void endCollection(std::vector<T>& collection, JsonSerializationContext& context)
+        {
+            context.dynamicCollectionIndex = context.previousDynamicCollectionIndex;
+            context.previousDynamicCollectionIndex = 0;
+        }
+    };
+
     struct JsonSerializationPolicies: public VisitorDefaultPolicies
     {
         using ValuePolicy = SerializerValuePolicy;
@@ -113,7 +155,7 @@ namespace dory::typeMap::json
         using EndCollectionPolicy = SerializerEndCollectionPolicy;
         using BeginCollectionItemPolicy = SerializerBeginCollectionItemPolicy;
         using EndCollectionItemPolicy = SerializerEndCollectionItemPolicy;
-        /*using DynamicCollectionPolicyType = DeserializerDynamicCollectionPolicy;*/
+        using DynamicCollectionPolicyType = SerializerDynamicCollectionPolicy;
     };
 
     class JsonSerializer

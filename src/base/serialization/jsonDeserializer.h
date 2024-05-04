@@ -87,7 +87,8 @@ namespace dory::typeMap::json
 
     struct DeserializerDynamicCollectionPolicy
     {
-        inline static void beginCollection(JsonContext& context)
+        template<typename T>
+        inline static void beginCollection(std::vector<T>& collection, JsonContext& context)
         {
             context.previousDynamicCollectionIndex = context.dynamicCollectionIndex;
             context.dynamicCollectionIndex = 0;
@@ -126,7 +127,8 @@ namespace dory::typeMap::json
             context.current.pop();
         }
 
-        inline static void endCollection(JsonContext& context)
+        template<typename T>
+        inline static void endCollection(std::vector<T>& collection, JsonContext& context)
         {
             context.dynamicCollectionIndex = context.previousDynamicCollectionIndex;
             context.previousDynamicCollectionIndex = 0;

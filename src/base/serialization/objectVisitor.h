@@ -79,8 +79,8 @@ namespace dory::typeMap
 
     struct DefaultDynamicCollectionPolicy
     {
-        template<typename TContext>
-        inline static void beginCollection(TContext& context)
+        template<typename T, typename TContext>
+        inline static void beginCollection(std::vector<T>& collection, TContext& context)
         {
         }
 
@@ -95,8 +95,8 @@ namespace dory::typeMap
         {
         }
 
-        template<typename TContext>
-        inline static void endCollection(TContext& context)
+        template<typename T, typename TContext>
+        inline static void endCollection(std::vector<T>& collection, TContext& context)
         {
         }
     };
@@ -186,7 +186,7 @@ namespace dory::typeMap
         template<typename T, typename TContext>
         static void visit(std::vector<T>& object, TContext& context)
         {
-            TPolicies::DynamicCollectionPolicyType::beginCollection(context);
+            TPolicies::DynamicCollectionPolicyType::beginCollection(object, context);
 
             auto item = TPolicies::DynamicCollectionPolicyType::getNextItem(object, context);
             while(item)
@@ -198,7 +198,7 @@ namespace dory::typeMap
                 item = TPolicies::DynamicCollectionPolicyType::getNextItem(object, context);
             }
 
-            TPolicies::DynamicCollectionPolicyType::endCollection(context);
+            TPolicies::DynamicCollectionPolicyType::endCollection(object, context);
         }
     };
 }
