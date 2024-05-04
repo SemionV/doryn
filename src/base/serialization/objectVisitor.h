@@ -154,6 +154,12 @@ namespace dory::typeMap
             TPolicies::ValuePolicy::process(object, context);
         }
 
+        template<typename TContext>
+        static void visit(const std::string& object, TContext& context)
+        {
+            TPolicies::ValuePolicy::process(object, context);
+        }
+
         template<typename T, typename TContext>
         requires(std::is_class_v<std::remove_reference_t<T>>)
         static void visit(T&& object, TContext& context)

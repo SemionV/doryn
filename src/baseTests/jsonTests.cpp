@@ -1,5 +1,6 @@
 #include "dependencies.h"
 #include "base/serialization/jsonDeserializer.h"
+#include "base/serialization/jsonSerializer.h"
 
 using json = nlohmann::json;
 
@@ -218,4 +219,24 @@ TEST_CASE( "Deserialize with missing fileds", "[json]" )
     REQUIRE(scene.entities[1].position[2] == 0);
     REQUIRE(scene.entities[1].mesh.vertices.empty());
 
+}
+
+struct Player
+{
+    std::string name;
+    int points;
+};
+
+REFL_TYPE(Player)
+        REFL_FIELD(name)
+        REFL_FIELD(points)
+REFL_END
+
+TEST_CASE( "Serialize plaijn object", "[json]" )
+{
+    auto player = Player{"test", 12};
+
+    auto json = dory::typeMap::json::JsonSerializer::serialize(player, 4);
+
+    std::cout << json << std::endl;
 }
