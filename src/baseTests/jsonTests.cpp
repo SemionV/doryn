@@ -221,22 +221,12 @@ TEST_CASE( "Deserialize with missing fileds", "[json]" )
 
 }
 
-struct Player
-{
-    std::string name;
-    int points;
-};
-
-REFL_TYPE(Player)
-        REFL_FIELD(name)
-        REFL_FIELD(points)
-REFL_END
-
 TEST_CASE( "Serialize plaijn object", "[json]" )
 {
-    auto player = Player{"test", 12};
+    auto entity = Entity{"test", {1, 2, 3}};
 
-    auto json = dory::typeMap::json::JsonSerializer::serialize(player, 4);
+    auto json = dory::typeMap::json::JsonSerializer::serialize(entity, 4);
 
     std::cout << json << std::endl;
 }
+
