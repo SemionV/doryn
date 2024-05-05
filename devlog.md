@@ -2,7 +2,6 @@
 
 Tasks:
 * YAML Serializer/Deserializer
-* JSON Serializer/Deserializer
 * Static mapping of Vertex Attributes
 * Fill Buffers with mapped data
 * Batch rendering
@@ -20,6 +19,11 @@ Tasks:
 * Networking/Mutliplayer
 * Build for MacOS
 * Voice control
+
+**05.05.24**
+* Task done: JSON Serializer/Deserializer
+* YAML Serializer/Deserializer
+  * Integrate rapid-yaml library
 
 **07.04.24**
 * Task done: Build for Linux

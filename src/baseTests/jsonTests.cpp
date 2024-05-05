@@ -1,6 +1,7 @@
 #include "dependencies.h"
 #include "base/serialization/jsonDeserializer.h"
 #include "base/serialization/jsonSerializer.h"
+#include "base/serialization/yamlDeserializer.h"
 
 using json = nlohmann::json;
 
@@ -13,13 +14,6 @@ TEST_CASE( "Basic", "[json]" )
     })");
 
     REQUIRE(ex1["happy"] == true);
-
-    auto happy = ex1["happy"];
-
-    if(ex1.is_object())
-    {
-        auto& propertyName = ex1.items().begin().key();
-    }
 }
 
 TEST_CASE( "Basic collection", "[.][json]" )
@@ -290,3 +284,18 @@ TEST_CASE( "Serialize/Deserialize complex object", "[json]" )
     }
 }
 
+TEST_CASE( "Deserialize YAML", "[yaml]" )
+{
+    char yml_buf[] = "{foo: 1, bar: [2, 3], john: doe}";
+    ryml::Tree tree = ryml::parse_in_place(yml_buf);
+
+    ryml::ConstNodeRef root = tree.rootref();  // a const node reference
+    ryml::ConstNodeRef bar = tree["bar"];
+    REQUIRE(root.is_map());
+    REQUIRE(bar.is_seq());
+
+    REQUIRE(root["foo"].val() == "1");
+    REQUIRE(root["foo"].key().str == yml_buf + 1);
+    REQUIRE(bar[0].val() == "2");
+    REQUIRE(root["john"].val() == "doe");
+}
