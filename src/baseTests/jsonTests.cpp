@@ -233,7 +233,60 @@ TEST_CASE( "Serialize plaijn object", "[json]" )
          }};
 
     auto json = dory::typeMap::json::JsonSerializer::serialize(entity, 4);
+}
 
-    std::cout << json << std::endl;
+TEST_CASE( "Serialize/Deserialize complex object", "[json]" )
+{
+    auto scene = Scene {
+        "scene1",
+        {
+            Entity {
+                "entity1",
+                {1, 1, 1},
+                Mesh {
+                    {
+                        {2, 2, 2},
+                        {3, 3, 3}
+                    }
+                }
+            },
+            Entity {
+                "entity2",
+                {4, 4, 4},
+                Mesh {
+                    {
+                        {5, 5, 5},
+                        {6, 6, 6}
+                    }
+                }
+            }
+        }
+    };
+
+    auto json = dory::typeMap::json::JsonSerializer::serialize(scene, 4);
+
+    auto sceneDeserialized = dory::typeMap::json::JsonDeserializer::deserialize<Scene>(json);
+    REQUIRE(sceneDeserialized.name == scene.name);
+    REQUIRE(sceneDeserialized.entities.size() == scene.entities.size());
+
+    for(std::size_t i = 0; i < scene.entities.size(); ++i)
+    {
+        auto entity = scene.entities[i];
+        auto entityDeserilized = sceneDeserialized.entities[i];
+        REQUIRE(entityDeserilized.position[0] == entity.position[0]);
+        REQUIRE(entityDeserilized.position[1] == entity.position[1]);
+        REQUIRE(entityDeserilized.position[2] == entity.position[2]);
+
+        REQUIRE(entityDeserilized.mesh.vertices.size() == entity.mesh.vertices.size());
+        for(std::size_t j = 0; j < entity.mesh.vertices.size(); ++j)
+        {
+            auto vertex = entity.mesh.vertices[j];
+            auto vertexDeserilized = entityDeserilized.mesh.vertices[j];
+
+            REQUIRE(vertexDeserilized[0] == vertex[0]);
+            REQUIRE(vertexDeserilized[1] == vertex[1]);
+            REQUIRE(vertexDeserilized[2] == vertex[2]);
+        }
+    }
 }
 
