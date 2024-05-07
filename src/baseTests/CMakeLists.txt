@@ -22,7 +22,7 @@ add_executable(baseTests linearAlgebra.cpp
         atm_book.cpp
         serviceContainer.cpp
         scriptService.cpp
-        jsonTests.cpp
+        serializationTests.cpp
 )
                          
 target_include_directories(baseTests PRIVATE "${CMAKE_SOURCE_DIR}")

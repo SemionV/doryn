@@ -75,6 +75,19 @@ REFL_TYPE(Scene)
         REFL_FIELD(entities)
 REFL_END
 
+struct Player
+{
+    std::string name;
+    unsigned int age;
+    unsigned int ranking;
+};
+
+REFL_TYPE(Player)
+        REFL_FIELD(name)
+        REFL_FIELD(age)
+        REFL_FIELD(ranking)
+REFL_END
+
 TEST_CASE( "Deserialize vector of objects", "[.][json]" )
 {
     std::string meshJson = R"(
@@ -298,4 +311,19 @@ TEST_CASE( "Deserialize YAML", "[yaml]" )
     REQUIRE(root["foo"].key().str == yml_buf + 1);
     REQUIRE(bar[0].val() == "2");
     REQUIRE(root["john"].val() == "doe");
+
+    /*std::string name;
+    root["john"] >> name;
+    REQUIRE(name == "doe");*/
+}
+
+TEST_CASE( "Deserialize YAML map", "[yaml]" )
+{
+    std::string yaml = R"(
+    name: Test
+    age: 18
+    ranking: 5)";
+
+    auto player = dory::typeMap::yaml::YamlDeserializer::deserialize<Player>(yaml);
+    REQUIRE(player.name == "Test");
 }
