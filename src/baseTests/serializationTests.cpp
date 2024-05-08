@@ -326,4 +326,6 @@ TEST_CASE( "Deserialize YAML map", "[yaml]" )
 
     auto player = dory::typeMap::yaml::YamlDeserializer::deserialize<Player>(yaml);
     REQUIRE(player.name == "Test");
+    REQUIRE(player.age == 18);
+    REQUIRE(player.ranking == 5);
 }

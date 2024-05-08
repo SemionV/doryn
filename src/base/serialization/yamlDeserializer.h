@@ -12,7 +12,7 @@ namespace dory::typeMap::yaml
         inline static void process(T& value, YamlContext& context)
         {
             auto current = context.current.top();
-            if(current.is_val() && !current.empty())
+            //if(current.is_val() && !current.empty())
             {
                 current >> value;
             }
