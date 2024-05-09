@@ -58,8 +58,7 @@ namespace dory::reflection
                 using MemberDescriptorType = U;
 
                 auto& memberValue = object.*MemberDescriptorType::pointer;
-                const auto& memberName = static_cast<std::string>(MemberDescriptorType::name);
-                functor(memberValue, memberName, i++, memberCount, std::forward<Args>(args)...);
+                functor(memberValue, MemberDescriptorType::name.str(), i++, memberCount, std::forward<Args>(args)...);
             }
         });
     }
