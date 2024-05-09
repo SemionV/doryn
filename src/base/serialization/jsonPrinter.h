@@ -73,20 +73,17 @@ namespace dory::typeMap
         }
     };
 
-    struct PrintBeginCollectionPolicy
+    struct PrintCollectionPolicy
     {
         template<typename T, auto N, typename TContext>
-        inline static void process(TContext& context)
+        inline static void beginCollection(TContext& context)
         {
             context.stream << "[" << std::endl;
             ++context.nestingLevel;
         }
-    };
 
-    struct PrintEndCollectionPolicy
-    {
         template<typename TContext>
-        inline static void process(TContext& context)
+        inline static void endCollection(TContext& context)
         {
             --context.nestingLevel;
             JsonFormatting::printIndent(context);
@@ -94,19 +91,16 @@ namespace dory::typeMap
         }
     };
 
-    struct PrintBeginCollectionItemPolicy
+    struct PrintCollectionItemPolicy
     {
         template<typename TContext>
-        inline static void process(const std::size_t i, TContext& context)
+        inline static void beginItem(const std::size_t i, TContext& context)
         {
             JsonFormatting::printIndent(context);
         }
-    };
 
-    struct PrintEndCollectionItemPolicy
-    {
         template<typename TContext>
-        inline static void process(const bool lastItem, TContext& context)
+        inline static void endItem(const bool lastItem, TContext& context)
         {
             if(!lastItem)
             {
@@ -122,10 +116,8 @@ namespace dory::typeMap
         using ValuePolicy = PrintValuePolicy;
         using ObjectPolicy = PrintObjectPolicy;
         using MemberPolicy = PrintMemberPolicy;
-        using BeginCollectionPolicy = PrintBeginCollectionPolicy;
-        using EndCollectionPolicy = PrintEndCollectionPolicy;
-        using BeginCollectionItemPolicy = PrintBeginCollectionItemPolicy;
-        using EndCollectionItemPolicy = PrintEndCollectionItemPolicy;
+        using CollectionPolicy = PrintCollectionPolicy;
+        using CollectionItemPolicy = PrintCollectionItemPolicy;
     };
 
     class ObjectPrinter

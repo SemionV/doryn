@@ -39,34 +39,28 @@ namespace dory::typeMap
         }
     };
 
-    struct DefaultBeginCollectionPolicy
+    struct DefaultCollectionPolicy
     {
         template<typename T, auto N, typename TContext>
-        inline static void process(TContext& context)
+        inline static void beginCollection(TContext& context)
+        {
+        }
+
+        template<typename TContext>
+        inline static void endCollection(TContext& context)
         {
         }
     };
 
-    struct DefaultEndCollectionPolicy
+    struct DefaultCollectionItemPolicy
     {
         template<typename TContext>
-        inline static void process(TContext& context)
+        inline static void beginItem(const std::size_t i, TContext& context)
         {
         }
-    };
 
-    struct DefaultBeginCollectionItemPolicy
-    {
         template<typename TContext>
-        inline static void process(const std::size_t i, TContext& context)
-        {
-        }
-    };
-
-    struct DefaultEndCollectionItemPolicy
-    {
-        template<typename TContext>
-        inline static void process(const bool lastItem, TContext& context)
+        inline static void endItem(const bool lastItem, TContext& context)
         {
         }
     };
@@ -100,10 +94,8 @@ namespace dory::typeMap
         using ValuePolicy = DefaultValuePolicy;
         using ObjectPolicy = DefaultObjectPolicy;
         using MemberPolicy = DefaultMemberPolicy;
-        using BeginCollectionPolicy = DefaultBeginCollectionPolicy;
-        using EndCollectionPolicy = DefaultEndCollectionPolicy;
-        using BeginCollectionItemPolicy = DefaultBeginCollectionItemPolicy;
-        using EndCollectionItemPolicy = DefaultEndCollectionItemPolicy;
+        using CollectionPolicy = DefaultCollectionPolicy;
+        using CollectionItemPolicy = DefaultCollectionItemPolicy;
         using DynamicCollectionPolicyType = DefaultDynamicCollectionPolicy;
     };
 
@@ -114,16 +106,16 @@ namespace dory::typeMap
         template<typename T, auto N, typename TContext>
         static void visitArray(std::array<T, N>& object, TContext& context)
         {
-            TPolicies::BeginCollectionPolicy::template process<T, N>(context);
+            TPolicies::CollectionPolicy::template beginCollection<T, N>(context);
 
             for(std::size_t i {}; i < N; ++i)
             {
-                TPolicies::BeginCollectionItemPolicy::process(i, context);
+                TPolicies::CollectionItemPolicy::beginItem(i, context);
                 visit(object[i], context);
-                TPolicies::EndCollectionItemPolicy::process(i == N - 1, context);
+                TPolicies::CollectionItemPolicy::endItem(i == N - 1, context);
             }
 
-            TPolicies::EndCollectionPolicy::process(context);
+            TPolicies::CollectionPolicy::endCollection(context);
         }
 
     public:

@@ -49,36 +49,33 @@ namespace dory::typeMap::json
         }
     };
 
-    struct SerializerBeginCollectionPolicy
+    struct SerializerCollectionPolicy
     {
-        template<typename T, auto N>
-        inline static void process(JsonContext& context)
+        template<typename T, auto N, typename TContext>
+        inline static void beginCollection(TContext& context)
         {
             auto* currentJson = context.current.top();
             *currentJson = json::array();
         }
-    };
 
-    struct SerializerEndCollectionPolicy
-    {
-        inline static void process(JsonContext& context)
+        template<typename TContext>
+        inline static void endCollection(TContext& context)
         {
         }
     };
 
-    struct SerializerBeginCollectionItemPolicy
+    struct SerializerCollectionItemPolicy
     {
-        inline static void process(const std::size_t i, JsonContext& context)
+        template<typename TContext>
+        inline static void beginItem(const std::size_t i, TContext& context)
         {
             auto* currentJson = context.current.top();
             auto& itemJson = currentJson->operator[](i);
             context.current.push(&itemJson);
         }
-    };
 
-    struct SerializerEndCollectionItemPolicy
-    {
-        inline static void process(const bool lastItem, JsonContext& context)
+        template<typename TContext>
+        inline static void endItem(const bool lastItem, TContext& context)
         {
             context.current.pop();
         }
@@ -131,10 +128,8 @@ namespace dory::typeMap::json
         using ValuePolicy = SerializerValuePolicy;
         using ObjectPolicy = SerializerObjectPolicy;
         using MemberPolicy = SerializerMemberPolicy;
-        using BeginCollectionPolicy = SerializerBeginCollectionPolicy;
-        using EndCollectionPolicy = SerializerEndCollectionPolicy;
-        using BeginCollectionItemPolicy = SerializerBeginCollectionItemPolicy;
-        using EndCollectionItemPolicy = SerializerEndCollectionItemPolicy;
+        using CollectionPolicy = SerializerCollectionPolicy;
+        using CollectionItemPolicy = SerializerCollectionItemPolicy;
         using DynamicCollectionPolicyType = SerializerDynamicCollectionPolicy;
     };
 

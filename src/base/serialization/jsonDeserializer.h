@@ -43,34 +43,10 @@ namespace dory::typeMap::json
         }
     };
 
-    struct DeserializerBeginMemberPolicy
+    struct DeserializerCollectionItemPolicy
     {
-        inline static void process(const std::string& memberName, const std::size_t i, JsonContext& context)
-        {
-            auto* currentJson = context.current.top();
-            if(currentJson->contains(memberName))
-            {
-                auto& memberJson = currentJson->at(memberName);
-                context.current.push(&memberJson);
-            }
-            else
-            {
-                context.current.push(&context.emptyJson);
-            }
-        }
-    };
-
-    struct DeserializerEndMemberPolicy
-    {
-        inline static void process(const bool lastMember, JsonContext& context)
-        {
-            context.current.pop();
-        }
-    };
-
-    struct DeserializerBeginCollectionItemPolicy
-    {
-        inline static void process(const std::size_t i, JsonContext& context)
+        template<typename TContext>
+        inline static void beginItem(const std::size_t i, TContext& context)
         {
             auto* currentJson = context.current.top();
             if(i < currentJson->size())
@@ -83,11 +59,9 @@ namespace dory::typeMap::json
                 context.current.push(&context.emptyJson);
             }
         }
-    };
 
-    struct DeserializerEndCollectionItemPolicy
-    {
-        inline static void process(const bool lastItem, JsonContext& context)
+        template<typename TContext>
+        inline static void endItem(const bool lastItem, TContext& context)
         {
             context.current.pop();
         }
@@ -147,8 +121,7 @@ namespace dory::typeMap::json
     {
         using ValuePolicy = DeserializerValuePolicy;
         using MemberPolicy = DeserializerMemberPolicy;
-        using BeginCollectionItemPolicy = DeserializerBeginCollectionItemPolicy;
-        using EndCollectionItemPolicy = DeserializerEndCollectionItemPolicy;
+        using CollectionItemPolicy = DeserializerCollectionItemPolicy;
         using DynamicCollectionPolicyType = DeserializerDynamicCollectionPolicy;
     };
 

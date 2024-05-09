@@ -56,9 +56,10 @@ namespace dory::typeMap::yaml
         }
     };
 
-    struct DeserializerBeginCollectionItemPolicy
+    struct DeserializerCollectionItemPolicy
     {
-        inline static void process(const std::size_t i, YamlContext& context)
+        template<typename TContext>
+        inline static void beginItem(const std::size_t i, TContext& context)
         {
             /*auto* currentJson = context.current.top();
             if(i < currentJson->size())
@@ -71,11 +72,9 @@ namespace dory::typeMap::yaml
                 context.current.push(&context.emptyJson);
             }*/
         }
-    };
 
-    struct DeserializerEndCollectionItemPolicy
-    {
-        inline static void process(const bool lastItem, YamlContext& context)
+        template<typename TContext>
+        inline static void endItem(const bool lastItem, TContext& context)
         {
             //context.current.pop();
         }
@@ -135,8 +134,7 @@ namespace dory::typeMap::yaml
     {
         using ValuePolicy = DeserializerValuePolicy;
         using MemberPolicy = DeserializerMemberPolicy;
-        using BeginCollectionItemPolicy = DeserializerBeginCollectionItemPolicy;
-        using EndCollectionItemPolicy = DeserializerEndCollectionItemPolicy;
+        using CollectionItemPolicy = DeserializerCollectionItemPolicy;
         using DynamicCollectionPolicyType = DeserializerDynamicCollectionPolicy;
     };
 

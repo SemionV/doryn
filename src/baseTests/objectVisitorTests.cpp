@@ -134,40 +134,34 @@ namespace dory::typeMap
         }
     };
 
-    struct BeginCollectionPolicy
+    struct CollectionPolicy
     {
         template<typename T, auto N, typename TContext>
-        inline static void process(TContext& context)
+        inline static void beginCollection(TContext& context)
         {
             assert(context.currentValueNode);
             context.currentValueNode->value = CollectionRepresentation();
         }
-    };
 
-    struct EndCollectionPolicy
-    {
         template<typename TContext>
-        inline static void process(TContext& context)
+        inline static void endCollection(TContext& context)
         {
         }
     };
 
-    struct BeginCollectionItemPolicy
+    struct CollectionItemPolicy
     {
         template<typename TContext>
-        inline static void process(const std::size_t i, TContext& context)
+        inline static void beginItem(const std::size_t i, TContext& context)
         {
             assert(std::holds_alternative<CollectionRepresentation>(context.currentValueNode->value));
             auto valueNode = std::make_shared<ValueNode>(context.currentValueNode);
             std::get<CollectionRepresentation>(context.currentValueNode->value).emplace_back(valueNode);
             context.currentValueNode = valueNode;
         }
-    };
 
-    struct EndCollectionItemPolicy
-    {
         template<typename TContext>
-        inline static void process(const bool lastItem, TContext& context)
+        inline static void endItem(const bool lastItem, TContext& context)
         {
             assert(context.currentValueNode);
             context.currentValueNode = context.currentValueNode->parent;
@@ -180,10 +174,8 @@ namespace dory::typeMap
         using ValuePolicy = ValuePolicy;
         using ObjectPolicy = ObjectPolicy;
         using MemberPolicy = MemberPolicy;
-        using BeginCollectionPolicy = BeginCollectionPolicy;
-        using EndCollectionPolicy = EndCollectionPolicy;
-        using BeginCollectionItemPolicy = BeginCollectionItemPolicy;
-        using EndCollectionItemPolicy = EndCollectionItemPolicy;
+        using CollectionPolicy = CollectionPolicy;
+        using CollectionItemPolicy = CollectionItemPolicy;
     };
 
     template<typename TValue, typename TExpected = TValue>
