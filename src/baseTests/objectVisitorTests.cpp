@@ -99,40 +99,34 @@ namespace dory::typeMap
         }
     };
 
-    struct BeginObjectPolicy
+    struct ObjectPolicy
     {
         template<typename TContext>
-        inline static void process(TContext& context)
+        inline static void beginObject(TContext& context)
         {
             assert(context.currentValueNode);
             context.currentValueNode->value = ObjectRepresentation();
         }
-    };
 
-    struct EndObjectPolicy
-    {
         template<typename TContext>
-        inline static void process(TContext& context)
+        inline static void endObject(TContext& context)
         {
         }
     };
 
-    struct BeginMemberPolicy
+    struct MemberPolicy
     {
         template<typename TContext>
-        inline static void process(const std::string& memberName, const std::size_t i, TContext& context)
+        inline static void beginMember(const std::string& memberName, const std::size_t i, TContext& context)
         {
             assert(std::holds_alternative<ObjectRepresentation>(context.currentValueNode->value));
             auto valueNode = std::make_shared<ValueNode>(context.currentValueNode);
             std::get<ObjectRepresentation>(context.currentValueNode->value).emplace(memberName, valueNode);
             context.currentValueNode = valueNode;
         }
-    };
 
-    struct EndMemberPolicy
-    {
         template<typename TContext>
-        inline static void process(const bool lastMember, TContext& context)
+        inline static void endMember(const bool lastMember, TContext& context)
         {
             assert(context.currentValueNode);
             context.currentValueNode = context.currentValueNode->parent;
@@ -184,10 +178,8 @@ namespace dory::typeMap
     struct VisitorPolicies
     {
         using ValuePolicy = ValuePolicy;
-        using BeginObjectPolicy = BeginObjectPolicy;
-        using EndObjectPolicy = EndObjectPolicy;
-        using BeginMemberPolicy = BeginMemberPolicy;
-        using EndMemberPolicy = EndMemberPolicy;
+        using ObjectPolicy = ObjectPolicy;
+        using MemberPolicy = MemberPolicy;
         using BeginCollectionPolicy = BeginCollectionPolicy;
         using EndCollectionPolicy = EndCollectionPolicy;
         using BeginCollectionItemPolicy = BeginCollectionItemPolicy;

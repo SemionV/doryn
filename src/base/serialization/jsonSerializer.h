@@ -16,36 +16,34 @@ namespace dory::typeMap::json
         }
     };
 
-    struct SerializerBeginObjectPolicy
+    struct SerializerObjectPolicy
     {
-        inline static void process(JsonContext& context)
+        template<typename TContext>
+        inline static void beginObject(TContext& context)
         {
             auto* currentJson = context.current.top();
             *currentJson = json::object();
         }
-    };
 
-    struct SerializerEndObjectPolicy
-    {
-        inline static void process(JsonContext& context)
+        template<typename TContext>
+        inline static void endObject(TContext& context)
         {
         }
     };
 
-    struct SerializerBeginMemberPolicy
+    struct SerializerMemberPolicy
     {
-        inline static void process(const std::string& memberName, const std::size_t i, JsonContext& context)
+        template<typename TContext>
+        inline static void beginMember(const std::string& memberName, const std::size_t i, TContext& context)
         {
             auto* currentJson = context.current.top();
 
             auto& memberJson = currentJson->operator[](memberName);
             context.current.push(&memberJson);
         }
-    };
 
-    struct SerializerEndMemberPolicy
-    {
-        inline static void process(const bool lastMember, JsonContext& context)
+        template<typename TContext>
+        inline static void endMember(const bool lastMember, TContext& context)
         {
             context.current.pop();
         }
@@ -131,10 +129,8 @@ namespace dory::typeMap::json
     struct JsonSerializationPolicies: public VisitorDefaultPolicies
     {
         using ValuePolicy = SerializerValuePolicy;
-        using BeginObjectPolicy = SerializerBeginObjectPolicy;
-        using EndObjectPolicy = SerializerEndObjectPolicy;
-        using BeginMemberPolicy = SerializerBeginMemberPolicy;
-        using EndMemberPolicy = SerializerEndMemberPolicy;
+        using ObjectPolicy = SerializerObjectPolicy;
+        using MemberPolicy = SerializerMemberPolicy;
         using BeginCollectionPolicy = SerializerBeginCollectionPolicy;
         using EndCollectionPolicy = SerializerEndCollectionPolicy;
         using BeginCollectionItemPolicy = SerializerBeginCollectionItemPolicy;

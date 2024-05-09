@@ -19,6 +19,30 @@ namespace dory::typeMap::json
         }
     };
 
+    struct DeserializerMemberPolicy
+    {
+        template<typename TContext>
+        inline static void beginMember(const std::string& memberName, const std::size_t i, TContext& context)
+        {
+            auto* currentJson = context.current.top();
+            if(currentJson->contains(memberName))
+            {
+                auto& memberJson = currentJson->at(memberName);
+                context.current.push(&memberJson);
+            }
+            else
+            {
+                context.current.push(&context.emptyJson);
+            }
+        }
+
+        template<typename TContext>
+        inline static void endMember(const bool lastMember, TContext& context)
+        {
+            context.current.pop();
+        }
+    };
+
     struct DeserializerBeginMemberPolicy
     {
         inline static void process(const std::string& memberName, const std::size_t i, JsonContext& context)
@@ -122,8 +146,7 @@ namespace dory::typeMap::json
     struct JsonDeserializationPolicies: public VisitorDefaultPolicies
     {
         using ValuePolicy = DeserializerValuePolicy;
-        using BeginMemberPolicy = DeserializerBeginMemberPolicy;
-        using EndMemberPolicy = DeserializerEndMemberPolicy;
+        using MemberPolicy = DeserializerMemberPolicy;
         using BeginCollectionItemPolicy = DeserializerBeginCollectionItemPolicy;
         using EndCollectionItemPolicy = DeserializerEndCollectionItemPolicy;
         using DynamicCollectionPolicyType = DeserializerDynamicCollectionPolicy;

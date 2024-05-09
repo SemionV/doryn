@@ -34,20 +34,17 @@ namespace dory::typeMap
         }
     };
 
-    struct PrintBeginObjectPolicy
+    struct PrintObjectPolicy
     {
         template<typename TContext>
-        inline static void process(TContext& context)
+        inline static void beginObject(TContext& context)
         {
             context.stream << "{" << std::endl;
             ++context.nestingLevel;
         }
-    };
 
-    struct PrintEndObjectPolicy
-    {
         template<typename TContext>
-        inline static void process(TContext& context)
+        inline static void endObject(TContext& context)
         {
             --context.nestingLevel;
             JsonFormatting::printIndent(context);
@@ -55,20 +52,17 @@ namespace dory::typeMap
         }
     };
 
-    struct PrintBeginMemberPolicy
+    struct PrintMemberPolicy
     {
         template<typename TContext>
-        inline static void process(const std::string& memberName, const std::size_t i, TContext& context)
+        inline static void beginMember(const std::string& memberName, const std::size_t i, TContext& context)
         {
             JsonFormatting::printIndent(context);
             context.stream << "\"" << memberName << "\"" << ": ";
         }
-    };
 
-    struct PrintEndMemberPolicy
-    {
         template<typename TContext>
-        inline static void process(const bool lastMember, TContext& context)
+        inline static void endMember(const bool lastMember, TContext& context)
         {
             if(!lastMember)
             {
@@ -126,14 +120,12 @@ namespace dory::typeMap
     struct PrintingPolicies: public VisitorDefaultPolicies
     {
         using ValuePolicy = PrintValuePolicy;
-        using BeginMemberPolicy = PrintBeginMemberPolicy;
-        using EndMemberPolicy = PrintEndMemberPolicy;
+        using ObjectPolicy = PrintObjectPolicy;
+        using MemberPolicy = PrintMemberPolicy;
         using BeginCollectionPolicy = PrintBeginCollectionPolicy;
         using EndCollectionPolicy = PrintEndCollectionPolicy;
         using BeginCollectionItemPolicy = PrintBeginCollectionItemPolicy;
         using EndCollectionItemPolicy = PrintEndCollectionItemPolicy;
-        using BeginObjectPolicy = PrintBeginObjectPolicy;
-        using EndObjectPolicy = PrintEndObjectPolicy;
     };
 
     class ObjectPrinter

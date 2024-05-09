@@ -13,34 +13,28 @@ namespace dory::typeMap
         }
     };
 
-    struct DefaultBeginObjectPolicy
+    struct DefaultObjectPolicy
     {
         template<typename TContext>
-        inline static void process(TContext& context)
+        inline static void beginObject(TContext& context)
+        {
+        }
+
+        template<typename TContext>
+        inline static void endObject(TContext& context)
         {
         }
     };
 
-    struct DefaultEndObjectPolicy
+    struct DefaultMemberPolicy
     {
         template<typename TContext>
-        inline static void process(TContext& context)
+        inline static void beginMember(const std::string& memberName, const std::size_t i, TContext& context)
         {
         }
-    };
 
-    struct DefaultBeginMemberPolicy
-    {
         template<typename TContext>
-        inline static void process(const std::string& memberName, const std::size_t i, TContext& context)
-        {
-        }
-    };
-
-    struct DefaultEndMemberPolicy
-    {
-        template<typename TContext>
-        inline static void process(const bool lastMember, TContext& context)
+        inline static void endMember(const bool lastMember, TContext& context)
         {
         }
     };
@@ -104,10 +98,8 @@ namespace dory::typeMap
     struct VisitorDefaultPolicies
     {
         using ValuePolicy = DefaultValuePolicy;
-        using BeginObjectPolicy = DefaultBeginObjectPolicy;
-        using EndObjectPolicy = DefaultEndObjectPolicy;
-        using BeginMemberPolicy = DefaultBeginMemberPolicy;
-        using EndMemberPolicy = DefaultEndMemberPolicy;
+        using ObjectPolicy = DefaultObjectPolicy;
+        using MemberPolicy = DefaultMemberPolicy;
         using BeginCollectionPolicy = DefaultBeginCollectionPolicy;
         using EndCollectionPolicy = DefaultEndCollectionPolicy;
         using BeginCollectionItemPolicy = DefaultBeginCollectionItemPolicy;
@@ -158,17 +150,17 @@ namespace dory::typeMap
         requires(std::is_class_v<std::remove_reference_t<T>>)
         static void visit(T&& object, TContext& context)
         {
-            TPolicies::BeginObjectPolicy::process(context);
+            TPolicies::ObjectPolicy::beginObject(context);
 
             reflection::visitClassFields(object, [](auto& memberValue, const std::string& memberName,
                     const std::size_t i, const std::size_t memberCount, TContext& context)
             {
-                TPolicies::BeginMemberPolicy::process(memberName, i, context);
+                TPolicies::MemberPolicy::beginMember(memberName, i, context);
                 visit(memberValue, context);
-                TPolicies::EndMemberPolicy::process(i == memberCount - 1, context);
+                TPolicies::MemberPolicy::endMember(i == memberCount - 1, context);
             }, context);
 
-            TPolicies::EndObjectPolicy::process(context);
+            TPolicies::ObjectPolicy::endObject(context);
         }
 
         template<typename T, auto N, typename TContext>
