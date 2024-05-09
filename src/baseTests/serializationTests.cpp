@@ -361,3 +361,70 @@ TEST_CASE( "Deserialize YAML collection", "[yaml]" )
     REQUIRE(player2.age == 38);
     REQUIRE(player2.ranking == 2);
 }
+
+TEST_CASE( "Deserialize YAML dynamic collection", "[yaml]" )
+{
+    std::string yaml = R"(
+    - name: Test
+      age: 18
+      ranking: 5
+    - name: Test2
+      age: 38
+      ranking: 2)";
+
+    auto players = dory::typeMap::yaml::YamlDeserializer::deserialize<std::vector<Player>>(yaml);
+    REQUIRE(players.size() == 2);
+    auto& player = players[0];
+    REQUIRE(player.name == "Test");
+    REQUIRE(player.age == 18);
+    REQUIRE(player.ranking == 5);
+    auto& player2 = players[1];
+    REQUIRE(player2.name == "Test2");
+    REQUIRE(player2.age == 38);
+    REQUIRE(player2.ranking == 2);
+}
+
+TEST_CASE( "Deserialize YAML complex object", "[yaml]" )
+{
+    std::string yaml = R"(
+    name: scene1
+    entities:
+      - name: entity1
+        position: [1, 1, 1]
+        mesh:
+          vertices:
+            - [2, 2, 2]
+            - [3, 3, 3]
+      - name: entity2
+        position: [4, 4, 4]
+        mesh:
+          vertices:
+            - [5, 5, 5]
+            - [6, 6, 6])";
+
+    auto scene = dory::typeMap::yaml::YamlDeserializer::deserialize<Scene>(yaml);
+    REQUIRE(scene.name == "scene1");
+    REQUIRE(scene.entities.size() == 2);
+    REQUIRE(scene.entities[0].name == "entity1");
+    REQUIRE(scene.entities[0].position[0] == 1);
+    REQUIRE(scene.entities[0].position[1] == 1);
+    REQUIRE(scene.entities[0].position[2] == 1);
+    REQUIRE(scene.entities[0].mesh.vertices.size() == 2);
+    REQUIRE(scene.entities[0].mesh.vertices[0][0] == 2);
+    REQUIRE(scene.entities[0].mesh.vertices[0][1] == 2);
+    REQUIRE(scene.entities[0].mesh.vertices[0][2] == 2);
+    REQUIRE(scene.entities[0].mesh.vertices[1][0] == 3);
+    REQUIRE(scene.entities[0].mesh.vertices[1][1] == 3);
+    REQUIRE(scene.entities[0].mesh.vertices[1][2] == 3);
+    REQUIRE(scene.entities[1].name == "entity2");
+    REQUIRE(scene.entities[1].position[0] == 4);
+    REQUIRE(scene.entities[1].position[1] == 4);
+    REQUIRE(scene.entities[1].position[2] == 4);
+    REQUIRE(scene.entities[1].mesh.vertices.size() == 2);
+    REQUIRE(scene.entities[1].mesh.vertices[0][0] == 5);
+    REQUIRE(scene.entities[1].mesh.vertices[0][1] == 5);
+    REQUIRE(scene.entities[1].mesh.vertices[0][2] == 5);
+    REQUIRE(scene.entities[1].mesh.vertices[1][0] == 6);
+    REQUIRE(scene.entities[1].mesh.vertices[1][1] == 6);
+    REQUIRE(scene.entities[1].mesh.vertices[1][2] == 6);
+}

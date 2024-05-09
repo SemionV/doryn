@@ -77,32 +77,22 @@ namespace dory::typeMap::yaml
         template<typename T>
         inline static void beginCollection(std::vector<T>& collection, YamlContext& context)
         {
-            /*context.previousDynamicCollectionIndex = context.dynamicCollectionIndex;
-            context.dynamicCollectionIndex = 0;*/
+            context.previousDynamicCollectionIndex = context.dynamicCollectionIndex;
+            context.dynamicCollectionIndex = 0;
         }
 
         template<typename T>
         inline static std::optional<T> getNextItem(std::vector<T>& collection, YamlContext& context)
         {
-            /*auto* currentJson = context.current.top();
-
-            if(currentJson->is_array())
+            auto current = context.current.top();
+            if(current.is_seq() && context.dynamicCollectionIndex < current.num_children())
             {
-                if(context.dynamicCollectionIndex < currentJson->size())
-                {
-                    auto& itemJson = currentJson->at(context.dynamicCollectionIndex);
+                auto itemNode = current.at(context.dynamicCollectionIndex);
+                context.current.push(itemNode);
+                ++context.dynamicCollectionIndex;
 
-                    context.current.push(&itemJson);
-                    ++context.dynamicCollectionIndex;
-
-                    if(itemJson.is_object() || itemJson.is_array())
-                    {
-                        return std::optional<T>{T{}};
-                    }
-
-                    return std::optional<T>{itemJson};
-                }
-            }*/
+                return T{};
+            }
 
             return {};
         }
@@ -110,15 +100,15 @@ namespace dory::typeMap::yaml
         template<typename T>
         inline static void processItem(T& item, std::vector<T>& collection, YamlContext& context)
         {
-            /*collection.push_back(item);
-            context.current.pop();*/
+            collection.push_back(item);
+            context.current.pop();
         }
 
         template<typename T>
         inline static void endCollection(std::vector<T>& collection, YamlContext& context)
         {
-            /*context.dynamicCollectionIndex = context.previousDynamicCollectionIndex;
-            context.previousDynamicCollectionIndex = 0;*/
+            context.dynamicCollectionIndex = context.previousDynamicCollectionIndex;
+            context.previousDynamicCollectionIndex = 0;
         }
     };
 
