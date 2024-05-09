@@ -86,12 +86,7 @@ namespace dory::typeMap::json
                     context.current.push(&itemJson);
                     ++context.dynamicCollectionIndex;
 
-                    if(itemJson.is_object() || itemJson.is_array())
-                    {
-                        return std::optional<T>{T{}};
-                    }
-
-                    return std::optional<T>{itemJson};
+                    return T{};
                 }
             }
 

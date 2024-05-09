@@ -88,7 +88,7 @@ REFL_TYPE(Player)
         REFL_FIELD(ranking)
 REFL_END
 
-TEST_CASE( "Deserialize vector of objects", "[.][json]" )
+TEST_CASE( "Deserialize vector of objects", "[json]" )
 {
     std::string meshJson = R"(
     {
@@ -108,7 +108,7 @@ TEST_CASE( "Deserialize vector of objects", "[.][json]" )
     REQUIRE(mesh.vertices[1][2] == 2);
 }
 
-TEST_CASE( "Deserialize top collection", "[.][json]" )
+TEST_CASE( "Deserialize top collection", "[json]" )
 {
     std::string meshJson = R"(
     [
