@@ -58,21 +58,17 @@ namespace dory::typeMap::yaml
     {
         inline static void beginItem(const std::size_t i, YamlContext& context)
         {
-            /*auto* currentJson = context.current.top();
-            if(i < currentJson->size())
+            auto current = context.current.top();
+            if(current.is_seq())
             {
-                auto& itemJson = currentJson->at(i);
-                context.current.push(&itemJson);
+                auto itemNode = current.at(i);
+                context.current.push(itemNode);
             }
-            else
-            {
-                context.current.push(&context.emptyJson);
-            }*/
         }
 
         inline static void endItem(const bool lastItem, YamlContext& context)
         {
-            //context.current.pop();
+            context.current.pop();
         }
     };
 
@@ -143,6 +139,16 @@ namespace dory::typeMap::yaml
             auto tree = ryml::parse_in_place(source.data());
             YamlContext context(tree.rootref());
             ObjectVisitor<YamlDeserializationPolicies>::visit(object, context);
+
+            return object;
+        }
+
+        template<typename T>
+        static T deserialize(std::string source)
+        {
+            auto object = T{};
+
+            deserialize(source, object);
 
             return object;
         }

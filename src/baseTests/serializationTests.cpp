@@ -311,21 +311,16 @@ TEST_CASE( "Deserialize YAML", "[yaml]" )
     REQUIRE(root["foo"].key().str == yml_buf + 1);
     REQUIRE(bar[0].val() == "2");
     REQUIRE(root["john"].val() == "doe");
-
-    /*std::string name;
-    root["john"] >> name;
-    REQUIRE(name == "doe");*/
 }
 
-TEST_CASE( "Deserialize YAML map", "[.][yaml]" )
+TEST_CASE( "Deserialize YAML map", "[yaml]" )
 {
     std::string yaml = R"(
     name: Test
     age: 18
     ranking: 5)";
 
-    auto player = Player{};
-    dory::typeMap::yaml::YamlDeserializer::deserialize(yaml, player);
+    auto player = dory::typeMap::yaml::YamlDeserializer::deserialize<Player>(yaml);
     REQUIRE(player.name == "Test");
     REQUIRE(player.age == 18);
     REQUIRE(player.ranking == 5);
@@ -343,4 +338,26 @@ TEST_CASE( "Deserialize YAML with missing fields", "[yaml]" )
     REQUIRE(player.name == "Test");
     REQUIRE(player.age == 18);
     REQUIRE(player.ranking == 1);
+}
+
+TEST_CASE( "Deserialize YAML collection", "[yaml]" )
+{
+    std::string yaml = R"(
+    - name: Test
+      age: 18
+      ranking: 5
+    - name: Test2
+      age: 38
+      ranking: 2)";
+
+    auto players = dory::typeMap::yaml::YamlDeserializer::deserialize<std::array<Player, 2>>(yaml);
+    REQUIRE(players.size() == 2);
+    auto& player = players[0];
+    REQUIRE(player.name == "Test");
+    REQUIRE(player.age == 18);
+    REQUIRE(player.ranking == 5);
+    auto& player2 = players[1];
+    REQUIRE(player2.name == "Test2");
+    REQUIRE(player2.age == 38);
+    REQUIRE(player2.ranking == 2);
 }
