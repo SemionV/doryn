@@ -2,6 +2,7 @@
 #include "base/serialization/jsonDeserializer.h"
 #include "base/serialization/jsonSerializer.h"
 #include "base/serialization/yamlDeserializer.h"
+#include "base/serialization/yamlSerializer.h"
 
 using json = nlohmann::json;
 
@@ -427,4 +428,15 @@ TEST_CASE( "Deserialize YAML complex object", "[yaml]" )
     REQUIRE(scene.entities[1].mesh.vertices[1][0] == 6);
     REQUIRE(scene.entities[1].mesh.vertices[1][1] == 6);
     REQUIRE(scene.entities[1].mesh.vertices[1][2] == 6);
+}
+
+TEST_CASE( "Serialize YAML map", "[yaml]" )
+{
+    std::string yamlExpected = "name: Test\nage: 18\nranking: 5\n";
+
+    auto player = Player{"Test", 18, 5};
+
+    auto yaml = dory::typeMap::yaml::YamlSerializer::serialize(player);
+    REQUIRE(!yaml.empty());
+    REQUIRE(yaml == yamlExpected);
 }

@@ -10,12 +10,12 @@ namespace dory::typeMap::yaml
     {
     private:
         template<typename T>
-        inline static void readValue(T& value, ryml::ConstNodeRef& node)
+        inline static void readValue(T& value, ryml::NodeRef& node)
         {
             node >> value;
         }
 
-        inline static void readValue(std::string& value, ryml::ConstNodeRef& node)
+        inline static void readValue(std::string& value, ryml::NodeRef& node)
         {
             value = std::string(node.val().str, node.val().len);
         }
