@@ -2,6 +2,7 @@
 
 Tasks:
 * YAML Serializer/Deserializer
+* Configuration subsystem
 * Static mapping of Vertex Attributes
 * Fill Buffers with mapped data
 * Batch rendering

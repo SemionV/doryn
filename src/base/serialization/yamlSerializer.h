@@ -17,7 +17,7 @@ namespace dory::typeMap::yaml
 
         inline static void writeValue(std::string& value, ryml::NodeRef& node)
         {
-            node = value.data();
+            node = toRymlCStr(value);
         }
 
     public:
@@ -26,7 +26,6 @@ namespace dory::typeMap::yaml
         {
             auto current = context.current.top();
             current |= c4::yml::NodeType_e::VAL;
-            //current.set_type(c4::yml::NodeType{c4::yml::NodeType_e::VAL});
             writeValue(value, current);
         }
     };
@@ -37,10 +36,6 @@ namespace dory::typeMap::yaml
         {
             auto current = context.current.top();
             current |= c4::yml::NodeType_e::MAP;
-            //current.set_type(c4::yml::NodeType{c4::yml::NodeType_e::MAP});
-
-            /*auto* currentJson = context.current.top();
-            *currentJson = json::object();*/
         }
 
         inline static void endObject(YamlContext& context)
@@ -52,8 +47,11 @@ namespace dory::typeMap::yaml
     {
         inline static void beginMember(const std::string& memberName, const std::size_t i, YamlContext& context)
         {
-            auto currentNode = context.current.top();
-            auto memberNode = currentNode[memberName.data()];
+            auto current = context.current.top();
+
+            auto key = std::make_shared<std::string>(memberName);
+            context.memberNames.emplace_back(key);
+            auto memberNode = current[toRymlCStr(*key)];
             context.current.push(memberNode);
         }
 
@@ -68,8 +66,8 @@ namespace dory::typeMap::yaml
         template<typename T, auto N>
         inline static void beginCollection(YamlContext& context)
         {
-            /*auto* currentJson = context.current.top();
-            *currentJson = json::array();*/
+            auto current = context.current.top();
+            current |= c4::yml::NodeType_e::SEQ;
         }
 
         inline static void endCollection(YamlContext& context)
@@ -81,14 +79,14 @@ namespace dory::typeMap::yaml
     {
         inline static void beginItem(const std::size_t i, YamlContext& context)
         {
-            /*auto* currentJson = context.current.top();
-            auto& itemJson = currentJson->operator[](i);
-            context.current.push(&itemJson);*/
+            auto current = context.current.top();
+            auto itemNode = current.append_child();
+            context.current.push(itemNode);
         }
 
         inline static void endItem(const bool lastItem, YamlContext& context)
         {
-            /*context.current.pop();*/
+            context.current.pop();
         }
     };
 
@@ -155,12 +153,9 @@ namespace dory::typeMap::yaml
             YamlContext context(tree.rootref());
             ObjectVisitor<YamlSerializationPolicies>::visit(object, context);
 
-            std::stringstream ss;
-            ss << tree;
-            std::string stream_result = ss.str();
-
-            return stream_result;
-            //return ryml::emitrs_yaml<std::string>(tree);
+            std::stringstream stream;
+            stream << tree;
+            return stream.str();
         }
     };
 }

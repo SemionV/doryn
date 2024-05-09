@@ -37,9 +37,10 @@ namespace dory::typeMap::yaml
         inline static void beginMember(const std::string& memberName, const std::size_t i, YamlContext& context)
         {
             auto current = context.current.top();
-            if(current.is_map() && current.has_child(memberName.data()))
+            const auto& name = toRymlCStr(memberName);
+            if(current.is_map() && current.has_child(name))
             {
-                auto member = current[memberName.data()];
+                auto member = current[name];
                 context.current.push(member);
             }
             else
@@ -126,7 +127,7 @@ namespace dory::typeMap::yaml
         template<typename T>
         static T deserialize(std::string source, T& object)
         {
-            auto tree = ryml::parse_in_place(source.data());
+            auto tree = ryml::parse_in_place(toRymlStr(source));
             YamlContext context(tree.rootref());
             ObjectVisitor<YamlDeserializationPolicies>::visit(object, context);
 
