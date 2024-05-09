@@ -71,6 +71,7 @@ namespace dory::typeMap::yaml
         {
             auto current = context.current.top();
             current |= c4::yml::NodeType_e::SEQ;
+            current |= c4::yml::NodeType_e::_WIP_STYLE_FLOW_SL;
         }
 
         inline static void endCollection(YamlContext& context)
