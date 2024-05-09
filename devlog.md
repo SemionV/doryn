@@ -1,7 +1,6 @@
 # Development log
 
 Tasks:
-* YAML Serializer/Deserializer
 * Configuration subsystem
 * Static mapping of Vertex Attributes
 * Fill Buffers with mapped data
@@ -20,6 +19,9 @@ Tasks:
 * Networking/Mutliplayer
 * Build for MacOS
 * Voice control
+
+**09.05.24**
+* Task done: YAML Serializer/Deserializer
 
 **05.05.24**
 * Task done: JSON Serializer/Deserializer

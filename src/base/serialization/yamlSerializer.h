@@ -53,7 +53,8 @@ namespace dory::typeMap::yaml
 
             auto string = std::make_shared<std::string>(memberName);
             context.strings.emplace_back(string);
-            auto memberNode = current[toRymlCStr(*string)];
+            auto memberNode = current.append_child();
+            memberNode.set_key(toRymlCStr(*string));
             context.current.push(memberNode);
         }
 

@@ -430,7 +430,7 @@ TEST_CASE( "Deserialize YAML complex object", "[yaml]" )
     REQUIRE(scene.entities[1].mesh.vertices[1][2] == 6);
 }
 
-TEST_CASE( "Serialize YAML map", "[.][yaml]" )
+TEST_CASE( "Serialize YAML map", "[yaml]" )
 {
     std::string yamlExpected = "name: Test\nage: 18\nranking: 5\n";
 
@@ -469,9 +469,9 @@ TEST_CASE( "Serialize YAML dynamic collection", "[yaml]" )
     REQUIRE(yaml == yamlExpected);
 }
 
-/*TEST_CASE( "Serialize YAML complext object", "[yaml]" )
+TEST_CASE( "Serialize YAML complext object", "[yaml]" )
 {
-    std::string yamlExpected = "- name: Test\n  age: 18\n  ranking: 5\n- name: Test2\n  age: 38\n  ranking: 2\n";
+    std::string yamlExpected = "name: scene1\nentities:\n  - name: entity1\n    position:\n      - 1\n      - 1\n      - 1\n    mesh:\n      vertices:\n        - - 2\n          - 2\n          - 2\n        - - 3\n          - 3\n          - 3\n  - name: entity2\n    position:\n      - 4\n      - 4\n      - 4\n    mesh:\n      vertices:\n        - - 5\n          - 5\n          - 5\n        - - 6\n          - 6\n          - 6\n";
 
     auto scene = Scene {
         "scene1",
@@ -502,4 +502,4 @@ TEST_CASE( "Serialize YAML dynamic collection", "[yaml]" )
     auto yaml = dory::typeMap::yaml::YamlSerializer::serialize(scene);
     REQUIRE(!yaml.empty());
     REQUIRE(yaml == yamlExpected);
-}*/
+}
