@@ -8,22 +8,26 @@ namespace dory::typeMap::yaml
 {
     struct DeserializerValuePolicy
     {
+    private:
+        template<typename T>
+        inline static void readValue(T& value, ryml::ConstNodeRef& node)
+        {
+            node >> value;
+        }
+
+        inline static void readValue(std::string& value, ryml::ConstNodeRef& node)
+        {
+            value = std::string(node.val().str, node.val().len);
+        }
+
+    public:
         template<typename T>
         inline static void process(T& value, YamlContext& context)
         {
             auto current = context.current.top();
-            //if(current.is_val() && !current.empty())
+            if(current.has_val())
             {
-                current >> value;
-            }
-        }
-
-        inline static void process(std::string& value, YamlContext& context)
-        {
-            auto current = context.current.top();
-            //if(current.is_val() && !current.empty())
-            {
-                value = std::string(current.val().str, current.val().len);
+                readValue(value, current);
             }
         }
     };
@@ -33,17 +37,14 @@ namespace dory::typeMap::yaml
         inline static void process(const std::string& memberName, const std::size_t i, YamlContext& context)
         {
             auto current = context.current.top();
-            if(current.is_map())
+            if(current.is_map() && current.has_child(memberName.data()))
             {
                 auto member = current[memberName.data()];
-                if(member.key_is_null())
-                {
-                    context.current.push(ryml::NodeRef());
-                }
-                else
-                {
-                    context.current.push(member);
-                }
+                context.current.push(member);
+            }
+            else
+            {
+                context.current.push(current);
             }
         }
     };
@@ -145,12 +146,10 @@ namespace dory::typeMap::yaml
     {
     public:
         template<typename T>
-        static T deserialize(std::string source)
+        static T deserialize(std::string source, T& object)
         {
             auto tree = ryml::parse_in_place(source.data());
             YamlContext context(tree.rootref());
-            auto name = tree.rootref()["name"].val();
-            auto object = T{};
             ObjectVisitor<YamlDeserializationPolicies>::visit(object, context);
 
             return object;

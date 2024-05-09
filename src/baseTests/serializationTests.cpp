@@ -317,15 +317,30 @@ TEST_CASE( "Deserialize YAML", "[yaml]" )
     REQUIRE(name == "doe");*/
 }
 
-TEST_CASE( "Deserialize YAML map", "[yaml]" )
+TEST_CASE( "Deserialize YAML map", "[.][yaml]" )
 {
     std::string yaml = R"(
     name: Test
     age: 18
     ranking: 5)";
 
-    auto player = dory::typeMap::yaml::YamlDeserializer::deserialize<Player>(yaml);
+    auto player = Player{};
+    dory::typeMap::yaml::YamlDeserializer::deserialize(yaml, player);
     REQUIRE(player.name == "Test");
     REQUIRE(player.age == 18);
     REQUIRE(player.ranking == 5);
+}
+
+TEST_CASE( "Deserialize YAML with missing fields", "[yaml]" )
+{
+    std::string yaml = R"(
+    name: Test
+    age: 18)";
+
+    auto player = Player{};
+    player.ranking = 1;
+    dory::typeMap::yaml::YamlDeserializer::deserialize(yaml, player);
+    REQUIRE(player.name == "Test");
+    REQUIRE(player.age == 18);
+    REQUIRE(player.ranking == 1);
 }
