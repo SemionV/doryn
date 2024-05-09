@@ -9,7 +9,7 @@ namespace dory::typeMap::yaml
         std::stack<ryml::NodeRef> current;
         std::size_t dynamicCollectionIndex = 0;
         std::size_t previousDynamicCollectionIndex = 0;
-        std::vector<std::shared_ptr<std::string>> memberNames;
+        std::vector<std::shared_ptr<std::string>> strings;
 
         explicit YamlContext(ryml::NodeRef root)
         {

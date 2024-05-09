@@ -454,3 +454,52 @@ TEST_CASE( "Serialize YAML collection", "[yaml]" )
     REQUIRE(!yaml.empty());
     REQUIRE(yaml == yamlExpected);
 }
+
+TEST_CASE( "Serialize YAML dynamic collection", "[yaml]" )
+{
+    std::string yamlExpected = "- name: Test\n  age: 18\n  ranking: 5\n- name: Test2\n  age: 38\n  ranking: 2\n";
+
+    auto players = std::vector<Player>{
+        Player{"Test", 18, 5},
+        Player{"Test2", 38, 2}
+    };
+
+    auto yaml = dory::typeMap::yaml::YamlSerializer::serialize(players);
+    REQUIRE(!yaml.empty());
+    REQUIRE(yaml == yamlExpected);
+}
+
+/*TEST_CASE( "Serialize YAML complext object", "[yaml]" )
+{
+    std::string yamlExpected = "- name: Test\n  age: 18\n  ranking: 5\n- name: Test2\n  age: 38\n  ranking: 2\n";
+
+    auto scene = Scene {
+        "scene1",
+        {
+            Entity {
+                "entity1",
+                {1, 1, 1},
+                Mesh {
+                    {
+                        {2, 2, 2},
+                        {3, 3, 3}
+                    }
+                }
+            },
+            Entity {
+                "entity2",
+                {4, 4, 4},
+                Mesh {
+                    {
+                        {5, 5, 5},
+                        {6, 6, 6}
+                    }
+                }
+            }
+        }
+    };
+
+    auto yaml = dory::typeMap::yaml::YamlSerializer::serialize(scene);
+    REQUIRE(!yaml.empty());
+    REQUIRE(yaml == yamlExpected);
+}*/
