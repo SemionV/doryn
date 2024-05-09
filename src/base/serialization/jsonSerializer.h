@@ -18,23 +18,20 @@ namespace dory::typeMap::json
 
     struct SerializerObjectPolicy
     {
-        template<typename TContext>
-        inline static void beginObject(TContext& context)
+        inline static void beginObject(JsonContext& context)
         {
             auto* currentJson = context.current.top();
             *currentJson = json::object();
         }
 
-        template<typename TContext>
-        inline static void endObject(TContext& context)
+        inline static void endObject(JsonContext& context)
         {
         }
     };
 
     struct SerializerMemberPolicy
     {
-        template<typename TContext>
-        inline static void beginMember(const std::string& memberName, const std::size_t i, TContext& context)
+        inline static void beginMember(const std::string& memberName, const std::size_t i, JsonContext& context)
         {
             auto* currentJson = context.current.top();
 
@@ -42,8 +39,7 @@ namespace dory::typeMap::json
             context.current.push(&memberJson);
         }
 
-        template<typename TContext>
-        inline static void endMember(const bool lastMember, TContext& context)
+        inline static void endMember(const bool lastMember, JsonContext& context)
         {
             context.current.pop();
         }
@@ -51,31 +47,28 @@ namespace dory::typeMap::json
 
     struct SerializerCollectionPolicy
     {
-        template<typename T, auto N, typename TContext>
-        inline static void beginCollection(TContext& context)
+        template<typename T, auto N>
+        inline static void beginCollection(JsonContext& context)
         {
             auto* currentJson = context.current.top();
             *currentJson = json::array();
         }
 
-        template<typename TContext>
-        inline static void endCollection(TContext& context)
+        inline static void endCollection(JsonContext& context)
         {
         }
     };
 
     struct SerializerCollectionItemPolicy
     {
-        template<typename TContext>
-        inline static void beginItem(const std::size_t i, TContext& context)
+        inline static void beginItem(const std::size_t i, JsonContext& context)
         {
             auto* currentJson = context.current.top();
             auto& itemJson = currentJson->operator[](i);
             context.current.push(&itemJson);
         }
 
-        template<typename TContext>
-        inline static void endItem(const bool lastItem, TContext& context)
+        inline static void endItem(const bool lastItem, JsonContext& context)
         {
             context.current.pop();
         }

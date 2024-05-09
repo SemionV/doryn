@@ -34,8 +34,7 @@ namespace dory::typeMap::yaml
 
     struct DeserializerMemberPolicy
     {
-        template<typename TContext>
-        inline static void beginMember(const std::string& memberName, const std::size_t i, TContext& context)
+        inline static void beginMember(const std::string& memberName, const std::size_t i, YamlContext& context)
         {
             auto current = context.current.top();
             if(current.is_map() && current.has_child(memberName.data()))
@@ -49,8 +48,7 @@ namespace dory::typeMap::yaml
             }
         }
 
-        template<typename TContext>
-        inline static void endMember(const bool lastMember, TContext& context)
+        inline static void endMember(const bool lastMember, YamlContext& context)
         {
             context.current.pop();
         }
@@ -58,8 +56,7 @@ namespace dory::typeMap::yaml
 
     struct DeserializerCollectionItemPolicy
     {
-        template<typename TContext>
-        inline static void beginItem(const std::size_t i, TContext& context)
+        inline static void beginItem(const std::size_t i, YamlContext& context)
         {
             /*auto* currentJson = context.current.top();
             if(i < currentJson->size())
@@ -73,8 +70,7 @@ namespace dory::typeMap::yaml
             }*/
         }
 
-        template<typename TContext>
-        inline static void endItem(const bool lastItem, TContext& context)
+        inline static void endItem(const bool lastItem, YamlContext& context)
         {
             //context.current.pop();
         }

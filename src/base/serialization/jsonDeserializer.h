@@ -21,8 +21,7 @@ namespace dory::typeMap::json
 
     struct DeserializerMemberPolicy
     {
-        template<typename TContext>
-        inline static void beginMember(const std::string& memberName, const std::size_t i, TContext& context)
+        inline static void beginMember(const std::string& memberName, const std::size_t i, JsonContext& context)
         {
             auto* currentJson = context.current.top();
             if(currentJson->contains(memberName))
@@ -36,8 +35,7 @@ namespace dory::typeMap::json
             }
         }
 
-        template<typename TContext>
-        inline static void endMember(const bool lastMember, TContext& context)
+        inline static void endMember(const bool lastMember, JsonContext& context)
         {
             context.current.pop();
         }
@@ -45,8 +43,7 @@ namespace dory::typeMap::json
 
     struct DeserializerCollectionItemPolicy
     {
-        template<typename TContext>
-        inline static void beginItem(const std::size_t i, TContext& context)
+        inline static void beginItem(const std::size_t i, JsonContext& context)
         {
             auto* currentJson = context.current.top();
             if(i < currentJson->size())
@@ -60,8 +57,7 @@ namespace dory::typeMap::json
             }
         }
 
-        template<typename TContext>
-        inline static void endItem(const bool lastItem, TContext& context)
+        inline static void endItem(const bool lastItem, JsonContext& context)
         {
             context.current.pop();
         }
