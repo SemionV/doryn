@@ -117,7 +117,7 @@ namespace dory::typeMap
     struct MemberPolicy
     {
         template<typename TContext>
-        inline static void beginMember(const std::string& memberName, const std::size_t i, TContext& context)
+        inline static void beginMember(const std::string_view& memberName, const std::size_t i, TContext& context)
         {
             assert(std::holds_alternative<ObjectRepresentation>(context.currentValueNode->value));
             auto valueNode = std::make_shared<ValueNode>(context.currentValueNode);

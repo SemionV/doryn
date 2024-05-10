@@ -34,7 +34,7 @@ namespace dory::typeMap::yaml
 
     struct DeserializerMemberPolicy
     {
-        inline static void beginMember(const std::string& memberName, const std::size_t i, YamlContext& context)
+        inline static void beginMember(const std::string_view& memberName, const std::size_t i, YamlContext& context)
         {
             auto current = context.current.top();
             const auto& name = toRymlCStr(memberName);

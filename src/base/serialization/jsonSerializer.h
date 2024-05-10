@@ -31,7 +31,7 @@ namespace dory::typeMap::json
 
     struct SerializerMemberPolicy
     {
-        inline static void beginMember(const std::string& memberName, const std::size_t i, JsonContext& context)
+        inline static void beginMember(const std::string_view& memberName, const std::size_t i, JsonContext& context)
         {
             auto* currentJson = context.current.top();
 

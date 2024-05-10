@@ -22,6 +22,11 @@ namespace dory::typeMap::yaml
         return {source.data(), source.size()};
     }
 
+    c4::csubstr toRymlCStr(const std::string_view& source)
+    {
+        return {source.data(), source.size()};
+    }
+
     c4::substr toRymlStr(std::string& source)
     {
         return {source.data(), source.size()};

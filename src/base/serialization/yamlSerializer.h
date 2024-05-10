@@ -47,14 +47,12 @@ namespace dory::typeMap::yaml
 
     struct SerializerMemberPolicy
     {
-        inline static void beginMember(const std::string& memberName, const std::size_t i, YamlContext& context)
+        inline static void beginMember(const std::string_view& memberName, const std::size_t i, YamlContext& context)
         {
             auto current = context.current.top();
 
-            auto string = std::make_shared<std::string>(memberName);
-            context.strings.emplace_back(string);
             auto memberNode = current.append_child();
-            memberNode.set_key(toRymlCStr(*string));
+            memberNode.set_key(toRymlCStr(memberName));
             context.current.push(memberNode);
         }
 

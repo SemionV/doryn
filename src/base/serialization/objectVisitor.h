@@ -29,7 +29,7 @@ namespace dory::typeMap
     struct DefaultMemberPolicy
     {
         template<typename TContext>
-        inline static void beginMember(const std::string& memberName, const std::size_t i, TContext& context)
+        inline static void beginMember(const std::string_view& memberName, const std::size_t i, TContext& context)
         {
         }
 
@@ -144,7 +144,7 @@ namespace dory::typeMap
         {
             TPolicies::ObjectPolicy::beginObject(context);
 
-            reflection::visitClassFields(object, [](auto& memberValue, const std::string& memberName,
+            reflection::visitClassFields(object, [](auto& memberValue, const std::string_view& memberName,
                     const std::size_t i, const std::size_t memberCount, TContext& context)
             {
                 TPolicies::MemberPolicy::beginMember(memberName, i, context);
