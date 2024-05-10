@@ -17,9 +17,13 @@ namespace dory::typeMap::yaml
 
         inline static void writeValue(std::string& value, ryml::NodeRef& node, YamlContext& context)
         {
-            auto string = std::make_shared<std::string>(value);
-            context.strings.emplace_back(string);
-            node = toRymlCStr(*string);
+            //auto string = std::make_shared<std::string>(value);
+            //context.strings.emplace_back(string);
+            //node = toRymlCStr(*string);
+            auto cstr = toRymlCStr(value);
+            const char* data = cstr.data();
+            auto size = cstr.size();
+            node = cstr;
         }
 
     public:

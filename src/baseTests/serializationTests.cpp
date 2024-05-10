@@ -430,7 +430,7 @@ TEST_CASE( "Deserialize YAML complex object", "[yaml]" )
     REQUIRE(scene.entities[1].mesh.vertices[1][2] == 6);
 }
 
-TEST_CASE( "Serialize YAML map", "[yaml]" )
+TEST_CASE( "Serialize YAML map", "[.][yaml]" )
 {
     std::string yamlExpected = "name: Test\nage: 18\nranking: 5\n";
 
@@ -441,7 +441,7 @@ TEST_CASE( "Serialize YAML map", "[yaml]" )
     REQUIRE(yaml == yamlExpected);
 }
 
-TEST_CASE( "Serialize YAML collection", "[yaml]" )
+TEST_CASE( "Serialize YAML collection", "[.][yaml]" )
 {
     std::string yamlExpected = "[{name: Test,age: 18,ranking: 5},{name: Test2,age: 38,ranking: 2}]";
 
@@ -455,7 +455,7 @@ TEST_CASE( "Serialize YAML collection", "[yaml]" )
     REQUIRE(yaml == yamlExpected);
 }
 
-TEST_CASE( "Serialize YAML dynamic collection", "[yaml]" )
+TEST_CASE( "Serialize YAML dynamic collection", "[.][yaml]" )
 {
     std::string yamlExpected = "- name: Test\n  age: 18\n  ranking: 5\n- name: Test2\n  age: 38\n  ranking: 2\n";
 

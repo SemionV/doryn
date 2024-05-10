@@ -155,6 +155,23 @@ namespace dory::typeMap
             TPolicies::ObjectPolicy::endObject(context);
         }
 
+        template<typename T, typename TContext>
+        requires(std::is_class_v<std::remove_reference_t<T>>)
+        static void visit(const T&& object, TContext& context)
+        {
+            TPolicies::ObjectPolicy::beginObject(context);
+
+            reflection::visitClassFields(object, [](const auto& memberValue, const std::string_view& memberName,
+                                                    const std::size_t i, const std::size_t memberCount, TContext& context)
+            {
+                TPolicies::MemberPolicy::beginMember(memberName, i, context);
+                visit(memberValue, context);
+                TPolicies::MemberPolicy::endMember(i == memberCount - 1, context);
+            }, context);
+
+            TPolicies::ObjectPolicy::endObject(context);
+        }
+
         template<typename T, auto N, typename TContext>
         static void visit(std::array<T, N>& object, TContext& context)
         {
@@ -175,7 +192,7 @@ namespace dory::typeMap
             auto item = TPolicies::DynamicCollectionPolicyType::getNextItem(object, context);
             while(item)
             {
-                auto& value = *item;
+                auto value = *item;
 
                 visit(value, context);
                 TPolicies::DynamicCollectionPolicyType::processItem(value, object, context);
