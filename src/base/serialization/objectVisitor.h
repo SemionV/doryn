@@ -118,6 +118,23 @@ namespace dory::typeMap
             TPolicies::CollectionPolicy::endCollection(context);
         }
 
+        template<typename T, typename TContext, typename F>
+        static void visitObject(T&& object, TContext& context, F memberPredicate)
+        {
+            TPolicies::ObjectPolicy::beginObject(context);
+            reflection::visitClassFields(object, memberPredicate, context);
+            TPolicies::ObjectPolicy::endObject(context);
+        }
+
+        template<typename T, typename TContext>
+        static void visitObjectMember(T& memberValue, const std::string_view& memberName,
+                                      const std::size_t i, const std::size_t memberCount, TContext& context)
+        {
+            TPolicies::MemberPolicy::beginMember(memberName, i, context);
+            visit(memberValue, context);
+            TPolicies::MemberPolicy::endMember(i == memberCount - 1, context);
+        }
+
     public:
         template<typename T, typename TContext>
         requires(std::is_fundamental_v<std::remove_reference_t<T>>)
@@ -127,13 +144,13 @@ namespace dory::typeMap
         }
 
         template<typename TContext>
-        static void visit(std::string&& object, TContext& context)
+        static void visit(std::string& object, TContext& context)
         {
-            TPolicies::ValuePolicy::process(std::move(object), context);
+            TPolicies::ValuePolicy::process(object, context);
         }
 
         template<typename TContext>
-        static void visit(std::string& object, TContext& context)
+        static void visit(const std::string& object, TContext& context)
         {
             TPolicies::ValuePolicy::process(object, context);
         }
@@ -142,34 +159,22 @@ namespace dory::typeMap
         requires(std::is_class_v<std::remove_reference_t<T>>)
         static void visit(T&& object, TContext& context)
         {
-            TPolicies::ObjectPolicy::beginObject(context);
-
-            reflection::visitClassFields(object, [](auto& memberValue, const std::string_view& memberName,
-                    const std::size_t i, const std::size_t memberCount, TContext& context)
+            visitObject(std::forward<T>(object), context, [](auto& memberValue, const std::string_view& memberName,
+                                                             const std::size_t i, const std::size_t memberCount, TContext& context)
             {
-                TPolicies::MemberPolicy::beginMember(memberName, i, context);
-                visit(memberValue, context);
-                TPolicies::MemberPolicy::endMember(i == memberCount - 1, context);
-            }, context);
-
-            TPolicies::ObjectPolicy::endObject(context);
+                visitObjectMember(memberValue, memberName, i, memberCount, context);
+            });
         }
 
         template<typename T, typename TContext>
         requires(std::is_class_v<std::remove_reference_t<T>>)
-        static void visit(const T&& object, TContext& context)
+        static void visit(const T& object, TContext& context)
         {
-            TPolicies::ObjectPolicy::beginObject(context);
-
-            reflection::visitClassFields(object, [](const auto& memberValue, const std::string_view& memberName,
-                                                    const std::size_t i, const std::size_t memberCount, TContext& context)
+            visitObject(std::forward<T>(object), context, [](const auto& memberValue, const std::string_view& memberName,
+                                                             const std::size_t i, const std::size_t memberCount, TContext& context)
             {
-                TPolicies::MemberPolicy::beginMember(memberName, i, context);
-                visit(memberValue, context);
-                TPolicies::MemberPolicy::endMember(i == memberCount - 1, context);
-            }, context);
-
-            TPolicies::ObjectPolicy::endObject(context);
+                visitObjectMember(memberValue, memberName, i, memberCount, context);
+            });
         }
 
         template<typename T, auto N, typename TContext>
