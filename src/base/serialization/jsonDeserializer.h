@@ -120,7 +120,7 @@ namespace dory::typeMap::json
     {
     public:
         template<typename T>
-        static T deserialize(std::string source)
+        static T deserialize(const std::string& source)
         {
             auto data = json::parse(source);
             JsonContext context(&data);

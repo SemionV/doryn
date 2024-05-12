@@ -15,15 +15,9 @@ namespace dory::typeMap::yaml
             node << value;
         }
 
-        inline static void writeValue(std::string& value, ryml::NodeRef& node, YamlContext& context)
+        inline static void writeValue(const std::string& value, ryml::NodeRef& node, YamlContext& context)
         {
-            //auto string = std::make_shared<std::string>(value);
-            //context.strings.emplace_back(string);
-            //node = toRymlCStr(*string);
-            auto cstr = toRymlCStr(value);
-            const char* data = cstr.data();
-            auto size = cstr.size();
-            node = cstr;
+            node = toRymlCStr(value);
         }
 
     public:
@@ -99,7 +93,7 @@ namespace dory::typeMap::yaml
     struct SerializerDynamicCollectionPolicy
     {
         template<typename T>
-        inline static void beginCollection(std::vector<T>& collection, YamlContext& context)
+        inline static void beginCollection(T& collection, YamlContext& context)
         {
             auto current = context.current.top();
             current |= c4::yml::NodeType_e::SEQ;
@@ -109,7 +103,7 @@ namespace dory::typeMap::yaml
         }
 
         template<typename T>
-        inline static std::optional<T> getNextItem(std::vector<T>& collection, YamlContext& context)
+        inline static std::optional<typename T::value_type> getNextItem(T& collection, YamlContext& context)
         {
             auto current = context.current.top();
             if(context.dynamicCollectionIndex < collection.size())
@@ -126,14 +120,14 @@ namespace dory::typeMap::yaml
             return {};
         }
 
-        template<typename T>
-        inline static void processItem(T& item, std::vector<T>& collection, YamlContext& context)
+        template<typename T, typename V>
+        inline static void processItem(T& item, V& collection, YamlContext& context)
         {
             context.current.pop();
         }
 
         template<typename T>
-        inline static void endCollection(std::vector<T>& collection, YamlContext& context)
+        inline static void endCollection(T& collection, YamlContext& context)
         {
             context.dynamicCollectionIndex = context.previousDynamicCollectionIndex;
             context.previousDynamicCollectionIndex = 0;
@@ -154,7 +148,7 @@ namespace dory::typeMap::yaml
     {
     public:
         template<typename T>
-        static std::string serialize(T& object)
+        static std::string serialize(const T& object)
         {
             auto tree = ryml::Tree{};
 

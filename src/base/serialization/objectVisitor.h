@@ -68,25 +68,52 @@ namespace dory::typeMap
     struct DefaultDynamicCollectionPolicy
     {
         template<typename T, typename TContext>
-        inline static void beginCollection(std::vector<T>& collection, TContext& context)
+        inline static void beginCollection(T& collection, TContext& context)
         {
         }
 
         template<typename T, typename TContext>
-        inline static std::optional<T> getNextItem(std::vector<T>& collection, TContext& context)
+        inline static std::optional<typename T::value_type> getNextItem(T& collection, TContext& context)
         {
             return {};
         }
 
-        template<typename T, typename TContext>
-        inline static void processItem(T& item, std::vector<T>& collection, TContext& context)
+        template<typename T, typename V, typename TContext>
+        inline static void processItem(T& item, V& collection, TContext& context)
         {
         }
 
         template<typename T, typename TContext>
-        inline static void endCollection(std::vector<T>& collection, TContext& context)
+        inline static void endCollection(T& collection, TContext& context)
         {
         }
+    };
+
+    template<class A>
+    struct is_fixed_array: std::false_type {};
+
+    template<class T, std::size_t I>
+    struct is_fixed_array<std::array<T, I>>: std::true_type {};
+
+    template<class T>
+    constexpr bool is_fixed_array_v = is_fixed_array<T>::value;
+
+    template<class A>
+    struct is_vector: std::false_type {};
+
+    template<class T>
+    struct is_vector<std::vector<T>>: std::true_type {};
+
+    template<class T>
+    constexpr bool is_vector_v = is_vector<T>::value;
+
+    template<typename>
+    struct array_size;
+
+    template<typename T, size_t N>
+    struct array_size<std::array<T,N>>
+    {
+        static size_t const size = N;
     };
 
     struct VisitorDefaultPolicies
@@ -102,39 +129,6 @@ namespace dory::typeMap
     template<typename TPolicies = VisitorDefaultPolicies>
     class ObjectVisitor
     {
-    private:
-        template<typename T, auto N, typename TContext>
-        static void visitArray(std::array<T, N>& object, TContext& context)
-        {
-            TPolicies::CollectionPolicy::template beginCollection<T, N>(context);
-
-            for(std::size_t i {}; i < N; ++i)
-            {
-                TPolicies::CollectionItemPolicy::beginItem(i, context);
-                visit(object[i], context);
-                TPolicies::CollectionItemPolicy::endItem(i == N - 1, context);
-            }
-
-            TPolicies::CollectionPolicy::endCollection(context);
-        }
-
-        template<typename T, typename TContext, typename F>
-        static void visitObject(T&& object, TContext& context, F memberPredicate)
-        {
-            TPolicies::ObjectPolicy::beginObject(context);
-            reflection::visitClassFields(object, memberPredicate, context);
-            TPolicies::ObjectPolicy::endObject(context);
-        }
-
-        template<typename T, typename TContext>
-        static void visitObjectMember(T& memberValue, const std::string_view& memberName,
-                                      const std::size_t i, const std::size_t memberCount, TContext& context)
-        {
-            TPolicies::MemberPolicy::beginMember(memberName, i, context);
-            visit(memberValue, context);
-            TPolicies::MemberPolicy::endMember(i == memberCount - 1, context);
-        }
-
     public:
         template<typename T, typename TContext>
         requires(std::is_fundamental_v<std::remove_reference_t<T>>)
@@ -145,61 +139,67 @@ namespace dory::typeMap
 
         template<typename T, typename TContext>
         requires(std::is_same_v<std::decay_t<T>, std::string>)
-        static void visit(T& object, TContext& context)
-        {
-            TPolicies::ValuePolicy::process(object, context);
-        }
-
-        template<typename T, typename TContext>
-        requires(std::is_class_v<std::remove_reference_t<T>>)
         static void visit(T&& object, TContext& context)
         {
-            visitObject(std::forward<T>(object), context, [](auto& memberValue, const std::string_view& memberName,
-                                                             const std::size_t i, const std::size_t memberCount, TContext& context)
-            {
-                visitObjectMember(memberValue, memberName, i, memberCount, context);
-            });
+            TPolicies::ValuePolicy::process(std::forward<T>(object), context);
         }
 
         template<typename T, typename TContext>
-        requires(std::is_class_v<std::remove_reference_t<T>>)
-        static void visit(const T& object, TContext& context)
+        requires(is_fixed_array_v<std::decay_t<T>>)
+        static void visit(T&& object, TContext& context)
         {
-            visitObject(std::forward<T>(object), context, [](const auto& memberValue, const std::string_view& memberName,
-                                                             const std::size_t i, const std::size_t memberCount, TContext& context)
+            using TArray = std::decay_t<T>;
+            constexpr const typename TArray::size_type size = array_size<TArray>::size;
+
+            TPolicies::CollectionPolicy::template beginCollection<typename TArray::value_type, size>(context);
+
+            for(std::size_t i {}; i < size; ++i)
             {
-                visitObjectMember(memberValue, memberName, i, memberCount, context);
-            });
-        }
+                TPolicies::CollectionItemPolicy::beginItem(i, context);
+                visit(object[i], context);
+                TPolicies::CollectionItemPolicy::endItem(i == size - 1, context);
+            }
 
-        template<typename T, auto N, typename TContext>
-        static void visit(std::array<T, N>& object, TContext& context)
-        {
-            visitArray(object, context);
-        }
-
-        template<typename T, auto N, typename TContext>
-        static void visit(std::array<T, N>&& object, TContext& context)
-        {
-            visitArray(object, context);
+            TPolicies::CollectionPolicy::endCollection(context);
         }
 
         template<typename T, typename TContext>
-        static void visit(std::vector<T>& object, TContext& context)
+        requires(is_vector_v<std::decay_t<T>>)
+        static void visit(T&& object, TContext& context)
         {
-            TPolicies::DynamicCollectionPolicyType::beginCollection(object, context);
+            TPolicies::DynamicCollectionPolicyType::beginCollection(std::forward<T>(object), context);
 
-            auto item = TPolicies::DynamicCollectionPolicyType::getNextItem(object, context);
+            auto item = TPolicies::DynamicCollectionPolicyType::getNextItem(std::forward<T>(object), context);
             while(item)
             {
                 auto value = *item;
 
                 visit(value, context);
-                TPolicies::DynamicCollectionPolicyType::processItem(value, object, context);
-                item = TPolicies::DynamicCollectionPolicyType::getNextItem(object, context);
+                TPolicies::DynamicCollectionPolicyType::processItem(value, std::forward<T>(object), context);
+                item = TPolicies::DynamicCollectionPolicyType::getNextItem(std::forward<T>(object), context);
             }
 
-            TPolicies::DynamicCollectionPolicyType::endCollection(object, context);
+            TPolicies::DynamicCollectionPolicyType::endCollection(std::forward<T>(object), context);
+        }
+
+        template<typename T, typename TContext>
+        requires(std::is_class_v<std::decay_t<T>>
+                 && !is_fixed_array_v<std::decay_t<T>>
+                 && !std::is_same_v<std::decay_t<T>, std::string>
+                 && !is_vector_v<std::decay_t<T>>)
+        static void visit(T&& object, TContext& context)
+        {
+            TPolicies::ObjectPolicy::beginObject(context);
+
+            reflection::visitClassFields(object, [](auto& memberValue, const std::string_view& memberName,
+                                                    const std::size_t i, const std::size_t memberCount, TContext& context)
+            {
+                TPolicies::MemberPolicy::beginMember(memberName, i, context);
+                visit(memberValue, context);
+                TPolicies::MemberPolicy::endMember(i == memberCount - 1, context);
+            }, context);
+
+            TPolicies::ObjectPolicy::endObject(context);
         }
     };
 }
