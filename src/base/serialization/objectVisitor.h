@@ -143,14 +143,9 @@ namespace dory::typeMap
             TPolicies::ValuePolicy::process(std::forward<T>(object), context);
         }
 
-        template<typename TContext>
-        static void visit(std::string& object, TContext& context)
-        {
-            TPolicies::ValuePolicy::process(object, context);
-        }
-
-        template<typename TContext>
-        static void visit(const std::string& object, TContext& context)
+        template<typename T, typename TContext>
+        requires(std::is_same_v<std::decay_t<T>, std::string>)
+        static void visit(T& object, TContext& context)
         {
             TPolicies::ValuePolicy::process(object, context);
         }
