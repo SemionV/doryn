@@ -459,7 +459,7 @@ TEST_CASE( "Serialize YAML dynamic collection", "[yaml]" )
 {
     std::string yamlExpected = "- name: Test\n  age: 18\n  ranking: 5\n- name: Test2\n  age: 38\n  ranking: 2\n";
 
-    const auto players = std::vector<Player>{
+    const auto players = std::deque<Player>{
         Player{"Test", 18, 5},
         Player{"Test2", 38, 2}
     };

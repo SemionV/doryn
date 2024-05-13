@@ -15,6 +15,45 @@ namespace dory
     template<typename T, template <class, class...> class U>
     constexpr bool is_instance_v = is_instance<T, U>::value;
 
+    template<class A>
+    struct is_fixed_array: std::false_type {};
+
+    template<class T, std::size_t I>
+    struct is_fixed_array<std::array<T, I>>: std::true_type {};
+
+    template<class T>
+    constexpr bool is_fixed_array_v = is_fixed_array<T>::value;
+
+    template<class A>
+    struct is_vector: std::false_type {};
+
+    template<class T>
+    struct is_vector<std::vector<T>>: std::true_type {};
+
+    template<class T>
+    constexpr bool is_vector_v = is_vector<T>::value;
+
+    template<class A>
+    struct is_deque: std::false_type {};
+
+    template<class T>
+    struct is_deque<std::deque<T>>: std::true_type {};
+
+    template<class T>
+    constexpr bool is_deque_v = is_deque<T>::value;
+
+    template<class T>
+    constexpr bool is_dynamic_collection_v = is_deque<T>::value || is_vector<T>::value;
+
+    template<typename>
+    struct array_size;
+
+    template<typename T, size_t N>
+    struct array_size<std::array<T,N>>
+    {
+        static size_t const size = N;
+    };
+
     constexpr std::size_t getStringLength(const char* string)
     {
         std::size_t length = 0;

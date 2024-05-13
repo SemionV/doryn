@@ -89,33 +89,6 @@ namespace dory::typeMap
         }
     };
 
-    template<class A>
-    struct is_fixed_array: std::false_type {};
-
-    template<class T, std::size_t I>
-    struct is_fixed_array<std::array<T, I>>: std::true_type {};
-
-    template<class T>
-    constexpr bool is_fixed_array_v = is_fixed_array<T>::value;
-
-    template<class A>
-    struct is_vector: std::false_type {};
-
-    template<class T>
-    struct is_vector<std::vector<T>>: std::true_type {};
-
-    template<class T>
-    constexpr bool is_vector_v = is_vector<T>::value;
-
-    template<typename>
-    struct array_size;
-
-    template<typename T, size_t N>
-    struct array_size<std::array<T,N>>
-    {
-        static size_t const size = N;
-    };
-
     struct VisitorDefaultPolicies
     {
         using ValuePolicy = DefaultValuePolicy;
@@ -164,7 +137,7 @@ namespace dory::typeMap
         }
 
         template<typename T, typename TContext>
-        requires(is_vector_v<std::decay_t<T>>)
+        requires(is_dynamic_collection_v<std::decay_t<T>>)
         static void visit(T&& object, TContext& context)
         {
             TPolicies::DynamicCollectionPolicyType::beginCollection(std::forward<T>(object), context);
@@ -186,7 +159,7 @@ namespace dory::typeMap
         requires(std::is_class_v<std::decay_t<T>>
                  && !is_fixed_array_v<std::decay_t<T>>
                  && !std::is_same_v<std::decay_t<T>, std::string>
-                 && !is_vector_v<std::decay_t<T>>)
+                 && !is_dynamic_collection_v<std::decay_t<T>>)
         static void visit(T&& object, TContext& context)
         {
             TPolicies::ObjectPolicy::beginObject(context);
