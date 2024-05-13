@@ -124,10 +124,10 @@ namespace dory::typeMap
     {
     public:
         template<typename T>
-        static void print(T&& object)
+        static void print(const T& object)
         {
             JsonPrintingContext context(std::cout);
-            ObjectVisitor<PrintingPolicies>::visit(std::forward<T>(object), context);
+            ObjectVisitor<PrintingPolicies>::visit(object, context);
 
             std::cout << std::endl;
         }

@@ -18,7 +18,7 @@ namespace dory::serialization
     struct WriteBinaryValuePolicy
     {
         template<typename T, typename TContext>
-        inline static void process(T&& value, TContext& context)
+        inline static void process(T& value, TContext& context)
         {
             auto size = sizeof(T);
             memcpy(context.buffer + context.offset, &value, size);
@@ -29,7 +29,7 @@ namespace dory::serialization
     struct ReadBinaryValuePolicy
     {
         template<typename T, typename TContext>
-        inline static void process(T&& value, TContext& context)
+        inline static void process(T& value, TContext& context)
         {
             auto size = sizeof(T);
             memcpy(&value, context.buffer + context.offset, size);
@@ -63,15 +63,15 @@ namespace dory::serialization
 
     public:
         template<auto Id, typename T>
-        static std::size_t writeAttribute(T&& attributeValue, Byte* buffer)
+        static std::size_t writeAttribute(const T& attributeValue, Byte* buffer)
         {
-            return processAttribute<Id, WriteBinaryPolicies>(std::forward<T>(attributeValue), buffer);
+            return processAttribute<Id, WriteBinaryPolicies>(attributeValue, buffer);
         }
 
         template<auto Id, typename T>
-        static std::size_t readAttribute(T&& attributeValue, Byte* buffer)
+        static std::size_t readAttribute(T& attributeValue, Byte* buffer)
         {
-            return processAttribute<Id, ReadBinaryPolicies>(std::forward<T>(attributeValue), buffer);
+            return processAttribute<Id, ReadBinaryPolicies>(attributeValue, buffer);
         }
     };
 }
