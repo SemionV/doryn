@@ -73,13 +73,13 @@ namespace dory::typeMap
         }
 
         template<typename T, typename TContext>
-        inline static std::optional<typename T::value_type> getNextItem(T& collection, TContext& context)
+        inline static std::optional<std::reference_wrapper<typename T::value_type>> getNextItem(T& collection, TContext& context)
         {
             return {};
         }
 
         template<typename T, typename V, typename TContext>
-        inline static void processItem(T& item, V& collection, TContext& context)
+        inline static void processItem(std::reference_wrapper<typename T::value_type> item, V& collection, TContext& context)
         {
         }
 
@@ -172,10 +172,10 @@ namespace dory::typeMap
             auto item = TPolicies::DynamicCollectionPolicyType::getNextItem(std::forward<T>(object), context);
             while(item)
             {
-                auto value = *item;
+                auto valueRef = *item;
 
-                visit(value, context);
-                TPolicies::DynamicCollectionPolicyType::processItem(value, std::forward<T>(object), context);
+                visit(valueRef.get(), context);
+                TPolicies::DynamicCollectionPolicyType::processItem(valueRef, std::forward<T>(object), context);
                 item = TPolicies::DynamicCollectionPolicyType::getNextItem(std::forward<T>(object), context);
             }
 

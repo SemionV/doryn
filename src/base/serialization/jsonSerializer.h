@@ -84,7 +84,7 @@ namespace dory::typeMap::json
         }
 
         template<typename T>
-        inline static std::optional<T> getNextItem(std::vector<T>& collection, JsonContext& context)
+        inline static std::optional<std::reference_wrapper<T>> getNextItem(std::vector<T>& collection, JsonContext& context)
         {
             auto* currentJson = context.current.top();
             if(context.dynamicCollectionIndex < collection.size())
@@ -96,14 +96,14 @@ namespace dory::typeMap::json
 
                 ++context.dynamicCollectionIndex;
 
-                return item;
+                return {std::ref(item)};
             }
 
             return {};
         }
 
         template<typename T>
-        inline static void processItem(T& item, std::vector<T>& collection, JsonContext& context)
+        inline static void processItem(std::reference_wrapper<T> item, std::vector<T>& collection, JsonContext& context)
         {
             context.current.pop();
         }
