@@ -77,14 +77,14 @@ namespace dory::typeMap::json
     struct SerializerDynamicCollectionPolicy
     {
         template<typename T>
-        inline static void beginCollection(std::vector<T>& collection, JsonContext& context)
+        inline static void beginCollection(T& collection, JsonContext& context)
         {
             context.previousDynamicCollectionIndex = context.dynamicCollectionIndex;
             context.dynamicCollectionIndex = 0;
         }
 
         template<typename T>
-        inline static std::optional<std::reference_wrapper<T>> getNextItem(std::vector<T>& collection, JsonContext& context)
+        inline static std::optional<std::reference_wrapper<const typename T::value_type>> getNextItem(T& collection, JsonContext& context)
         {
             auto* currentJson = context.current.top();
             if(context.dynamicCollectionIndex < collection.size())
@@ -96,20 +96,20 @@ namespace dory::typeMap::json
 
                 ++context.dynamicCollectionIndex;
 
-                return {std::ref(item)};
+                return {std::reference_wrapper(item)};
             }
 
             return {};
         }
 
         template<typename T>
-        inline static void processItem(std::reference_wrapper<T> item, std::vector<T>& collection, JsonContext& context)
+        inline static void processItem(std::reference_wrapper<const typename T::value_type> item, T& collection, JsonContext& context)
         {
             context.current.pop();
         }
 
         template<typename T>
-        inline static void endCollection(std::vector<T>& collection, JsonContext& context)
+        inline static void endCollection(T& collection, JsonContext& context)
         {
             context.dynamicCollectionIndex = context.previousDynamicCollectionIndex;
             context.previousDynamicCollectionIndex = 0;
@@ -130,7 +130,7 @@ namespace dory::typeMap::json
     {
     public:
         template<typename T>
-        static std::string serialize(T& object, const int indent = -1)
+        static std::string serialize(const T& object, const int indent = -1)
         {
             auto data = json{};
             JsonContext context(&data);

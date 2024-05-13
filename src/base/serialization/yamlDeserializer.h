@@ -76,7 +76,7 @@ namespace dory::typeMap::yaml
     struct DeserializerDynamicCollectionPolicy
     {
         template<typename T>
-        inline static void beginCollection(std::vector<T>& collection, YamlContext& context)
+        inline static void beginCollection(T& collection, YamlContext& context)
         {
             context.previousDynamicCollectionIndex = context.dynamicCollectionIndex;
             context.dynamicCollectionIndex = 0;
@@ -107,7 +107,7 @@ namespace dory::typeMap::yaml
         }
 
         template<typename T>
-        inline static void endCollection(std::vector<T>& collection, YamlContext& context)
+        inline static void endCollection(T& collection, YamlContext& context)
         {
             context.dynamicCollectionIndex = context.previousDynamicCollectionIndex;
             context.previousDynamicCollectionIndex = 0;

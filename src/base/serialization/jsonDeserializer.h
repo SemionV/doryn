@@ -66,14 +66,14 @@ namespace dory::typeMap::json
     struct DeserializerDynamicCollectionPolicy
     {
         template<typename T>
-        inline static void beginCollection(std::vector<T>& collection, JsonContext& context)
+        inline static void beginCollection(T& collection, JsonContext& context)
         {
             context.previousDynamicCollectionIndex = context.dynamicCollectionIndex;
             context.dynamicCollectionIndex = 0;
         }
 
         template<typename T>
-        inline static std::optional<std::reference_wrapper<T>> getNextItem(std::vector<T>& collection, JsonContext& context)
+        inline static std::optional<std::reference_wrapper<typename T::value_type>> getNextItem(T& collection, JsonContext& context)
         {
             auto* currentJson = context.current.top();
 
@@ -86,7 +86,7 @@ namespace dory::typeMap::json
                     context.current.push(&itemJson);
                     ++context.dynamicCollectionIndex;
 
-                    auto& item = collection.emplace_back(T{});
+                    auto& item = collection.emplace_back(typename T::value_type{});
 
                     return {std::ref(item)};
                 }
@@ -96,13 +96,13 @@ namespace dory::typeMap::json
         }
 
         template<typename T>
-        inline static void processItem(std::reference_wrapper<T> item, std::vector<T>& collection, JsonContext& context)
+        inline static void processItem(std::reference_wrapper<typename T::value_type> item,T& collection, JsonContext& context)
         {
             context.current.pop();
         }
 
         template<typename T>
-        inline static void endCollection(std::vector<T>& collection, JsonContext& context)
+        inline static void endCollection(T& collection, JsonContext& context)
         {
             context.dynamicCollectionIndex = context.previousDynamicCollectionIndex;
             context.previousDynamicCollectionIndex = 0;

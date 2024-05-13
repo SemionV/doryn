@@ -434,7 +434,7 @@ TEST_CASE( "Serialize YAML map", "[yaml]" )
 {
     std::string yamlExpected = "name: Test\nage: 18\nranking: 5\n";
 
-    auto player = Player{"Test", 18, 5};
+    const auto player = Player{"Test", 18, 5};
 
     auto yaml = dory::typeMap::yaml::YamlSerializer::serialize(player);
     REQUIRE(!yaml.empty());
@@ -445,7 +445,7 @@ TEST_CASE( "Serialize YAML collection", "[yaml]" )
 {
     std::string yamlExpected = "[{name: Test,age: 18,ranking: 5},{name: Test2,age: 38,ranking: 2}]";
 
-    auto players = std::array<Player, 2>{
+    const auto players = std::array<Player, 2>{
         Player{"Test", 18, 5},
         Player{"Test2", 38, 2}
     };
@@ -459,7 +459,7 @@ TEST_CASE( "Serialize YAML dynamic collection", "[yaml]" )
 {
     std::string yamlExpected = "- name: Test\n  age: 18\n  ranking: 5\n- name: Test2\n  age: 38\n  ranking: 2\n";
 
-    auto players = std::vector<Player>{
+    const auto players = std::vector<Player>{
         Player{"Test", 18, 5},
         Player{"Test2", 38, 2}
     };
@@ -473,7 +473,7 @@ TEST_CASE( "Serialize YAML complext object", "[yaml]" )
 {
     std::string yamlExpected = "name: scene1\nentities:\n  - name: entity1\n    position: [1,1,1]\n    mesh:\n      vertices:\n        - [2,2,2]\n        - [3,3,3]\n  - name: entity2\n    position: [4,4,4]\n    mesh:\n      vertices:\n        - [5,5,5]\n        - [6,6,6]\n";
 
-    auto scene = Scene {
+    const auto scene = Scene {
         "scene1",
         {
             Entity {
