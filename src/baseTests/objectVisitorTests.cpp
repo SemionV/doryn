@@ -89,7 +89,7 @@ namespace dory::typeMap
         }
     };
 
-    struct ValuePolicy
+    struct ValuePolicyTest
     {
         template<typename T, typename TContext>
         inline static void process(T&& value, TContext& context)
@@ -99,7 +99,7 @@ namespace dory::typeMap
         }
     };
 
-    struct ObjectPolicy
+    struct ObjectPolicyTest
     {
         template<typename TContext>
         inline static void beginObject(TContext& context)
@@ -114,7 +114,7 @@ namespace dory::typeMap
         }
     };
 
-    struct MemberPolicy
+    struct MemberPolicyTest
     {
         template<typename TContext>
         inline static void beginMember(const std::string_view& memberName, const std::size_t i, TContext& context)
@@ -134,7 +134,7 @@ namespace dory::typeMap
         }
     };
 
-    struct CollectionPolicy
+    struct CollectionPolicyTest
     {
         template<typename T, auto N, typename TContext>
         inline static void beginCollection(TContext& context)
@@ -149,7 +149,7 @@ namespace dory::typeMap
         }
     };
 
-    struct CollectionItemPolicy
+    struct CollectionItemPolicyTest
     {
         template<typename TContext>
         inline static void beginItem(const std::size_t i, TContext& context)
@@ -171,11 +171,11 @@ namespace dory::typeMap
 
     struct VisitorPolicies
     {
-        using ValuePolicy = ValuePolicy;
-        using ObjectPolicy = ObjectPolicy;
-        using MemberPolicy = MemberPolicy;
-        using CollectionPolicy = CollectionPolicy;
-        using CollectionItemPolicy = CollectionItemPolicy;
+        using ValuePolicy = ValuePolicyTest;
+        using ObjectPolicy = ObjectPolicyTest;
+        using MemberPolicy = MemberPolicyTest;
+        using CollectionPolicy = CollectionPolicyTest;
+        using CollectionItemPolicy = CollectionItemPolicyTest;
     };
 
     template<typename TValue, typename TExpected = TValue>
