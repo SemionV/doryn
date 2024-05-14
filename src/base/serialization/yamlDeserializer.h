@@ -83,7 +83,7 @@ namespace dory::typeMap::yaml
         }
 
         template<typename T>
-        inline static std::optional<std::reference_wrapper<typename T::value_type>> getNextItem(T& collection, YamlContext& context)
+        inline static std::optional<std::reference_wrapper<typename T::value_type>> nextItem(T& collection, YamlContext& context)
         {
             auto current = context.current.top();
             if(current.is_seq() && context.dynamicCollectionIndex < current.num_children())
@@ -101,7 +101,7 @@ namespace dory::typeMap::yaml
         }
 
         template<typename T>
-        inline static void processItem(std::reference_wrapper<typename T::value_type> item, T& collection, YamlContext& context)
+        inline static void endItem(std::reference_wrapper<typename T::value_type> item, T& collection, YamlContext& context)
         {
             context.current.pop();
         }

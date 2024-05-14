@@ -73,7 +73,7 @@ namespace dory::typeMap::json
         }
 
         template<typename T>
-        inline static std::optional<std::reference_wrapper<typename T::value_type>> getNextItem(T& collection, JsonContext& context)
+        inline static std::optional<std::reference_wrapper<typename T::value_type>> nextItem(T& collection, JsonContext& context)
         {
             auto* currentJson = context.current.top();
 
@@ -96,7 +96,7 @@ namespace dory::typeMap::json
         }
 
         template<typename T>
-        inline static void processItem(std::reference_wrapper<typename T::value_type> item,T& collection, JsonContext& context)
+        inline static void endItem(std::reference_wrapper<typename T::value_type> item,T& collection, JsonContext& context)
         {
             context.current.pop();
         }

@@ -73,18 +73,18 @@ namespace dory::typeMap
         }
 
         template<typename T, typename TContext>
-        inline static std::optional<std::reference_wrapper<typename T::value_type>> getNextItem(T& collection, TContext& context)
+        inline static void endCollection(T& collection, TContext& context)
+        {
+        }
+
+        template<typename T, typename TContext>
+        inline static std::optional<std::reference_wrapper<typename T::value_type>> nextItem(T& collection, TContext& context)
         {
             return {};
         }
 
         template<typename T, typename V, typename TContext>
-        inline static void processItem(std::reference_wrapper<typename T::value_type> item, V& collection, TContext& context)
-        {
-        }
-
-        template<typename T, typename TContext>
-        inline static void endCollection(T& collection, TContext& context)
+        inline static void endItem(std::reference_wrapper<typename T::value_type> item, V& collection, TContext& context)
         {
         }
     };
@@ -142,14 +142,14 @@ namespace dory::typeMap
         {
             TPolicies::DynamicCollectionPolicyType::beginCollection(std::forward<T>(object), context);
 
-            auto item = TPolicies::DynamicCollectionPolicyType::getNextItem(std::forward<T>(object), context);
+            auto item = TPolicies::DynamicCollectionPolicyType::nextItem(std::forward<T>(object), context);
             while(item)
             {
                 auto valueRef = *item;
 
                 visit(valueRef.get(), context);
-                TPolicies::DynamicCollectionPolicyType::processItem(valueRef, std::forward<T>(object), context);
-                item = TPolicies::DynamicCollectionPolicyType::getNextItem(std::forward<T>(object), context);
+                TPolicies::DynamicCollectionPolicyType::endItem(valueRef, std::forward<T>(object), context);
+                item = TPolicies::DynamicCollectionPolicyType::nextItem(std::forward<T>(object), context);
             }
 
             TPolicies::DynamicCollectionPolicyType::endCollection(std::forward<T>(object), context);
