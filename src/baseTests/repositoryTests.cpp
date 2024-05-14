@@ -142,5 +142,5 @@ TEST_CASE( "forEach", "[static poly repository]" )
 
     REQUIRE(count == 2);
     REQUIRE(ids[0] == 1);
-    REQUIRE(ids[2] == 2);
+    REQUIRE(ids[1] == 2);
 }
