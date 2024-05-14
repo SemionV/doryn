@@ -14,6 +14,7 @@
 #include "base/domain/services/viewService.h"
 #include "base/domain/devices/terminalDevice.h"
 #include "base/domain/services/scriptService.h"
+#include "base/domain/services/configurationService.h"
 #include "openGL/glfwWindow.h"
 #include "openGL/glfwWindowController.h"
 #include "openGL/viewControllerOpenGL.h"

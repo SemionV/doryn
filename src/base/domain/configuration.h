@@ -5,6 +5,11 @@
 
 namespace dory::configuration
 {
+    template<typename... Ts>
+    struct Configuration: public Ts...
+    {
+    };
+
     enum class ConfigurationError
     {
         FileNotFound
