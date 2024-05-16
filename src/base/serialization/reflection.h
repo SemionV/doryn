@@ -1,5 +1,7 @@
 #pragma once
 
+#include "base/dependencies.h"
+
 namespace dory::reflection
 {
     template <std::size_t N>

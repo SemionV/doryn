@@ -7,6 +7,7 @@
 #include "base/domain/events/engineEventHub.h"
 #include "base/domain/events/applicationEventHub.h"
 #include "base/domain/events/scriptEventHub.h"
+#include "base/domain/events/notificationEventHub.h"
 #include "base/domain/entity.h"
 #include "base/domain/entityRepository.h"
 #include "base/domain/engine.h"
@@ -71,6 +72,9 @@ namespace testApp::registry
     using StandartInputEventHubType = events::InputEventHub<DataContextType>;
     using ScriptEventDispatcherType = events::ScriptEventDispatcher<DataContextType>;
     using ScriptEventHubType = events::ScriptEventHub<DataContextType>;
+    using ApplicationNotificationEventDispatcherType = events::notification::application::NotificationEventDispatcher<DataContextType>;
+    using ApplicationNotificationEventHubType = events::notification::application::NotificationEventDispatcher<DataContextType>;
+    using ScriptEventHubType = events::ScriptEventHub<DataContextType>;
     using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<WindowRepositoryType >>;
     using ViewServiceType = services::ViewService<services::ViewServiceDependencies<DataContextType,
                                                                                     ViewRepositoryType,
@@ -99,6 +103,8 @@ namespace testApp::registry
         StandartInputEventHubType& standartInputEventHub = standartIoEventDispatcher;
         ScriptEventDispatcherType scriptEventDispatcher;
         ScriptEventHubType& scriptEventHub = scriptEventDispatcher;
+        ApplicationNotificationEventDispatcherType applicationNotificationsEventDispatcher;
+        ApplicationNotificationEventHubType & applicationNotificationsEventHub = applicationNotificationsEventDispatcher;
         PipelineRepositoryType pipelineRepository;
         CameraRepositoryType cameraRepository;
         ViewRepositoryType viewRepository;

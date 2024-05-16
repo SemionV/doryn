@@ -34,6 +34,9 @@ namespace testApp
             services.applicationEventHub.onExit().attachHandler(this, &Project::onApplicationExit);
             services.windowEventHub.onCloseWindow().attachHandler(this, &Project::onCloseWindow);
             services.scriptEventHub.onRunScript().attachHandler(this, &Project::onRunScript);
+            services.applicationNotificationsEventHub.onNotification().attachHandler(this, &Project::onApplicationNotification);
+            services.applicationNotificationsEventHub.onProblem().attachHandler(this, &Project::onApplicationProblem);
+            services.applicationNotificationsEventHub.onDisaster().attachHandler(this, &Project::onApplicationDisaster);
         }
 
         void onInitializeEngine(DataContextType& context, const events::InitializeEngineEventData& eventData)
@@ -105,6 +108,23 @@ namespace testApp
         void onRunScript(DataContextType& context, const events::script::RunScriptEventData& eventData)
         {
             services.scriptService.runScript(context, eventData.scriptKey, eventData.arguments);
+        }
+
+        void onApplicationNotification(DataContextType& context, const events::notification::application::Notification& eventData)
+        {
+            services.terminalDevice.writeLine(eventData.message);
+        }
+
+        void onApplicationProblem(DataContextType& context, const events::notification::application::Problem& eventData)
+        {
+            auto message = "\u001B[34m" + eventData.message + "\u001B[0m";
+            services.terminalDevice.writeLine(message);
+        }
+
+        void onApplicationDisaster(DataContextType& context, const events::notification::application::Disaster& eventData)
+        {
+            auto message = "\u001B[31m" + eventData.message + "\u001B[0m";
+            services.terminalDevice.writeLine(message);
         }
     };
 }

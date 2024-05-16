@@ -11,7 +11,7 @@ namespace dory
 
         if(!stream.is_open())
         {
-            throw std::ios_base::failure("cannot open file " + std::string(filename));
+            throw std::ios_base::failure("cannot open file " + filename.string());
         }
 
         auto result = std::string();

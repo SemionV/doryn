@@ -1,6 +1,7 @@
 # Development log
 
 Tasks:
+* Error handling and logging
 * Configuration subsystem
 * Static mapping of Vertex Attributes
 * Fill Buffers with mapped data
