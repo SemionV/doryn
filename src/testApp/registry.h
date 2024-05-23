@@ -17,6 +17,7 @@
 #include "base/domain/services/scriptService.h"
 #include "base/domain/services/notificationService.h"
 #include "base/domain/services/configurationService.h"
+#include "base/domain/services/loggerService.h"
 #include "openGL/glfwWindow.h"
 #include "openGL/glfwWindowController.h"
 #include "openGL/viewControllerOpenGL.h"
