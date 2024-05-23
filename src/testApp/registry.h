@@ -15,6 +15,7 @@
 #include "base/domain/services/viewService.h"
 #include "base/domain/devices/terminalDevice.h"
 #include "base/domain/services/scriptService.h"
+#include "base/domain/services/notificationService.h"
 #include "base/domain/services/configurationService.h"
 #include "openGL/glfwWindow.h"
 #include "openGL/glfwWindowController.h"
@@ -89,10 +90,13 @@ namespace testApp::registry
 #endif
     using TerminalDeviceType = devices::TerminalDevice<DataContextType, StandartIODeviceType>;
     using ScriptServiceType = services::ScriptService<DataContextType>;
+    using NotificationServiceType = services::NotificationService<DataContextType>;
 
     class Services
     {
     public:
+        ApplicationNotificationEventDispatcherType applicationNotificationsEventDispatcher;
+        ApplicationNotificationEventHubType& applicationNotificationsEventHub = applicationNotificationsEventDispatcher;
         EngineEventDispatcherType engineEventDispatcher;
         EngineEventHubType& engineEventHub = engineEventDispatcher;
         WindowEventHubDispatcherType windowEventDispatcher;
@@ -103,8 +107,6 @@ namespace testApp::registry
         StandartInputEventHubType& standartInputEventHub = standartIoEventDispatcher;
         ScriptEventDispatcherType scriptEventDispatcher;
         ScriptEventHubType& scriptEventHub = scriptEventDispatcher;
-        ApplicationNotificationEventDispatcherType applicationNotificationsEventDispatcher;
-        ApplicationNotificationEventHubType & applicationNotificationsEventHub = applicationNotificationsEventDispatcher;
         PipelineRepositoryType pipelineRepository;
         CameraRepositoryType cameraRepository;
         ViewRepositoryType viewRepository;
@@ -121,6 +123,7 @@ namespace testApp::registry
         StandartIODeviceType standartIODevice = StandartIODeviceType{standartIoEventDispatcher};
         TerminalDeviceType terminalDevice = TerminalDeviceType{standartIODevice, standartInputEventHub, scriptEventDispatcher, applicationEventDispatcher};
         ScriptServiceType scriptService = ScriptServiceType{};
+        NotificationServiceType notificationService = NotificationServiceType{ applicationNotificationsEventDispatcher };
 
         explicit Services(std::string configurationPath):
                 configurationPath(std::move(configurationPath))

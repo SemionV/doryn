@@ -6,28 +6,28 @@
 
 namespace dory::domain::services
 {
-    template<typename TImplementation>
+    template<typename TDataContext, typename TImplementation>
     class INotificationService: Uncopyable, public StaticInterface<TImplementation>
     {
     public:
-        void sendNotification(TImplementation::DataContextType& context, const std::string& notification)
+        void sendNotification(TDataContext& context, const std::string& notification)
         {
             this->toImplementation()->sendNotificationImpl(context, notification);
         }
 
-        void sendProblem(TImplementation::DataContextType& context, const std::string& problem)
+        void sendProblem(TDataContext& context, const std::string& problem)
         {
             this->toImplementation()->sendProblemImpl(context, problem);
         }
 
-        void sendDisaster(TImplementation::DataContextType& context, const std::string& disaster)
+        void sendDisaster(TDataContext& context, const std::string& disaster)
         {
             this->toImplementation()->sendDisasterImpl(context, disaster);
         }
     };
 
     template<typename TDataContext>
-    class NotificationService: public INotificationService<NotificationService<TDataContext>>
+    class NotificationService: public INotificationService<TDataContext, NotificationService<TDataContext>>
     {
     private:
         events::notification::application::NotificationEventDispatcher<TDataContext>& notificationsEventHub;
@@ -35,7 +35,11 @@ namespace dory::domain::services
     public:
         using DataContextType = TDataContext;
 
-        void sendNotification(TDataContext& context, const std::string& notification)
+        explicit NotificationService(events::notification::application::NotificationEventDispatcher<TDataContext>& notificationsEventHub):
+                notificationsEventHub(notificationsEventHub)
+        {}
+
+        void sendNotificationImpl(TDataContext& context, const std::string& notification)
         {
             notificationsEventHub.fire(context, events::notification::application::Notification{notification});
         }
