@@ -1,11 +1,6 @@
 SRC_DEPENDENCY_SCRIPT_DIR="build/dependencies/"
 
-. ${SRC_DEPENDENCY_SCRIPT_DIR}catch2.sh
-. ${SRC_DEPENDENCY_SCRIPT_DIR}fakeit.sh
-. ${SRC_DEPENDENCY_SCRIPT_DIR}glfw.sh
-. ${SRC_DEPENDENCY_SCRIPT_DIR}gl3w.sh
-. ${SRC_DEPENDENCY_SCRIPT_DIR}refl-cpp.sh
-. ${SRC_DEPENDENCY_SCRIPT_DIR}google-benchmark.sh
-. ${SRC_DEPENDENCY_SCRIPT_DIR}nlohmann-json.sh
-. ${SRC_DEPENDENCY_SCRIPT_DIR}ryml.sh
-. ${SRC_DEPENDENCY_SCRIPT_DIR}spdlog.sh
+set -e  # exit on error
+for f in $SRC_DEPENDENCY_SCRIPT_DIR*.sh; do
+  bash "$f"
+done
