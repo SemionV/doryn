@@ -8,3 +8,4 @@ SRC_DEPENDENCY_SCRIPT_DIR="build/dependencies/"
 . ${SRC_DEPENDENCY_SCRIPT_DIR}google-benchmark.sh
 . ${SRC_DEPENDENCY_SCRIPT_DIR}nlohmann-json.sh
 . ${SRC_DEPENDENCY_SCRIPT_DIR}ryml.sh
+. ${SRC_DEPENDENCY_SCRIPT_DIR}spdlog.sh
