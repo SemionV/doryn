@@ -19,7 +19,7 @@ namespace testApp
             attachEventHandlers();
 
             auto context = DataContextType{};
-            auto engine = registry::EngineType { services.engineEventDispatcher, services.pipelineRepository };
+            auto engine = registry::EngineType { services.events.engineDispatcher, services.pipelineRepository };
 
             frameService.startLoop(context, engine);
 
@@ -29,11 +29,11 @@ namespace testApp
     private:
         void attachEventHandlers()
         {
-            services.engineEventHub.attach(this, &Project::onInitializeEngine);
-            services.engineEventHub.attach(this, &Project::onStopEngine);
-            services.applicationEventHub.attach(this, &Project::onApplicationExit);
-            services.windowEventHub.attach(this, &Project::onCloseWindow);
-            services.scriptEventHub.attach(this, &Project::onRunScript);
+            services.events.engine.attach(this, &Project::onInitializeEngine);
+            services.events.engine.attach(this, &Project::onStopEngine);
+            services.events.application.attach(this, &Project::onApplicationExit);
+            services.events.window.attach(this, &Project::onCloseWindow);
+            services.events.script.attach(this, &Project::onRunScript);
         }
 
         void onInitializeEngine(DataContextType& context, const events::engine::Initialize& eventData)
@@ -46,14 +46,14 @@ namespace testApp
             services.scriptService.addScript("exit", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
             {
                 services.terminalDevice.writeLine("-\u001B[31mexit\u001B[0m-");
-                services.applicationEventDispatcher.fire(context, events::application::Exit{});
+                services.events.applicationDispatcher.fire(context, events::application::Exit{});
             });
 
             services.pipelineManager.configurePipeline(context);
 
             auto supmitInputEvents = [this](auto referenceId, const auto& timeStep, DataContextType& context)
             {
-                services.standartIoEventDispatcher.fireAll(context);
+                services.events.standartIoDispatcher.fireAll(context);
             };
 
             auto flushOutput = [this](auto referenceId, const auto& timeStep, DataContextType& context)
@@ -98,7 +98,7 @@ namespace testApp
 
             if(eventData.windowId == context.mainWindowId)
             {
-                services.applicationEventDispatcher.fire(context, events::application::Exit{});
+                services.events.applicationDispatcher.fire(context, events::application::Exit{});
             }
         }
 

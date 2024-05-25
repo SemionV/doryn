@@ -41,6 +41,32 @@ namespace testApp::registry
     namespace configuration = dory::configuration;
 
     using DataContextType = ProjectDataContext;
+
+    struct Events
+    {
+        using EngineDispatcherType = events::engine::Dispatcher<DataContextType>;
+        using EngineType = events::engine::Hub<DataContextType>;
+        using WindowDispatcherType = events::window::Dispatcher<DataContextType>;
+        using WindowType = events::window::Hub<DataContextType>;
+        using ApplicationDispatcherType = events::application::Dispatcher<DataContextType>;
+        using ApplicationType = events::application::Hub<DataContextType>;
+        using StandartInputDispatcherType = events::io::Dispatcher<DataContextType>;
+        using StandartInputType = events::io::Hub<DataContextType>;
+        using ScriptDispatcherType = events::script::Dispatcher<DataContextType>;
+        using ScriptType = events::script::Hub<DataContextType>;
+
+        EngineDispatcherType engineDispatcher;
+        EngineType& engine = engineDispatcher;
+        WindowDispatcherType windowDispatcher;
+        WindowType& window = windowDispatcher;
+        ApplicationDispatcherType applicationDispatcher;
+        ApplicationType& application = applicationDispatcher;
+        StandartInputDispatcherType standartIoDispatcher;
+        StandartInputType& standartInput = standartIoDispatcher;
+        ScriptDispatcherType scriptDispatcher;
+        ScriptType& script = scriptDispatcher;
+    };
+
     using ConfigurationServiceType = configuration::FileSystemBasedConfiguration;
     using CameraRepositoryType = domain::EntityRepository<entity::Camera>;
     using ViewRepositoryType = domain::EntityRepository<entity::View>;
@@ -60,16 +86,7 @@ namespace testApp::registry
             WindowRepositoryType,
             RendererFactoryType>>;
     using ViewControllerFactoryType = ViewControllerType::FactoryType;
-    using EngineEventDispatcherType = events::engine::Dispatcher<DataContextType>;
-    using EngineEventHubType = events::engine::Hub<DataContextType>;
-    using WindowEventHubDispatcherType = events::window::Dispatcher<DataContextType>;
-    using WindowEventHubType = events::window::Hub<DataContextType>;
-    using ApplicationEventDispatcherType = events::application::Dispatcher<DataContextType>;
-    using ApplicationEventHubType = events::application::Hub<DataContextType>;
-    using StandartInputEventDispatcherType = events::io::Dispatcher<DataContextType>;
-    using StandartInputEventHubType = events::io::Hub<DataContextType>;
-    using ScriptEventDispatcherType = events::script::Dispatcher<DataContextType>;
-    using ScriptEventHubType = events::script::Hub<DataContextType>;
+
     using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<WindowRepositoryType >>;
     using ViewServiceType = services::ViewService<services::ViewServiceDependencies<DataContextType,
                                                                                     ViewRepositoryType,
@@ -88,16 +105,7 @@ namespace testApp::registry
     class Services
     {
     public:
-        EngineEventDispatcherType engineEventDispatcher;
-        EngineEventHubType& engineEventHub = engineEventDispatcher;
-        WindowEventHubDispatcherType windowEventDispatcher;
-        WindowEventHubType& windowEventHub = windowEventDispatcher;
-        ApplicationEventDispatcherType applicationEventDispatcher;
-        ApplicationEventHubType& applicationEventHub = applicationEventDispatcher;
-        StandartInputEventDispatcherType standartIoEventDispatcher;
-        StandartInputEventHubType& standartInputEventHub = standartIoEventDispatcher;
-        ScriptEventDispatcherType scriptEventDispatcher;
-        ScriptEventHubType& scriptEventHub = scriptEventDispatcher;
+        Events events;
         PipelineRepositoryType pipelineRepository;
         CameraRepositoryType cameraRepository;
         ViewRepositoryType viewRepository;
@@ -105,14 +113,14 @@ namespace testApp::registry
         std::string configurationPath;
         ConfigurationServiceType configurationService = ConfigurationServiceType{ configurationPath };
         ShaderServiceType shaderService = ShaderServiceType{ configurationService };
-        WindowControllerFactoryType windowControllerFactory = WindowControllerFactoryType {windowRepository, windowEventDispatcher};
+        WindowControllerFactoryType windowControllerFactory = WindowControllerFactoryType {windowRepository, events.windowDispatcher};
         RendererFactoryType rendererFactory = RendererFactoryType { shaderService };
         ViewControllerFactoryType viewControllerFactory = ViewControllerFactoryType{ rendererFactory, viewRepository, windowRepository };
         PipelineManagerType pipelineManager = PipelineManagerType{ windowControllerFactory, pipelineRepository };
         WindowServiceType windowService = WindowServiceType{ windowRepository };
         ViewServiceType viewService = ViewServiceType{ viewRepository, pipelineRepository, cameraRepository, viewControllerFactory };
-        StandartIODeviceType standartIODevice = StandartIODeviceType{standartIoEventDispatcher};
-        TerminalDeviceType terminalDevice = TerminalDeviceType{standartIODevice, standartInputEventHub, scriptEventDispatcher, applicationEventDispatcher};
+        StandartIODeviceType standartIODevice = StandartIODeviceType{events.standartIoDispatcher};
+        TerminalDeviceType terminalDevice = TerminalDeviceType{standartIODevice, events.standartInput, events.scriptDispatcher, events.applicationDispatcher};
         ScriptServiceType scriptService = ScriptServiceType{};
 
         explicit Services(std::string configurationPath):
