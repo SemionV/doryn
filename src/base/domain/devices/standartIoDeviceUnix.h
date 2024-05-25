@@ -1,7 +1,7 @@
 #pragma once
 
 #include "device.h"
-#include "base/domain/events/inputEventHub.h"
+#include "base/domain/events/hub.h"
 #include "base/unix/dependencies.h"
 
 namespace dory::domain::devices
@@ -14,7 +14,7 @@ namespace dory::domain::devices
                                 public IStandartOutputDevice<ConsoleIODeviceUnix<TDataContext>, std::string>
     {
     private:
-        using InputEventDispatcherType =  events::InputEventDispatcher<TDataContext>;
+        using InputEventDispatcherType =  events::io::Dispatcher<TDataContext>;
         InputEventDispatcherType& inputEventDispatcher;
 
         std::jthread pollingThread;
@@ -25,27 +25,27 @@ namespace dory::domain::devices
         {
             if(key == 3)//CTRL+C
             {
-                inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Terminate });
+                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Terminate });
             }
             else if(key == 27)//ESC
             {
-                inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Escape });
+                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Escape });
             }
             else if(key == 127)//BACKSPACE
             {
-                inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Backspace });
+                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Backspace });
             }
             else if(key == 10)//END OF LINE
             {
-                inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Return });
+                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Return });
             }
             else if(key != 0)// Character
             {
-                inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Character, key });
+                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Character, key });
             }
             else
             {
-                inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Unknown });
+                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Unknown });
             }
         }
 

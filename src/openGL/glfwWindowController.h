@@ -2,7 +2,7 @@
 
 #include "glfwWindow.h"
 #include "base/domain/entity.h"
-#include "base/domain/events/windowEventHub.h"
+#include "base/domain/events/hub.h"
 
 namespace dory::openGL
 {
@@ -16,7 +16,7 @@ namespace dory::openGL
         using WindowRepositoryType = domain::IEntityRepository<TWindowRepository, openGL::GlfwWindow, domain::entity::IdType>;
         WindowRepositoryType& windowRepository;
 
-        using WindowEventHubType = domain::events::WindowEventHubDispatcher<TDataContext>;
+        using WindowEventHubType = domain::events::window::Dispatcher<TDataContext>;
         WindowEventHubType& windowEventHubDispatcher;
 
     public:
@@ -46,12 +46,12 @@ namespace dory::openGL
             {
                 if(glfwWindowShouldClose(window.handler))
                 {
-                    this->windowEventHubDispatcher.addCase(domain::events::CloseWindowEventData(window.id));
+                    this->windowEventHubDispatcher.charge(domain::events::window::Close(window.id));
                     glfwSetWindowShouldClose(window.handler, 0);
                 }
             });
 
-            windowEventHubDispatcher.submit(context);
+            windowEventHubDispatcher.fireAll(context);
         }
     };
 
@@ -64,7 +64,7 @@ namespace dory::openGL
         using WindowRepositoryType = domain::IEntityRepository<TWindowRepository, openGL::GlfwWindow, domain::entity::IdType>;
         WindowRepositoryType& windowRepository;
 
-        using WindowEventHubType = domain::events::WindowEventHubDispatcher<TDataContext>;
+        using WindowEventHubType = domain::events::window::Dispatcher<TDataContext>;
         WindowEventHubType& windowEventHubDispatcher;
 
     public:

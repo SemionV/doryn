@@ -1,7 +1,7 @@
 #pragma once
 
 #include "controller.h"
-#include "events/engineEventHub.h"
+#include "events/hub.h"
 #include "base/typeComponents.h"
 #include "object.h"
 #include "services/pipelineService.h"
@@ -32,11 +32,11 @@ namespace dory::domain
     class Engine: public IEngine<Engine<TDataContext, TPipelineRepository>, TDataContext>
     {
     private:
-        events::EngineEventHubDispatcher<TDataContext>& engineEventHub;
+        events::engine::Dispatcher<TDataContext>& engineEventHub;
         services::IPipelineRepository<TPipelineRepository, TDataContext>& pipelineRepository;
 
     public:
-        explicit Engine(events::EngineEventHubDispatcher<TDataContext>& engineEventHub,
+        explicit Engine(events::engine::Dispatcher<TDataContext>& engineEventHub,
                         services::IPipelineRepository<TPipelineRepository, TDataContext>& pipelineRepository):
                 engineEventHub(engineEventHub),
                 pipelineRepository(pipelineRepository)
@@ -62,12 +62,12 @@ namespace dory::domain
 
         void initializeImpl(TDataContext& context)
         {
-            engineEventHub.fire(context, events::InitializeEngineEventData{});
+            engineEventHub.fire(context, events::engine::Initialize{});
         };
 
         void stopImpl(TDataContext& context)
         {
-            engineEventHub.fire(context, events::StopEngineEventData{});
+            engineEventHub.fire(context, events::engine::Stop{});
 
             auto pipelineNodes = pipelineRepository.getPipeline();
 

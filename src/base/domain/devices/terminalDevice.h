@@ -1,33 +1,31 @@
 #pragma once
 
 #include "device.h"
-#include "base/domain/events/inputEventHub.h"
-#include "base/domain/events/scriptEventHub.h"
-#include "base/domain/events/applicationEventHub.h"
+#include "base/domain/events/hub.h"
 
 namespace dory::domain::devices
 {
-    template<typename TImpelementation, typename TOutputData>
+    template<typename TImplementation, typename TOutputData>
     struct ITerminal
     {
         void write(const TOutputData& data)
         {
-            toImplementation<TImpelementation>(this)->writeImpl(data);
+            toImplementation<TImplementation>(this)->writeImpl(data);
         }
 
         void writeLine(const TOutputData& data)
         {
-            toImplementation<TImpelementation>(this)->writeLineImpl(data);
+            toImplementation<TImplementation>(this)->writeLineImpl(data);
         }
 
         void enterCommandMode()
         {
-            toImplementation<TImpelementation>(this)->enterCommandModeImpl();
+            toImplementation<TImplementation>(this)->enterCommandModeImpl();
         }
 
         void exitCommandMode()
         {
-            toImplementation<TImpelementation>(this)->exitCommandModeImpl();
+            toImplementation<TImplementation>(this)->exitCommandModeImpl();
         }
     };
 
@@ -44,13 +42,13 @@ namespace dory::domain::devices
         using OutputDeviceType = IStandartOutputDevice<TOutputDevice, std::string>;
         OutputDeviceType& outputDevice;
 
-        using InputEventHubType = events::InputEventHub<TDataContext>;
+        using InputEventHubType = events::io::Hub<TDataContext>;
         InputEventHubType& inputEventHub;
 
-        using ScriptEventDispatcherType = events::ScriptEventDispatcher<TDataContext>;
+        using ScriptEventDispatcherType = events::script::Dispatcher<TDataContext>;
         ScriptEventDispatcherType& scriptEventDispatcher;
 
-        using ApplicationEventDispatcherType = events::ApplicationEventDispatcher<TDataContext>;
+        using ApplicationEventDispatcherType = events::application::Dispatcher<TDataContext>;
         ApplicationEventDispatcherType& applicationEventDispatcher;
 
     public:
@@ -98,7 +96,7 @@ namespace dory::domain::devices
 
         void connectImpl(TDataContext& context)
         {
-            inputEventHub.onKeyPress().attachHandler(this, &TerminalDevice::onKeyPress);
+            inputEventHub.attach(this, &TerminalDevice::onKeyPress);
         }
 
         void disconnectImpl(TDataContext& context)
@@ -155,7 +153,7 @@ namespace dory::domain::devices
                 auto command = currentCommand;
                 exitCommandModeImpl();
 
-                scriptEventDispatcher.fire(context, events::script::RunScriptEventData{command});
+                scriptEventDispatcher.fire(context, events::script::Run{command});
 
                 enterCommandModeImpl();
             }
@@ -180,7 +178,7 @@ namespace dory::domain::devices
 
         void onPressTerminate(TDataContext& context, events::io::KeyPressEvent eventData)
         {
-            applicationEventDispatcher.fire(context, events::ApplicationExitEventData{});
+            applicationEventDispatcher.fire(context, events::application::Exit{});
         }
 
         void onEnterSymbol(TDataContext& context, events::io::KeyPressEvent eventData)
@@ -191,7 +189,7 @@ namespace dory::domain::devices
             }
         }
 
-        void onKeyPress(TDataContext& context, events::io::KeyPressEvent eventData)
+        void onKeyPress(TDataContext& context, events::io::KeyPressEvent& eventData)
         {
             switch(eventData.keyCode)
             {

@@ -4,10 +4,7 @@
 
 #include "base/serviceContainer.h"
 #include "base/domain/configuration.h"
-#include "base/domain/events/engineEventHub.h"
-#include "base/domain/events/applicationEventHub.h"
-#include "base/domain/events/scriptEventHub.h"
-#include "base/domain/events/notificationEventHub.h"
+#include "base/domain/events/hub.h"
 #include "base/domain/entity.h"
 #include "base/domain/entityRepository.h"
 #include "base/domain/engine.h"
@@ -15,7 +12,6 @@
 #include "base/domain/services/viewService.h"
 #include "base/domain/devices/terminalDevice.h"
 #include "base/domain/services/scriptService.h"
-#include "base/domain/services/notificationService.h"
 #include "base/domain/services/configurationService.h"
 #include "base/domain/services/loggerService.h"
 #include "openGL/glfwWindow.h"
@@ -64,19 +60,16 @@ namespace testApp::registry
             WindowRepositoryType,
             RendererFactoryType>>;
     using ViewControllerFactoryType = ViewControllerType::FactoryType;
-    using EngineEventDispatcherType = events::EngineEventHubDispatcher<DataContextType>;
-    using EngineEventHubType = events::EngineEventHub<DataContextType>;
-    using WindowEventHubDispatcherType = events::WindowEventHubDispatcher<DataContextType>;
-    using WindowEventHubType = events::WindowEventHub<DataContextType>;
-    using ApplicationEventDispatcherType = events::ApplicationEventDispatcher<DataContextType>;
-    using ApplicationEventHubType = events::ApplicationEventHub<DataContextType>;
-    using StandartInputEventDispatcherType = events::InputEventDispatcher<DataContextType>;
-    using StandartInputEventHubType = events::InputEventHub<DataContextType>;
-    using ScriptEventDispatcherType = events::ScriptEventDispatcher<DataContextType>;
-    using ScriptEventHubType = events::ScriptEventHub<DataContextType>;
-    using ApplicationNotificationEventDispatcherType = events::notification::application::NotificationEventDispatcher<DataContextType>;
-    using ApplicationNotificationEventHubType = events::notification::application::NotificationEventDispatcher<DataContextType>;
-    using ScriptEventHubType = events::ScriptEventHub<DataContextType>;
+    using EngineEventDispatcherType = events::engine::Dispatcher<DataContextType>;
+    using EngineEventHubType = events::engine::Hub<DataContextType>;
+    using WindowEventHubDispatcherType = events::window::Dispatcher<DataContextType>;
+    using WindowEventHubType = events::window::Hub<DataContextType>;
+    using ApplicationEventDispatcherType = events::application::Dispatcher<DataContextType>;
+    using ApplicationEventHubType = events::application::Hub<DataContextType>;
+    using StandartInputEventDispatcherType = events::io::Dispatcher<DataContextType>;
+    using StandartInputEventHubType = events::io::Hub<DataContextType>;
+    using ScriptEventDispatcherType = events::script::Dispatcher<DataContextType>;
+    using ScriptEventHubType = events::script::Hub<DataContextType>;
     using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<WindowRepositoryType >>;
     using ViewServiceType = services::ViewService<services::ViewServiceDependencies<DataContextType,
                                                                                     ViewRepositoryType,
@@ -91,13 +84,10 @@ namespace testApp::registry
 #endif
     using TerminalDeviceType = devices::TerminalDevice<DataContextType, StandartIODeviceType>;
     using ScriptServiceType = services::ScriptService<DataContextType>;
-    using NotificationServiceType = services::NotificationService<DataContextType>;
 
     class Services
     {
     public:
-        ApplicationNotificationEventDispatcherType applicationNotificationsEventDispatcher;
-        ApplicationNotificationEventHubType& applicationNotificationsEventHub = applicationNotificationsEventDispatcher;
         EngineEventDispatcherType engineEventDispatcher;
         EngineEventHubType& engineEventHub = engineEventDispatcher;
         WindowEventHubDispatcherType windowEventDispatcher;
@@ -124,7 +114,6 @@ namespace testApp::registry
         StandartIODeviceType standartIODevice = StandartIODeviceType{standartIoEventDispatcher};
         TerminalDeviceType terminalDevice = TerminalDeviceType{standartIODevice, standartInputEventHub, scriptEventDispatcher, applicationEventDispatcher};
         ScriptServiceType scriptService = ScriptServiceType{};
-        NotificationServiceType notificationService = NotificationServiceType{ applicationNotificationsEventDispatcher };
 
         explicit Services(std::string configurationPath):
                 configurationPath(std::move(configurationPath))

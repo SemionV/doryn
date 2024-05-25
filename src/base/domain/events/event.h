@@ -249,15 +249,9 @@ namespace dory::domain::events
     {
     public:
         template<typename TEvent>
-        void charge(TEvent& eventData)
-        {
-            EventBufferController<TDataContext, TEvent>::eventBuffer.addCase(eventData);
-        }
-
-        template<typename TEvent>
         void charge(const TEvent& eventData)
         {
-            EventBufferController<TDataContext, const TEvent>::eventBuffer.addCase(eventData);
+            EventBufferController<TDataContext, TEvent>::eventBuffer.addCase(eventData);
         }
 
         void fireAll(TDataContext& context)

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "device.h"
-#include "base/domain/events/inputEventHub.h"
+#include "base/domain/events/hub.h"
 #include "base/win32/dependencies.h"
 
 namespace dory::domain::devices

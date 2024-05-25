@@ -31,15 +31,12 @@ namespace testApp
         {
             services.engineEventHub.attach(this, &Project::onInitializeEngine);
             services.engineEventHub.attach(this, &Project::onStopEngine);
-            services.applicationEventHub.onExit().attachHandler(this, &Project::onApplicationExit);
-            services.windowEventHub.onCloseWindow().attachHandler(this, &Project::onCloseWindow);
-            services.scriptEventHub.onRunScript().attachHandler(this, &Project::onRunScript);
-            services.applicationNotificationsEventHub.onNotification().attachHandler(this, &Project::onApplicationNotification);
-            services.applicationNotificationsEventHub.onProblem().attachHandler(this, &Project::onApplicationProblem);
-            services.applicationNotificationsEventHub.onDisaster().attachHandler(this, &Project::onApplicationDisaster);
+            services.applicationEventHub.attach(this, &Project::onApplicationExit);
+            services.windowEventHub.attach(this, &Project::onCloseWindow);
+            services.scriptEventHub.attach(this, &Project::onRunScript);
         }
 
-        void onInitializeEngine(DataContextType& context, const events::InitializeEngineEventData& eventData)
+        void onInitializeEngine(DataContextType& context, const events::engine::Initialize& eventData)
         {
             services.standartIODevice.connect(context);
             services.terminalDevice.connect(context);
@@ -49,14 +46,14 @@ namespace testApp
             services.scriptService.addScript("exit", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
             {
                 services.terminalDevice.writeLine("-\u001B[31mexit\u001B[0m-");
-                services.applicationEventDispatcher.fire(context, events::ApplicationExitEventData{});
+                services.applicationEventDispatcher.fire(context, events::application::Exit{});
             });
 
             services.pipelineManager.configurePipeline(context);
 
             auto supmitInputEvents = [this](auto referenceId, const auto& timeStep, DataContextType& context)
             {
-                services.standartIoEventDispatcher.submit(context);
+                services.standartIoEventDispatcher.fireAll(context);
             };
 
             auto flushOutput = [this](auto referenceId, const auto& timeStep, DataContextType& context)
@@ -81,7 +78,7 @@ namespace testApp
             services.viewService.createView(context, window.id, context.outputGroupNodeId);
         }
 
-        void onStopEngine(DataContextType& context, const events::StopEngineEventData& eventData)
+        void onStopEngine(DataContextType& context, const events::engine::Stop& eventData)
         {
             services.terminalDevice.exitCommandMode();
             services.terminalDevice.writeLine("Stop Engine...");
@@ -89,42 +86,25 @@ namespace testApp
             services.standartIODevice.disconnect(context);
         }
 
-        void onApplicationExit(DataContextType& context, const events::ApplicationExitEventData& eventData)
+        void onApplicationExit(DataContextType& context, const events::application::Exit& eventData)
         {
             frameService.endLoop();
         }
 
-        void onCloseWindow(DataContextType& context, events::CloseWindowEventData& eventData)
+        void onCloseWindow(DataContextType& context, events::window::Close& eventData)
         {
             services.windowService.closeWindow(eventData.windowId);
             services.viewService.destroyView(eventData.windowId);
 
             if(eventData.windowId == context.mainWindowId)
             {
-                services.applicationEventDispatcher.fire(context, events::ApplicationExitEventData{});
+                services.applicationEventDispatcher.fire(context, events::application::Exit{});
             }
         }
 
-        void onRunScript(DataContextType& context, const events::script::RunScriptEventData& eventData)
+        void onRunScript(DataContextType& context, const events::script::Run& eventData)
         {
             services.scriptService.runScript(context, eventData.scriptKey, eventData.arguments);
-        }
-
-        void onApplicationNotification(DataContextType& context, const events::notification::application::Notification& eventData)
-        {
-            services.terminalDevice.writeLine(eventData.message);
-        }
-
-        void onApplicationProblem(DataContextType& context, const events::notification::application::Problem& eventData)
-        {
-            auto message = "\u001B[34m" + eventData.message + "\u001B[0m";
-            services.terminalDevice.writeLine(message);
-        }
-
-        void onApplicationDisaster(DataContextType& context, const events::notification::application::Disaster& eventData)
-        {
-            auto message = "\u001B[31m" + eventData.message + "\u001B[0m";
-            services.terminalDevice.writeLine(message);
         }
     };
 }
