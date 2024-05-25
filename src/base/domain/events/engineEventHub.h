@@ -100,6 +100,13 @@ namespace dory::domain::events
             auto dispatcher = this->template getDispatcher<TEvent>();
             dispatcher(context, eventData);
         }
+
+        template<typename TEvent>
+        void fire(TDataContext& context, const TEvent& eventData)
+        {
+            auto dispatcher = this->template getDispatcher<const TEvent>();
+            dispatcher(context, eventData);
+        }
     };
 
     template<typename TEventHub>
