@@ -1,7 +1,6 @@
 # Development log
 
 Tasks:
-* Error handling and logging
 * Configuration subsystem
 * Static mapping of Vertex Attributes
 * Fill Buffers with mapped data
@@ -20,6 +19,9 @@ Tasks:
 * Networking/Mutliplayer
 * Build for MacOS
 * Voice control
+
+**25.05.24**
+* Task done: Error handling and logging
 
 **09.05.24**
 * Task done: YAML Serializer/Deserializer
