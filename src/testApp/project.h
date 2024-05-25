@@ -43,6 +43,8 @@ namespace testApp
             services.terminalDevice.writeLine("Start Engine...");
             services.terminalDevice.enterCommandMode();
 
+            services.logService.information("devices connected");
+
             services.scriptService.addScript("exit", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
             {
                 services.terminalDevice.writeLine("-\u001B[31mexit\u001B[0m-");
@@ -84,6 +86,8 @@ namespace testApp
             services.terminalDevice.writeLine("Stop Engine...");
             services.terminalDevice.disconnect(context);
             services.standartIODevice.disconnect(context);
+
+            services.logService.information("devices disconnected");
         }
 
         void onApplicationExit(DataContextType& context, const events::application::Exit& eventData)

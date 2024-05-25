@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "dependencies.h"
 
 #include "base/serviceContainer.h"
@@ -13,7 +15,7 @@
 #include "base/domain/devices/terminalDevice.h"
 #include "base/domain/services/scriptService.h"
 #include "base/domain/services/configurationService.h"
-#include "base/domain/services/loggerService.h"
+#include "base/domain/services/logService.h"
 #include "openGL/glfwWindow.h"
 #include "openGL/glfwWindowController.h"
 #include "openGL/viewControllerOpenGL.h"
@@ -101,6 +103,7 @@ namespace testApp::registry
 #endif
     using TerminalDeviceType = devices::TerminalDevice<DataContextType, StandartIODeviceType>;
     using ScriptServiceType = services::ScriptService<DataContextType>;
+    using LogServiceType = services::RotationLogService;
 
     class Services
     {
@@ -110,7 +113,8 @@ namespace testApp::registry
         CameraRepositoryType cameraRepository;
         ViewRepositoryType viewRepository;
         WindowRepositoryType windowRepository;
-        std::string configurationPath;
+        const std::string configurationPath;
+        const std::string logsPath;
         ConfigurationServiceType configurationService = ConfigurationServiceType{ configurationPath };
         ShaderServiceType shaderService = ShaderServiceType{ configurationService };
         WindowControllerFactoryType windowControllerFactory = WindowControllerFactoryType {windowRepository, events.windowDispatcher};
@@ -122,9 +126,11 @@ namespace testApp::registry
         StandartIODeviceType standartIODevice = StandartIODeviceType{events.standartIoDispatcher};
         TerminalDeviceType terminalDevice = TerminalDeviceType{standartIODevice, events.standartInput, events.scriptDispatcher, events.applicationDispatcher};
         ScriptServiceType scriptService = ScriptServiceType{};
+        LogServiceType logService = LogServiceType{"test app", logsPath};
 
-        explicit Services(std::string configurationPath):
-                configurationPath(std::move(configurationPath))
+        explicit Services(std::string configurationPath, std::string  logsPath):
+                configurationPath(std::move(configurationPath)),
+                logsPath(std::move(logsPath))
         {}
     };
 
@@ -132,7 +138,7 @@ namespace testApp::registry
     {
     public:
         ServicesLocal():
-                Services("configuration")
+                Services("configuration", "logs")
         {}
     };
 }

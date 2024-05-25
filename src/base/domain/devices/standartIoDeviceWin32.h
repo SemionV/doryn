@@ -12,7 +12,7 @@ namespace dory::domain::devices
             public IStandartOutputDevice<ConsoleIODeviceWin32<TDataContext>, std::string>
     {
     private:
-        using InputEventDispatcherType =  events::InputEventDispatcher<TDataContext>;
+        using InputEventDispatcherType =  events::window::Dispatcher<TDataContext>;
         InputEventDispatcherType& inputEventDispatcher;
 
         std::jthread pollingThread;
@@ -52,27 +52,27 @@ namespace dory::domain::devices
         {
             if(inputRecord.Event.KeyEvent.uChar.AsciiChar == 3)//CTRL+C
             {
-                inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Terminate });
+                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Terminate });
             }
             else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 27)//ESC
             {
-                inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Escape });
+                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Escape });
             }
             else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 8)//BACKSPACE
             {
-                inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Backspace });
+                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Backspace });
             }
             else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 13)//RETURN
             {
-                inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Return });
+                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Return });
             }
             else if(inputRecord.Event.KeyEvent.uChar.AsciiChar != 0)// Character
             {
-                inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Character, inputRecord.Event.KeyEvent.uChar.AsciiChar });
+                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Character, inputRecord.Event.KeyEvent.uChar.AsciiChar });
             }
             else
             {
-                inputEventDispatcher.addCase(context, events::io::KeyPressEvent{ events::io::KeyCode::Unknown });
+                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Unknown });
             }
         }
 

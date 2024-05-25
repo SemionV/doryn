@@ -31,3 +31,4 @@
 #include "ryml.hpp"
 #include "refl-cpp/include/refl-cpp/refl.hpp"
 #include "spdlog/spdlog.h"
+#include "spdlog/sinks/rotating_file_sink.h"
