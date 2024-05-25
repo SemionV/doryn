@@ -1,7 +1,6 @@
 #pragma once
 
-#include "base/typeComponents.h"
-#include "base/domain/events/eventBuffer.h"
+#include "event.h"
 
 namespace dory::domain::events
 {
