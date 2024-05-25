@@ -67,7 +67,7 @@ class WindowEventHub
         }
 };
 
-class WindowEventHubDispatcher: public WindowEventHub, public events::EventHubDispatcher<dory::domain::DataContext>
+class WindowEventHubDispatcher: public WindowEventHub
 {
     private:
         events::EventBuffer<DataContext, KeyPressed> keyPressedEventBuffer;
@@ -84,7 +84,7 @@ class WindowEventHubDispatcher: public WindowEventHub, public events::EventHubDi
             keyPressedEventBuffer.addCase(std::forward<KeyPressed>(clickData));
         }
 
-        void submit(DataContext& dataContext) override
+        void submit(DataContext& dataContext)
         {
             clickEventBuffer.submitCases(onClickDispatcher(), dataContext);
             keyPressedEventBuffer.submitCases(onKeyPressedDispatcher(), dataContext);

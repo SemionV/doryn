@@ -35,7 +35,7 @@ namespace dory::domain::events
     };
 
     template<class TDataContext>
-    class WindowEventHubDispatcher: public EventHubDispatcher<TDataContext>, public WindowEventHub<TDataContext>
+    class WindowEventHubDispatcher: public WindowEventHub<TDataContext>
     {
     private:
         EventBuffer<TDataContext, CloseWindowEventData> closeWindowEventBuffer;

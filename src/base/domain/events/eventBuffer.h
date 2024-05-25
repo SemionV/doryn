@@ -4,15 +4,6 @@
 
 namespace dory::domain::events
 {
-    template<class TDataContext>
-    class EventHubDispatcher
-    {
-        public:
-            virtual ~EventHubDispatcher() = default;
-
-            virtual void submit(TDataContext& context) = 0;
-    };
-
     template<typename TDataContext, typename TEventData>
     class EventBuffer
     {

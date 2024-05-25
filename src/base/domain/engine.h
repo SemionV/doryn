@@ -62,12 +62,14 @@ namespace dory::domain
 
         void initializeImpl(TDataContext& context)
         {
-            engineEventHub.fire(context, events::InitializeEngineEventData());
+            const auto event = events::InitializeEngineEventData{};
+            engineEventHub.fire(context, event);
         };
 
         void stopImpl(TDataContext& context)
         {
-            engineEventHub.fire(context, events::StopEngineEventData());
+            const auto event = events::StopEngineEventData{};
+            engineEventHub.fire(context, event);
 
             auto pipelineNodes = pipelineRepository.getPipeline();
 
