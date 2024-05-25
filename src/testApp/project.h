@@ -29,8 +29,8 @@ namespace testApp
     private:
         void attachEventHandlers()
         {
-            services.engineEventHub.on<const events::InitializeEngineEventData>().attachHandler(this, &Project::onInitializeEngine);
-            services.engineEventHub.on<const events::StopEngineEventData>().attachHandler(this, &Project::onStopEngine);
+            services.engineEventHub.attach(this, &Project::onInitializeEngine);
+            services.engineEventHub.attach(this, &Project::onStopEngine);
             services.applicationEventHub.onExit().attachHandler(this, &Project::onApplicationExit);
             services.windowEventHub.onCloseWindow().attachHandler(this, &Project::onCloseWindow);
             services.scriptEventHub.onRunScript().attachHandler(this, &Project::onRunScript);
