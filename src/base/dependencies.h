@@ -30,4 +30,4 @@
 #include "nlohmann/json.hpp"
 #include "ryml.hpp"
 #include "refl-cpp/include/refl-cpp/refl.hpp"
-#include "spdlog/include/spdlog/spdlog.h"
+#include "spdlog/spdlog.h"
