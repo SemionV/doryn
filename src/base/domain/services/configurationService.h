@@ -13,9 +13,9 @@ namespace dory::domain::services
     class IConfigurationLoader: Uncopyable, public StaticInterface<TImplementation>
     {
     public:
-        void load(const std::filesystem::path& configurationPath, TConfiguration& configuration)
+        bool load(const std::filesystem::path& configurationPath, TConfiguration& configuration)
         {
-            this->toImplementation()->loadImpl(configuration);
+            return this->toImplementation()->loadImpl(configurationPath, configuration);
         }
     };
 
@@ -33,21 +33,25 @@ namespace dory::domain::services
             logger(logger)
         {}
 
-        void loadImpl(const std::filesystem::path& configurationPath, ConfigurationType& configuration)
+        bool loadImpl(const std::filesystem::path& configurationPath, ConfigurationType& configuration)
         {
             try
             {
                 auto yamlSource = getTextFileContent(configurationPath);
                 dory::typeMap::yaml::YamlDeserializer::deserialize(yamlSource, configuration);
+
+                return true;
             }
             catch(const std::exception& e)
             {
-                logger.error("Cannot load configuration {0}", "!");
+                logger.error(fmt::format("Cannot load configuration: {0}", e.what()));
             }
             catch(...)
             {
-
+                logger.error("Cannot load configuration: unknown exception type");
             }
+
+            return false;
         }
     };
 }
