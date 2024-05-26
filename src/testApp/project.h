@@ -6,6 +6,11 @@ namespace testApp
 {
     namespace events = dory::domain::events;
 
+    struct LogStrings
+    {
+        const fmt::runtime_format_string<>& devicesConnected = fmt::runtime("Devices connected {0}");
+    };
+
     class Project: dory::Uncopyable
     {
     private:
@@ -43,11 +48,13 @@ namespace testApp
             services.terminalDevice.writeLine("Start Engine...");
             services.terminalDevice.enterCommandMode();
 
-            services.logService.information("devices connected");
+            auto logStrings = LogStrings{};
+            services.logService.information(logStrings.devicesConnected, "!");
+            services.logService.information(fmt::format("devices connected {0}: fmt", "!"));
 
             services.scriptService.addScript("exit", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
             {
-                services.terminalDevice.writeLine("-\u001B[31mexit\u001B[0m-");
+                services.terminalDevice.writeLine(fmt::format("-\u001B[31m{0}\u001B[0m-", "exit"));
                 services.events.applicationDispatcher.fire(context, events::application::Exit{});
             });
 

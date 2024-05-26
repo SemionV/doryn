@@ -2,6 +2,7 @@
 
 Tasks:
 * Configuration subsystem
+* I18n
 * Static mapping of Vertex Attributes
 * Fill Buffers with mapped data
 * Batch rendering
