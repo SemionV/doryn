@@ -89,11 +89,23 @@ REFL_TYPE(Player)
         REFL_FIELD(ranking)
 REFL_END
 
+struct LogSink
+{
+    std::string name;
+    int level;
+};
+
+REFL_TYPE(LogSink)
+        REFL_FIELD(name)
+        REFL_FIELD(level)
+REFL_END
+
 struct LogSettings
 {
     std::optional<int> size;
     std::optional<int> filesCount;
     std::optional<std::string> fileName;
+    std::optional<LogSink> sink;
 };
 
 REFL_TYPE(LogSettings)
@@ -350,7 +362,10 @@ TEST_CASE( "Deserialize YAML with missing fields", "[yaml]" )
 {
     std::string yaml = R"(
     size: 1024
-    fileName: "log.txt")";
+    fileName: "log.txt"
+    sink:
+      name: "testSink"
+      level: 3)";
 
     auto logSettings = LogSettings{};
     dory::typeMap::yaml::YamlDeserializer::deserialize(yaml, logSettings);
@@ -359,6 +374,10 @@ TEST_CASE( "Deserialize YAML with missing fields", "[yaml]" )
     REQUIRE(logSettings.fileName);
     REQUIRE(*logSettings.fileName == "log.txt");
     REQUIRE(!logSettings.filesCount);
+
+    REQUIRE(logSettings.sink);
+    REQUIRE((*logSettings.sink).name == "testSink");
+    REQUIRE((*logSettings.sink).level == 3);
 }
 
 TEST_CASE( "Deserialize YAML optional field", "[yaml]" )
