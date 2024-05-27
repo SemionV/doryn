@@ -60,7 +60,7 @@ namespace testApp
             multiLogger.information(fmt::format(logStrings.devicesConnected, "!!!"));
 
             auto loggerConfiguration2 = dory::configuration::Logger{"multi-logger-2"};
-            loggerConfiguration.stdoutLogger = dory::configuration::StdoutLogSink{};
+            loggerConfiguration2.stdoutLogger = dory::configuration::StdoutLogSink{};
             multiLogger.initialize(loggerConfiguration2);
             multiLogger.information(fmt::format(logStrings.devicesConnected, "-!!"));
 

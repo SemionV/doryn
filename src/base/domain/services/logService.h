@@ -147,7 +147,7 @@ namespace dory::domain::services
             }
             else
             {
-                consoleSink = std::make_shared<spdlog::sinks::null_sink_mt>();
+                rotationFileSink = std::make_shared<spdlog::sinks::null_sink_mt>();
             }
 
             this->logger = std::make_shared<spdlog::logger>(loggerConfiguration.name, spdlog::sinks_init_list{rotationFileSink, consoleSink});
