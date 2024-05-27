@@ -32,25 +32,10 @@ namespace dory::typeMap::yaml
         }
     };
 
-    struct DeserializerOptionalValuePolicy
-    {
-        template<typename T>
-        inline static bool exists(T& value, YamlContext& context)
-        {
-            auto current = context.current.top();
-            if(current.has_val() || current.is_seq() || current.is_map())
-            {
-                value = typename T::value_type{};
-                return true;
-            }
-
-            return false;
-        }
-    };
-
     struct DeserializerMemberPolicy
     {
-        inline static bool beginMember(const std::string_view& memberName, const std::size_t i, YamlContext& context)
+        template<class T>
+        inline static bool beginMember(const std::string_view& memberName, const T& value, const std::size_t i, YamlContext& context)
         {
             auto current = context.current.top();
             const auto& name = toRymlCStr(memberName);
@@ -59,6 +44,18 @@ namespace dory::typeMap::yaml
                 auto member = current[name];
                 context.current.push(member);
 
+                return true;
+            }
+
+            return false;
+        }
+
+        template<class T>
+        inline static bool beginMember(const std::string_view& memberName, std::optional<T>& value, const std::size_t i, YamlContext& context)
+        {
+            if(beginMember(memberName, *value, i, context))
+            {
+                value = T{};
                 return true;
             }
 
@@ -133,7 +130,6 @@ namespace dory::typeMap::yaml
     struct YamlDeserializationPolicies: public VisitorDefaultPolicies
     {
         using ValuePolicy = DeserializerValuePolicy;
-        using OptionalValuePolicy = DeserializerOptionalValuePolicy;
         using MemberPolicy = DeserializerMemberPolicy;
         using CollectionItemPolicy = DeserializerCollectionItemPolicy;
         using DynamicCollectionPolicyType = DeserializerDynamicCollectionPolicy;

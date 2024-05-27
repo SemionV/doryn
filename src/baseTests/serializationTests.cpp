@@ -557,3 +557,17 @@ TEST_CASE( "Serialize YAML complext object", "[yaml]" )
     REQUIRE(!yaml.empty());
     REQUIRE(yaml == yamlExpected);
 }
+
+TEST_CASE( "DSerialize YAML with optional fileds", "[yaml]" )
+{
+    auto yamlExpected = "size: 256\nfileName: test\nsink:\n  name: sink1\n  level: 2\n";
+
+    auto logSettings = LogSettings{};
+    logSettings.fileName = "test";
+    logSettings.size = 256;
+    logSettings.sink = LogSink{"sink1", 2};
+    auto yaml = dory::typeMap::yaml::YamlSerializer::serialize(logSettings);
+
+    REQUIRE(!yaml.empty());
+    REQUIRE(yaml == yamlExpected);
+}

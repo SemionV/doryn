@@ -19,25 +19,10 @@ namespace dory::typeMap::json
         }
     };
 
-    struct DeserializerOptionalValuePolicy
-    {
-        template<typename T>
-        inline static bool exists(T& value, JsonContext& context)
-        {
-            auto* currentJson = context.current.top();
-            if(!currentJson->empty())
-            {
-                value = typename T::value_type{};
-                return true;
-            }
-
-            return false;
-        }
-    };
-
     struct DeserializerMemberPolicy
     {
-        inline static bool beginMember(const std::string_view& memberName, const std::size_t i, JsonContext& context)
+        template<class T>
+        inline static bool beginMember(const std::string_view& memberName, T& value, const std::size_t i, JsonContext& context)
         {
             auto* currentJson = context.current.top();
             if(currentJson->contains(memberName))
@@ -45,6 +30,18 @@ namespace dory::typeMap::json
                 auto& memberJson = currentJson->at(memberName);
                 context.current.push(&memberJson);
 
+                return true;
+            }
+
+            return false;
+        }
+
+        template<class T>
+        inline static bool beginMember(const std::string_view& memberName, std::optional<T>& value, const std::size_t i, JsonContext& context)
+        {
+            if(beginMember(memberName, *value, i, context))
+            {
+                value = T{};
                 return true;
             }
 
@@ -128,7 +125,6 @@ namespace dory::typeMap::json
     struct JsonDeserializationPolicies: public VisitorDefaultPolicies
     {
         using ValuePolicy = DeserializerValuePolicy;
-        using OptionalValuePolicy = DeserializerOptionalValuePolicy;
         using MemberPolicy = DeserializerMemberPolicy;
         using CollectionItemPolicy = DeserializerCollectionItemPolicy;
         using DynamicCollectionPolicyType = DeserializerDynamicCollectionPolicy;

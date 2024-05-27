@@ -31,7 +31,8 @@ namespace dory::typeMap::json
 
     struct SerializerMemberPolicy
     {
-        inline static bool beginMember(const std::string_view& memberName, const std::size_t i, JsonContext& context)
+        template<class T>
+        inline static bool beginMember(const std::string_view& memberName, T& value, const std::size_t i, JsonContext& context)
         {
             auto* currentJson = context.current.top();
 
@@ -39,6 +40,17 @@ namespace dory::typeMap::json
             context.current.push(&memberJson);
 
             return true;
+        }
+
+        template<class T>
+        inline static bool beginMember(const std::string_view& memberName, const std::optional<T>& value, const std::size_t i, JsonContext& context)
+        {
+            if(value.has_value())
+            {
+                return beginMember(memberName, *value, i, context);
+            }
+
+            return false;
         }
 
         inline static void endMember(const bool lastMember, JsonContext& context)

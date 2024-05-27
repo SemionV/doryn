@@ -13,15 +13,6 @@ namespace dory::typeMap
         }
     };
 
-    struct DefaultOptionalValuePolicy
-    {
-        template<typename T, typename TContext>
-        inline static bool exists(T&& value, TContext& context)
-        {
-            return value.has_value();
-        }
-    };
-
     struct DefaultObjectPolicy
     {
         template<typename TContext>
@@ -37,8 +28,8 @@ namespace dory::typeMap
 
     struct DefaultMemberPolicy
     {
-        template<typename TContext>
-        inline static bool beginMember(const std::string_view& memberName, const std::size_t i, TContext& context)
+        template<typename TContext, typename T>
+        inline static bool beginMember(const std::string_view& memberName, T& value, const std::size_t i, TContext& context)
         {
             return true;
         }
@@ -102,7 +93,6 @@ namespace dory::typeMap
     struct VisitorDefaultPolicies
     {
         using ValuePolicy = DefaultValuePolicy;
-        using OptionalValuePolicy = DefaultOptionalValuePolicy;
         using ObjectPolicy = DefaultObjectPolicy;
         using MemberPolicy = DefaultMemberPolicy;
         using CollectionPolicy = DefaultCollectionPolicy;
@@ -132,10 +122,7 @@ namespace dory::typeMap
         requires(is_optional_v<std::decay_t<T>>)
         static void visit(T&& object, TContext& context)
         {
-            if(TPolicies::OptionalValuePolicy::exists(std::forward<T>(object), context))
-            {
-                visit(*object, context);
-            }
+            visit(*object, context);
         }
 
         template<typename T, typename TContext>
@@ -189,7 +176,7 @@ namespace dory::typeMap
             reflection::visitClassFields(object, [](auto& memberValue, const std::string_view& memberName,
                                                     const std::size_t i, const std::size_t memberCount, TContext& context)
             {
-                if(TPolicies::MemberPolicy::beginMember(memberName, i, context))
+                if(TPolicies::MemberPolicy::beginMember(memberName, memberValue, i, context))
                 {
                     visit(memberValue, context);
                     TPolicies::MemberPolicy::endMember(i == memberCount - 1, context);

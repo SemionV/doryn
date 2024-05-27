@@ -45,7 +45,8 @@ namespace dory::typeMap::yaml
 
     struct SerializerMemberPolicy
     {
-        inline static bool beginMember(const std::string_view& memberName, const std::size_t i, YamlContext& context)
+        template<class T>
+        inline static bool beginMember(const std::string_view& memberName, T& value, const std::size_t i, YamlContext& context)
         {
             auto current = context.current.top();
 
@@ -54,6 +55,17 @@ namespace dory::typeMap::yaml
             context.current.push(memberNode);
 
             return true;
+        }
+
+        template<class T>
+        inline static bool beginMember(const std::string_view& memberName, const std::optional<T>& value, const std::size_t i, YamlContext& context)
+        {
+            if(value.has_value())
+            {
+                return beginMember(memberName, *value, i, context);
+            }
+
+            return false;
         }
 
         inline static void endMember(const bool lastMember, YamlContext& context)
