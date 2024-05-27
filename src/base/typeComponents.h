@@ -45,6 +45,15 @@ namespace dory
     template<class T>
     constexpr bool is_dynamic_collection_v = is_deque<T>::value || is_vector<T>::value;
 
+    template<class A>
+    struct is_optional: std::false_type {};
+
+    template<class T>
+    struct is_optional<std::optional<T>>: std::true_type {};
+
+    template<class T>
+    constexpr bool is_optional_v = is_optional<T>::value;
+
     template<typename>
     struct array_size;
 

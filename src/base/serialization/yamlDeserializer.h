@@ -32,6 +32,34 @@ namespace dory::typeMap::yaml
         }
     };
 
+    struct DeserializerOptionalValuePolicy
+    {
+    private:
+        template<typename T>
+        inline static void readValue(T& value, ryml::NodeRef& node)
+        {
+            node >> value;
+        }
+
+        inline static void readValue(std::string& value, ryml::NodeRef& node)
+        {
+            value = std::string(node.val().str, node.val().len);
+        }
+
+    public:
+        template<typename T>
+        inline static void process(T& value, YamlContext& context)
+        {
+            auto current = context.current.top();
+            if(current.has_val())
+            {
+                typename T::value_type valueTemp;
+                readValue(valueTemp, current);
+                value = valueTemp;
+            }
+        }
+    };
+
     struct DeserializerMemberPolicy
     {
         inline static void beginMember(const std::string_view& memberName, const std::size_t i, YamlContext& context)
@@ -117,6 +145,7 @@ namespace dory::typeMap::yaml
     struct YamlDeserializationPolicies: public VisitorDefaultPolicies
     {
         using ValuePolicy = DeserializerValuePolicy;
+        using OptionalValuePolicy = DeserializerOptionalValuePolicy;
         using MemberPolicy = DeserializerMemberPolicy;
         using CollectionItemPolicy = DeserializerCollectionItemPolicy;
         using DynamicCollectionPolicyType = DeserializerDynamicCollectionPolicy;

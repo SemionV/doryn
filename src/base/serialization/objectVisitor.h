@@ -13,6 +13,14 @@ namespace dory::typeMap
         }
     };
 
+    struct DefaultOptionalValuePolicy
+    {
+        template<typename T, typename TContext>
+        inline static void process(T&& value, TContext& context)
+        {
+        }
+    };
+
     struct DefaultObjectPolicy
     {
         template<typename TContext>
@@ -92,6 +100,7 @@ namespace dory::typeMap
     struct VisitorDefaultPolicies
     {
         using ValuePolicy = DefaultValuePolicy;
+        using OptionalValuePolicy = DefaultOptionalValuePolicy;
         using ObjectPolicy = DefaultObjectPolicy;
         using MemberPolicy = DefaultMemberPolicy;
         using CollectionPolicy = DefaultCollectionPolicy;
@@ -115,6 +124,13 @@ namespace dory::typeMap
         static void visit(T&& object, TContext& context)
         {
             TPolicies::ValuePolicy::process(std::forward<T>(object), context);
+        }
+
+        template<typename T, typename TContext>
+        requires(is_optional_v<std::decay_t<T>>)
+        static void visit(T&& object, TContext& context)
+        {
+            TPolicies::OptionalValuePolicy::process(std::forward<T>(object), context);
         }
 
         template<typename T, typename TContext>
@@ -159,6 +175,7 @@ namespace dory::typeMap
         requires(std::is_class_v<std::decay_t<T>>
                  && !is_fixed_array_v<std::decay_t<T>>
                  && !std::is_same_v<std::decay_t<T>, std::string>
+                 && !is_optional_v<std::decay_t<T>>
                  && !is_dynamic_collection_v<std::decay_t<T>>)
         static void visit(T&& object, TContext& context)
         {
