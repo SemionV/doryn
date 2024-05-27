@@ -117,12 +117,14 @@ namespace dory::typeMap
     struct MemberPolicyTest
     {
         template<typename TContext>
-        inline static void beginMember(const std::string_view& memberName, const std::size_t i, TContext& context)
+        inline static bool beginMember(const std::string_view& memberName, const std::size_t i, TContext& context)
         {
             assert(std::holds_alternative<ObjectRepresentation>(context.currentValueNode->value));
             auto valueNode = std::make_shared<ValueNode>(context.currentValueNode);
             std::get<ObjectRepresentation>(context.currentValueNode->value).emplace(memberName, valueNode);
             context.currentValueNode = valueNode;
+
+            return true;
         }
 
         template<typename TContext>

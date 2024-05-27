@@ -106,12 +106,15 @@ struct LogSettings
     std::optional<int> filesCount;
     std::optional<std::string> fileName;
     std::optional<LogSink> sink;
+    std::optional<LogSink> sink2;
 };
 
 REFL_TYPE(LogSettings)
         REFL_FIELD(size)
         REFL_FIELD(filesCount)
         REFL_FIELD(fileName)
+        REFL_FIELD(sink)
+        REFL_FIELD(sink2)
 REFL_END
 
 REFL_TYPE(std::optional<int>)
@@ -119,6 +122,10 @@ REFL_END
 
 REFL_TYPE(std::optional<std::string>)
 REFL_END
+
+REFL_TYPE(std::optional<LogSink>)
+REFL_END
+
 
 TEST_CASE( "Deserialize vector of objects", "[json]" )
 {
@@ -378,6 +385,7 @@ TEST_CASE( "Deserialize YAML with missing fields", "[yaml]" )
     REQUIRE(logSettings.sink);
     REQUIRE((*logSettings.sink).name == "testSink");
     REQUIRE((*logSettings.sink).level == 3);
+    REQUIRE(!logSettings.sink2);
 }
 
 TEST_CASE( "Deserialize YAML optional field", "[yaml]" )

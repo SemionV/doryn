@@ -55,10 +55,12 @@ namespace dory::typeMap
     struct PrintMemberPolicy
     {
         template<typename TContext>
-        inline static void beginMember(const std::string_view& memberName, const std::size_t i, TContext& context)
+        inline static bool beginMember(const std::string_view& memberName, const std::size_t i, TContext& context)
         {
             JsonFormatting::printIndent(context);
             context.stream << "\"" << memberName << "\"" << ": ";
+
+            return true;
         }
 
         template<typename TContext>

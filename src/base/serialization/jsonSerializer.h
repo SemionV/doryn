@@ -31,12 +31,14 @@ namespace dory::typeMap::json
 
     struct SerializerMemberPolicy
     {
-        inline static void beginMember(const std::string_view& memberName, const std::size_t i, JsonContext& context)
+        inline static bool beginMember(const std::string_view& memberName, const std::size_t i, JsonContext& context)
         {
             auto* currentJson = context.current.top();
 
             auto& memberJson = currentJson->operator[](memberName);
             context.current.push(&memberJson);
+
+            return true;
         }
 
         inline static void endMember(const bool lastMember, JsonContext& context)

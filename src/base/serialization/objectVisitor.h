@@ -18,7 +18,7 @@ namespace dory::typeMap
         template<typename T, typename TContext>
         inline static bool exists(T&& value, TContext& context)
         {
-            return false;
+            return value.has_value();
         }
     };
 
@@ -38,8 +38,9 @@ namespace dory::typeMap
     struct DefaultMemberPolicy
     {
         template<typename TContext>
-        inline static void beginMember(const std::string_view& memberName, const std::size_t i, TContext& context)
+        inline static bool beginMember(const std::string_view& memberName, const std::size_t i, TContext& context)
         {
+            return true;
         }
 
         template<typename TContext>
@@ -188,9 +189,11 @@ namespace dory::typeMap
             reflection::visitClassFields(object, [](auto& memberValue, const std::string_view& memberName,
                                                     const std::size_t i, const std::size_t memberCount, TContext& context)
             {
-                TPolicies::MemberPolicy::beginMember(memberName, i, context);
-                visit(memberValue, context);
-                TPolicies::MemberPolicy::endMember(i == memberCount - 1, context);
+                if(TPolicies::MemberPolicy::beginMember(memberName, i, context))
+                {
+                    visit(memberValue, context);
+                    TPolicies::MemberPolicy::endMember(i == memberCount - 1, context);
+                }
             }, context);
 
             TPolicies::ObjectPolicy::endObject(context);

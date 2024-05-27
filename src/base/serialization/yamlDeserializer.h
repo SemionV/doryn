@@ -38,8 +38,7 @@ namespace dory::typeMap::yaml
         inline static bool exists(T& value, YamlContext& context)
         {
             auto current = context.current.top();
-            //TODO: introduce NodeRef wrapper to distinguish between non-existing nodes and existing
-            if(current.has_val())
+            if(current.has_val() || current.is_seq() || current.is_map())
             {
                 value = typename T::value_type{};
                 return true;
@@ -51,7 +50,7 @@ namespace dory::typeMap::yaml
 
     struct DeserializerMemberPolicy
     {
-        inline static void beginMember(const std::string_view& memberName, const std::size_t i, YamlContext& context)
+        inline static bool beginMember(const std::string_view& memberName, const std::size_t i, YamlContext& context)
         {
             auto current = context.current.top();
             const auto& name = toRymlCStr(memberName);
@@ -59,12 +58,11 @@ namespace dory::typeMap::yaml
             {
                 auto member = current[name];
                 context.current.push(member);
+
+                return true;
             }
-            else
-            {
-                //TODO: introduce NodeRef wrapper to distinguish between non-existing nodes and existing
-                context.current.push(current);
-            }
+
+            return false;
         }
 
         inline static void endMember(const bool lastMember, YamlContext& context)
