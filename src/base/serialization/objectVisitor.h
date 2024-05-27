@@ -16,8 +16,9 @@ namespace dory::typeMap
     struct DefaultOptionalValuePolicy
     {
         template<typename T, typename TContext>
-        inline static void process(T&& value, TContext& context)
+        inline static bool exists(T&& value, TContext& context)
         {
+            return false;
         }
     };
 
@@ -130,7 +131,10 @@ namespace dory::typeMap
         requires(is_optional_v<std::decay_t<T>>)
         static void visit(T&& object, TContext& context)
         {
-            TPolicies::OptionalValuePolicy::process(std::forward<T>(object), context);
+            if(TPolicies::OptionalValuePolicy::exists(std::forward<T>(object), context))
+            {
+                visit(*object, context);
+            }
         }
 
         template<typename T, typename TContext>
