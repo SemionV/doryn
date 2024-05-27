@@ -49,7 +49,7 @@ namespace testApp
             services.terminalDevice.enterCommandMode();
 
             auto logStrings = LogStrings{};
-            services.logService.information(logStrings.devicesConnected, "!");
+            services.logService.information(fmt::format(logStrings.devicesConnected, "!"));
             services.logService.information(fmt::format("devices connected {0}: fmt", "!"));
 
             services.scriptService.addScript("exit", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)

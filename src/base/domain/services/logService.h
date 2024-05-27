@@ -15,22 +15,10 @@ namespace dory::domain::services
             this->toImplementation()->traceImpl(message);
         }
 
-        template<typename T, typename... Ts>
-        void trace(T messageTemplate, Ts&&... parameters)
-        {
-            this->toImplementation()->traceImpl(messageTemplate, std::forward<Ts>(parameters)...);
-        }
-
         template<typename T>
         void debug(const T& message)
         {
             this->toImplementation()->debugImpl(message);
-        }
-
-        template<typename T, typename... Ts>
-        void debug(T messageTemplate, Ts&&... parameters)
-        {
-            this->toImplementation()->debugImpl(messageTemplate, std::forward<Ts>(parameters)...);
         }
 
         template<typename T>
@@ -39,22 +27,10 @@ namespace dory::domain::services
             this->toImplementation()->informationImpl(message);
         }
 
-        template<typename T, typename... Ts>
-        void information(const T& messageTemplate, Ts&&... parameters)
-        {
-            this->toImplementation()->informationImpl(messageTemplate, std::forward<Ts>(parameters)...);
-        }
-
         template<typename T>
         void warning(const T& message)
         {
             this->toImplementation()->warningImpl(message);
-        }
-
-        template<typename T, typename... Ts>
-        void warning(T messageTemplate, Ts&&... parameters)
-        {
-            this->toImplementation()->warningImpl(messageTemplate, std::forward<Ts>(parameters)...);
         }
 
         template<typename T>
@@ -63,22 +39,10 @@ namespace dory::domain::services
             this->toImplementation()->errorImpl(message);
         }
 
-        template<typename T, typename... Ts>
-        void error(T messageTemplate, Ts&&... parameters)
-        {
-            this->toImplementation()->errorImpl(messageTemplate, std::forward<Ts>(parameters)...);
-        }
-
         template<typename T>
         void critical(const T& message)
         {
             this->toImplementation()->criticalImpl(message);
-        }
-
-        template<typename T, typename... Ts>
-        void critical(T messageTemplate, Ts&&... parameters)
-        {
-            this->toImplementation()->criticalImpl(messageTemplate, std::forward<Ts>(parameters)...);
         }
     };
 
@@ -103,22 +67,10 @@ namespace dory::domain::services
             logger->trace(message);
         }
 
-        template<typename T, typename... Ts>
-        void traceImpl(T messageTemplate, Ts&&... parameters)
-        {
-            logger->trace(messageTemplate, std::forward<Ts>(parameters)...);
-        }
-
         template<typename T>
         void debugImpl(const T& message)
         {
             logger->debug(message);
-        }
-
-        template<typename T, typename... Ts>
-        void debugImpl(T messageTemplate, Ts&&... parameters)
-        {
-            logger->debug(messageTemplate, std::forward<Ts>(parameters)...);
         }
 
         template<typename T>
@@ -127,22 +79,10 @@ namespace dory::domain::services
             logger->info(message);
         }
 
-        template<typename T, typename... Ts>
-        void informationImpl(const T& messageTemplate, Ts&&... parameters)
-        {
-            logger->info(messageTemplate, std::forward<Ts>(parameters)...);
-        }
-
         template<typename T>
         void warningImpl(const T& message)
         {
             logger->warn(message);
-        }
-
-        template<typename T, typename... Ts>
-        void warningImpl(T messageTemplate, Ts&&... parameters)
-        {
-            logger->warn(messageTemplate, std::forward<Ts>(parameters)...);
         }
 
         template<typename T>
@@ -151,22 +91,10 @@ namespace dory::domain::services
             logger->error(message);
         }
 
-        template<typename T, typename... Ts>
-        void errorImpl(T messageTemplate, Ts&&... parameters)
-        {
-            logger->error(messageTemplate, std::forward<Ts>(parameters)...);
-        }
-
         template<typename T>
         void criticalImpl(const T& message)
         {
             logger->critical(message);
-        }
-
-        template<typename T, typename... Ts>
-        void criticalImpl(T messageTemplate, Ts&&... parameters)
-        {
-            logger->critical(messageTemplate, std::forward<Ts>(parameters)...);
         }
     };
 }
