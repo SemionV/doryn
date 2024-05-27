@@ -12,7 +12,7 @@ namespace dory::domain::devices
             public IStandartOutputDevice<ConsoleIODeviceWin32<TDataContext>, std::string>
     {
     private:
-        using InputEventDispatcherType =  events::window::Dispatcher<TDataContext>;
+        using InputEventDispatcherType =  events::io::Dispatcher<TDataContext>;
         InputEventDispatcherType& inputEventDispatcher;
 
         std::jthread pollingThread;

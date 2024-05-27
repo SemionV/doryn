@@ -91,9 +91,10 @@ namespace dory::domain::services
         std::shared_ptr<spdlog::logger> logger;
 
     public:
-        explicit RotationLogService(const std::string& loggerName, std::filesystem::path logsDirectory)
+        explicit RotationLogService(const std::string& loggerName, const std::filesystem::path& logsDirectory)
         {
-            logger = spdlog::rotating_logger_mt(loggerName, logsDirectory.append(baseFileName), maxSize, maxFiles);
+            auto path = std::filesystem::path{logsDirectory};
+            logger = spdlog::rotating_logger_mt(loggerName, path.append(baseFileName).string(), maxSize, maxFiles);
         }
 
         template<typename T>
