@@ -128,7 +128,7 @@ namespace testApp::registry
         ScriptServiceType scriptService = ScriptServiceType{};
         LogServiceType logService = LogServiceType{"test app", logsPath};
 
-        explicit Services(std::string configurationPath, std::string  logsPath):
+        explicit Services(std::string configurationPath, std::string logsPath):
                 configurationPath(std::move(configurationPath)),
                 logsPath(std::move(logsPath))
         {}

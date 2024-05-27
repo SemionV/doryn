@@ -5,22 +5,28 @@
 
 namespace dory::configuration
 {
-    struct RotationLogConfiguration
+    struct RotationLogSink
     {
-        std::string logFileName = "log.txt";
+        std::string logFileName = "logs/main.log";
         std::size_t maximumFileSize = 1048576 * 5;
         std::size_t maximumFilesCount = 3;
     };
 
-    struct LogSinks
+    struct StdoutLogSink
     {
-        std::optional<RotationLogConfiguration> rotationLogger;
+    };
+
+    struct Logger
+    {
+        std::string name;
+        std::optional<RotationLogSink> rotationLogger;
+        std::optional<StdoutLogSink> stdoutLogger;
     };
 
     struct LoggingConfiguration
     {
-        std::string logsDirectory = "logs";
-        LogSinks sinks;
+        Logger mainLogger;
+        Logger bootLogger;
     };
 
     struct Configuration

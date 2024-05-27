@@ -51,6 +51,19 @@ namespace testApp
             auto logStrings = LogStrings{};
             services.logService.information(fmt::format(logStrings.devicesConnected, "!"));
 
+            auto loggerConfiguration = dory::configuration::Logger{"multi-logger"};
+            loggerConfiguration.rotationLogger = dory::configuration::RotationLogSink{"logs/multi.log"};
+            loggerConfiguration.stdoutLogger = dory::configuration::StdoutLogSink{};
+            auto multiLogger = dory::domain::services::MultiSinkLogService{};
+            multiLogger.initialize(loggerConfiguration);
+            multiLogger.information(fmt::format(logStrings.devicesConnected, "!!"));
+            multiLogger.information(fmt::format(logStrings.devicesConnected, "!!!"));
+
+            auto loggerConfiguration2 = dory::configuration::Logger{"multi-logger-2"};
+            loggerConfiguration.stdoutLogger = dory::configuration::StdoutLogSink{};
+            multiLogger.initialize(loggerConfiguration2);
+            multiLogger.information(fmt::format(logStrings.devicesConnected, "-!!"));
+
             services.scriptService.addScript("exit", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
             {
                 services.terminalDevice.writeLine(fmt::format("-\u001B[31m{0}\u001B[0m-", "exit"));
