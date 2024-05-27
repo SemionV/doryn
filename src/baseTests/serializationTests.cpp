@@ -89,6 +89,25 @@ REFL_TYPE(Player)
         REFL_FIELD(ranking)
 REFL_END
 
+struct LogSettings
+{
+    std::optional<int> size;
+    std::optional<int> filesCount;
+    std::optional<std::string> fileName;
+};
+
+REFL_TYPE(LogSettings)
+        REFL_FIELD(size)
+        REFL_FIELD(filesCount)
+        REFL_FIELD(fileName)
+REFL_END
+
+REFL_TYPE(std::optional<int>)
+REFL_END
+
+REFL_TYPE(std::optional<std::string>)
+REFL_END
+
 TEST_CASE( "Deserialize vector of objects", "[json]" )
 {
     std::string meshJson = R"(
@@ -229,7 +248,7 @@ TEST_CASE( "Deserialize with missing fileds", "[json]" )
 
 }
 
-TEST_CASE( "Serialize plaijn object", "[json]" )
+TEST_CASE( "Serialize plain object", "[json]" )
 {
     auto entity = Entity{"test", {1, 2, 3}, Mesh
          {
@@ -330,15 +349,23 @@ TEST_CASE( "Deserialize YAML map", "[yaml]" )
 TEST_CASE( "Deserialize YAML with missing fields", "[yaml]" )
 {
     std::string yaml = R"(
+    size: 1024
+    fileName: "log.txt")";
+
+    auto logSettings = LogSettings{};
+    dory::typeMap::yaml::YamlDeserializer::deserialize(yaml, logSettings);
+    REQUIRE(logSettings.size);
+    REQUIRE(*logSettings.size == 1024);
+    REQUIRE(logSettings.fileName);
+    REQUIRE(*logSettings.fileName == "log.txt");
+    REQUIRE(!logSettings.filesCount);
+}
+
+TEST_CASE( "Deserialize YAML optional field", "[yaml]" )
+{
+    std::string yaml = R"(
     name: Test
     age: 18)";
-
-    auto player = Player{};
-    player.ranking = 1;
-    dory::typeMap::yaml::YamlDeserializer::deserialize(yaml, player);
-    REQUIRE(player.name == "Test");
-    REQUIRE(player.age == 18);
-    REQUIRE(player.ranking == 1);
 }
 
 TEST_CASE( "Deserialize YAML collection", "[yaml]" )

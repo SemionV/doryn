@@ -5,9 +5,27 @@
 
 namespace dory::configuration
 {
-    template<typename... Ts>
-    struct Configuration: public Ts...
+    struct RotationLogConfiguration
     {
+        std::string logFileName = "log.txt";
+        std::size_t maximumFileSize = 1048576 * 5;
+        std::size_t maximumFilesCount = 3;
+    };
+
+    struct LogSinks
+    {
+        std::optional<RotationLogConfiguration> rotationLogger;
+    };
+
+    struct LoggingConfiguration
+    {
+        std::string logsDirectory = "logs";
+        LogSinks sinks;
+    };
+
+    struct Configuration
+    {
+        LoggingConfiguration loggingConfiguration;
     };
 
     enum class ConfigurationError

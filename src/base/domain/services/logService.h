@@ -46,21 +46,13 @@ namespace dory::domain::services
         }
     };
 
-    class RotationLogService: public ILogService<RotationLogService>
+    template<typename TImplementation>
+    class LogService: public ILogService<TImplementation>
     {
-    private:
-        const std::size_t maxSize = 1048576 * 5;
-        const std::size_t maxFiles = 3;
-        const std::string baseFileName = "log.txt";
+    protected:
         std::shared_ptr<spdlog::logger> logger;
 
     public:
-        explicit RotationLogService(const std::string& loggerName, const std::filesystem::path& logsDirectory)
-        {
-            auto path = std::filesystem::path{logsDirectory};
-            logger = spdlog::rotating_logger_mt(loggerName, path.append(baseFileName).string(), maxSize, maxFiles);
-        }
-
         template<typename T>
         void traceImpl(const T& message)
         {
@@ -95,6 +87,20 @@ namespace dory::domain::services
         void criticalImpl(const T& message)
         {
             logger->critical(message);
+        }
+    };
+
+    class RotationLogService: public LogService<RotationLogService>
+    {
+    public:
+        explicit RotationLogService(const std::string& loggerName,
+                                    const std::filesystem::path& logsDirectory,
+                                    const std::string& logFileName = "log.txt",
+                                    const std::size_t maximumFileSize = 1048576 * 5,//5Mb
+                                    const std::size_t maximumFilesCount = 3)
+        {
+            auto path = std::filesystem::path{logsDirectory};
+            this->logger = spdlog::rotating_logger_mt(loggerName, path.append(logFileName).string(), maximumFileSize, maximumFilesCount);
         }
     };
 }
