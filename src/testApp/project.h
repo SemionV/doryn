@@ -25,12 +25,18 @@ namespace testApp
 
         int run()
         {
-            configuration.loggingConfiguration.configurationLogger.rotationLogger = dory::configuration::RotationLogSink{"boot.log"};
+            //0 level config
+            auto& bootLoggerConfig = configuration.loggingConfiguration.configurationLogger;
+            bootLoggerConfig.name = "boot";
+            bootLoggerConfig.rotationLogger = dory::configuration::RotationLogSink{"boot.log"};
+            bootLoggerConfig.stdoutLogger = dory::configuration::StdoutLogSink{};
 
-            services.logging.appConfigurationLogger.initialize(configuration.loggingConfiguration.configurationLogger,
-                                                               dory::makeOptionalRef(services.terminalDevice));
-
+            //init boot logger with 0 level config
+            services.logging.appConfigurationLogger.initialize(bootLoggerConfig, dory::makeOptionalRef(services.terminalDevice));
+            //load 1 level configuration
             services.configurationLoader.load(configuration.mainConfigurationFile, configuration);
+            //init main logger with current 1 level config
+            services.logging.appLogger.initialize(configuration.loggingConfiguration.mainLogger, dory::makeOptionalRef(services.terminalDevice));
 
             attachEventHandlers();
 
@@ -65,21 +71,6 @@ namespace testApp
 
             auto logStrings = LogStrings{};
             services.logging.appLogger.information(fmt::format(logStrings.devicesConnected, "!"));
-
-            services.terminalDevice.exitCommandMode();
-            auto loggerConfiguration = dory::configuration::Logger{"multi-logger"};
-            loggerConfiguration.rotationLogger = dory::configuration::RotationLogSink{"logs/multi.log"};
-            loggerConfiguration.stdoutLogger = dory::configuration::StdoutLogSink{};
-            auto multiLogger = dory::domain::services::MultiSinkLogService{};
-            multiLogger.initialize(loggerConfiguration, dory::makeOptionalRef(services.terminalDevice));
-            multiLogger.information(fmt::format(logStrings.devicesConnected, "!!"));
-            multiLogger.information(fmt::format(logStrings.devicesConnected, "!!!"));
-
-            auto loggerConfiguration2 = dory::configuration::Logger{"multi-logger-2"};
-            loggerConfiguration2.stdoutLogger = dory::configuration::StdoutLogSink{};
-            multiLogger.initialize(loggerConfiguration2, dory::OptionalReference<testApp::registry::TerminalDeviceType>{});
-            multiLogger.information(fmt::format(logStrings.devicesConnected, "-!!"));
-            services.terminalDevice.enterCommandMode();
 
             services.scriptService.addScript("exit", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
             {

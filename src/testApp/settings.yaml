@@ -1,1 +1,9 @@
 configurationDirectory: configuration
+loggingConfiguration:
+  mainLogger:
+    name: engine
+    rotationLogger:
+      logFileName: "logs/engine.log"
+      maximumFileSize: 5242880
+      maximumFilesCount: 3
+    stdoutLogger: {}
