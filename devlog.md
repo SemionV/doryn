@@ -3,21 +3,22 @@
 Tasks:
 * Configuration subsystem
 * I18n
+* Mouse picking
+* Multithreaded rendering
+* Dynamic module loading(plugin system)
+* Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
+* Networking/Mutliplayer
 * Static mapping of Vertex Attributes
 * Fill Buffers with mapped data
 * Batch rendering
 * Render Meshes
 * Camera Control
-* Mouse picking
 * Animation
 * Collision detection
-* Dynamic module loading(plugin system)
-* Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
 * Scene
 * Serialization of scene state
 * Spatial partition: https://youtube.com/watch?v=eED4bSkYCB8&si=uOxianrO-zNMLAG3, https://youtu.be/MzUxOe5x24w?si=3PLIEqPTq8w8RLet, https://youtu.be/4r_EvmPKOvY?si=iINNvyGsoYzdaftY, https://youtu.be/6BIfqfC1i7U?si=rJSwRj3xuANSJZ4o
 * Path finding
-* Networking/Mutliplayer
 * Build for MacOS
 * Voice control
 
