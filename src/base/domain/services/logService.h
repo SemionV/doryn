@@ -1,8 +1,11 @@
 #pragma once
 
+#include <utility>
+
 #include "base/dependencies.h"
 #include "base/typeComponents.h"
 #include "base/domain/configuration.h"
+#include "base/domain/devices/terminalDevice.h"
 
 namespace dory::domain::services
 {
@@ -123,15 +126,78 @@ namespace dory::domain::services
         }
     };
 
-    class MultiSinkLogService: public LogService<MultiSinkLogService>
+    template<typename TTerminal>
+    class TerminalSink: public spdlog::sinks::sink
     {
+    private:
+        std::unique_ptr<spdlog::sinks::sink> sink;
+
+        using TerminalType = devices::ITerminal<TTerminal>;
+        TerminalType& terminal;
+
     public:
+        explicit TerminalSink(std::unique_ptr<spdlog::sinks::sink> sink, TerminalType& terminal):
+            sink(std::move(sink)), terminal(terminal)
+        {}
+
+        ~TerminalSink() override = default;
+
+        void log(const spdlog::details::log_msg &msg) override
+        {
+            auto isCommandMode = terminal.isCommandMode();
+            if(isCommandMode)
+            {
+                terminal.exitCommandMode();
+            }
+
+            try
+            {
+                sink->log(msg);
+            }
+            catch(...)
+            {}
+
+            if(isCommandMode)
+            {
+                terminal.enterCommandMode();
+            }
+        }
+
+        void flush() override
+        {
+            sink->flush();
+        }
+
+        void set_pattern(const std::string &pattern) override
+        {
+            sink->set_pattern(pattern);
+        }
+
+        void set_formatter(std::unique_ptr<spdlog::formatter> sink_formatter) override
+        {
+            sink->set_formatter(std::move(sink_formatter));
+        }
+    };
+
+    template<typename TTerminal>
+    class MultiSinkLogService: public LogService<MultiSinkLogService<TTerminal>>
+    {
+    private:
+        using TerminalType = devices::ITerminal<TTerminal>;
+        TerminalType& terminal;
+
+    public:
+        explicit MultiSinkLogService(TerminalType& terminal):
+                terminal(terminal)
+        {}
+
         void initialize(const configuration::Logger& loggerConfiguration)
         {
             std::shared_ptr<spdlog::sinks::sink> consoleSink;
             if(loggerConfiguration.stdoutLogger)
             {
-                consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+                auto consoleSinkImpl = std::make_unique<spdlog::sinks::stdout_color_sink_mt>();
+                consoleSink = std::make_shared<TerminalSink<TTerminal>>(std::move(consoleSinkImpl), terminal);
             }
             else
             {

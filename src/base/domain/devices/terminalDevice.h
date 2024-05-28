@@ -5,7 +5,7 @@
 
 namespace dory::domain::devices
 {
-    template<typename TImplementation, typename TOutputData>
+    template<typename TImplementation, typename TOutputData = std::string>
     struct ITerminal
     {
         void write(const TOutputData& data)
@@ -27,12 +27,17 @@ namespace dory::domain::devices
         {
             toImplementation<TImplementation>(this)->exitCommandModeImpl();
         }
+
+        bool isCommandMode()
+        {
+            return toImplementation<TImplementation>(this)->isCommandModeImpl();
+        }
     };
 
     template<typename TDataContext, typename TOutputDevice>
     class TerminalDevice: Uncopyable,
             public IDevice<TerminalDevice<TDataContext, TOutputDevice>, TDataContext>,
-            public ITerminal<TerminalDevice<TDataContext, TOutputDevice>, std::string>
+            public ITerminal<TerminalDevice<TDataContext, TOutputDevice>>
     {
     private:
         const std::string commandModePrefix = "> ";
@@ -115,6 +120,11 @@ namespace dory::domain::devices
             currentCommand = "";
             commandMode = false;
             outputDevice.out("\n");
+        }
+
+        bool isCommandModeImpl()
+        {
+            return commandMode;
         }
 
     private:
