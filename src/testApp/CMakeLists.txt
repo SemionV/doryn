@@ -12,3 +12,4 @@ target_link_libraries(testApp dory-openGL)
 
 install(TARGETS testApp DESTINATION . COMPONENT Example)
 install(DIRECTORY configuration DESTINATION . COMPONENT Example)
+install(FILES settings.yaml DESTINATION . COMPONENT Example)

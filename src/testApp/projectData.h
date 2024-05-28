@@ -17,9 +17,4 @@ namespace testApp
             mainWindowId(dory::domain::entity::nullId)
         {}
     };
-
-    struct Configuration: public dory::configuration::Configuration
-    {
-
-    };
 }

@@ -16,7 +16,7 @@ namespace testApp
     private:
         using DataContextType = typename registry::DataContextType;
         registry::ConfigurationType configuration;
-        registry::Services services;
+        registry::Services services = registry::Services{configuration};
         registry::FrameServiceType frameService;
 
     public:
@@ -29,6 +29,8 @@ namespace testApp
 
             services.logging.appConfigurationLogger.initialize(configuration.loggingConfiguration.configurationLogger,
                                                                dory::makeOptionalRef(services.terminalDevice));
+
+            services.configurationLoader.load(configuration.mainConfigurationFile, configuration);
 
             attachEventHandlers();
 

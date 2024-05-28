@@ -43,7 +43,7 @@ namespace testApp::registry
     namespace configuration = dory::configuration;
 
     using DataContextType = ProjectDataContext;
-    using ConfigurationType = Configuration;
+    using ConfigurationType = dory::configuration::Configuration;
 
     struct Events
     {
@@ -112,18 +112,19 @@ namespace testApp::registry
 #endif
     using TerminalDeviceType = devices::TerminalDevice<DataContextType, StandartIODeviceType>;
     using ScriptServiceType = services::ScriptService<DataContextType>;
+    using ConfigurationLoaderType = services::YamlConfigurationLoader<ConfigurationType, Logging::LogServiceType>;
 
     class Services
     {
     public:
         Events events;
         Logging logging;
+        ConfigurationLoaderType configurationLoader = ConfigurationLoaderType{logging.appConfigurationLogger};
         PipelineRepositoryType pipelineRepository;
         CameraRepositoryType cameraRepository;
         ViewRepositoryType viewRepository;
         WindowRepositoryType windowRepository;
-        const std::string configurationPath;
-        ConfigurationServiceType configurationService = ConfigurationServiceType{ configurationPath };
+        ConfigurationServiceType configurationService;
         ShaderServiceType shaderService = ShaderServiceType{ configurationService };
         WindowControllerFactoryType windowControllerFactory = WindowControllerFactoryType {windowRepository, events.windowDispatcher};
         RendererFactoryType rendererFactory = RendererFactoryType { shaderService };
@@ -136,7 +137,7 @@ namespace testApp::registry
         ScriptServiceType scriptService = ScriptServiceType{};
 
         explicit Services(const ConfigurationType& configuration):
-                configurationPath(configuration.configurationDirectory)
+                configurationService(configuration)
         {}
     };
 }

@@ -37,6 +37,8 @@ namespace dory::domain::services
         {
             try
             {
+                logger.information(fmt::format("load configuration from: {0}", configurationPath.string()));
+
                 auto yamlSource = getTextFileContent(configurationPath);
                 dory::typeMap::yaml::YamlDeserializer::deserialize(yamlSource, configuration);
 
@@ -44,11 +46,11 @@ namespace dory::domain::services
             }
             catch(const std::exception& e)
             {
-                logger.error(fmt::format("Cannot load configuration: {0}", e.what()));
+                logger.error(fmt::format("cannot load configuration: {0}", e.what()));
             }
             catch(...)
             {
-                logger.error("Cannot load configuration: unknown exception type");
+                logger.error("cannot load configuration: unknown exception type");
             }
 
             return false;

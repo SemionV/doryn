@@ -32,7 +32,8 @@ namespace dory::configuration
     struct Configuration
     {
         LoggingConfiguration loggingConfiguration;
-        std::string configurationDirectory = "configuration";
+        std::string configurationDirectory;
+        std::string mainConfigurationFile = "settings.yaml";
     };
 
     enum class ConfigurationError
@@ -53,16 +54,16 @@ namespace dory::configuration
     class FileSystemBasedConfiguration: public IConfiguration<FileSystemBasedConfiguration>
     {
     private:
-        const std::filesystem::path configurationPath;
+        const Configuration& configuration;
 
     public:
-        explicit FileSystemBasedConfiguration(std::filesystem::path configurationPath):
-                configurationPath(std::move(configurationPath))
+        explicit FileSystemBasedConfiguration(const Configuration& configuration):
+                configuration(configuration)
         {}
 
         std::string getTextFileContentImpl(const std::filesystem::path& filename, const std::function<void(ConfigurationError)>& errorHandler = nullptr)
         {
-            auto path = configurationPath / filename.c_str();
+            auto path = std::filesystem::path{configuration.configurationDirectory} /= filename.c_str();
 
             auto stream = std::ifstream(path.generic_string());
             stream.exceptions(std::ios_base::badbit);
@@ -95,3 +96,29 @@ namespace dory::configuration
         }
     };
 }
+
+REFL_TYPE(dory::configuration::RotationLogSink)
+        REFL_FIELD(logFileName)
+        REFL_FIELD(maximumFileSize)
+        REFL_FIELD(maximumFilesCount)
+REFL_END
+
+REFL_TYPE(dory::configuration::StdoutLogSink)
+REFL_END
+
+REFL_TYPE(dory::configuration::Logger)
+        REFL_FIELD(name)
+        REFL_FIELD(rotationLogger)
+        REFL_FIELD(stdoutLogger)
+REFL_END
+
+REFL_TYPE(dory::configuration::LoggingConfiguration)
+        REFL_FIELD(mainLogger)
+        REFL_FIELD(configurationLogger)
+REFL_END
+
+REFL_TYPE(dory::configuration::Configuration)
+        REFL_FIELD(loggingConfiguration)
+        REFL_FIELD(configurationDirectory)
+        REFL_FIELD(mainConfigurationFile)
+REFL_END
