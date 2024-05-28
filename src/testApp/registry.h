@@ -43,6 +43,7 @@ namespace testApp::registry
     namespace configuration = dory::configuration;
 
     using DataContextType = ProjectDataContext;
+    using ConfigurationType = Configuration;
 
     struct Events
     {
@@ -67,6 +68,14 @@ namespace testApp::registry
         StandartInputType& standartInput = standartIoDispatcher;
         ScriptDispatcherType scriptDispatcher;
         ScriptType& script = scriptDispatcher;
+    };
+
+    struct Logging
+    {
+        using LogServiceType = services::MultiSinkLogService;
+
+        LogServiceType appConfigurationLogger;
+        LogServiceType appLogger;
     };
 
     using ConfigurationServiceType = configuration::FileSystemBasedConfiguration;
@@ -103,18 +112,17 @@ namespace testApp::registry
 #endif
     using TerminalDeviceType = devices::TerminalDevice<DataContextType, StandartIODeviceType>;
     using ScriptServiceType = services::ScriptService<DataContextType>;
-    using LogServiceType = services::RotationLogService;
 
     class Services
     {
     public:
         Events events;
+        Logging logging;
         PipelineRepositoryType pipelineRepository;
         CameraRepositoryType cameraRepository;
         ViewRepositoryType viewRepository;
         WindowRepositoryType windowRepository;
         const std::string configurationPath;
-        const std::string logsPath;
         ConfigurationServiceType configurationService = ConfigurationServiceType{ configurationPath };
         ShaderServiceType shaderService = ShaderServiceType{ configurationService };
         WindowControllerFactoryType windowControllerFactory = WindowControllerFactoryType {windowRepository, events.windowDispatcher};
@@ -126,19 +134,9 @@ namespace testApp::registry
         StandartIODeviceType standartIODevice = StandartIODeviceType{events.standartIoDispatcher};
         TerminalDeviceType terminalDevice = TerminalDeviceType{standartIODevice, events.standartInput, events.scriptDispatcher, events.applicationDispatcher};
         ScriptServiceType scriptService = ScriptServiceType{};
-        LogServiceType logService = LogServiceType{"test app", logsPath};
 
-        explicit Services(std::string configurationPath, std::string logsPath):
-                configurationPath(std::move(configurationPath)),
-                logsPath(std::move(logsPath))
-        {}
-    };
-
-    class ServicesLocal: public Services
-    {
-    public:
-        ServicesLocal():
-                Services("configuration", "logs")
+        explicit Services(const ConfigurationType& configuration):
+                configurationPath(configuration.configurationDirectory)
         {}
     };
 }

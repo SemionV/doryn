@@ -26,12 +26,13 @@ namespace dory::configuration
     struct LoggingConfiguration
     {
         Logger mainLogger;
-        Logger bootLogger;
+        Logger configurationLogger;
     };
 
     struct Configuration
     {
         LoggingConfiguration loggingConfiguration;
+        std::string configurationDirectory = "configuration";
     };
 
     enum class ConfigurationError

@@ -112,20 +112,6 @@ namespace dory::domain::services
         }
     };
 
-    class RotationLogService: public LogService<RotationLogService>
-    {
-    public:
-        explicit RotationLogService(const std::string& loggerName,
-                                    const std::filesystem::path& logsDirectory,
-                                    const std::string& logFileName = "main.log",
-                                    const std::size_t maximumFileSize = 1048576 * 5,//5Mb
-                                    const std::size_t maximumFilesCount = 3)
-        {
-            auto path = std::filesystem::path{logsDirectory};
-            this->logger = spdlog::rotating_logger_mt(loggerName, path.append(logFileName).string(), maximumFileSize, maximumFilesCount);
-        }
-    };
-
     template<typename TTerminal>
     class TerminalSink: public spdlog::sinks::sink
     {

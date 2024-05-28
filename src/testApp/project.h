@@ -15,12 +15,21 @@ namespace testApp
     {
     private:
         using DataContextType = typename registry::DataContextType;
-        registry::ServicesLocal services;
+        registry::ConfigurationType configuration;
+        registry::Services services;
         registry::FrameServiceType frameService;
 
     public:
+        Project(): services(configuration)
+        {}
+
         int run()
         {
+            configuration.loggingConfiguration.configurationLogger.rotationLogger = dory::configuration::RotationLogSink{"boot.log"};
+
+            services.logging.appConfigurationLogger.initialize(configuration.loggingConfiguration.configurationLogger,
+                                                               dory::makeOptionalRef(services.terminalDevice));
+
             attachEventHandlers();
 
             auto context = DataContextType{};
@@ -34,6 +43,8 @@ namespace testApp
     private:
         void attachEventHandlers()
         {
+            services.logging.appConfigurationLogger.information("attach event handlers");
+
             services.events.engine.attach(this, &Project::onInitializeEngine);
             services.events.engine.attach(this, &Project::onStopEngine);
             services.events.application.attach(this, &Project::onApplicationExit);
@@ -43,13 +54,15 @@ namespace testApp
 
         void onInitializeEngine(DataContextType& context, const events::engine::Initialize& eventData)
         {
+            services.logging.appConfigurationLogger.information("on: initialize engine");
+
             services.standartIODevice.connect(context);
             services.terminalDevice.connect(context);
             services.terminalDevice.writeLine("Start Engine...");
             services.terminalDevice.enterCommandMode();
 
             auto logStrings = LogStrings{};
-            services.logService.information(fmt::format(logStrings.devicesConnected, "!"));
+            services.logging.appLogger.information(fmt::format(logStrings.devicesConnected, "!"));
 
             services.terminalDevice.exitCommandMode();
             auto loggerConfiguration = dory::configuration::Logger{"multi-logger"};
@@ -108,7 +121,7 @@ namespace testApp
             services.terminalDevice.disconnect(context);
             services.standartIODevice.disconnect(context);
 
-            services.logService.information("devices disconnected");
+            services.logging.appLogger.information("devices disconnected");
         }
 
         void onApplicationExit(DataContextType& context, const events::application::Exit& eventData)
