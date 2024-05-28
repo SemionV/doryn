@@ -1,17 +1,17 @@
 # Development log
 
 Tasks:
-* Configuration subsystem
 * I18n
-* Mouse picking
-* Multithreaded rendering
 * Dynamic module loading(plugin system)
 * Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
+* Mouse picking
+* Multithreaded rendering
 * Networking/Mutliplayer
-* Static mapping of Vertex Attributes
-* Fill Buffers with mapped data
-* Batch rendering
-* Render Meshes
+* OpenGL Renderer
+  * Static mapping of Vertex Attributes
+  * Fill Buffers with mapped data
+  * Batch rendering
+  * Render Meshes
 * Camera Control
 * Animation
 * Collision detection
@@ -21,6 +21,9 @@ Tasks:
 * Path finding
 * Build for MacOS
 * Voice control
+
+**28.05.24**
+* Task done: Configuration subsystem
 
 **25.05.24**
 * Task done: Error handling and logging

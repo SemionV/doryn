@@ -28,7 +28,7 @@ namespace testApp
             //0 level config
             auto& bootLoggerConfig = configuration.loggingConfiguration.configurationLogger;
             bootLoggerConfig.name = "boot";
-            bootLoggerConfig.rotationLogger = dory::configuration::RotationLogSink{"boot.log"};
+            bootLoggerConfig.rotationLogger = dory::configuration::RotationLogSink{"logs/boot.log"};
             bootLoggerConfig.stdoutLogger = dory::configuration::StdoutLogSink{};
 
             //init boot logger with 0 level config
