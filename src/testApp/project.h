@@ -55,14 +55,14 @@ namespace testApp
             auto loggerConfiguration = dory::configuration::Logger{"multi-logger"};
             loggerConfiguration.rotationLogger = dory::configuration::RotationLogSink{"logs/multi.log"};
             loggerConfiguration.stdoutLogger = dory::configuration::StdoutLogSink{};
-            auto multiLogger = dory::domain::services::MultiSinkLogService<testApp::registry::TerminalDeviceType>{ services.terminalDevice };
-            multiLogger.initialize(loggerConfiguration);
+            auto multiLogger = dory::domain::services::MultiSinkLogService{};
+            multiLogger.initialize(loggerConfiguration, dory::makeOptionalRef(services.terminalDevice));
             multiLogger.information(fmt::format(logStrings.devicesConnected, "!!"));
             multiLogger.information(fmt::format(logStrings.devicesConnected, "!!!"));
 
             auto loggerConfiguration2 = dory::configuration::Logger{"multi-logger-2"};
             loggerConfiguration2.stdoutLogger = dory::configuration::StdoutLogSink{};
-            multiLogger.initialize(loggerConfiguration2);
+            multiLogger.initialize(loggerConfiguration2, dory::OptionalReference<testApp::registry::TerminalDeviceType>{});
             multiLogger.information(fmt::format(logStrings.devicesConnected, "-!!"));
             services.terminalDevice.enterCommandMode();
 

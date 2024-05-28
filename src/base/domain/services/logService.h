@@ -179,25 +179,17 @@ namespace dory::domain::services
         }
     };
 
-    template<typename TTerminal>
-    class MultiSinkLogService: public LogService<MultiSinkLogService<TTerminal>>
+    class MultiSinkLogService: public LogService<MultiSinkLogService>
     {
-    private:
-        using TerminalType = devices::ITerminal<TTerminal>;
-        TerminalType& terminal;
-
     public:
-        explicit MultiSinkLogService(TerminalType& terminal):
-                terminal(terminal)
-        {}
-
-        void initialize(const configuration::Logger& loggerConfiguration)
+        template<typename TTerminal>
+        void initialize(const configuration::Logger& loggerConfiguration, OptionalReference<TTerminal> terminal)
         {
             std::shared_ptr<spdlog::sinks::sink> consoleSink;
-            if(loggerConfiguration.stdoutLogger)
+            if(loggerConfiguration.stdoutLogger && terminal)
             {
                 auto consoleSinkImpl = std::make_unique<spdlog::sinks::stdout_color_sink_mt>();
-                consoleSink = std::make_shared<TerminalSink<TTerminal>>(std::move(consoleSinkImpl), terminal);
+                consoleSink = std::make_shared<TerminalSink<TTerminal>>(std::move(consoleSinkImpl), *terminal);
             }
             else
             {

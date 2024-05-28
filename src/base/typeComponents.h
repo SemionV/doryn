@@ -98,6 +98,15 @@ namespace dory
     template <std::string_view const&... Strs>
     static constexpr auto JoinStringLiterals = JoinStrings<Strs...>::value;
 
+    template<typename T>
+    using OptionalReference = std::optional<std::reference_wrapper<T>>;
+
+    template<class T>
+    OptionalReference<T> makeOptionalRef(T& ref)
+    {
+        return OptionalReference<T>{std::ref(ref)};
+    }
+
     class Uncopyable
     {
     public:
