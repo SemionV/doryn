@@ -34,13 +34,16 @@ namespace testApp
 
             //init boot logger with 0 level config
             services.logging.appConfigurationLogger.initialize(bootLoggerConfig, dory::makeOptionalRef(services.terminalDevice));
+
             //load 1 level configuration
             services.configurationLoader.load(configuration.mainConfigurationFile, configuration);
+
             //load additional settings(theme)
             for(const auto& settingsFile : configuration.settingFiles)
             {
                 services.configurationLoader.load(settingsFile, configuration);
             }
+
             //init main logger with current config
             services.logging.appLogger.initialize(configuration.loggingConfiguration.mainLogger, dory::makeOptionalRef(services.terminalDevice));
 
@@ -76,7 +79,7 @@ namespace testApp
             services.terminalDevice.enterCommandMode();
 
             auto logStrings = LogStrings{};
-            services.logging.appLogger.information(fmt::format(logStrings.devicesConnected, "!"));
+            services.logging.appLogger.information(fmt::format(logStrings.devicesConnected, ":)"));
 
             services.scriptService.addScript("exit", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
             {
