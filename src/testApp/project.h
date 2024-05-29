@@ -26,6 +26,7 @@ namespace testApp
         int run()
         {
             //0 level config
+            configuration.mainConfigurationFile = "settings.yaml";
             auto& bootLoggerConfig = configuration.loggingConfiguration.configurationLogger;
             bootLoggerConfig.name = "boot";
             bootLoggerConfig.rotationLogger = dory::configuration::RotationLogSink{"logs/boot.log"};
@@ -35,7 +36,12 @@ namespace testApp
             services.logging.appConfigurationLogger.initialize(bootLoggerConfig, dory::makeOptionalRef(services.terminalDevice));
             //load 1 level configuration
             services.configurationLoader.load(configuration.mainConfigurationFile, configuration);
-            //init main logger with current 1 level config
+            //load additional settings(theme)
+            for(const auto& settingsFile : configuration.settingFiles)
+            {
+                services.configurationLoader.load(settingsFile, configuration);
+            }
+            //init main logger with current config
             services.logging.appLogger.initialize(configuration.loggingConfiguration.mainLogger, dory::makeOptionalRef(services.terminalDevice));
 
             attachEventHandlers();

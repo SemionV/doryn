@@ -78,7 +78,6 @@ namespace testApp::registry
         LogServiceType appLogger;
     };
 
-    using ConfigurationServiceType = configuration::FileSystemBasedConfiguration;
     using CameraRepositoryType = domain::EntityRepository<entity::Camera>;
     using ViewRepositoryType = domain::EntityRepository<entity::View>;
     using WindowRepositoryType = domain::EntityRepository<openGL::GlfwWindow>;
@@ -88,7 +87,7 @@ namespace testApp::registry
     using WindowControllerType = openGL::GlfwWindowController<DataContextType, WindowRepositoryType>;
     using WindowControllerFactoryType = WindowControllerType::FactoryType;
     using PipelineManagerType = services::PipelineManager<DataContextType, WindowControllerFactoryType, PipelineRepositoryType>;
-    using ShaderServiceType = openGL::services::ShaderService<ConfigurationServiceType>;
+    using ShaderServiceType = openGL::services::ShaderService;
     using RendererType = openGL::Renderer<openGL::RendererDependencies<ShaderServiceType>>;
     using RendererFactoryType = RendererType::FactoryType;
     using ViewControllerType = openGL::ViewControllerOpenGL<openGL::ViewControllerDependencies<DataContextType,
@@ -124,8 +123,7 @@ namespace testApp::registry
         CameraRepositoryType cameraRepository;
         ViewRepositoryType viewRepository;
         WindowRepositoryType windowRepository;
-        ConfigurationServiceType configurationService;
-        ShaderServiceType shaderService = ShaderServiceType{ configurationService };
+        ShaderServiceType shaderService;
         WindowControllerFactoryType windowControllerFactory = WindowControllerFactoryType {windowRepository, events.windowDispatcher};
         RendererFactoryType rendererFactory = RendererFactoryType { shaderService };
         ViewControllerFactoryType viewControllerFactory = ViewControllerFactoryType{ rendererFactory, viewRepository, windowRepository };
@@ -137,7 +135,7 @@ namespace testApp::registry
         ScriptServiceType scriptService = ScriptServiceType{};
 
         explicit Services(const ConfigurationType& configuration):
-                configurationService(configuration)
+                shaderService(configuration.shaderLoader)
         {}
     };
 }

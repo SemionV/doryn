@@ -1,4 +1,5 @@
-configurationDirectory: configuration
+settingFiles:
+  - configuration/settings.yaml
 loggingConfiguration:
   mainLogger:
     name: engine

@@ -1,4 +1,7 @@
-#include "baseTests/dependencies.h"
+#include "baseTests/dependencies.h"REFL_TYPE(dory::configuration::LoggingConfiguration)
+        REFL_FIELD(mainLogger)
+        REFL_FIELD(configurationLogger)
+REFL_END
 #include "base/serialization/structures/dataLayout.h"
 
 struct Point

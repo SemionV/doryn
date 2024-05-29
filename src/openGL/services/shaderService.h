@@ -42,16 +42,14 @@ namespace dory::openGL::services
         }
     };
 
-    template<typename TConfiguration>
-    class ShaderService: public IShaderService<ShaderService<TConfiguration>>
+    class ShaderService: public IShaderService<ShaderService>
     {
     private:
-        using ConfigurationType = dory::configuration::IConfiguration<TConfiguration>;
-        ConfigurationType& configuration;
+        const configuration::ShaderLoader& shaderLoaderSettings;
 
     public:
-        explicit ShaderService(ConfigurationType& configuration):
-            configuration(configuration)
+        explicit ShaderService(const configuration::ShaderLoader& shaderLoaderSettings):
+            shaderLoaderSettings(shaderLoaderSettings)
         {}
 
         void loadProgramImpl(graphics::Program& program, const std::function<void(ShaderServiceError&)>& errorHandler)
@@ -64,7 +62,7 @@ namespace dory::openGL::services
             {
                 auto& shader = shaders[i];
 
-                shader.sourceCode = configuration.getTextFileContent(shader.key);
+                shader.sourceCode = dory::getTextFileContent(std::filesystem::path{shaderLoaderSettings.shadersDirectory} /= shader.key);
 
                 auto shaderId = shader.id = glCreateShader(shader.type);
                 const char* shaderSource = shader.sourceCode.c_str();

@@ -53,78 +53,26 @@ REFL_TYPE(dory::configuration::LoggingConfiguration)
 REFL_END
 
 namespace dory::configuration {
+    struct ShaderLoader
+    {
+        std::string shadersDirectory;
+    };
+}
+REFL_TYPE(dory::configuration::ShaderLoader)
+        REFL_FIELD(shadersDirectory)
+REFL_END
+
+namespace dory::configuration {
     struct Configuration
     {
+        std::vector<std::string> settingFiles;
         LoggingConfiguration loggingConfiguration;
-        std::string configurationDirectory;
-        std::string mainConfigurationFile = "settings.yaml";
+        std::string mainConfigurationFile;
+        ShaderLoader shaderLoader;
     };
 }
 REFL_TYPE(dory::configuration::Configuration)
+        REFL_FIELD(settingFiles)
         REFL_FIELD(loggingConfiguration)
-        REFL_FIELD(configurationDirectory)
-        REFL_FIELD(mainConfigurationFile)
+        REFL_FIELD(shaderLoader)
 REFL_END
-
-namespace dory::configuration
-{
-    enum class ConfigurationError
-    {
-        FileNotFound
-    };
-
-    template<typename TImplementation>
-    class IConfiguration: Uncopyable, public StaticInterface<TImplementation>
-    {
-    public:
-        std::string getTextFileContent(const std::filesystem::path& filename, const std::function<void(ConfigurationError)>& errorHandler = nullptr)
-        {
-            return this->toImplementation()->getTextFileContentImpl(filename, errorHandler);
-        }
-    };
-
-    class FileSystemBasedConfiguration: public IConfiguration<FileSystemBasedConfiguration>
-    {
-    private:
-        const Configuration& configuration;
-
-    public:
-        explicit FileSystemBasedConfiguration(const Configuration& configuration):
-                configuration(configuration)
-        {}
-
-        std::string getTextFileContentImpl(const std::filesystem::path& filename, const std::function<void(ConfigurationError)>& errorHandler = nullptr)
-        {
-            auto path = std::filesystem::path{configuration.configurationDirectory} /= filename.c_str();
-
-            auto stream = std::ifstream(path.generic_string());
-            stream.exceptions(std::ios_base::badbit);
-
-            if(!stream.is_open())
-            {
-                if(errorHandler)
-                {
-                    errorHandler(ConfigurationError::FileNotFound);
-                }
-                else
-                {
-                    throw std::ios_base::failure("file does not exist");
-                }
-
-                return {};
-            }
-
-            auto result = std::string();
-
-            constexpr auto read_size = std::size_t(4096);
-            auto buffer = std::string(read_size, '\0');
-            while (stream.read(& buffer[0], read_size))
-            {
-                result.append(buffer, 0, stream.gcount());
-            }
-            result.append(buffer, 0, stream.gcount());
-
-            return result;
-        }
-    };
-}
