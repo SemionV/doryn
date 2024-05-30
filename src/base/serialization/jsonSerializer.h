@@ -88,7 +88,7 @@ namespace dory::typeMap::json
         }
     };
 
-    struct SerializerDynamicCollectionPolicy
+    struct SerializerContainerPolicy
     {
         template<typename T>
         inline static void beginCollection(T& collection, JsonContext& context)
@@ -137,7 +137,7 @@ namespace dory::typeMap::json
         using MemberPolicy = SerializerMemberPolicy;
         using CollectionPolicy = SerializerCollectionPolicy;
         using CollectionItemPolicy = SerializerCollectionItemPolicy;
-        using DynamicCollectionPolicyType = SerializerDynamicCollectionPolicy;
+        using ContainerPolicyType = SerializerContainerPolicy;
     };
 
     class JsonSerializer

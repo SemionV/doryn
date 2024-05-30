@@ -86,26 +86,25 @@ namespace dory::typeMap::yaml
         }
     };
 
-    struct DeserializerDynamicCollectionPolicy
+    struct DeserializerContainerPolicy
     {
         template<typename T>
         inline static void beginCollection(T& collection, YamlContext& context)
         {
-            context.previousDynamicCollectionIndex = context.dynamicCollectionIndex;
-            context.dynamicCollectionIndex = 0;
+            context.collectionIndexesStack.push(0);
         }
 
         template<typename T>
         inline static auto nextItem(T& collection, YamlContext& context)
         {
             auto current = context.current.top();
-            c4::yml::id_type numChildren = current.num_children();
-            if(context.dynamicCollectionIndex < numChildren && (current.is_seq() || current.is_map()))
+            auto& index = context.collectionIndexesStack.top();
+            if(index < current.num_children() && (current.is_seq() || current.is_map()))
             {
-                auto itemNode = current.at(context.dynamicCollectionIndex);
+                auto itemNode = current.at(index);
 
                 context.current.push(itemNode);
-                ++context.dynamicCollectionIndex;
+                ++index;
 
                 auto& item = insertItem(collection, itemNode);
                 return std::optional{std::ref(item)};
@@ -144,8 +143,7 @@ namespace dory::typeMap::yaml
         template<typename T>
         inline static void endCollection(T& collection, YamlContext& context)
         {
-            context.dynamicCollectionIndex = context.previousDynamicCollectionIndex;
-            context.previousDynamicCollectionIndex = 0;
+            context.collectionIndexesStack.pop();
         }
     };
 
@@ -154,7 +152,7 @@ namespace dory::typeMap::yaml
         using ValuePolicy = DeserializerValuePolicy;
         using MemberPolicy = DeserializerMemberPolicy;
         using CollectionItemPolicy = DeserializerCollectionItemPolicy;
-        using DynamicCollectionPolicyType = DeserializerDynamicCollectionPolicy;
+        using ContainerPolicyType = DeserializerContainerPolicy;
     };
 
     class YamlDeserializer

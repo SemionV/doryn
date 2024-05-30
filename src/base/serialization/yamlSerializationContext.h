@@ -7,8 +7,8 @@ namespace dory::typeMap::yaml
     struct YamlContext
     {
         std::stack<ryml::NodeRef> current;
-        std::size_t dynamicCollectionIndex = 0;
-        std::size_t previousDynamicCollectionIndex = 0;
+        std::stack<std::size_t> collectionIndexesStack;
+        std::stack<std::queue<std::string>> dictionaryKeysStack;
 
         explicit YamlContext(ryml::NodeRef root)
         {

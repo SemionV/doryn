@@ -66,7 +66,7 @@ namespace dory::typeMap
         }
     };
 
-    struct DefaultDynamicCollectionPolicy
+    struct DefaultContainerPolicy
     {
         template<typename T, typename TContext>
         inline static void beginCollection(T& collection, TContext& context)
@@ -97,7 +97,7 @@ namespace dory::typeMap
         using MemberPolicy = DefaultMemberPolicy;
         using CollectionPolicy = DefaultCollectionPolicy;
         using CollectionItemPolicy = DefaultCollectionItemPolicy;
-        using DynamicCollectionPolicyType = DefaultDynamicCollectionPolicy;
+        using ContainerPolicyType = DefaultContainerPolicy;
     };
 
     template<typename TPolicies = VisitorDefaultPolicies>
@@ -155,19 +155,19 @@ namespace dory::typeMap
         requires(is_dynamic_collection_v<std::decay_t<T>> || is_dictionary_v<std::decay_t<T>>)
         static void visit(T&& object, TContext& context)
         {
-            TPolicies::DynamicCollectionPolicyType::beginCollection(std::forward<T>(object), context);
+            TPolicies::ContainerPolicyType::beginCollection(std::forward<T>(object), context);
 
-            auto item = TPolicies::DynamicCollectionPolicyType::nextItem(std::forward<T>(object), context);
+            auto item = TPolicies::ContainerPolicyType::nextItem(std::forward<T>(object), context);
             while(item)
             {
                 auto valueRef = *item;
 
                 visit(valueRef.get(), context);
-                TPolicies::DynamicCollectionPolicyType::endItem(valueRef, std::forward<T>(object), context);
-                item = TPolicies::DynamicCollectionPolicyType::nextItem(std::forward<T>(object), context);
+                TPolicies::ContainerPolicyType::endItem(valueRef, std::forward<T>(object), context);
+                item = TPolicies::ContainerPolicyType::nextItem(std::forward<T>(object), context);
             }
 
-            TPolicies::DynamicCollectionPolicyType::endCollection(std::forward<T>(object), context);
+            TPolicies::ContainerPolicyType::endCollection(std::forward<T>(object), context);
         }
 
         template<typename T, typename TContext>

@@ -109,34 +109,85 @@ namespace dory::typeMap::yaml
         }
     };
 
-    struct SerializerDynamicCollectionPolicy
+    struct SerializerContainerPolicy
     {
-        template<typename T>
-        inline static void beginCollection(T& collection, YamlContext& context)
+        template<typename TCollection>
+        requires(is_dynamic_collection_v<TCollection>)
+        inline static void beginCollection(TCollection& collection, YamlContext& context)
         {
             auto current = context.current.top();
             current |= c4::yml::NodeType_e::SEQ;
+            context.collectionIndexesStack.push(0);
+        }
+        template<typename TCollection>
+        requires(is_dictionary_v<TCollection>)
+        inline static void beginCollection(TCollection& collection, YamlContext& context)
+        {
+            auto current = context.current.top();
+            current |= c4::yml::NodeType_e::MAP;
 
-            context.previousDynamicCollectionIndex = context.dynamicCollectionIndex;
-            context.dynamicCollectionIndex = 0;
+            auto& keys = context.dictionaryKeysStack.emplace();
+            for(auto& pair : collection)
+            {
+                keys.emplace(pair.first);
+            }
         }
 
         template<typename T>
-        inline static std::optional<std::reference_wrapper<const typename T::value_type>> nextItem(T& collection, YamlContext& context)
+        inline static auto nextItem(T& collection, YamlContext& context)
         {
             auto current = context.current.top();
-            if(context.dynamicCollectionIndex < collection.size())
+            if(itemsLeft(collection, context))
             {
-                auto& item = collection[context.dynamicCollectionIndex];
-                auto itemNode = current.append_child();
-                context.current.push(itemNode);
-
-                ++context.dynamicCollectionIndex;
-
-                return {std::reference_wrapper{item}};
+                auto& item = getItem(collection, context, current);
+                return std::optional{std::ref(item)};
             }
 
-            return {};
+            return std::optional<std::reference_wrapper<CollectionValueTypeType<T>>>{};
+        }
+
+        template<typename TCollection>
+        requires(is_dynamic_collection_v<TCollection>)
+        inline static bool itemsLeft(TCollection& collection, YamlContext& context)
+        {
+            return context.collectionIndexesStack.top() < collection.size();
+        }
+
+        template<typename TCollection>
+        requires(is_dynamic_collection_v<TCollection>)
+        inline static auto& getItem(TCollection& collection, YamlContext& context, ryml::NodeRef& containerNode)
+        {
+            auto& index = context.collectionIndexesStack.top();
+            auto& item = collection[index];
+            ++index;
+
+            auto itemNode = containerNode.append_child();
+            context.current.push(itemNode);
+
+            return item;
+        }
+
+        template<typename TCollection>
+        requires(is_dictionary_v<TCollection>)
+        inline static bool itemsLeft(TCollection& collection, YamlContext& context)
+        {
+            auto keys = context.dictionaryKeysStack.top();
+            return !keys.empty() && collection.contains(keys.front());
+        }
+
+        template<typename TCollection>
+        requires(is_dictionary_v<TCollection>)
+        inline static auto& getItem(TCollection& collection, YamlContext& context, ryml::NodeRef& containerNode)
+        {
+            auto keys = context.dictionaryKeysStack.top();
+            auto key = keys.front();
+            keys.pop();
+
+            auto itemNode = containerNode.append_child();
+            itemNode.set_key(toRymlCStr(key));
+            context.current.push(itemNode);
+
+            return collection[key];
         }
 
         template<typename T>
@@ -145,11 +196,17 @@ namespace dory::typeMap::yaml
             context.current.pop();
         }
 
-        template<typename T>
-        inline static void endCollection(T& collection, YamlContext& context)
+        template<typename TCollection>
+        requires(is_dynamic_collection_v<TCollection>)
+        inline static void endCollection(TCollection& collection, YamlContext& context)
         {
-            context.dynamicCollectionIndex = context.previousDynamicCollectionIndex;
-            context.previousDynamicCollectionIndex = 0;
+            context.collectionIndexesStack.pop();
+        }
+        template<typename TCollection>
+        requires(is_dictionary_v<TCollection>)
+        inline static void endCollection(TCollection& collection, YamlContext& context)
+        {
+            context.dictionaryKeysStack.pop();
         }
     };
 
@@ -160,7 +217,7 @@ namespace dory::typeMap::yaml
         using MemberPolicy = SerializerMemberPolicy;
         using CollectionPolicy = SerializerCollectionPolicy;
         using CollectionItemPolicy = SerializerCollectionItemPolicy;
-        using DynamicCollectionPolicyType = SerializerDynamicCollectionPolicy;
+        using ContainerPolicyType = SerializerContainerPolicy;
     };
 
     class YamlSerializer
