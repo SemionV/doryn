@@ -2,16 +2,16 @@
 
 Tasks:
 * I18n
+* Mouse picking(redirect event to the corresponding event hub of a view)
 * Dynamic module loading(plugin system)
 * Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
-* Mouse picking
-* Multithreaded rendering
-* Networking/Mutliplayer
 * OpenGL Renderer
   * Static mapping of Vertex Attributes
   * Fill Buffers with mapped data
   * Batch rendering
   * Render Meshes
+* Multithreaded rendering
+* Networking/Mutliplayer
 * Camera Control
 * Animation
 * Collision detection
@@ -21,6 +21,9 @@ Tasks:
 * Path finding
 * Build for MacOS
 * Voice control
+
+**30.05.24**
+* Task done: Support of dictionaries in YAML and JSON(needed to configure i18n and other resources)
 
 **28.05.24**
 * Task done: Configuration subsystem

@@ -43,7 +43,7 @@ namespace dory
     constexpr bool is_deque_v = is_deque<T>::value;
 
     template<class T>
-    constexpr bool is_dynamic_collection_v = is_deque_v<T> || is_vector_v<T>;
+    constexpr bool is_dynamic_collection_v = is_deque_v<std::decay_t<T>> || is_vector_v<std::decay_t<T>>;
 
     template<class T>
     struct is_map: std::false_type {};
@@ -64,7 +64,7 @@ namespace dory
     constexpr bool is_unordered_map_v = is_unordered_map<T>::value;
 
     template<class T>
-    constexpr bool is_dictionary_v = is_unordered_map_v<T> || is_map_v<T>;
+    constexpr bool is_dictionary_v = is_unordered_map_v<std::decay_t<T>> || is_map_v<std::decay_t<T>>;
 
     template<class A>
     struct is_optional: std::false_type {};

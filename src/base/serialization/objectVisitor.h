@@ -152,7 +152,7 @@ namespace dory::typeMap
         }
 
         template<typename T, typename TContext>
-        requires(is_dynamic_collection_v<std::decay_t<T>> || is_dictionary_v<std::decay_t<T>>)
+        requires(is_dynamic_collection_v<T> || is_dictionary_v<T>)
         static void visit(T&& object, TContext& context)
         {
             TPolicies::ContainerPolicyType::beginCollection(std::forward<T>(object), context);
@@ -175,9 +175,9 @@ namespace dory::typeMap
                  && !is_fixed_array_v<std::decay_t<T>>
                  && !std::is_same_v<std::decay_t<T>, std::string>
                  && !is_optional_v<std::decay_t<T>>
-                 && !is_dynamic_collection_v<std::decay_t<T>>
-                 && !is_pair_v<std::decay_t<T>>
-                 && !is_dictionary_v<std::decay_t<T>>)
+                 && !is_dynamic_collection_v<T>
+                 && !is_dictionary_v<T>
+                 && !is_pair_v<std::decay_t<T>>)
         static void visit(T&& object, TContext& context)
         {
             TPolicies::ObjectPolicy::beginObject(context);
