@@ -96,25 +96,47 @@ namespace dory::typeMap::yaml
         }
 
         template<typename T>
-        inline static std::optional<std::reference_wrapper<typename T::value_type>> nextItem(T& collection, YamlContext& context)
+        inline static auto nextItem(T& collection, YamlContext& context)
         {
             auto current = context.current.top();
-            if(current.is_seq() && context.dynamicCollectionIndex < current.num_children())
+            c4::yml::id_type numChildren = current.num_children();
+            if(context.dynamicCollectionIndex < numChildren && (current.is_seq() || current.is_map()))
             {
                 auto itemNode = current.at(context.dynamicCollectionIndex);
+
                 context.current.push(itemNode);
                 ++context.dynamicCollectionIndex;
 
-                auto& item = collection.emplace_back(typename T::value_type{});
-
-                return {std::ref(item)};
+                auto& item = insertItem(collection, itemNode);
+                return std::optional{std::ref(item)};
             }
 
-            return {};
+            return std::optional<decltype(std::ref(insertItem(std::declval<T&>(), std::declval<const ryml::NodeRef&>())))>{};
+        }
+
+        template<typename TCollection>
+        requires(is_dynamic_collection_v<TCollection>)
+        inline static auto& insertItem(TCollection& collection, const ryml::NodeRef& node)
+        {
+            return collection.emplace_back(typename TCollection::value_type{});
+        }
+
+        template<typename TCollection>
+        requires(is_dictionary_v<TCollection>)
+        inline static auto& insertItem(TCollection& collection, const ryml::NodeRef& node)
+        {
+            auto nodeKey = node.key();
+            auto key = std::string(nodeKey.str, nodeKey.len);
+            if(collection.contains(key))
+            {
+                return collection[key];
+            }
+
+            return collection[key] = typename TCollection::mapped_type{};
         }
 
         template<typename T>
-        inline static void endItem(std::reference_wrapper<typename T::value_type> item, T& collection, YamlContext& context)
+        inline static void endItem(auto item, T& collection, YamlContext& context)
         {
             context.current.pop();
         }

@@ -43,7 +43,28 @@ namespace dory
     constexpr bool is_deque_v = is_deque<T>::value;
 
     template<class T>
-    constexpr bool is_dynamic_collection_v = is_deque<T>::value || is_vector<T>::value;
+    constexpr bool is_dynamic_collection_v = is_deque_v<T> || is_vector_v<T>;
+
+    template<class T>
+    struct is_map: std::false_type {};
+
+    template<class K, class T>
+    struct is_map<std::map<K, T>>: std::true_type {};
+
+    template<class T>
+    constexpr bool is_map_v = is_map<T>::value;
+
+    template<class T>
+    struct is_unordered_map: std::false_type {};
+
+    template<class K, class T>
+    struct is_unordered_map<std::unordered_map<K, T>>: std::true_type {};
+
+    template<class T>
+    constexpr bool is_unordered_map_v = is_unordered_map<T>::value;
+
+    template<class T>
+    constexpr bool is_dictionary_v = is_unordered_map_v<T> || is_map_v<T>;
 
     template<class A>
     struct is_optional: std::false_type {};
@@ -53,6 +74,15 @@ namespace dory
 
     template<class T>
     constexpr bool is_optional_v = is_optional<T>::value;
+
+    template<class T>
+    struct is_pair: std::false_type {};
+
+    template<class K, class T>
+    struct is_pair<std::pair<K, T>>: std::true_type {};
+
+    template<class T>
+    constexpr bool is_pair_v = is_pair<T>::value;
 
     template<typename>
     struct array_size;

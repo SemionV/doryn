@@ -66,6 +66,8 @@ namespace dory::configuration {
     struct Configuration
     {
         std::vector<std::string> settingFiles;
+        std::map<std::string, std::vector<std::string>> i18nSets;
+        std::string activeI18nSet;
         LoggingConfiguration loggingConfiguration;
         std::string mainConfigurationFile;
         ShaderLoader shaderLoader;
@@ -73,6 +75,8 @@ namespace dory::configuration {
 }
 REFL_TYPE(dory::configuration::Configuration)
         REFL_FIELD(settingFiles)
+        REFL_FIELD(i18nSets)
+        REFL_FIELD(activeI18nSet)
         REFL_FIELD(loggingConfiguration)
         REFL_FIELD(shaderLoader)
 REFL_END
