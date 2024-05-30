@@ -93,6 +93,26 @@ namespace dory
         static size_t const size = N;
     };
 
+    template<class T>
+    struct CollectionValueType;
+
+    template<class T>
+    requires(is_dynamic_collection_v<T>)
+    struct CollectionValueType<T>
+    {
+        using Type = typename T::value_type;
+    };
+
+    template<class T>
+    requires(is_dictionary_v<T>)
+    struct CollectionValueType<T>
+    {
+        using Type = typename T::mapped_type;
+    };
+
+    template<class T>
+    using CollectionValueTypeType = CollectionValueType<T>::Type;
+
     constexpr std::size_t getStringLength(const char* string)
     {
         std::size_t length = 0;

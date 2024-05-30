@@ -111,7 +111,7 @@ namespace dory::typeMap::yaml
                 return std::optional{std::ref(item)};
             }
 
-            return std::optional<decltype(std::ref(insertItem(std::declval<T&>(), std::declval<const ryml::NodeRef&>())))>{};
+            return std::optional<std::reference_wrapper<CollectionValueTypeType<T>>>{};
         }
 
         template<typename TCollection>
