@@ -172,7 +172,7 @@ namespace dory::typeMap::yaml
         requires(is_dictionary_v<TCollection>)
         inline static bool itemsLeft(TCollection& collection, YamlContext& context)
         {
-            auto keys = context.dictionaryKeysStack.top();
+            auto& keys = context.dictionaryKeysStack.top();
             return !keys.empty() && collection.contains(keys.front());
         }
 
@@ -180,19 +180,19 @@ namespace dory::typeMap::yaml
         requires(is_dictionary_v<TCollection>)
         inline static auto& getItem(TCollection& collection, YamlContext& context, ryml::NodeRef& containerNode)
         {
-            auto keys = context.dictionaryKeysStack.top();
-            auto key = keys.front();
+            auto& keys = context.dictionaryKeysStack.top();
+            auto& key = keys.front();
             keys.pop();
 
             auto itemNode = containerNode.append_child();
             itemNode.set_key(toRymlCStr(key));
             context.current.push(itemNode);
 
-            return collection[key];
+            return collection.at(key);
         }
 
         template<typename T>
-        inline static void endItem(std::reference_wrapper<const typename T::value_type> item, T& collection, YamlContext& context)
+        inline static void endItem(auto& item, T& collection, YamlContext& context)
         {
             context.current.pop();
         }

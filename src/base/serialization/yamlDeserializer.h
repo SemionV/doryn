@@ -135,7 +135,7 @@ namespace dory::typeMap::yaml
         }
 
         template<typename T>
-        inline static void endItem(auto item, T& collection, YamlContext& context)
+        inline static void endItem(auto& item, T& collection, YamlContext& context)
         {
             context.current.pop();
         }

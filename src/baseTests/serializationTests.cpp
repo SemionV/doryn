@@ -46,9 +46,6 @@ REFL_TYPE(Mesh)
     REFL_FIELD(vertices)
 REFL_END
 
-REFL_TYPE(std::optional<Mesh>)
-REFL_END
-
 struct Entity
 {
     std::string name;
@@ -67,9 +64,6 @@ struct Scene
     std::string name;
     std::vector<Entity> entities;
 };
-
-REFL_TYPE(std::vector<Entity>)
-REFL_END
 
 REFL_TYPE(Scene)
         REFL_FIELD(name)
@@ -116,16 +110,6 @@ REFL_TYPE(LogSettings)
         REFL_FIELD(sink)
         REFL_FIELD(sink2)
 REFL_END
-
-REFL_TYPE(std::optional<int>)
-REFL_END
-
-REFL_TYPE(std::optional<std::string>)
-REFL_END
-
-REFL_TYPE(std::optional<LogSink>)
-REFL_END
-
 
 TEST_CASE( "Deserialize vector of objects", "[json]" )
 {
@@ -484,6 +468,20 @@ TEST_CASE( "Deserialize YAML complex object", "[yaml]" )
     REQUIRE(scene.entities[1].mesh.vertices[1][2] == 6);
 }
 
+TEST_CASE( "Deserialize YAML simple dictionary", "[yaml]" )
+{
+    std::string yaml = R"(
+    key1: value1
+    key2: value2)";
+
+    auto dictionary = dory::typeMap::yaml::YamlDeserializer::deserialize<std::map<std::string, std::string>>(yaml);
+    REQUIRE(dictionary.size() == 2);
+    REQUIRE(dictionary.contains("key1"));
+    REQUIRE(dictionary["key1"] == "value1");
+    REQUIRE(dictionary.contains("key2"));
+    REQUIRE(dictionary["key2"] == "value2");
+}
+
 TEST_CASE( "Serialize YAML map", "[yaml]" )
 {
     std::string yamlExpected = "name: Test\nage: 18\nranking: 5\n";
@@ -558,7 +556,7 @@ TEST_CASE( "Serialize YAML complext object", "[yaml]" )
     REQUIRE(yaml == yamlExpected);
 }
 
-TEST_CASE( "DSerialize YAML with optional fileds", "[yaml]" )
+TEST_CASE( "Serialize YAML with optional fields", "[yaml]" )
 {
     auto yamlExpected = "size: 256\nfileName: test\nsink:\n  name: sink1\n  level: 2\n";
 
@@ -567,6 +565,21 @@ TEST_CASE( "DSerialize YAML with optional fileds", "[yaml]" )
     logSettings.size = 256;
     logSettings.sink = LogSink{"sink1", 2};
     auto yaml = dory::typeMap::yaml::YamlSerializer::serialize(logSettings);
+
+    REQUIRE(!yaml.empty());
+    REQUIRE(yaml == yamlExpected);
+}
+
+TEST_CASE( "Serialize YAML simple dictionary", "[yaml]" )
+{
+    auto yamlExpected = "key1: value1\nkey2: value2\n";
+
+    auto dictionary = std::map<std::string, std::string>{
+            {"key1", "value1"},
+            {"key2", "value2"}
+    };
+
+    auto yaml = dory::typeMap::yaml::YamlSerializer::serialize(dictionary);
 
     REQUIRE(!yaml.empty());
     REQUIRE(yaml == yamlExpected);
