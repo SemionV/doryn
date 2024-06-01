@@ -111,110 +111,49 @@ namespace dory::typeMap::yaml
         }
     };
 
-    struct SerializerContainerPolicy2: public ContainerPolicy<SerializerContainerPolicy2, TreeStructureContext<ryml::NodeRef>>
-    {
-    };
-
-    struct SerializerContainerPolicy
+    struct SerializerContainerPolicy: public ContainerPolicy<SerializerContainerPolicy, TreeStructureContext<ryml::NodeRef>>
     {
         template<typename TCollection>
-        requires(is_dynamic_collection_v<TCollection>)
-        inline static void beginCollection(TCollection& collection, YamlContext& context)
+        inline static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
         {
-            auto current = context.parents.top();
-            current |= c4::yml::NodeType_e::SEQ;
-            context.collectionIndexesStack.push(0);
+            auto currentNode = parents.top();
+            currentNode |= c4::yml::NodeType_e::SEQ;
+            size = collection.size();
         }
 
-        template<typename TCollection>
-        requires(is_dictionary_v<TCollection>)
-        inline static void beginCollection(TCollection& collection, YamlContext& context)
+        template<typename TCollection, typename TKeysContainer>
+        inline static void buildDictionaryKeysList(TCollection& collection, std::stack<NodeType>& parents, TKeysContainer& keys)
         {
-            auto current = context.parents.top();
-            current |= c4::yml::NodeType_e::MAP;
+            auto currentNode = parents.top();
+            currentNode |= c4::yml::NodeType_e::MAP;
 
-            auto& keys = context.dictionaryKeysStack.emplace();
             for(auto& pair : collection)
             {
                 keys.emplace(pair.first);
             }
         }
 
-        template<typename T>
-        inline static auto nextItem(T& collection, YamlContext& context)
-        {
-            auto current = context.parents.top();
-            if(itemsLeft(collection, context))
-            {
-                auto& item = getItem(collection, context, current);
-                return std::optional{std::ref(item)};
-            }
-
-            using ValueType = decltype(getItem(std::declval<T&>(), std::declval<YamlContext&>(), std::declval<ryml::NodeRef&>()));
-            return std::optional<decltype(std::ref(std::declval<ValueType>()))>{};
-        }
-
         template<typename TCollection>
-        requires(is_dynamic_collection_v<TCollection>)
-        inline static bool itemsLeft(TCollection& collection, YamlContext& context)
+        inline static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
         {
-            return context.collectionIndexesStack.top() < collection.size();
-        }
-
-        template<typename TCollection>
-        requires(is_dynamic_collection_v<TCollection>)
-        inline static auto& getItem(TCollection& collection, YamlContext& context, ryml::NodeRef& containerNode)
-        {
-            auto& index = context.collectionIndexesStack.top();
+            auto currentNode = parents.top();
             auto& item = collection[index];
-            ++index;
 
-            auto itemNode = containerNode.append_child();
-            context.parents.push(itemNode);
+            auto itemNode = currentNode.append_child();
+            parents.push(itemNode);
 
-            return item;
+           return item;
         }
 
         template<typename TCollection>
-        requires(is_dictionary_v<TCollection>)
-        inline static bool itemsLeft(TCollection& collection, YamlContext& context)
+        inline static auto& getDictionaryItem(TCollection& collection, const auto& key, std::stack<NodeType>& parents)
         {
-            auto& keys = context.dictionaryKeysStack.top();
-            return !keys.empty() && collection.contains(keys.front());
-        }
-
-        template<typename TCollection>
-        requires(is_dictionary_v<TCollection>)
-        inline static auto& getItem(TCollection& collection, YamlContext& context, ryml::NodeRef& containerNode)
-        {
-            auto& keys = context.dictionaryKeysStack.top();
-            auto& key = keys.front();
-            keys.pop();
-
-            auto itemNode = containerNode.append_child();
+            auto currentNode = parents.top();
+            auto itemNode = currentNode.append_child();
             itemNode.set_key(toRymlCStr(key));
-            context.parents.push(itemNode);
+            parents.push(itemNode);
 
             return collection.at(key);
-        }
-
-        template<typename T>
-        inline static void endItem(auto& item, T& collection, YamlContext& context)
-        {
-            context.parents.pop();
-        }
-
-        template<typename TCollection>
-        requires(is_dynamic_collection_v<TCollection>)
-        inline static void endCollection(TCollection& collection, YamlContext& context)
-        {
-            context.collectionIndexesStack.pop();
-        }
-        template<typename TCollection>
-        requires(is_dictionary_v<TCollection>)
-        inline static void endCollection(TCollection& collection, YamlContext& context)
-        {
-            context.dictionaryKeysStack.pop();
         }
     };
 
