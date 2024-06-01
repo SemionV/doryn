@@ -4,16 +4,10 @@
 
 namespace dory::typeMap::yaml
 {
-    struct YamlContext
+    struct YamlContext: TreeStructureContext<ryml::NodeRef>
     {
-        std::stack<ryml::NodeRef> current;
-        std::stack<std::size_t> collectionIndexesStack;
-        std::stack<std::queue<std::string>> dictionaryKeysStack;
-
-        explicit YamlContext(ryml::NodeRef root)
-        {
-            current.push(root);
-        }
+        explicit YamlContext(ryml::NodeRef root): TreeStructureContext<ryml::NodeRef>(root)
+        {}
     };
 
     c4::csubstr toRymlCStr(const std::string& source)

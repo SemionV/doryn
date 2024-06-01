@@ -76,61 +76,53 @@ namespace dory::typeMap::json
         }
     };
 
-    struct DeserializerContainerPolicy
+    struct DeserializerContainerPolicy: public ContainerPolicy<DeserializerContainerPolicy, TreeStructureContext<json*>>
     {
-        template<typename T>
-        inline static void beginCollection(T& collection, JsonContext& context)
-        {
-            context.collectionIndexesStack.push(0);
-        }
+        using NodeType = json*;
 
-        template<typename T>
-        inline static std::optional<std::reference_wrapper<typename T::value_type>> nextItem(T& collection, JsonContext& context)
+        template<typename TCollection>
+        inline static void setCollectionSize(TCollection& collection, ContextType& context, std::size_t& size)
         {
             auto* currentJson = context.current.top();
+            size = currentJson->is_array() ? currentJson->size() : 0;
+        }
 
-            if(currentJson->is_array())
+        template<typename TCollection, typename TKeysContainer>
+        inline static void buildDictionaryKeysList(TCollection& collection, ContextType& context, TKeysContainer& keys)
+        {
+            auto* currentJson = context.current.top();
+            if(currentJson->is_object())
             {
-                auto& index = context.collectionIndexesStack.top();
-                if(index < currentJson->size())
+                for(auto& iter : currentJson->items())
                 {
-                    auto& itemJson = currentJson->at(index);
-
-                    context.current.push(&itemJson);
-                    ++index;
-
-                    auto& item = collection.emplace_back(typename T::value_type{});
-
-                    return {std::ref(item)};
+                    keys.emplace(iter.key());
                 }
             }
-            /*else if(currentJson->is_object())
+        }
+
+        template<typename TCollection>
+        inline static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
+        {
+            auto* currentJson = parents.top();
+            auto& itemJson = currentJson->at(index);
+            parents.push(&itemJson);
+
+            return collection.emplace_back(typename TCollection::value_type{});
+        }
+
+        template<typename TCollection>
+        inline static auto& getDictionaryItem(TCollection& collection, const auto& key, std::stack<NodeType>& parents)
+        {
+            auto* currentJson = parents.top();
+            auto& itemJson = currentJson->at(key);
+            parents.push(&itemJson);
+
+            if(collection.contains(key))
             {
-                auto& index = context.collectionIndexesStack.top();
-                if(index < currentJson->size())
-                {
-                    auto& itemJson = currentJson->at(index);
+                return collection[key];
+            }
 
-                    context.current.push(&itemJson);
-                    ++index;
-
-                    auto nodeKey = itemJson.items().begin().value()
-                }
-            }*/
-
-            return {};
-        }
-
-        template<typename T>
-        inline static void endItem(std::reference_wrapper<typename T::value_type> item,T& collection, JsonContext& context)
-        {
-            context.current.pop();
-        }
-
-        template<typename T>
-        inline static void endCollection(T& collection, JsonContext& context)
-        {
-            context.collectionIndexesStack.pop();
+            return collection[key] = typename TCollection::mapped_type{};
         }
     };
 

@@ -6,15 +6,9 @@ namespace dory::typeMap::json
 {
     using json = nlohmann::json;
 
-    struct JsonContext
+    struct JsonContext: TreeStructureContext<json*>
     {
-        std::stack<json*> current;
-        std::stack<std::size_t> collectionIndexesStack;
-        std::stack<std::queue<std::string>> dictionaryKeysStack;
-
-        explicit JsonContext(json* data)
-        {
-            current.push(data);
-        }
+        explicit JsonContext(json* data): TreeStructureContext<json *>(data)
+        {}
     };
 }

@@ -90,64 +90,59 @@ namespace dory::typeMap::yaml
         }
     };
 
-    struct DeserializerContainerPolicy
+    struct DeserializerContainerPolicy: public ContainerPolicy<DeserializerContainerPolicy, TreeStructureContext<ryml::NodeRef>>
     {
-        template<typename T>
-        inline static void beginCollection(T& collection, YamlContext& context)
-        {
-            context.collectionIndexesStack.push(0);
-        }
+        using NodeType = ryml::NodeRef;
 
-        template<typename T>
-        inline static auto nextItem(T& collection, YamlContext& context)
+        template<typename TCollection>
+        inline static void setCollectionSize(TCollection& collection, ContextType& context, std::size_t& size)
         {
             auto current = context.current.top();
-            auto& index = context.collectionIndexesStack.top();
-            if((current.is_seq() || current.is_map()) && index < current.num_children())
+            size = current.is_seq() ? current.num_children() : 0;
+        }
+
+        template<typename TCollection, typename TKeysContainer>
+        inline static void buildDictionaryKeysList(TCollection& collection, ContextType& context, TKeysContainer& keys)
+        {
+            auto currentNode = context.current.top();
+
+            if(currentNode.is_map())
             {
-                auto itemNode = current.at(index);
+                size_t count = currentNode.num_children();
+                for(std::size_t i = 0; i < count; ++i)
+                {
+                    auto itemNode = currentNode.at(i);
+                    auto nodeKey = itemNode.key();
+                    auto key = std::string(nodeKey.str, nodeKey.len);
 
-                context.current.push(itemNode);
-                ++index;
-
-                auto& item = insertItem(collection, itemNode);
-                return std::optional{std::ref(item)};
+                    keys.emplace(key);
+                }
             }
-
-            return std::optional<std::reference_wrapper<GetCollectionValueType<T>>>{};
         }
 
         template<typename TCollection>
-        requires(is_dynamic_collection_v<TCollection>)
-        inline static auto& insertItem(TCollection& collection, const ryml::NodeRef& node)
+        inline static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
         {
+            auto currentNode = parents.top();
+            auto itemNode = currentNode.at(index);
+            parents.push(itemNode);
+
             return collection.emplace_back(typename TCollection::value_type{});
         }
 
         template<typename TCollection>
-        requires(is_dictionary_v<TCollection>)
-        inline static auto& insertItem(TCollection& collection, const ryml::NodeRef& node)
+        inline static auto& getDictionaryItem(TCollection& collection, const auto& key, std::stack<NodeType>& parents)
         {
-            auto nodeKey = node.key();
-            auto key = std::string(nodeKey.str, nodeKey.len);
+            auto currentNode = parents.top();
+            auto itemNode = currentNode.at(toRymlCStr(key));
+            parents.push(itemNode);
+
             if(collection.contains(key))
             {
                 return collection[key];
             }
 
             return collection[key] = typename TCollection::mapped_type{};
-        }
-
-        template<typename T>
-        inline static void endItem(auto& item, T& collection, YamlContext& context)
-        {
-            context.current.pop();
-        }
-
-        template<typename T>
-        inline static void endCollection(T& collection, YamlContext& context)
-        {
-            context.collectionIndexesStack.pop();
         }
     };
 

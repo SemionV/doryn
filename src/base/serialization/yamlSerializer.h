@@ -121,6 +121,7 @@ namespace dory::typeMap::yaml
             current |= c4::yml::NodeType_e::SEQ;
             context.collectionIndexesStack.push(0);
         }
+
         template<typename TCollection>
         requires(is_dictionary_v<TCollection>)
         inline static void beginCollection(TCollection& collection, YamlContext& context)

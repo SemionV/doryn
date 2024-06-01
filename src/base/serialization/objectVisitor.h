@@ -91,6 +91,127 @@ namespace dory::typeMap
         }
     };
 
+    template<typename TNode, typename... Ts>
+    struct TreeStructureContext: public Ts...
+    {
+        std::stack<TNode> current;
+        std::stack<std::size_t> collectionIndexesStack;
+        std::stack<std::size_t> collectionSizesStack;
+        std::stack<std::queue<std::string>> dictionaryKeysStack;
+
+        explicit TreeStructureContext(TNode data)
+        {
+            current.push(data);
+        }
+    };
+
+    template<typename TDerived, typename TContext>
+    struct ContainerPolicy;
+
+    template<typename TDerived, typename TNode, typename... Ts>
+    struct ContainerPolicy<TDerived, TreeStructureContext<TNode, Ts...>>
+    {
+        using ContextType = TreeStructureContext<TNode, Ts...>;
+
+        template<typename TCollection>
+        requires(is_dynamic_collection_v<TCollection>)
+        inline static void beginCollection(TCollection& collection, ContextType& context)
+        {
+            context.collectionIndexesStack.emplace(0);
+            auto& size = context.collectionSizesStack.emplace(0);
+            setCollectionSize(collection, context, size);
+        }
+
+        template<typename TCollection>
+        inline static void setCollectionSize(TCollection& collection, ContextType& context, std::size_t& size)
+        {
+            TDerived::setCollectionSize(collection, context, size);
+        }
+
+        template<typename TCollection>
+        requires(is_dictionary_v<TCollection>)
+        inline static void beginCollection(TCollection& collection, ContextType& context)
+        {
+            auto& keys = context.dictionaryKeysStack.emplace();
+            TDerived::buildDictionaryKeysList(collection, context, keys);
+        }
+
+        template<typename TCollection, typename TKeysContainer>
+        inline static void buildDictionaryKeysList(TCollection& collection, ContextType& context, TKeysContainer& keys)
+        {
+            TDerived::buildDictionaryKeysList(collection, context, keys);
+        }
+
+        template<typename TCollection>
+        inline static auto nextItem(TCollection& collection, ContextType& context)
+        {
+            if(itemsLeft(collection, context))
+            {
+                auto& item = getItem(collection, context);
+                return std::optional{std::ref(item)};
+            }
+
+            using ValueType = decltype(getItem(std::declval<TCollection&>(), std::declval<ContextType&>()));
+            return std::optional<decltype(std::ref(std::declval<ValueType>()))>{};
+        }
+
+        template<typename TCollection>
+        requires(is_dynamic_collection_v<TCollection>)
+        inline static bool itemsLeft(TCollection& collection, ContextType& context)
+        {
+            return context.collectionIndexesStack.top() < context.collectionSizesStack.top();
+        }
+
+        template<typename TCollection>
+        requires(is_dictionary_v<TCollection>)
+        inline static bool itemsLeft(TCollection& collection, ContextType& context)
+        {
+            auto& keys = context.dictionaryKeysStack.top();
+            return !keys.empty();
+        }
+
+        template<typename TCollection>
+        requires(is_dynamic_collection_v<TCollection>)
+        inline static auto& getItem(TCollection& collection, ContextType& context)
+        {
+            auto& index = context.collectionIndexesStack.top();
+            auto& item = TDerived::getCollectionItem(collection, index, context.current);
+            index++;
+            return item;
+        }
+
+        template<typename TCollection>
+        requires(is_dictionary_v<TCollection>)
+        inline static auto& getItem(TCollection& collection, ContextType& context)
+        {
+            auto& keys = context.dictionaryKeysStack.top();
+            auto& key = keys.front();
+            keys.pop();
+
+            return TDerived::getDictionaryItem(collection, key, context.current);
+        }
+
+        template<typename T>
+        inline static void endItem(auto& item, T& collection, ContextType& context)
+        {
+            context.current.pop();
+        }
+
+        template<typename TCollection>
+        requires(is_dynamic_collection_v<TCollection>)
+        inline static void endCollection(TCollection& collection, ContextType& context)
+        {
+            context.collectionIndexesStack.pop();
+            context.collectionSizesStack.pop();
+        }
+        template<typename TCollection>
+        requires(is_dictionary_v<TCollection>)
+        inline static void endCollection(TCollection& collection, ContextType& context)
+        {
+            context.dictionaryKeysStack.pop();
+        }
+    };
+
     struct VisitorDefaultPolicies
     {
         using ValuePolicy = DefaultValuePolicy;

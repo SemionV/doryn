@@ -251,6 +251,26 @@ TEST_CASE( "Deserialize with missing fileds", "[json]" )
 
 }
 
+TEST_CASE( "Deserialize JSON simple dictionary", "[yaml]" )
+{
+    std::string yaml = R"(
+    key1: value1
+    key2: value2)";
+
+    std::string json = R"(
+    {
+        "key1": "value1",
+        "key2": "value2"
+    })";
+
+    auto dictionary = dory::typeMap::json::JsonDeserializer::deserialize<std::map<std::string, std::string>>(json);
+    REQUIRE(dictionary.size() == 2);
+    REQUIRE(dictionary.contains("key1"));
+    REQUIRE(dictionary["key1"] == "value1");
+    REQUIRE(dictionary.contains("key2"));
+    REQUIRE(dictionary["key2"] == "value2");
+}
+
 TEST_CASE( "Serialize plain object", "[json]" )
 {
     auto entity = Entity{"test", {1, 2, 3}, Mesh
