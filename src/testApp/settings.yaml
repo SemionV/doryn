@@ -15,3 +15,4 @@ i18nSets:
   French:
     - configuration/strings.fr.txt
     - configuration/strings2.fr.txt
+activeI18nSet: English
