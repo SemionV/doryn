@@ -75,11 +75,13 @@ namespace dory::typeMap::json
 
     struct SerializerCollectionItemPolicy
     {
-        inline static void beginItem(const std::size_t i, JsonContext& context)
+        inline static bool beginItem(const std::size_t i, JsonContext& context)
         {
             auto* currentJson = context.current.top();
             auto& itemJson = currentJson->operator[](i);
             context.current.push(&itemJson);
+
+            return true;
         }
 
         inline static void endItem(const bool lastItem, JsonContext& context)
@@ -93,22 +95,22 @@ namespace dory::typeMap::json
         template<typename T>
         inline static void beginCollection(T& collection, JsonContext& context)
         {
-            context.previousDynamicCollectionIndex = context.dynamicCollectionIndex;
-            context.dynamicCollectionIndex = 0;
+            context.collectionIndexesStack.push(0);
         }
 
         template<typename T>
         inline static std::optional<std::reference_wrapper<const typename T::value_type>> nextItem(T& collection, JsonContext& context)
         {
             auto* currentJson = context.current.top();
-            if(context.dynamicCollectionIndex < collection.size())
+            auto& index = context.collectionIndexesStack.top();
+            if(index < collection.size())
             {
-                auto& item = collection[context.dynamicCollectionIndex];
+                auto& item = collection[index];
 
-                auto& itemJson = currentJson->operator[](context.dynamicCollectionIndex);
+                auto& itemJson = currentJson->operator[](index);
                 context.current.push(&itemJson);
 
-                ++context.dynamicCollectionIndex;
+                ++index;
 
                 return {std::reference_wrapper(item)};
             }
@@ -125,8 +127,7 @@ namespace dory::typeMap::json
         template<typename T>
         inline static void endCollection(T& collection, JsonContext& context)
         {
-            context.dynamicCollectionIndex = context.previousDynamicCollectionIndex;
-            context.previousDynamicCollectionIndex = 0;
+            context.collectionIndexesStack.pop();
         }
     };
 

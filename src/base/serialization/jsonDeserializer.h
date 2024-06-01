@@ -56,18 +56,18 @@ namespace dory::typeMap::json
 
     struct DeserializerCollectionItemPolicy
     {
-        inline static void beginItem(const std::size_t i, JsonContext& context)
+        inline static bool beginItem(const std::size_t i, JsonContext& context)
         {
             auto* currentJson = context.current.top();
             if(i < currentJson->size())
             {
                 auto& itemJson = currentJson->at(i);
                 context.current.push(&itemJson);
+
+                return true;
             }
-            else
-            {
-                context.current.push(&context.emptyJson);
-            }
+
+            return false;
         }
 
         inline static void endItem(const bool lastItem, JsonContext& context)
@@ -81,8 +81,7 @@ namespace dory::typeMap::json
         template<typename T>
         inline static void beginCollection(T& collection, JsonContext& context)
         {
-            context.previousDynamicCollectionIndex = context.dynamicCollectionIndex;
-            context.dynamicCollectionIndex = 0;
+            context.collectionIndexesStack.push(0);
         }
 
         template<typename T>
@@ -92,18 +91,32 @@ namespace dory::typeMap::json
 
             if(currentJson->is_array())
             {
-                if(context.dynamicCollectionIndex < currentJson->size())
+                auto& index = context.collectionIndexesStack.top();
+                if(index < currentJson->size())
                 {
-                    auto& itemJson = currentJson->at(context.dynamicCollectionIndex);
+                    auto& itemJson = currentJson->at(index);
 
                     context.current.push(&itemJson);
-                    ++context.dynamicCollectionIndex;
+                    ++index;
 
                     auto& item = collection.emplace_back(typename T::value_type{});
 
                     return {std::ref(item)};
                 }
             }
+            /*else if(currentJson->is_object())
+            {
+                auto& index = context.collectionIndexesStack.top();
+                if(index < currentJson->size())
+                {
+                    auto& itemJson = currentJson->at(index);
+
+                    context.current.push(&itemJson);
+                    ++index;
+
+                    auto nodeKey = itemJson.items().begin().value()
+                }
+            }*/
 
             return {};
         }
@@ -117,8 +130,7 @@ namespace dory::typeMap::json
         template<typename T>
         inline static void endCollection(T& collection, JsonContext& context)
         {
-            context.dynamicCollectionIndex = context.previousDynamicCollectionIndex;
-            context.previousDynamicCollectionIndex = 0;
+            context.collectionIndexesStack.pop();
         }
     };
 

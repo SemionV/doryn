@@ -56,8 +56,9 @@ namespace dory::typeMap
     struct DefaultCollectionItemPolicy
     {
         template<typename TContext>
-        inline static void beginItem(const std::size_t i, TContext& context)
+        inline static bool beginItem(const std::size_t i, TContext& context)
         {
+            return true;
         }
 
         template<typename TContext>
@@ -79,7 +80,7 @@ namespace dory::typeMap
         }
 
         template<typename T, typename TContext>
-        inline static std::optional<std::reference_wrapper<typename T::value_type>> nextItem(T& collection, TContext& context)
+        inline static std::optional<std::reference_wrapper<GetCollectionValueType<T>>> nextItem(T& collection, TContext& context)
         {
             return {};
         }
@@ -141,11 +142,14 @@ namespace dory::typeMap
 
             TPolicies::CollectionPolicy::template beginCollection<typename TArray::value_type, size>(context);
 
+            size_t lastIndex = size - 1;
             for(std::size_t i {}; i < size; ++i)
             {
-                TPolicies::CollectionItemPolicy::beginItem(i, context);
-                visit(object[i], context);
-                TPolicies::CollectionItemPolicy::endItem(i == size - 1, context);
+                if(TPolicies::CollectionItemPolicy::beginItem(i, context))
+                {
+                    visit(object[i], context);
+                    TPolicies::CollectionItemPolicy::endItem(i == lastIndex, context);
+                }
             }
 
             TPolicies::CollectionPolicy::endCollection(context);

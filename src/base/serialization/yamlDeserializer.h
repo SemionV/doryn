@@ -70,14 +70,18 @@ namespace dory::typeMap::yaml
 
     struct DeserializerCollectionItemPolicy
     {
-        inline static void beginItem(const std::size_t i, YamlContext& context)
+        inline static bool beginItem(const std::size_t i, YamlContext& context)
         {
             auto current = context.current.top();
-            if(current.is_seq())
+            if(current.is_seq() && i < current.num_children())
             {
                 auto itemNode = current.at(i);
                 context.current.push(itemNode);
+
+                return true;
             }
+
+            return false;
         }
 
         inline static void endItem(const bool lastItem, YamlContext& context)
@@ -99,7 +103,7 @@ namespace dory::typeMap::yaml
         {
             auto current = context.current.top();
             auto& index = context.collectionIndexesStack.top();
-            if(index < current.num_children() && (current.is_seq() || current.is_map()))
+            if((current.is_seq() || current.is_map()) && index < current.num_children())
             {
                 auto itemNode = current.at(index);
 
@@ -110,7 +114,7 @@ namespace dory::typeMap::yaml
                 return std::optional{std::ref(item)};
             }
 
-            return std::optional<std::reference_wrapper<CollectionValueTypeType<T>>>{};
+            return std::optional<std::reference_wrapper<GetCollectionValueType<T>>>{};
         }
 
         template<typename TCollection>

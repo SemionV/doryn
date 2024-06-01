@@ -9,9 +9,8 @@ namespace dory::typeMap::json
     struct JsonContext
     {
         std::stack<json*> current;
-        json emptyJson = {};
-        std::size_t dynamicCollectionIndex = 0;
-        std::size_t previousDynamicCollectionIndex = 0;
+        std::stack<std::size_t> collectionIndexesStack;
+        std::stack<std::queue<std::string>> dictionaryKeysStack;
 
         explicit JsonContext(json* data)
         {

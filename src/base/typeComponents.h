@@ -111,7 +111,7 @@ namespace dory
     };
 
     template<class T>
-    using CollectionValueTypeType = CollectionValueType<T>::Type;
+    using GetCollectionValueType = CollectionValueType<T>::Type;
 
     constexpr std::size_t getStringLength(const char* string)
     {

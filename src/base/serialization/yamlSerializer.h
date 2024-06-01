@@ -96,11 +96,13 @@ namespace dory::typeMap::yaml
 
     struct SerializerCollectionItemPolicy
     {
-        inline static void beginItem(const std::size_t i, YamlContext& context)
+        inline static bool beginItem(const std::size_t i, YamlContext& context)
         {
             auto current = context.current.top();
             auto itemNode = current.append_child();
             context.current.push(itemNode);
+
+            return true;
         }
 
         inline static void endItem(const bool lastItem, YamlContext& context)

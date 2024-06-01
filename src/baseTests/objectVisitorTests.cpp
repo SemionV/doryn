@@ -154,12 +154,14 @@ namespace dory::typeMap
     struct CollectionItemPolicyTest
     {
         template<typename TContext>
-        inline static void beginItem(const std::size_t i, TContext& context)
+        inline static bool beginItem(const std::size_t i, TContext& context)
         {
             assert(std::holds_alternative<CollectionRepresentation>(context.currentValueNode->value));
             auto valueNode = std::make_shared<ValueNode>(context.currentValueNode);
             std::get<CollectionRepresentation>(context.currentValueNode->value).emplace_back(valueNode);
             context.currentValueNode = valueNode;
+
+            return true;
         }
 
         template<typename TContext>

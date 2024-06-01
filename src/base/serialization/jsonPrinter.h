@@ -96,9 +96,11 @@ namespace dory::typeMap
     struct PrintCollectionItemPolicy
     {
         template<typename TContext>
-        inline static void beginItem(const std::size_t i, TContext& context)
+        inline static bool beginItem(const std::size_t i, TContext& context)
         {
             JsonFormatting::printIndent(context);
+
+            return true;
         }
 
         template<typename TContext>
