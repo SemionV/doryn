@@ -121,7 +121,7 @@ TEST_CASE( "Deserialize vector of objects", "[json]" )
         ]
     })";
 
-    auto mesh = dory::typeMap::json::JsonDeserializer::deserialize<Mesh>(meshJson);
+    auto mesh = dory::serialization::json::deserialize<Mesh>(meshJson);
     REQUIRE(mesh.vertices.size() == 2);
     REQUIRE(mesh.vertices[0][0] == 1);
     REQUIRE(mesh.vertices[0][1] == 1);
@@ -139,7 +139,7 @@ TEST_CASE( "Deserialize top collection", "[json]" )
         [2, 2, 2]
     ])";
 
-    auto mesh = dory::typeMap::json::JsonDeserializer::deserialize<std::vector<std::array<float, 3>>>(meshJson);
+    auto mesh = dory::serialization::json::deserialize<std::vector<std::array<float, 3>>>(meshJson);
     REQUIRE(mesh.size() == 2);
     REQUIRE(mesh[0][0] == 1);
     REQUIRE(mesh[0][1] == 1);
@@ -178,7 +178,7 @@ TEST_CASE( "Deserialize complex object", "[json]" )
         ]
     })";
 
-    auto scene = dory::typeMap::json::JsonDeserializer::deserialize<Scene>(json);
+    auto scene = dory::serialization::json::deserialize<Scene>(json);
     REQUIRE(scene.name == "scene1");
     REQUIRE(scene.entities.size() == 2);
     REQUIRE(scene.entities[0].name == "entity1");
@@ -229,7 +229,7 @@ TEST_CASE( "Deserialize with missing fileds", "[json]" )
         ]
     })";
 
-    auto scene = dory::typeMap::json::JsonDeserializer::deserialize<Scene>(json);
+    auto scene = dory::serialization::json::deserialize<Scene>(json);
     REQUIRE(scene.name == "scene1");
     REQUIRE(scene.entities.size() == 2);
     REQUIRE(scene.entities[0].name == "entity1");
@@ -251,7 +251,7 @@ TEST_CASE( "Deserialize with missing fileds", "[json]" )
 
 }
 
-TEST_CASE( "Deserialize JSON simple dictionary", "[yaml]" )
+TEST_CASE( "Deserialize JSON simple dictionary", "[json]" )
 {
     std::string yaml = R"(
     key1: value1
@@ -263,7 +263,7 @@ TEST_CASE( "Deserialize JSON simple dictionary", "[yaml]" )
         "key2": "value2"
     })";
 
-    auto dictionary = dory::typeMap::json::JsonDeserializer::deserialize<std::map<std::string, std::string>>(json);
+    auto dictionary = dory::serialization::json::deserialize<std::map<std::string, std::string>>(json);
     REQUIRE(dictionary.size() == 2);
     REQUIRE(dictionary.contains("key1"));
     REQUIRE(dictionary["key1"] == "value1");
@@ -282,7 +282,7 @@ TEST_CASE( "Serialize plain object", "[json]" )
              }
          }};
 
-    auto json = dory::typeMap::json::JsonSerializer::serialize(entity, 4);
+    auto json = dory::serialization::json::serialize(entity, 4);
 }
 
 TEST_CASE( "Serialize/Deserialize complex object", "[json]" )
@@ -313,9 +313,9 @@ TEST_CASE( "Serialize/Deserialize complex object", "[json]" )
         }
     };
 
-    auto json = dory::typeMap::json::JsonSerializer::serialize(scene, 4);
+    auto json = dory::serialization::json::serialize(scene, 4);
 
-    auto sceneDeserialized = dory::typeMap::json::JsonDeserializer::deserialize<Scene>(json);
+    auto sceneDeserialized = dory::serialization::json::deserialize<Scene>(json);
     REQUIRE(sceneDeserialized.name == scene.name);
     REQUIRE(sceneDeserialized.entities.size() == scene.entities.size());
 
@@ -338,6 +338,21 @@ TEST_CASE( "Serialize/Deserialize complex object", "[json]" )
             REQUIRE(vertexDeserilized[2] == vertex[2]);
         }
     }
+}
+
+TEST_CASE( "Serialize JSON simple dictionary", "[json]" )
+{
+    auto jsonExpected = R"({"key1":"value1","key2":"value2"})";
+
+    auto dictionary = std::map<std::string, std::string>{
+            {"key1", "value1"},
+            {"key2", "value2"}
+    };
+
+    auto json = dory::serialization::json::serialize(dictionary);
+
+    REQUIRE(!json.empty());
+    REQUIRE(json == jsonExpected);
 }
 
 TEST_CASE( "Deserialize YAML", "[yaml]" )
@@ -363,7 +378,7 @@ TEST_CASE( "Deserialize YAML map", "[yaml]" )
     age: 18
     ranking: 5)";
 
-    auto player = dory::typeMap::yaml::YamlDeserializer::deserialize<Player>(yaml);
+    auto player = dory::serialization::yaml::deserialize<Player>(yaml);
     REQUIRE(player.name == "Test");
     REQUIRE(player.age == 18);
     REQUIRE(player.ranking == 5);
@@ -379,7 +394,7 @@ TEST_CASE( "Deserialize YAML with missing fields", "[yaml]" )
       level: 3)";
 
     auto logSettings = LogSettings{};
-    dory::typeMap::yaml::YamlDeserializer::deserialize(yaml, logSettings);
+    dory::serialization::yaml::deserialize(yaml, logSettings);
     REQUIRE(logSettings.size);
     REQUIRE(*logSettings.size == 1024);
     REQUIRE(logSettings.fileName);
@@ -392,13 +407,6 @@ TEST_CASE( "Deserialize YAML with missing fields", "[yaml]" )
     REQUIRE(!logSettings.sink2);
 }
 
-TEST_CASE( "Deserialize YAML optional field", "[yaml]" )
-{
-    std::string yaml = R"(
-    name: Test
-    age: 18)";
-}
-
 TEST_CASE( "Deserialize YAML collection", "[yaml]" )
 {
     std::string yaml = R"(
@@ -409,7 +417,7 @@ TEST_CASE( "Deserialize YAML collection", "[yaml]" )
       age: 38
       ranking: 2)";
 
-    auto players = dory::typeMap::yaml::YamlDeserializer::deserialize<std::array<Player, 2>>(yaml);
+    auto players = dory::serialization::yaml::deserialize<std::array<Player, 2>>(yaml);
     REQUIRE(players.size() == 2);
     auto& player = players[0];
     REQUIRE(player.name == "Test");
@@ -431,7 +439,7 @@ TEST_CASE( "Deserialize YAML dynamic collection", "[yaml]" )
       age: 38
       ranking: 2)";
 
-    auto players = dory::typeMap::yaml::YamlDeserializer::deserialize<std::vector<Player>>(yaml);
+    auto players = dory::serialization::yaml::deserialize<std::vector<Player>>(yaml);
     REQUIRE(players.size() == 2);
     auto& player = players[0];
     REQUIRE(player.name == "Test");
@@ -461,7 +469,7 @@ TEST_CASE( "Deserialize YAML complex object", "[yaml]" )
             - [5, 5, 5]
             - [6, 6, 6])";
 
-    auto scene = dory::typeMap::yaml::YamlDeserializer::deserialize<Scene>(yaml);
+    auto scene = dory::serialization::yaml::deserialize<Scene>(yaml);
     REQUIRE(scene.name == "scene1");
     REQUIRE(scene.entities.size() == 2);
     REQUIRE(scene.entities[0].name == "entity1");
@@ -494,7 +502,7 @@ TEST_CASE( "Deserialize YAML simple dictionary", "[yaml]" )
     key1: value1
     key2: value2)";
 
-    auto dictionary = dory::typeMap::yaml::YamlDeserializer::deserialize<std::map<std::string, std::string>>(yaml);
+    auto dictionary = dory::serialization::yaml::deserialize<std::map<std::string, std::string>>(yaml);
     REQUIRE(dictionary.size() == 2);
     REQUIRE(dictionary.contains("key1"));
     REQUIRE(dictionary["key1"] == "value1");
@@ -508,7 +516,7 @@ TEST_CASE( "Serialize YAML map", "[yaml]" )
 
     const auto player = Player{"Test", 18, 5};
 
-    auto yaml = dory::typeMap::yaml::YamlSerializer::serialize(player);
+    auto yaml = dory::serialization::yaml::serialize(player);
     REQUIRE(!yaml.empty());
     REQUIRE(yaml == yamlExpected);
 }
@@ -522,7 +530,7 @@ TEST_CASE( "Serialize YAML collection", "[yaml]" )
         Player{"Test2", 38, 2}
     };
 
-    auto yaml = dory::typeMap::yaml::YamlSerializer::serialize(players);
+    auto yaml = dory::serialization::yaml::serialize(players);
     REQUIRE(!yaml.empty());
     REQUIRE(yaml == yamlExpected);
 }
@@ -536,7 +544,7 @@ TEST_CASE( "Serialize YAML dynamic collection", "[yaml]" )
         Player{"Test2", 38, 2}
     };
 
-    auto yaml = dory::typeMap::yaml::YamlSerializer::serialize(players);
+    auto yaml = dory::serialization::yaml::serialize(players);
     REQUIRE(!yaml.empty());
     REQUIRE(yaml == yamlExpected);
 }
@@ -571,7 +579,7 @@ TEST_CASE( "Serialize YAML complext object", "[yaml]" )
         }
     };
 
-    auto yaml = dory::typeMap::yaml::YamlSerializer::serialize(scene);
+    auto yaml = dory::serialization::yaml::serialize(scene);
     REQUIRE(!yaml.empty());
     REQUIRE(yaml == yamlExpected);
 }
@@ -584,7 +592,7 @@ TEST_CASE( "Serialize YAML with optional fields", "[yaml]" )
     logSettings.fileName = "test";
     logSettings.size = 256;
     logSettings.sink = LogSink{"sink1", 2};
-    auto yaml = dory::typeMap::yaml::YamlSerializer::serialize(logSettings);
+    auto yaml = dory::serialization::yaml::serialize(logSettings);
 
     REQUIRE(!yaml.empty());
     REQUIRE(yaml == yamlExpected);
@@ -599,7 +607,7 @@ TEST_CASE( "Serialize YAML simple dictionary", "[yaml]" )
             {"key2", "value2"}
     };
 
-    auto yaml = dory::typeMap::yaml::YamlSerializer::serialize(dictionary);
+    auto yaml = dory::serialization::yaml::serialize(dictionary);
 
     REQUIRE(!yaml.empty());
     REQUIRE(yaml == yamlExpected);

@@ -4,7 +4,7 @@
 #include "jsonSerializationContext.h"
 #include "base/dependencies.h"
 
-namespace dory::typeMap::json
+namespace dory::serialization::json
 {
     struct DeserializerValuePolicy
     {
@@ -132,18 +132,14 @@ namespace dory::typeMap::json
         using ContainerPolicyType = DeserializerContainerPolicy;
     };
 
-    class JsonDeserializer
+    template<typename T>
+    static T deserialize(const std::string& source)
     {
-    public:
-        template<typename T>
-        static T deserialize(const std::string& source)
-        {
-            auto data = json::parse(source);
-            JsonContext context(&data);
-            auto object = T{};
-            ObjectVisitor<JsonDeserializationPolicies>::visit(object, context);
+        auto data = json::parse(source);
+        JsonContext context(&data);
+        auto object = T{};
+        ObjectVisitor<JsonDeserializationPolicies>::visit(object, context);
 
-            return object;
-        }
-    };
+        return object;
+    }
 }

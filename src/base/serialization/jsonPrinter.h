@@ -2,7 +2,7 @@
 
 #include "objectVisitor.h"
 
-namespace dory::typeMap
+namespace dory::serialization
 {
     struct JsonPrintingContext
     {

@@ -4,7 +4,7 @@
 #include "jsonSerializationContext.h"
 #include "base/dependencies.h"
 
-namespace dory::typeMap::json
+namespace dory::serialization::json
 {
     struct SerializerValuePolicy
     {
@@ -90,44 +90,44 @@ namespace dory::typeMap::json
         }
     };
 
-    struct SerializerContainerPolicy
+    struct SerializerContainerPolicy: public ContainerPolicy<SerializerContainerPolicy, TreeStructureContext<json*>>
     {
-        template<typename T>
-        inline static void beginCollection(T& collection, JsonContext& context)
+        template<typename TCollection>
+        inline static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
         {
-            context.collectionIndexesStack.push(0);
+            size = collection.size();
         }
 
-        template<typename T>
-        inline static std::optional<std::reference_wrapper<const typename T::value_type>> nextItem(T& collection, JsonContext& context)
+        template<typename TCollection, typename TKeysContainer>
+        inline static void buildDictionaryKeysList(TCollection& collection, std::stack<NodeType>& parents, TKeysContainer& keys)
         {
-            auto* currentJson = context.parents.top();
-            auto& index = context.collectionIndexesStack.top();
-            if(index < collection.size())
+            for(auto& pair : collection)
             {
-                auto& item = collection[index];
-
-                auto& itemJson = currentJson->operator[](index);
-                context.parents.push(&itemJson);
-
-                ++index;
-
-                return {std::reference_wrapper(item)};
+                keys.emplace(pair.first);
             }
-
-            return {};
         }
 
-        template<typename T>
-        inline static void endItem(std::reference_wrapper<const typename T::value_type> item, T& collection, JsonContext& context)
+        template<typename TCollection>
+        inline static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
         {
-            context.parents.pop();
+            auto currentNode = parents.top();
+            auto& item = collection[index];
+
+            auto& itemJson = currentNode->operator[](index);
+            parents.push(&itemJson);
+
+            return item;
         }
 
-        template<typename T>
-        inline static void endCollection(T& collection, JsonContext& context)
+        template<typename TCollection>
+        inline static auto& getDictionaryItem(TCollection& collection, const auto& key, std::stack<NodeType>& parents)
         {
-            context.collectionIndexesStack.pop();
+            auto currentNode = parents.top();
+
+            auto& itemNode = currentNode->operator[](key);
+            parents.push(&itemNode);
+
+            return collection.at(key);
         }
     };
 
@@ -141,17 +141,13 @@ namespace dory::typeMap::json
         using ContainerPolicyType = SerializerContainerPolicy;
     };
 
-    class JsonSerializer
+    template<typename T>
+    static std::string serialize(const T& object, const int indent = -1)
     {
-    public:
-        template<typename T>
-        static std::string serialize(const T& object, const int indent = -1)
-        {
-            auto data = json{};
-            JsonContext context(&data);
-            ObjectVisitor<JsonSerializationPolicies>::visit(object, context);
+        auto data = json{};
+        JsonContext context(&data);
+        ObjectVisitor<JsonSerializationPolicies>::visit(object, context);
 
-            return data.dump(indent);
-        }
-    };
+        return data.dump(indent);
+    }
 }

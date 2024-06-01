@@ -3,7 +3,7 @@
 #include "baseTests/dependencies.h"
 #include "base/serialization/objectVisitor.h"
 
-namespace dory::typeMap
+namespace dory::serialization
 {
     struct Point
     {
@@ -35,32 +35,32 @@ namespace dory::typeMap
     };
 }
 
-REFL_TYPE(dory::typeMap::Point)
+REFL_TYPE(dory::serialization::Point)
         REFL_FIELD(x)
         REFL_FIELD(y)
         REFL_FIELD(z)
 REFL_END
 
-REFL_TYPE(dory::typeMap::Color)
+REFL_TYPE(dory::serialization::Color)
         REFL_FIELD(r)
         REFL_FIELD(g)
         REFL_FIELD(b)
         REFL_FIELD(a)
 REFL_END
 
-REFL_TYPE(dory::typeMap::Axises)
+REFL_TYPE(dory::serialization::Axises)
         REFL_FIELD(i)
         REFL_FIELD(j)
         REFL_FIELD(k)
 REFL_END
 
-REFL_TYPE(dory::typeMap::AffineTransformation)
+REFL_TYPE(dory::serialization::AffineTransformation)
         REFL_FIELD(translation)
         REFL_FIELD(rotation)
         REFL_FIELD(axises)
 REFL_END
 
-namespace dory::typeMap
+namespace dory::serialization
 {
     struct ValueNode;
 

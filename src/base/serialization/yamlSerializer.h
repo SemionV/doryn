@@ -4,7 +4,7 @@
 #include "yamlSerializationContext.h"
 #include "base/dependencies.h"
 
-namespace dory::typeMap::yaml
+namespace dory::serialization::yaml
 {
     struct SerializerValuePolicy
     {
@@ -167,20 +167,16 @@ namespace dory::typeMap::yaml
         using ContainerPolicyType = SerializerContainerPolicy;
     };
 
-    class YamlSerializer
+    template<typename T>
+    static std::string serialize(const T& object)
     {
-    public:
-        template<typename T>
-        static std::string serialize(const T& object)
-        {
-            auto tree = ryml::Tree{};
+        auto tree = ryml::Tree{};
 
-            YamlContext context(tree.rootref());
-            ObjectVisitor<YamlSerializationPolicies>::visit(object, context);
+        YamlContext context(tree.rootref());
+        ObjectVisitor<YamlSerializationPolicies>::visit(object, context);
 
-            std::stringstream stream;
-            stream << tree;
-            return stream.str();
-        }
-    };
+        std::stringstream stream;
+        stream << tree;
+        return stream.str();
+    }
 }

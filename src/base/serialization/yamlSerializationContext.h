@@ -2,7 +2,7 @@
 
 #include "base/dependencies.h"
 
-namespace dory::typeMap::yaml
+namespace dory::serialization::yaml
 {
     struct YamlContext: TreeStructureContext<ryml::NodeRef>
     {

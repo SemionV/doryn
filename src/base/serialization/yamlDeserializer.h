@@ -4,7 +4,7 @@
 #include "yamlSerializationContext.h"
 #include "base/dependencies.h"
 
-namespace dory::typeMap::yaml
+namespace dory::serialization::yaml
 {
     struct DeserializerValuePolicy
     {
@@ -152,27 +152,23 @@ namespace dory::typeMap::yaml
         using ContainerPolicyType = DeserializerContainerPolicy;
     };
 
-    class YamlDeserializer
+    template<typename T>
+    static T deserialize(std::string source, T& object)
     {
-    public:
-        template<typename T>
-        static T deserialize(std::string source, T& object)
-        {
-            auto tree = ryml::parse_in_place(toRymlStr(source));
-            YamlContext context(tree.rootref());
-            ObjectVisitor<YamlDeserializationPolicies>::visit(object, context);
+        auto tree = ryml::parse_in_place(toRymlStr(source));
+        YamlContext context(tree.rootref());
+        ObjectVisitor<YamlDeserializationPolicies>::visit(object, context);
 
-            return object;
-        }
+        return object;
+    }
 
-        template<typename T>
-        static T deserialize(std::string source)
-        {
-            auto object = T{};
+    template<typename T>
+    static T deserialize(std::string source)
+    {
+        auto object = T{};
 
-            deserialize(source, object);
+        deserialize(source, object);
 
-            return object;
-        }
-    };
+        return object;
+    }
 }

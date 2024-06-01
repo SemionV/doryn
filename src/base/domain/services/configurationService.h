@@ -40,7 +40,7 @@ namespace dory::domain::services
                 logger.information(fmt::format("load configuration from: {0}", configurationPath.string()));
 
                 auto yamlSource = getTextFileContent(configurationPath);
-                dory::typeMap::yaml::YamlDeserializer::deserialize(yamlSource, configuration);
+                dory::serialization::yaml::deserialize(yamlSource, configuration);
 
                 return true;
             }

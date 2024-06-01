@@ -37,12 +37,12 @@ namespace dory::serialization
         }
     };
 
-    struct WriteBinaryPolicies: public dory::typeMap::VisitorDefaultPolicies
+    struct WriteBinaryPolicies: public dory::serialization::VisitorDefaultPolicies
     {
         using ValuePolicy = WriteBinaryValuePolicy;
     };
 
-    struct ReadBinaryPolicies: public dory::typeMap::VisitorDefaultPolicies
+    struct ReadBinaryPolicies: public dory::serialization::VisitorDefaultPolicies
     {
         using ValuePolicy = ReadBinaryValuePolicy;
     };
@@ -56,7 +56,7 @@ namespace dory::serialization
         {
             auto offset = LayoutAttributeOffsetV<Id, TLayout>;
             BinarySerializationContext context(buffer + offset);
-            dory::typeMap::ObjectVisitor<TPolicies>::visit(std::forward<T>(attributeValue), context);
+            dory::serialization::ObjectVisitor<TPolicies>::visit(std::forward<T>(attributeValue), context);
 
             return context.offset;
         }

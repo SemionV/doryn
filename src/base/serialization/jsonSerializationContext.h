@@ -2,7 +2,7 @@
 
 #include "base/dependencies.h"
 
-namespace dory::typeMap::json
+namespace dory::serialization::json
 {
     using json = nlohmann::json;
 

@@ -3,7 +3,7 @@
 #include "reflection.h"
 #include "base/typeComponents.h"
 
-namespace dory::typeMap
+namespace dory::serialization
 {
     struct DefaultValuePolicy
     {
@@ -134,7 +134,7 @@ namespace dory::typeMap
         template<typename TCollection>
         inline static auto nextItem(TCollection& collection, ContextType& context)
         {
-            if(itemsLeft(collection, context))
+            if(itemsLeft<TCollection>(context))
             {
                 auto& item = getItem(collection, context);
                 return std::optional{std::ref(item)};
@@ -146,14 +146,14 @@ namespace dory::typeMap
 
         template<typename TCollection>
         requires(is_dynamic_collection_v<TCollection>)
-        inline static bool itemsLeft(TCollection& collection, ContextType& context)
+        inline static bool itemsLeft(ContextType& context)
         {
             return context.collectionIndexesStack.top() < context.collectionSizesStack.top();
         }
 
         template<typename TCollection>
         requires(is_dictionary_v<TCollection>)
-        inline static bool itemsLeft(TCollection& collection, ContextType& context)
+        inline static bool itemsLeft(ContextType& context)
         {
             auto& keys = context.dictionaryKeysStack.top();
             return !keys.empty();
@@ -165,7 +165,7 @@ namespace dory::typeMap
         {
             auto& index = context.collectionIndexesStack.top();
             auto& item = TDerived::getCollectionItem(collection, index, context.parents);
-            index++;
+            ++index;
             return item;
         }
 
