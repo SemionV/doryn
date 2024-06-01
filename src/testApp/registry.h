@@ -30,7 +30,7 @@
 #include "base/domain/devices/standartIoDeviceUnix.h"
 #endif
 
-namespace testApp::registry
+namespace testApp
 {
     namespace domain = dory::domain;
     namespace entity = domain::entity;
@@ -68,72 +68,109 @@ namespace testApp::registry
         ScriptType& script = scriptDispatcher;
     };
 
-    struct Logging
+    struct Devices
+    {
+#ifdef WIN32
+        using StandartIODeviceType = devices::ConsoleIODeviceWin32<DataContextType>;
+#endif
+#ifdef __unix__
+        using StandartIODeviceType = devices::ConsoleIODeviceUnix<DataContextType>;
+#endif
+        using TerminalDeviceType = devices::TerminalDevice<DataContextType, StandartIODeviceType>;
+
+        StandartIODeviceType standartIODevice;
+        TerminalDeviceType terminalDevice;
+
+        explicit Devices(Events& events):
+                standartIODevice(events.standartIoDispatcher),
+                terminalDevice(standartIODevice, events.standartInput, events.scriptDispatcher, events.applicationDispatcher)
+        {}
+    };
+
+    struct Repositories
+    {
+        using CameraRepositoryType = domain::EntityRepository<entity::Camera>;
+        using ViewRepositoryType = domain::EntityRepository<entity::View>;
+        using WindowRepositoryType = domain::EntityRepository<openGL::GlfwWindow>;
+        using PipelineRepositoryType = domain::services::PipelineRepository<DataContextType, entity::PipelineNode<DataContextType>>;
+
+        CameraRepositoryType cameras;
+        ViewRepositoryType views;
+        WindowRepositoryType windows;
+        PipelineRepositoryType pipelines;
+    };
+
+    struct Services
     {
         using LogServiceType = services::MultiSinkLogService;
+        using FrameServiceType = services::BasicFrameService;
+        using ShaderServiceType = openGL::services::ShaderService;
+        using RendererType = openGL::Renderer<openGL::RendererDependencies<ShaderServiceType>>;
+        using RendererFactoryType = RendererType::FactoryType;
+        using EngineType = domain::Engine<DataContextType, Repositories::PipelineRepositoryType>;
+        using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<Repositories::WindowRepositoryType >>;
+        using ScriptServiceType = services::ScriptService<DataContextType>;
+        using ConfigurationLoaderType = services::YamlConfigurationLoader<ConfigurationType, LogServiceType>;
+        using WindowControllerType = openGL::GlfwWindowController<DataContextType, Repositories::WindowRepositoryType>;
+        using WindowControllerFactoryType = WindowControllerType::FactoryType;
+        using ViewControllerType = openGL::ViewControllerOpenGL<openGL::ViewControllerDependencies<DataContextType,
+                Services::RendererType,
+                Repositories::ViewRepositoryType,
+                Repositories::WindowRepositoryType,
+                Services::RendererFactoryType>>;
+        using ViewControllerFactoryType = ViewControllerType::FactoryType;
 
         LogServiceType appConfigurationLogger;
         LogServiceType appLogger;
+        ConfigurationLoaderType configurationLoader;
+        ShaderServiceType shaderService;
+        RendererFactoryType rendererFactory;
+        WindowServiceType windowService;
+        ScriptServiceType scriptService;
+        WindowControllerFactoryType windowControllerFactory;
+        ViewControllerFactoryType viewControllerFactory;
+
+        Services(const ConfigurationType& configuration, Events& events, Repositories& repository):
+                configurationLoader(appConfigurationLogger),
+                shaderService(configuration.shaderLoader),
+                windowService(repository.windows),
+                rendererFactory(shaderService),
+                windowControllerFactory(repository.windows, events.windowDispatcher),
+                viewControllerFactory(rendererFactory, repository.views, repository.windows)
+        {}
     };
 
-    using CameraRepositoryType = domain::EntityRepository<entity::Camera>;
-    using ViewRepositoryType = domain::EntityRepository<entity::View>;
-    using WindowRepositoryType = domain::EntityRepository<openGL::GlfwWindow>;
-    using PipelineRepositoryType = domain::services::PipelineRepository<DataContextType, entity::PipelineNode<DataContextType>>;
-    using EngineType = domain::Engine<DataContextType, PipelineRepositoryType>;
-    using FrameServiceType = services::BasicFrameService;
-    using WindowControllerType = openGL::GlfwWindowController<DataContextType, WindowRepositoryType>;
-    using WindowControllerFactoryType = WindowControllerType::FactoryType;
-    using PipelineManagerType = services::PipelineManager<DataContextType, WindowControllerFactoryType, PipelineRepositoryType>;
-    using ShaderServiceType = openGL::services::ShaderService;
-    using RendererType = openGL::Renderer<openGL::RendererDependencies<ShaderServiceType>>;
-    using RendererFactoryType = RendererType::FactoryType;
-    using ViewControllerType = openGL::ViewControllerOpenGL<openGL::ViewControllerDependencies<DataContextType,
-            RendererType,
-            ViewRepositoryType,
-            WindowRepositoryType,
-            RendererFactoryType>>;
-    using ViewControllerFactoryType = ViewControllerType::FactoryType;
+    struct Managers
+    {
+        using PipelineManagerType = services::PipelineManager<DataContextType, Services::WindowControllerFactoryType, Repositories::PipelineRepositoryType>;
+        using ViewServiceType = services::ViewService<services::ViewServiceDependencies<DataContextType,
+                Repositories::ViewRepositoryType,
+                Repositories::PipelineRepositoryType,
+                Repositories::CameraRepositoryType,
+                Services::ViewControllerFactoryType>>;
 
-    using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<WindowRepositoryType >>;
-    using ViewServiceType = services::ViewService<services::ViewServiceDependencies<DataContextType,
-                                                                                    ViewRepositoryType,
-                                                                                    PipelineRepositoryType,
-                                                                                    CameraRepositoryType,
-                                                                                    ViewControllerFactoryType>>;
-#ifdef WIN32
-    using StandartIODeviceType = devices::ConsoleIODeviceWin32<DataContextType>;
-#endif
-#ifdef __unix__
-    using StandartIODeviceType = devices::ConsoleIODeviceUnix<DataContextType>;
-#endif
-    using TerminalDeviceType = devices::TerminalDevice<DataContextType, StandartIODeviceType>;
-    using ScriptServiceType = services::ScriptService<DataContextType>;
-    using ConfigurationLoaderType = services::YamlConfigurationLoader<ConfigurationType, Logging::LogServiceType>;
+        PipelineManagerType pipelineManager;
+        ViewServiceType viewService;
 
-    class Services
+        Managers(Repositories& repository, Services& services):
+                pipelineManager(services.windowControllerFactory, repository.pipelines),
+                viewService(repository.views, repository.pipelines, repository.cameras, services.viewControllerFactory)
+        {}
+    };
+
+    class Registry
     {
     public:
         Events events;
-        Logging logging;
-        ConfigurationLoaderType configurationLoader = ConfigurationLoaderType{logging.appConfigurationLogger};
-        PipelineRepositoryType pipelineRepository;
-        CameraRepositoryType cameraRepository;
-        ViewRepositoryType viewRepository;
-        WindowRepositoryType windowRepository;
-        ShaderServiceType shaderService;
-        WindowControllerFactoryType windowControllerFactory = WindowControllerFactoryType {windowRepository, events.windowDispatcher};
-        RendererFactoryType rendererFactory = RendererFactoryType { shaderService };
-        ViewControllerFactoryType viewControllerFactory = ViewControllerFactoryType{ rendererFactory, viewRepository, windowRepository };
-        PipelineManagerType pipelineManager = PipelineManagerType{ windowControllerFactory, pipelineRepository };
-        WindowServiceType windowService = WindowServiceType{ windowRepository };
-        ViewServiceType viewService = ViewServiceType{ viewRepository, pipelineRepository, cameraRepository, viewControllerFactory };
-        StandartIODeviceType standartIODevice = StandartIODeviceType{events.standartIoDispatcher};
-        TerminalDeviceType terminalDevice = TerminalDeviceType{standartIODevice, events.standartInput, events.scriptDispatcher, events.applicationDispatcher};
-        ScriptServiceType scriptService = ScriptServiceType{};
+        Devices devices;
+        Repositories respository;
+        Services services;
+        Managers managers;
 
-        explicit Services(const ConfigurationType& configuration):
-                shaderService(configuration.shaderLoader)
+        explicit Registry(const ConfigurationType& configuration):
+                devices(events),
+                services(configuration, events, respository),
+                managers(respository, services)
         {}
     };
 }

@@ -14,13 +14,12 @@ namespace testApp
     class Project: dory::Uncopyable
     {
     private:
-        using DataContextType = typename registry::DataContextType;
-        registry::ConfigurationType configuration;
-        registry::Services services = registry::Services{configuration};
-        registry::FrameServiceType frameService;
+        ConfigurationType configuration;
+        Registry registry = Registry{configuration};
+        Services::FrameServiceType frameService;
 
     public:
-        Project(): services(configuration)
+        Project(): registry(configuration)
         {}
 
         int run()
@@ -33,24 +32,24 @@ namespace testApp
             bootLoggerConfig.stdoutLogger = dory::configuration::StdoutLogSink{};
 
             //init boot logger with 0 level config
-            services.logging.appConfigurationLogger.initialize(bootLoggerConfig, dory::makeOptionalRef(services.terminalDevice));
+            registry.services.appConfigurationLogger.initialize(bootLoggerConfig, dory::makeOptionalRef(registry.devices.terminalDevice));
 
             //load 1 level configuration
-            services.configurationLoader.load(configuration.mainConfigurationFile, configuration);
+            registry.services.configurationLoader.load(configuration.mainConfigurationFile, configuration);
 
             //load additional settings(theme)
             for(const auto& settingsFile : configuration.settingFiles)
             {
-                services.configurationLoader.load(settingsFile, configuration);
+                registry.services.configurationLoader.load(settingsFile, configuration);
             }
 
             //init main logger with parents config
-            services.logging.appLogger.initialize(configuration.loggingConfiguration.mainLogger, dory::makeOptionalRef(services.terminalDevice));
+            registry.services.appLogger.initialize(configuration.loggingConfiguration.mainLogger, dory::makeOptionalRef(registry.devices.terminalDevice));
 
             attachEventHandlers();
 
             auto context = DataContextType{};
-            auto engine = registry::EngineType { services.events.engineDispatcher, services.pipelineRepository };
+            auto engine = Services::EngineType {registry.events.engineDispatcher, registry.respository.pipelines };
 
             frameService.startLoop(context, engine);
 
@@ -60,70 +59,70 @@ namespace testApp
     private:
         void attachEventHandlers()
         {
-            services.logging.appConfigurationLogger.information("attach event handlers");
+            registry.services.appConfigurationLogger.information("attach event handlers");
 
-            services.events.engine.attach(this, &Project::onInitializeEngine);
-            services.events.engine.attach(this, &Project::onStopEngine);
-            services.events.application.attach(this, &Project::onApplicationExit);
-            services.events.window.attach(this, &Project::onCloseWindow);
-            services.events.script.attach(this, &Project::onRunScript);
+            registry.events.engine.attach(this, &Project::onInitializeEngine);
+            registry.events.engine.attach(this, &Project::onStopEngine);
+            registry.events.application.attach(this, &Project::onApplicationExit);
+            registry.events.window.attach(this, &Project::onCloseWindow);
+            registry.events.script.attach(this, &Project::onRunScript);
         }
 
         void onInitializeEngine(DataContextType& context, const events::engine::Initialize& eventData)
         {
-            services.logging.appConfigurationLogger.information("on: initialize engine");
+            registry.services.appConfigurationLogger.information("on: initialize engine");
 
-            services.standartIODevice.connect(context);
-            services.terminalDevice.connect(context);
-            services.terminalDevice.writeLine("Start Engine...");
-            services.terminalDevice.enterCommandMode();
+            registry.devices.standartIODevice.connect(context);
+            registry.devices.terminalDevice.connect(context);
+            registry.devices.terminalDevice.writeLine("Start Engine...");
+            registry.devices.terminalDevice.enterCommandMode();
 
             auto logStrings = LogStrings{};
-            services.logging.appLogger.information(fmt::format(logStrings.devicesConnected, ":)"));
+            registry.services.appLogger.information(fmt::format(logStrings.devicesConnected, ":)"));
 
-            services.scriptService.addScript("exit", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
+            registry.services.scriptService.addScript("exit", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
             {
-                services.terminalDevice.writeLine(fmt::format("-\u001B[31m{0}\u001B[0m-", "exit"));
-                services.events.applicationDispatcher.fire(context, events::application::Exit{});
+                registry.devices.terminalDevice.writeLine(fmt::format("-\u001B[31m{0}\u001B[0m-", "exit"));
+                registry.events.applicationDispatcher.fire(context, events::application::Exit{});
             });
 
-            services.pipelineManager.configurePipeline(context);
+            registry.managers.pipelineManager.configurePipeline(context);
 
             auto supmitInputEvents = [this](auto referenceId, const auto& timeStep, DataContextType& context)
             {
-                services.events.standartIoDispatcher.fireAll(context);
+                registry.events.standartIoDispatcher.fireAll(context);
             };
 
             auto flushOutput = [this](auto referenceId, const auto& timeStep, DataContextType& context)
             {
-                services.standartIODevice.flush();
+                registry.devices.standartIODevice.flush();
             };
 
-            registry::services::IPipelineRepository<registry::PipelineRepositoryType, DataContextType>& pipelineRepository = services.pipelineRepository;
+            services::IPipelineRepository<Repositories::PipelineRepositoryType, DataContextType>& pipelines = registry.respository.pipelines;
 
-            pipelineRepository.store(dory::domain::entity::PipelineNode<DataContextType> {
+            pipelines.store(dory::domain::entity::PipelineNode<DataContextType> {
                     supmitInputEvents,
                     dory::domain::entity::PipelineNodePriority::Default,
                     context.inputGroupNodeId});
 
-            pipelineRepository.store(dory::domain::entity::PipelineNode<DataContextType> {
+            pipelines.store(dory::domain::entity::PipelineNode<DataContextType> {
                 flushOutput,
                 dory::domain::entity::PipelineNodePriority::Default,
                 context.outputGroupNodeId});
 
-            auto window = services.windowService.createWindow();
+            auto window = registry.services.windowService.createWindow();
             context.mainWindowId = window.id;
-            services.viewService.createView(context, window.id, context.outputGroupNodeId);
+            registry.managers.viewService.createView(context, window.id, context.outputGroupNodeId);
         }
 
         void onStopEngine(DataContextType& context, const events::engine::Stop& eventData)
         {
-            services.terminalDevice.exitCommandMode();
-            services.terminalDevice.writeLine("Stop Engine...");
-            services.terminalDevice.disconnect(context);
-            services.standartIODevice.disconnect(context);
+            registry.devices.terminalDevice.exitCommandMode();
+            registry.devices.terminalDevice.writeLine("Stop Engine...");
+            registry.devices.terminalDevice.disconnect(context);
+            registry.devices.standartIODevice.disconnect(context);
 
-            services.logging.appLogger.information("devices disconnected");
+            registry.services.appLogger.information("devices disconnected");
         }
 
         void onApplicationExit(DataContextType& context, const events::application::Exit& eventData)
@@ -133,18 +132,18 @@ namespace testApp
 
         void onCloseWindow(DataContextType& context, events::window::Close& eventData)
         {
-            services.windowService.closeWindow(eventData.windowId);
-            services.viewService.destroyView(eventData.windowId);
+            registry.services.windowService.closeWindow(eventData.windowId);
+            registry.managers.viewService.destroyView(eventData.windowId);
 
             if(eventData.windowId == context.mainWindowId)
             {
-                services.events.applicationDispatcher.fire(context, events::application::Exit{});
+                registry.events.applicationDispatcher.fire(context, events::application::Exit{});
             }
         }
 
         void onRunScript(DataContextType& context, const events::script::Run& eventData)
         {
-            services.scriptService.runScript(context, eventData.scriptKey, eventData.arguments);
+            registry.services.scriptService.runScript(context, eventData.scriptKey, eventData.arguments);
         }
     };
 }
