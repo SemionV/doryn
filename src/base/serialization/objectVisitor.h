@@ -94,14 +94,14 @@ namespace dory::typeMap
     template<typename TNode, typename... Ts>
     struct TreeStructureContext: public Ts...
     {
-        std::stack<TNode> current;
+        std::stack<TNode> parents;
         std::stack<std::size_t> collectionIndexesStack;
         std::stack<std::size_t> collectionSizesStack;
         std::stack<std::queue<std::string>> dictionaryKeysStack;
 
         explicit TreeStructureContext(TNode data)
         {
-            current.push(data);
+            parents.push(data);
         }
     };
 
@@ -111,6 +111,7 @@ namespace dory::typeMap
     template<typename TDerived, typename TNode, typename... Ts>
     struct ContainerPolicy<TDerived, TreeStructureContext<TNode, Ts...>>
     {
+        using NodeType = TNode;
         using ContextType = TreeStructureContext<TNode, Ts...>;
 
         template<typename TCollection>
@@ -119,13 +120,7 @@ namespace dory::typeMap
         {
             context.collectionIndexesStack.emplace(0);
             auto& size = context.collectionSizesStack.emplace(0);
-            setCollectionSize(collection, context, size);
-        }
-
-        template<typename TCollection>
-        inline static void setCollectionSize(TCollection& collection, ContextType& context, std::size_t& size)
-        {
-            TDerived::setCollectionSize(collection, context, size);
+            TDerived::setCollectionSize(collection, context.parents, size);
         }
 
         template<typename TCollection>
@@ -133,13 +128,7 @@ namespace dory::typeMap
         inline static void beginCollection(TCollection& collection, ContextType& context)
         {
             auto& keys = context.dictionaryKeysStack.emplace();
-            TDerived::buildDictionaryKeysList(collection, context, keys);
-        }
-
-        template<typename TCollection, typename TKeysContainer>
-        inline static void buildDictionaryKeysList(TCollection& collection, ContextType& context, TKeysContainer& keys)
-        {
-            TDerived::buildDictionaryKeysList(collection, context, keys);
+            TDerived::buildDictionaryKeysList(collection, context.parents, keys);
         }
 
         template<typename TCollection>
@@ -175,7 +164,7 @@ namespace dory::typeMap
         inline static auto& getItem(TCollection& collection, ContextType& context)
         {
             auto& index = context.collectionIndexesStack.top();
-            auto& item = TDerived::getCollectionItem(collection, index, context.current);
+            auto& item = TDerived::getCollectionItem(collection, index, context.parents);
             index++;
             return item;
         }
@@ -188,13 +177,13 @@ namespace dory::typeMap
             auto& key = keys.front();
             keys.pop();
 
-            return TDerived::getDictionaryItem(collection, key, context.current);
+            return TDerived::getDictionaryItem(collection, key, context.parents);
         }
 
         template<typename T>
         inline static void endItem(auto& item, T& collection, ContextType& context)
         {
-            context.current.pop();
+            context.parents.pop();
         }
 
         template<typename TCollection>

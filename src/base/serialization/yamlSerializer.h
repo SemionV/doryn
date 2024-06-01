@@ -24,7 +24,7 @@ namespace dory::typeMap::yaml
         template<typename T>
         inline static void process(T& value, YamlContext& context)
         {
-            auto current = context.current.top();
+            auto current = context.parents.top();
             current |= c4::yml::NodeType_e::VAL;
             writeValue(value, current, context);
         }
@@ -34,7 +34,7 @@ namespace dory::typeMap::yaml
     {
         inline static void beginObject(YamlContext& context)
         {
-            auto current = context.current.top();
+            auto current = context.parents.top();
             current |= c4::yml::NodeType_e::MAP;
         }
 
@@ -48,11 +48,11 @@ namespace dory::typeMap::yaml
         template<class T>
         inline static bool beginMember(const std::string_view& memberName, T& value, const std::size_t i, YamlContext& context)
         {
-            auto current = context.current.top();
+            auto current = context.parents.top();
 
             auto memberNode = current.append_child();
             memberNode.set_key(toRymlCStr(memberName));
-            context.current.push(memberNode);
+            context.parents.push(memberNode);
 
             return true;
         }
@@ -70,7 +70,7 @@ namespace dory::typeMap::yaml
 
         inline static void endMember(const bool lastMember, YamlContext& context)
         {
-            context.current.pop();
+            context.parents.pop();
         }
     };
 
@@ -79,13 +79,13 @@ namespace dory::typeMap::yaml
         template<typename T, auto N>
         inline static void beginCollection(YamlContext& context)
         {
-            auto current = context.current.top();
+            auto current = context.parents.top();
             current |= c4::yml::NodeType_e::SEQ;
 #ifdef WIN32
             current |= c4::yml::NodeType_e::_WIP_STYLE_FLOW_SL;
 #endif
 #ifdef __unix__
-            current |= c4::yml::NodeType_e::FLOW_SL;
+            parents |= c4::yml::NodeType_e::FLOW_SL;
 #endif
         }
 
@@ -98,17 +98,21 @@ namespace dory::typeMap::yaml
     {
         inline static bool beginItem(const std::size_t i, YamlContext& context)
         {
-            auto current = context.current.top();
+            auto current = context.parents.top();
             auto itemNode = current.append_child();
-            context.current.push(itemNode);
+            context.parents.push(itemNode);
 
             return true;
         }
 
         inline static void endItem(const bool lastItem, YamlContext& context)
         {
-            context.current.pop();
+            context.parents.pop();
         }
+    };
+
+    struct SerializerContainerPolicy2: public ContainerPolicy<SerializerContainerPolicy2, TreeStructureContext<ryml::NodeRef>>
+    {
     };
 
     struct SerializerContainerPolicy
@@ -117,7 +121,7 @@ namespace dory::typeMap::yaml
         requires(is_dynamic_collection_v<TCollection>)
         inline static void beginCollection(TCollection& collection, YamlContext& context)
         {
-            auto current = context.current.top();
+            auto current = context.parents.top();
             current |= c4::yml::NodeType_e::SEQ;
             context.collectionIndexesStack.push(0);
         }
@@ -126,7 +130,7 @@ namespace dory::typeMap::yaml
         requires(is_dictionary_v<TCollection>)
         inline static void beginCollection(TCollection& collection, YamlContext& context)
         {
-            auto current = context.current.top();
+            auto current = context.parents.top();
             current |= c4::yml::NodeType_e::MAP;
 
             auto& keys = context.dictionaryKeysStack.emplace();
@@ -139,7 +143,7 @@ namespace dory::typeMap::yaml
         template<typename T>
         inline static auto nextItem(T& collection, YamlContext& context)
         {
-            auto current = context.current.top();
+            auto current = context.parents.top();
             if(itemsLeft(collection, context))
             {
                 auto& item = getItem(collection, context, current);
@@ -166,7 +170,7 @@ namespace dory::typeMap::yaml
             ++index;
 
             auto itemNode = containerNode.append_child();
-            context.current.push(itemNode);
+            context.parents.push(itemNode);
 
             return item;
         }
@@ -189,7 +193,7 @@ namespace dory::typeMap::yaml
 
             auto itemNode = containerNode.append_child();
             itemNode.set_key(toRymlCStr(key));
-            context.current.push(itemNode);
+            context.parents.push(itemNode);
 
             return collection.at(key);
         }
@@ -197,7 +201,7 @@ namespace dory::typeMap::yaml
         template<typename T>
         inline static void endItem(auto& item, T& collection, YamlContext& context)
         {
-            context.current.pop();
+            context.parents.pop();
         }
 
         template<typename TCollection>

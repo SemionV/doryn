@@ -11,7 +11,7 @@ namespace dory::typeMap::json
         template<typename T>
         inline static void process(T& value, JsonContext& context)
         {
-            auto* currentJson = context.current.top();
+            auto* currentJson = context.parents.top();
             if(!currentJson->empty())
             {
                 value = currentJson->get<T>();
@@ -24,11 +24,11 @@ namespace dory::typeMap::json
         template<class T>
         inline static bool beginMember(const std::string_view& memberName, T& value, const std::size_t i, JsonContext& context)
         {
-            auto* currentJson = context.current.top();
+            auto* currentJson = context.parents.top();
             if(currentJson->contains(memberName))
             {
                 auto& memberJson = currentJson->at(memberName);
-                context.current.push(&memberJson);
+                context.parents.push(&memberJson);
 
                 return true;
             }
@@ -50,7 +50,7 @@ namespace dory::typeMap::json
 
         inline static void endMember(const bool lastMember, JsonContext& context)
         {
-            context.current.pop();
+            context.parents.pop();
         }
     };
 
@@ -58,11 +58,11 @@ namespace dory::typeMap::json
     {
         inline static bool beginItem(const std::size_t i, JsonContext& context)
         {
-            auto* currentJson = context.current.top();
+            auto* currentJson = context.parents.top();
             if(i < currentJson->size())
             {
                 auto& itemJson = currentJson->at(i);
-                context.current.push(&itemJson);
+                context.parents.push(&itemJson);
 
                 return true;
             }
@@ -72,25 +72,23 @@ namespace dory::typeMap::json
 
         inline static void endItem(const bool lastItem, JsonContext& context)
         {
-            context.current.pop();
+            context.parents.pop();
         }
     };
 
     struct DeserializerContainerPolicy: public ContainerPolicy<DeserializerContainerPolicy, TreeStructureContext<json*>>
     {
-        using NodeType = json*;
-
         template<typename TCollection>
-        inline static void setCollectionSize(TCollection& collection, ContextType& context, std::size_t& size)
+        inline static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
         {
-            auto* currentJson = context.current.top();
+            auto* currentJson = parents.top();
             size = currentJson->is_array() ? currentJson->size() : 0;
         }
 
         template<typename TCollection, typename TKeysContainer>
-        inline static void buildDictionaryKeysList(TCollection& collection, ContextType& context, TKeysContainer& keys)
+        inline static void buildDictionaryKeysList(TCollection& collection, std::stack<NodeType>& parents, TKeysContainer& keys)
         {
-            auto* currentJson = context.current.top();
+            auto* currentJson = parents.top();
             if(currentJson->is_object())
             {
                 for(auto& iter : currentJson->items())

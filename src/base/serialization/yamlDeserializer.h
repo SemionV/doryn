@@ -24,7 +24,7 @@ namespace dory::typeMap::yaml
         template<typename T>
         inline static void process(T& value, YamlContext& context)
         {
-            auto current = context.current.top();
+            auto current = context.parents.top();
             if(current.has_val())
             {
                 readValue(value, current);
@@ -37,12 +37,12 @@ namespace dory::typeMap::yaml
         template<class T>
         inline static bool beginMember(const std::string_view& memberName, const T& value, const std::size_t i, YamlContext& context)
         {
-            auto current = context.current.top();
+            auto current = context.parents.top();
             const auto& name = toRymlCStr(memberName);
             if(current.is_map() && current.has_child(name))
             {
                 auto member = current[name];
-                context.current.push(member);
+                context.parents.push(member);
 
                 return true;
             }
@@ -64,7 +64,7 @@ namespace dory::typeMap::yaml
 
         inline static void endMember(const bool lastMember, YamlContext& context)
         {
-            context.current.pop();
+            context.parents.pop();
         }
     };
 
@@ -72,11 +72,11 @@ namespace dory::typeMap::yaml
     {
         inline static bool beginItem(const std::size_t i, YamlContext& context)
         {
-            auto current = context.current.top();
+            auto current = context.parents.top();
             if(current.is_seq() && i < current.num_children())
             {
                 auto itemNode = current.at(i);
-                context.current.push(itemNode);
+                context.parents.push(itemNode);
 
                 return true;
             }
@@ -86,25 +86,23 @@ namespace dory::typeMap::yaml
 
         inline static void endItem(const bool lastItem, YamlContext& context)
         {
-            context.current.pop();
+            context.parents.pop();
         }
     };
 
     struct DeserializerContainerPolicy: public ContainerPolicy<DeserializerContainerPolicy, TreeStructureContext<ryml::NodeRef>>
     {
-        using NodeType = ryml::NodeRef;
-
         template<typename TCollection>
-        inline static void setCollectionSize(TCollection& collection, ContextType& context, std::size_t& size)
+        inline static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
         {
-            auto current = context.current.top();
-            size = current.is_seq() ? current.num_children() : 0;
+            auto currentNode = parents.top();
+            size = currentNode.is_seq() ? currentNode.num_children() : 0;
         }
 
         template<typename TCollection, typename TKeysContainer>
-        inline static void buildDictionaryKeysList(TCollection& collection, ContextType& context, TKeysContainer& keys)
+        inline static void buildDictionaryKeysList(TCollection& collection, std::stack<NodeType>& parents, TKeysContainer& keys)
         {
-            auto currentNode = context.current.top();
+            auto currentNode = parents.top();
 
             if(currentNode.is_map())
             {

@@ -44,7 +44,7 @@ namespace testApp
                 services.configurationLoader.load(settingsFile, configuration);
             }
 
-            //init main logger with current config
+            //init main logger with parents config
             services.logging.appLogger.initialize(configuration.loggingConfiguration.mainLogger, dory::makeOptionalRef(services.terminalDevice));
 
             attachEventHandlers();

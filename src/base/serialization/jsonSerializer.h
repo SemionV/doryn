@@ -11,7 +11,7 @@ namespace dory::typeMap::json
         template<typename T>
         inline static void process(const T& value, JsonContext& context)
         {
-            auto* currentJson = context.current.top();
+            auto* currentJson = context.parents.top();
             *currentJson = value;
         }
     };
@@ -20,7 +20,7 @@ namespace dory::typeMap::json
     {
         inline static void beginObject(JsonContext& context)
         {
-            auto* currentJson = context.current.top();
+            auto* currentJson = context.parents.top();
             *currentJson = json::object();
         }
 
@@ -34,10 +34,10 @@ namespace dory::typeMap::json
         template<class T>
         inline static bool beginMember(const std::string_view& memberName, T& value, const std::size_t i, JsonContext& context)
         {
-            auto* currentJson = context.current.top();
+            auto* currentJson = context.parents.top();
 
             auto& memberJson = currentJson->operator[](memberName);
-            context.current.push(&memberJson);
+            context.parents.push(&memberJson);
 
             return true;
         }
@@ -55,7 +55,7 @@ namespace dory::typeMap::json
 
         inline static void endMember(const bool lastMember, JsonContext& context)
         {
-            context.current.pop();
+            context.parents.pop();
         }
     };
 
@@ -64,7 +64,7 @@ namespace dory::typeMap::json
         template<typename T, auto N>
         inline static void beginCollection(JsonContext& context)
         {
-            auto* currentJson = context.current.top();
+            auto* currentJson = context.parents.top();
             *currentJson = json::array();
         }
 
@@ -77,16 +77,16 @@ namespace dory::typeMap::json
     {
         inline static bool beginItem(const std::size_t i, JsonContext& context)
         {
-            auto* currentJson = context.current.top();
+            auto* currentJson = context.parents.top();
             auto& itemJson = currentJson->operator[](i);
-            context.current.push(&itemJson);
+            context.parents.push(&itemJson);
 
             return true;
         }
 
         inline static void endItem(const bool lastItem, JsonContext& context)
         {
-            context.current.pop();
+            context.parents.pop();
         }
     };
 
@@ -101,14 +101,14 @@ namespace dory::typeMap::json
         template<typename T>
         inline static std::optional<std::reference_wrapper<const typename T::value_type>> nextItem(T& collection, JsonContext& context)
         {
-            auto* currentJson = context.current.top();
+            auto* currentJson = context.parents.top();
             auto& index = context.collectionIndexesStack.top();
             if(index < collection.size())
             {
                 auto& item = collection[index];
 
                 auto& itemJson = currentJson->operator[](index);
-                context.current.push(&itemJson);
+                context.parents.push(&itemJson);
 
                 ++index;
 
@@ -121,7 +121,7 @@ namespace dory::typeMap::json
         template<typename T>
         inline static void endItem(std::reference_wrapper<const typename T::value_type> item, T& collection, JsonContext& context)
         {
-            context.current.pop();
+            context.parents.pop();
         }
 
         template<typename T>
