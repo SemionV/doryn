@@ -8,18 +8,18 @@ namespace testApp
 
     struct LogStrings
     {
-        const fmt::runtime_format_string<>& devicesConnected = fmt::runtime("Devices connected {0}");
+        const fmt::runtime_format_string<>& devicesConnected = fmt::runtime("DeviceLayer connected {0}");
     };
 
     class Project: dory::Uncopyable
     {
     private:
         ConfigurationType configuration;
-        Registry registry = Registry{configuration};
-        Services::FrameServiceType frameService;
+        Registry registry;
+        ServiceLayer::FrameServiceType frameService;
 
     public:
-        Project(): registry(configuration)
+        Project(): registry { configuration }
         {}
 
         int run()
@@ -49,7 +49,7 @@ namespace testApp
             attachEventHandlers();
 
             auto context = DataContextType{};
-            auto engine = Services::EngineType {registry.events.engineDispatcher, registry.respository.pipelines };
+            auto engine = ServiceLayer::EngineType {registry.events.engineDispatcher, registry.repositories.pipelines };
 
             frameService.startLoop(context, engine);
 
@@ -72,7 +72,7 @@ namespace testApp
         {
             registry.services.appConfigurationLogger.information("on: initialize engine");
 
-            registry.devices.standartIODevice.connect(context);
+            registry.devices.standardIoDevice.connect(context);
             registry.devices.terminalDevice.connect(context);
             registry.devices.terminalDevice.writeLine("Start Engine...");
             registry.devices.terminalDevice.enterCommandMode();
@@ -90,15 +90,15 @@ namespace testApp
 
             auto supmitInputEvents = [this](auto referenceId, const auto& timeStep, DataContextType& context)
             {
-                registry.events.standartIoDispatcher.fireAll(context);
+                registry.events.standardIoDispatcher.fireAll(context);
             };
 
             auto flushOutput = [this](auto referenceId, const auto& timeStep, DataContextType& context)
             {
-                registry.devices.standartIODevice.flush();
+                registry.devices.standardIoDevice.flush();
             };
 
-            dory::domain::repositories::IPipelineRepository<Repositories::PipelineRepositoryType, DataContextType>& pipelines = registry.respository.pipelines;
+            dory::domain::repositories::IPipelineRepository<RepositoryLayer::PipelineRepositoryType, DataContextType>& pipelines = registry.repositories.pipelines;
 
             pipelines.store(dory::domain::entity::PipelineNode<DataContextType> {
                     supmitInputEvents,
@@ -120,7 +120,7 @@ namespace testApp
             registry.devices.terminalDevice.exitCommandMode();
             registry.devices.terminalDevice.writeLine("Stop Engine...");
             registry.devices.terminalDevice.disconnect(context);
-            registry.devices.standartIODevice.disconnect(context);
+            registry.devices.standardIoDevice.disconnect(context);
 
             registry.services.appLogger.information("devices disconnected");
         }

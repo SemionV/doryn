@@ -45,7 +45,7 @@ namespace testApp
     using DataContextType = ProjectDataContext;
     using ConfigurationType = dory::configuration::Configuration;
 
-    struct Events
+    struct EventLayer
     {
         using EngineDispatcherType = events::engine::Dispatcher<DataContextType>;
         using EngineType = events::engine::Hub<DataContextType>;
@@ -64,13 +64,13 @@ namespace testApp
         WindowType& window = windowDispatcher;
         ApplicationDispatcherType applicationDispatcher;
         ApplicationType& application = applicationDispatcher;
-        StandartInputDispatcherType standartIoDispatcher;
-        StandartInputType& standartInput = standartIoDispatcher;
+        StandartInputDispatcherType standardIoDispatcher;
+        StandartInputType& standardInput = standardIoDispatcher;
         ScriptDispatcherType scriptDispatcher;
         ScriptType& script = scriptDispatcher;
     };
 
-    struct Devices
+    struct DeviceLayer
     {
 #ifdef WIN32
         using StandartIODeviceType = devices::ConsoleIODeviceWin32<DataContextType>;
@@ -80,16 +80,16 @@ namespace testApp
 #endif
         using TerminalDeviceType = devices::TerminalDevice<DataContextType, StandartIODeviceType>;
 
-        StandartIODeviceType standartIODevice;
+        StandartIODeviceType standardIoDevice;
         TerminalDeviceType terminalDevice;
 
-        explicit Devices(Events& events):
-                standartIODevice(events.standartIoDispatcher),
-                terminalDevice(standartIODevice, events.standartInput, events.scriptDispatcher, events.applicationDispatcher)
+        explicit DeviceLayer(EventLayer& events):
+                standardIoDevice(events.standardIoDispatcher),
+                terminalDevice{ standardIoDevice, events.standardInput, events.scriptDispatcher, events.applicationDispatcher }
         {}
     };
 
-    struct Repositories
+    struct RepositoryLayer
     {
         using CameraRepositoryType = domain::EntityRepository<entity::Camera>;
         using ViewRepositoryType = domain::EntityRepository<entity::View>;
@@ -102,24 +102,24 @@ namespace testApp
         PipelineRepositoryType pipelines;
     };
 
-    struct Services
+    struct ServiceLayer
     {
         using LogServiceType = services::MultiSinkLogService;
         using FrameServiceType = services::BasicFrameService;
         using ShaderServiceType = openGL::services::ShaderService;
         using RendererType = openGL::Renderer<openGL::RendererDependencies<ShaderServiceType>>;
         using RendererFactoryType = RendererType::FactoryType;
-        using EngineType = domain::Engine<DataContextType, Repositories::PipelineRepositoryType>;
-        using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<Repositories::WindowRepositoryType >>;
+        using EngineType = domain::Engine<DataContextType, RepositoryLayer::PipelineRepositoryType>;
+        using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<RepositoryLayer::WindowRepositoryType >>;
         using ScriptServiceType = services::ScriptService<DataContextType>;
         using ConfigurationLoaderType = services::YamlConfigurationLoader<ConfigurationType, LogServiceType>;
-        using WindowControllerType = openGL::GlfwWindowController<DataContextType, Repositories::WindowRepositoryType>;
+        using WindowControllerType = openGL::GlfwWindowController<DataContextType, RepositoryLayer::WindowRepositoryType>;
         using WindowControllerFactoryType = WindowControllerType::FactoryType;
         using ViewControllerType = openGL::ViewControllerOpenGL<openGL::ViewControllerDependencies<DataContextType,
-                Services::RendererType,
-                Repositories::ViewRepositoryType,
-                Repositories::WindowRepositoryType,
-                Services::RendererFactoryType>>;
+                ServiceLayer::RendererType,
+                RepositoryLayer::ViewRepositoryType,
+                RepositoryLayer::WindowRepositoryType,
+                ServiceLayer::RendererFactoryType>>;
         using ViewControllerFactoryType = ViewControllerType::FactoryType;
 
         LogServiceType appConfigurationLogger;
@@ -132,7 +132,7 @@ namespace testApp
         WindowControllerFactoryType windowControllerFactory;
         ViewControllerFactoryType viewControllerFactory;
 
-        Services(const ConfigurationType& configuration, Events& events, Repositories& repository):
+        ServiceLayer(const ConfigurationType& configuration, EventLayer& events, RepositoryLayer& repository):
                 configurationLoader(appConfigurationLogger),
                 shaderService(configuration.shaderLoader),
                 windowService(repository.windows),
@@ -142,19 +142,19 @@ namespace testApp
         {}
     };
 
-    struct Managers
+    struct ManagerLayer
     {
-        using PipelineManagerType = managers::PipelineManager<DataContextType, Services::WindowControllerFactoryType, Repositories::PipelineRepositoryType>;
+        using PipelineManagerType = managers::PipelineManager<DataContextType, ServiceLayer::WindowControllerFactoryType, RepositoryLayer::PipelineRepositoryType>;
         using ViewManagerType = managers::ViewManager<managers::ViewManagerDependencies<DataContextType,
-                Repositories::ViewRepositoryType,
-                Repositories::PipelineRepositoryType,
-                Repositories::CameraRepositoryType,
-                Services::ViewControllerFactoryType>>;
+                RepositoryLayer::ViewRepositoryType,
+                RepositoryLayer::PipelineRepositoryType,
+                RepositoryLayer::CameraRepositoryType,
+                ServiceLayer::ViewControllerFactoryType>>;
 
         PipelineManagerType pipelineManager;
         ViewManagerType viewManager;
 
-        Managers(Repositories& repository, Services& services):
+        ManagerLayer(RepositoryLayer& repository, ServiceLayer& services):
                 pipelineManager(services.windowControllerFactory, repository.pipelines),
                 viewManager(repository.views, repository.pipelines, repository.cameras, services.viewControllerFactory)
         {}
@@ -163,16 +163,16 @@ namespace testApp
     class Registry
     {
     public:
-        Events events;
-        Devices devices;
-        Repositories respository;
-        Services services;
-        Managers managers;
+        EventLayer events = EventLayer{};
+        DeviceLayer devices;
+        RepositoryLayer repositories = RepositoryLayer{};
+        ServiceLayer services;
+        ManagerLayer managers;
 
         explicit Registry(const ConfigurationType& configuration):
-                devices(events),
-                services(configuration, events, respository),
-                managers(respository, services)
+                devices{ events },
+                services { configuration, events, repositories },
+                managers { repositories, services }
         {}
     };
 }
