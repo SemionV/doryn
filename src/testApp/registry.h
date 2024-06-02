@@ -8,9 +8,10 @@
 #include "base/domain/events/hub.h"
 #include "base/domain/entity.h"
 #include "base/domain/entityRepository.h"
+#include "base/domain/repositories/pipelineRepository.h"
 #include "base/domain/engine.h"
 #include "base/domain/services/frameService.h"
-#include "base/domain/services/viewService.h"
+#include "base/domain/managers/viewManager.h"
 #include "base/domain/devices/terminalDevice.h"
 #include "base/domain/services/scriptService.h"
 #include "base/domain/services/configurationService.h"
@@ -35,6 +36,7 @@ namespace testApp
     namespace domain = dory::domain;
     namespace entity = domain::entity;
     namespace services = domain::services;
+    namespace managers = domain::managers;
     namespace events = domain::events;
     namespace devices = domain::devices;
     namespace openGL = dory::openGL;
@@ -92,7 +94,7 @@ namespace testApp
         using CameraRepositoryType = domain::EntityRepository<entity::Camera>;
         using ViewRepositoryType = domain::EntityRepository<entity::View>;
         using WindowRepositoryType = domain::EntityRepository<openGL::GlfwWindow>;
-        using PipelineRepositoryType = domain::services::PipelineRepository<DataContextType, entity::PipelineNode<DataContextType>>;
+        using PipelineRepositoryType = domain::repositories::PipelineRepository<DataContextType, entity::PipelineNode<DataContextType>>;
 
         CameraRepositoryType cameras;
         ViewRepositoryType views;
@@ -121,7 +123,7 @@ namespace testApp
         using ViewControllerFactoryType = ViewControllerType::FactoryType;
 
         LogServiceType appConfigurationLogger;
-        LogServiceType appLogger;
+        LogServiceType appLogger = LogServiceType{};
         ConfigurationLoaderType configurationLoader;
         ShaderServiceType shaderService;
         RendererFactoryType rendererFactory;
@@ -142,19 +144,19 @@ namespace testApp
 
     struct Managers
     {
-        using PipelineManagerType = services::PipelineManager<DataContextType, Services::WindowControllerFactoryType, Repositories::PipelineRepositoryType>;
-        using ViewServiceType = services::ViewService<services::ViewServiceDependencies<DataContextType,
+        using PipelineManagerType = managers::PipelineManager<DataContextType, Services::WindowControllerFactoryType, Repositories::PipelineRepositoryType>;
+        using ViewManagerType = managers::ViewManager<managers::ViewManagerDependencies<DataContextType,
                 Repositories::ViewRepositoryType,
                 Repositories::PipelineRepositoryType,
                 Repositories::CameraRepositoryType,
                 Services::ViewControllerFactoryType>>;
 
         PipelineManagerType pipelineManager;
-        ViewServiceType viewService;
+        ViewManagerType viewManager;
 
         Managers(Repositories& repository, Services& services):
                 pipelineManager(services.windowControllerFactory, repository.pipelines),
-                viewService(repository.views, repository.pipelines, repository.cameras, services.viewControllerFactory)
+                viewManager(repository.views, repository.pipelines, repository.cameras, services.viewControllerFactory)
         {}
     };
 

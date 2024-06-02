@@ -1,6 +1,6 @@
 #include "baseTests/dependencies.h"
 #include "base/domain/entity.h"
-#include "base/domain/services/pipelineService.h"
+#include "base/domain/repositories/pipelineRepository.h"
 
 using namespace dory::domain;
 
@@ -8,7 +8,7 @@ TEST_CASE( "Load Pipeline", "[pipelineRepository]" )
 {
     using PipelineNodeType = entity::PipelineNode<int>;
 
-    auto pipelineService = services::PipelineRepository<int, PipelineNodeType, entity::IdType>(
+    auto pipelineService = repositories::PipelineRepository<int, PipelineNodeType, entity::IdType>(
             std::initializer_list<PipelineNodeType>{
                     PipelineNodeType(2, nullptr, entity::PipelineNodePriority::First, entity::nullId),
                     PipelineNodeType(1, nullptr, entity::PipelineNodePriority::Default, entity::nullId),

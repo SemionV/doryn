@@ -4,7 +4,7 @@
 #include "events/hub.h"
 #include "base/typeComponents.h"
 #include "object.h"
-#include "services/pipelineService.h"
+#include "base/domain/managers/pipelineManager.h"
 
 namespace dory::domain
 {
@@ -33,11 +33,11 @@ namespace dory::domain
     {
     private:
         events::engine::Dispatcher<TDataContext>& engineEventHub;
-        services::IPipelineRepository<TPipelineRepository, TDataContext>& pipelineRepository;
+        repositories::IPipelineRepository<TPipelineRepository, TDataContext>& pipelineRepository;
 
     public:
         explicit Engine(events::engine::Dispatcher<TDataContext>& engineEventHub,
-                        services::IPipelineRepository<TPipelineRepository, TDataContext>& pipelineRepository):
+                        repositories::IPipelineRepository<TPipelineRepository, TDataContext>& pipelineRepository):
                 engineEventHub(engineEventHub),
                 pipelineRepository(pipelineRepository)
         {}

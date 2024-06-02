@@ -98,7 +98,7 @@ namespace testApp
                 registry.devices.standartIODevice.flush();
             };
 
-            services::IPipelineRepository<Repositories::PipelineRepositoryType, DataContextType>& pipelines = registry.respository.pipelines;
+            dory::domain::repositories::IPipelineRepository<Repositories::PipelineRepositoryType, DataContextType>& pipelines = registry.respository.pipelines;
 
             pipelines.store(dory::domain::entity::PipelineNode<DataContextType> {
                     supmitInputEvents,
@@ -112,7 +112,7 @@ namespace testApp
 
             auto window = registry.services.windowService.createWindow();
             context.mainWindowId = window.id;
-            registry.managers.viewService.createView(context, window.id, context.outputGroupNodeId);
+            registry.managers.viewManager.createView(context, window.id, context.outputGroupNodeId);
         }
 
         void onStopEngine(DataContextType& context, const events::engine::Stop& eventData)
@@ -133,7 +133,7 @@ namespace testApp
         void onCloseWindow(DataContextType& context, events::window::Close& eventData)
         {
             registry.services.windowService.closeWindow(eventData.windowId);
-            registry.managers.viewService.destroyView(eventData.windowId);
+            registry.managers.viewManager.destroyView(eventData.windowId);
 
             if(eventData.windowId == context.mainWindowId)
             {

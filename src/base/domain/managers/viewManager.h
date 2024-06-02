@@ -2,12 +2,12 @@
 
 #include "base/typeComponents.h"
 #include "base/domain/entity.h"
-#include "pipelineService.h"
+#include "base/domain/managers/pipelineManager.h"
 
-namespace dory::domain::services
+namespace dory::domain::managers
 {
     template<typename TImplementation, typename TDataContext>
-    class IViewService: Uncopyable, public StaticInterface<TImplementation>
+    class IViewManager: Uncopyable, public StaticInterface<TImplementation>
     {
     public:
         auto createView(TDataContext& dataContext, entity::IdType windowId, entity::IdType parentPipelineNodeId)
@@ -26,7 +26,7 @@ namespace dory::domain::services
             typename TPipelineRepository,
             typename TCameraRepository,
             typename TViewControllerFactory>
-    struct ViewServiceDependencies
+    struct ViewManagerDependencies
     {
         using DataContextType = TDataContext;
         using ViewRepositoryType = TViewRepository;
@@ -36,8 +36,8 @@ namespace dory::domain::services
     };
 
     template<typename T>
-    requires(is_instance_v<T, ViewServiceDependencies>)
-    class ViewService: public IViewService<ViewService<T>, typename T::DataContextType>
+    requires(is_instance_v<T, ViewManagerDependencies>)
+    class ViewManager: public IViewManager<ViewManager<T>, typename T::DataContextType>
     {
     private:
         using DataContextType = typename T::DataContextType;
@@ -45,7 +45,7 @@ namespace dory::domain::services
         using ViewRepositoryType = IEntityRepository<typename T::ViewRepositoryType, entity::View, entity::IdType>;
         ViewRepositoryType& viewRepository;
 
-        using PipelineRepositoryType = IPipelineRepository<typename T::PipelineRepositoryType, typename T::DataContextType>;
+        using PipelineRepositoryType = repositories::IPipelineRepository<typename T::PipelineRepositoryType, typename T::DataContextType>;
         PipelineRepositoryType& pipelineRepository;
 
         using CameraRepositoryType = IEntityRepository<typename T::CameraRepositoryType, entity::Camera, entity::IdType>;
@@ -55,7 +55,7 @@ namespace dory::domain::services
         ViewControllerFactoryType& viewControllerFactory;
 
     public:
-        explicit ViewService(ViewRepositoryType& viewRepository,
+        explicit ViewManager(ViewRepositoryType& viewRepository,
                              PipelineRepositoryType& pipelineRepository,
                              CameraRepositoryType& cameraRepository,
                              ViewControllerFactoryType& viewControllerFactory):
