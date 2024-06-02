@@ -79,13 +79,13 @@ namespace dory::serialization::yaml
         template<typename T, auto N>
         inline static void beginCollection(YamlContext& context)
         {
-            auto current = context.parents.top();
-            current |= c4::yml::NodeType_e::SEQ;
+            auto currentNode = context.parents.top();
+            currentNode |= c4::yml::NodeType_e::SEQ;
 #ifdef WIN32
-            current |= c4::yml::NodeType_e::_WIP_STYLE_FLOW_SL;
+            currentNode |= c4::yml::NodeType_e::_WIP_STYLE_FLOW_SL;
 #endif
 #ifdef __unix__
-            parents |= c4::yml::NodeType_e::FLOW_SL;
+            currentNode |= c4::yml::NodeType_e::FLOW_SL;
 #endif
         }
 

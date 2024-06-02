@@ -8,11 +8,11 @@ loggingConfiguration:
       maximumFileSize: 5242880
       maximumFilesCount: 3
     stdoutLogger: {}
-i18nSets:
+stringSets:
   English:
     - configuration/strings.en.txt
     - configuration/strings2.en.txt
   French:
     - configuration/strings.fr.txt
     - configuration/strings2.fr.txt
-activeI18nSet: English
+activeStringSet: English
