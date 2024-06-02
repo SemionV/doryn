@@ -237,13 +237,6 @@ namespace dory::serialization
         }
 
         template<typename T, typename TContext>
-        requires(is_pair_v<std::decay_t<T>>)
-        static void visit(T&& object, TContext& context)
-        {
-            visit(*object.second, context);
-        }
-
-        template<typename T, typename TContext>
         requires(is_fixed_array_v<std::decay_t<T>>)
         static void visit(T&& object, TContext& context)
         {
@@ -290,8 +283,7 @@ namespace dory::serialization
                  && !std::is_same_v<std::decay_t<T>, std::string>
                  && !is_optional_v<std::decay_t<T>>
                  && !is_dynamic_collection_v<T>
-                 && !is_dictionary_v<T>
-                 && !is_pair_v<std::decay_t<T>>)
+                 && !is_dictionary_v<T>)
         static void visit(T&& object, TContext& context)
         {
             TPolicies::ObjectPolicy::beginObject(context);
