@@ -15,13 +15,14 @@ namespace dory::serialization
 
     struct DefaultObjectPolicy
     {
-        template<typename TContext>
-        inline static void beginObject(TContext& context)
+        template<typename TContext, typename T>
+        inline static bool beginObject(T&& object, TContext& context)
         {
+            return true;
         }
 
-        template<typename TContext>
-        inline static void endObject(TContext& context)
+        template<typename TContext, typename T>
+        inline static void endObject(T&& object, TContext& context)
         {
         }
     };
@@ -286,19 +287,20 @@ namespace dory::serialization
                  && !is_dictionary_v<T>)
         static void visit(T&& object, TContext& context)
         {
-            TPolicies::ObjectPolicy::beginObject(context);
-
-            reflection::visitClassFields(object, [](auto& memberValue, const std::string_view& memberName,
-                                                    const std::size_t i, const std::size_t memberCount, TContext& context)
+            if(TPolicies::ObjectPolicy::beginObject(std::forward<T>(object), context))
             {
-                if(TPolicies::MemberPolicy::beginMember(memberName, memberValue, i, context))
+                reflection::visitClassFields(object, [](auto& memberValue, const std::string_view& memberName,
+                                                        const std::size_t i, const std::size_t memberCount, TContext& context)
                 {
-                    visit(memberValue, context);
-                    TPolicies::MemberPolicy::endMember(i == memberCount - 1, context);
-                }
-            }, context);
+                    if(TPolicies::MemberPolicy::beginMember(memberName, memberValue, i, context))
+                    {
+                        visit(memberValue, context);
+                        TPolicies::MemberPolicy::endMember(i == memberCount - 1, context);
+                    }
+                }, context);
 
-            TPolicies::ObjectPolicy::endObject(context);
+                TPolicies::ObjectPolicy::endObject(std::forward<T>(object), context);
+            }
         }
     };
 }

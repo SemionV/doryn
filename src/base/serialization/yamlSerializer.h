@@ -32,13 +32,17 @@ namespace dory::serialization::yaml
 
     struct SerializerObjectPolicy
     {
-        inline static void beginObject(YamlContext& context)
+        template<typename T>
+        inline static bool beginObject(T&& object, YamlContext& context)
         {
             auto current = context.parents.top();
             current |= c4::yml::NodeType_e::MAP;
+
+            return true;
         }
 
-        inline static void endObject(YamlContext& context)
+        template<typename T>
+        inline static void endObject(T&& object, YamlContext& context)
         {
         }
     };

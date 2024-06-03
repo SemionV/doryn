@@ -101,15 +101,17 @@ namespace dory::serialization
 
     struct ObjectPolicyTest
     {
-        template<typename TContext>
-        inline static void beginObject(TContext& context)
+        template<typename TContext, typename T>
+        inline static bool beginObject(T&& object, TContext& context)
         {
             assert(context.currentValueNode);
             context.currentValueNode->value = ObjectRepresentation();
+
+            return true;
         }
 
-        template<typename TContext>
-        inline static void endObject(TContext& context)
+        template<typename TContext, typename T>
+        inline static void endObject(T&& object, TContext& context)
         {
         }
     };

@@ -18,13 +18,17 @@ namespace dory::serialization::json
 
     struct SerializerObjectPolicy
     {
-        inline static void beginObject(JsonContext& context)
+        template<typename T>
+        inline static bool beginObject(T&& object, JsonContext& context)
         {
             auto* currentJson = context.parents.top();
             *currentJson = json::object();
+
+            return true;
         }
 
-        inline static void endObject(JsonContext& context)
+        template<typename T>
+        inline static void endObject(T&& object, JsonContext& context)
         {
         }
     };
