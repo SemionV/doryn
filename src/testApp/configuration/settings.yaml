@@ -1,7 +1,7 @@
 shaderLoader:
   shadersDirectory: configuration/
-stringSets:
-  Spanish:
+languages:
+  spanish:
     - configuration/strings.sp.txt
     - configuration/strings2.sp.txt
     - configuration/strings3.sp.txt

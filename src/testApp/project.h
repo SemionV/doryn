@@ -8,7 +8,7 @@ namespace testApp
 
     struct LogStrings
     {
-        const fmt::runtime_format_string<>& devicesConnected = fmt::runtime("DeviceLayer connected {0}");
+        const fmt::runtime_format_string<> devicesConnected = fmt::runtime("DeviceLayer connected {0}");
     };
 
     class Project: dory::Uncopyable
