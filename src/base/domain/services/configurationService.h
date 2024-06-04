@@ -5,7 +5,6 @@
 #include "base/domain/configuration.h"
 #include "base/serialization/yamlDeserializer.h"
 #include "base/serialization/yamlSerializer.h"
-#include "base/io.h"
 #include "logService.h"
 #include "base/serialization/objectVisitor.h"
 #include "fileService.h"
