@@ -3,6 +3,7 @@
 #include "openGL/graphics/program.h"
 #include "base/domain/configuration.h"
 #include "base/typeComponents.h"
+#include "base/domain/services/logService.h"
 
 namespace dory::openGL::services
 {
@@ -42,14 +43,20 @@ namespace dory::openGL::services
         }
     };
 
-    class ShaderService: public IShaderService<ShaderService>
+    template<typename TLogger>
+    class ShaderService: public IShaderService<ShaderService<TLogger>>
     {
     private:
+        using LoggerType = domain::services::ILogService<TLogger>;
+        LoggerType& logger;
+
         const configuration::ShaderLoader& shaderLoaderSettings;
 
     public:
-        explicit ShaderService(const configuration::ShaderLoader& shaderLoaderSettings):
-            shaderLoaderSettings(shaderLoaderSettings)
+        explicit ShaderService(const configuration::ShaderLoader& shaderLoaderSettings,
+                               LoggerType& logger):
+            shaderLoaderSettings(shaderLoaderSettings),
+            logger(logger)
         {}
 
         void loadProgramImpl(graphics::Program& program, const std::function<void(ShaderServiceError&)>& errorHandler)
@@ -62,34 +69,45 @@ namespace dory::openGL::services
             {
                 auto& shader = shaders[i];
 
-                shader.sourceCode = dory::getTextFileContent(std::filesystem::path{shaderLoaderSettings.shadersDirectory} /= shader.key);
-
-                auto shaderId = shader.id = glCreateShader(shader.type);
-                const char* shaderSource = shader.sourceCode.c_str();
-                glShaderSource(shaderId, 1, &shaderSource, 0);
-
-                glCompileShader(shaderId);
-
-                GLint compiled;
-                glGetShaderiv(shaderId, GL_COMPILE_STATUS, &compiled);
-                if(!compiled)
+                auto filename = std::filesystem::path{shaderLoaderSettings.shadersDirectory} /= shader.key;
+                try
                 {
-                    GLsizei len;
-                    glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &len);
-
-                    std::string logString(len + 1, 0);
-                    glGetShaderInfoLog(shaderId, len, &len, logString.data());
-
-                    if(errorHandler)
-                    {
-                        ShaderServiceError shaderServiceError;
-                        shaderServiceError.shaderCompilationError = std::make_shared<ShaderCompilationError>(shader.key, logString);
-
-                        errorHandler(shaderServiceError);
-                    }
+                    shader.sourceCode = dory::getTextFileContent(filename);
+                }
+                catch(std::exception e)
+                {
+                    logger.error("cannot load shader: " + filename.string());
                 }
 
-                glAttachShader(program.id, shaderId);
+                if(!shader.sourceCode.empty())
+                {
+                    auto shaderId = shader.id = glCreateShader(shader.type);
+                    const char* shaderSource = shader.sourceCode.c_str();
+                    glShaderSource(shaderId, 1, &shaderSource, 0);
+
+                    glCompileShader(shaderId);
+
+                    GLint compiled;
+                    glGetShaderiv(shaderId, GL_COMPILE_STATUS, &compiled);
+                    if(!compiled)
+                    {
+                        GLsizei len;
+                        glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &len);
+
+                        std::string logString(len + 1, 0);
+                        glGetShaderInfoLog(shaderId, len, &len, logString.data());
+
+                        if(errorHandler)
+                        {
+                            ShaderServiceError shaderServiceError;
+                            shaderServiceError.shaderCompilationError = std::make_shared<ShaderCompilationError>(shader.key, logString);
+
+                            errorHandler(shaderServiceError);
+                        }
+                    }
+
+                    glAttachShader(program.id, shaderId);
+                }
             }
 
             glLinkProgram(program.id);

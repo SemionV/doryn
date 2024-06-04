@@ -1,5 +1,5 @@
-overrideWithFiles:
-  - configuration/settings.yaml
+description: app settings
+loadFrom: [ configuration/settings.user.yaml ]
 loggingConfiguration:
   mainLogger:
     name: engine
@@ -16,6 +16,7 @@ localizations:
     - configuration/strings.fr.txt
     - configuration/strings2.fr.txt
 interface:
-  overrideWithFiles:
-    - configuration/interface.user.yaml
+  description: user interface settings
+  loadFrom: [ configuration/interface.user.yaml ]
+  saveTo: configuration/interface.user.yaml
   activeLanguage: english

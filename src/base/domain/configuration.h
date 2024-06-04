@@ -7,7 +7,9 @@ namespace dory::configuration
 {
     struct RecursiveSection
     {
-        std::vector<std::string> overrideWithFiles;
+        std::vector<std::string> loadFrom;
+        std::string saveTo;
+        std::string description;
     };
 }
 
@@ -77,7 +79,9 @@ namespace dory::configuration {
     };
 }
 REFL_TYPE(dory::configuration::Interface)
-        REFL_FIELD(overrideWithFiles)
+        REFL_FIELD(loadFrom)
+        REFL_FIELD(saveTo)
+        REFL_FIELD(description)
         REFL_FIELD(activeLanguage)
 REFL_END
 
@@ -92,7 +96,7 @@ namespace dory::configuration {
     };
 }
 REFL_TYPE(dory::configuration::Configuration)
-        REFL_FIELD(overrideWithFiles)
+        REFL_FIELD(loadFrom)
         REFL_FIELD(localizations)
         REFL_FIELD(loggingConfiguration)
         REFL_FIELD(shaderLoader)

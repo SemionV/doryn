@@ -106,13 +106,13 @@ namespace testApp
     {
         using LogServiceType = services::MultiSinkLogService;
         using FrameServiceType = services::BasicFrameService;
-        using ShaderServiceType = openGL::services::ShaderService;
+        using ShaderServiceType = openGL::services::ShaderService<LogServiceType>;
         using RendererType = openGL::Renderer<openGL::RendererDependencies<ShaderServiceType>>;
         using RendererFactoryType = RendererType::FactoryType;
         using EngineType = domain::Engine<DataContextType, RepositoryLayer::PipelineRepositoryType>;
         using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<RepositoryLayer::WindowRepositoryType >>;
         using ScriptServiceType = services::ScriptService<DataContextType>;
-        using ConfigurationLoaderType = services::configuration::YamlConfigurationLoader<ConfigurationType, LogServiceType>;
+        using ConfigurationLoaderType = services::configuration::YamlConfigurationLoader<LogServiceType>;
         using WindowControllerType = openGL::GlfwWindowController<DataContextType, RepositoryLayer::WindowRepositoryType>;
         using WindowControllerFactoryType = WindowControllerType::FactoryType;
         using ViewControllerType = openGL::ViewControllerOpenGL<openGL::ViewControllerDependencies<DataContextType,
@@ -134,7 +134,7 @@ namespace testApp
 
         ServiceLayer(const ConfigurationType& configuration, EventLayer& events, RepositoryLayer& repository):
                 configurationLoader(appConfigurationLogger),
-                shaderService(configuration.shaderLoader),
+                shaderService(configuration.shaderLoader, appLogger),
                 windowService(repository.windows),
                 rendererFactory(shaderService),
                 windowControllerFactory(repository.windows, events.windowDispatcher),

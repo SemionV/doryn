@@ -10,28 +10,29 @@
 
 namespace dory::domain::services::configuration
 {
-    template<typename TConfiguration, typename TImplementation>
+    template<typename TImplementation>
     class IConfigurationLoader: Uncopyable, public StaticInterface<TImplementation>
     {
     public:
+        template<typename TConfiguration>
         bool load(const std::filesystem::path& configurationPath, TConfiguration& configuration)
         {
             return this->toImplementation()->loadImpl(configurationPath, configuration);
         }
     };
 
-    template<template<typename TSection, typename TLogger> class TConfigurationLoader, typename TLogger>
+    template<typename TLoader>
     struct ConfigurationSectionContext
     {
-        using LoggerType = ILogService<TLogger>;
-        LoggerType& logger;
+        using LoaderType = IConfigurationLoader<TLoader>;
+        LoaderType& loader;
 
-        explicit ConfigurationSectionContext(LoggerType& logger):
-            logger(logger)
+        explicit ConfigurationSectionContext(LoaderType& loader):
+                loader(loader)
         {}
     };
 
-    struct SectionLoadObjectPolicy
+    struct ConfigurationSectionObjectPolicy
     {
         template<typename TContext, typename T>
         requires((!std::is_base_of_v<dory::configuration::RecursiveSection, std::decay_t<T>>))
@@ -41,16 +42,15 @@ namespace dory::domain::services::configuration
             return true;
         }
 
-        template<typename T, typename TLogger, template<typename TSection, typename> class TConfigurationLoader>
+        template<typename T, typename TLoader>
         requires(std::is_base_of_v<dory::configuration::RecursiveSection, std::decay_t<T>>)
-        inline static bool beginObject(T&& object, ConfigurationSectionContext<TConfigurationLoader, TLogger>& context)
+        inline static bool beginObject(T&& object, ConfigurationSectionContext<TLoader>& context)
         {
             //recursive section
-            auto loader = TConfigurationLoader<std::decay_t<T>, TLogger>{ context.logger };
-            auto overrideWithFiles = std::vector<std::string>{ std::move(object.overrideWithFiles) };
+            auto overrideWithFiles = std::vector<std::string>{ std::move(object.loadFrom) };
             for(const auto& settingsFile : overrideWithFiles)
             {
-                loader.load(settingsFile, std::forward<T>(object));
+                context.loader.load(settingsFile, std::forward<T>(object));
             }
 
             return true;
@@ -64,21 +64,20 @@ namespace dory::domain::services::configuration
 
     struct ConfigurationSectionLoadPolicies: public serialization::VisitorDefaultPolicies
     {
-        using ObjectPolicy = SectionLoadObjectPolicy;
+        using ObjectPolicy = ConfigurationSectionObjectPolicy;
     };
 
-    template<typename TConfiguration, typename TLogger>
-    class YamlConfigurationLoader: public IConfigurationLoader<TConfiguration, YamlConfigurationLoader<TConfiguration, TLogger>>
+    template<typename TLogger>
+    class YamlConfigurationLoader: public IConfigurationLoader<YamlConfigurationLoader<TLogger>>
     {
     private:
-        using ConfigurationType = TConfiguration;
-
         using LoggerType = ILogService<TLogger>;
         LoggerType& logger;
 
-        void loadSections(ConfigurationType& configuration)
+        template<typename TConfiguration>
+        void loadSections(TConfiguration& configuration)
         {
-            auto context = ConfigurationSectionContext<YamlConfigurationLoader, TLogger>{ logger };
+            auto context = ConfigurationSectionContext<YamlConfigurationLoader<TLogger>>{ *this };
             serialization::ObjectVisitor<ConfigurationSectionLoadPolicies>::visit(configuration, context);
         }
 
@@ -87,14 +86,22 @@ namespace dory::domain::services::configuration
             logger(logger)
         {}
 
-        bool loadImpl(const std::filesystem::path& configurationPath, ConfigurationType& configuration)
+        template<typename TConfiguration>
+        bool loadImpl(const std::filesystem::path& configurationPath, TConfiguration& configuration)
         {
             try
             {
                 logger.information(fmt::format("load configuration from: {0}", configurationPath.string()));
 
-                auto yamlSource = getTextFileContent(configurationPath);
-                dory::serialization::yaml::deserialize(yamlSource, configuration);
+                try
+                {
+                    auto yamlSource = getTextFileContent(configurationPath);
+                    dory::serialization::yaml::deserialize(yamlSource, configuration);
+                }
+                catch(std::exception e)
+                {
+                    logger.error("cannot load configuration: " + configurationPath.string());
+                }
 
                 //load recursive settings
                 loadSections(configuration);
