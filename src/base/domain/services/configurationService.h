@@ -22,9 +22,15 @@ namespace dory::domain::services::configuration
         }
 
         template<typename TConfiguration>
-        bool save(TConfiguration& configuration)
+        bool save(const std::filesystem::path& configurationPath, TConfiguration& configuration)
         {
-            return this->toImplementation()->saveImpl(configuration);
+            return this->toImplementation()->saveImpl(configurationPath, configuration);
+        }
+
+        template<typename TConfiguration>
+        void save(TConfiguration& configuration)
+        {
+            this->toImplementation()->saveImpl(configuration);
         }
     };
 
@@ -81,7 +87,7 @@ namespace dory::domain::services::configuration
             //recursive section
             if(!object.saveTo.empty())
             {
-                context.loader.save(object);
+                context.loader.save(object.saveTo, object);
             }
 
             return true;
@@ -139,27 +145,21 @@ namespace dory::domain::services::configuration
         }
 
         template<typename TConfiguration>
-        bool saveImpl(TConfiguration& configuration)
+        void saveImpl(TConfiguration& configuration)
+        {
+            auto context = ConfigurationSectionContext<YamlConfigurationLoader<TLogger>>{ *this };
+            serialization::ObjectVisitor<SaveConfigurationSectionPolicies>::visit(configuration, context);
+        }
+
+        template<typename TConfiguration>
+        bool saveImpl(const std::filesystem::path& configurationPath, TConfiguration& configuration)
         {
             try
             {
-                if(!configuration.saveTo.empty())
-                {
-                    auto filePath = std::filesystem::path{ configuration.saveTo };
+                logger.information(fmt::format("save configuration to: {0}", configurationPath.string()));
 
-                    logger.information(fmt::format("save configuration to: {0}", filePath.string()));
-
-                    auto yaml = dory::serialization::yaml::serialize(configuration);
-                    writeToFile(filePath, yaml);
-                }
-
-                auto pathCopy = std::string{ std::move(configuration.saveTo) };
-
-                //save recursive sections
-                auto context = ConfigurationSectionContext<YamlConfigurationLoader<TLogger>>{ *this };
-                serialization::ObjectVisitor<SaveConfigurationSectionPolicies>::visit(configuration, context);
-
-                configuration.saveTo = std::string{ std::move(pathCopy) };
+                auto yaml = dory::serialization::yaml::serialize(configuration);
+                writeToFile(configurationPath, yaml);
 
                 return true;
             }
