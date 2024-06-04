@@ -34,17 +34,13 @@ namespace testApp
             //init boot logger with 0 level config
             registry.services.appConfigurationLogger.initialize(bootLoggerConfig, dory::makeOptionalRef(registry.devices.terminalDevice));
 
-            //load 1 level configuration
+            //load configuration
             registry.services.configurationLoader.load(configuration.mainConfigurationFile, configuration);
-
-            //load additional settings(theme)
-            for(const auto& settingsFile : configuration.settingFiles)
-            {
-                registry.services.configurationLoader.load(settingsFile, configuration);
-            }
 
             //init main logger with parents config
             registry.services.appLogger.initialize(configuration.loggingConfiguration.mainLogger, dory::makeOptionalRef(registry.devices.terminalDevice));
+
+            registry.services.appConfigurationLogger.information("active language: " + configuration.interface.activeLanguage);
 
             attachEventHandlers();
 

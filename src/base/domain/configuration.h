@@ -3,6 +3,14 @@
 #include "base/dependencies.h"
 #include "base/typeComponents.h"
 
+namespace dory::configuration
+{
+    struct RecursiveSection
+    {
+        std::vector<std::string> overrideWithFiles;
+    };
+}
+
 namespace dory::configuration {
     struct RotationLogSink
     {
@@ -63,20 +71,30 @@ REFL_TYPE(dory::configuration::ShaderLoader)
 REFL_END
 
 namespace dory::configuration {
-    struct Configuration
+    struct Interface: public RecursiveSection
     {
-        std::vector<std::string> settingFiles;
-        std::map<std::string, std::vector<std::string>> localizations;
         std::string activeLanguage;
-        LoggingConfiguration loggingConfiguration;
+    };
+}
+REFL_TYPE(dory::configuration::Interface)
+        REFL_FIELD(overrideWithFiles)
+        REFL_FIELD(activeLanguage)
+REFL_END
+
+namespace dory::configuration {
+    struct Configuration: public RecursiveSection
+    {
         std::string mainConfigurationFile;
+        std::map<std::string, std::vector<std::string>> localizations;
+        LoggingConfiguration loggingConfiguration;
         ShaderLoader shaderLoader;
+        Interface interface;
     };
 }
 REFL_TYPE(dory::configuration::Configuration)
-        REFL_FIELD(settingFiles)
+        REFL_FIELD(overrideWithFiles)
         REFL_FIELD(localizations)
-        REFL_FIELD(activeLanguage)
         REFL_FIELD(loggingConfiguration)
         REFL_FIELD(shaderLoader)
+        REFL_FIELD(interface)
 REFL_END

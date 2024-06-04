@@ -1,6 +1,8 @@
+overrideWithFiles:
+  - configuration/settings2.yaml
 shaderLoader:
   shadersDirectory: configuration/
-languages:
+localizations:
   spanish:
     - configuration/strings.sp.txt
     - configuration/strings2.sp.txt

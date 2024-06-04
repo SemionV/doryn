@@ -86,8 +86,8 @@ namespace dory::serialization
             return {};
         }
 
-        template<typename T, typename V, typename TContext>
-        inline static void endItem(std::reference_wrapper<typename T::value_type> item, V& collection, TContext& context)
+        template<typename V, typename TContext>
+        inline static void endItem(auto& item, V& collection, TContext& context)
         {
         }
     };

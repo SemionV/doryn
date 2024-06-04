@@ -112,7 +112,7 @@ namespace testApp
         using EngineType = domain::Engine<DataContextType, RepositoryLayer::PipelineRepositoryType>;
         using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<RepositoryLayer::WindowRepositoryType >>;
         using ScriptServiceType = services::ScriptService<DataContextType>;
-        using ConfigurationLoaderType = services::YamlConfigurationLoader<ConfigurationType, LogServiceType>;
+        using ConfigurationLoaderType = services::configuration::YamlConfigurationLoader<ConfigurationType, LogServiceType>;
         using WindowControllerType = openGL::GlfwWindowController<DataContextType, RepositoryLayer::WindowRepositoryType>;
         using WindowControllerFactoryType = WindowControllerType::FactoryType;
         using ViewControllerType = openGL::ViewControllerOpenGL<openGL::ViewControllerDependencies<DataContextType,

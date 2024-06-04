@@ -1,4 +1,4 @@
-settingFiles:
+overrideWithFiles:
   - configuration/settings.yaml
 loggingConfiguration:
   mainLogger:
@@ -15,4 +15,7 @@ localizations:
   french:
     - configuration/strings.fr.txt
     - configuration/strings2.fr.txt
-activeLanguage: english
+interface:
+  overrideWithFiles:
+    - configuration/interface.user.yaml
+  activeLanguage: english
