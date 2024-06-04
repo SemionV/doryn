@@ -97,6 +97,7 @@ namespace dory::configuration {
 }
 REFL_TYPE(dory::configuration::Configuration)
         REFL_FIELD(loadFrom)
+        REFL_FIELD(saveTo)
         REFL_FIELD(localizations)
         REFL_FIELD(loggingConfiguration)
         REFL_FIELD(shaderLoader)

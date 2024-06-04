@@ -98,7 +98,7 @@ namespace dory::serialization
         std::stack<TNode> parents;
         std::stack<std::size_t> collectionIndexesStack;
         std::stack<std::size_t> collectionSizesStack;
-        std::stack<std::queue<std::string>> dictionaryKeysStack;
+        std::stack<std::queue<std::string_view>> dictionaryKeysStack;
 
         explicit TreeStructureContext(TNode data)
         {

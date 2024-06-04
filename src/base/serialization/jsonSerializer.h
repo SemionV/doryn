@@ -131,7 +131,7 @@ namespace dory::serialization::json
             auto& itemNode = currentNode->operator[](key);
             parents.push(&itemNode);
 
-            return collection.at(key);
+            return collection.at(std::string { key });
         }
     };
 

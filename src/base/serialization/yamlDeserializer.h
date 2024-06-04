@@ -111,7 +111,7 @@ namespace dory::serialization::yaml
                 {
                     auto itemNode = currentNode.at(i);
                     auto nodeKey = itemNode.key();
-                    auto key = std::string(nodeKey.str, nodeKey.len);
+                    auto key = std::string_view(nodeKey.str, nodeKey.len);
 
                     keys.emplace(key);
                 }
@@ -135,12 +135,13 @@ namespace dory::serialization::yaml
             auto itemNode = currentNode.at(toRymlCStr(key));
             parents.push(itemNode);
 
-            if(collection.contains(key))
+            const std::string keyString { key };
+            if(collection.contains(keyString))
             {
-                return collection[key];
+                return collection[keyString];
             }
 
-            return collection[key] = typename TCollection::mapped_type{};
+            return collection[keyString] = typename TCollection::mapped_type{};
         }
     };
 

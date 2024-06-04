@@ -42,6 +42,9 @@ namespace testApp
 
             registry.services.appConfigurationLogger.information("active language: " + configuration.interface.activeLanguage);
 
+            configuration.interface.activeLanguage = "spanish";
+            registry.services.configurationLoader.save(configuration);
+
             attachEventHandlers();
 
             auto context = DataContextType{};

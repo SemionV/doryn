@@ -72,9 +72,9 @@ namespace dory::openGL::services
                 auto filename = std::filesystem::path{shaderLoaderSettings.shadersDirectory} /= shader.key;
                 try
                 {
-                    shader.sourceCode = dory::getTextFileContent(filename);
+                    shader.sourceCode = dory::readFromFile(filename);
                 }
-                catch(std::exception e)
+                catch(const std::exception& e)
                 {
                     logger.error("cannot load shader: " + filename.string());
                 }

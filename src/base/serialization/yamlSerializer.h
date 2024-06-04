@@ -154,10 +154,11 @@ namespace dory::serialization::yaml
         {
             auto currentNode = parents.top();
             auto itemNode = currentNode.append_child();
-            itemNode.set_key(toRymlCStr(key));
+            const c4::csubstr &substring = toRymlCStr(key);
+            itemNode.set_key(substring);
             parents.push(itemNode);
 
-            return collection.at(key);
+            return collection.at(std::string { key });
         }
     };
 

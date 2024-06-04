@@ -1,5 +1,6 @@
 description: app settings
-loadFrom: [ configuration/settings.user.yaml ]
+loadFrom: [ configuration/settings.yaml ]
+saveTo: configuration/settings.user.yaml
 loggingConfiguration:
   mainLogger:
     name: engine

@@ -4,6 +4,7 @@
 #include "base/typeComponents.h"
 #include "base/domain/configuration.h"
 #include "base/serialization/yamlDeserializer.h"
+#include "base/serialization/yamlSerializer.h"
 #include "base/io.h"
 #include "logService.h"
 #include "base/serialization/objectVisitor.h"
@@ -19,6 +20,12 @@ namespace dory::domain::services::configuration
         {
             return this->toImplementation()->loadImpl(configurationPath, configuration);
         }
+
+        template<typename TConfiguration>
+        bool save(TConfiguration& configuration)
+        {
+            return this->toImplementation()->saveImpl(configuration);
+        }
     };
 
     template<typename TLoader>
@@ -32,7 +39,7 @@ namespace dory::domain::services::configuration
         {}
     };
 
-    struct ConfigurationSectionObjectPolicy
+    struct LoadConfigurationSectionObjectPolicy: public serialization::DefaultObjectPolicy
     {
         template<typename TContext, typename T>
         requires((!std::is_base_of_v<dory::configuration::RecursiveSection, std::decay_t<T>>))
@@ -55,16 +62,40 @@ namespace dory::domain::services::configuration
 
             return true;
         }
+    };
 
+    struct SaveConfigurationSectionObjectPolicy: public serialization::DefaultObjectPolicy
+    {
         template<typename TContext, typename T>
-        inline static void endObject(T&& object, TContext& context)
+        requires((!std::is_base_of_v<dory::configuration::RecursiveSection, std::decay_t<T>>))
+        inline static bool beginObject(T&& object, TContext& context)
         {
+            //skip non-recursive section
+            return true;
+        }
+
+        template<typename T, typename TLoader>
+        requires(std::is_base_of_v<dory::configuration::RecursiveSection, std::decay_t<T>>)
+        inline static bool beginObject(T&& object, ConfigurationSectionContext<TLoader>& context)
+        {
+            //recursive section
+            if(!object.saveTo.empty())
+            {
+                context.loader.save(object);
+            }
+
+            return true;
         }
     };
 
-    struct ConfigurationSectionLoadPolicies: public serialization::VisitorDefaultPolicies
+    struct LoadConfigurationSectionPolicies: public serialization::VisitorDefaultPolicies
     {
-        using ObjectPolicy = ConfigurationSectionObjectPolicy;
+        using ObjectPolicy = LoadConfigurationSectionObjectPolicy;
+    };
+
+    struct SaveConfigurationSectionPolicies: public serialization::VisitorDefaultPolicies
+    {
+        using ObjectPolicy = SaveConfigurationSectionObjectPolicy;
     };
 
     template<typename TLogger>
@@ -73,13 +104,6 @@ namespace dory::domain::services::configuration
     private:
         using LoggerType = ILogService<TLogger>;
         LoggerType& logger;
-
-        template<typename TConfiguration>
-        void loadSections(TConfiguration& configuration)
-        {
-            auto context = ConfigurationSectionContext<YamlConfigurationLoader<TLogger>>{ *this };
-            serialization::ObjectVisitor<ConfigurationSectionLoadPolicies>::visit(configuration, context);
-        }
 
     public:
         explicit YamlConfigurationLoader(LoggerType& logger):
@@ -93,18 +117,12 @@ namespace dory::domain::services::configuration
             {
                 logger.information(fmt::format("load configuration from: {0}", configurationPath.string()));
 
-                try
-                {
-                    auto yamlSource = getTextFileContent(configurationPath);
-                    dory::serialization::yaml::deserialize(yamlSource, configuration);
-                }
-                catch(std::exception e)
-                {
-                    logger.error("cannot load configuration: " + configurationPath.string());
-                }
+                auto yamlSource = readFromFile(configurationPath);
+                dory::serialization::yaml::deserialize(yamlSource, configuration);
 
-                //load recursive settings
-                loadSections(configuration);
+                //load recursive sections
+                auto context = ConfigurationSectionContext<YamlConfigurationLoader<TLogger>>{ *this };
+                serialization::ObjectVisitor<LoadConfigurationSectionPolicies>::visit(configuration, context);
 
                 return true;
             }
@@ -115,6 +133,43 @@ namespace dory::domain::services::configuration
             catch(...)
             {
                 logger.error("cannot load configuration: unknown exception type");
+            }
+
+            return false;
+        }
+
+        template<typename TConfiguration>
+        bool saveImpl(TConfiguration& configuration)
+        {
+            try
+            {
+                if(!configuration.saveTo.empty())
+                {
+                    auto filePath = std::filesystem::path{ configuration.saveTo };
+
+                    logger.information(fmt::format("save configuration to: {0}", filePath.string()));
+
+                    auto yaml = dory::serialization::yaml::serialize(configuration);
+                    writeToFile(filePath, yaml);
+                }
+
+                auto pathCopy = std::string{ std::move(configuration.saveTo) };
+
+                //save recursive sections
+                auto context = ConfigurationSectionContext<YamlConfigurationLoader<TLogger>>{ *this };
+                serialization::ObjectVisitor<SaveConfigurationSectionPolicies>::visit(configuration, context);
+
+                configuration.saveTo = std::string{ std::move(pathCopy) };
+
+                return true;
+            }
+            catch(const std::exception& e)
+            {
+                logger.error(fmt::format("cannot save configuration: {0}", e.what()));
+            }
+            catch(...)
+            {
+                logger.error("cannot save configuration: unknown exception type");
             }
 
             return false;

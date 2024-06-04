@@ -115,12 +115,13 @@ namespace dory::serialization::json
             auto& itemJson = currentJson->at(key);
             parents.push(&itemJson);
 
-            if(collection.contains(key))
+            const std::string keyString { key };
+            if(collection.contains(keyString))
             {
-                return collection[key];
+                return collection[keyString];
             }
 
-            return collection[key] = typename TCollection::mapped_type{};
+            return collection[keyString] = typename TCollection::mapped_type{};
         }
     };
 

@@ -4,7 +4,7 @@
 
 namespace dory
 {
-    std::string getTextFileContent(const std::filesystem::path& filename)
+    std::string readFromFile(const std::filesystem::path& filename)
     {
         auto stream = std::ifstream(filename);
         stream.exceptions(std::ios_base::badbit);
@@ -25,5 +25,17 @@ namespace dory
         result.append(buffer, 0, stream.gcount());
 
         return result;
+    }
+
+    void writeToFile(const std::filesystem::path& filename, const std::string& content)
+    {
+        std::ofstream stream(filename.string(), std::ios::trunc);
+        if(!stream.is_open())
+        {
+            throw std::ios_base::failure("cannot open file " + filename.string());
+        }
+
+        stream << content;
+        stream.close();
     }
 }
