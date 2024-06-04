@@ -8,6 +8,7 @@
 #include "base/io.h"
 #include "logService.h"
 #include "base/serialization/objectVisitor.h"
+#include "fileService.h"
 
 namespace dory::domain::services::configuration
 {
@@ -104,16 +105,20 @@ namespace dory::domain::services::configuration
         using ObjectPolicy = SaveConfigurationSectionObjectPolicy;
     };
 
-    template<typename TLogger>
-    class YamlConfigurationLoader: public IConfigurationLoader<YamlConfigurationLoader<TLogger>>
+    template<typename TLogger, typename TFileService>
+    class YamlConfigurationLoader: public IConfigurationLoader<YamlConfigurationLoader<TLogger, TFileService>>
     {
     private:
         using LoggerType = ILogService<TLogger>;
         LoggerType& logger;
 
+        using FileServiceType = domain::services::IFileService<TFileService>;
+        FileServiceType& fileService;
+
     public:
-        explicit YamlConfigurationLoader(LoggerType& logger):
-            logger(logger)
+        explicit YamlConfigurationLoader(LoggerType& logger, FileServiceType& fileService):
+            logger(logger),
+            fileService(fileService)
         {}
 
         template<typename TConfiguration>
@@ -123,11 +128,11 @@ namespace dory::domain::services::configuration
             {
                 logger.information(fmt::format("load configuration from: {0}", configurationPath.string()));
 
-                auto yamlSource = readFromFile(configurationPath);
+                auto yamlSource = fileService.read(configurationPath);
                 dory::serialization::yaml::deserialize(yamlSource, configuration);
 
                 //load recursive sections
-                auto context = ConfigurationSectionContext<YamlConfigurationLoader<TLogger>>{ *this };
+                auto context = ConfigurationSectionContext<YamlConfigurationLoader>{ *this };
                 serialization::ObjectVisitor<LoadConfigurationSectionPolicies>::visit(configuration, context);
 
                 return true;
@@ -147,7 +152,7 @@ namespace dory::domain::services::configuration
         template<typename TConfiguration>
         void saveImpl(TConfiguration& configuration)
         {
-            auto context = ConfigurationSectionContext<YamlConfigurationLoader<TLogger>>{ *this };
+            auto context = ConfigurationSectionContext<YamlConfigurationLoader>{ *this };
             serialization::ObjectVisitor<SaveConfigurationSectionPolicies>::visit(configuration, context);
         }
 
@@ -159,7 +164,7 @@ namespace dory::domain::services::configuration
                 logger.information(fmt::format("save configuration to: {0}", configurationPath.string()));
 
                 auto yaml = dory::serialization::yaml::serialize(configuration);
-                writeToFile(configurationPath, yaml);
+                fileService.write(configurationPath, yaml);
 
                 return true;
             }

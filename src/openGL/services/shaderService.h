@@ -43,20 +43,25 @@ namespace dory::openGL::services
         }
     };
 
-    template<typename TLogger>
-    class ShaderService: public IShaderService<ShaderService<TLogger>>
+    template<typename TLogger, typename TFileService>
+    class ShaderService: public IShaderService<ShaderService<TLogger, TFileService>>
     {
     private:
         using LoggerType = domain::services::ILogService<TLogger>;
         LoggerType& logger;
 
+        using FileServiceType = domain::services::IFileService<TFileService>;
+        FileServiceType& fileService;
+
         const configuration::ShaderLoader& shaderLoaderSettings;
 
     public:
         explicit ShaderService(const configuration::ShaderLoader& shaderLoaderSettings,
-                               LoggerType& logger):
+                               LoggerType& logger,
+                               FileServiceType& fileService):
             shaderLoaderSettings(shaderLoaderSettings),
-            logger(logger)
+            logger(logger),
+            fileService(fileService)
         {}
 
         void loadProgramImpl(graphics::Program& program, const std::function<void(ShaderServiceError&)>& errorHandler)
@@ -72,7 +77,7 @@ namespace dory::openGL::services
                 auto filename = std::filesystem::path{shaderLoaderSettings.shadersDirectory} /= shader.key;
                 try
                 {
-                    shader.sourceCode = dory::readFromFile(filename);
+                    shader.sourceCode = fileService.read(filename);
                 }
                 catch(const std::exception& e)
                 {

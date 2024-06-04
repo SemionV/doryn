@@ -16,6 +16,7 @@
 #include "base/domain/services/scriptService.h"
 #include "base/domain/services/configurationService.h"
 #include "base/domain/services/logService.h"
+#include "base/domain/services/fileService.h"
 #include "openGL/glfwWindow.h"
 #include "openGL/glfwWindowController.h"
 #include "openGL/viewControllerOpenGL.h"
@@ -106,13 +107,14 @@ namespace testApp
     {
         using LogServiceType = services::MultiSinkLogService;
         using FrameServiceType = services::BasicFrameService;
-        using ShaderServiceType = openGL::services::ShaderService<LogServiceType>;
+        using FileServiceType = services::FileService;
+        using ShaderServiceType = openGL::services::ShaderService<LogServiceType, FileServiceType>;
         using RendererType = openGL::Renderer<openGL::RendererDependencies<ShaderServiceType>>;
         using RendererFactoryType = RendererType::FactoryType;
         using EngineType = domain::Engine<DataContextType, RepositoryLayer::PipelineRepositoryType>;
         using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<RepositoryLayer::WindowRepositoryType >>;
         using ScriptServiceType = services::ScriptService<DataContextType>;
-        using ConfigurationLoaderType = services::configuration::YamlConfigurationLoader<LogServiceType>;
+        using ConfigurationLoaderType = services::configuration::YamlConfigurationLoader<LogServiceType, FileServiceType>;
         using WindowControllerType = openGL::GlfwWindowController<DataContextType, RepositoryLayer::WindowRepositoryType>;
         using WindowControllerFactoryType = WindowControllerType::FactoryType;
         using ViewControllerType = openGL::ViewControllerOpenGL<openGL::ViewControllerDependencies<DataContextType,
@@ -122,6 +124,7 @@ namespace testApp
                 ServiceLayer::RendererFactoryType>>;
         using ViewControllerFactoryType = ViewControllerType::FactoryType;
 
+        FileServiceType fileService;
         LogServiceType appConfigurationLogger;
         LogServiceType appLogger = LogServiceType{};
         ConfigurationLoaderType configurationLoader;
@@ -133,8 +136,8 @@ namespace testApp
         ViewControllerFactoryType viewControllerFactory;
 
         ServiceLayer(const ConfigurationType& configuration, EventLayer& events, RepositoryLayer& repository):
-                configurationLoader(appConfigurationLogger),
-                shaderService(configuration.shaderLoader, appLogger),
+                configurationLoader(appConfigurationLogger, fileService),
+                shaderService(configuration.shaderLoader, appLogger, fileService),
                 windowService(repository.windows),
                 rendererFactory(shaderService),
                 windowControllerFactory(repository.windows, events.windowDispatcher),

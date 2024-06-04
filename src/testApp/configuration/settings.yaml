@@ -1,5 +1,3 @@
-loadFrom:
-  - configuration/settings2.yaml
 shaderLoader:
   shadersDirectory: configuration/
 localizations:
