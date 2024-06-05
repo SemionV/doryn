@@ -133,27 +133,34 @@ namespace dory::domain::services::configuration
         using ObjectPolicy = SaveConfigurationSectionObjectPolicy;
     };
 
-    /*template<typename TLogger, typename TFileService, typename TSerializationServices>
-    class ConfigurationService;*/
-
-    template<typename TLogger, typename TFileService, typename TSerializationService>
-    class ConfigurationService: public IConfigurationService<ConfigurationService<TLogger, TFileService, TSerializationService>>
+    template<typename TLogger, typename TFileService, typename... TSerializationServices>
+    class ConfigurationService: public IConfigurationService<ConfigurationService<TLogger, TFileService, TSerializationServices...>>
     {
+    public:
+        template<typename T>
+        using SerializationServiceRefType = std::reference_wrapper<ISerializationService<T>>;
+        using SerializationServicesMapEntryType = std::variant<int, SerializationServiceRefType<TSerializationServices>...>;
+        using SerializationServicesMapType = std::map<std::string, SerializationServicesMapEntryType>;
+
     private:
         using LoggerType = ILogService<TLogger>;
         LoggerType& logger;
 
-        using SerializationServiceType = ISerializationService<TSerializationService>;
-        SerializationServiceType& serializationService;
-
         using FileServiceType = domain::services::IFileService<TFileService>;
         FileServiceType& fileService;
 
+        SerializationServicesMapType& serializationServices;
+
+        decltype(auto) getSerializationService(const std::string& format)
+        {
+            return serializationServices[format];
+        }
+
     public:
-        explicit ConfigurationService(LoggerType& logger, FileServiceType& fileService, SerializationServiceType& serializationService):
+        explicit ConfigurationService(LoggerType& logger, FileServiceType& fileService, SerializationServicesMapType& serializationServices):
             logger(logger),
             fileService(fileService),
-            serializationService(serializationService)
+            serializationServices(serializationServices)
         {}
 
         template<typename TConfiguration>
@@ -164,10 +171,16 @@ namespace dory::domain::services::configuration
                 logger.information(fmt::format("load configuration from: {0}", configurationPath.string()));
 
                 auto source = fileService.read(configurationPath);
-                serializationService.deserialize(source, configuration);
+                auto& serializationServiceVariant = getSerializationService(configurationPath.extension());
+                std::visit([&](auto&& serviceRef){
+                    if constexpr (!std::is_same_v<int, std::decay_t<decltype(serviceRef)>>)
+                    {
+                        serviceRef.get().deserialize(source, configuration);
+                    }
+                }, serializationServiceVariant);
 
                 //load recursive sections
-                auto context = ConfigurationSectionContext<ConfigurationService>{*this };
+                auto context = ConfigurationSectionContext<ConfigurationService>{ *this };
                 serialization::ObjectVisitor<LoadConfigurationSectionPolicies>::visit(configuration, context);
 
                 return true;
@@ -198,7 +211,14 @@ namespace dory::domain::services::configuration
             {
                 logger.information(fmt::format("save configuration to: {0}", configurationPath.string()));
 
-                auto content = serializationService.serialize(configuration);
+                std::string content;
+                auto& serializationServiceVariant = getSerializationService(configurationPath.extension());
+                std::visit([&](auto&& serviceRef){
+                    if constexpr (!std::is_same_v<int, std::decay_t<decltype(serviceRef)>>)
+                    {
+                        content = serviceRef.get().serialize(configuration);
+                    }
+                }, serializationServiceVariant);
                 fileService.write(configurationPath, content);
 
                 return true;

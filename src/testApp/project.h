@@ -44,7 +44,6 @@ namespace testApp
 
             configuration.interface.activeLanguage = "spanish";
             registry.services.configurationService.save(configuration);
-            registry.services.configurationService2.save(configuration);
 
             attachEventHandlers();
 

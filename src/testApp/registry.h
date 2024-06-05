@@ -117,8 +117,7 @@ namespace testApp
         using EngineType = domain::Engine<DataContextType, RepositoryLayer::PipelineRepositoryType>;
         using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<RepositoryLayer::WindowRepositoryType >>;
         using ScriptServiceType = services::ScriptService<DataContextType>;
-        using ConfigurationServiceType = services::configuration::ConfigurationService<LogServiceType, FileServiceType, YamlSerializationServiceType>;
-        using ConfigurationServiceType2 = services::configuration::ConfigurationService<LogServiceType, FileServiceType, JsonSerializationServiceType>;
+        using ConfigurationServiceType = services::configuration::ConfigurationService<LogServiceType, FileServiceType, YamlSerializationServiceType, JsonSerializationServiceType>;
         using WindowControllerType = openGL::GlfwWindowController<DataContextType, RepositoryLayer::WindowRepositoryType>;
         using WindowControllerFactoryType = WindowControllerType::FactoryType;
         using ViewControllerType = openGL::ViewControllerOpenGL<openGL::ViewControllerDependencies<DataContextType,
@@ -133,8 +132,10 @@ namespace testApp
         JsonSerializationServiceType jsonSerializationService;
         LogServiceType appConfigurationLogger;
         LogServiceType appLogger = LogServiceType{};
+
+        typename ConfigurationServiceType::SerializationServicesMapType configFormatMap;
         ConfigurationServiceType configurationService;
-        ConfigurationServiceType2 configurationService2;
+
         ShaderServiceType shaderService;
         RendererFactoryType rendererFactory;
         WindowServiceType windowService;
@@ -143,14 +144,16 @@ namespace testApp
         ViewControllerFactoryType viewControllerFactory;
 
         ServiceLayer(const ConfigurationType& configuration, EventLayer& events, RepositoryLayer& repository):
-                configurationService(appConfigurationLogger, fileService, yamlSerializationService),
-                configurationService2(appConfigurationLogger, fileService, jsonSerializationService),
+                configurationService(appConfigurationLogger, fileService, configFormatMap),
                 shaderService(configuration.shaderLoader, appLogger, fileService),
                 windowService(repository.windows),
                 rendererFactory(shaderService),
                 windowControllerFactory(repository.windows, events.windowDispatcher),
                 viewControllerFactory(rendererFactory, repository.views, repository.windows)
-        {}
+        {
+            configFormatMap[".yaml"] = std::ref(yamlSerializationService);
+            configFormatMap[".json"] = std::ref(jsonSerializationService);
+        }
     };
 
     struct ManagerLayer
