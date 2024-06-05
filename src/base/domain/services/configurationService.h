@@ -45,22 +45,43 @@ namespace dory::domain::services::configuration
         {}
     };
 
+    template<typename T>
+    concept IsRecursiveSectionMetadata = requires (T x)
+    {
+        requires std::is_base_of_v<dory::configuration::RecursiveSection, T>;
+    };
+
+    template<typename T>
+    concept IsRecursiveSection = requires (T x)
+    {
+        { x.section };
+        requires IsRecursiveSectionMetadata<std::decay_t<decltype(x.section)>>;
+    };
+
     struct LoadConfigurationSectionObjectPolicy: public serialization::DefaultObjectPolicy
     {
         template<typename TContext, typename T>
-        requires((!std::is_base_of_v<dory::configuration::RecursiveSection, std::decay_t<T>>))
+        requires (!IsRecursiveSection<T> && !IsRecursiveSectionMetadata<T>)
         inline static bool beginObject(T&& object, TContext& context)
         {
             //skip non-recursive section
             return true;
         }
 
+        template<typename TContext, typename T>
+        requires (IsRecursiveSectionMetadata<T>)
+        inline static bool beginObject(T&& object, TContext& context)
+        {
+            //skip recursive section metadata itself
+            return false;
+        }
+
         template<typename T, typename TLoader>
-        requires(std::is_base_of_v<dory::configuration::RecursiveSection, std::decay_t<T>>)
+        requires IsRecursiveSection<T>
         inline static bool beginObject(T&& object, ConfigurationSectionContext<TLoader>& context)
         {
             //recursive section
-            auto overrideWithFiles = std::vector<std::string>{ std::move(object.loadFrom) };
+            auto overrideWithFiles = std::vector<std::string>{ std::move(object.section.loadFrom) };
             for(const auto& settingsFile : overrideWithFiles)
             {
                 context.loader.load(settingsFile, std::forward<T>(object));
@@ -73,21 +94,30 @@ namespace dory::domain::services::configuration
     struct SaveConfigurationSectionObjectPolicy: public serialization::DefaultObjectPolicy
     {
         template<typename TContext, typename T>
-        requires((!std::is_base_of_v<dory::configuration::RecursiveSection, std::decay_t<T>>))
+        requires (!IsRecursiveSection<T> && !IsRecursiveSectionMetadata<T>)
         inline static bool beginObject(T&& object, TContext& context)
         {
             //skip non-recursive section
             return true;
         }
 
+        template<typename TContext, typename T>
+        requires (IsRecursiveSectionMetadata<T>)
+        inline static bool beginObject(T&& object, TContext& context)
+        {
+            //skip recursive section metadata itself
+            return false;
+        }
+
         template<typename T, typename TLoader>
-        requires(std::is_base_of_v<dory::configuration::RecursiveSection, std::decay_t<T>>)
+        requires IsRecursiveSection<T>
         inline static bool beginObject(T&& object, ConfigurationSectionContext<TLoader>& context)
         {
             //recursive section
-            if(!object.saveTo.empty())
+            auto& saveTo = object.section.saveTo;
+            if(!saveTo.empty())
             {
-                context.loader.save(object.saveTo, object);
+                context.loader.save(saveTo, object);
             }
 
             return true;

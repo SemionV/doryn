@@ -1,6 +1,7 @@
-description: app settings
-loadFrom: [ configuration/settings.yaml ]
-saveTo: configuration/settings.user.yaml
+section:
+  description: app settings
+  loadFrom: [ configuration/settings.yaml ]
+  saveTo: configuration/settings.user.yaml
 loggingConfiguration:
   mainLogger:
     name: engine
@@ -17,7 +18,8 @@ localizations:
     - configuration/strings.fr.txt
     - configuration/strings2.fr.txt
 interface:
-  description: user interface settings
-  loadFrom: [ configuration/interface.user.yaml ]
-  saveTo: configuration/interface.user.yaml
+  section:
+    description: user interface settings
+    loadFrom: [ configuration/interface.user.yaml ]
+    saveTo: configuration/interface.user.yaml
   activeLanguage: english

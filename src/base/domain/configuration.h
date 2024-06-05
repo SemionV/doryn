@@ -12,6 +12,11 @@ namespace dory::configuration
         std::string description;
     };
 }
+REFL_TYPE(dory::configuration::RecursiveSection)
+        REFL_FIELD(loadFrom)
+        REFL_FIELD(saveTo)
+        REFL_FIELD(description)
+REFL_END
 
 namespace dory::configuration {
     struct RotationLogSink
@@ -73,21 +78,21 @@ REFL_TYPE(dory::configuration::ShaderLoader)
 REFL_END
 
 namespace dory::configuration {
-    struct Interface: public RecursiveSection
+    struct Interface
     {
+        RecursiveSection section;
         std::string activeLanguage;
     };
 }
 REFL_TYPE(dory::configuration::Interface)
-        REFL_FIELD(loadFrom)
-        REFL_FIELD(saveTo)
-        REFL_FIELD(description)
+        REFL_FIELD(section)
         REFL_FIELD(activeLanguage)
 REFL_END
 
 namespace dory::configuration {
-    struct Configuration: public RecursiveSection
+    struct Configuration
     {
+        RecursiveSection section;
         std::string mainConfigurationFile;
         std::map<std::string, std::vector<std::string>> localizations;
         LoggingConfiguration loggingConfiguration;
@@ -96,8 +101,7 @@ namespace dory::configuration {
     };
 }
 REFL_TYPE(dory::configuration::Configuration)
-        REFL_FIELD(loadFrom)
-        REFL_FIELD(saveTo)
+        REFL_FIELD(section)
         REFL_FIELD(localizations)
         REFL_FIELD(loggingConfiguration)
         REFL_FIELD(shaderLoader)
