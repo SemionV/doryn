@@ -35,7 +35,7 @@ namespace testApp
             registry.services.appConfigurationLogger.initialize(bootLoggerConfig, dory::makeOptionalRef(registry.devices.terminalDevice));
 
             //load configuration
-            registry.services.configurationLoader.load(configuration.mainConfigurationFile, configuration);
+            registry.services.configurationService.load(configuration.mainConfigurationFile, configuration);
 
             //init main logger with parents config
             registry.services.appLogger.initialize(configuration.loggingConfiguration.mainLogger, dory::makeOptionalRef(registry.devices.terminalDevice));
@@ -43,7 +43,8 @@ namespace testApp
             registry.services.appConfigurationLogger.information("active language: " + configuration.interface.activeLanguage);
 
             configuration.interface.activeLanguage = "spanish";
-            registry.services.configurationLoader.save(configuration);
+            registry.services.configurationService.save(configuration);
+            registry.services.configurationService2.save(configuration);
 
             attachEventHandlers();
 

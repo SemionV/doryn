@@ -17,6 +17,7 @@
 #include "base/domain/services/configurationService.h"
 #include "base/domain/services/logService.h"
 #include "base/domain/services/fileService.h"
+#include "base/domain/services/serializationService.h"
 #include "openGL/glfwWindow.h"
 #include "openGL/glfwWindowController.h"
 #include "openGL/viewControllerOpenGL.h"
@@ -108,13 +109,16 @@ namespace testApp
         using LogServiceType = services::MultiSinkLogService;
         using FrameServiceType = services::BasicFrameService;
         using FileServiceType = services::FileService;
+        using YamlSerializationServiceType = services::YamlSerializationService;
+        using JsonSerializationServiceType = services::JsonSerializationService<4>;
         using ShaderServiceType = openGL::services::ShaderService<LogServiceType, FileServiceType>;
         using RendererType = openGL::Renderer<openGL::RendererDependencies<ShaderServiceType>>;
         using RendererFactoryType = RendererType::FactoryType;
         using EngineType = domain::Engine<DataContextType, RepositoryLayer::PipelineRepositoryType>;
         using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<RepositoryLayer::WindowRepositoryType >>;
         using ScriptServiceType = services::ScriptService<DataContextType>;
-        using ConfigurationLoaderType = services::configuration::YamlConfigurationLoader<LogServiceType, FileServiceType>;
+        using ConfigurationServiceType = services::configuration::ConfigurationService<LogServiceType, FileServiceType, YamlSerializationServiceType>;
+        using ConfigurationServiceType2 = services::configuration::ConfigurationService<LogServiceType, FileServiceType, JsonSerializationServiceType>;
         using WindowControllerType = openGL::GlfwWindowController<DataContextType, RepositoryLayer::WindowRepositoryType>;
         using WindowControllerFactoryType = WindowControllerType::FactoryType;
         using ViewControllerType = openGL::ViewControllerOpenGL<openGL::ViewControllerDependencies<DataContextType,
@@ -125,9 +129,12 @@ namespace testApp
         using ViewControllerFactoryType = ViewControllerType::FactoryType;
 
         FileServiceType fileService;
+        YamlSerializationServiceType yamlSerializationService;
+        JsonSerializationServiceType jsonSerializationService;
         LogServiceType appConfigurationLogger;
         LogServiceType appLogger = LogServiceType{};
-        ConfigurationLoaderType configurationLoader;
+        ConfigurationServiceType configurationService;
+        ConfigurationServiceType2 configurationService2;
         ShaderServiceType shaderService;
         RendererFactoryType rendererFactory;
         WindowServiceType windowService;
@@ -136,7 +143,8 @@ namespace testApp
         ViewControllerFactoryType viewControllerFactory;
 
         ServiceLayer(const ConfigurationType& configuration, EventLayer& events, RepositoryLayer& repository):
-                configurationLoader(appConfigurationLogger, fileService),
+                configurationService(appConfigurationLogger, fileService, yamlSerializationService),
+                configurationService2(appConfigurationLogger, fileService, jsonSerializationService),
                 shaderService(configuration.shaderLoader, appLogger, fileService),
                 windowService(repository.windows),
                 rendererFactory(shaderService),
