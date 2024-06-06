@@ -111,14 +111,15 @@ namespace testApp
         using FileServiceType = services::FileService;
         using YamlSerializationServiceType = services::serialization::YamlSerializationService;
         using JsonSerializationServiceType = services::serialization::JsonSerializationService<4>;
-        using SerializationServiceBundle = services::serialization::SerializationServiceBundle<YamlSerializationServiceType, JsonSerializationServiceType>;
+        using FormatKeyConverterType = services::serialization::FormatKeyConverter;
+        using SerializationServiceBundle = services::serialization::SerializationServiceBundle<services::serialization::Format, YamlSerializationServiceType, JsonSerializationServiceType>;
         using ShaderServiceType = openGL::services::ShaderService<LogServiceType, FileServiceType>;
         using RendererType = openGL::Renderer<openGL::RendererDependencies<ShaderServiceType>>;
         using RendererFactoryType = RendererType::FactoryType;
         using EngineType = domain::Engine<DataContextType, RepositoryLayer::PipelineRepositoryType>;
         using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<RepositoryLayer::WindowRepositoryType >>;
         using ScriptServiceType = services::ScriptService<DataContextType>;
-        using ConfigurationServiceType = services::configuration::ConfigurationService<LogServiceType, FileServiceType, SerializationServiceBundle>;
+        using ConfigurationServiceType = services::configuration::ConfigurationService<LogServiceType, FileServiceType, SerializationServiceBundle, services::serialization::Format, FormatKeyConverterType>;
         using WindowControllerType = openGL::GlfwWindowController<DataContextType, RepositoryLayer::WindowRepositoryType>;
         using WindowControllerFactoryType = WindowControllerType::FactoryType;
         using ViewControllerType = openGL::ViewControllerOpenGL<openGL::ViewControllerDependencies<DataContextType,
@@ -131,6 +132,7 @@ namespace testApp
         FileServiceType fileService;
         YamlSerializationServiceType yamlSerializationService;
         JsonSerializationServiceType jsonSerializationService;
+        FormatKeyConverterType formatKeyConverter;
         SerializationServiceBundle serializationServiceBundle;
         LogServiceType appConfigurationLogger;
         LogServiceType appLogger = LogServiceType{};
@@ -149,7 +151,7 @@ namespace testApp
                         {services::serialization::Format::json, std::ref(jsonSerializationService)}
                     }
                 },
-                configurationService(appConfigurationLogger, fileService, serializationServiceBundle),
+                configurationService(appConfigurationLogger, fileService, serializationServiceBundle, formatKeyConverter),
                 shaderService(configuration.shaderLoader, appLogger, fileService),
                 windowService(repository.windows),
                 rendererFactory(shaderService),

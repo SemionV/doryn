@@ -84,12 +84,34 @@ namespace dory::domain::services::serialization
         json
     };
 
-    struct FormatKey
+    template<typename TFormat, typename TImplementation>
+    class IFormatKeyConverter: Uncopyable, public StaticInterface<TImplementation>
     {
+    public:
+        TFormat getFormat(const std::string& key)
+        {
+            return this->toImplementation()->getFormatImpl(key);
+        }
+
+        TFormat getFormat(const std::string_view key)
+        {
+            return this->toImplementation()->getFormatImpl(key);
+        }
+
+        TFormat getFormat(const std::filesystem::path& path)
+        {
+            return this->toImplementation()->getFormatImpl(path);
+        }
+    };
+
+    class FormatKeyConverter: public IFormatKeyConverter<Format, FormatKeyConverter>
+    {
+    private:
         constexpr const static std::string yaml = "yaml";
         constexpr const static std::string json = "json";
 
-        static Format getFormat(const std::string& key)
+    public:
+        static Format getFormatImpl(const std::string& key)
         {
             auto lowerCaseKey = dory::toLower(key);
             if(lowerCaseKey == yaml)
@@ -104,20 +126,20 @@ namespace dory::domain::services::serialization
             return Format::unknown;
         }
 
-        static Format getFormat(const std::string_view key)
+        static Format getFormatImpl(const std::string_view key)
         {
-            return getFormat(std::string{key});
+            return getFormatImpl(std::string{key});
         }
 
-        static Format getFormat(const std::filesystem::path& path)
+        static Format getFormatImpl(const std::filesystem::path& path)
         {
             std::string extension = path.extension();
             if(!extension.empty() && extension[0] == '.')
             {
-                return getFormat(std::string_view{ ++extension.begin(), extension.end() });
+                return getFormatImpl(std::string_view{ ++extension.begin(), extension.end() });
             }
 
-            return getFormat(extension);
+            return getFormatImpl(extension);
         }
     };
 
@@ -144,19 +166,20 @@ namespace dory::domain::services::serialization
         }
     };
 
-    template<typename... TSerializationServices>
-    class SerializationServiceBundle: public ISerializationServiceBundle<SerializationServiceBundle<TSerializationServices...>>
+    template<typename TFormat, typename... TSerializationServices>
+    class SerializationServiceBundle: public ISerializationServiceBundle<SerializationServiceBundle<TFormat, TSerializationServices...>>
     {
     public:
+        using InitType = bool;
         template<typename T>
         using SerializationServiceRefType = std::reference_wrapper<ISerializationService<T>>;
-        using SerializationServiceMapValueType = std::variant<bool, SerializationServiceRefType<TSerializationServices>...>;
-        using SerializationServiceMapType = std::map<Format, SerializationServiceMapValueType>;
+        using SerializationServiceMapValueType = std::variant<InitType, SerializationServiceRefType<TSerializationServices>...>;
+        using SerializationServiceMapType = std::map<TFormat, SerializationServiceMapValueType>;
 
     private:
         SerializationServiceMapType serializationServiceMap;
 
-        decltype(auto) getSerializationService(const Format format)
+        decltype(auto) getSerializationService(const TFormat& format)
         {
             if(serializationServiceMap.contains(format))
             {
@@ -171,7 +194,7 @@ namespace dory::domain::services::serialization
         {}
 
         template<typename T>
-        std::string serializeImpl(const Format format, T&& object)
+        std::string serializeImpl(const TFormat& format, T&& object)
         {
             auto serializationServiceOptional = getSerializationService(format);
             if(serializationServiceOptional)
@@ -193,7 +216,7 @@ namespace dory::domain::services::serialization
         }
 
         template<typename T>
-        T deserializeImpl(const Format format, const std::string& source)
+        T deserializeImpl(const TFormat& format, const std::string& source)
         {
             auto serializationServiceOptional = getSerializationService(format);
             if(serializationServiceOptional)
@@ -215,14 +238,14 @@ namespace dory::domain::services::serialization
         }
 
         template<typename T>
-        void deserializeImpl(const Format format, const std::string& source, T& object)
+        void deserializeImpl(const TFormat& format, const std::string& source, T& object)
         {
             auto serializationServiceOptional = getSerializationService(format);
             if(serializationServiceOptional)
             {
                 std::visit([&](auto&& serviceRef)
                 {
-                    if constexpr (!std::is_same_v<bool, std::decay_t<decltype(serviceRef)>>)
+                    if constexpr (!std::is_same_v<InitType, std::decay_t<decltype(serviceRef)>>)
                     {
                         serviceRef.get().deserialize(source, object);
                     }

@@ -10,17 +10,14 @@ namespace dory::serialization::yaml
         {}
     };
 
-    c4::csubstr toRymlCStr(const std::string& source)
+    template<typename T>
+    c4::csubstr toRymlCStr(const T& source)
     {
         return {source.data(), source.size()};
     }
 
-    c4::csubstr toRymlCStr(const std::string_view& source)
-    {
-        return {source.data(), source.size()};
-    }
-
-    c4::substr toRymlStr(std::string& source)
+    template<typename T>
+    c4::substr toRymlStr(T& source)
     {
         return {source.data(), source.size()};
     }

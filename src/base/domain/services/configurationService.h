@@ -133,24 +133,31 @@ namespace dory::domain::services::configuration
         using ObjectPolicy = SaveConfigurationSectionObjectPolicy;
     };
 
-    template<typename TLogger, typename TFileService, typename TSerializationServiceBundle>
-    class ConfigurationService: public IConfigurationService<ConfigurationService<TLogger, TFileService, TSerializationServiceBundle>>
+    template<typename TLogger, typename TFileService, typename TSerializationServiceBundle, typename TFormat, typename TFormatConverter>
+    class ConfigurationService: public IConfigurationService<ConfigurationService<TLogger, TFileService, TSerializationServiceBundle, TFormat, TFormatConverter>>
     {
     private:
         using LoggerType = ILogService<TLogger>;
         LoggerType& logger;
 
-        using FileServiceType = domain::services::IFileService<TFileService>;
+        using FileServiceType = IFileService<TFileService>;
         FileServiceType& fileService;
 
         using SerializationServiceBundleType = serialization::ISerializationServiceBundle<TSerializationServiceBundle>;
         SerializationServiceBundleType& serializationServiceBundle;
 
+        using FormatConverterType = serialization::IFormatKeyConverter<TFormat, TFormatConverter>;
+        FormatConverterType& formatKeyConverter;
+
     public:
-        explicit ConfigurationService(LoggerType& logger, FileServiceType& fileService, SerializationServiceBundleType& serializationServiceBundle):
-            logger(logger),
-            fileService(fileService),
-            serializationServiceBundle(serializationServiceBundle)
+        explicit ConfigurationService(LoggerType& logger,
+                                      FileServiceType& fileService,
+                                      SerializationServiceBundleType& serializationServiceBundle,
+                                      FormatConverterType& formatConverter):
+                logger(logger),
+                fileService(fileService),
+                serializationServiceBundle(serializationServiceBundle),
+                formatKeyConverter(formatConverter)
         {}
 
         template<typename TConfiguration>
@@ -161,7 +168,7 @@ namespace dory::domain::services::configuration
                 logger.information(fmt::format("load configuration from: {0}", configurationPath.string()));
 
                 auto source = fileService.read(configurationPath);
-                serializationServiceBundle.deserialize(serialization::FormatKey::getFormat(configurationPath), source, configuration);
+                serializationServiceBundle.deserialize(formatKeyConverter.getFormat(configurationPath), source, configuration);
 
                 //load recursive sections
                 auto context = ConfigurationSectionContext<ConfigurationService>{ *this };
@@ -195,7 +202,7 @@ namespace dory::domain::services::configuration
             {
                 logger.information(fmt::format("save configuration to: {0}", configurationPath.string()));
 
-                std::string content = serializationServiceBundle.serialize(serialization::FormatKey::getFormat(configurationPath), configuration);
+                std::string content = serializationServiceBundle.serialize(formatKeyConverter.getFormat(configurationPath), configuration);
                 fileService.write(configurationPath, content);
 
                 return true;
