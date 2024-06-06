@@ -133,8 +133,8 @@ namespace dory::domain::services::configuration
         using ObjectPolicy = SaveConfigurationSectionObjectPolicy;
     };
 
-    template<typename TLogger, typename TFileService, typename TSerializationServiceBundle, typename TFormat, typename TFormatConverter>
-    class ConfigurationService: public IConfigurationService<ConfigurationService<TLogger, TFileService, TSerializationServiceBundle, TFormat, TFormatConverter>>
+    template<typename TLogger, typename TFileService, typename TSerializationServiceBundle, typename TFormatConverter>
+    class ConfigurationService: public IConfigurationService<ConfigurationService<TLogger, TFileService, TSerializationServiceBundle, TFormatConverter>>
     {
     private:
         using LoggerType = ILogService<TLogger>;
@@ -143,10 +143,10 @@ namespace dory::domain::services::configuration
         using FileServiceType = IFileService<TFileService>;
         FileServiceType& fileService;
 
-        using SerializationServiceBundleType = serialization::ISerializationServiceBundle<TSerializationServiceBundle>;
+        using SerializationServiceBundleType = serialization::ISerializationServiceBundle<typename TFormatConverter::FormatType, TSerializationServiceBundle>;
         SerializationServiceBundleType& serializationServiceBundle;
 
-        using FormatConverterType = serialization::IFormatKeyConverter<TFormat, TFormatConverter>;
+        using FormatConverterType = serialization::IFormatKeyConverter<typename TFormatConverter::FormatType, TFormatConverter>;
         FormatConverterType& formatKeyConverter;
 
     public:

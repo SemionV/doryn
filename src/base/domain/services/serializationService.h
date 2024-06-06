@@ -111,6 +111,8 @@ namespace dory::domain::services::serialization
         constexpr const static std::string json = "json";
 
     public:
+        using FormatType = Format;
+
         static Format getFormatImpl(const std::string& key)
         {
             auto lowerCaseKey = dory::toLower(key);
@@ -143,31 +145,31 @@ namespace dory::domain::services::serialization
         }
     };
 
-    template<typename TImplementation>
+    template<typename TFormat, typename TImplementation>
     class ISerializationServiceBundle: Uncopyable, public StaticInterface<TImplementation>
     {
     public:
         template<typename T>
-        std::string serialize(const Format format, T&& object)
+        std::string serialize(const TFormat format, T&& object)
         {
             return this->toImplementation()->serializeImpl(format, std::forward<T>(object));
         }
 
         template<typename T>
-        T deserialize(const Format format, const std::string& source)
+        T deserialize(const TFormat format, const std::string& source)
         {
             return this->toImplementation()->deserializeImpl(format, source);
         }
 
         template<typename T>
-        void deserialize(const Format format, const std::string& source, T& object)
+        void deserialize(const TFormat format, const std::string& source, T& object)
         {
             this->toImplementation()->deserializeImpl(format, source, object);
         }
     };
 
     template<typename TFormat, typename... TSerializationServices>
-    class SerializationServiceBundle: public ISerializationServiceBundle<SerializationServiceBundle<TFormat, TSerializationServices...>>
+    class SerializationServiceBundle: public ISerializationServiceBundle<TFormat, SerializationServiceBundle<TFormat, TSerializationServices...>>
     {
     public:
         using InitType = bool;
