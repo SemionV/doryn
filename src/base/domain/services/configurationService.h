@@ -57,7 +57,7 @@ namespace dory::domain::services::configuration
         requires IsRecursiveSectionMetadata<std::decay_t<decltype(x.section)>>;
     };
 
-    struct LoadConfigurationSectionObjectPolicy: public serialization::DefaultObjectPolicy
+    struct LoadConfigurationSectionObjectPolicy: public dory::serialization::DefaultObjectPolicy
     {
         template<typename TContext, typename T>
         requires (!IsRecursiveSection<T> && !IsRecursiveSectionMetadata<T>)
@@ -90,7 +90,7 @@ namespace dory::domain::services::configuration
         }
     };
 
-    struct SaveConfigurationSectionObjectPolicy: public serialization::DefaultObjectPolicy
+    struct SaveConfigurationSectionObjectPolicy: public dory::serialization::DefaultObjectPolicy
     {
         template<typename TContext, typename T>
         requires (!IsRecursiveSection<T> && !IsRecursiveSectionMetadata<T>)
@@ -123,25 +123,19 @@ namespace dory::domain::services::configuration
         }
     };
 
-    struct LoadConfigurationSectionPolicies: public serialization::VisitorDefaultPolicies
+    struct LoadConfigurationSectionPolicies: public dory::serialization::VisitorDefaultPolicies
     {
         using ObjectPolicy = LoadConfigurationSectionObjectPolicy;
     };
 
-    struct SaveConfigurationSectionPolicies: public serialization::VisitorDefaultPolicies
+    struct SaveConfigurationSectionPolicies: public dory::serialization::VisitorDefaultPolicies
     {
         using ObjectPolicy = SaveConfigurationSectionObjectPolicy;
     };
 
-    template<typename TLogger, typename TFileService, typename... TSerializationServices>
-    class ConfigurationService: public IConfigurationService<ConfigurationService<TLogger, TFileService, TSerializationServices...>>
+    template<typename TLogger, typename TFileService, typename TSerializationServiceBundle>
+    class ConfigurationService: public IConfigurationService<ConfigurationService<TLogger, TFileService, TSerializationServiceBundle>>
     {
-    public:
-        template<typename T>
-        using SerializationServiceRefType = std::reference_wrapper<ISerializationService<T>>;
-        using SerializationServicesMapEntryType = std::variant<int, SerializationServiceRefType<TSerializationServices>...>;
-        using SerializationServicesMapType = std::map<std::string, SerializationServicesMapEntryType>;
-
     private:
         using LoggerType = ILogService<TLogger>;
         LoggerType& logger;
@@ -149,18 +143,14 @@ namespace dory::domain::services::configuration
         using FileServiceType = domain::services::IFileService<TFileService>;
         FileServiceType& fileService;
 
-        SerializationServicesMapType& serializationServices;
-
-        decltype(auto) getSerializationService(const std::string& format)
-        {
-            return serializationServices[format];
-        }
+        using SerializationServiceBundleType = serialization::ISerializationServiceBundle<TSerializationServiceBundle>;
+        SerializationServiceBundleType& serializationServiceBundle;
 
     public:
-        explicit ConfigurationService(LoggerType& logger, FileServiceType& fileService, SerializationServicesMapType& serializationServices):
+        explicit ConfigurationService(LoggerType& logger, FileServiceType& fileService, SerializationServiceBundleType& serializationServiceBundle):
             logger(logger),
             fileService(fileService),
-            serializationServices(serializationServices)
+            serializationServiceBundle(serializationServiceBundle)
         {}
 
         template<typename TConfiguration>
@@ -171,17 +161,11 @@ namespace dory::domain::services::configuration
                 logger.information(fmt::format("load configuration from: {0}", configurationPath.string()));
 
                 auto source = fileService.read(configurationPath);
-                auto& serializationServiceVariant = getSerializationService(configurationPath.extension());
-                std::visit([&](auto&& serviceRef){
-                    if constexpr (!std::is_same_v<int, std::decay_t<decltype(serviceRef)>>)
-                    {
-                        serviceRef.get().deserialize(source, configuration);
-                    }
-                }, serializationServiceVariant);
+                serializationServiceBundle.deserialize(serialization::FormatKey::getFormat(configurationPath), source, configuration);
 
                 //load recursive sections
                 auto context = ConfigurationSectionContext<ConfigurationService>{ *this };
-                serialization::ObjectVisitor<LoadConfigurationSectionPolicies>::visit(configuration, context);
+                dory::serialization::ObjectVisitor<LoadConfigurationSectionPolicies>::visit(configuration, context);
 
                 return true;
             }
@@ -201,7 +185,7 @@ namespace dory::domain::services::configuration
         void saveImpl(TConfiguration& configuration)
         {
             auto context = ConfigurationSectionContext<ConfigurationService>{*this };
-            serialization::ObjectVisitor<SaveConfigurationSectionPolicies>::visit(configuration, context);
+            dory::serialization::ObjectVisitor<SaveConfigurationSectionPolicies>::visit(configuration, context);
         }
 
         template<typename TConfiguration>
@@ -211,14 +195,7 @@ namespace dory::domain::services::configuration
             {
                 logger.information(fmt::format("save configuration to: {0}", configurationPath.string()));
 
-                std::string content;
-                auto& serializationServiceVariant = getSerializationService(configurationPath.extension());
-                std::visit([&](auto&& serviceRef){
-                    if constexpr (!std::is_same_v<int, std::decay_t<decltype(serviceRef)>>)
-                    {
-                        content = serviceRef.get().serialize(configuration);
-                    }
-                }, serializationServiceVariant);
+                std::string content = serializationServiceBundle.serialize(serialization::FormatKey::getFormat(configurationPath), configuration);
                 fileService.write(configurationPath, content);
 
                 return true;

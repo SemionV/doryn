@@ -22,6 +22,9 @@ Tasks:
 * Build for MacOS
 * Voice control
 
+**06.06.24**
+* Task done: SerializationService bundle: set of multiple serialization services mapped to distinct file formats
+
 **30.05.24**
 * Task done: Support of dictionaries in YAML and JSON(needed to configure i18n and other resources)
 

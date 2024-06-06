@@ -157,6 +157,30 @@ namespace dory
         return OptionalReference<T>{std::ref(ref)};
     }
 
+    constexpr std::string toLower(std::string data)
+    {
+        std::transform(data.begin(), data.end(), data.begin(),
+                       [](auto c)
+                       {
+                           return std::tolower(c);
+                       });
+
+        return data;
+    }
+
+    constexpr std::string toLower(const std::string_view data)
+    {
+        auto result = std::string {data};
+
+        std::transform(result.begin(), result.end(), result.begin(),
+                       [](auto c)
+                       {
+                           return std::tolower(c);
+                       });
+
+        return result;
+    }
+
     class Uncopyable
     {
     public:
