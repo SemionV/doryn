@@ -31,19 +31,15 @@ namespace testApp
             bootLoggerConfig.rotationLogger = dory::configuration::RotationLogSink{"logs/boot.log"};
             bootLoggerConfig.stdoutLogger = dory::configuration::StdoutLogSink{};
 
-            //init boot logger with 0 level config
             registry.services.appConfigurationLogger.initialize(bootLoggerConfig, dory::makeOptionalRef(registry.devices.terminalDevice));
-
-            //load configuration
             registry.services.configurationService.load(configuration);
-
-            //init main logger with parents config
             registry.services.appLogger.initialize(configuration.loggingConfiguration.mainLogger, dory::makeOptionalRef(registry.devices.terminalDevice));
 
             registry.services.appConfigurationLogger.information("active language: " + configuration.interface.activeLanguage);
 
-            configuration.interface.activeLanguage = "spanish";
-            registry.services.configurationService.save(configuration);
+            LocalizationType localization;
+            registry.services.localizationService.load(configuration, localization);
+            registry.services.appConfigurationLogger.information(*localization.hello.str);
 
             attachEventHandlers();
 

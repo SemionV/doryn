@@ -1,7 +1,6 @@
 section:
   description: app settings
   loadFrom: [ configuration/settings.json ]
-  saveTo: configuration/settings.user.json
 loggingConfiguration:
   mainLogger:
     name: engine
@@ -12,11 +11,9 @@ loggingConfiguration:
     stdoutLogger: {}
 localizations:
   english:
-    - configuration/strings.en.txt
-    - configuration/strings2.en.txt
-  french:
-    - configuration/strings.fr.txt
-    - configuration/strings2.fr.txt
+    - configuration/localization/english.yaml
+  german:
+    - configuration/localization/german.yaml
 interface:
   section:
     description: user interface settings

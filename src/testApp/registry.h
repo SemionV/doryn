@@ -18,6 +18,8 @@
 #include "base/domain/services/logService.h"
 #include "base/domain/services/fileService.h"
 #include "base/domain/services/serializationService.h"
+#include "base/domain/services/localizationService.h"
+#include "base/domain/resources/localization.h"
 #include "openGL/glfwWindow.h"
 #include "openGL/glfwWindowController.h"
 #include "openGL/viewControllerOpenGL.h"
@@ -43,9 +45,11 @@ namespace testApp
     namespace devices = domain::devices;
     namespace openGL = dory::openGL;
     namespace configuration = dory::configuration;
+    namespace resources = dory::domain::resources;
 
     using DataContextType = ProjectDataContext;
     using ConfigurationType = dory::configuration::Configuration;
+    using LocalizationType = resources::Localization;
 
     struct EventLayer
     {
@@ -120,6 +124,7 @@ namespace testApp
         using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<RepositoryLayer::WindowRepositoryType >>;
         using ScriptServiceType = services::ScriptService<DataContextType>;
         using ConfigurationServiceType = services::configuration::ConfigurationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;
+        using LocalizationServiceType = services::localization::LocalizationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;
         using WindowControllerType = openGL::GlfwWindowController<DataContextType, RepositoryLayer::WindowRepositoryType>;
         using WindowControllerFactoryType = WindowControllerType::FactoryType;
         using ViewControllerType = openGL::ViewControllerOpenGL<openGL::ViewControllerDependencies<DataContextType,
@@ -137,6 +142,7 @@ namespace testApp
         LogServiceType appConfigurationLogger;
         LogServiceType appLogger = LogServiceType{};
         ConfigurationServiceType configurationService;
+        LocalizationServiceType localizationService;
         ShaderServiceType shaderService;
         RendererFactoryType rendererFactory;
         WindowServiceType windowService;
@@ -152,6 +158,7 @@ namespace testApp
                     }
                 },
                 configurationService(appConfigurationLogger, fileService, serializationServiceBundle, formatKeyConverter),
+                localizationService(appLogger, fileService, serializationServiceBundle, formatKeyConverter),
                 shaderService(configuration.shaderLoader, appLogger, fileService),
                 windowService(repository.windows),
                 rendererFactory(shaderService),

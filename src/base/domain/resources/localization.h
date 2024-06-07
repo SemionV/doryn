@@ -13,6 +13,6 @@ namespace dory::domain::resources
     };
 }
 REFL_TYPE(dory::domain::resources::Localization)
-REFL_FIELD(hello)
-REFL_FIELD(goodBye)
+    REFL_FIELD(hello)
+    REFL_FIELD(goodBye)
 REFL_END
