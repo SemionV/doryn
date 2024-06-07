@@ -25,7 +25,7 @@ namespace testApp
         int run()
         {
             //0 level config
-            configuration.mainConfigurationFile = "settings.yaml";
+            configuration.section.loadFrom.emplace_back("settings.yaml");
             auto& bootLoggerConfig = configuration.loggingConfiguration.configurationLogger;
             bootLoggerConfig.name = "boot";
             bootLoggerConfig.rotationLogger = dory::configuration::RotationLogSink{"logs/boot.log"};
@@ -35,7 +35,7 @@ namespace testApp
             registry.services.appConfigurationLogger.initialize(bootLoggerConfig, dory::makeOptionalRef(registry.devices.terminalDevice));
 
             //load configuration
-            registry.services.configurationService.load(configuration.mainConfigurationFile, configuration);
+            registry.services.configurationService.load(configuration);
 
             //init main logger with parents config
             registry.services.appLogger.initialize(configuration.loggingConfiguration.mainLogger, dory::makeOptionalRef(registry.devices.terminalDevice));

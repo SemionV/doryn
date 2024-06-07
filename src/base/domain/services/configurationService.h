@@ -21,6 +21,12 @@ namespace dory::domain::services::configuration
         }
 
         template<typename TConfiguration>
+        void load(TConfiguration& configuration)
+        {
+            return this->toImplementation()->loadImpl(configuration);
+        }
+
+        template<typename TConfiguration>
         bool save(const std::filesystem::path& configurationPath, const TConfiguration& configuration)
         {
             return this->toImplementation()->saveImpl(configurationPath, configuration);
@@ -161,6 +167,14 @@ namespace dory::domain::services::configuration
         {}
 
         template<typename TConfiguration>
+        void loadImpl(TConfiguration& configuration)
+        {
+            //load recursive sections
+            auto context = ConfigurationSectionContext<ConfigurationService>{ *this };
+            dory::serialization::ObjectVisitor<LoadConfigurationSectionPolicies>::visit(configuration, context);
+        }
+
+        template<typename TConfiguration>
         bool loadImpl(const std::filesystem::path& configurationPath, TConfiguration& configuration)
         {
             try
@@ -191,6 +205,7 @@ namespace dory::domain::services::configuration
         template<typename TConfiguration>
         void saveImpl(TConfiguration& configuration)
         {
+            //save recursive sections
             auto context = ConfigurationSectionContext<ConfigurationService>{*this };
             dory::serialization::ObjectVisitor<SaveConfigurationSectionPolicies>::visit(configuration, context);
         }

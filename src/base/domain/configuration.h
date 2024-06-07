@@ -93,7 +93,6 @@ namespace dory::configuration {
     struct Configuration
     {
         RecursiveSection section;
-        std::string mainConfigurationFile;
         std::map<std::string, std::vector<std::string>> localizations;
         LoggingConfiguration loggingConfiguration;
         ShaderLoader shaderLoader;
