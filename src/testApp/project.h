@@ -39,10 +39,14 @@ namespace testApp
 
             LocalizationType localization;
             registry.services.localizationService.load(configuration, localization);
-            registry.services.appConfigurationLogger.information(resources::Resource::get(localization.hello));
+            registry.services.appConfigurationLogger.information(localization.hello);
+            registry.services.appConfigurationLogger.information(localization.goodBye.get("Semion"));
+            registry.services.appConfigurationLogger.information(localization.birthDate.get(11, 03, 1984));
 
-            resources::Resource::compile(localization.goodBye.fmt);
-            registry.services.appConfigurationLogger.information(resources::Resource::get(localization.goodBye, "Semion"));
+            configuration.interface.activeLanguage = "english";
+            registry.services.localizationService.load(configuration, localization);
+            registry.services.appConfigurationLogger.information(localization.hello);
+            registry.services.appConfigurationLogger.information(localization.goodBye.get("Semion"));
             registry.services.appConfigurationLogger.information(localization.birthDate.get(11, 03, 1984));
 
             attachEventHandlers();

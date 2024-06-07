@@ -5,51 +5,37 @@
 
 namespace dory::domain::resources
 {
-    struct String
+    class ParameterizedString
     {
-        std::string value;
-    };
-
-    struct FmtTemplate
-    {
+        private:
         std::string value;
         fmt::runtime_format_string<> compiledValue;
-    };
-
-    struct GoodByeTemplate
-    {
-        FmtTemplate fmt;
-    };
-}
-REFL_TYPE(dory::domain::resources::String)
-    REFL_FIELD(value)
-REFL_END
-
-REFL_TYPE(dory::domain::resources::FmtTemplate)
-        REFL_FIELD(value)
-REFL_END
-
-REFL_TYPE(dory::domain::resources::GoodByeTemplate)
-        REFL_FIELD(fmt)
-REFL_END
-
-namespace dory::domain::resources
-{
-    struct Resource
-    {
-        static std::string get(String& resource)
+        public:
+        std::string& getTemplate()
         {
-            return resource.value;
+            return value;
         }
 
-        static void compile(FmtTemplate& resource)
+        [[nodiscard]] decltype(auto) getTemplate() const
         {
-            resource.compiledValue = fmt::runtime(resource.value);
+            return value;
         }
 
-        static std::string get(GoodByeTemplate& resource, const std::string& name)
+        void updateTemplate()
         {
-            return fmt::format(resource.fmt.compiledValue, name);
+            compiledValue = fmt::runtime(value);
+        }
+
+        template<typename... Ts>
+        std::string format(Ts&&... params)
+        {
+            return fmt::format(compiledValue, std::forward<Ts>(params)...);
+        }
+
+        template<typename... Ts>
+        std::string get(Ts&&... params)
+        {
+            return format(std::forward<Ts>(params)...);
         }
     };
 }

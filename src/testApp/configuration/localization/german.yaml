@@ -1,4 +1,3 @@
-hello: {value: "Hallo!"}
-goodBye: {fmt: {value: "Tschuss, {0}!"}}
-direct: "Direkt Tschuss, {0}!"
+hello: "Hallo!"
+goodBye: "Tschuss, {0}!"
 birthDate: "Geburtsdatum: {0}.{1}.{2}"
