@@ -6,17 +6,43 @@
 
 namespace dory::domain::resources
 {
-    using FmtTemplate = fmt::runtime_format_string<>;
+    class ParameterizedString
+    {
+    private:
+        std::string value;
+        fmt::runtime_format_string<> compiledValue;
+    public:
+        std::string& getTemplate()
+        {
+            return value;
+        }
+
+        [[nodiscard]] decltype(auto) getTemplate() const
+        {
+            return value;
+        }
+
+        void updateTemplate()
+        {
+            compiledValue = fmt::runtime(value);
+        }
+
+        template<typename... Ts>
+        std::string get(Ts... params)
+        {
+            return fmt::format(compiledValue, params...);
+        }
+    };
 
     struct Localization
     {
         String hello;
         GoodByeTemplate goodBye;
-        FmtTemplate direct;
+        ParameterizedString birthDate;
     };
 }
 REFL_TYPE(dory::domain::resources::Localization)
     REFL_FIELD(hello)
     REFL_FIELD(goodBye)
-    REFL_FIELD(direct)
+    REFL_FIELD(birthDate)
 REFL_END

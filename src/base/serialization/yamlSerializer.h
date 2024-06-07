@@ -20,11 +20,6 @@ namespace dory::serialization::yaml
             node = toRymlCStr(value);
         }
 
-        inline static void writeValue(const fmt::runtime_format_string<>& value, ryml::NodeRef& node)
-        {
-            node = toRymlCStr(std::string_view(value.str.data(), value.str.size()));
-        }
-
     public:
         template<typename T>
         inline static void process(T& value, YamlContext& context)

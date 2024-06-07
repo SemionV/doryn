@@ -17,16 +17,6 @@ namespace dory::serialization::json
                 value = currentJson->get<T>();
             }
         }
-
-        inline static void process(fmt::runtime_format_string<>& value, JsonContext& context)
-        {
-            auto* currentJson = context.parents.top();
-            if(!currentJson->empty())
-            {
-                auto resource = currentJson->get<std::string>();
-                value = fmt::runtime(resource);
-            }
-        }
     };
 
     struct DeserializerMemberPolicy

@@ -43,7 +43,7 @@ namespace testApp
 
             resources::Resource::compile(localization.goodBye.fmt);
             registry.services.appConfigurationLogger.information(resources::Resource::get(localization.goodBye, "Semion"));
-            registry.services.appConfigurationLogger.information(fmt::format(localization.direct, "Semion"));
+            registry.services.appConfigurationLogger.information(localization.birthDate.get(11, 03, 1984));
 
             attachEventHandlers();
 

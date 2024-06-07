@@ -1,3 +1,4 @@
 hello: {value: "Hello!"}
 goodBye: {fmt: {value: "Good bye, {0}!"}}
 direct: "Direct good bye, {0}!"
+birthDate: "Birth date: {0}.{1}.{2}"

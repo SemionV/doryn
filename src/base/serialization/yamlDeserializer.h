@@ -20,12 +20,6 @@ namespace dory::serialization::yaml
             value = std::string(node.val().str, node.val().len);
         }
 
-        inline static void readValue(fmt::runtime_format_string<>& value, ryml::NodeRef& node)
-        {
-            auto resource = std::string_view(node.val().str, node.val().len);
-            value = fmt::runtime(resource);
-        }
-
     public:
         template<typename T>
         inline static void process(T& value, YamlContext& context)

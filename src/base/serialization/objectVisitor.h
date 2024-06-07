@@ -2,6 +2,7 @@
 
 #include "reflection.h"
 #include "base/typeComponents.h"
+#include "base/domain/resources/localization.h"
 
 namespace dory::serialization
 {
@@ -231,10 +232,11 @@ namespace dory::serialization
         }
 
         template<typename T, typename TContext>
-        requires(std::is_same_v<std::decay_t<T>, fmt::runtime_format_string<>>)
+        requires(std::is_base_of_v<dory::domain::resources::ParameterizedString, std::decay_t<T>>)
         static void visit(T&& object, TContext& context)
         {
-            TPolicies::ValuePolicy::process(std::forward<T>(object), context);
+            TPolicies::ValuePolicy::process(object.getTemplate(), context);
+            object.updateTemplate();
         }
 
         template<typename T, typename TContext>
@@ -290,6 +292,7 @@ namespace dory::serialization
                  && !is_fixed_array_v<std::decay_t<T>>
                  && !std::is_same_v<std::decay_t<T>, std::string>
                  && !std::is_same_v<std::decay_t<T>, fmt::runtime_format_string<>>
+                 && !std::is_base_of_v<dory::domain::resources::ParameterizedString, std::decay_t<T>>
                  && !is_optional_v<std::decay_t<T>>
                  && !is_dynamic_collection_v<T>
                  && !is_dictionary_v<T>)
