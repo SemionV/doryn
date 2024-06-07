@@ -1,7 +1,6 @@
 # Development log
 
 Tasks:
-* I18n
 * Mouse picking(redirect event to the corresponding event hub of a view)
 * Dynamic module loading(plugin system)
 * Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
@@ -21,6 +20,9 @@ Tasks:
 * Path finding
 * Build for MacOS
 * Voice control
+
+**07.06.24**
+* Task done: I18n
 
 **06.06.24**
 * Task done: SerializationService bundle: set of multiple serialization services mapped to distinct file formats

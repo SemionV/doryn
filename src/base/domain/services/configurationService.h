@@ -192,11 +192,11 @@ namespace dory::domain::services::configuration
             }
             catch(const std::exception& e)
             {
-                logger.error(fmt::format("cannot load configuration: {0}", e.what()));
+                logger.warning(fmt::format("cannot load configuration: {0}", e.what()));
             }
             catch(...)
             {
-                logger.error("cannot load configuration: unknown exception type");
+                logger.warning("cannot load configuration: unknown exception type");
             }
 
             return false;

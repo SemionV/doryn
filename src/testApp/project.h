@@ -35,19 +35,19 @@ namespace testApp
             registry.services.configurationService.load(configuration);
             registry.services.appLogger.initialize(configuration.loggingConfiguration.mainLogger, dory::makeOptionalRef(registry.devices.terminalDevice));
 
-            registry.services.appConfigurationLogger.information("active language: " + configuration.interface.activeLanguage);
+            registry.services.appLogger.information("active language: " + configuration.interface.activeLanguage);
 
             LocalizationType localization;
             registry.services.localizationService.load(configuration, localization);
-            registry.services.appConfigurationLogger.information(localization.hello);
-            registry.services.appConfigurationLogger.information(localization.goodBye.get("Semion"));
-            registry.services.appConfigurationLogger.information(localization.birthDate.get(11, 03, 1984));
+            registry.services.appLogger.information(localization.hello);
+            registry.services.appLogger.information(localization.goodBye.get("Semion"));
+            registry.services.appLogger.information(localization.birthDate.get(11, 03, 1984));
 
             configuration.interface.activeLanguage = "english";
             registry.services.localizationService.load(configuration, localization);
-            registry.services.appConfigurationLogger.information(localization.hello);
-            registry.services.appConfigurationLogger.information(localization.goodBye.get("Semion"));
-            registry.services.appConfigurationLogger.information(localization.birthDate.get(11, 03, 1984));
+            registry.services.appLogger.information(localization.hello);
+            registry.services.appLogger.information(localization.goodBye.get("Semion"));
+            registry.services.appLogger.information(localization.birthDate.get(11, 03, 1984));
 
             attachEventHandlers();
 
@@ -62,7 +62,7 @@ namespace testApp
     private:
         void attachEventHandlers()
         {
-            registry.services.appConfigurationLogger.information("attach event handlers");
+            registry.services.appLogger.information("attach event handlers");
 
             registry.events.engine.attach(this, &Project::onInitializeEngine);
             registry.events.engine.attach(this, &Project::onStopEngine);
@@ -73,7 +73,7 @@ namespace testApp
 
         void onInitializeEngine(DataContextType& context, const events::engine::Initialize& eventData)
         {
-            registry.services.appConfigurationLogger.information("on: initialize engine");
+            registry.services.appLogger.information("on: initialize engine");
 
             registry.devices.standardIoDevice.connect(context);
             registry.devices.terminalDevice.connect(context);
