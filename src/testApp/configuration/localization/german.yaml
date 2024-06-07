@@ -1,2 +1,3 @@
-hello: {str: "Hallo!"}
-goodBye: {fmt: "Tschuss, {0}!"}
+hello: {value: "Hallo!"}
+goodBye: {fmt: {value: "Tschuss, {0}!"}}
+direct: "Direkt Tschuss, {0}!"

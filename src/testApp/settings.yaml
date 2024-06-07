@@ -19,4 +19,4 @@ interface:
     description: user interface settings
     loadFrom: [ configuration/interface.user.yaml ]
     saveTo: configuration/interface.user.yaml
-  activeLanguage: english
+  activeLanguage: german

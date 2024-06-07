@@ -231,6 +231,13 @@ namespace dory::serialization
         }
 
         template<typename T, typename TContext>
+        requires(std::is_same_v<std::decay_t<T>, fmt::runtime_format_string<>>)
+        static void visit(T&& object, TContext& context)
+        {
+            TPolicies::ValuePolicy::process(std::forward<T>(object), context);
+        }
+
+        template<typename T, typename TContext>
         requires(is_optional_v<std::decay_t<T>>)
         static void visit(T&& object, TContext& context)
         {
@@ -282,6 +289,7 @@ namespace dory::serialization
         requires(std::is_class_v<std::decay_t<T>>
                  && !is_fixed_array_v<std::decay_t<T>>
                  && !std::is_same_v<std::decay_t<T>, std::string>
+                 && !std::is_same_v<std::decay_t<T>, fmt::runtime_format_string<>>
                  && !is_optional_v<std::decay_t<T>>
                  && !is_dynamic_collection_v<T>
                  && !is_dictionary_v<T>)

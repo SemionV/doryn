@@ -39,7 +39,11 @@ namespace testApp
 
             LocalizationType localization;
             registry.services.localizationService.load(configuration, localization);
-            registry.services.appConfigurationLogger.information(*localization.hello.str);
+            registry.services.appConfigurationLogger.information(resources::Resource::get(localization.hello));
+
+            resources::Resource::compile(localization.goodBye.fmt);
+            registry.services.appConfigurationLogger.information(resources::Resource::get(localization.goodBye, "Semion"));
+            registry.services.appConfigurationLogger.information(fmt::format(localization.direct, "Semion"));
 
             attachEventHandlers();
 

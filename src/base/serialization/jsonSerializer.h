@@ -14,6 +14,13 @@ namespace dory::serialization::json
             auto* currentJson = context.parents.top();
             *currentJson = value;
         }
+
+        template<typename T>
+        inline static void process(const fmt::runtime_format_string<>& value, JsonContext& context)
+        {
+            auto* currentJson = context.parents.top();
+            *currentJson = std::string_view{value.str.data(), value.str.size()};
+        }
     };
 
     struct SerializerObjectPolicy
