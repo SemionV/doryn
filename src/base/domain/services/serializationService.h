@@ -135,7 +135,7 @@ namespace dory::domain::services::serialization
 
         static Format getFormatImpl(const std::filesystem::path& path)
         {
-            std::string extension = path.extension();
+            auto extension = std::string{ path.extension().string() };
             if(!extension.empty() && extension[0] == '.')
             {
                 return getFormatImpl(std::string_view{ ++extension.begin(), extension.end() });
