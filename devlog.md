@@ -1,6 +1,7 @@
 # Development log
 
 Tasks:
+* Optimize compilation time
 * Mouse picking(redirect event to the corresponding event hub of a view)
 * Dynamic module loading(plugin system)
 * Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)

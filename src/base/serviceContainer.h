@@ -1,4 +1,5 @@
-#include <cassert>
+#pragma once
+
 #include "dependencies.h"
 #include "typeComponents.h"
 

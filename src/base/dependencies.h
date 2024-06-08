@@ -27,6 +27,8 @@
 #include <future>
 #include <any>
 
+#include <cassert>
+
 #include "nlohmann/json.hpp"
 #include "ryml.hpp"
 #include "refl-cpp/include/refl-cpp/refl.hpp"
