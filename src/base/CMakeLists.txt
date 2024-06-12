@@ -12,4 +12,5 @@ add_library(base INTERFACE
 
 target_link_libraries(base INTERFACE nlohmann_json::nlohmann_json)
 target_link_libraries(base INTERFACE ryml::ryml)
-target_link_libraries(base INTERFACE spdlog::spdlog_header_only)
+#target_link_libraries(base INTERFACE spdlog::spdlog_header_only) -- very long compile times on slow machines
+target_link_libraries(base INTERFACE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)

@@ -8,9 +8,9 @@ target_include_directories(testApp PRIVATE "${CMAKE_SOURCE_DIR}")
 target_include_directories(testApp PRIVATE ${VENDOR_DIR})
 target_precompile_headers(testApp PRIVATE dependencies.h)
 
-target_compile_options(testApp PRIVATE -H)
-
 target_link_libraries(testApp dory-openGL)
+
+target_compile_definitions(testApp PRIVATE USE_FMT USE_SPDLOG)
 
 install(TARGETS testApp DESTINATION . COMPONENT Example)
 install(DIRECTORY configuration DESTINATION . COMPONENT Example)

@@ -291,7 +291,6 @@ namespace dory::serialization
         requires(std::is_class_v<std::decay_t<T>>
                  && !is_fixed_array_v<std::decay_t<T>>
                  && !std::is_same_v<std::decay_t<T>, std::string>
-                 && !std::is_same_v<std::decay_t<T>, fmt::runtime_format_string<>>
                  && !std::is_base_of_v<dory::domain::resources::ParameterizedString, std::decay_t<T>>
                  && !is_optional_v<std::decay_t<T>>
                  && !is_dynamic_collection_v<T>

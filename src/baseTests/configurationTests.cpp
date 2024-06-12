@@ -184,7 +184,7 @@ public:
 
 TEST_CASE( "Load settings", "[configuration]" )
 {
-    auto logger = dory::domain::services::MultiSinkLogService{};
+    auto logger = dory::domain::services::LogServiceNull{};
     auto fileService = FileServiceMock{};
     auto serializationServiceBundle = SerializationServiceBundleMock{};
     auto formatKeyConverter = FormatKeyConverterMock{};

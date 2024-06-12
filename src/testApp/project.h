@@ -6,11 +6,6 @@ namespace testApp
 {
     namespace events = dory::domain::events;
 
-    struct LogStrings
-    {
-        const fmt::runtime_format_string<> devicesConnected = fmt::runtime("DeviceLayer connected {0}");
-    };
-
     class Project: dory::Uncopyable
     {
     private:
@@ -31,11 +26,13 @@ namespace testApp
             bootLoggerConfig.rotationLogger = dory::configuration::RotationLogSink{"logs/boot.log"};
             bootLoggerConfig.stdoutLogger = dory::configuration::StdoutLogSink{};
 
+#ifdef USE_SPDLOG
             registry.services.appConfigurationLogger.initialize(bootLoggerConfig, dory::makeOptionalRef(registry.devices.terminalDevice));
+#endif
             registry.services.configurationService.load(configuration);
+#ifdef USE_SPDLOG
             registry.services.appLogger.initialize(configuration.loggingConfiguration.mainLogger, dory::makeOptionalRef(registry.devices.terminalDevice));
-
-            registry.services.appLogger.information("active language: " + configuration.interface.activeLanguage);
+#endif
 
             LocalizationType localization;
             registry.services.localizationService.load(configuration, localization);
@@ -80,9 +77,6 @@ namespace testApp
             registry.devices.terminalDevice.writeLine("Start Engine...");
             registry.devices.terminalDevice.enterCommandMode();
 
-            auto logStrings = LogStrings{};
-            registry.services.appLogger.information(fmt::format(logStrings.devicesConnected, ":)"));
-
             registry.services.scriptService.addScript("exit", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
             {
                 registry.devices.terminalDevice.writeLine(fmt::format("-\u001B[31m{0}\u001B[0m-", "exit"));
@@ -124,8 +118,6 @@ namespace testApp
             registry.devices.terminalDevice.writeLine("Stop Engine...");
             registry.devices.terminalDevice.disconnect(context);
             registry.devices.standardIoDevice.disconnect(context);
-
-            registry.services.appLogger.information("devices disconnected");
         }
 
         void onApplicationExit(DataContextType& context, const events::application::Exit& eventData)

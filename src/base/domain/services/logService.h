@@ -48,6 +48,41 @@ namespace dory::domain::services
         }
     };
 
+    class LogServiceNull: public ILogService<LogServiceNull>
+    {
+    public:
+        template<typename T>
+        static void traceImpl(const T& message)
+        {
+        }
+
+        template<typename T>
+        static void debugImpl(const T& message)
+        {
+        }
+
+        template<typename T>
+        static void informationImpl(const T& message)
+        {
+        }
+
+        template<typename T>
+        static void warningImpl(const T& message)
+        {
+        }
+
+        template<typename T>
+        static void errorImpl(const T& message)
+        {
+        }
+
+        template<typename T>
+        static void criticalImpl(const T& message)
+        {
+        }
+    };
+
+#ifdef USE_SPDLOG
     template<class TImplementation>
     class LogService: public ILogService<TImplementation>
     {
@@ -195,4 +230,6 @@ namespace dory::domain::services
             this->logger = std::make_shared<spdlog::logger>(loggerConfiguration.name, spdlog::sinks_init_list{rotationFileSink, consoleSink});
         }
     };
+#endif
+
 }
