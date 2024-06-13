@@ -19,6 +19,7 @@
 #include "base/domain/services/fileService.h"
 #include "base/domain/services/serializationService.h"
 #include "base/domain/services/localizationService.h"
+#include "base/domain/services/moduleService.h"
 #include "base/domain/resources/localization.h"
 #include "openGL/glfwWindow.h"
 #include "openGL/glfwWindowController.h"

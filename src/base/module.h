@@ -2,7 +2,7 @@
 
 #include "dependencies.h"
 
-namespace dory::plugin
+namespace dory
 {
     template<typename TRegistry>
     class IModule

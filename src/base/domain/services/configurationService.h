@@ -39,14 +39,14 @@ namespace dory::domain::services::configuration
         }
     };
 
-    template<typename TLoader>
+    template<typename TConfigurationService>
     struct ConfigurationSectionContext
     {
-        using LoaderType = IConfigurationService<TLoader>;
-        LoaderType& loader;
+        using ConfigurationServiceType = IConfigurationService<TConfigurationService>;
+        ConfigurationServiceType& configurationService;
 
-        explicit ConfigurationSectionContext(LoaderType& loader):
-                loader(loader)
+        explicit ConfigurationSectionContext(ConfigurationServiceType& configurationService):
+                configurationService(configurationService)
         {}
     };
 
@@ -89,7 +89,7 @@ namespace dory::domain::services::configuration
             auto overrideWithFiles = std::vector<std::string>{ std::move(object.section.loadFrom) };
             for(const auto& settingsFile : overrideWithFiles)
             {
-                context.loader.load(settingsFile, std::forward<T>(object));
+                context.configurationService.load(settingsFile, std::forward<T>(object));
             }
 
             return true;
@@ -122,7 +122,7 @@ namespace dory::domain::services::configuration
             auto& saveTo = object.section.saveTo;
             if(!saveTo.empty())
             {
-                context.loader.save(saveTo, object);
+                context.configurationService.save(saveTo, object);
             }
 
             return true;
