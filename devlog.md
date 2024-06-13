@@ -1,9 +1,12 @@
 # Development log
 
 Tasks:
-* Optimize compilation time
-* Mouse picking(redirect event to the corresponding event hub of a view)
 * Dynamic module loading(plugin system)
+  * Configure and load plugins
+  * Subscribe to the events and attach Controllers from plugins
+  * Hot reload of plugins
+  * Runtime CPP compilation(optional)
+* Mouse picking(redirect event to the corresponding event hub of a view)
 * Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
 * OpenGL Renderer
   * Static mapping of Vertex Attributes
@@ -21,6 +24,9 @@ Tasks:
 * Path finding
 * Build for MacOS
 * Voice control
+
+**12.06.24**
+* Task done: Optimize compilation time
 
 **07.06.24**
 * Task done: I18n

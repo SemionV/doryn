@@ -27,4 +27,4 @@ target_include_directories(testPlugin PRIVATE ${VENDOR_DIR})
 # Include Boost directories
 include_directories(${Boost_INCLUDE_DIRS})
 
-install(TARGETS testPlugin DESTINATION . COMPONENT Example)
+install(TARGETS testPlugin DESTINATION ./plugins COMPONENT Example)
