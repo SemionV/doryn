@@ -1,15 +1,7 @@
 #include "plugin.h"
 
-namespace testPlugin
+#define API extern "C" BOOST_SYMBOL_EXPORT
+API std::unique_ptr<client::PluginInterfaceType> pluginFactory()
 {
-    static std::unique_ptr<client::PluginInterfaceType> pluginFactory()
-    {
-        return std::make_unique<TestPlugin>();
-    }
+    return std::make_unique<testPlugin::TestPlugin>();
 }
-
-BOOST_DLL_ALIAS
-(
-    testPlugin::pluginFactory,
-    pluginFactory
-)
