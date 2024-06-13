@@ -5,11 +5,11 @@
 
 int main()
 {
-    auto pluginFactory = boost::dll::import_symbol<dory::plugin::PluginFactory<client::Registry>>("plugins/testPlugin.dll", "pluginFactory");
+    auto moduleFactory = boost::dll::import_symbol<dory::plugin::PluginFactory<client::Registry>>("modules/testModule.dll", "moduleFactory");
 
     auto registry = client::Registry{};
-    auto plugin = pluginFactory();
-    plugin->initialize(registry);
+    auto module = moduleFactory();
+    module->initialize(registry);
 
     return 0;
 }

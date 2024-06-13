@@ -4,9 +4,9 @@
 #include <boost/dll/alias.hpp>
 #include "client/client.h"
 
-namespace testPlugin
+namespace testModule
 {
-    class TestPlugin: public client::PluginInterfaceType
+    class TestModule: public client::ModuleInterfaceType
     {
     public:
         void initialize(client::Registry& registry) override;
