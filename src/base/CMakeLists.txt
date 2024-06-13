@@ -8,7 +8,8 @@ find_package(spdlog PATHS ${VENDOR_DIR}spdlog NO_DEFAULT_PATH REQUIRED)
 
 add_library(base INTERFACE
         serialization/jsonDeserializer.h
-        domain/services/localizationService.h)
+        domain/services/localizationService.h
+        plugin.h)
 
 target_link_libraries(base INTERFACE nlohmann_json::nlohmann_json)
 target_link_libraries(base INTERFACE ryml::ryml)
