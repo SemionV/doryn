@@ -21,10 +21,11 @@ namespace dory::domain::services::module
         step by step proper dereferencing of a module and unload of the module from memory*/
         boost::dll::shared_library library;
         std::unique_ptr<TModule> module;
+        //TODO: use bool flag instead of shared_ptr
         ModuleStateType state;
         //TODO: use more global mutex in order to avoid too many locks while firing many events or running amny controller
         // symply lock a global mutex(perphaps resided in ModulesService) and block unloading of modules while running a bundle of actions
-        std::mutex mutex;
+        std::optional<std::mutex> mutex;
     };
 
     template<typename TImplementation>
@@ -121,13 +122,17 @@ namespace dory::domain::services::module
             if(moduleHandles.contains(moduleName))
             {
                 auto& handle = moduleHandles[moduleName];
-                auto lock = std::unique_lock<std::mutex>{handle.mutex};
-                unloadCheck.wait(lock, [&handle]()
+                if(handle.mutex)
                 {
-                    return handle.state.unique();
-                });
-
-                moduleHandles.erase(moduleName);
+                    auto lock = std::lock_guard<std::mutex>{handle.mutex};
+                    moduleHandles.erase(moduleName);
+                    handle.state = nullptr;
+                }
+                else
+                {
+                    moduleHandles.erase(moduleName);
+                    handle.state = nullptr;
+                }
             }
         }
 
