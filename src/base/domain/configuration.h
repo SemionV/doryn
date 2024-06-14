@@ -13,9 +13,9 @@ namespace dory::configuration
     };
 }
 REFL_TYPE(dory::configuration::RecursiveSection)
-        REFL_FIELD(loadFrom)
-        REFL_FIELD(saveTo)
-        REFL_FIELD(description)
+    REFL_FIELD(loadFrom)
+    REFL_FIELD(saveTo)
+    REFL_FIELD(description)
 REFL_END
 
 namespace dory::configuration {
@@ -27,9 +27,9 @@ namespace dory::configuration {
     };
 }
 REFL_TYPE(dory::configuration::RotationLogSink)
-        REFL_FIELD(logFileName)
-        REFL_FIELD(maximumFileSize)
-        REFL_FIELD(maximumFilesCount)
+    REFL_FIELD(logFileName)
+    REFL_FIELD(maximumFileSize)
+    REFL_FIELD(maximumFilesCount)
 REFL_END
 
 namespace dory::configuration {
@@ -49,9 +49,9 @@ namespace dory::configuration {
     };
 }
 REFL_TYPE(dory::configuration::Logger)
-        REFL_FIELD(name)
-        REFL_FIELD(rotationLogger)
-        REFL_FIELD(stdoutLogger)
+    REFL_FIELD(name)
+    REFL_FIELD(rotationLogger)
+    REFL_FIELD(stdoutLogger)
 REFL_END
 
 
@@ -63,8 +63,8 @@ namespace dory::configuration {
     };
 }
 REFL_TYPE(dory::configuration::LoggingConfiguration)
-        REFL_FIELD(mainLogger)
-        REFL_FIELD(configurationLogger)
+    REFL_FIELD(mainLogger)
+    REFL_FIELD(configurationLogger)
 REFL_END
 
 namespace dory::configuration {
@@ -74,7 +74,7 @@ namespace dory::configuration {
     };
 }
 REFL_TYPE(dory::configuration::ShaderLoader)
-        REFL_FIELD(shadersDirectory)
+    REFL_FIELD(shadersDirectory)
 REFL_END
 
 namespace dory::configuration {
@@ -85,14 +85,15 @@ namespace dory::configuration {
     };
 }
 REFL_TYPE(dory::configuration::Interface)
-        REFL_FIELD(section)
-        REFL_FIELD(activeLanguage)
+    REFL_FIELD(section)
+    REFL_FIELD(activeLanguage)
 REFL_END
 
 namespace dory::configuration {
     struct Configuration
     {
         RecursiveSection section;
+        std::map<std::string, std::string> modules;
         std::map<std::string, std::vector<std::string>> localizations;
         LoggingConfiguration loggingConfiguration;
         ShaderLoader shaderLoader;
@@ -100,9 +101,9 @@ namespace dory::configuration {
     };
 }
 REFL_TYPE(dory::configuration::Configuration)
-        REFL_FIELD(section)
-        REFL_FIELD(localizations)
-        REFL_FIELD(loggingConfiguration)
-        REFL_FIELD(shaderLoader)
-        REFL_FIELD(interface)
+    REFL_FIELD(section)
+    REFL_FIELD(localizations)
+    REFL_FIELD(loggingConfiguration)
+    REFL_FIELD(shaderLoader)
+    REFL_FIELD(interface)
 REFL_END

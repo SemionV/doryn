@@ -12,20 +12,20 @@ int main()
     auto logger = dory::domain::services::StdOutLogService{"client"};
     auto moduleLoader = dory::domain::services::module::ModuleLoader<decltype(logger)>{ logger };
 
-    auto moduleStateRef = dory::domain::services::module::HandleStateReferenceType{};
+    auto moduleState = dory::ModuleStateReferenceType{};
 
     {
         auto moduleHandle = moduleLoader.load<dory::IModule<client::Registry>>("modules/testModule.dll", "test module");
-        moduleHandle.module->run(registry);
+        moduleState = moduleHandle.state;
+        moduleHandle.module->run(moduleState.lock(), registry);
 
-        moduleStateRef = moduleHandle.state;
-        if(!moduleStateRef.expired())
+        if(!moduleState.expired())
         {
             logger.information("module is in memory");
         }
     }
 
-    if(!moduleStateRef.expired())
+    if(!moduleState.expired())
     {
         logger.information("module is in memory");
     }

@@ -2,13 +2,13 @@
 
 namespace testModule
 {
-    void TestModule::run(client::Registry& registry)
+    void TestModule::run(dory::ModuleStateType moduleState, client::Registry& registry)
     {
         std::cout << "Run TestModule\n";
     }
 
     TestModule::~TestModule()
     {
-        std::cout << "Unload of TestModule\n";
+        std::cout << "Unload TestModule\n";
     }
 }
