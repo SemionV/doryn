@@ -6,16 +6,23 @@
 
 namespace dory::domain::services::module
 {
+    using HandleStateType = char;
+    using HandleStateReferenceType = std::weak_ptr<HandleStateType>;
+    using HandleStateOwnerType = std::shared_ptr<HandleStateType>;
+
+    HandleStateOwnerType makeHandleState()
+    {
+        return std::make_shared<HandleStateType>();
+    }
+
     template<typename TModule>
     struct ModuleHandle
     {
-        using StateType = char;
-
         const std::size_t id {};
         const std::string name;
         boost::dll::shared_library library;
         std::unique_ptr<TModule> module;
-        std::shared_ptr<StateType> state;
+        HandleStateOwnerType state;
     };
 
     template<typename TImplementation>
@@ -26,12 +33,6 @@ namespace dory::domain::services::module
         ModuleHandle<TModule> load(const std::filesystem::path& modulePath, const std::string& moduleName)
         {
             return this->toImplementation()->template loadImpl<TModule>(modulePath, moduleName);
-        }
-
-        template<typename TModule>
-        void unload(const ModuleHandle<TModule>& handle)
-        {
-            this->toImplementation()->template unloadImpl<TModule>(handle);
         }
     };
 
@@ -70,7 +71,7 @@ namespace dory::domain::services::module
 
                 auto moduleFactory = library.template get<PluginFactory<TModule>>(moduleFactoryFunctionName);
                 handle.module = moduleFactory();
-                handle.state = std::make_shared<typename ModuleHandle<TModule>::StateType>();
+                handle.state = makeHandleState();
             }
             catch(const std::exception& e)
             {
@@ -83,16 +84,10 @@ namespace dory::domain::services::module
 
             return handle;
         }
-
-        template<typename TModule>
-        void unloadImpl(const ModuleHandle<TModule>& handle)
-        {
-
-        }
     };
 
     template<typename TImplementation>
-    class IModuleService: Uncopyable, public StaticInterface<TImplementation>
+    class IModulesService: Uncopyable, public StaticInterface<TImplementation>
     {
     public:
         void load(const dory::configuration::Configuration& configuration)
@@ -101,7 +96,7 @@ namespace dory::domain::services::module
         }
     };
 
-    class ModuleService: public IModuleService<ModuleService>
+    class ModulesService: public IModulesService<ModulesService>
     {
     public:
         void loadImpl(const dory::configuration::Configuration& configuration)

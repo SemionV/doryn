@@ -12,7 +12,7 @@ int main()
     auto logger = dory::domain::services::StdOutLogService{"client"};
     auto moduleLoader = dory::domain::services::module::ModuleLoader<decltype(logger)>{ logger };
 
-    auto moduleStateRef = std::weak_ptr<dory::domain::services::module::ModuleHandle<dory::IModule<client::Registry>>::StateType>{};
+    auto moduleStateRef = dory::domain::services::module::HandleStateReferenceType{};
 
     {
         auto moduleHandle = moduleLoader.load<dory::IModule<client::Registry>>("modules/testModule.dll", "test module");

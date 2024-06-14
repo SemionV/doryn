@@ -4,11 +4,11 @@ namespace testModule
 {
     void TestModule::run(client::Registry& registry)
     {
-        std::cout << "Initialization of TestModule\n";
+        std::cout << "Run TestModule\n";
     }
 
     TestModule::~TestModule()
     {
-        std::cout << "unload test module\n";
+        std::cout << "Unload of TestModule\n";
     }
 }
