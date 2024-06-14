@@ -9,11 +9,7 @@ namespace dory::domain::resources
     {
         private:
         std::string value;
-#ifdef USE_FMT
         fmt::runtime_format_string<> compiledValue;
-#else
-        std::string compiledValue;
-#endif
         public:
         std::string& getTemplate()
         {
@@ -27,11 +23,7 @@ namespace dory::domain::resources
 
         void updateTemplate()
         {
-#ifdef USE_FMT
             compiledValue = fmt::runtime(value);
-#else
-            compiledValue = value;
-#endif
         }
 
         template<typename... Ts>

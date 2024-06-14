@@ -11,7 +11,9 @@ namespace dory::domain::services::module
     {
         const std::size_t id {};
         const std::string name;
+        boost::dll::shared_library library;
         std::unique_ptr<IModule<TServiceRegistry>> moduleInterface;
+        std::shared_ptr<char> state;
     };
 
     template<typename TServiceRegistry, typename TImplementation>
@@ -38,6 +40,11 @@ namespace dory::domain::services::module
         using LoggerType = ILogService<TLogger>;
         LoggerType& logger;
 
+        ModuleHandle<TServiceRegistry> getNewModuleHandle(const std::string& moduleName)
+        {
+            return ModuleHandle<TServiceRegistry>{ currentId++, moduleName };
+        }
+
     public:
         explicit ModuleLoader(LoggerType& logger):
             logger(logger)
@@ -45,7 +52,22 @@ namespace dory::domain::services::module
 
         ModuleHandle<TServiceRegistry> loadImpl(const std::filesystem::path& modulePath, const std::string& moduleName, TServiceRegistry& serviceRegistry)
         {
-            auto handle = ModuleHandle<TServiceRegistry>{ currentId++, moduleName };
+            auto handle = getNewModuleHandle(moduleName);
+
+            logger.information(fmt::format("Load module {0}, {1}", moduleName, modulePath.string()));
+
+            try
+            {
+
+            }
+            catch(const std::exception& e)
+            {
+                logger.error(fmt::format("Error on loading an instance of module {0}, {1}: {2}", moduleName, modulePath.string(), e.what()));
+            }
+            catch(...)
+            {
+
+            }
 
             return handle;
         }

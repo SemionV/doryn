@@ -82,7 +82,6 @@ namespace dory::domain::services
         }
     };
 
-#ifdef USE_SPDLOG
     template<class TImplementation>
     class LogService: public ILogService<TImplementation>
     {
@@ -230,6 +229,13 @@ namespace dory::domain::services
             this->logger = std::make_shared<spdlog::logger>(loggerConfiguration.name, spdlog::sinks_init_list{rotationFileSink, consoleSink});
         }
     };
-#endif
 
+    class StdOutLogService: public LogService<StdOutLogService>
+    {
+    public:
+        explicit StdOutLogService(const std::string& loggerName)
+        {
+            this->logger = std::make_shared<spdlog::logger>(loggerName, spdlog::sinks_init_list{std::make_unique<spdlog::sinks::stdout_color_sink_mt>()});
+        }
+    };
 }

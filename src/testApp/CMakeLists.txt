@@ -10,8 +10,6 @@ target_precompile_headers(testApp PRIVATE dependencies.h)
 
 target_link_libraries(testApp dory-openGL)
 
-target_compile_definitions(testApp PRIVATE USE_FMT USE_SPDLOG)
-
 install(TARGETS testApp DESTINATION . COMPONENT Example)
 install(DIRECTORY configuration DESTINATION . COMPONENT Example)
 install(FILES settings.yaml DESTINATION . COMPONENT Example)

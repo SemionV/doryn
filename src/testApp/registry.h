@@ -111,11 +111,7 @@ namespace testApp
 
     struct ServiceLayer
     {
-#ifdef USE_SPDLOG
         using LogServiceType = services::MultiSinkLogService;
-#else
-        using LogServiceType = services::LogServiceNull;
-#endif
         using FrameServiceType = services::BasicFrameService;
         using FileServiceType = services::FileService;
         using YamlSerializationServiceType = services::serialization::YamlSerializationService;

@@ -6,5 +6,5 @@
 
 namespace client
 {
-    using ModuleInterfaceType = dory::plugin::IModule<Registry>;
+    using ModuleInterfaceType = dory::IModule<Registry>;
 }

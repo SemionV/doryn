@@ -26,13 +26,9 @@ namespace testApp
             bootLoggerConfig.rotationLogger = dory::configuration::RotationLogSink{"logs/boot.log"};
             bootLoggerConfig.stdoutLogger = dory::configuration::StdoutLogSink{};
 
-#ifdef USE_SPDLOG
             registry.services.appConfigurationLogger.initialize(bootLoggerConfig, dory::makeOptionalRef(registry.devices.terminalDevice));
-#endif
             registry.services.configurationService.load(configuration);
-#ifdef USE_SPDLOG
             registry.services.appLogger.initialize(configuration.loggingConfiguration.mainLogger, dory::makeOptionalRef(registry.devices.terminalDevice));
-#endif
 
             LocalizationType localization;
             registry.services.localizationService.load(configuration, localization);
