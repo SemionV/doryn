@@ -54,7 +54,7 @@ namespace dory::domain::services::module
         {
             auto handle = getNewModuleHandle(moduleName);
 
-            logger.information(fmt::format("Load module {0}, {1}", moduleName, modulePath.string()));
+            logger.information(fmt::format(R"(Load module "{0}" from "{1}")", moduleName, modulePath.string()));
 
             try
             {
@@ -62,7 +62,7 @@ namespace dory::domain::services::module
             }
             catch(const std::exception& e)
             {
-                logger.error(fmt::format("Error on loading an instance of module {0}, {1}: {2}", moduleName, modulePath.string(), e.what()));
+                logger.error(fmt::format(R"(Error on loading an instance of module "{0}" from "{1}": {2})", moduleName, modulePath.string(), e.what()));
             }
             catch(...)
             {
