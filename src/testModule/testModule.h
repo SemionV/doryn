@@ -6,9 +6,11 @@
 
 namespace testModule
 {
-    class TestModule: public client::ModuleInterfaceType
+    class TestModule: public dory::IModule<client::Registry>
     {
     public:
-        void initialize(client::Registry& registry) override;
+        ~TestModule() override;
+
+        void run(client::Registry& registry) override;
     };
 }

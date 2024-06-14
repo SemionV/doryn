@@ -10,9 +10,11 @@ namespace dory
     public:
         virtual ~IModule() = default;
 
-        virtual void initialize(TRegistry& registry) = 0;
+        virtual void run(TRegistry& registry) = 0;
     };
 
-    template<typename TRegistry>
-    using PluginFactory = std::unique_ptr<IModule<TRegistry>>();
+    template<typename TModule>
+    using PluginFactory = std::unique_ptr<TModule>();
+
+    const static std::string moduleFactoryFunctionName = "moduleFactory";
 }

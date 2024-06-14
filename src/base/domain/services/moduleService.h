@@ -6,33 +6,37 @@
 
 namespace dory::domain::services::module
 {
-    template<typename TServiceRegistry>
+    template<typename TModule>
     struct ModuleHandle
     {
+        using StateType = char;
+
         const std::size_t id {};
         const std::string name;
         boost::dll::shared_library library;
-        std::unique_ptr<IModule<TServiceRegistry>> moduleInterface;
-        std::shared_ptr<char> state;
+        std::unique_ptr<TModule> module;
+        std::shared_ptr<StateType> state;
     };
 
-    template<typename TServiceRegistry, typename TImplementation>
+    template<typename TImplementation>
     class IModuleLoader: Uncopyable, public StaticInterface<TImplementation>
     {
     public:
-        ModuleHandle<TServiceRegistry> load(const std::filesystem::path& modulePath, const std::string& moduleName, TServiceRegistry& serviceRegistry)
+        template<typename TModule>
+        ModuleHandle<TModule> load(const std::filesystem::path& modulePath, const std::string& moduleName)
         {
-            return this->toImplementation()->loadImpl(modulePath, moduleName, serviceRegistry);
+            return this->toImplementation()->template loadImpl<TModule>(modulePath, moduleName);
         }
 
-        void unload(const ModuleHandle<TServiceRegistry>& handle)
+        template<typename TModule>
+        void unload(const ModuleHandle<TModule>& handle)
         {
-            this->toImplementation()->unloadImpl(handle);
+            this->toImplementation()->template unloadImpl<TModule>(handle);
         }
     };
 
-    template<typename TServiceRegistry, typename TLogger>
-    class ModuleLoader: public IModuleLoader<TServiceRegistry, ModuleLoader<TServiceRegistry, TLogger>>
+    template<typename TLogger>
+    class ModuleLoader: public IModuleLoader<ModuleLoader<TLogger>>
     {
     private:
         std::atomic<std::size_t> currentId = 0;
@@ -40,9 +44,10 @@ namespace dory::domain::services::module
         using LoggerType = ILogService<TLogger>;
         LoggerType& logger;
 
-        ModuleHandle<TServiceRegistry> getNewModuleHandle(const std::string& moduleName)
+        template<typename TModule>
+        ModuleHandle<TModule> getNewModuleHandle(const std::string& moduleName)
         {
-            return ModuleHandle<TServiceRegistry>{ currentId++, moduleName };
+            return ModuleHandle<TModule>{ currentId++, moduleName };
         }
 
     public:
@@ -50,29 +55,37 @@ namespace dory::domain::services::module
             logger(logger)
         {}
 
-        ModuleHandle<TServiceRegistry> loadImpl(const std::filesystem::path& modulePath, const std::string& moduleName, TServiceRegistry& serviceRegistry)
+        template<typename TModule>
+        ModuleHandle<TModule> loadImpl(const std::filesystem::path& modulePath, const std::string& moduleName)
         {
-            auto handle = getNewModuleHandle(moduleName);
+            auto handle = getNewModuleHandle<TModule>(moduleName);
 
             logger.information(fmt::format(R"(Load module "{0}" from "{1}")", moduleName, modulePath.string()));
 
+            constexpr auto errorPattern = R"(Error on loading an instance of module "{0}" from "{1}": {2})";
             try
             {
+                auto& library = handle.library;
+                library.load(modulePath.string());
 
+                auto moduleFactory = library.template get<PluginFactory<TModule>>(moduleFactoryFunctionName);
+                handle.module = moduleFactory();
+                handle.state = std::make_shared<typename ModuleHandle<TModule>::StateType>();
             }
             catch(const std::exception& e)
             {
-                logger.error(fmt::format(R"(Error on loading an instance of module "{0}" from "{1}": {2})", moduleName, modulePath.string(), e.what()));
+                logger.error(fmt::format(errorPattern, moduleName, modulePath.string(), e.what()));
             }
             catch(...)
             {
-
+                logger.error(fmt::format(errorPattern, moduleName, modulePath.string(), "unknown exception type"));
             }
 
             return handle;
         }
 
-        void unloadImpl(const ModuleHandle<TServiceRegistry>& handle)
+        template<typename TModule>
+        void unloadImpl(const ModuleHandle<TModule>& handle)
         {
 
         }

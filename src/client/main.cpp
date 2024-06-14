@@ -7,17 +7,32 @@
 
 int main()
 {
-    auto moduleFactory = boost::dll::import_symbol<dory::PluginFactory<client::Registry>>("modules/testModule.dll", "moduleFactory");
-
     auto registry = client::Registry{};
 
-    auto module = moduleFactory();
-    module->initialize(registry);
-
     auto logger = dory::domain::services::StdOutLogService{"client"};
-    auto moduleLoader = dory::domain::services::module::ModuleLoader<client::Registry, decltype(logger)>{ logger };
+    auto moduleLoader = dory::domain::services::module::ModuleLoader<decltype(logger)>{ logger };
 
-    moduleLoader.load("modules/testModule.dll", "test module", registry);
+    auto moduleStateRef = std::weak_ptr<dory::domain::services::module::ModuleHandle<dory::IModule<client::Registry>>::StateType>{};
+
+    {
+        auto moduleHandle = moduleLoader.load<dory::IModule<client::Registry>>("modules/testModule.dll", "test module");
+        moduleHandle.module->run(registry);
+
+        moduleStateRef = moduleHandle.state;
+        if(!moduleStateRef.expired())
+        {
+            logger.information("module is in memory");
+        }
+    }
+
+    if(!moduleStateRef.expired())
+    {
+        logger.information("module is in memory");
+    }
+    else
+    {
+        logger.information("module is unloaded");
+    }
 
     return 0;
 }
