@@ -25,7 +25,8 @@ namespace dory::domain::services::module
         ModuleStateType state;
         //TODO: use more global mutex in order to avoid too many locks while firing many events or running amny controller
         // symply lock a global mutex(perphaps resided in ModulesService) and block unloading of modules while running a bundle of actions
-        std::optional<std::mutex> mutex;
+        std::mutex mutex;
+        bool hotReloadEnabled = false;
     };
 
     template<typename TImplementation>
@@ -33,9 +34,9 @@ namespace dory::domain::services::module
     {
     public:
         template<typename TModule>
-        ModuleHandle<TModule> load(const std::filesystem::path& modulePath, const std::string& moduleName)
+        void load(ModuleHandle<TModule>& moduleHandle)
         {
-            return this->toImplementation()->template loadImpl<TModule>(modulePath, moduleName);
+            return this->toImplementation()->template loadImpl<TModule>(moduleHandle);
         }
     };
 
@@ -52,21 +53,22 @@ namespace dory::domain::services::module
         {}
 
         template<typename TModule>
-        ModuleHandle<TModule> loadImpl(const std::filesystem::path& modulePath, const std::string& moduleName)
+        void loadImpl(ModuleHandle<TModule>& moduleHandle)
         {
-            auto handle = ModuleHandle<TModule>{ moduleName, modulePath };
+            const auto& moduleName = moduleHandle.name;
+            const auto& modulePath = moduleHandle.path;
 
-            logger.information(fmt::format(R"(Load module "{0}" from "{1}")", moduleName, modulePath.string()));
+            logger.information(fmt::format(R"(Load module "{0}" from "{1}")", moduleHandle.name, modulePath.string()));
 
             constexpr auto errorPattern = R"(Error on loading an instance of module "{0}" from "{1}": {2})";
             try
             {
-                auto& library = handle.library;
+                auto& library = moduleHandle.library;
                 library.load((std::filesystem::path{modulePath} /= systemSharedLibraryFileExtension).string());
 
                 auto moduleFactory = library.template get<ModuleFactory<TModule>>(moduleFactoryFunctionName);
-                handle.module = moduleFactory();
-                handle.state = makeHandleState();
+                moduleHandle.module = moduleFactory();
+                moduleHandle.state = makeHandleState();
             }
             catch(const std::exception& e)
             {
@@ -76,8 +78,6 @@ namespace dory::domain::services::module
             {
                 logger.error(fmt::format(errorPattern, moduleName, modulePath.string(), "unknown exception type"));
             }
-
-            return handle;
         }
     };
 
@@ -122,7 +122,7 @@ namespace dory::domain::services::module
             if(moduleHandles.contains(moduleName))
             {
                 auto& handle = moduleHandles[moduleName];
-                if(handle.mutex)
+                if(handle.hotReloadEnabled)
                 {
                     auto lock = std::lock_guard<std::mutex>{handle.mutex};
                     moduleHandles.erase(moduleName);
@@ -138,24 +138,33 @@ namespace dory::domain::services::module
 
         void load(const std::string& moduleName, const std::filesystem::path& modulePath, TServiceRegistry& serviceRegistry)
         {
-            auto handle = moduleLoader.template load<ModuleType>(modulePath, moduleName);
-            if(handle.state)
+            auto insertion = moduleHandles.emplace(moduleName, ModuleHandle<ModuleType>{ moduleName, modulePath });
+            if(insertion.second)
             {
-                constexpr auto errorPattern = R"(Error on running module "{0}" from "{1}": {2})";
-                try
+                auto& handle = *insertion.first;
+                moduleLoader.template load<ModuleType>(modulePath, moduleName, handle);
+                if(handle.state)
                 {
-                    //TODO: pass handle by reference, so that subsequent code has access to the state and handle's mutex
-                    handle.module->run(handle.state, serviceRegistry);
-                    moduleHandles[handle.name] = handle;
+                    constexpr auto errorPattern = R"(Error on running module "{0}" from "{1}": {2})";
+                    try
+                    {
+                        //TODO: pass handle by reference, so that subsequent code has access to the state and handle's mutex
+                        handle.module->run(handle.state, serviceRegistry);
+                        moduleHandles[handle.name] = handle;
+                    }
+                    catch(const std::exception&e)
+                    {
+                        logger.error(fmt::format(errorPattern, moduleName, modulePath.string(), e.what()));
+                    }
+                    catch(...)
+                    {
+                        logger.error(fmt::format(errorPattern, moduleName, modulePath.string(), "unknown exception type"));
+                    }
                 }
-                catch(const std::exception&e)
-                {
-                    logger.error(fmt::format(errorPattern, moduleName, modulePath.string(), e.what()));
-                }
-                catch(...)
-                {
-                    logger.error(fmt::format(errorPattern, moduleName, modulePath.string(), "unknown exception type"));
-                }
+            }
+            else
+            {
+                logger.warning(fmt::format("Module is loaded already: {0}, {1}", moduleName, modulePath.string()));
             }
         }
 

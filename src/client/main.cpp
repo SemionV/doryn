@@ -15,7 +15,8 @@ int main()
     auto moduleState = dory::ModuleStateReferenceType{};
 
     {
-        auto moduleHandle = moduleLoader.load<dory::IModule<client::Registry>>("modules/testModule.dll", "test module");
+        auto moduleHandle = dory::domain::services::module::ModuleHandle<dory::IModule<client::Registry>>{ "test module", "modules/testModule"};
+        moduleLoader.load(moduleHandle);
         moduleState = moduleHandle.state;
         moduleHandle.module->run(moduleState.lock(), registry);
 
