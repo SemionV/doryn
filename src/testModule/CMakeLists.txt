@@ -6,12 +6,9 @@ add_library(testModule MODULE ${PLATFORM}
         testModule.cpp
         factory.cpp)
 
-if(WIN32)
-    set_target_properties(testModule PROPERTIES PREFIX ""
-            IMPORT_PREFIX ""
-            IMPORT_SUFFIX ".lib"
-            OUTPUT_NAME "testModule")
-endif()
+set_target_properties(testModule PROPERTIES PREFIX ""
+        IMPORT_PREFIX ""
+        OUTPUT_NAME "testModule")
 
 target_link_libraries(testModule base)
 
