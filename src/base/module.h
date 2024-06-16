@@ -16,7 +16,7 @@ namespace dory
     struct ModuleHandle
     {
         const std::string name;
-        std::filesystem::path path;
+        const std::filesystem::path path;
         std::mutex mutex;
         //TODO: check if the module is unloaded on destruction, terminate if not
         bool isLoaded = false;

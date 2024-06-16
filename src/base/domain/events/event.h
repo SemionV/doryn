@@ -2,139 +2,211 @@
 
 #include "base/dependencies.h"
 #include "base/typeComponents.h"
+#include "base/module.h"
 
 namespace dory::domain::events
 {
     template<class... Ts>
     class Callable
     {
-        public:
-            virtual ~Callable() = default;
-            
-            virtual void operator()(Ts... arguments) const = 0;
+    public:
+        using ModuleHandleOptionType = std::optional<std::reference_wrapper<ModuleHandle>>;
+        ModuleHandleOptionType moduleHandle;
+
+    protected:
+        template<typename... Args>
+        void invoke(Args&&... args) const
+        {
+            std::invoke(std::forward<Args>(args)...);
+        }
+
+    public:
+        virtual ~Callable() = default;
+
+        explicit Callable() = default;
+
+        explicit Callable(ModuleHandle& moduleHandle):
+            moduleHandle(moduleHandle)
+        {}
+
+        virtual void operator()(Ts... arguments) const = 0;
+
+
     };
 
     template<class... Ts>
     class CallableFunction: public Callable<Ts...>
     {
-        private:
-            std::function<void(Ts...)> function;
+    private:
+        std::function<void(Ts...)> function;
 
-        public:
-            explicit CallableFunction(std::function<void(Ts...)>&& function):
-                function(std::move(function))
-            {}
+    public:
+        explicit CallableFunction(std::function<void(Ts...)>&& function):
+            function(std::move(function))
+        {}
 
-            void operator()(Ts... arguments) const override
-            {
-                std::invoke(function, arguments...);
-            }
+        explicit CallableFunction(std::function<void(Ts...)>&& function, ModuleHandle& moduleHandle):
+            Callable<Ts...>(moduleHandle),
+            function(std::move(function))
+        {}
+
+        void operator()(Ts... arguments) const override
+        {
+            this->invoke(function, arguments...);
+        }
     };
 
     template<typename T, class... Ts>
     class CallableMemberFunction: public Callable<Ts...>
     {
-        private:
-            std::pair<T*, void (T::*)(Ts...)> memberFunctionPair;
+    private:
+        std::pair<T*, void (T::*)(Ts...)> memberFunctionPair;
 
-        public:
-            CallableMemberFunction(T* instance, void (T::* memberFunction)(Ts...)):
-                memberFunctionPair(instance, memberFunction)
-            {}
+    public:
+        CallableMemberFunction(T* instance, void (T::* memberFunction)(Ts...)):
+            memberFunctionPair(instance, memberFunction)
+        {}
 
-            void operator()(Ts... arguments) const override
-            {
-                std::invoke(memberFunctionPair.second, memberFunctionPair.first, arguments...);
-            }
+        CallableMemberFunction(T* instance, void (T::* memberFunction)(Ts...), ModuleHandle& moduleHandle):
+            Callable<Ts...>(moduleHandle),
+            memberFunctionPair(instance, memberFunction)
+        {}
+
+        void operator()(Ts... arguments) const override
+        {
+            this->invoke(memberFunctionPair.second, memberFunctionPair.first, arguments...);
+        }
     };
 
     template<class... Ts>
     class Event
     {
-        public:
-            using KeyType = std::size_t;
+    public:
+        using KeyType = std::size_t;
 
-        private:
-            KeyType idCounter {};
+    private:
+        KeyType idCounter {};
 
-        protected:
-            std::map<KeyType, std::shared_ptr<Callable<Ts...>>> handlers;
+    protected:
+        std::map<KeyType, std::shared_ptr<Callable<Ts...>>> handlers;
 
-        public:
-            template<typename F>
-            KeyType attachHandler(F&& function)
-            {
-                auto functor = std::forward<F>(function);
-                return attachFunction(std::move(functor));
-            }
+    public:
+        template<typename F>
+        KeyType attachHandler(F&& function)
+        {
+            auto functor = std::forward<F>(function);
+            return attachFunction(std::move(functor));
+        }
 
-            template<typename F>
-            KeyType operator+=(F&& function)
-            {
-                return attachHandler(std::forward<F>(function));
-            }
+        template<typename F>
+        KeyType operator+=(F&& function)
+        {
+            return attachHandler(std::forward<F>(function));
+        }
 
-            KeyType attachHandler(std::function<void(Ts...)>&& functor)
-            {
-                return attachFunction(std::move(functor));
-            }
+        KeyType attachHandler(std::function<void(Ts...)>&& functor)
+        {
+            return attachFunction(std::move(functor));
+        }
 
-            template<typename F>
-            KeyType operator+=(std::function<void(Ts...)>&& functor)
-            {
-                return attachFunction(std::move(functor));
-            }
+        template<typename F>
+        KeyType operator+=(std::function<void(Ts...)>&& functor)
+        {
+            return attachFunction(std::move(functor));
+        }
 
-            template<typename T>
-            KeyType attachHandler(T* instance, void (T::* memberFunction)(Ts...))
-            {
-                return attachMemberFunction(instance, memberFunction);
-            }
+        template<typename T>
+        KeyType attachHandler(T* instance, void (T::* memberFunction)(Ts...))
+        {
+            return attachMemberFunction(instance, memberFunction);
+        }
 
-            void detachHandler(KeyType handlerKey)
-            {
-                handlers.erase(handlerKey);
-            }
+        void detachHandler(KeyType handlerKey)
+        {
+            handlers.erase(handlerKey);
+        }
 
-        private:
-            KeyType attachFunction(std::function<void(Ts...)>&& functor)
-            {
-                auto callable = std::make_shared<CallableFunction<Ts...>>(std::move(functor));
-                return attachCallable(callable);
-            }
+    private:
+        KeyType attachFunction(std::function<void(Ts...)>&& functor)
+        {
+            auto callable = std::make_shared<CallableFunction<Ts...>>(std::move(functor));
+            return attachCallable(callable);
+        }
+        KeyType attachFunction(std::function<void(Ts...)>&& functor, ModuleHandle& moduleHandle)
+        {
+            auto callable = std::make_shared<CallableFunction<Ts...>>(std::move(functor), moduleHandle);
+            return attachCallable(callable);
+        }
 
-            template<typename T>
-            KeyType attachMemberFunction(T* instance, void (T::* memberFunction)(Ts...))
-            {
-                auto callable = std::make_shared<CallableMemberFunction<T, Ts...>>(instance, memberFunction);
-                return attachCallable(callable);
-            }
+        template<typename T>
+        KeyType attachMemberFunction(T* instance, void (T::* memberFunction)(Ts...))
+        {
+            auto callable = std::make_shared<CallableMemberFunction<T, Ts...>>(instance, memberFunction);
+            return attachCallable(callable);
+        }
 
-            KeyType attachCallable(std::shared_ptr<Callable<Ts...>> callable)
-            {
-                KeyType key = getNewKey();
-                handlers.emplace(key, callable);
+        template<typename T>
+        KeyType attachMemberFunction(T* instance, void (T::* memberFunction)(Ts...), ModuleHandle& moduleHandle)
+        {
+            auto callable = std::make_shared<CallableMemberFunction<T, Ts...>>(instance, memberFunction, moduleHandle);
+            return attachCallable(callable);
+        }
 
-                return key;
-            }
+        KeyType attachCallable(std::shared_ptr<Callable<Ts...>> callable)
+        {
+            KeyType key = getNewKey();
+            handlers.emplace(key, callable);
 
-            KeyType getNewKey()
-            {
-                return idCounter++;
-            }
+            return key;
+        }
+
+        KeyType getNewKey()
+        {
+            return idCounter++;
+        }
     };
 
     template<class... Ts>
     class EventDispatcher: public Event<Ts...>
     {
-        public:
-            void operator()(Ts... arguments)
+    public:
+        void operator()(Ts... arguments)
+        {
+            auto expiredHandlers = std::vector<typename Event<Ts...>::KeyType>{};
+
+            for (const auto& [key, handler]: this->handlers)
             {
-                for (const auto& [key, handler]: this->handlers)
+                if(handler->moduleHandle)
+                {
+                    ModuleHandle& moduleHandler = (*handler->moduleHandle).get();
+
+                    auto lock = std::unique_lock{ moduleHandler.mutex };
+
+                    if(moduleHandler.isMultithreaded)
+                    {
+                        lock.lock();
+                    }
+
+                    if(moduleHandler.isLoaded)
+                    {
+                        handler->operator()(arguments...);
+                    }
+                    else
+                    {
+                        expiredHandlers.emplace_back(key);
+                    }
+                }
+                else
                 {
                     handler->operator()(arguments...);
                 }
             }
+
+            for(auto& key : expiredHandlers)
+            {
+                this->handlers.erase(key);
+            }
+        }
     };
 
     template<typename TDataContext, typename TEventData>
