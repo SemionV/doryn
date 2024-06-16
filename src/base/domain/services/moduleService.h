@@ -13,7 +13,7 @@ namespace dory::domain::services::module
     {
     public:
         template<typename TModuleContext>
-        std::unique_ptr<IModule<TModuleContext>> load(const ModuleHandle& moduleHandle)
+        std::unique_ptr<ILoadableModule<TModuleContext>> load(const ModuleHandle& moduleHandle)
         {
             return this->toImplementation()->template loadImpl<TModuleContext>(moduleHandle);
         }
@@ -34,7 +34,7 @@ namespace dory::domain::services::module
         {}
 
         template<typename TModuleContext>
-        std::unique_ptr<IModule<TModuleContext>> loadImpl(const ModuleHandle& moduleHandle)
+        std::unique_ptr<ILoadableModule<TModuleContext>> loadImpl(const ModuleHandle& moduleHandle)
         {
             const auto& moduleName = moduleHandle.name;
             const auto& modulePath = moduleHandle.path;
@@ -51,7 +51,7 @@ namespace dory::domain::services::module
                     auto path = modulePath.string() + systemSharedLibraryFileExtension;
                     library.load(path);
 
-                    auto moduleFactory = library.template get<ModuleFactory<TModuleContext>>(moduleFactoryFunctionName);
+                    auto moduleFactory = library.template get<LoadableModuleFactory<TModuleContext>>(loadableModuleFactoryFunctionName);
                     return moduleFactory();
                 }
                 else
@@ -104,14 +104,14 @@ namespace dory::domain::services::module
         ModelLoaderType& moduleLoader;
 
         std::map<std::string, ModuleHandle> moduleHandles;
-        std::condition_variable unloadCheck;
+        std::map<std::string, IModule> loadedModules;
 
         void unload(const std::string& moduleName)
         {
             if(moduleHandles.contains(moduleName))
             {
                 auto& handle = moduleHandles[moduleName];
-                if(handle.hotReloadEnabled)
+                if(handle.isMultithreaded)
                 {
                     auto lock = std::lock_guard<std::mutex>{handle.mutex};
                     moduleHandles.erase(moduleName);
@@ -138,7 +138,8 @@ namespace dory::domain::services::module
                     constexpr auto errorPattern = R"(Error on running module "{0}" from "{1}": {2})";
                     try
                     {
-                        module->run(handle, moduleContext);
+                        module->load(handle, moduleContext);
+                        loadedModules[moduleName] = module;
                     }
                     catch(const std::exception&e)
                     {

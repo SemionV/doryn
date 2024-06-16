@@ -5,7 +5,7 @@
 
 using namespace dory::testing::atm_book;
 
-TEST_CASE( "run atm", "[.][atm_book]" )
+TEST_CASE( "load atm", "[.][atm_book]" )
 {
     using Log = dory::concurrency::logging::Log<decltype(std::cout)>;
     auto log = Log(std::cout);

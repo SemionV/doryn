@@ -114,7 +114,7 @@ Update for last  months
 * Task done: Add Groups of Controllers to Engine
 * Task done: Assign ComponentId to every Controller, attach view to controller inderectly with view-controller entity
 * Task done: Remove Engine::dataContext and pass it in the Engine::update as parameter instead
-* Task done: Introduce Engene EventHub and invoke "after run event"
+* Task done: Introduce Engene EventHub and invoke "after load event"
 * Task done: Implement dynamic Controller creating and deletion on Engine
 
 **16.09.23**

@@ -2,9 +2,9 @@
 
 namespace testModule
 {
-    void TestModule::run(const dory::ModuleHandle& moduleHandle, client::Registry& registry)
+    void TestModule::load(const dory::ModuleHandle& moduleHandle, client::Registry& registry)
     {
-        std::cout << "Run TestModule\n";
+        std::cout << "Load TestModule\n";
     }
 
     TestModule::~TestModule()

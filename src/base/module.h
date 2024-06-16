@@ -18,8 +18,9 @@ namespace dory
         const std::string name;
         std::filesystem::path path;
         std::mutex mutex;
+        //TODO: check if the module is unloaded on destruction, terminate if not
         bool isLoaded = false;
-        bool hotReloadEnabled = false;
+        bool isMultithreaded = false;
 
         explicit ModuleHandle(std::string  name, std::filesystem::path  path):
                 name(std::move(name)),
@@ -27,17 +28,22 @@ namespace dory
         {}
     };
 
-    template<typename TRegistry>
     class IModule
     {
     public:
         virtual ~IModule() = default;
-
-        virtual void run(const ModuleHandle& moduleState, TRegistry& registry) = 0;
     };
 
     template<typename TModuleContext>
-    using ModuleFactory = std::unique_ptr<IModule<TModuleContext>>();
+    class ILoadableModule
+    {
+    public:
+        virtual ~ILoadableModule() = default;
+        virtual void load(const ModuleHandle& moduleState, TModuleContext& moduleContext) = 0;
+    };
 
-    const static std::string moduleFactoryFunctionName = "moduleFactory";
+    template<typename TModuleContext>
+    using LoadableModuleFactory = std::unique_ptr<ILoadableModule<TModuleContext>>();
+
+    const static std::string loadableModuleFactoryFunctionName = "loadableModuleFactory";
 }

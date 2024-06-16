@@ -6,11 +6,11 @@
 
 namespace testModule
 {
-    class TestModule: public dory::IModule<client::Registry>
+    class TestModule: public dory::ILoadableModule<client::Registry>
     {
     public:
         ~TestModule() override;
 
-        void run(const dory::ModuleHandle& moduleHandle, client::Registry& registry) override;
+        void load(const dory::ModuleHandle& moduleHandle, client::Registry& registry) override;
     };
 }

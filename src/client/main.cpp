@@ -16,7 +16,7 @@ int main()
     auto module = moduleLoader.load<client::Registry>(moduleHandle);
     if(module)
     {
-        module->run(moduleHandle, registry);
+        module->load(moduleHandle, registry);
     }
 
     return 0;
