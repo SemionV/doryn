@@ -11,6 +11,6 @@ namespace testModule
     public:
         ~TestModule() override;
 
-        void run(dory::ModuleStateType moduleState, client::Registry& registry) override;
+        void run(const dory::ModuleHandle& moduleHandle, client::Registry& registry) override;
     };
 }

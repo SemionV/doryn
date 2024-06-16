@@ -1,42 +1,21 @@
 #pragma once
 
+#include <utility>
+
 #include "base/dependencies.h"
 #include "base/typeComponents.h"
 #include "base/module.h"
 
 namespace dory::domain::services::module
 {
-    ModuleStateType makeHandleState()
-    {
-        return std::make_shared<ModuleStateBasicType>();
-    }
-
-    template<typename TModule>
-    struct ModuleHandle
-    {
-        const std::string name;
-        std::filesystem::path path;
-
-        /*here the declaration order of the members below is very important for
-        step by step proper dereferencing of a module and unload of the module from memory*/
-        boost::dll::shared_library library;
-        std::unique_ptr<TModule> module;
-        //TODO: use bool flag instead of shared_ptr
-        ModuleStateType state;
-        //TODO: use more global mutex in order to avoid too many locks while firing many events or running amny controller
-        // symply lock a global mutex(perphaps resided in ModulesService) and block unloading of modules while running a bundle of actions
-        std::mutex mutex;
-        bool hotReloadEnabled = false;
-    };
-
     template<typename TImplementation>
     class IModuleLoader: Uncopyable, public StaticInterface<TImplementation>
     {
     public:
-        template<typename TModule>
-        void load(ModuleHandle<TModule>& moduleHandle)
+        template<typename TModuleContext>
+        std::unique_ptr<IModule<TModuleContext>> load(const ModuleHandle& moduleHandle)
         {
-            return this->toImplementation()->template loadImpl<TModule>(moduleHandle);
+            return this->toImplementation()->template loadImpl<TModuleContext>(moduleHandle);
         }
     };
 
@@ -47,13 +26,15 @@ namespace dory::domain::services::module
         using LoggerType = ILogService<TLogger>;
         LoggerType& logger;
 
+        std::map<std::string, boost::dll::shared_library> libraries;
+
     public:
         explicit ModuleLoader(LoggerType& logger):
             logger(logger)
         {}
 
-        template<typename TModule>
-        void loadImpl(ModuleHandle<TModule>& moduleHandle)
+        template<typename TModuleContext>
+        std::unique_ptr<IModule<TModuleContext>> loadImpl(const ModuleHandle& moduleHandle)
         {
             const auto& moduleName = moduleHandle.name;
             const auto& modulePath = moduleHandle.path;
@@ -63,12 +44,20 @@ namespace dory::domain::services::module
             constexpr auto errorPattern = R"(Error on loading an instance of module "{0}" from "{1}": {2})";
             try
             {
-                auto& library = moduleHandle.library;
-                library.load((std::filesystem::path{modulePath} /= systemSharedLibraryFileExtension).string());
+                auto insertion = libraries.emplace(moduleName, boost::dll::shared_library{});
+                if(insertion.second)
+                {
+                    auto& library = insertion.first->second;
+                    auto path = modulePath.string() + systemSharedLibraryFileExtension;
+                    library.load(path);
 
-                auto moduleFactory = library.template get<ModuleFactory<TModule>>(moduleFactoryFunctionName);
-                moduleHandle.module = moduleFactory();
-                moduleHandle.state = makeHandleState();
+                    auto moduleFactory = library.template get<ModuleFactory<TModuleContext>>(moduleFactoryFunctionName);
+                    return moduleFactory();
+                }
+                else
+                {
+                    logger.warning(fmt::format("Module is loaded already: {0}, {1}", moduleName, modulePath.string()));
+                }
             }
             catch(const std::exception& e)
             {
@@ -78,6 +67,8 @@ namespace dory::domain::services::module
             {
                 logger.error(fmt::format(errorPattern, moduleName, modulePath.string(), "unknown exception type"));
             }
+
+            return nullptr;
         }
     };
 
@@ -85,10 +76,10 @@ namespace dory::domain::services::module
     class IModulesService: Uncopyable, public StaticInterface<TImplementation>
     {
     public:
-        template<typename TServiceRegistry>
-        void loadModules(const std::map<std::string, std::string>& modules, TServiceRegistry& serviceRegistry)
+        template<typename TModuleContext>
+        void loadModules(const std::map<std::string, std::string>& modules, TModuleContext& modulesContext)
         {
-            this->toImplementation()->loadModulesImpl(modules, serviceRegistry);
+            this->toImplementation()->loadModulesImpl(modules, modulesContext);
         }
 
         void reloadModule(const std::string& moduleName)
@@ -102,19 +93,17 @@ namespace dory::domain::services::module
         }
     };
 
-    template<typename TServiceRegistry, typename TModuleLoader, typename TLogger>
-    class ModulesService: public IModulesService<ModulesService<TServiceRegistry, TModuleLoader, TLogger>>
+    template<typename TModuleLoader, typename TLogger>
+    class ModulesService: public IModulesService<ModulesService<TModuleLoader, TLogger>>
     {
     private:
-        using ModuleType = IModule<TServiceRegistry>;
-
         using LoggerType = ILogService<TLogger>;
         LoggerType& logger;
 
         using ModelLoaderType = IModuleLoader<TModuleLoader>;
         ModelLoaderType& moduleLoader;
 
-        std::map<std::string, ModuleHandle<ModuleType>> moduleHandles;
+        std::map<std::string, ModuleHandle> moduleHandles;
         std::condition_variable unloadCheck;
 
         void unload(const std::string& moduleName)
@@ -126,31 +115,30 @@ namespace dory::domain::services::module
                 {
                     auto lock = std::lock_guard<std::mutex>{handle.mutex};
                     moduleHandles.erase(moduleName);
-                    handle.state = nullptr;
+                    handle.isLoaded = false;
                 }
                 else
                 {
                     moduleHandles.erase(moduleName);
-                    handle.state = nullptr;
+                    handle.isLoaded = false;
                 }
             }
         }
 
-        void load(const std::string& moduleName, const std::filesystem::path& modulePath, TServiceRegistry& serviceRegistry)
+        template<typename TModuleContext>
+        void load(const std::string& moduleName, const std::filesystem::path& modulePath, TModuleContext& moduleContext)
         {
-            auto insertion = moduleHandles.emplace(moduleName, ModuleHandle<ModuleType>{ moduleName, modulePath });
+            auto insertion = moduleHandles.emplace(moduleName, ModuleHandle{ moduleName, modulePath });
             if(insertion.second)
             {
-                auto& handle = *insertion.first;
-                moduleLoader.template load<ModuleType>(modulePath, moduleName, handle);
-                if(handle.state)
+                auto& handle = insertion.first->second;
+                auto module = moduleLoader.template load<TModuleContext>(modulePath, moduleName, handle);
+                if(module)
                 {
                     constexpr auto errorPattern = R"(Error on running module "{0}" from "{1}": {2})";
                     try
                     {
-                        //TODO: pass handle by reference, so that subsequent code has access to the state and handle's mutex
-                        handle.module->run(handle.state, serviceRegistry);
-                        moduleHandles[handle.name] = handle;
+                        module->run(handle, moduleContext);
                     }
                     catch(const std::exception&e)
                     {
@@ -161,17 +149,22 @@ namespace dory::domain::services::module
                         logger.error(fmt::format(errorPattern, moduleName, modulePath.string(), "unknown exception type"));
                     }
                 }
+                else
+                {
+                    logger.error(fmt::format(R"(Module is not loaded: "{0}" from "{1}")", moduleName, modulePath.string()));
+                }
             }
             else
             {
-                logger.warning(fmt::format("Module is loaded already: {0}, {1}", moduleName, modulePath.string()));
+                logger.warning(fmt::format("Module handle is already in place: {0}, {1}", moduleName, modulePath.string()));
             }
         }
 
-        void reload(const std::string& moduleName, const std::string& modulePath, TServiceRegistry& serviceRegistry)
+        template<typename TModuleContext>
+        void reload(const std::string& moduleName, const std::string& modulePath, TModuleContext& moduleContext)
         {
             unload(moduleName);
-            load(moduleName, modulePath, serviceRegistry);
+            load(moduleName, modulePath, moduleContext);
         }
 
     public:
@@ -180,11 +173,12 @@ namespace dory::domain::services::module
                 logger(logger)
         {}
 
-        void loadModulesImpl(const std::map<std::string, std::string>& modules, TServiceRegistry& serviceRegistry)
+        template<typename TModuleContext>
+        void loadModulesImpl(const std::map<std::string, std::string>& modules, TModuleContext& moduleContext)
         {
             for(auto& pair : modules)
             {
-                reload(pair.first, pair.second, serviceRegistry);
+                reload(pair.first, pair.second, moduleContext);
             }
         }
 

@@ -2,7 +2,7 @@
 
 namespace testModule
 {
-    void TestModule::run(dory::ModuleStateType moduleState, client::Registry& registry)
+    void TestModule::run(const dory::ModuleHandle& moduleHandle, client::Registry& registry)
     {
         std::cout << "Run TestModule\n";
     }

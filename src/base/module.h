@@ -4,14 +4,7 @@
 
 namespace dory
 {
-    using ModuleStateBasicType = char;
-    using ModuleStateReferenceType = std::weak_ptr<ModuleStateBasicType>;
-    using ModuleStateType = std::shared_ptr<ModuleStateBasicType>;
 
-    template<typename TModule>
-    using ModuleFactory = std::unique_ptr<TModule>();
-
-    const static std::string moduleFactoryFunctionName = "moduleFactory";
 #ifdef WIN32
     const static std::string& systemSharedLibraryFileExtension = ".dll";
 #endif
@@ -20,12 +13,31 @@ namespace dory
     const static std::string& systemSharedLibraryFileExtension = ".so";
 #endif
 
+    struct ModuleHandle
+    {
+        const std::string name;
+        std::filesystem::path path;
+        std::mutex mutex;
+        bool isLoaded = false;
+        bool hotReloadEnabled = false;
+
+        explicit ModuleHandle(std::string  name, std::filesystem::path  path):
+                name(std::move(name)),
+                path(std::move(path))
+        {}
+    };
+
     template<typename TRegistry>
     class IModule
     {
     public:
         virtual ~IModule() = default;
 
-        virtual void run(ModuleStateType moduleState, TRegistry& registry) = 0;
+        virtual void run(const ModuleHandle& moduleState, TRegistry& registry) = 0;
     };
+
+    template<typename TModuleContext>
+    using ModuleFactory = std::unique_ptr<IModule<TModuleContext>>();
+
+    const static std::string moduleFactoryFunctionName = "moduleFactory";
 }
