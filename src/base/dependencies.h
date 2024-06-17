@@ -27,6 +27,7 @@
 #include <future>
 #include <any>
 #include <cassert>
+#include <shared_mutex>
 
 #include "nlohmann/json.hpp"
 #include "ryml.hpp"

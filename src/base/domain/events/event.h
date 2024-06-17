@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "base/dependencies.h"
 #include "base/typeComponents.h"
 #include "base/module.h"
@@ -10,8 +12,7 @@ namespace dory::domain::events
     class Callable
     {
     public:
-        using ModuleHandleOptionType = std::optional<std::reference_wrapper<ModuleHandle>>;
-        ModuleHandleOptionType moduleHandle;
+        std::optional<std::weak_ptr<ModuleHandle>> moduleHandleOption;
 
     protected:
         template<typename... Args>
@@ -25,8 +26,8 @@ namespace dory::domain::events
 
         explicit Callable() = default;
 
-        explicit Callable(ModuleHandle& moduleHandle):
-            moduleHandle(moduleHandle)
+        explicit Callable(std::weak_ptr<ModuleHandle> moduleHandle):
+            moduleHandleOption(moduleHandle)
         {}
 
         virtual void operator()(Ts... arguments) const = 0;
@@ -45,7 +46,7 @@ namespace dory::domain::events
             function(std::move(function))
         {}
 
-        explicit CallableFunction(std::function<void(Ts...)>&& function, ModuleHandle& moduleHandle):
+        explicit CallableFunction(std::function<void(Ts...)>&& function, std::weak_ptr<ModuleHandle> moduleHandle):
             Callable<Ts...>(moduleHandle),
             function(std::move(function))
         {}
@@ -67,7 +68,7 @@ namespace dory::domain::events
             memberFunctionPair(instance, memberFunction)
         {}
 
-        CallableMemberFunction(T* instance, void (T::* memberFunction)(Ts...), ModuleHandle& moduleHandle):
+        CallableMemberFunction(T* instance, void (T::* memberFunction)(Ts...), std::weak_ptr<ModuleHandle> moduleHandle):
             Callable<Ts...>(moduleHandle),
             memberFunctionPair(instance, memberFunction)
         {}
@@ -132,7 +133,7 @@ namespace dory::domain::events
             auto callable = std::make_shared<CallableFunction<Ts...>>(std::move(functor));
             return attachCallable(callable);
         }
-        KeyType attachFunction(std::function<void(Ts...)>&& functor, ModuleHandle& moduleHandle)
+        KeyType attachFunction(std::function<void(Ts...)>&& functor, std::weak_ptr<ModuleHandle> moduleHandle)
         {
             auto callable = std::make_shared<CallableFunction<Ts...>>(std::move(functor), moduleHandle);
             return attachCallable(callable);
@@ -146,7 +147,7 @@ namespace dory::domain::events
         }
 
         template<typename T>
-        KeyType attachMemberFunction(T* instance, void (T::* memberFunction)(Ts...), ModuleHandle& moduleHandle)
+        KeyType attachMemberFunction(T* instance, void (T::* memberFunction)(Ts...), std::weak_ptr<ModuleHandle> moduleHandle)
         {
             auto callable = std::make_shared<CallableMemberFunction<T, Ts...>>(instance, memberFunction, moduleHandle);
             return attachCallable(callable);
@@ -172,28 +173,20 @@ namespace dory::domain::events
     public:
         void operator()(Ts... arguments)
         {
-            auto expiredHandlers = std::vector<typename Event<Ts...>::KeyType>{};
+            auto expiredHandles = std::vector<typename Event<Ts...>::KeyType>{};
 
             for (const auto& [key, handler]: this->handlers)
             {
-                if(handler->moduleHandle)
+                if(handler->moduleHandleOption)
                 {
-                    ModuleHandle& moduleHandler = (*handler->moduleHandle).get();
-
-                    auto lock = std::unique_lock{ moduleHandler.mutex };
-
-                    if(moduleHandler.isMultithreaded)
-                    {
-                        lock.lock();
-                    }
-
-                    if(moduleHandler.isLoaded)
+                    std::shared_ptr<ModuleHandle> moduleHandle = (*handler->moduleHandleOption).lock();
+                    if(moduleHandle)
                     {
                         handler->operator()(arguments...);
                     }
                     else
                     {
-                        expiredHandlers.emplace_back(key);
+                        expiredHandles.emplace_back(key);
                     }
                 }
                 else
@@ -202,7 +195,7 @@ namespace dory::domain::events
                 }
             }
 
-            for(auto& key : expiredHandlers)
+            for(auto& key : expiredHandles)
             {
                 this->handlers.erase(key);
             }

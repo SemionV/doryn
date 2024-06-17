@@ -2,10 +2,14 @@
 
 Tasks:
 * Dynamic module loading(plugin system)
+  * Safe lock mechanism to execute code from a library
   * Configure and load plugins
   * Subscribe to the events and attach Controllers from plugins
   * Hot reload of plugins
   * Runtime CPP compilation(optional)
+* Manage external dependencies with CMake
+  * Manage and compile dependencies, which are compiled with the same builöd configuration(parsers, loggers, etc)
+  * Manage dependencies, which are compiled separately and with different build configuration(benchmark framework, test framework, etc)
 * Mouse picking(redirect event to the corresponding event hub of a view)
 * Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
 * OpenGL Renderer

@@ -13,18 +13,23 @@ namespace dory
     const static std::string& systemSharedLibraryFileExtension = ".so";
 #endif
 
+    struct SharedLibrary
+    {
+        virtual ~SharedLibrary() = default;
+    };
+
     struct ModuleHandle
     {
         const std::string name;
         const std::filesystem::path path;
-        std::mutex mutex;
-        //TODO: check if the module is unloaded on destruction, terminate if not
-        bool isLoaded = false;
-        bool isMultithreaded = false;
+        const std::unique_ptr<SharedLibrary> library;
 
-        explicit ModuleHandle(std::string  name, std::filesystem::path  path):
+        explicit ModuleHandle(std::string  name,
+                              std::filesystem::path  path,
+                              std::unique_ptr<SharedLibrary> library):
                 name(std::move(name)),
-                path(std::move(path))
+                path(std::move(path)),
+                library(std::move(library))
         {}
     };
 
@@ -35,11 +40,11 @@ namespace dory
     };
 
     template<typename TModuleContext>
-    class ILoadableModule
+    class ILoadableModule: public IModule
     {
     public:
-        virtual ~ILoadableModule() = default;
-        virtual void load(const ModuleHandle& moduleState, TModuleContext& moduleContext) = 0;
+        ~ILoadableModule() override = default;
+        virtual void load(std::shared_ptr<ModuleHandle> moduleHandle, TModuleContext& moduleContext) = 0;
     };
 
     template<typename TModuleContext>

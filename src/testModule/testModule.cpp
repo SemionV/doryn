@@ -2,7 +2,7 @@
 
 namespace testModule
 {
-    void TestModule::load(const dory::ModuleHandle& moduleHandle, client::Registry& registry)
+    void TestModule::load(std::shared_ptr<dory::ModuleHandle> moduleHandle, client::Registry& registry)
     {
         std::cout << "Load TestModule\n";
     }

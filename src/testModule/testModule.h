@@ -11,6 +11,6 @@ namespace testModule
     public:
         ~TestModule() override;
 
-        void load(const dory::ModuleHandle& moduleHandle, client::Registry& registry) override;
+        void load(std::shared_ptr<dory::ModuleHandle> moduleHandle, client::Registry& registry) override;
     };
 }
