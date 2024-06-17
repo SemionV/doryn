@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base/dependencies.h"
+#include "base/module.h"
 #include "types.h"
 
 namespace dory::domain::entity
@@ -72,6 +73,7 @@ namespace dory::domain::entity
     template<typename TDataContext>
     struct PipelineNode: Entity<IdType>
     {
+        std::optional<std::weak_ptr<ModuleHandle>> moduleHandleOption;
         std::shared_ptr<void> attachedController;
         std::function<void(IdType referenceId, const TimeSpan& timeStep, TDataContext& context)> update;
         IdType parentNodeId;

@@ -52,4 +52,27 @@ namespace dory
     using LoadableModuleFactory = std::unique_ptr<ILoadableModule<TModuleContext>>();
 
     const static std::string loadableModuleFactoryFunctionName = "loadableModuleFactory";
+
+    template<typename P, typename... Args>
+    bool invokeModuleProcedure(std::optional<std::weak_ptr<ModuleHandle>>& moduleHandleOption, P procedure, Args... arguments)
+    {
+        if(moduleHandleOption)
+        {
+            std::shared_ptr<ModuleHandle> moduleHandle = (*moduleHandleOption).lock();
+            if(moduleHandle && !moduleHandle->isUnloading)
+            {
+                std::invoke(procedure, arguments...);
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            std::invoke(procedure, arguments...);
+        }
+
+        return true;
+    }
 }

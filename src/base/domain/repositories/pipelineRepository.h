@@ -17,6 +17,8 @@ namespace dory::domain::repositories
     class IPipelineRepository: public IEntityRepository<TImplementation, entity::PipelineNode<TDataContext>, entity::IdType>
     {
     public:
+        using IdType = entity::IdType;
+
         std::list<std::shared_ptr<object::PipelineNode<TDataContext>>> getPipeline()
         {
             return this->toImplementation()->getPipelineImpl();

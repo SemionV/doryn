@@ -5,6 +5,7 @@
 #include "base/typeComponents.h"
 #include "object.h"
 #include "base/domain/managers/pipelineManager.h"
+#include "base/module.h"
 
 namespace dory::domain
 {
@@ -45,19 +46,35 @@ namespace dory::domain
         void updateImpl(TDataContext& context, const TimeSpan& timeStep)
         {
             auto pipelineNodes = pipelineRepository.getPipeline();
+            auto expiredNodes = std::vector<typename repositories::IPipelineRepository<TPipelineRepository, TDataContext>::IdType>{};
 
-            touchPipelineNodes(pipelineNodes, context, [](const std::shared_ptr<object::PipelineNode<TDataContext>>& node, TDataContext& context, const TimeSpan& timeStep)
+            touchPipelineNodes(pipelineNodes, context, [&expiredNodes](const std::shared_ptr<object::PipelineNode<TDataContext>>& node, TDataContext& context, const TimeSpan& timeStep)
             {
-                auto controller = node->nodeEntity.attachedController;
-                if(controller)
+                bool isNotExpired = invokeModuleProcedure(node->nodeEntity.moduleHandleOption, [&]()
                 {
-                    std::static_pointer_cast<Controller<TDataContext>>(controller)->update(node->nodeEntity.id, timeStep, context);
-                }
-                else if(node->nodeEntity.update)
+                    auto controller = node->nodeEntity.attachedController ?
+                                      std::static_pointer_cast<Controller<TDataContext>>(node->nodeEntity.attachedController)
+                                                                          : nullptr;
+                    if(controller)
+                    {
+                        controller->update(node->nodeEntity.id, timeStep, context);
+                    }
+                    else if(node->nodeEntity.update)
+                    {
+                        node->nodeEntity.update(node->nodeEntity.id, timeStep, context);
+                    }
+                });
+
+                if(!isNotExpired)
                 {
-                    node->nodeEntity.update(node->nodeEntity.id, timeStep, context);
+                    expiredNodes.emplace_back(node->nodeEntity.id);
                 }
             }, timeStep);
+
+            for(auto id : expiredNodes)
+            {
+                pipelineRepository.remove(id);
+            }
         }
 
         void initializeImpl(TDataContext& context)
@@ -70,15 +87,29 @@ namespace dory::domain
             engineEventHub.fire(context, events::engine::Stop{});
 
             auto pipelineNodes = pipelineRepository.getPipeline();
+            auto expiredNodes = std::vector<typename repositories::IPipelineRepository<TPipelineRepository, TDataContext>::IdType>{};
 
-            touchPipelineNodes(pipelineNodes, context, [](const std::shared_ptr<object::PipelineNode<TDataContext>>& node, TDataContext& context)
+            touchPipelineNodes(pipelineNodes, context, [&expiredNodes](const std::shared_ptr<object::PipelineNode<TDataContext>>& node, TDataContext& context)
             {
-                auto controller = node->nodeEntity.attachedController;
-                if(controller)
+                bool isNotExpired = invokeModuleProcedure(node->nodeEntity.moduleHandleOption, [&]()
                 {
-                    std::static_pointer_cast<Controller<TDataContext>>(controller)->stop(node->nodeEntity.id, context);
+                    auto controller = node->nodeEntity.attachedController;
+                    if(controller)
+                    {
+                        std::static_pointer_cast<Controller<TDataContext>>(controller)->stop(node->nodeEntity.id, context);
+                    }
+                });
+
+                if(!isNotExpired)
+                {
+                    expiredNodes.emplace_back(node->nodeEntity.id);
                 }
             });
+
+            for(auto id : expiredNodes)
+            {
+                pipelineRepository.remove(id);
+            }
         }
 
     private:

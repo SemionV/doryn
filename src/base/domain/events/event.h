@@ -177,21 +177,9 @@ namespace dory::domain::events
 
             for (const auto& [key, handler]: this->handlers)
             {
-                if(handler->moduleHandleOption)
+                if(!invokeModuleProcedure(handler->moduleHandleOption, [&](){ handler->operator()(arguments...); }))
                 {
-                    std::shared_ptr<ModuleHandle> moduleHandle = (*handler->moduleHandleOption).lock();
-                    if(moduleHandle && !moduleHandle->isUnloading)
-                    {
-                        handler->operator()(arguments...);
-                    }
-                    else
-                    {
-                        expiredHandles.emplace_back(key);
-                    }
-                }
-                else
-                {
-                    handler->operator()(arguments...);
+                    expiredHandles.emplace_back(key);
                 }
             }
 
