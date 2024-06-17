@@ -23,6 +23,7 @@ namespace dory
         const std::string name;
         const std::filesystem::path path;
         const std::unique_ptr<SharedLibrary> library;
+        std::atomic<bool> isUnloading = false;
 
         explicit ModuleHandle(std::string  name,
                               std::filesystem::path  path,

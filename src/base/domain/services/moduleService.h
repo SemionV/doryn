@@ -48,6 +48,8 @@ namespace dory::domain::services::module
         template<typename TModuleContext>
         void loadImpl(const std::string& moduleName, const std::filesystem::path& modulePath, TModuleContext& moduleContext)
         {
+            unloadImpl(moduleName);
+
             logger.information(fmt::format(R"(Load module "{0}" from "{1}")", moduleName, modulePath.string()));
 
             constexpr auto errorPattern = R"(Error on loading module "{0}" from "{1}": {2})";
@@ -84,11 +86,16 @@ namespace dory::domain::services::module
         {
             if(modules.contains(moduleName))
             {
+                logger.information(fmt::format(R"(Unload module "{0}"")", moduleName));
                 modules.erase(moduleName);
             }
 
             if(moduleHandles.contains(moduleName))
             {
+                auto moduleHandle = moduleHandles[moduleName];
+                moduleHandle->isUnloading = true;
+
+                logger.information(fmt::format(R"(Unload library "{0}"")", moduleName));
                 moduleHandles.erase(moduleName);
             }
         }

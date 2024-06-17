@@ -10,6 +10,7 @@ int main()
     auto moduleLoader = dory::domain::services::module::ModuleService<decltype(logger)>{logger };
 
     moduleLoader.load("test module", "modules/testModule", registry);
+    moduleLoader.load("test module", "modules/testModule", registry);
 
     return 0;
 }

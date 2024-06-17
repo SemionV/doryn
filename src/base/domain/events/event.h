@@ -180,7 +180,7 @@ namespace dory::domain::events
                 if(handler->moduleHandleOption)
                 {
                     std::shared_ptr<ModuleHandle> moduleHandle = (*handler->moduleHandleOption).lock();
-                    if(moduleHandle)
+                    if(moduleHandle && !moduleHandle->isUnloading)
                     {
                         handler->operator()(arguments...);
                     }
