@@ -6,6 +6,7 @@ Tasks:
   * Configure and load plugins
   * Subscribe to the events and attach Controllers from plugins
   * Hot reload of plugins
+* Flaten controller pipeline: store entites in a sorted flat array
 * Manage external dependencies with CMake
   * Manage and compile dependencies, which are compiled with the same builöd configuration(parsers, loggers, etc)
   * Manage dependencies, which are compiled separately and with different build configuration(benchmark framework, test framework, etc)
