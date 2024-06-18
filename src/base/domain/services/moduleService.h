@@ -91,7 +91,7 @@ namespace dory::domain::services::module
                 {
                     try
                     {
-                        module->load(library, moduleContext);
+                        module->initialize(library, moduleContext);
                         libraries[moduleName] = library;
                     }
                     catch(...)

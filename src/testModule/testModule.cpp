@@ -2,7 +2,7 @@
 
 namespace testModule
 {
-    void TestModule::load(std::shared_ptr<dory::ILibrary> library, client::Registry& registry)
+    void TestModule::initialize(std::shared_ptr<dory::ILibrary> library, client::Registry& registry)
     {
         std::cout << "Load TestModule\n";
     }

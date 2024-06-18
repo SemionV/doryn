@@ -11,6 +11,6 @@ namespace testModule
     public:
         ~TestModule() override;
 
-        void load(std::shared_ptr<dory::ILibrary> library, client::Registry& registry) override;
+        void initialize(std::shared_ptr<dory::ILibrary> library, client::Registry& registry) override;
     };
 }

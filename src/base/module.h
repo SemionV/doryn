@@ -34,7 +34,7 @@ namespace dory
     {
     public:
         ~ILoadableModule() override = default;
-        virtual void load(std::shared_ptr<ILibrary> moduleHandle, TModuleContext& moduleContext) = 0;
+        virtual void initialize(std::shared_ptr<ILibrary> library, TModuleContext& moduleContext) = 0;
     };
 
     template<typename TModuleContext>
