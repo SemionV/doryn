@@ -2,10 +2,9 @@
 
 Tasks:
 * Dynamic module loading(plugin system)
-  * Test reload logic 
   * Configure and load plugins
-  * Subscribe to the events and attach Controllers from plugins
-  * Hot reload of plugins
+  * Restrict events and controllers API to use ILibrary handler for all subscriptions
+  * Hot reload of plugins via script commands and file watchers
 * Flaten controller pipeline: store entites in a sorted flat array
 * Manage external dependencies with CMake
   * Manage and compile dependencies, which are compiled with the same builöd configuration(parsers, loggers, etc)
@@ -28,6 +27,9 @@ Tasks:
 * Path finding
 * Build for MacOS
 * Voice control
+
+**18.06.24**
+* Task done: Test reload logic
 
 **17.06.24**
 * Task done: Safe lock mechanism to execute code from a library

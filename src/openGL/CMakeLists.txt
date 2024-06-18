@@ -11,6 +11,8 @@ set_source_files_properties(${VENDOR_DIR}GL/gl3w.c PROPERTIES LANGUAGE CXX )
 
 add_library(dory-openGL ${VENDOR_DIR}GL/gl3w.c)
 
+target_include_directories(dory-openGL INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 set_target_properties(dory-openGL PROPERTIES PREFIX ""
                                             IMPORT_PREFIX ""
                                             IMPORT_SUFFIX ".lib"

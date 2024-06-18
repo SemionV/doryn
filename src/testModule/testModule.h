@@ -2,7 +2,7 @@
 
 #include <boost/config.hpp>
 #include <boost/dll/alias.hpp>
-#include "client/client.h"
+#include "client/registry.h"
 
 namespace testModule
 {
