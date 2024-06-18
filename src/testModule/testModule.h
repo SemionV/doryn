@@ -9,8 +9,7 @@ namespace testModule
     class TestModule: public dory::ILoadableModule<client::Registry>
     {
     public:
-        ~TestModule() override;
-
-        void initialize(std::shared_ptr<dory::ILibrary> library, client::Registry& registry) override;
+        void attach(std::shared_ptr<dory::ILibrary> library, client::Registry& registry) override;
+        void detach(client::Registry& registry) override;
     };
 }

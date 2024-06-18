@@ -34,7 +34,8 @@ namespace dory
     {
     public:
         ~ILoadableModule() override = default;
-        virtual void initialize(std::shared_ptr<ILibrary> library, TModuleContext& moduleContext) = 0;
+        virtual void attach(std::shared_ptr<ILibrary> library, TModuleContext& moduleContext) = 0;
+        virtual void detach(TModuleContext& moduleContext) = 0;
     };
 
     template<typename TModuleContext>
@@ -44,7 +45,7 @@ namespace dory
         virtual ~DynamicLinkLibrary() = default;
 
         virtual std::shared_ptr<ILoadableModule<TModuleContext>> load(const std::filesystem::path& libraryPath) = 0;
-        virtual void unload() = 0;
+        virtual std::shared_ptr<ILoadableModule<TModuleContext>> unload() = 0;
     };
 
     template<typename TModuleContext>

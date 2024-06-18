@@ -5,6 +5,7 @@
 #include "base/dependencies.h"
 #include "base/typeComponents.h"
 #include "base/module.h"
+#include "logService.h"
 
 namespace dory::domain::services::module
 {
@@ -22,10 +23,14 @@ namespace dory::domain::services::module
             return _isLoaded;
         }
 
-        void unload() override
+        std::shared_ptr<ILoadableModule<TModuleContext>> unload() override
         {
             _isLoaded = false;
+
+            auto tmpModule = _module;
             _module = nullptr;
+
+            return tmpModule;
         }
 
         std::shared_ptr<ILoadableModule<TModuleContext>> load(const std::filesystem::path& libraryPath) override
@@ -55,14 +60,14 @@ namespace dory::domain::services::module
             this->toImplementation()->loadImpl(moduleName, modulePath, moduleContext);
         }
 
-        void unload(const std::string& moduleName)
+        void unload(const std::string& moduleName, TModuleContext& moduleContext)
         {
-            this->toImplementation()->unloadImpl(moduleName);
+            this->toImplementation()->unloadImpl(moduleName, moduleContext);
         }
     };
 
-    template<typename TModuleContext, typename TLogger>
-    class ModuleService: public IModuleService<TModuleContext, ModuleService<TModuleContext, TLogger>>
+    template<typename TModuleContext, typename TLogger, typename TLibrary = BoostDynamicLinkLibrary<TModuleContext>>
+    class ModuleService: public IModuleService<TModuleContext, ModuleService<TModuleContext, TLogger, TLibrary>>
     {
     private:
         using LoggerType = ILogService<TLogger>;
@@ -77,21 +82,21 @@ namespace dory::domain::services::module
 
         void loadImpl(const std::string& moduleName, const std::filesystem::path& libraryPath, TModuleContext& moduleContext)
         {
-            unloadImpl(moduleName);
+            unloadImpl(moduleName, moduleContext);
 
             logger.information(fmt::format(R"(Load module "{0}" from "{1} library")", moduleName, libraryPath.string()));
 
             constexpr auto errorPattern = R"(Error on loading module "{0}" from "{1}": {2})";
             try
             {
-                auto library = std::make_shared<BoostDynamicLinkLibrary<TModuleContext>>();
+                std::shared_ptr<DynamicLinkLibrary<TModuleContext>> library = std::make_shared<TLibrary>();
                 auto module = library->load(libraryPath);
 
                 if(module)
                 {
                     try
                     {
-                        module->initialize(library, moduleContext);
+                        module->attach(library, moduleContext);
                         libraries[moduleName] = library;
                     }
                     catch(...)
@@ -111,12 +116,16 @@ namespace dory::domain::services::module
             }
         }
 
-        void unloadImpl(const std::string& moduleName)
+        void unloadImpl(const std::string& moduleName, TModuleContext& moduleContext)
         {
             if(libraries.contains(moduleName))
             {
                 auto library = libraries[moduleName];
-                library->unload();
+                auto module = library->unload();
+                if(module)
+                {
+                    module->detach(moduleContext);
+                }
                 libraries.erase(moduleName);
             }
         }

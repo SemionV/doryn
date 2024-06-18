@@ -24,6 +24,7 @@ add_executable(baseTests linearAlgebra.cpp
         scriptService.cpp
         serializationTests.cpp
         configurationTests.cpp
+        modulesTest.cpp
 )
                          
 target_include_directories(baseTests PRIVATE "${CMAKE_SOURCE_DIR}")
