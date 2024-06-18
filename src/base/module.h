@@ -34,7 +34,7 @@ namespace dory
     {
     public:
         ~ILoadableModule() override = default;
-        virtual void attach(std::shared_ptr<ILibrary> library, TModuleContext& moduleContext) = 0;
+        virtual void attach(std::weak_ptr<ILibrary> library, TModuleContext& moduleContext) = 0;
         virtual void detach(TModuleContext& moduleContext) = 0;
     };
 

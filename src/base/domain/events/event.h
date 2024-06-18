@@ -100,6 +100,13 @@ namespace dory::domain::events
         }
 
         template<typename F>
+        KeyType attachHandler(std::weak_ptr<ILibrary> library, F&& function)
+        {
+            auto functor = std::forward<F>(function);
+            return attachFunction(library, std::move(functor));
+        }
+
+        template<typename F>
         KeyType operator+=(F&& function)
         {
             return attachHandler(std::forward<F>(function));
@@ -110,6 +117,11 @@ namespace dory::domain::events
             return attachFunction(std::move(functor));
         }
 
+        KeyType attachHandler(std::weak_ptr<ILibrary> library, std::function<void(Ts...)>&& functor)
+        {
+            return attachFunction(library, std::move(functor));
+        }
+
         template<typename F>
         KeyType operator+=(std::function<void(Ts...)>&& functor)
         {
@@ -118,6 +130,12 @@ namespace dory::domain::events
 
         template<typename T>
         KeyType attachHandler(T* instance, void (T::* memberFunction)(Ts...))
+        {
+            return attachMemberFunction(instance, memberFunction);
+        }
+
+        template<typename T>
+        KeyType attachHandler(std::weak_ptr<ILibrary> library, T* instance, void (T::* memberFunction)(Ts...))
         {
             return attachMemberFunction(instance, memberFunction);
         }
@@ -133,7 +151,8 @@ namespace dory::domain::events
             auto callable = std::make_shared<CallableFunction<Ts...>>(std::move(functor));
             return attachCallable(callable);
         }
-        KeyType attachFunction(std::function<void(Ts...)>&& functor, std::weak_ptr<ILibrary> library)
+
+        KeyType attachFunction(std::weak_ptr<ILibrary> library, std::function<void(Ts...)>&& functor)
         {
             auto callable = std::make_shared<CallableFunction<Ts...>>(std::move(functor), library);
             return attachCallable(callable);
@@ -147,7 +166,7 @@ namespace dory::domain::events
         }
 
         template<typename T>
-        KeyType attachMemberFunction(T* instance, void (T::* memberFunction)(Ts...), std::weak_ptr<ILibrary> library)
+        KeyType attachMemberFunction(std::weak_ptr<ILibrary> library, T* instance, void (T::* memberFunction)(Ts...))
         {
             auto callable = std::make_shared<CallableMemberFunction<T, Ts...>>(instance, memberFunction, library);
             return attachCallable(callable);
@@ -257,10 +276,22 @@ namespace dory::domain::events
             return getDispatcher<TEvent>().attachHandler(instance, memberFunction);
         }
 
+        template<typename TEvent, typename T>
+        auto attach(std::weak_ptr<ILibrary> library, T* instance, void (T::* memberFunction)(TDataContext&, TEvent&))
+        {
+            return getDispatcher<TEvent>().attachHandler(library, instance, memberFunction);
+        }
+
         template<typename TEvent>
         auto attach(std::function<void(TDataContext&, TEvent&)>&& predicate)
         {
             return getDispatcher<TEvent>().attachHandler(std::move(predicate));
+        }
+
+        template<typename TEvent>
+        auto attach(std::weak_ptr<ILibrary> library, std::function<void(TDataContext&, TEvent&)>&& predicate)
+        {
+            return getDispatcher<TEvent>().attachHandler(library, std::move(predicate));
         }
     };
 

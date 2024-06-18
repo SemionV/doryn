@@ -2,7 +2,7 @@
 
 namespace testModule
 {
-    void TestModule::attach(std::shared_ptr<dory::ILibrary> library, client::Registry& registry)
+    void TestModule::attach(std::weak_ptr<dory::ILibrary> library, client::Registry& registry)
     {
         std::cout << "Load TestModule\n";
     }
