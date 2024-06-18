@@ -7,10 +7,13 @@ struct TestContext
     bool isEventHandled = false;
 };
 
-struct TestEvent
-{};
+struct TestEvent {};
+struct LockEvent
+{
+    std::shared_ptr<dory::ILibrary> lock;
+};
 
-using Hub = dory::domain::events::EventHub<TestContext, const TestEvent>;
+using Hub = dory::domain::events::EventHub<TestContext, const TestEvent, LockEvent>;
 using Dispatcher = dory::domain::events::EventCannon<Hub>;
 
 struct TestServices
@@ -29,6 +32,11 @@ public:
         registry.dispatcher.attach(library, std::function{ [](TestContext& context, const TestEvent& event)
         {
             context.isEventHandled = true;
+        }});
+
+        registry.dispatcher.attach(library, std::function{ [&](TestContext& context, LockEvent& event)
+        {
+            event.lock = library.lock();
         }});
     }
 
@@ -72,7 +80,7 @@ public:
     }
 };
 
-TEST_CASE( "Load module", "[modules]" )
+TEST_CASE( "Load and unload module", "[modules]" )
 {
     auto logger = dory::domain::services::LogServiceNull{};
     auto moduleService  = dory::domain::services::module::ModuleService<TestServices, decltype(logger), TestDynamicLinkLibrary>{ logger };
@@ -93,4 +101,25 @@ TEST_CASE( "Load module", "[modules]" )
 
     REQUIRE(services.isTestAttached);
     REQUIRE(services.isTestDetached);
+}
+
+TEST_CASE( "Unload module with lock", "[modules]" )
+{
+    auto logger = dory::domain::services::LogServiceNull{};
+    auto moduleService  = dory::domain::services::module::ModuleService<TestServices, decltype(logger), TestDynamicLinkLibrary>{ logger };
+
+    auto context = TestContext{};
+    auto services = TestServices{};
+
+    moduleService.load("test-module", "test", services);
+
+    auto lockEvent = LockEvent{};
+
+    services.dispatcher.fire(context, lockEvent);
+    REQUIRE(lockEvent.lock);
+
+    moduleService.unload("test-module", services);
+
+    services.dispatcher.fire(context, TestEvent{});
+    REQUIRE(!context.isEventHandled);
 }
