@@ -10,7 +10,7 @@
 namespace dory::domain::services::localization
 {
     template<typename TImplementation>
-    class ILocalizationService: Uncopyable, public StaticInterface<TImplementation>
+    class ILocalizationService: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         template<typename TLocalization>

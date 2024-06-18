@@ -9,7 +9,7 @@ public:
     int value = 1;
 };
 
-class Service1Uncopiable: Uncopyable, public Service1
+class Service1Uncopiable: NonCopyable, public Service1
 {};
 
 class Service2
@@ -25,7 +25,7 @@ public:
     int value = 2;
 };
 
-class Service2Uncopiable: Uncopyable, public Service2
+class Service2Uncopiable: NonCopyable, public Service2
 {
 public:
     explicit Service2Uncopiable(Service1& service1):
@@ -85,7 +85,7 @@ TEST_CASE("Check concept", "Service Container")
 }
 
 template<typename TImplementation>
-class IPipelineService: Uncopyable
+class IPipelineService: NonCopyable
 {
 public:
     int getPipeline()
@@ -123,7 +123,7 @@ public:
 };
 
 template<typename TImplementation>
-class IHelloService: Uncopyable
+class IHelloService: NonCopyable
 {
 public:
     int sayHello()
@@ -142,7 +142,7 @@ public:
 };
 
 template<typename TPipelineService, typename THelloService>
-class EngineService: public Uncopyable
+class EngineService: public NonCopyable
 {
 private:
     IPipelineService<TPipelineService>& pipelineService;

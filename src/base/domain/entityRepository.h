@@ -7,7 +7,7 @@
 namespace dory::domain
 {
     template<typename TImpelementation, typename TEntity, typename TId = entity::IdType>
-    class IEntityRepository: Uncopyable, public StaticInterface<TImpelementation>
+    class IEntityRepository: NonCopyable, public StaticInterface<TImpelementation>
     {
     public:
         std::size_t count()

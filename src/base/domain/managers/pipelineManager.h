@@ -9,7 +9,7 @@
 namespace dory::domain::managers
 {
     template<typename TImplementation, typename TDataContext>
-    class IPipelineManager: Uncopyable, public StaticInterface<TImplementation>
+    class IPipelineManager: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         void configurePipeline(TDataContext&  context)

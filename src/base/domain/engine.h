@@ -10,7 +10,7 @@
 namespace dory::domain
 {
     template<typename TImplementation, typename TDataContext>
-    class IEngine: Uncopyable, public StaticInterface<TImplementation>
+    class IEngine: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         void update(TDataContext& context, const TimeSpan& timeStep)
@@ -50,7 +50,7 @@ namespace dory::domain
 
             touchPipelineNodes(pipelineNodes, context, [&expiredNodes](const std::shared_ptr<object::PipelineNode<TDataContext>>& node, TDataContext& context, const TimeSpan& timeStep)
             {
-                bool isNotExpired = invokeModuleProcedure(node->nodeEntity.moduleHandleOption, [&]()
+                bool isNotExpired = invokeModuleProcedure(node->nodeEntity.libraryOption, [&]()
                 {
                     auto controller = node->nodeEntity.attachedController ?
                                       std::static_pointer_cast<Controller<TDataContext>>(node->nodeEntity.attachedController)
@@ -91,7 +91,7 @@ namespace dory::domain
 
             touchPipelineNodes(pipelineNodes, context, [&expiredNodes](const std::shared_ptr<object::PipelineNode<TDataContext>>& node, TDataContext& context)
             {
-                bool isNotExpired = invokeModuleProcedure(node->nodeEntity.moduleHandleOption, [&]()
+                bool isNotExpired = invokeModuleProcedure(node->nodeEntity.libraryOption, [&]()
                 {
                     auto controller = node->nodeEntity.attachedController;
                     if(controller)

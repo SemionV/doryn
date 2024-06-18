@@ -181,13 +181,13 @@ namespace dory
         return result;
     }
 
-    class Uncopyable
+    class NonCopyable
     {
     public:
-        Uncopyable(const Uncopyable&) = delete;
-        Uncopyable& operator=(const Uncopyable&) = delete;
+        NonCopyable(const NonCopyable&) = delete;
+        NonCopyable& operator=(const NonCopyable&) = delete;
 
-        Uncopyable() = default;
+        NonCopyable() = default;
     };
 
     template<typename TImpelementation>
@@ -207,7 +207,7 @@ namespace dory
     }
 
     template<typename TImplementation>
-    class IServiceFactory: Uncopyable, public StaticInterface<TImplementation>
+    class IServiceFactory: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         auto createInstance()

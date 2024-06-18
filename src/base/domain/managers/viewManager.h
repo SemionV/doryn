@@ -7,7 +7,7 @@
 namespace dory::domain::managers
 {
     template<typename TImplementation, typename TDataContext>
-    class IViewManager: Uncopyable, public StaticInterface<TImplementation>
+    class IViewManager: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         auto createView(TDataContext& dataContext, entity::IdType windowId, entity::IdType parentPipelineNodeId)

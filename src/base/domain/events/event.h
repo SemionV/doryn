@@ -12,7 +12,7 @@ namespace dory::domain::events
     class Callable
     {
     public:
-        std::optional<std::weak_ptr<ModuleHandle>> moduleHandleOption;
+        std::optional<std::weak_ptr<ILibrary>> libraryOption;
 
     protected:
         template<typename... Args>
@@ -26,8 +26,8 @@ namespace dory::domain::events
 
         explicit Callable() = default;
 
-        explicit Callable(std::weak_ptr<ModuleHandle> moduleHandle):
-            moduleHandleOption(moduleHandle)
+        explicit Callable(std::weak_ptr<ILibrary> library):
+            libraryOption(library)
         {}
 
         virtual void operator()(Ts... arguments) const = 0;
@@ -46,8 +46,8 @@ namespace dory::domain::events
             function(std::move(function))
         {}
 
-        explicit CallableFunction(std::function<void(Ts...)>&& function, std::weak_ptr<ModuleHandle> moduleHandle):
-            Callable<Ts...>(moduleHandle),
+        explicit CallableFunction(std::function<void(Ts...)>&& function, std::weak_ptr<ILibrary> library):
+            Callable<Ts...>(library),
             function(std::move(function))
         {}
 
@@ -68,8 +68,8 @@ namespace dory::domain::events
             memberFunctionPair(instance, memberFunction)
         {}
 
-        CallableMemberFunction(T* instance, void (T::* memberFunction)(Ts...), std::weak_ptr<ModuleHandle> moduleHandle):
-            Callable<Ts...>(moduleHandle),
+        CallableMemberFunction(T* instance, void (T::* memberFunction)(Ts...), std::weak_ptr<ILibrary> library):
+            Callable<Ts...>(library),
             memberFunctionPair(instance, memberFunction)
         {}
 
@@ -133,9 +133,9 @@ namespace dory::domain::events
             auto callable = std::make_shared<CallableFunction<Ts...>>(std::move(functor));
             return attachCallable(callable);
         }
-        KeyType attachFunction(std::function<void(Ts...)>&& functor, std::weak_ptr<ModuleHandle> moduleHandle)
+        KeyType attachFunction(std::function<void(Ts...)>&& functor, std::weak_ptr<ILibrary> library)
         {
-            auto callable = std::make_shared<CallableFunction<Ts...>>(std::move(functor), moduleHandle);
+            auto callable = std::make_shared<CallableFunction<Ts...>>(std::move(functor), library);
             return attachCallable(callable);
         }
 
@@ -147,9 +147,9 @@ namespace dory::domain::events
         }
 
         template<typename T>
-        KeyType attachMemberFunction(T* instance, void (T::* memberFunction)(Ts...), std::weak_ptr<ModuleHandle> moduleHandle)
+        KeyType attachMemberFunction(T* instance, void (T::* memberFunction)(Ts...), std::weak_ptr<ILibrary> library)
         {
-            auto callable = std::make_shared<CallableMemberFunction<T, Ts...>>(instance, memberFunction, moduleHandle);
+            auto callable = std::make_shared<CallableMemberFunction<T, Ts...>>(instance, memberFunction, library);
             return attachCallable(callable);
         }
 
@@ -177,7 +177,7 @@ namespace dory::domain::events
 
             for (const auto& [key, handler]: this->handlers)
             {
-                if(!invokeModuleProcedure(handler->moduleHandleOption, [&](){ handler->operator()(arguments...); }))
+                if(!invokeModuleProcedure(handler->libraryOption, [&](){ handler->operator()(arguments...); }))
                 {
                     expiredHandles.emplace_back(key);
                 }
@@ -241,7 +241,7 @@ namespace dory::domain::events
     };
 
     template<typename TDataContext, typename... TEvents>
-    class EventHub: Uncopyable, public EventController<TDataContext, TEvents>...
+    class EventHub: NonCopyable, public EventController<TDataContext, TEvents>...
     {
     protected:
         template<typename TEvent>

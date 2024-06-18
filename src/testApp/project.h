@@ -6,7 +6,7 @@ namespace testApp
 {
     namespace events = dory::domain::events;
 
-    class Project: dory::Uncopyable
+    class Project: dory::NonCopyable
     {
     private:
         ConfigurationType configuration;

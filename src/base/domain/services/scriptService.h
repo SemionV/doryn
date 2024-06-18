@@ -23,7 +23,7 @@ namespace dory::domain::services
     };
 
     template<typename TDataContext>
-    class ScriptService: Uncopyable, public IScriptService<ScriptService<TDataContext>, TDataContext>
+    class ScriptService: NonCopyable, public IScriptService<ScriptService<TDataContext>, TDataContext>
     {
     private:
         using ParentScriptParametersPackType = IScriptService<ScriptService<TDataContext>, TDataContext>::ScriptParametersPackType;

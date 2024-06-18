@@ -5,7 +5,7 @@
 namespace dory::domain::services
 {
     template<typename TImplementation>
-    class IWindowService: Uncopyable, public StaticInterface<TImplementation>
+    class IWindowService: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         auto createWindow()

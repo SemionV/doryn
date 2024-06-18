@@ -10,7 +10,7 @@
 namespace dory::domain::services::serialization
 {
     template<typename TImplementation>
-    class ISerializationService: Uncopyable, public StaticInterface<TImplementation>
+    class ISerializationService: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         template<typename T>
@@ -85,7 +85,7 @@ namespace dory::domain::services::serialization
     };
 
     template<typename TFormat, typename TImplementation>
-    class IFormatKeyConverter: Uncopyable, public StaticInterface<TImplementation>
+    class IFormatKeyConverter: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         TFormat getFormat(const std::string& key)
@@ -146,7 +146,7 @@ namespace dory::domain::services::serialization
     };
 
     template<typename TFormat, typename TImplementation>
-    class ISerializationServiceBundle: Uncopyable, public StaticInterface<TImplementation>
+    class ISerializationServiceBundle: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         template<typename T>

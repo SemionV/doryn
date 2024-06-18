@@ -7,7 +7,7 @@
 namespace dory::domain::services
 {
     template<typename TImplementation>
-    class IFrameService: Uncopyable, public StaticInterface<TImplementation>
+    class IFrameService: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         template<typename TDataContext, typename TEngine>

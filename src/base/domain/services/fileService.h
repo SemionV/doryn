@@ -6,7 +6,7 @@
 namespace dory::domain::services
 {
     template<typename TImplementation>
-    class IFileService: Uncopyable, public StaticInterface<TImplementation>
+    class IFileService: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         std::string read(const std::filesystem::path& filePath)

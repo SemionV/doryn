@@ -189,7 +189,7 @@ namespace dory
     };
 
     template<typename... TDependencies>
-    struct ServiceContainer: Uncopyable, public DependencyController<TDependencies, ServiceContainer<TDependencies...>>...
+    struct ServiceContainer: NonCopyable, public DependencyController<TDependencies, ServiceContainer<TDependencies...>>...
     {
         using ThisType = ServiceContainer<TDependencies...>;
 

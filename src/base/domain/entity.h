@@ -73,7 +73,7 @@ namespace dory::domain::entity
     template<typename TDataContext>
     struct PipelineNode: Entity<IdType>
     {
-        std::optional<std::weak_ptr<ModuleHandle>> moduleHandleOption;
+        std::optional<std::weak_ptr<ILibrary>> libraryOption;
         std::shared_ptr<void> attachedController;
         std::function<void(IdType referenceId, const TimeSpan& timeStep, TDataContext& context)> update;
         IdType parentNodeId;

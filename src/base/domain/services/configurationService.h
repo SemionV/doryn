@@ -11,7 +11,7 @@
 namespace dory::domain::services::configuration
 {
     template<typename TImplementation>
-    class IConfigurationService: Uncopyable, public StaticInterface<TImplementation>
+    class IConfigurationService: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         template<typename TConfiguration>

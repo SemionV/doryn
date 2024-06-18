@@ -34,7 +34,7 @@ namespace dory::openGL::services
     };
 
     template<typename TImplementation>
-    class IShaderService: Uncopyable, public StaticInterface<TImplementation>
+    class IShaderService: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         void loadProgram(graphics::Program& program, const std::function<void(ShaderServiceError&)>& errorHandler = nullptr)

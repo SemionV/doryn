@@ -8,7 +8,7 @@
 namespace dory::domain::services
 {
     template<typename TImplementation>
-    class ILogService: Uncopyable, public StaticInterface<TImplementation>
+    class ILogService: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         template<typename T>

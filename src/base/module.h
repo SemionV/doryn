@@ -1,37 +1,26 @@
 #pragma once
 
 #include "dependencies.h"
+#include "typeComponents.h"
 
 namespace dory
 {
-
+    class ILibrary: NonCopyable
+    {
+    public:
 #ifdef WIN32
-    const static std::string& systemSharedLibraryFileExtension = ".dll";
+        const constexpr static std::string_view& systemSharedLibraryFileExtension = ".dll";
 #endif
 
 #ifdef __unix__
-    const static std::string& systemSharedLibraryFileExtension = ".so";
+        const constexpr static std::string_view& systemSharedLibraryFileExtension = ".so";
 #endif
 
-    struct SharedLibrary
-    {
-        virtual ~SharedLibrary() = default;
-    };
-
-    struct ModuleHandle
-    {
+    public:
         const std::string name;
         const std::filesystem::path path;
-        const std::unique_ptr<SharedLibrary> library;
-        std::atomic<bool> isUnloading = false;
 
-        explicit ModuleHandle(std::string  name,
-                              std::filesystem::path  path,
-                              std::unique_ptr<SharedLibrary> library):
-                name(std::move(name)),
-                path(std::move(path)),
-                library(std::move(library))
-        {}
+        virtual bool isLoaded() = 0;
     };
 
     class IModule
@@ -45,21 +34,31 @@ namespace dory
     {
     public:
         ~ILoadableModule() override = default;
-        virtual void load(std::shared_ptr<ModuleHandle> moduleHandle, TModuleContext& moduleContext) = 0;
+        virtual void load(std::shared_ptr<ILibrary> moduleHandle, TModuleContext& moduleContext) = 0;
     };
 
     template<typename TModuleContext>
-    using LoadableModuleFactory = std::unique_ptr<ILoadableModule<TModuleContext>>();
+    class DynamicLinkLibrary: public ILibrary
+    {
+    public:
+        virtual ~DynamicLinkLibrary() = default;
+
+        virtual std::shared_ptr<ILoadableModule<TModuleContext>> load(const std::filesystem::path& libraryPath) = 0;
+        virtual void unload() = 0;
+    };
+
+    template<typename TModuleContext>
+    using LoadableModuleFactory = std::shared_ptr<ILoadableModule<TModuleContext>>();
 
     const static std::string loadableModuleFactoryFunctionName = "loadableModuleFactory";
 
     template<typename P, typename... Args>
-    bool invokeModuleProcedure(std::optional<std::weak_ptr<ModuleHandle>>& moduleHandleOption, P procedure, Args... arguments)
+    bool invokeModuleProcedure(std::optional<std::weak_ptr<ILibrary>>& libraryOption, P procedure, Args... arguments)
     {
-        if(moduleHandleOption)
+        if(libraryOption)
         {
-            std::shared_ptr<ModuleHandle> moduleHandle = (*moduleHandleOption).lock();
-            if(moduleHandle && !moduleHandle->isUnloading)
+            std::shared_ptr<ILibrary> library = (*libraryOption).lock();
+            if(library && library->isLoaded())
             {
                 std::invoke(procedure, arguments...);
             }

@@ -7,7 +7,7 @@ int main()
     auto registry = client::Registry{};
 
     auto logger = dory::domain::services::StdOutLogService{ "client" };
-    auto moduleLoader = dory::domain::services::module::ModuleService<decltype(logger)>{logger };
+    auto moduleLoader = dory::domain::services::module::ModuleService<decltype(registry), decltype(logger)>{logger };
 
     moduleLoader.load("test module", "modules/testModule", registry);
 

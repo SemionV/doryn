@@ -35,9 +35,9 @@ namespace dory::domain::devices
     };
 
     template<typename TDataContext, typename TOutputDevice>
-    class TerminalDevice: Uncopyable,
-            public IDevice<TerminalDevice<TDataContext, TOutputDevice>, TDataContext>,
-            public ITerminal<TerminalDevice<TDataContext, TOutputDevice>>
+    class TerminalDevice: NonCopyable,
+                          public IDevice<TerminalDevice<TDataContext, TOutputDevice>, TDataContext>,
+                          public ITerminal<TerminalDevice<TDataContext, TOutputDevice>>
     {
     private:
         const std::string commandModePrefix = "> ";
