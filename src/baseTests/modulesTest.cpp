@@ -123,3 +123,60 @@ TEST_CASE( "Unload module with lock", "[modules]" )
     services.dispatcher.fire(context, TestEvent{});
     REQUIRE(!context.isEventHandled);
 }
+
+struct Mesh
+{
+    int pointsCount = 0;
+};
+
+template<typename TImplementation>
+class IMeshRepository
+{
+private:
+    TImplementation& _implementation;
+
+public:
+    virtual ~IMeshRepository() = default;
+
+    explicit IMeshRepository(TImplementation& implementation):
+        _implementation(implementation)
+    {}
+
+    Mesh& getMesh(int id)
+    {
+        return _implementation.getMesh(id);
+    }
+};
+
+class MeshRepository
+{
+private:
+    Mesh _mesh = Mesh{ 5 };
+
+public:
+    Mesh& getMesh(int id)
+    {
+        return _mesh;
+    }
+};
+
+TEST_CASE( "Implementation of an interface", "[mocks]" )
+{
+    auto meshServiceImpl = MeshRepository{};
+    auto meshService = IMeshRepository<MeshRepository>{ meshServiceImpl };
+
+    auto& mesh = meshService.getMesh(1);
+    REQUIRE(mesh.pointsCount == 5);
+}
+
+TEST_CASE( "Mock of a service", "[mocks]" )
+{
+    /*fakeit::Mock<IMeshRepository<MeshRepository>> mock;
+
+    When(Method(mock.get(), getMesh)).AlwaysReturn();
+
+    auto meshService = IMeshRepository<MeshRepository>{ mock };
+
+    auto& mesh = meshService.getMesh(1);
+    REQUIRE(mesh.pointsCount == 5);*/
+}
