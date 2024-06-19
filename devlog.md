@@ -1,6 +1,7 @@
 # Development log
 
 Tasks:
+* Template based class mocking with FakeIt
 * Dynamic module loading(plugin system)
   * LibraryHandle, which is referenceing ILibrary with a weak_ptr and has lock() method to create an instance of a RAII object to hold ILibrary in memory while executing some code from it.
     Make it possible to implement fast locks for unloadable(root) modules
