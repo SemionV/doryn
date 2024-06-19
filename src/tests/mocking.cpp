@@ -54,7 +54,66 @@ TEST(MyTemplateClassTest, GetValueTest) {
     EXPECT_EQ(value, 42);
 }
 
-/*int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}*/
+struct Mesh
+{
+    int pointsCount = 0;
+};
+
+template<typename TImplementation>
+class IMeshRepository
+{
+private:
+    TImplementation& _implementation;
+
+public:
+    virtual ~IMeshRepository() = default;
+
+    explicit IMeshRepository(TImplementation& implementation):
+            _implementation(implementation)
+    {}
+
+    Mesh& getMesh(int id)
+    {
+        return _implementation.getMesh(id);
+    }
+};
+
+class MeshRepository
+{
+private:
+    Mesh _mesh = Mesh{ 5 };
+
+public:
+    Mesh& getMesh(int id)
+    {
+        return _mesh;
+    }
+};
+
+class MeshRepositoryMock
+{
+public:
+    MOCK_METHOD(Mesh&, getMesh, (int id));
+};
+
+struct Registry
+{
+private:
+    MeshRepository meshRepositoryImpl;
+public:
+    IMeshRepository<MeshRepository> meshRepository = IMeshRepository<MeshRepository>{meshRepositoryImpl};
+};
+
+TEST(MeshRepositoryTests, getMeshTest)
+{
+    MeshRepositoryMock meshRepositoryImpl;
+    auto meshRepository = IMeshRepository<MeshRepositoryMock>{meshRepositoryImpl};
+
+    auto mesh = Mesh{5};
+
+    EXPECT_CALL(meshRepositoryImpl, getMesh(1)).WillOnce(::testing::ReturnRef(mesh));
+
+    auto resultMesh = meshRepository.getMesh(1);
+
+    EXPECT_EQ(resultMesh.pointsCount, 5);
+}
