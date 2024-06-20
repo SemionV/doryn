@@ -1,7 +1,10 @@
 # Development log
 
 Tasks:
-* Template based class mocking with FakeIt
+* Manage external dependencies with CMake
+  * Manage and compile dependencies, which are compiled with the same build configuration(parsers, loggers, etc)
+  * Manage dependencies, which are compiled separately and with different build configuration(benchmark framework, test framework, etc)
+* CI/CD setup with GitLab
 * Dynamic module loading(plugin system)
   * LibraryHandle, which is referenceing ILibrary with a weak_ptr and has lock() method to create an instance of a RAII object to hold ILibrary in memory while executing some code from it.
     Make it possible to implement fast locks for unloadable(root) modules
@@ -12,16 +15,14 @@ Tasks:
   * Restrict events and controllers API to use ILibrary handler for all subscriptions
   * Hot reload of plugins via script commands and file watchers
 * Flaten controller pipeline: store entites in a sorted flat array
-* Manage external dependencies with CMake
-  * Manage and compile dependencies, which are compiled with the same builöd configuration(parsers, loggers, etc)
-  * Manage dependencies, which are compiled separately and with different build configuration(benchmark framework, test framework, etc)
-* Mouse picking(redirect event to the corresponding event hub of a view)
 * Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
 * OpenGL Renderer
   * Static mapping of Vertex Attributes
   * Fill Buffers with mapped data
   * Batch rendering
   * Render Meshes
+* Ray casting(for mouse picking and other features)
+* Mouse picking(redirect event to the corresponding event hub of a view)
 * Multithreaded rendering
 * Networking/Mutliplayer
 * Camera Control
@@ -33,6 +34,9 @@ Tasks:
 * Path finding
 * Build for MacOS
 * Voice control
+
+**19.06.24**
+*Task done: Template based class mocking with FakeIt
 
 **18.06.24**
 * Task done: Test reload logic
