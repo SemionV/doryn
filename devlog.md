@@ -1,19 +1,24 @@
 # Development log
 
 Tasks:
-* Manage external dependencies with CMake
-  * Manage and compile dependencies, which are compiled with the same build configuration(parsers, loggers, etc)
-  * Manage dependencies, which are compiled separately and with different build configuration(benchmark framework, test framework, etc)
-* CI/CD setup with GitLab
 * Dynamic module loading(plugin system)
-  * LibraryHandle, which is referenceing ILibrary with a weak_ptr and has lock() method to create an instance of a RAII object to hold ILibrary in memory while executing some code from it.
+  * Resource handling and reference counting utility  classes
+    * A possibility to do a quick lock for the resources which lifetime is longer then the lifetime of objects referencing to them(core modules, which won't be unloaded)
+    * Weak references
+    * Multithreading
+    * Locking mechanism, which forbids reference counting incrementing(for released resources, who are waiting for the last clients to finish their job, before get deleted)
+  * LibraryHandle, which is referencing ILibrary with a weak_ptr and has lock() method to create an instance of a RAII object to hold ILibrary in memory while executing some code from it.
     Make it possible to implement fast locks for unloadable(root) modules
-  * Pass custom ILibrary insance to ModuleService::load with an abstract methods attach and detach, which are not depending on any template parameters and can implement any kind
+  * Pass custom ILibrary instance to ModuleService::load with an abstract methods attach and detach, which are not depending on any template parameters and can implement any kind
     of libraries
   * Multi-module libraries
   * Configure and load plugins
   * Restrict events and controllers API to use ILibrary handler for all subscriptions
   * Hot reload of plugins via script commands and file watchers
+* Manage external dependencies with CMake
+  * Manage and compile dependencies, which are compiled with the same build configuration(parsers, loggers, etc)
+  * Manage dependencies, which are compiled separately and with different build configuration(benchmark framework, test framework, etc)
+* CI/CD setup with GitLab
 * Flaten controller pipeline: store entites in a sorted flat array
 * Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
 * OpenGL Renderer
