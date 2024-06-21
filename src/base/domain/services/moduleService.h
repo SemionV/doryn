@@ -13,7 +13,7 @@ namespace dory::domain::services::module
     class BoostDynamicLinkLibrary: public DynamicLinkLibrary<TModuleContext>
     {
     private:
-        bool _isLoaded = false;
+        std::atomic<bool> _isLoaded = false;
         boost::dll::shared_library _dll;
         std::shared_ptr<ILoadableModule<TModuleContext>> _module;
 

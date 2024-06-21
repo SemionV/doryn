@@ -2,11 +2,7 @@
 
 Tasks:
 * Dynamic module loading(plugin system)
-  * Resource handling and reference counting utility  classes
-    * A possibility to do a quick lock for the resources which lifetime is longer then the lifetime of objects referencing to them(core modules, which won't be unloaded)
-    * Weak references
-    * Multithreading
-    * Locking mechanism, which forbids reference counting incrementing(for released resources, who are waiting for the last clients to finish their job, before get deleted)
+  * Fix cross-dll memory management problem with LibraryResource class
   * LibraryHandle, which is referencing ILibrary with a weak_ptr and has lock() method to create an instance of a RAII object to hold ILibrary in memory while executing some code from it.
     Make it possible to implement fast locks for unloadable(root) modules
   * Pass custom ILibrary instance to ModuleService::load with an abstract methods attach and detach, which are not depending on any template parameters and can implement any kind
@@ -41,7 +37,10 @@ Tasks:
 * Voice control
 
 **19.06.24**
-*Task done: Template based class mocking with FakeIt
+* Task done: Resource handling and reference counting utility  classes
+
+**19.06.24**
+* Task done: Template based class mocking with FakeIt
 
 **18.06.24**
 * Task done: Test reload logic

@@ -4,9 +4,12 @@
 
 #include "dependencies.h"
 #include "typeComponents.h"
+#include "memory.h"
 
 namespace dory
 {
+    class
+
     class ILibrary: NonCopyable
     {
     public:
@@ -36,7 +39,7 @@ namespace dory
     {
     public:
         ~ILoadableModule() override = default;
-        virtual void attach(std::weak_ptr<ILibrary> library, TModuleContext& moduleContext) = 0;
+        virtual void attach(std::weak_ptr<ILibrary> library, /*CustomAllocator<>,*/ TModuleContext& moduleContext) = 0;
         virtual void detach(TModuleContext& moduleContext) = 0;
     };
 
