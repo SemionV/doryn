@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "dependencies.h"
 #include "typeComponents.h"
 
@@ -75,4 +77,55 @@ namespace dory
 
         return true;
     }
+
+    template<typename TResource>
+    class ResourceHandle: NonCopyable
+    {
+    private:
+        std::shared_ptr<ILibrary> _library;
+        TResource* _resource;
+
+    public:
+        explicit ResourceHandle(std::shared_ptr<ILibrary> library, TResource* resource):
+            _library(std::move(library)),
+            _resource(resource)
+        {}
+
+        explicit operator bool()
+        {
+            return _library.operator bool() && _resource;
+        }
+
+        TResource* operator->()
+        {
+            assert((bool)this);
+            return _resource;
+        }
+
+        TResource& operator*()
+        {
+            assert((bool)this);
+            return *_resource;
+        }
+    };
+
+    template<typename TResource>
+    class LibraryResource: NonCopyable
+    {
+    private:
+        std::unique_ptr<TResource> _resource;
+        std::weak_ptr<ILibrary> _library;
+
+    public:
+        explicit LibraryResource(std::weak_ptr<ILibrary> library, std::unique_ptr<TResource> resource):
+            _library(std::move(library)),
+            _resource(std::move(resource))
+        {}
+
+        ResourceHandle<TResource> lock()
+        {
+            auto library = _library.lock();
+            return ResourceHandle<TResource>{ library && library->isLoaded() ? library : nullptr, _resource.get() };
+        }
+    };
 }

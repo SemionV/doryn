@@ -196,7 +196,7 @@ namespace dory::domain::events
 
             for (const auto& [key, handler]: this->handlers)
             {
-                if(!invokeModuleProcedure(handler->libraryOption, [&](){ handler->operator()(arguments...); }))
+                if(!invokeModuleProcedure(handler->libraryOption, [&](){ (*handler)(arguments...); }))
                 {
                     expiredHandles.emplace_back(key);
                 }
