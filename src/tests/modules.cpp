@@ -96,7 +96,9 @@ TEST(RsourceHandleTests, LifetimeOfLibraryAndResource)
     EXPECT_CALL(*testController, update(1));
     EXPECT_CALL(*testController, callOperator());
 
-    auto libraryResource = dory::LibraryResource<TestController>{library, std::move(testController)};
+    auto libraryHandle = dory::LibraryHandle{ library };
+
+    auto libraryResource = dory::ResourceHandle<TestController>{libraryHandle, testController.get()};
 
     {
         auto resource = libraryResource.lock();

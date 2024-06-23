@@ -2,12 +2,8 @@
 
 Tasks:
 * Dynamic module loading(plugin system)
-  * Fix cross-dll memory management problem with LibraryResource class
-  * LibraryHandle, which is referencing ILibrary with a weak_ptr and has lock() method to create an instance of a RAII object to hold ILibrary in memory while executing some code from it.
-    Make it possible to implement fast locks for unloadable(root) modules
-  * Pass custom ILibrary instance to ModuleService::load with an abstract methods attach and detach, which are not depending on any template parameters and can implement any kind
-    of libraries
-  * Multi-module libraries
+  * Test multi-module libraries
+  * Clean up old ModuleService code
   * Configure and load plugins
   * Restrict events and controllers API to use ILibrary handler for all subscriptions
   * Hot reload of plugins via script commands and file watchers
@@ -15,7 +11,7 @@ Tasks:
   * Manage and compile dependencies, which are compiled with the same build configuration(parsers, loggers, etc)
   * Manage dependencies, which are compiled separately and with different build configuration(benchmark framework, test framework, etc)
 * CI/CD setup with GitLab
-* Flaten controller pipeline: store entites in a sorted flat array
+* Flatten controller pipeline: store entities in a sorted flat array
 * Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
 * OpenGL Renderer
   * Static mapping of Vertex Attributes
@@ -36,7 +32,14 @@ Tasks:
 * Build for MacOS
 * Voice control
 
-**19.06.24**
+**23.06.24**
+* Task done: Multi-module libraries
+
+**22.06.24**
+* Task done: Resource handling and reference counting utility classes. The problem is mitigated in the way, that Resources will be allocated in a library
+  and will be deallocated by the library itself on library destruction
+
+**21.06.24**
 * Task done: Resource handling and reference counting utility  classes
 
 **19.06.24**

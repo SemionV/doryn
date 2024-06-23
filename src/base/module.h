@@ -8,7 +8,21 @@
 
 namespace dory
 {
-    class
+    class IModule
+    {
+    public:
+        virtual ~IModule() = default;
+    };
+
+    class LibraryHandle;
+
+    template<typename TModuleContext>
+    class IDynamicModule: public IModule
+    {
+    public:
+        ~IDynamicModule() override = default;
+        virtual void attach(LibraryHandle library, TModuleContext& moduleContext) = 0;
+    };
 
     class ILibrary: NonCopyable
     {
@@ -25,13 +39,70 @@ namespace dory
         const std::string name;
         const std::filesystem::path path;
 
+        ILibrary() = default;
+
+        ILibrary(const std::filesystem::path& libraryName, const std::filesystem::path& libraryPath):
+            name(libraryName), path(libraryPath)
+        {}
+
         virtual bool isLoaded() = 0;
     };
 
-    class IModule
+    class DynamicLibrary: public ILibrary
     {
+    private:
+        constexpr const static std::string_view dynamicModuleFactoryFunctionName = "dynamicModuleFactory";
+        template<typename TModuleContext>
+        using LoadableModuleFactory = std::shared_ptr<IDynamicModule<TModuleContext>>(const std::string& moduleName);
+
+        std::atomic<bool> _isLoaded = false;
+        boost::dll::shared_library _dll;
+        std::unordered_map<std::string, std::shared_ptr<IModule>> _modules;
+
     public:
-        virtual ~IModule() = default;
+        explicit DynamicLibrary(const std::filesystem::path& libraryName, const std::filesystem::path& libraryPath):
+                ILibrary(libraryName, libraryPath)
+        {}
+
+        inline bool isLoaded() noexcept final
+        {
+            return _isLoaded;
+        }
+
+        void unload()
+        {
+            assert(_isLoaded);
+            _isLoaded = false;
+        }
+
+        void load(const std::filesystem::path& libraryPath)
+        {
+            assert(!_isLoaded);
+
+            auto path = libraryPath.string() + std::string { ILibrary::systemSharedLibraryFileExtension };
+            _dll.load(path);
+            _isLoaded = true;
+        }
+
+        template<typename TModuleContext>
+        std::shared_ptr<IDynamicModule<TModuleContext>> loadModule(const std::string moduleName)
+        {
+            assert(_dll.is_loaded());
+
+            if(_modules.contains(moduleName))
+            {
+                _modules.erase(moduleName);
+            }
+
+            auto moduleFactory = _dll.template get<LoadableModuleFactory<TModuleContext>>(std::string{ dynamicModuleFactoryFunctionName });
+            auto module = moduleFactory(moduleName);
+            if(module)
+            {
+                _modules[moduleName] = module;
+            }
+
+            return module;
+        }
     };
 
     template<typename TModuleContext>
@@ -39,7 +110,7 @@ namespace dory
     {
     public:
         ~ILoadableModule() override = default;
-        virtual void attach(std::weak_ptr<ILibrary> library, /*CustomAllocator<>,*/ TModuleContext& moduleContext) = 0;
+        virtual void attach(std::weak_ptr<ILibrary> library, TModuleContext& moduleContext) = 0;
         virtual void detach(TModuleContext& moduleContext) = 0;
     };
 
@@ -81,15 +152,34 @@ namespace dory
         return true;
     }
 
+    class LibraryHandle
+    {
+    private:
+        std::weak_ptr<ILibrary> _library;
+
+        std::shared_ptr<ILibrary> lock()
+        {
+            return _library.lock();
+        }
+
+    public:
+        explicit LibraryHandle(std::weak_ptr<ILibrary> library):
+                _library(std::move(library))
+        {}
+
+        template<typename U>
+        friend class ResourceHandle;
+    };
+
     template<typename TResource>
-    class ResourceHandle: NonCopyable
+    class ResourceRef: NonCopyable
     {
     private:
         std::shared_ptr<ILibrary> _library;
         TResource* _resource;
 
     public:
-        explicit ResourceHandle(std::shared_ptr<ILibrary> library, TResource* resource):
+        explicit ResourceRef(std::shared_ptr<ILibrary> library, TResource* resource):
             _library(std::move(library)),
             _resource(resource)
         {}
@@ -113,22 +203,22 @@ namespace dory
     };
 
     template<typename TResource>
-    class LibraryResource: NonCopyable
+    class ResourceHandle: NonCopyable
     {
     private:
-        std::unique_ptr<TResource> _resource;
-        std::weak_ptr<ILibrary> _library;
+        TResource* _resource;
+        LibraryHandle _library;
 
     public:
-        explicit LibraryResource(std::weak_ptr<ILibrary> library, std::unique_ptr<TResource> resource):
+        explicit ResourceHandle(LibraryHandle library, TResource* resource):
             _library(std::move(library)),
-            _resource(std::move(resource))
+            _resource(resource)
         {}
 
-        ResourceHandle<TResource> lock()
+        ResourceRef<TResource> lock()
         {
             auto library = _library.lock();
-            return ResourceHandle<TResource>{ library && library->isLoaded() ? library : nullptr, _resource.get() };
+            return ResourceRef<TResource>{library && library->isLoaded() ? library : nullptr, _resource };
         }
     };
 }

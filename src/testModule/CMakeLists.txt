@@ -4,6 +4,7 @@ project(dory-testModule)
 
 add_library(testModule MODULE ${PLATFORM}
         testModule.cpp
+        testModule2.cpp
         factory.cpp)
 
 set_target_properties(testModule PROPERTIES PREFIX ""
