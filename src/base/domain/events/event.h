@@ -51,7 +51,7 @@ namespace dory::domain::events
             function(std::move(function))
         {}
 
-        void operator()(Ts... arguments) const override
+        inline void operator()(Ts... arguments) const final
         {
             this->invoke(function, arguments...);
         }
@@ -73,7 +73,7 @@ namespace dory::domain::events
             memberFunctionPair(instance, memberFunction)
         {}
 
-        void operator()(Ts... arguments) const override
+        inline void operator()(Ts... arguments) const final
         {
             this->invoke(memberFunctionPair.second, memberFunctionPair.first, arguments...);
         }
@@ -84,12 +84,14 @@ namespace dory::domain::events
     {
     public:
         using KeyType = std::size_t;
+        using HandlerType = IResourceHandle<std::function<void(Ts...)>>;
 
     private:
         KeyType idCounter {};
 
     protected:
         std::map<KeyType, std::shared_ptr<Callable<Ts...>>> handlers;
+        //std::map<KeyType, std::unique_ptr<HandlerType>> _handlers;
 
     public:
         template<typename F>
@@ -189,23 +191,43 @@ namespace dory::domain::events
     template<class... Ts>
     class EventDispatcher: public Event<Ts...>
     {
+    private:
+        using EventKeyType = Event<Ts...>::KeyType;
+        using HandlerType = Event<Ts...>::HandlerType;
+
     public:
         void operator()(Ts... arguments)
         {
-            auto expiredHandles = std::vector<typename Event<Ts...>::KeyType>{};
-
-            for (const auto& [key, handler]: this->handlers)
             {
-                if(!invokeModuleProcedure(handler->libraryOption, [&](){ (*handler)(arguments...); }))
-                {
-                    expiredHandles.emplace_back(key);
+                auto expiredHandles = std::vector<EventKeyType>{};
+
+                for (const auto &[key, handler]: this->handlers) {
+                    if (!invokeModuleProcedure(handler->libraryOption, [&]() { (*handler)(arguments...); })) {
+                        expiredHandles.emplace_back(key);
+                    }
+                }
+
+                for (auto &key: expiredHandles) {
+                    this->handlers.erase(key);
                 }
             }
 
-            for(auto& key : expiredHandles)
-            {
-                this->handlers.erase(key);
-            }
+            /*new handlers*/
+            /*{
+                auto expiredHandles = std::vector<EventKeyType>{};
+
+                for (std::pair<const EventKeyType, std::unique_ptr<HandlerType>>& handlerPair: this->_handlers) {
+                    auto resourceRef = handlerPair.second->lock();
+                    if(resourceRef)
+                    {
+                        //resourceRef.operator->()(arguments...);
+                    }
+                    else
+                    {
+                        expiredHandles.emplace_back(handlerPair.first);
+                    }
+                }
+            }*/
         }
     };
 

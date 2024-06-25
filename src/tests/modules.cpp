@@ -119,3 +119,27 @@ TEST(RsourceHandleTests, LifetimeOfLibraryAndResource)
     auto resource3 = libraryResource.lock();
     EXPECT_FALSE((bool)resource3);
 }
+
+struct TestModuleContext
+{};
+
+class TestModule: dory::IDynamicModule<TestModuleContext>
+{
+public:
+    MOCK_METHOD(void, attach, (dory::LibraryHandle library, TestModuleContext& moduleContext), (final));
+};
+
+class TestDynamicLibrary: public dory::ILibrary
+{
+public:
+    MOCK_METHOD(bool, isLoaded, (), (final));
+    MOCK_METHOD(void, load, (const std::filesystem::path& libraryPath));
+    MOCK_METHOD(std::shared_ptr<dory::IDynamicModule<TestModuleContext>>, loadModule, (const std::string moduleName));
+};
+
+
+TEST(LibraryTests, HandleEventsInLibrary)
+{
+    auto library = std::make_shared<TestDynamicLibrary>();
+    EXPECT_CALL(*library, isLoaded()).WillOnce(Return(true));
+}
