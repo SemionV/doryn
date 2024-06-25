@@ -138,6 +138,10 @@ namespace dory::domain::services::module
         TImplementation& _implementation;
 
     public:
+        explicit IDynamicLibraryService(TImplementation& implementation):
+            _implementation(implementation)
+        {}
+
         std::shared_ptr<DynamicLibrary> load(const std::filesystem::path& libraryName, const std::filesystem::path& libraryPath)
         {
             return _implementation.load(libraryName, libraryPath);

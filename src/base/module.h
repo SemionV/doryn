@@ -152,6 +152,82 @@ namespace dory
         return true;
     }
 
+    template<typename TResource>
+    class IResourceRef: NonCopyable
+    {
+    public:
+        explicit virtual operator bool() = 0;
+        virtual TResource* operator->() = 0;
+        virtual TResource& operator*() = 0;
+    };
+
+    template<typename TResource>
+    class ResourceRef: public IResourceRef<TResource>
+    {
+    private:
+        std::shared_ptr<ILibrary> _library;
+        TResource* _resource;
+
+    public:
+        explicit ResourceRef(std::shared_ptr<ILibrary> library, TResource* resource):
+            _library(std::move(library)),
+            _resource(resource)
+        {}
+
+        inline explicit operator bool() final
+        {
+            return _library.operator bool() && _resource;
+        }
+
+        inline TResource* operator->() final
+        {
+            assert((bool)this);
+            return _resource;
+        }
+
+        inline TResource& operator*() final
+        {
+            assert((bool)this);
+            return *_resource;
+        }
+    };
+
+    template<typename TResource>
+    class StaticResourceRef: public IResourceRef<TResource>
+    {
+    private:
+        TResource& _resource;
+
+    public:
+        explicit StaticResourceRef(TResource& resource):
+                _resource(resource)
+        {}
+
+        inline explicit operator bool() final
+        {
+            return true;
+        }
+
+        inline TResource* operator->() final
+        {
+            return &_resource;
+        }
+
+        inline TResource& operator*() final
+        {
+            return *_resource;
+        }
+    };
+
+    template<typename TResource>
+    class IResourceHandle: public NonCopyable
+    {
+    public:
+        virtual ~IResourceHandle() = default;
+
+        virtual ResourceRef<TResource> lock() = 0;
+    };
+
     class LibraryHandle
     {
     private:
@@ -172,38 +248,7 @@ namespace dory
     };
 
     template<typename TResource>
-    class ResourceRef: NonCopyable
-    {
-    private:
-        std::shared_ptr<ILibrary> _library;
-        TResource* _resource;
-
-    public:
-        explicit ResourceRef(std::shared_ptr<ILibrary> library, TResource* resource):
-            _library(std::move(library)),
-            _resource(resource)
-        {}
-
-        explicit operator bool()
-        {
-            return _library.operator bool() && _resource;
-        }
-
-        TResource* operator->()
-        {
-            assert((bool)this);
-            return _resource;
-        }
-
-        TResource& operator*()
-        {
-            assert((bool)this);
-            return *_resource;
-        }
-    };
-
-    template<typename TResource>
-    class ResourceHandle: NonCopyable
+    class ResourceHandle: public IResourceHandle<TResource>
     {
     private:
         TResource* _resource;
@@ -215,10 +260,28 @@ namespace dory
             _resource(resource)
         {}
 
-        ResourceRef<TResource> lock()
+        inline ResourceRef<TResource> lock() final
         {
             auto library = _library.lock();
             return ResourceRef<TResource>{library && library->isLoaded() ? library : nullptr, _resource };
+        }
+    };
+
+    template<typename TResource>
+    class StaticResourceHandle: public IResourceHandle<TResource>
+    {
+    private:
+        TResource _resource;
+
+    public:
+        template<typename... Ts>
+        explicit StaticResourceHandle(Ts&&... args):
+                _resource{std::forward<Ts>(args)...}
+        {}
+
+        inline ResourceRef<TResource> lock() final
+        {
+            return StaticResourceRef<TResource>{ _resource };
         }
     };
 }
