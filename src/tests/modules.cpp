@@ -141,5 +141,17 @@ public:
 TEST(LibraryTests, HandleEventsInLibrary)
 {
     auto library = std::make_shared<TestDynamicLibrary>();
+    auto libraryHandle = dory::LibraryHandle{ library };
     //EXPECT_CALL(*library, isLoaded()).WillOnce(Return(true));
+
+    using HandlerType = dory::IResourceHandle<std::function<void(int)>>;
+
+    std::function<void(int)> handler;
+    auto resourceHandle = dory::ResourceHandle<std::function<void(int)>>{libraryHandle, &handler};
+
+    std::map<int, std::unique_ptr<HandlerType>> handlers;
+    handlers[1] = std::make_unique<dory::ResourceHandle<std::function<void(int)>>>(libraryHandle, &handler);
+
+    auto lock = resourceHandle.lock();
+    //*lock.
 }

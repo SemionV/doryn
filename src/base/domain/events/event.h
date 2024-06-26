@@ -91,7 +91,7 @@ namespace dory::domain::events
 
     protected:
         std::map<KeyType, std::shared_ptr<Callable<Ts...>>> handlers;
-        //std::map<KeyType, std::unique_ptr<HandlerType>> _handlers;
+        std::unordered_map<KeyType, std::shared_ptr<HandlerType>> _handlers;
 
     public:
         template<typename F>
@@ -139,7 +139,7 @@ namespace dory::domain::events
         template<typename T>
         KeyType attachHandler(std::weak_ptr<ILibrary> library, T* instance, void (T::* memberFunction)(Ts...))
         {
-            return attachMemberFunction(instance, memberFunction);
+            return attachMemberFunction(library, instance, memberFunction);
         }
 
         void detachHandler(KeyType handlerKey)
