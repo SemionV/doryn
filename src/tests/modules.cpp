@@ -137,21 +137,26 @@ public:
     MOCK_METHOD(std::shared_ptr<dory::IDynamicModule<TestModuleContext>>, loadModule, (const std::string moduleName));
 };
 
+class
 
 TEST(LibraryTests, HandleEventsInLibrary)
 {
     auto library = std::make_shared<TestDynamicLibrary>();
     auto libraryHandle = dory::LibraryHandle{ library };
-    //EXPECT_CALL(*library, isLoaded()).WillOnce(Return(true));
+    EXPECT_CALL(*library, isLoaded()).WillOnce(Return(true));
 
-    using HandlerType = dory::IResourceHandle<std::function<void(int)>>;
+    using ResourceType = std::function<void(int)>;
+    using HandlerType = dory::IResourceHandle<ResourceType>;
 
-    std::function<void(int)> handler;
-    auto resourceHandle = dory::ResourceHandle<std::function<void(int)>>{libraryHandle, &handler};
+    ResourceType handler;
+    handler = [](int i){std::cout << "handler: " << i << "\n";};
+    auto resourceHandle = dory::ResourceHandle<ResourceType>{libraryHandle, &handler};
 
-    std::map<int, std::unique_ptr<HandlerType>> handlers;
-    handlers[1] = std::make_unique<dory::ResourceHandle<std::function<void(int)>>>(libraryHandle, &handler);
+    std::unordered_map<int, std::shared_ptr<HandlerType>> handlers;
+    handlers[1] = std::make_unique<dory::ResourceHandle<ResourceType>>(libraryHandle, &handler);
 
-    auto lock = resourceHandle.lock();
-    //*lock.
+    auto resource = resourceHandle.lock();
+
+    resource->operator()(1);
+    (*resource)(4);
 }
