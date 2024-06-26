@@ -25,18 +25,23 @@ struct TestServices
 
 class TestModule: public dory::ILoadableModule<TestServices>
 {
+private:
+    std::weak_ptr<dory::ILibrary> _library;
+
 public:
     void attach(std::weak_ptr<dory::ILibrary> library, TestServices& registry) override
     {
+        _library = library;
+
         registry.isTestAttached = true;
         registry.dispatcher.attach(library, std::function{ [](TestContext& context, const TestEvent& event)
         {
             context.isEventHandled = true;
         }});
 
-        registry.dispatcher.attach(library, std::function{ [&](TestContext& context, LockEvent& event)
+        registry.dispatcher.attach(library, std::function{ [this](TestContext& context, LockEvent& event)
         {
-            event.lock = library.lock();
+            event.lock = _library.lock();
         }});
     }
 

@@ -1,4 +1,8 @@
 #include "registry.h"
+#ifdef WIN32
+#include <windows.h>
+#include <winnt.h>
+#endif
 
 #ifdef __unix__
 int main()

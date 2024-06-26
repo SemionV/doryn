@@ -7,7 +7,7 @@
 namespace dory::domain::devices
 {
     template<typename TDataContext>
-    class ConsoleIODeviceWin32: Uncopyable,
+    class ConsoleIODeviceWin32: NonCopyable,
             public IDevice<ConsoleIODeviceWin32<TDataContext>, TDataContext>,
             public IStandartOutputDevice<ConsoleIODeviceWin32<TDataContext>, std::string>
     {

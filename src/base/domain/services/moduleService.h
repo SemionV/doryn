@@ -159,7 +159,7 @@ namespace dory::domain::services::module
         std::map<std::string, std::shared_ptr<DynamicLibrary>> _libraries;
 
     public:
-        std::shared_ptr<DynamicLibrary> load(const std::filesystem::path& libraryName, const std::filesystem::path& libraryPath)
+        std::shared_ptr<DynamicLibrary> load(const std::string& libraryName, const std::filesystem::path& libraryPath)
         {
             if(_libraries.contains(libraryName))
             {

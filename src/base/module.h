@@ -28,11 +28,11 @@ namespace dory
     {
     public:
 #ifdef WIN32
-        const constexpr static std::string_view& systemSharedLibraryFileExtension = ".dll";
+        const constexpr static std::string_view systemSharedLibraryFileExtension = ".dll";
 #endif
 
 #ifdef __unix__
-        const constexpr static std::string_view& systemSharedLibraryFileExtension = ".so";
+        const constexpr static std::string_view systemSharedLibraryFileExtension = ".so";
 #endif
 
     public:
@@ -41,7 +41,7 @@ namespace dory
 
         ILibrary() = default;
 
-        ILibrary(const std::filesystem::path& libraryName, const std::filesystem::path& libraryPath):
+        ILibrary(const std::string& libraryName, const std::filesystem::path& libraryPath):
             name(libraryName), path(libraryPath)
         {}
 
@@ -60,7 +60,7 @@ namespace dory
         std::unordered_map<std::string, std::shared_ptr<IModule>> _modules;
 
     public:
-        explicit DynamicLibrary(const std::filesystem::path& libraryName, const std::filesystem::path& libraryPath):
+        explicit DynamicLibrary(const std::string& libraryName, const std::filesystem::path& libraryPath):
                 ILibrary(libraryName, libraryPath)
         {}
 
