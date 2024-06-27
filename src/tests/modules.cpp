@@ -109,20 +109,20 @@ TEST(RsourceHandleTests, lifetimeOfLibraryAndResource)
         auto resource = libraryResource.lock();
         EXPECT_TRUE((bool)resource);
 
-        if(*resource)
+        if(resource)
         {
-            (*resource)->update(1);
-            (**resource)();
+            resource->update(1);
+            (*resource)();
         }
 
         library.reset();
 
         auto resource2 = libraryResource.lock();
-        EXPECT_FALSE((bool)(*resource2));
+        EXPECT_FALSE((bool)resource2);
     }
 
     auto resource3 = libraryResource.lock();
-    EXPECT_FALSE((bool)(*resource3));
+    EXPECT_FALSE((bool)resource3);
 }
 
 class TestModule: dory::IDynamicModule<TestModuleContext>
@@ -158,8 +158,8 @@ TEST(LibraryTests, handleEventsInLibrary)
         auto resource = resourceHandle->lock();
         if(*resource)
         {
-            (*resource)->operator()(1);
-            (**resource)(4);
+            resource->operator()(1);
+            (*resource)(4);
         }
     }
 
@@ -174,8 +174,8 @@ TEST(LibraryTests, handleEventsInLibrary)
         auto resource = resourceHandle2->lock();
         if(*resource)
         {
-            (*resource)->operator()(1);
-            (**resource)(4);
+            resource->operator()(1);
+            (*resource)(4);
         }
     }
 
@@ -187,8 +187,8 @@ TEST(LibraryTests, handleEventsInLibrary)
         auto resource = resourceHandle3->lock();
         if(*resource)
         {
-            (*resource)->operator()(1);
-            (**resource)(4);
+            resource->operator()(1);
+            (*resource)(4);
         }
     }
 }

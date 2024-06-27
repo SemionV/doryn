@@ -152,84 +152,6 @@ namespace dory
         return true;
     }
 
-    template<typename TResource>
-    class IResourceRef: NonCopyable
-    {
-    public:
-        virtual ~IResourceRef() = default;
-
-        explicit virtual operator bool() = 0;
-        virtual TResource* operator->() = 0;
-        virtual TResource& operator*() = 0;
-    };
-
-    template<typename TResource>
-    class ResourceRef: public IResourceRef<TResource>
-    {
-    private:
-        std::shared_ptr<ILibrary> _library;
-        TResource* _resource;
-
-    public:
-        explicit ResourceRef(std::shared_ptr<ILibrary> library, TResource* resource):
-            _library(std::move(library)),
-            _resource(resource)
-        {}
-
-        inline explicit operator bool() final
-        {
-            return _library.operator bool() && _resource;
-        }
-
-        inline TResource* operator->() final
-        {
-            assert((bool)this);
-            return _resource;
-        }
-
-        inline TResource& operator*() final
-        {
-            assert((bool)this);
-            return *_resource;
-        }
-    };
-
-    template<typename TResource>
-    class StaticResourceRef: public IResourceRef<TResource>
-    {
-    private:
-        TResource& _resource;
-
-    public:
-        explicit StaticResourceRef(TResource& resource):
-                _resource(resource)
-        {}
-
-        inline explicit operator bool() final
-        {
-            return true;
-        }
-
-        inline TResource* operator->() final
-        {
-            return &_resource;
-        }
-
-        inline TResource& operator*() final
-        {
-            return _resource;
-        }
-    };
-
-    template<typename TResource>
-    class IResourceHandle: public NonCopyable
-    {
-    public:
-        virtual ~IResourceHandle() = default;
-
-        virtual std::unique_ptr<IResourceRef<TResource>> lock() = 0;
-    };
-
     class LibraryHandle
     {
     private:
@@ -250,6 +172,46 @@ namespace dory
     };
 
     template<typename TResource>
+    class ResourceRef
+    {
+    private:
+        std::optional<std::shared_ptr<ILibrary>> _library;
+        TResource* _resource;
+
+    public:
+        explicit ResourceRef(std::optional<std::shared_ptr<ILibrary>> library, TResource* resource):
+            _library(std::move(library)),
+            _resource(resource)
+        {}
+
+        explicit operator bool()
+        {
+            return (!_library || (bool) *_library) && _resource;
+        }
+
+        inline TResource* operator->()
+        {
+            assert((bool)this);
+            return _resource;
+        }
+
+        inline TResource& operator*()
+        {
+            assert((bool)this);
+            return *_resource;
+        }
+    };
+
+    template<typename TResource>
+    class IResourceHandle: public NonCopyable
+    {
+    public:
+        virtual ~IResourceHandle() = default;
+
+        virtual ResourceRef<TResource> lock() = 0;
+    };
+
+    template<typename TResource>
     class ResourceHandle: public IResourceHandle<TResource>
     {
     private:
@@ -262,11 +224,10 @@ namespace dory
             _resource(resource)
         {}
 
-        inline std::unique_ptr<IResourceRef<TResource>> lock() final
+        inline ResourceRef<TResource> lock() final
         {
             auto library = _library.lock();
-            return std::make_unique<ResourceRef<TResource>>(library && library->isLoaded() ? library : nullptr, _resource);
-            //return ResourceRef<TResource>{library && library->isLoaded() ? library : nullptr, _resource };
+            return ResourceRef<TResource>{library && library->isLoaded() ? library : nullptr, _resource };
         }
     };
 
@@ -282,9 +243,9 @@ namespace dory
                 _resource{std::forward<Ts>(args)...}
         {}
 
-        inline std::unique_ptr<IResourceRef<TResource>> lock() final
+        inline ResourceRef<TResource> lock() final
         {
-            return std::make_unique<StaticResourceRef<TResource>>(_resource);
+            return ResourceRef<TResource>{{}, &_resource };
         }
     };
 }
