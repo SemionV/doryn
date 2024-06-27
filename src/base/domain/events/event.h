@@ -84,14 +84,15 @@ namespace dory::domain::events
     {
     public:
         using KeyType = std::size_t;
-        using HandlerType = IResourceHandle<std::function<void(Ts...)>>;
+        using HandlerType = std::function<void(Ts...)>;
 
     private:
         KeyType idCounter {};
 
     protected:
         std::map<KeyType, std::shared_ptr<Callable<Ts...>>> handlers;
-        std::unordered_map<KeyType, std::shared_ptr<HandlerType>> _handlers;
+        //TODO: if the event used concurrently, it can lead to data race
+        std::unordered_map<KeyType, std::shared_ptr<IResourceHandle<HandlerType>>> _handlers;
 
     public:
         template<typename F>
@@ -213,21 +214,23 @@ namespace dory::domain::events
             }
 
             /*new handlers*/
-            /*{
+            {
                 auto expiredHandles = std::vector<EventKeyType>{};
 
-                for (std::pair<const EventKeyType, std::unique_ptr<HandlerType>>& handlerPair: this->_handlers) {
+                for (std::pair<const EventKeyType, std::shared_ptr<IResourceHandle<HandlerType>>>& handlerPair: this->_handlers) {
                     auto resourceRef = handlerPair.second->lock();
-                    if(resourceRef)
-                    {
-                        //resourceRef.operator->()(arguments...);
+                    if(resourceRef) {
+                        (*resourceRef)(arguments...);
                     }
-                    else
-                    {
+                    else {
                         expiredHandles.emplace_back(handlerPair.first);
                     }
                 }
-            }*/
+
+                for (auto &key: expiredHandles) {
+                    this->_handlers.erase(key);
+                }
+            }
         }
     };
 
