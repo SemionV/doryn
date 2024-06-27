@@ -155,17 +155,25 @@ namespace dory
     class LibraryHandle
     {
     private:
-        std::weak_ptr<ILibrary> _library;
+        std::optional<std::weak_ptr<ILibrary>> _libraryOption;
 
         std::shared_ptr<ILibrary> lock()
         {
-            return _library.lock();
+            assert(!isStatic());
+            return (*_libraryOption).lock();
         }
 
     public:
+        explicit LibraryHandle() = default;
+
         explicit LibraryHandle(std::weak_ptr<ILibrary> library):
-                _library(std::move(library))
+                _libraryOption(std::move(library))
         {}
+
+        bool isStatic()
+        {
+            return !(bool)_libraryOption;
+        }
 
         template<typename U>
         friend class ResourceHandle;
@@ -248,4 +256,16 @@ namespace dory
             return ResourceRef<TResource>{{}, &_resource };
         }
     };
+
+    template<typename TResource>
+    std::shared_ptr<IResourceHandle<TResource>> makeResourceHandle(LibraryHandle& libraryHandle, TResource* resource)
+    {
+        return std::make_shared<dory::ResourceHandle<TResource>>(libraryHandle, resource);
+    }
+
+    template<typename TResource, typename... Ts>
+    std::shared_ptr<IResourceHandle<TResource>> makeResourceHandle(Ts&&... resourceParameters)
+    {
+        return std::make_shared<StaticResourceHandle<TResource>>(std::forward<Ts>(resourceParameters)...);
+    }
 }
