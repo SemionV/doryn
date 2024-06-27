@@ -140,55 +140,57 @@ public:
     }
 };
 
-TEST(LibraryTests, handleEventsInLibrary)
+class HandleResourceTests: public testing::Test
 {
-    auto library = std::make_shared<TestLibrary>();
-    auto libraryHandle = dory::LibraryHandle{ library };
-    EXPECT_CALL(*library, isLoaded()).WillRepeatedly(Return(true));
-
+protected:
     using ResourceType = std::function<void(int)>;
 
-    ResourceType handler = [](int i){std::cout << "handler: " << i << "\n";};
+    std::shared_ptr<TestLibrary> _library = std::make_shared<TestLibrary>();
+    dory::LibraryHandle _libraryHandle = dory::LibraryHandle{ _library };
 
-    std::unordered_map<int, std::shared_ptr<dory::IResourceHandle<ResourceType>>> handlers;
-    handlers[1] = std::make_shared<dory::ResourceHandle<ResourceType>>(libraryHandle, &handler);
-    auto resourceHandle = handlers[1];
+    void SetUp() override {
+    }
 
+    void invokeHandler(std::shared_ptr<dory::IResourceHandle<ResourceType>> resourceHandle)
     {
         auto resource = resourceHandle->lock();
-        if(*resource)
+        if(resource)
         {
             resource->operator()(1);
             (*resource)(4);
         }
     }
+};
 
+TEST_F(HandleResourceTests, handleEventsByLambdaInLibrary)
+{
+    EXPECT_CALL(*_library, isLoaded()).WillOnce(Return(true));
+    ResourceType handler = [](int i){std::cout << "handler: " << i << "\n";};
+
+    invokeHandler(std::make_shared<dory::ResourceHandle<ResourceType>>(_libraryHandle, &handler));
+}
+
+TEST_F(HandleResourceTests, handleEventsByBindInLibrary)
+{
+    EXPECT_CALL(*_library, isLoaded()).WillOnce(Return(true));
     TestEventHandler object;
-    //use template lambda
-    //ResourceType handler2 = [object = &object](auto&& param) { object->handleEvent(std::forward<decltype(param)>(param)); };
     ResourceType handler2 = std::bind(&TestEventHandler::handleEvent, &object, std::placeholders::_1);
-    handlers[2] = std::make_shared<dory::ResourceHandle<ResourceType>>(libraryHandle, &handler2);
-    auto resourceHandle2 = handlers[2];
 
-    {
-        auto resource = resourceHandle2->lock();
-        if(*resource)
-        {
-            resource->operator()(1);
-            (*resource)(4);
-        }
-    }
+    invokeHandler(std::make_shared<dory::ResourceHandle<ResourceType>>(_libraryHandle, &handler2));
+}
 
+TEST_F(HandleResourceTests, handleEventsByLambdaInStaticLibrary)
+{
     auto handler3 = [](int i){std::cout << "handler 3: " << i << "\n";};
-    handlers[3] = std::make_shared<dory::StaticResourceHandle<ResourceType>>(std::move(handler3));
-    auto resourceHandle3 = handlers[3];
 
-    {
-        auto resource = resourceHandle3->lock();
-        if(*resource)
-        {
-            resource->operator()(1);
-            (*resource)(4);
-        }
-    }
+    invokeHandler(std::make_shared<dory::StaticResourceHandle<ResourceType>>(std::move(handler3)));
+}
+TEST_F(HandleResourceTests, handleEventsByMemberFunctionLambdaInStaticLibrary)
+{
+    TestEventHandler object2;
+    ResourceType handler4 = [object = &object2, method = &TestEventHandler::handleEvent] <typename... Ts> (Ts&&... params) {
+        std::invoke(method, object, std::forward<Ts>(params)...);
+    };
+
+    invokeHandler(std::make_shared<dory::StaticResourceHandle<ResourceType>>(std::move(handler4)));
 }
