@@ -156,6 +156,8 @@ namespace dory
     class IResourceRef: NonCopyable
     {
     public:
+        virtual ~IResourceRef() = default;
+
         explicit virtual operator bool() = 0;
         virtual TResource* operator->() = 0;
         virtual TResource& operator*() = 0;
@@ -215,7 +217,7 @@ namespace dory
 
         inline TResource& operator*() final
         {
-            return *_resource;
+            return _resource;
         }
     };
 
@@ -225,7 +227,7 @@ namespace dory
     public:
         virtual ~IResourceHandle() = default;
 
-        virtual ResourceRef<TResource> lock() = 0;
+        virtual std::unique_ptr<IResourceRef<TResource>> lock() = 0;
     };
 
     class LibraryHandle
@@ -260,10 +262,11 @@ namespace dory
             _resource(resource)
         {}
 
-        inline ResourceRef<TResource> lock() final
+        inline std::unique_ptr<IResourceRef<TResource>> lock() final
         {
             auto library = _library.lock();
-            return ResourceRef<TResource>{library && library->isLoaded() ? library : nullptr, _resource };
+            return std::make_unique<ResourceRef<TResource>>(library && library->isLoaded() ? library : nullptr, _resource);
+            //return ResourceRef<TResource>{library && library->isLoaded() ? library : nullptr, _resource };
         }
     };
 
@@ -279,9 +282,9 @@ namespace dory
                 _resource{std::forward<Ts>(args)...}
         {}
 
-        inline ResourceRef<TResource> lock() final
+        inline std::unique_ptr<IResourceRef<TResource>> lock() final
         {
-            return StaticResourceRef<TResource>{ _resource };
+            return std::make_unique<StaticResourceRef<TResource>>(_resource);
         }
     };
 }
