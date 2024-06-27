@@ -131,12 +131,25 @@ public:
     MOCK_METHOD(void, attach, (dory::LibraryHandle library, TestModuleContext& moduleContext), (final));
 };
 
-class TestEventHandler
+class InvokeSentinel
 {
 public:
+    MOCK_METHOD(void, notifyCall, (int i));
+};
+
+class TestEventHandler
+{
+private:
+    InvokeSentinel& _sentinel;
+
+public:
+    explicit TestEventHandler(InvokeSentinel& sentinel):
+        _sentinel(sentinel)
+    {}
+
     void handleEvent(int i)
     {
-        std::cout << "handler 2: " << i << "\n";
+        _sentinel.notifyCall(i);
     }
 };
 
@@ -147,11 +160,14 @@ protected:
 
     std::shared_ptr<TestLibrary> _library = std::make_shared<TestLibrary>();
     dory::LibraryHandle _libraryHandle = dory::LibraryHandle{ _library };
+    InvokeSentinel _sentinel;
 
     void SetUp() override {
+        EXPECT_CALL(_sentinel, notifyCall(1));
+        EXPECT_CALL(_sentinel, notifyCall(4));
     }
 
-    void invokeHandler(std::shared_ptr<dory::IResourceHandle<ResourceType>> resourceHandle)
+    static void invokeHandler(const std::shared_ptr<dory::IResourceHandle<ResourceType>>& resourceHandle)
     {
         auto resource = resourceHandle->lock();
         if(resource)
@@ -165,15 +181,16 @@ protected:
 TEST_F(HandleResourceTests, handleEventsByLambdaInLibrary)
 {
     EXPECT_CALL(*_library, isLoaded()).WillOnce(Return(true));
-    ResourceType handler = [](int i){std::cout << "handler: " << i << "\n";};
-
+    ResourceType handler = [this](int i) {
+        _sentinel.notifyCall(i);
+    };
     invokeHandler(std::make_shared<dory::ResourceHandle<ResourceType>>(_libraryHandle, &handler));
 }
 
 TEST_F(HandleResourceTests, handleEventsByBindInLibrary)
 {
     EXPECT_CALL(*_library, isLoaded()).WillOnce(Return(true));
-    TestEventHandler object;
+    auto object = TestEventHandler{ _sentinel };
     ResourceType handler2 = std::bind(&TestEventHandler::handleEvent, &object, std::placeholders::_1);
 
     invokeHandler(std::make_shared<dory::ResourceHandle<ResourceType>>(_libraryHandle, &handler2));
@@ -181,13 +198,15 @@ TEST_F(HandleResourceTests, handleEventsByBindInLibrary)
 
 TEST_F(HandleResourceTests, handleEventsByLambdaInStaticLibrary)
 {
-    auto handler3 = [](int i){std::cout << "handler 3: " << i << "\n";};
+    auto handler3 = [this](int i) {
+        _sentinel.notifyCall(i);
+    };
 
     invokeHandler(std::make_shared<dory::StaticResourceHandle<ResourceType>>(std::move(handler3)));
 }
 TEST_F(HandleResourceTests, handleEventsByMemberFunctionLambdaInStaticLibrary)
 {
-    TestEventHandler object2;
+    auto object2 = TestEventHandler{ _sentinel };
     ResourceType handler4 = [object = &object2, method = &TestEventHandler::handleEvent] <typename... Ts> (Ts&&... params) {
         std::invoke(method, object, std::forward<Ts>(params)...);
     };
