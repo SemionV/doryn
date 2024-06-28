@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION ${BUILD_TOOLS_REQUIRED_VERSION})
 project(dory-tests)
 
 add_executable(tests modules.cpp)

@@ -143,6 +143,14 @@ namespace dory::domain::events
             return attachMemberFunction(library, instance, memberFunction);
         }
 
+        KeyType attachHandlerLib(std::shared_ptr<IResourceHandle<HandlerType>> handler)
+        {
+            KeyType key = getNewKey();
+            _handlers[key] = handler;
+
+            return key;
+        }
+
         void detachHandler(KeyType handlerKey)
         {
             handlers.erase(handlerKey);

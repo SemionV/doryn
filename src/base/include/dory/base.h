@@ -4,3 +4,4 @@
 #include "base/module.h"
 #include "base/domain/services/logService.h"
 #include "base/domain/services/moduleService.h"
+#include "base/registry.h"

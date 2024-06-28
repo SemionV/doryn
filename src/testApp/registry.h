@@ -3,6 +3,8 @@
 #include "dependencies.h"
 #include "projectData.h"
 
+#include <dory/base.h>
+
 #include "base/serviceContainer.h"
 #include "base/domain/configuration.h"
 #include "base/domain/events/hub.h"
@@ -12,7 +14,6 @@
 #include "base/domain/engine.h"
 #include "base/domain/services/frameService.h"
 #include "base/domain/managers/viewManager.h"
-#include "base/domain/devices/terminalDevice.h"
 #include "base/domain/services/scriptService.h"
 #include "base/domain/services/configurationService.h"
 #include "base/domain/services/logService.h"
@@ -47,49 +48,8 @@ namespace testApp
     using ConfigurationType = dory::configuration::Configuration;
     using LocalizationType = resources::Localization;
 
-    struct EventLayer
-    {
-        using EngineDispatcherType = events::engine::Dispatcher<DataContextType>;
-        using EngineType = events::engine::Hub<DataContextType>;
-        using WindowDispatcherType = events::window::Dispatcher<DataContextType>;
-        using WindowType = events::window::Hub<DataContextType>;
-        using ApplicationDispatcherType = events::application::Dispatcher<DataContextType>;
-        using ApplicationType = events::application::Hub<DataContextType>;
-        using StandartInputDispatcherType = events::io::Dispatcher<DataContextType>;
-        using StandartInputType = events::io::Hub<DataContextType>;
-        using ScriptDispatcherType = events::script::Dispatcher<DataContextType>;
-        using ScriptType = events::script::Hub<DataContextType>;
-
-        EngineDispatcherType engineDispatcher;
-        EngineType& engine = engineDispatcher;
-        WindowDispatcherType windowDispatcher;
-        WindowType& window = windowDispatcher;
-        ApplicationDispatcherType applicationDispatcher;
-        ApplicationType& application = applicationDispatcher;
-        StandartInputDispatcherType standardIoDispatcher;
-        StandartInputType& standardInput = standardIoDispatcher;
-        ScriptDispatcherType scriptDispatcher;
-        ScriptType& script = scriptDispatcher;
-    };
-
-    struct DeviceLayer
-    {
-#ifdef WIN32
-        using StandartIODeviceType = devices::ConsoleIODeviceWin32<DataContextType>;
-#endif
-#ifdef __unix__
-        using StandartIODeviceType = devices::ConsoleIODeviceUnix<DataContextType>;
-#endif
-        using TerminalDeviceType = devices::TerminalDevice<DataContextType, StandartIODeviceType>;
-
-        StandartIODeviceType standardIoDevice;
-        TerminalDeviceType terminalDevice;
-
-        explicit DeviceLayer(EventLayer& events):
-                standardIoDevice(events.standardIoDispatcher),
-                terminalDevice{ standardIoDevice, events.standardInput, events.scriptDispatcher, events.applicationDispatcher }
-        {}
-    };
+    struct EventLayer: public dory::EventLayer<dory::EventLayerTypeRegistry<DataContextType>>
+    {};
 
     struct RepositoryLayer
     {
@@ -184,8 +144,8 @@ namespace testApp
     class Registry
     {
     public:
-        EventLayer events = EventLayer{};
-        DeviceLayer devices;
+        EventLayer events = testApp::EventLayer{};
+        dory::DeviceLayer<dory::DeviceLayerTypeRegistry<DataContextType>, EventLayer> devices;
         RepositoryLayer repositories = RepositoryLayer{};
         ServiceLayer services;
         ManagerLayer managers;
