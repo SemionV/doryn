@@ -9,9 +9,11 @@ namespace testApp
     class Project: dory::NonCopyable
     {
     private:
-        ConfigurationType configuration;
+        using DataContextType = Registry::DataContextType;
+
+        Registry::ConfigurationType configuration;
         Registry registry;
-        ServiceLayer::FrameServiceType frameService;
+        Registry::ServiceTypes::FrameServiceType frameService;
 
     public:
         Project(): registry { configuration }
@@ -30,7 +32,7 @@ namespace testApp
             registry.services.configurationService.load(configuration);
             registry.services.appLogger.initialize(configuration.loggingConfiguration.mainLogger, dory::makeOptionalRef(registry.devices.terminalDevice));
 
-            LocalizationType localization;
+            Registry::LocalizationType localization;
             registry.services.localizationService.load(configuration, localization);
             registry.services.appLogger.information(localization.hello);
             registry.services.appLogger.information(localization.goodBye.get("Semion"));
@@ -45,7 +47,7 @@ namespace testApp
             attachEventHandlers();
 
             auto context = DataContextType{};
-            auto engine = ServiceLayer::EngineType {registry.events.engineDispatcher, registry.repositories.pipelines };
+            auto engine = Registry::ServiceTypes::EngineType {registry.events.engineDispatcher, registry.repositories.pipelines };
 
             frameService.startLoop(context, engine);
 
@@ -91,7 +93,7 @@ namespace testApp
                 registry.devices.standardIoDevice.flush();
             };
 
-            dory::domain::repositories::IPipelineRepository<RepositoryTypes::PipelineRepositoryType, DataContextType>& pipelines = registry.repositories.pipelines;
+            dory::domain::repositories::IPipelineRepository<Registry::RepositoryTypes::PipelineRepositoryType, DataContextType>& pipelines = registry.repositories.pipelines;
 
             pipelines.store(dory::domain::entity::PipelineNode<DataContextType> {
                     supmitInputEvents,
