@@ -3,8 +3,6 @@
 #include "dependencies.h"
 #include "projectData.h"
 
-#include <dory/application.h>
-
 namespace testApp
 {
     class Registry

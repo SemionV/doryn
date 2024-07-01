@@ -9,7 +9,7 @@ namespace testModule
     class TestModule2: public dory::IDynamicModule<client::Registry>
     {
     public:
-        virtual ~TestModule2();
+        ~TestModule2() override;
 
         inline void attach(dory::LibraryHandle library, client::Registry& registry) final;
     };

@@ -15,6 +15,7 @@ add_library(base INTERFACE
         domain/services/moduleService.h)
 
 target_include_directories(base INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(base INTERFACE ${VENDOR_DIR})
 
 # Include Boost directories
 include_directories(${Boost_INCLUDE_DIRS})
