@@ -91,7 +91,7 @@ namespace testApp
                 registry.devices.standardIoDevice.flush();
             };
 
-            dory::domain::repositories::IPipelineRepository<RepositoryLayer::PipelineRepositoryType, DataContextType>& pipelines = registry.repositories.pipelines;
+            dory::domain::repositories::IPipelineRepository<RepositoryTypes::PipelineRepositoryType, DataContextType>& pipelines = registry.repositories.pipelines;
 
             pipelines.store(dory::domain::entity::PipelineNode<DataContextType> {
                     supmitInputEvents,

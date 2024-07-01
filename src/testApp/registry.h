@@ -3,7 +3,7 @@
 #include "dependencies.h"
 #include "projectData.h"
 
-#include <dory/base.h>
+#include <dory/application.h>
 
 #include "base/serviceContainer.h"
 #include "base/domain/configuration.h"
@@ -22,15 +22,6 @@
 #include "base/domain/services/localizationService.h"
 #include "base/domain/services/moduleService.h"
 #include "base/domain/resources/localization.h"
-#include <dory/opengl.h>
-
-#ifdef WIN32
-#include "base/domain/devices/standartIoDeviceWin32.h"
-#endif
-
-#ifdef __unix__
-#include "base/domain/devices/standartIoDeviceUnix.h"
-#endif
 
 namespace testApp
 {
@@ -51,18 +42,9 @@ namespace testApp
     struct EventLayer: public dory::EventLayer<dory::EventLayerTypeRegistry<DataContextType>>
     {};
 
-    struct RepositoryLayer
-    {
-        using CameraRepositoryType = domain::EntityRepository<entity::Camera>;
-        using ViewRepositoryType = domain::EntityRepository<entity::View>;
-        using WindowRepositoryType = domain::EntityRepository<openGL::GlfwWindow>;
-        using PipelineRepositoryType = domain::repositories::PipelineRepository<DataContextType, entity::PipelineNode<DataContextType>>;
-
-        CameraRepositoryType cameras;
-        ViewRepositoryType views;
-        WindowRepositoryType windows;
-        PipelineRepositoryType pipelines;
-    };
+    using RepositoryTypes = dory::RepositoryLayerTypeRegistry<DataContextType>;
+    struct RepositoryLayer: public dory::RepositoryLayer<RepositoryTypes>
+    {};
 
     struct ServiceLayer
     {
@@ -76,17 +58,17 @@ namespace testApp
         using ShaderServiceType = openGL::services::ShaderService<LogServiceType, FileServiceType>;
         using RendererType = openGL::Renderer<openGL::RendererDependencies<ShaderServiceType>>;
         using RendererFactoryType = RendererType::FactoryType;
-        using EngineType = domain::Engine<DataContextType, RepositoryLayer::PipelineRepositoryType>;
-        using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<RepositoryLayer::WindowRepositoryType >>;
+        using EngineType = domain::Engine<DataContextType, RepositoryTypes::PipelineRepositoryType>;
+        using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<RepositoryTypes::WindowRepositoryType >>;
         using ScriptServiceType = services::ScriptService<DataContextType>;
         using ConfigurationServiceType = services::configuration::ConfigurationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;
         using LocalizationServiceType = services::localization::LocalizationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;
-        using WindowControllerType = openGL::GlfwWindowController<DataContextType, RepositoryLayer::WindowRepositoryType>;
+        using WindowControllerType = openGL::GlfwWindowController<DataContextType, RepositoryTypes::WindowRepositoryType>;
         using WindowControllerFactoryType = WindowControllerType::FactoryType;
         using ViewControllerType = openGL::ViewControllerOpenGL<openGL::ViewControllerDependencies<DataContextType,
                 ServiceLayer::RendererType,
-                RepositoryLayer::ViewRepositoryType,
-                RepositoryLayer::WindowRepositoryType,
+                RepositoryTypes::ViewRepositoryType,
+                RepositoryTypes::WindowRepositoryType,
                 ServiceLayer::RendererFactoryType>>;
         using ViewControllerFactoryType = ViewControllerType::FactoryType;
 
@@ -125,11 +107,11 @@ namespace testApp
 
     struct ManagerLayer
     {
-        using PipelineManagerType = managers::PipelineManager<DataContextType, ServiceLayer::WindowControllerFactoryType, RepositoryLayer::PipelineRepositoryType>;
+        using PipelineManagerType = managers::PipelineManager<DataContextType, ServiceLayer::WindowControllerFactoryType, RepositoryTypes::PipelineRepositoryType>;
         using ViewManagerType = managers::ViewManager<managers::ViewManagerDependencies<DataContextType,
-                RepositoryLayer::ViewRepositoryType,
-                RepositoryLayer::PipelineRepositoryType,
-                RepositoryLayer::CameraRepositoryType,
+                RepositoryTypes::ViewRepositoryType,
+                RepositoryTypes::PipelineRepositoryType,
+                RepositoryTypes::CameraRepositoryType,
                 ServiceLayer::ViewControllerFactoryType>>;
 
         PipelineManagerType pipelineManager;

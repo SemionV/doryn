@@ -9,9 +9,9 @@ namespace dory::domain::devices
     static struct termios oldt, currentt;
 
     template<typename TDataContext>
-    class ConsoleIODeviceUnix: NonCopyable,
-                               public IDevice<ConsoleIODeviceUnix<TDataContext>, TDataContext>,
-                               public IStandartOutputDevice<ConsoleIODeviceUnix<TDataContext>, std::string>
+    class ConsoleIODevice: NonCopyable,
+                               public IDevice<ConsoleIODevice<TDataContext>, TDataContext>,
+                               public IStandartOutputDevice<ConsoleIODevice<TDataContext>, std::string>
     {
     private:
         using InputEventDispatcherType =  events::io::Dispatcher<TDataContext>;
@@ -50,7 +50,7 @@ namespace dory::domain::devices
         }
 
     public:
-        explicit ConsoleIODeviceUnix(InputEventDispatcherType& inputEventDispatcher):
+        explicit ConsoleIODevice(InputEventDispatcherType& inputEventDispatcher):
         inputEventDispatcher(inputEventDispatcher)
         {}
 

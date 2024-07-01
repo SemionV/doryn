@@ -1,14 +1,7 @@
 #pragma once
 
-#include "domain/dataContext.h"
-#include "domain/events/event.h"
-#include "base/domain/devices/terminalDevice.h"
-#ifdef WIN32
-#include "base/domain/devices/standartIoDeviceWin32.h"
-#endif
-#ifdef __unix__
-#include "base/domain/devices/standartIoDeviceUnix.h"
-#endif
+#include <dory/base.h>
+#include <dory/opengl.h>
 
 namespace dory
 {
@@ -45,12 +38,8 @@ namespace dory
     template<typename TDataContext = domain::DataContext>
     struct DeviceLayerTypeRegistry
     {
-#ifdef WIN32
-        using StandartIODeviceType = domain::devices::ConsoleIODeviceWin32<DataContextType>;
-#endif
-#ifdef __unix__
-        using StandartIODeviceType = domain::devices::ConsoleIODeviceUnix<TDataContext>;
-#endif
+
+        using StandartIODeviceType = domain::devices::ConsoleIODevice<TDataContext>;
         using TerminalDeviceType = domain::devices::TerminalDevice<TDataContext, StandartIODeviceType>;
     };
 
@@ -64,5 +53,23 @@ namespace dory
                 standardIoDevice(events.standardIoDispatcher),
                 terminalDevice{ standardIoDevice, events.standardInput, events.scriptDispatcher, events.applicationDispatcher }
         {}
+    };
+
+    template<typename TDataContext = domain::DataContext>
+    struct RepositoryLayerTypeRegistry
+    {
+        using CameraRepositoryType = domain::EntityRepository<domain::entity::Camera>;
+        using ViewRepositoryType = domain::EntityRepository<domain::entity::View>;
+        using WindowRepositoryType = domain::EntityRepository<openGL::GlfwWindow>;
+        using PipelineRepositoryType = domain::repositories::PipelineRepository<TDataContext, domain::entity::PipelineNode<TDataContext>>;
+    };
+
+    template<typename T>
+    struct RepositoryLayer
+    {
+        T::CameraRepositoryType cameras;
+        T::ViewRepositoryType views;
+        T::WindowRepositoryType windows;
+        T::PipelineRepositoryType pipelines;
     };
 }
