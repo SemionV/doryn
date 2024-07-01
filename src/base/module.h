@@ -24,6 +24,14 @@ namespace dory
         virtual void attach(LibraryHandle library, TModuleContext& moduleContext) = 0;
     };
 
+    template<typename TModuleContext>
+    class IExecutableModule: public IModule
+    {
+    public:
+        ~IExecutableModule() override = default;
+        virtual int run(TModuleContext& moduleContext) = 0;
+    };
+
     class ILibrary: NonCopyable
     {
     public:

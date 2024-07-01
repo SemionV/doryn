@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION ${BUILD_TOOLS_REQUIRED_VERSION})
-project(main module)
+project(mainModule)
 
-add_library(modularApp::mainModule STATIC ${PLATFORM})
+#add_library(mainModule STATIC ${PLATFORM})
 
-target_link_libraries(modularApp::mainModule PRIVATE application)
+#target_link_libraries(mainModule PRIVATE application)
