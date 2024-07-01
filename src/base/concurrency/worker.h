@@ -1,6 +1,6 @@
 #pragma once
 
-#include "base/dependencies.h"
+#include "../dependencies.h"
 
 namespace dory::concurrency {
     template<typename T, typename... Ts>

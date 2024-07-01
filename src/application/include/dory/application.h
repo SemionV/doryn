@@ -1,3 +1,3 @@
 #pragma once
 
-#include "application/registry.h"
+#include "../../registry.h"
