@@ -20,6 +20,8 @@ FetchContent_Declare(rapid-yaml
         GIT_TAG v0.7.0)
 FetchContent_MakeAvailable(rapid-yaml)
 
+set(BOOST_INCLUDE_LIBRARIES dll)
+set(BOOST_ENABLE_CMAKE ON)
 FetchContent_Declare(boost
         GIT_REPOSITORY https://github.com/boostorg/boost.git
         GIT_TAG boost-1.85.0)
