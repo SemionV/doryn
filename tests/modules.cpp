@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <dory/base.h>
+#include <dory/engine.h>
 
 using testing::Return;
 using testing::ReturnRef;

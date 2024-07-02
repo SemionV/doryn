@@ -1,6 +1,7 @@
 # Development log
 
 Tasks:
+* Rework project structure
 * Dynamic module loading(plugin system)
   * Test multi-module libraries
   * Clean up old ModuleService code
