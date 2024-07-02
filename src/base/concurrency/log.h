@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../dependencies.h"
+#include "base/dependencies.h"
 
 namespace dory::concurrency::logging
 {

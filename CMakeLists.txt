@@ -18,6 +18,8 @@ endif()
 
 set(EXAMPLES_INSTALL_PREFIX "./examples/")
 
+include_directories(src)
+
 add_subdirectory(external)
 add_subdirectory(src)
 add_subdirectory(tests)

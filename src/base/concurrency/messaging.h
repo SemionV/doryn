@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../dependencies.h"
+#include "base/dependencies.h"
 #include "log.h"
 
 namespace dory::concurrency::messaging

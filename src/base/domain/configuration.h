@@ -1,7 +1,7 @@
 #pragma once
 
-#include "dependencies.h"
-#include "typeComponents.h"
+#include "base/dependencies.h"
+#include "base/typeComponents.h"
 
 namespace dory::configuration
 {
