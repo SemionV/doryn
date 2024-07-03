@@ -50,7 +50,12 @@ namespace dory::openGL
             if(windowHandler != nullptr)
             {
                 glfwMakeContextCurrent(windowHandler);
-                gl3wInit();
+
+                int version = gladLoadGL(glfwGetProcAddress);
+                if (version == 0) {
+                    return false;
+                }
+
                 renderer.initialize();
             }
 

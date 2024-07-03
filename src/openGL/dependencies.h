@@ -1,5 +1,5 @@
 #pragma once
 
 #include <dory/base.h>
-#include <GL/gl3w.h>
+#include <glad/gl.h>
 #include <GLFW/glfw3.h>
