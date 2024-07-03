@@ -2,12 +2,6 @@ cmake_minimum_required(VERSION ${BUILD_TOOLS_REQUIRED_VERSION})
 
 project(dory-benchmarks)
 
-find_package(Catch2 3 REQUIRED)
-find_package(FakeIt REQUIRED
-            PATHS ${VENDOR_DIR} NO_DEFAULT_PATH)
-find_package(refl-cpp REQUIRED 
-            PATHS ${VENDOR_DIR} NO_DEFAULT_PATH)
-
 add_executable(baseTests linearAlgebra.cpp
         templates.cpp
         eventTests.cpp
@@ -31,7 +25,6 @@ target_include_directories(baseTests PRIVATE "${CMAKE_SOURCE_DIR}")
 target_include_directories(baseTests PRIVATE ${VENDOR_DIR})
 
 target_link_libraries(baseTests PRIVATE Catch2::Catch2WithMain)
-target_link_libraries(baseTests PRIVATE FakeIt::FakeIt-catch)
 target_link_libraries(baseTests PRIVATE base)
 
 target_precompile_headers(baseTests PRIVATE dependencies.h)

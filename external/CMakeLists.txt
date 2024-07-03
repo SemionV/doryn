@@ -7,6 +7,12 @@ FetchContent_Declare(googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
         GIT_TAG v1.14.0)
 
+set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
+FetchContent_Declare(google-benchmark
+        GIT_REPOSITORY https://github.com/google/benchmark.git
+        GIT_TAG v1.8.4)
+FetchContent_MakeAvailable(google-benchmark)
+
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
@@ -26,3 +32,23 @@ FetchContent_Declare(boost
         GIT_REPOSITORY https://github.com/boostorg/boost.git
         GIT_TAG boost-1.85.0)
 FetchContent_MakeAvailable(boost)
+
+FetchContent_Declare(spdlog
+        GIT_REPOSITORY https://github.com/gabime/spdlog.git
+        GIT_TAG v1.14.1)
+FetchContent_MakeAvailable(spdlog)
+
+FetchContent_Declare(reflcpp
+        GIT_REPOSITORY https://github.com/veselink1/refl-cpp.git
+        GIT_TAG v0.12.4)
+FetchContent_MakeAvailable(reflcpp)
+
+FetchContent_Declare(catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG v3.6.0)
+FetchContent_MakeAvailable(catch2)
+
+FetchContent_Declare(glfw
+        GIT_REPOSITORY https://github.com/glfw/glfw.git
+        GIT_TAG 3.4)
+FetchContent_MakeAvailable(glfw)

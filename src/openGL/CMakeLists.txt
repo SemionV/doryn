@@ -4,8 +4,8 @@ project(dory-openGL)
 
 find_package(OpenGL REQUIRED)
 
-find_package(glfw3 REQUIRED
-            PATHS ${VENDOR_DIR}glfw NO_DEFAULT_PATH)
+#find_package(glfw3 REQUIRED
+#            PATHS ${VENDOR_DIR}glfw NO_DEFAULT_PATH)
 
 set_source_files_properties(${VENDOR_DIR}GL/gl3w.c PROPERTIES LANGUAGE CXX )
 

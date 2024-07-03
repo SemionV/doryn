@@ -10,4 +10,6 @@ target_include_directories(engine INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(engine INTERFACE
         nlohmann_json::nlohmann_json
         ryml::ryml
-        Boost::dll)
+        Boost::dll
+        spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
+        refl-cpp)
