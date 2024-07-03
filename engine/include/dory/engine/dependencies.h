@@ -37,3 +37,16 @@
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/null_sink.h>
+
+#ifdef __unix__
+#include <stdlib.h>
+#include <termios.h>
+#include <unistd.h>
+#include <sys/select.h>
+#endif
+
+#ifdef WIN32
+#include <conio.h>
+#include <windows.h>
+#include <tchar.h>
+#endif

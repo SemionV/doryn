@@ -1,9 +1,7 @@
 #pragma once
 
-#include <utility>
-
-#include "dependencies.h"
-#include "typeComponents.h"
+#include <dory/engine/dependencies.h>
+#include <dory/engine/typeComponents.h>
 
 namespace dory
 {

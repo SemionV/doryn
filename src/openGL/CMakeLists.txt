@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION ${BUILD_TOOLS_REQUIRED_VERSION})
 
 project(dory-openGL)
 
-set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/gl.c PROPERTIES LANGUAGE CXX )
-add_library(dory-openGL ${CMAKE_CURRENT_SOURCE_DIR}/src/gl.c)
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/gl.cpp PROPERTIES LANGUAGE CXX )
+add_library(dory-openGL ${CMAKE_CURRENT_SOURCE_DIR}/src/gl.cpp)
 
 target_include_directories(dory-openGL PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 

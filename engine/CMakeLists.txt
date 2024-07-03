@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION ${BUILD_TOOLS_REQUIRED_VERSION})
 project(engine)
 
-add_library(engine INTERFACE
-        include/dory/engine.h
-        include/dory/engine/dependencies.h)
+add_library(engine INTERFACE include/dory/engine.h)
 
 target_include_directories(engine INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 

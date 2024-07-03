@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION ${BUILD_TOOLS_REQUIRED_VERSION})
 project(dory-tests)
 
-add_executable(tests modules.cpp)
+add_executable(tests modules.cpp
+        dummy.cpp)
                          
 target_include_directories(tests PRIVATE "${CMAKE_SOURCE_DIR}")
 target_include_directories(tests PRIVATE ${VENDOR_DIR})
