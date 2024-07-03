@@ -8,9 +8,6 @@ Tasks:
   * Configure and load plugins
   * Restrict events and controllers API to use ILibrary handler for all subscriptions
   * Hot reload of plugins via script commands and file watchers
-* Manage external dependencies with CMake
-  * Manage and compile dependencies, which are compiled with the same build configuration(parsers, loggers, etc)
-  * Manage dependencies, which are compiled separately and with different build configuration(benchmark framework, test framework, etc)
 * CI/CD setup with GitLab
 * Flatten controller pipeline: store entities in a sorted flat array
 * Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
@@ -32,6 +29,9 @@ Tasks:
 * Path finding
 * Build for MacOS
 * Voice control
+
+**03.07.24**
+* Task done: Manage external dependencies with CMake
 
 **23.06.24**
 * Task done: Multi-module libraries
