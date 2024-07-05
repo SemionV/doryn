@@ -1,7 +1,6 @@
 # Development log
 
 Tasks:
-* Rework project structure
 * Dynamic module loading(plugin system)
   * Test multi-module libraries
   * Clean up old ModuleService code
@@ -29,6 +28,9 @@ Tasks:
 * Path finding
 * Build for MacOS
 * Voice control
+
+**05.07.24**
+* Task done: Rework project structure
 
 **03.07.24**
 * Task done: Manage external dependencies with CMake

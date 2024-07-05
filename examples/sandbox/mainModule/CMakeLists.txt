@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION ${BUILD_TOOLS_REQUIRED_VERSION})
+project(mainModule)
+
+add_library(${PROJECT_NAME} STATIC src/mainModule.cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE engine dory-bootstrapper_mod)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+add_library(${PROJECT_NAME}_mod INTERFACE include/dory/sandbox/mainModule.h)
+target_include_directories(${PROJECT_NAME}_mod INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(${PROJECT_NAME}_mod INTERFACE engine)

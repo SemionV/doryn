@@ -5,7 +5,7 @@ add_library(engine STATIC
         src/rendering/opengl-utils.cpp
         include/dory/engine.h include/dory/registry.h)
 
-target_precompile_headers(testApp PRIVATE include/dory/engine/dependencies.h)
+target_precompile_headers(engine PRIVATE include/dory/engine/dependencies.h)
 
 target_include_directories(engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 

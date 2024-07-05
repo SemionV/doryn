@@ -19,11 +19,12 @@ endif()
 set(EXAMPLES_INSTALL_PREFIX "./examples/")
 
 add_subdirectory(external)
+add_subdirectory(engine)
+add_subdirectory(bootstrapper)
+
 add_subdirectory(tests/engine)
 add_subdirectory(tests/baseTests)
 add_subdirectory(tests/baseBenchmarks)
-add_subdirectory(examples/modularApplication)
+add_subdirectory(examples/sandbox)
 add_subdirectory(examples/testApp)
 add_subdirectory(examples/modules)
-
-add_subdirectory(engine)
