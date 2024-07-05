@@ -17,7 +17,6 @@ add_executable(baseTests linearAlgebra.cpp
         scriptService.cpp
         serializationTests.cpp
         configurationTests.cpp
-        modulesTest.cpp
 )
 
 target_link_libraries(baseTests PRIVATE Catch2::Catch2WithMain)

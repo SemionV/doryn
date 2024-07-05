@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION ${BUILD_TOOLS_REQUIRED_VERSION})
 project(dory-testModule)
 
 add_library(testModule MODULE ${PLATFORM}
-        testModule.cpp
         testModule2.cpp
         factory.cpp)
 

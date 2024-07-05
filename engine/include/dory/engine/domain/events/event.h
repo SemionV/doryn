@@ -209,13 +209,7 @@ namespace dory::domain::events
                 auto expiredHandles = std::vector<EventKeyType>{};
 
                 for (const auto &[key, handler]: this->handlers) {
-                    if (!invokeModuleProcedure(handler->libraryOption, [&]() { (*handler)(arguments...); })) {
-                        expiredHandles.emplace_back(key);
-                    }
-                }
-
-                for (auto &key: expiredHandles) {
-                    this->handlers.erase(key);
+                    (*handler)(arguments...);
                 }
             }
 
