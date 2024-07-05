@@ -9,7 +9,7 @@
 #include "services/openglService.h"
 #include "services/shaderService.h"
 
-namespace dory::openGL
+namespace dory::opengl
 {
     template<typename T>
     class ViewControllerFactory;

@@ -60,7 +60,7 @@ namespace dory
     {
         using CameraRepositoryType = domain::EntityRepository<domain::entity::Camera>;
         using ViewRepositoryType = domain::EntityRepository<domain::entity::View>;
-        using WindowRepositoryType = domain::EntityRepository<openGL::GlfwWindow>;
+        using WindowRepositoryType = domain::EntityRepository<opengl::GlfwWindow>;
         using PipelineRepositoryType = domain::repositories::PipelineRepository<TDataContext, domain::entity::PipelineNode<TDataContext>>;
     };
 
@@ -83,17 +83,17 @@ namespace dory
         using JsonSerializationServiceType = domain::services::serialization::JsonSerializationService<4>;
         using FormatKeyConverterType = domain::services::serialization::FormatKeyConverter;
         using SerializationServiceBundle = domain::services::serialization::SerializationServiceBundle<domain::services::serialization::Format, YamlSerializationServiceType, JsonSerializationServiceType>;
-        using ShaderServiceType = openGL::services::ShaderService<LogServiceType, FileServiceType>;
-        using RendererType = openGL::Renderer<openGL::RendererDependencies<ShaderServiceType>>;
+        using ShaderServiceType = opengl::services::ShaderService<LogServiceType, FileServiceType>;
+        using RendererType = opengl::Renderer<opengl::RendererDependencies<ShaderServiceType>>;
         using RendererFactoryType = RendererType::FactoryType;
         using EngineType = domain::Engine<TDataContext, typename TRepositories::PipelineRepositoryType>;
-        using WindowServiceType = openGL::WindowService<openGL::WindowServiceDependencies<typename TRepositories::WindowRepositoryType >>;
+        using WindowServiceType = opengl::WindowService<opengl::WindowServiceDependencies<typename TRepositories::WindowRepositoryType >>;
         using ScriptServiceType = domain::services::ScriptService<TDataContext>;
         using ConfigurationServiceType = domain::services::configuration::ConfigurationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;
         using LocalizationServiceType = domain::services::localization::LocalizationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;
-        using WindowControllerType = openGL::GlfwWindowController<TDataContext, typename TRepositories::WindowRepositoryType>;
+        using WindowControllerType = opengl::GlfwWindowController<TDataContext, typename TRepositories::WindowRepositoryType>;
         using WindowControllerFactoryType = WindowControllerType::FactoryType;
-        using ViewControllerType = openGL::ViewControllerOpenGL<openGL::ViewControllerDependencies<TDataContext,
+        using ViewControllerType = opengl::ViewControllerOpenGL<opengl::ViewControllerDependencies<TDataContext,
                 RendererType,
                 typename TRepositories::ViewRepositoryType,
                 typename TRepositories::WindowRepositoryType,

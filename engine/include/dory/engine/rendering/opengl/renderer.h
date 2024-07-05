@@ -6,7 +6,7 @@
 #include "services/openglService.h"
 #include "services/shaderService.h"
 
-namespace dory::openGL
+namespace dory::opengl
 {
     struct TrianglesVertexArray: public graphics::AttributedVertexArray<1>
     {

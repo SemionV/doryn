@@ -5,7 +5,7 @@
 #include "../graphics/program.h"
 #include "../graphics/vertexArray.h"
 
-namespace dory::openGL::services
+namespace dory::opengl::services
 {
     class OpenglService
     {

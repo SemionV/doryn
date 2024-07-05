@@ -2,7 +2,7 @@
 
 #include "blocks.h"
 
-namespace dory::openGL::graphics
+namespace dory::opengl::graphics
 {
     struct VertexAttribute
     {

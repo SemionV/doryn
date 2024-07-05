@@ -4,7 +4,7 @@
 #include <dory/engine/domain/services/logService.h>
 #include "../graphics/program.h"
 
-namespace dory::openGL::services
+namespace dory::opengl::services
 {
     struct ShaderCompilationError
     {

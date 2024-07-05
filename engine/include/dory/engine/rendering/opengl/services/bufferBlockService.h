@@ -2,7 +2,7 @@
 
 #include "../graphics/blocks.h"
 
-namespace dory::openGL::services
+namespace dory::opengl::services
 {
     graphics::Buffer allocateBuffer(GLint bufferSize)
     {

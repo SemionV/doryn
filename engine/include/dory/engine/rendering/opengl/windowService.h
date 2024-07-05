@@ -6,7 +6,7 @@
 #include "glfwWindow.h"
 #include "glfwWindowParameters.h"
 
-namespace dory::openGL
+namespace dory::opengl
 {
     template<typename TWindowRepository>
     struct WindowServiceDependencies

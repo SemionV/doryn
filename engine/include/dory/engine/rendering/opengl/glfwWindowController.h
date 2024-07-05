@@ -4,7 +4,7 @@
 #include <dory/engine/domain/events/hub.h>
 #include "glfwWindow.h"
 
-namespace dory::openGL
+namespace dory::opengl
 {
     template<class TDataContext, typename TWindowRepository>
     class GlfwWindowControllerFactory;
@@ -13,7 +13,7 @@ namespace dory::openGL
     class GlfwWindowController: public domain::Controller<TDataContext>
     {
     private:
-        using WindowRepositoryType = domain::IEntityRepository<TWindowRepository, openGL::GlfwWindow, domain::entity::IdType>;
+        using WindowRepositoryType = domain::IEntityRepository<TWindowRepository, GlfwWindow, domain::entity::IdType>;
         WindowRepositoryType& windowRepository;
 
         using WindowEventHubType = domain::events::window::Dispatcher<TDataContext>;
@@ -61,7 +61,7 @@ namespace dory::openGL
     private:
         using ControllerInterfaceType = domain::Controller<TDataContext>;
 
-        using WindowRepositoryType = domain::IEntityRepository<TWindowRepository, openGL::GlfwWindow, domain::entity::IdType>;
+        using WindowRepositoryType = domain::IEntityRepository<TWindowRepository, GlfwWindow, domain::entity::IdType>;
         WindowRepositoryType& windowRepository;
 
         using WindowEventHubType = domain::events::window::Dispatcher<TDataContext>;
