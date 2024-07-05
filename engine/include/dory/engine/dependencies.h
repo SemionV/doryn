@@ -50,3 +50,6 @@
 #include <windows.h>
 #include <tchar.h>
 #endif
+
+#include <glad/gl.h>
+#include <GLFW/glfw3.h>

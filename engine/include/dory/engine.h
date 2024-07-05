@@ -50,6 +50,10 @@
 #include <dory/engine/domain/services/serializationService.h>
 #include <dory/engine/domain/services/windowService.h>
 
+#include <dory/engine/rendering/opengl/windowService.h>
+#include <dory/engine/rendering/opengl/viewControllerOpenGL.h>
+#include <dory/engine/rendering/opengl/glfwWindowController.h>
+
 #ifndef NDEBUG
 #include <dory/engine/testing/atm_book.h>
 #include <dory/engine/testing/dataGenerators.h>
