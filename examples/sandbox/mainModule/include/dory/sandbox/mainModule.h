@@ -7,6 +7,7 @@ namespace dory::sandbox
 {
     class MainModule: public IExecutableModule<bootstrapper::StartupModuleContext>
     {
-        inline int run(bootstrapper::StartupModuleContext& moduleContext) final;
+    public:
+        int run(bootstrapper::StartupModuleContext& moduleContext) final;
     };
 }

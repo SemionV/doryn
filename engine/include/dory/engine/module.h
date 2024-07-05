@@ -3,6 +3,8 @@
 #include <dory/engine/dependencies.h>
 #include <dory/engine/typeComponents.h>
 
+#include <utility>
+
 namespace dory
 {
     class IModule
@@ -46,14 +48,48 @@ namespace dory
 
         ILibrary() = default;
 
-        ILibrary(const std::string& libraryName, const std::filesystem::path& libraryPath):
-            name(libraryName), path(libraryPath)
+        ILibrary(std::string  libraryName, std::filesystem::path libraryPath):
+            name(std::move(libraryName)), path(std::move(libraryPath))
         {}
 
         virtual bool isLoaded() = 0;
     };
 
-    class DynamicLibrary: public ILibrary
+    template<typename TImplementation>
+    class Library: public StaticInterface<TImplementation>, public ILibrary
+    {
+    private:
+        std::unordered_map<std::string, std::shared_ptr<IModule>> _modules;
+
+    public:
+        explicit Library(const std::string& libraryName, const std::filesystem::path& libraryPath):
+                ILibrary(libraryName, libraryPath)
+        {}
+
+        inline bool isLoaded() noexcept final
+        {
+            return this->toImplementation()->isLoadedImpl();
+        }
+
+        template<typename TModuleContext>
+        std::shared_ptr<IDynamicModule<TModuleContext>> loadModule(const std::string moduleName)
+        {
+            if(_modules.contains(moduleName))
+            {
+                _modules.erase(moduleName);
+            }
+
+            auto module = this->toImplementation()->template loadModuleImpl<TModuleContext>(moduleName);
+            if(module)
+            {
+                _modules[moduleName] = module;
+            }
+
+            return module;
+        }
+    };
+
+    class DynamicLibrary: public Library<DynamicLibrary>
     {
     private:
         constexpr const static std::string_view dynamicModuleFactoryFunctionName = "dynamicModuleFactory";
@@ -62,16 +98,24 @@ namespace dory
 
         std::atomic<bool> _isLoaded = false;
         boost::dll::shared_library _dll;
-        std::unordered_map<std::string, std::shared_ptr<IModule>> _modules;
 
     public:
         explicit DynamicLibrary(const std::string& libraryName, const std::filesystem::path& libraryPath):
-                ILibrary(libraryName, libraryPath)
+                Library(libraryName, libraryPath)
         {}
 
-        inline bool isLoaded() noexcept final
+        bool isLoadedImpl() noexcept
         {
             return _isLoaded;
+        }
+
+        template<typename TModuleContext>
+        std::shared_ptr<IDynamicModule<TModuleContext>> loadModuleImpl(const std::string moduleName)
+        {
+            assert(_dll.is_loaded());
+
+            auto moduleFactory = _dll.template get<LoadableModuleFactory<TModuleContext>>(std::string{ dynamicModuleFactoryFunctionName });
+            return moduleFactory(moduleName);
         }
 
         void unload()
@@ -87,26 +131,6 @@ namespace dory
             auto path = libraryPath.string() + std::string { ILibrary::systemSharedLibraryFileExtension };
             _dll.load(path);
             _isLoaded = true;
-        }
-
-        template<typename TModuleContext>
-        std::shared_ptr<IDynamicModule<TModuleContext>> loadModule(const std::string moduleName)
-        {
-            assert(_dll.is_loaded());
-
-            if(_modules.contains(moduleName))
-            {
-                _modules.erase(moduleName);
-            }
-
-            auto moduleFactory = _dll.template get<LoadableModuleFactory<TModuleContext>>(std::string{ dynamicModuleFactoryFunctionName });
-            auto module = moduleFactory(moduleName);
-            if(module)
-            {
-                _modules[moduleName] = module;
-            }
-
-            return module;
         }
     };
 
