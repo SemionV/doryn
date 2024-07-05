@@ -1,3 +1,3 @@
 #pragma once
 
-#include <dory/application.h>
+#include <dory/registry.h>

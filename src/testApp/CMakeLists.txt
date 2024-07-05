@@ -4,7 +4,7 @@ project(dory-testApp)
 
 add_executable(testApp ${PLATFORM} main.cpp)
 target_precompile_headers(testApp PRIVATE dependencies.h)
-target_link_libraries(testApp application dory-openGL)
+target_link_libraries(testApp engine)
 
 install(TARGETS testApp DESTINATION . COMPONENT Example)
 install(DIRECTORY configuration DESTINATION . COMPONENT Example)

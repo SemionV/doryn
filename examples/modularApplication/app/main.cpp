@@ -1,4 +1,4 @@
-#include <dory/application.h>
+#include <dory/registry.h>
 
 #ifdef __unix__
 int main()
