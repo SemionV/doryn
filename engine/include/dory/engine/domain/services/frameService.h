@@ -1,8 +1,7 @@
 #pragma once
 
-#include "base/domain/types.h"
-#include "base/typeComponents.h"
-#include "base/domain/engine.h"
+#include <dory/engine/domain/types.h>
+#include <dory/engine/domain/engine.h>
 
 namespace dory::domain::services
 {

@@ -1,8 +1,6 @@
 #pragma once
 
-#include "base/dependencies.h"
-#include "base/typeComponents.h"
-#include "base/domain/configuration.h"
+#include <dory/engine/domain/configuration.h>
 #include "logService.h"
 #include "fileService.h"
 #include "serializationService.h"

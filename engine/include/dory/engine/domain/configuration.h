@@ -1,8 +1,5 @@
 #pragma once
 
-#include <dory/engine/dependencies.h>
-#include <dory/engine/typeComponents.h>
-
 namespace dory::configuration
 {
     struct RecursiveSection

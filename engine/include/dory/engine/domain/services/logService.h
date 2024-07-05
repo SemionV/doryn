@@ -1,9 +1,7 @@
 #pragma once
 
-#include "base/dependencies.h"
-#include "base/typeComponents.h"
-#include "base/domain/configuration.h"
-#include "base/domain/devices/terminalDevice.h"
+#include <dory/engine/domain/configuration.h>
+#include <dory/engine/domain/devices/terminalDevice.h>
 
 namespace dory::domain::services
 {

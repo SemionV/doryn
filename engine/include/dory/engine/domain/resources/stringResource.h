@@ -1,7 +1,6 @@
 #pragma once
 
-#include "base/dependencies.h"
-#include "base/typeComponents.h"
+#include <dory/engine/typeComponents.h>
 
 namespace dory::domain::resources
 {

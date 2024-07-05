@@ -1,10 +1,6 @@
 #pragma once
 
-#include <utility>
-
-#include "base/dependencies.h"
-#include "base/typeComponents.h"
-#include "base/module.h"
+#include <dory/engine/module.h>
 #include "logService.h"
 
 namespace dory::domain::services::module
