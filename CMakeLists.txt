@@ -23,6 +23,4 @@ add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(examples)
 
-#NEW-------------------
-
 add_subdirectory(engine)

@@ -1,6 +1,3 @@
-obj-debug/
-obj-release/
-lib/
 bin/
 .idea/
 build/cmake-artifacts/
@@ -8,8 +5,4 @@ build/cmake-artifacts-vs/
 build/cmake-artifacts-ninja/
 build/cmake-artifacts-ninja-clion/
 build/cmake-artifacts-make/
-*.gch
 build/settings.sh
-.vscode/c_cpp_properties.json
-.vscode/launch.json
-src/cmake-build-cmake-build-ninja-coverage/

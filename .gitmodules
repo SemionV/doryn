@@ -1,0 +1,3 @@
+[submodule "external/opengl-glad"]
+	path = external/opengl-glad
+	url = https://github.com/SemionV/opengl-glad.git

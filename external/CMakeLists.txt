@@ -1,6 +1,16 @@
 cmake_minimum_required(VERSION ${BUILD_TOOLS_REQUIRED_VERSION})
 project(dory-external)
 
+find_package(opengl-glad QUIET)
+if(NOT opengl-glad_FOUND)
+    message("opengl-glad is not found, initializing git submodule")
+    execute_process(
+            COMMAND git submodule update --init -- opengl-glad
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    add_subdirectory(opengl-glad)
+endif()
+
 include(FetchContent)
 
 FetchContent_Declare(googletest
@@ -26,6 +36,7 @@ FetchContent_Declare(rapid-yaml
         GIT_TAG v0.7.0)
 FetchContent_MakeAvailable(rapid-yaml)
 
+message(NOTICE "fetching boost...")
 set(BOOST_INCLUDE_LIBRARIES dll)
 set(BOOST_ENABLE_CMAKE ON)
 FetchContent_Declare(boost
