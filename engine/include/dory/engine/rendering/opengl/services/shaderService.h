@@ -1,8 +1,8 @@
 #pragma once
 
-#include <dory/engine/rendering/opengl/graphics/program.h>
 #include <dory/engine/domain/configuration.h>
 #include <dory/engine/domain/services/logService.h>
+#include "../graphics/program.h"
 
 namespace dory::openGL::services
 {

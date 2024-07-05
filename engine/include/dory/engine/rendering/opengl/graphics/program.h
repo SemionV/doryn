@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/engine/rendering/opengl/shaderMetadata.h>
+#include "../shaderMetadata.h"
 #include "blocks.h"
 
 namespace dory::openGL::graphics
