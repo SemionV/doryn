@@ -1,4 +1,4 @@
-#include "registry.h"
+#include <dory/client/client.h>
 #ifdef WIN32
 #include <windows.h>
 #include <winnt.h>

@@ -2,7 +2,7 @@
 
 #include <boost/config.hpp>
 #include <boost/dll/alias.hpp>
-#include "client/registry.h"
+#include <dory/client/client.h>
 
 namespace testModule
 {
