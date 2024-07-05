@@ -1,9 +1,4 @@
 #include "dependencies.h"
-#include "base/serialization/structures/dataLayout.h"
-#include "base/serialization/structures/typeMap.h"
-#include "base/serialization/jsonPrinter.h"
-#include "base/serialization/binaryLayoutSerializer.h"
-#include "base/typeComponents.h"
 
 struct TextureCoordinates
 {

@@ -1,5 +1,4 @@
-#include "baseTests/dependencies.h"
-#include "base/serialization/structures/dataLayout.h"
+#include "dependencies.h"
 
 struct Point
 {

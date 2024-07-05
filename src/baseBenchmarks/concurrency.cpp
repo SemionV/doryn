@@ -1,8 +1,4 @@
 #include "dependencies.h"
-#include "base/concurrency/log.h"
-#include "base/concurrency/messaging.h"
-#include "base/concurrency/queue.h"
-#include "base/testing/atm_book.h"
 
 static const constexpr std::size_t largeDataCount = 10000;
 static const constexpr std::size_t smallDataCount = 10;

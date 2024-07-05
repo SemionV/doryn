@@ -1,5 +1,4 @@
-#include "baseTests/dependencies.h"
-#include "base/serialization/objectVisitor.h"
+#include "dependencies.h"
 
 namespace dory::serialization
 {

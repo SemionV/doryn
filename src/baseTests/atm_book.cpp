@@ -1,7 +1,4 @@
 #include "dependencies.h"
-#include "base/concurrency/log.h"
-#include "base/testing/atm_book.h"
-
 
 using namespace dory::testing::atm_book;
 

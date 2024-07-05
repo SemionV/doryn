@@ -28,6 +28,7 @@
 #include <any>
 #include <cassert>
 #include <shared_mutex>
+#include <set>
 
 #include <nlohmann/json.hpp>
 #include <ryml.hpp>

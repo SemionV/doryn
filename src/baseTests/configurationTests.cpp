@@ -1,5 +1,4 @@
 #include "dependencies.h"
-#include "base/domain/services/configurationService.h"
 
 enum class TestFormat
 {

@@ -1,6 +1,4 @@
-#include "baseTests/dependencies.h"
-#include "base/math/linearAlgebra.h"
-#include "base/math/trigonometry.h"
+#include "dependencies.h"
 
 using namespace dory::math;
 

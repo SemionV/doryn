@@ -1,12 +1,4 @@
 #include "dependencies.h"
-#include "base/concurrency/worker.h"
-#include "base/concurrency/log.h"
-#include "base/testing/dataGenerators.h"
-#include "base/testing/quickSort.h"
-#include "base/concurrency/messaging.h"
-#include "base/concurrency/queue.h"
-#include "base/concurrency/stack.h"
-#include "base/testing/stack_lockfree.h"
 
 TEST_CASE( "Get number of CPU cores", "[.][concurrency]" )
 {

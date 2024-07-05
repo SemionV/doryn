@@ -1,6 +1,4 @@
-#include "baseTests/dependencies.h"
-#include "base/domain/entity.h"
-#include "base/domain/repositories/pipelineRepository.h"
+#include "dependencies.h"
 
 using namespace dory::domain;
 

@@ -1,4 +1,4 @@
-#include "base/domain/services/scriptService.h"
+#include "dependencies.h"
 
 namespace services = dory::domain::services;
 

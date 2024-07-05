@@ -1,8 +1,6 @@
 #pragma once
 
-#include "base/dependencies.h"
-#include "base/testing/quickSort.h"
-#include "base/testing/dataGenerators.h"
+#include <dory/engine.h>
 #include <benchmark/benchmark.h>
 #include <cstdint>
 #include <cmath>
