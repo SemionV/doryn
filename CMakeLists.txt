@@ -7,8 +7,8 @@ set(INSTALL_LIBRARIES_DESTINATION ".")
 
 if (UNIX)
     set(INSTALL_LIBRARIES_DESTINATION "/usr/lib")
-else()
-    add_compile_definitions("C4_MSVC")
+#else()
+    #add_compile_definitions("C4_MSVC")
 endif (UNIX)
 
 if (CMAKE_GENERATOR MATCHES "Visual Studio")

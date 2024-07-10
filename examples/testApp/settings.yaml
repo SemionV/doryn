@@ -14,7 +14,7 @@ localizations:
     - configuration/localization/english.yaml
   german:
     - configuration/localization/german.yaml
-interface:
+userInterface:
   section:
     description: user interface settings
     loadFrom: [ configuration/interface.user.yaml ]

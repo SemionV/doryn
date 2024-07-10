@@ -94,7 +94,7 @@ namespace dory::configuration {
         std::map<std::string, std::vector<std::string>> localizations;
         LoggingConfiguration loggingConfiguration;
         ShaderLoader shaderLoader;
-        Interface interface;
+        Interface userInterface;
     };
 }
 REFL_TYPE(dory::configuration::Configuration)
@@ -102,5 +102,5 @@ REFL_TYPE(dory::configuration::Configuration)
     REFL_FIELD(localizations)
     REFL_FIELD(loggingConfiguration)
     REFL_FIELD(shaderLoader)
-    REFL_FIELD(interface)
+    REFL_FIELD(userInterface)
 REFL_END

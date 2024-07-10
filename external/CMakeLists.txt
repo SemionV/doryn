@@ -3,7 +3,7 @@ project(dory-external)
 
 find_package(opengl-glad QUIET)
 if(NOT opengl-glad_FOUND)
-    message("opengl-glad is not found, initializing git submodule")
+    message(STATUS "opengl-glad is not found, initializing git submodule")
     execute_process(
             COMMAND git submodule update --init -- opengl-glad
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -18,6 +18,7 @@ FetchContent_Declare(googletest
         GIT_TAG v1.14.0)
 
 set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
+set(BENCHMARK_ENABLE_TESTING OFF)
 FetchContent_Declare(google-benchmark
         GIT_REPOSITORY https://github.com/google/benchmark.git
         GIT_TAG v1.8.4)
@@ -32,11 +33,10 @@ FetchContent_Declare(nlohmann-json
 FetchContent_MakeAvailable(nlohmann-json)
 
 FetchContent_Declare(rapid-yaml
-        GIT_REPOSITORY https://github.com/biojppm/rapidyaml
-        GIT_TAG v0.7.0)
+        GIT_REPOSITORY https://github.com/biojppm/rapidyaml)
 FetchContent_MakeAvailable(rapid-yaml)
 
-message(NOTICE "fetching boost...")
+message(STATUS "fetching boost...")
 set(BOOST_INCLUDE_LIBRARIES dll)
 set(BOOST_ENABLE_CMAKE ON)
 FetchContent_Declare(boost

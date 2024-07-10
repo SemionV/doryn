@@ -30,15 +30,6 @@
 #include <shared_mutex>
 #include <set>
 
-#include <nlohmann/json.hpp>
-#include <ryml.hpp>
-#include <boost/dll.hpp>
-#include <refl.hpp>
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/rotating_file_sink.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/sinks/null_sink.h>
-
 #ifdef __unix__
 #include <stdlib.h>
 #include <termios.h>
@@ -51,6 +42,15 @@
 #include <windows.h>
 #include <tchar.h>
 #endif
+
+#include <nlohmann/json.hpp>
+#include <ryml.hpp>
+#include <boost/dll.hpp>
+#include <refl.hpp>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/sinks/null_sink.h>
 
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>

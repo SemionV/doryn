@@ -38,7 +38,7 @@ namespace testApp
             registry.services.appLogger.information(localization.goodBye.get("Semion"));
             registry.services.appLogger.information(localization.birthDate.get(11, 03, 1984));
 
-            configuration.interface.activeLanguage = "english";
+            configuration.userInterface.activeLanguage = "english";
             registry.services.localizationService.load(configuration, localization);
             registry.services.appLogger.information(localization.hello);
             registry.services.appLogger.information(localization.goodBye.get("Semion"));

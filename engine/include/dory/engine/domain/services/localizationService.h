@@ -49,7 +49,7 @@ namespace dory::domain::services::localization
         template<typename TLocalization>
         void loadImpl(const dory::configuration::Configuration& configuration, TLocalization& localization)
         {
-            auto& activeLanguage = configuration.interface.activeLanguage;
+            auto& activeLanguage = configuration.userInterface.activeLanguage;
             if(configuration.localizations.contains(activeLanguage))
             {
                 auto& localizationFiles = configuration.localizations.at(activeLanguage);

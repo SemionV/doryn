@@ -85,7 +85,7 @@ namespace dory::serialization::yaml
             auto currentNode = context.parents.top();
             currentNode |= c4::yml::NodeType_e::SEQ;
 #ifdef WIN32
-            currentNode |= c4::yml::NodeType_e::_WIP_STYLE_FLOW_SL;
+            currentNode |= c4::yml::NodeType_e::FLOW_SL;
 #endif
 #ifdef __unix__
             currentNode |= c4::yml::NodeType_e::FLOW_SL;
