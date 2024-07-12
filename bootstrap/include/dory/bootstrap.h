@@ -1,6 +1,6 @@
 #pragma once
 
-namespace dory::bootstrapper
+namespace dory::bootstrap
 {
     struct StartupModuleContext
     {};

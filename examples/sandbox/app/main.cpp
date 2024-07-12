@@ -1,6 +1,6 @@
 #include <dory/registry.h>
 #include <dory/sandbox/mainModule.h>
-#include <dory/bootstrapper.h>
+#include <dory/bootstrap.h>
 
 #ifdef __unix__
 int main()
@@ -9,7 +9,7 @@ int main()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 #endif
 {
-    dory::bootstrapper::StartupModuleContext context;
+    dory::bootstrap::StartupModuleContext context;
 
     auto mainModule = dory::sandbox::MainModule{};
     return mainModule.run(context);

@@ -22,7 +22,7 @@ set(EXAMPLES_INSTALL_PREFIX "./examples/")
 
 add_subdirectory(external)
 add_subdirectory(engine)
-add_subdirectory(bootstrapper)
+add_subdirectory(bootstrap)
 
 add_subdirectory(tests/engine)
 add_subdirectory(tests/baseTests)
