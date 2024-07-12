@@ -71,6 +71,11 @@ namespace dory
             return this->toImplementation()->isLoadedImpl();
         }
 
+        void unloadModules()
+        {
+            _modules.clear();
+        }
+
         template<typename TModuleContext>
         std::shared_ptr<IDynamicModule<TModuleContext>> loadModule(const std::string moduleName)
         {
@@ -103,6 +108,11 @@ namespace dory
         explicit DynamicLibrary(const std::string& libraryName, const std::filesystem::path& libraryPath):
                 Library(libraryName, libraryPath)
         {}
+
+        ~DynamicLibrary()
+        {
+            unloadModules();
+        }
 
         bool isLoadedImpl() noexcept
         {
