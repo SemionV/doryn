@@ -12,4 +12,4 @@ set_target_properties(testModule PROPERTIES PREFIX ""
 
 target_link_libraries(testModule client_mod)
 
-install(TARGETS testModule DESTINATION ./modules COMPONENT Example)
+install(TARGETS testModule DESTINATION "${EXAMPLES_INSTALL_PREFIX}modular/modules" COMPONENT Example)

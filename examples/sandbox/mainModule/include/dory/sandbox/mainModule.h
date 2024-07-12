@@ -6,6 +6,8 @@
 
 namespace dory::sandbox
 {
+    namespace events = dory::domain::events;
+
     class MainModule: public IExecutableModule<bootstrap::StartupModuleContext>
     {
     private:
@@ -19,5 +21,13 @@ namespace dory::sandbox
         MainModule();
 
         int run(bootstrap::StartupModuleContext& moduleContext) final;
+
+    private:
+        void attachEventHandlers();
+        void onInitializeEngine(DataContextType& context, const events::engine::Initialize& eventData);
+        void onStopEngine(DataContextType& context, const events::engine::Stop& eventData);
+        void onApplicationExit(DataContextType& context, const events::application::Exit& eventData);
+        void onCloseWindow(DataContextType& context, events::window::Close& eventData);
+        void onRunScript(DataContextType& context, const events::script::Run& eventData);
     };
 }
