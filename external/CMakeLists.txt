@@ -44,10 +44,14 @@ FetchContent_Declare(boost
         GIT_TAG boost-1.85.0)
 FetchContent_MakeAvailable(boost)
 
+
 FetchContent_Declare(spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog.git
         GIT_TAG v1.14.1)
+set(SAVED_CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 FetchContent_MakeAvailable(spdlog)
+set(CMAKE_CXX_FLAGS "${SAVED_CMAKE_CXX_FLAGS}")
 
 FetchContent_Declare(reflcpp
         GIT_REPOSITORY https://github.com/veselink1/refl-cpp.git
