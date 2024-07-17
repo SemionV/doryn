@@ -8,8 +8,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 target_link_libraries(${PROJECT_NAME} PRIVATE engine mainModule dory-bootstrap_mod)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-set(DORY_SANDBOX_INSTALL_PREFIX "${EXAMPLES_INSTALL_PREFIX}sandbox")
-
-install(TARGETS ${PROJECT_NAME} DESTINATION ${DORY_SANDBOX_INSTALL_PREFIX} COMPONENT Example)
-install(DIRECTORY configuration DESTINATION ${DORY_SANDBOX_INSTALL_PREFIX} COMPONENT Example)
-install(FILES settings.yaml DESTINATION ${DORY_SANDBOX_INSTALL_PREFIX} COMPONENT Example)
+install(TARGETS ${PROJECT_NAME} DESTINATION . COMPONENT Sandbox)
+install(DIRECTORY configuration DESTINATION . COMPONENT Sandbox)
+install(FILES settings.yaml DESTINATION . COMPONENT Sandbox)

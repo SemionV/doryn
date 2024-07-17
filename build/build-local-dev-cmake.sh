@@ -14,3 +14,4 @@ fi
 cmake --install "$CMAKE_BUILD_DIR" --component Engine --prefix bin --config "$BUILD_CONFIG"
 cmake --install "$CMAKE_BUILD_DIR" --component Tests --prefix bin --config "$BUILD_CONFIG"
 cmake --install "$CMAKE_BUILD_DIR" --component Example --prefix bin --config "$BUILD_CONFIG"
+cmake --install "$CMAKE_BUILD_DIR" --component Sandbox --prefix bin/examples/sandbox --config "$BUILD_CONFIG"

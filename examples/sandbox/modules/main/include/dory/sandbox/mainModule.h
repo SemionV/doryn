@@ -3,6 +3,7 @@
 #include <dory/engine.h>
 #include <dory/bootstrap.h>
 #include "mainModule/registry.h"
+#include "mainModule/extensionContext.h"
 
 namespace dory::sandbox
 {
@@ -16,6 +17,8 @@ namespace dory::sandbox
         Registry::ConfigurationType configuration;
         Registry registry;
         Registry::ServiceTypes::FrameServiceType frameService;
+        dory::domain::services::module::DynamicLibraryService libraryService;
+        ExtensionContext extensionContext = ExtensionContext{ registry };
 
     public:
         MainModule();

@@ -58,6 +58,14 @@ namespace dory::sandbox
         registry.devices.standardIoDevice.connect(context);
         registry.devices.terminalDevice.connect(context);
         registry.devices.terminalDevice.writeLine("Start Engine...");
+
+        auto library = libraryService.load("test extension", "modules/extension");
+        if(library)
+        {
+            auto extension = library->loadModule<ExtensionContext>("extension");
+            extension->attach(dory::LibraryHandle{ library }, extensionContext);
+        }
+
         registry.devices.terminalDevice.enterCommandMode();
 
         registry.services.scriptService.addScript("exit", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
