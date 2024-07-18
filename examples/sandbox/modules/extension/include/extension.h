@@ -9,10 +9,9 @@ namespace dory::sandbox
     {
     private:
         ExtensionContext& _extensionContext;
-        std::function<void(Registry::DataContextType& context, const std::map<std::string, std::any>& arguments)> _pingScriptFunction;
 
     public:
-        Extension(ExtensionContext& extensionContext);
+        explicit Extension(ExtensionContext& extensionContext);
         ~Extension() override;
 
         void attach(LibraryHandle library) override;

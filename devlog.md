@@ -7,6 +7,7 @@ Tasks:
   * Configure and load plugins
   * Restrict events and controllers API to use ILibrary handler for all subscriptions
   * Hot reload of plugins via script commands and file watchers
+* Install boost preliminary
 * CI/CD setup with GitLab
 * Flatten controller pipeline: store entities in a sorted flat array
 * Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)

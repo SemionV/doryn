@@ -14,7 +14,7 @@ namespace dory::domain::services
             toImplementation<TImplementation>(this)->addScriptImpl(scriptKey, std::forward<F>(script));
         }
 
-        void addScript(const std::string& scriptKey, LibraryHandle libraryHandle, ScriptFunctionType* script)
+        void addScript(const std::string& scriptKey, LibraryHandle libraryHandle, ScriptFunctionType script)
         {
             toImplementation<TImplementation>(this)->addScriptImpl(scriptKey, libraryHandle, script);
         }
@@ -46,7 +46,7 @@ namespace dory::domain::services
             }
         }
 
-        void addScriptImpl(const std::string& scriptKey, LibraryHandle libraryHandle, ScriptFunctionType* script)
+        void addScriptImpl(const std::string& scriptKey, LibraryHandle libraryHandle, ScriptFunctionType script)
         {
             auto handler = makeResourceHandle<ScriptFunctionType>(libraryHandle, script);
             if(handler)

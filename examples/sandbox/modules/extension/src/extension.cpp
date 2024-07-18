@@ -3,8 +3,7 @@
 namespace dory::sandbox
 {
     Extension::Extension(ExtensionContext &extensionContext):
-        _extensionContext(extensionContext),
-        _pingScriptFunction{ std::bind(&Extension::pingScript, this, std::placeholders::_1, std::placeholders::_2) }
+        _extensionContext(extensionContext)
     {}
 
     Extension::~Extension()
@@ -17,7 +16,9 @@ namespace dory::sandbox
         std::cout << "Attach extension\n";
 
         auto& registry = _extensionContext.registry;
-        registry.services.scriptService.addScript("ping-extension", library, &_pingScriptFunction);
+        registry.services.scriptService.addScript("ping-extension",
+                                                  library,
+                                                  std::bind(&Extension::pingScript, this, std::placeholders::_1, std::placeholders::_2));
     }
 
     void Extension::pingScript(Registry::DataContextType& context, const std::map<std::string, std::any>& arguments)

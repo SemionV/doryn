@@ -174,29 +174,23 @@ namespace dory
     {
     private:
         std::optional<std::shared_ptr<ILibrary>> _library;
-        TResource* _resource;
+        TResource _resource;
 
     public:
-        explicit ResourceRef(std::optional<std::shared_ptr<ILibrary>> library, TResource* resource):
+        explicit ResourceRef(std::optional<std::shared_ptr<ILibrary>> library, TResource resource):
             _library(std::move(library)),
-            _resource(resource)
+            _resource(std::move(resource))
         {}
 
         explicit operator bool()
         {
-            return (!_library || (bool) *_library) && _resource;
-        }
-
-        inline TResource* operator->()
-        {
-            assert((bool)this);
-            return _resource;
+            return (!_library || (bool) *_library);
         }
 
         inline TResource& operator*()
         {
             assert((bool)this);
-            return *_resource;
+            return _resource;
         }
     };
 
@@ -213,11 +207,11 @@ namespace dory
     class ResourceHandle: public IResourceHandle<TResource>
     {
     private:
-        TResource* _resource;
+        TResource _resource;
         LibraryHandle _library;
 
     public:
-        explicit ResourceHandle(LibraryHandle library, TResource* resource):
+        explicit ResourceHandle(LibraryHandle library, TResource resource):
             _library(std::move(library)),
             _resource(resource)
         {}
@@ -225,7 +219,7 @@ namespace dory
         inline ResourceRef<TResource> lock() final
         {
             auto library = _library.lock();
-            return ResourceRef<TResource>{library && library->isLoaded() ? library : nullptr, _resource };
+            return ResourceRef<TResource>{ library && library->isLoaded() ? library : nullptr, _resource };
         }
     };
 
@@ -243,12 +237,12 @@ namespace dory
 
         inline ResourceRef<TResource> lock() final
         {
-            return ResourceRef<TResource>{{}, &_resource };
+            return ResourceRef<TResource>{{}, _resource };
         }
     };
 
     template<typename TResource>
-    std::shared_ptr<IResourceHandle<TResource>> makeResourceHandle(LibraryHandle& libraryHandle, TResource* resource)
+    std::shared_ptr<IResourceHandle<TResource>> makeResourceHandle(LibraryHandle& libraryHandle, TResource resource)
     {
         return std::make_shared<dory::ResourceHandle<TResource>>(libraryHandle, resource);
     }

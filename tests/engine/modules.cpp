@@ -97,13 +97,13 @@ TEST(RsourceHandleTests, lifetimeOfLibraryAndResource)
     auto library = std::make_shared<TestLibrary>();
     EXPECT_CALL(*library, isLoaded()).Times(2).WillOnce(Return(true)).WillOnce(Return(false));
 
-    auto testController = std::make_unique<TestController>();
+    auto testController = std::make_shared<TestController>();
     EXPECT_CALL(*testController, update(1));
     EXPECT_CALL(*testController, callOperator());
 
     auto libraryHandle = dory::LibraryHandle{ library };
 
-    auto libraryResource = dory::ResourceHandle<TestController>{libraryHandle, testController.get()};
+    auto libraryResource = dory::ResourceHandle<std::shared_ptr<TestController>>{libraryHandle, testController};
 
     {
         auto resource = libraryResource.lock();
@@ -111,8 +111,8 @@ TEST(RsourceHandleTests, lifetimeOfLibraryAndResource)
 
         if(resource)
         {
-            resource->update(1);
-            (*resource)();
+            (*resource)->update(1);
+            (**resource)();
         }
 
         library.reset();
@@ -172,7 +172,7 @@ protected:
         auto resource = resourceHandle->lock();
         if(resource)
         {
-            resource->operator()(1);
+            (*resource).operator()(1);
             (*resource)(4);
         }
     }
@@ -184,7 +184,7 @@ TEST_F(HandleResourceTests, handleEventsByLambdaInLibrary)
     ResourceType handler = [this](int i) {
         _sentinel.notifyCall(i);
     };
-    invokeHandler(dory::makeResourceHandle<ResourceType>(_libraryHandle, &handler));
+    invokeHandler(dory::makeResourceHandle<ResourceType>(_libraryHandle, handler));
 }
 
 TEST_F(HandleResourceTests, handleEventsByBindInLibrary)
@@ -192,8 +192,7 @@ TEST_F(HandleResourceTests, handleEventsByBindInLibrary)
     EXPECT_CALL(*_library, isLoaded()).WillOnce(Return(true));
     auto object = TestEventHandler{ _sentinel };
     ResourceType handler2 = std::bind(&TestEventHandler::handleEvent, &object, std::placeholders::_1);
-
-    invokeHandler(dory::makeResourceHandle<ResourceType>(_libraryHandle, &handler2));
+    invokeHandler(dory::makeResourceHandle<ResourceType>(_libraryHandle, handler2));
 }
 
 TEST_F(HandleResourceTests, handleEventsByLambdaInStaticLibrary)
