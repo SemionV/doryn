@@ -5,6 +5,7 @@ Tasks:
   * Deployment(install) of extensions and plugins during development 
   * Configure and load plugins
   * Hot reload of plugins via script commands and file watchers
+* Review and rework header includes(include only headers which are required be the source file), possibly use forward declaration
 * Install boost preliminary
 * CI/CD setup with GitLab
 * Flatten controller pipeline: store entities in a sorted flat array
