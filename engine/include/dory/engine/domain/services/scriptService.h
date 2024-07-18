@@ -19,6 +19,11 @@ namespace dory::domain::services
             toImplementation<TImplementation>(this)->addScriptImpl(scriptKey, libraryHandle, script);
         }
 
+        void removeScript(const std::string& scriptKey)
+        {
+            toImplementation<TImplementation>(this)->removeScriptImpl(scriptKey);
+        }
+
         bool runScript(TDataContext& context, const std::string& scriptKey, const ScriptParametersPackType& arguments)
         {
             return toImplementation<TImplementation>(this)->runScriptImpl(context, scriptKey, arguments);
@@ -39,20 +44,17 @@ namespace dory::domain::services
         template<typename F>
         void addScriptImpl(const std::string& scriptKey, F&& script)
         {
-            auto handler = makeResourceHandle<ScriptFunctionType>(script);
-            if(handler)
-            {
-                _scripts.emplace(scriptKey, handler);
-            }
+            setScript(scriptKey, makeResourceHandle<ScriptFunctionType>(script));
         }
 
         void addScriptImpl(const std::string& scriptKey, LibraryHandle libraryHandle, ScriptFunctionType script)
         {
-            auto handler = makeResourceHandle<ScriptFunctionType>(libraryHandle, script);
-            if(handler)
-            {
-                _scripts.emplace(scriptKey, handler);
-            }
+            setScript(scriptKey, makeResourceHandle<ScriptFunctionType>(libraryHandle, script));
+        }
+
+        void removeScriptImpl(const std::string& scriptKey)
+        {
+            _scripts.erase(scriptKey);
         }
 
         bool runScriptImpl(TDataContext& context, const std::string& scriptKey, const ParentScriptParametersPackType& arguments)
@@ -70,6 +72,15 @@ namespace dory::domain::services
             }
 
             return false;
+        }
+
+    private:
+        void setScript(const std::string& scriptKey, std::shared_ptr<IResourceHandle<ScriptFunctionType>> handler)
+        {
+            if(handler)
+            {
+                _scripts[scriptKey] = handler;
+            }
         }
     };
 }

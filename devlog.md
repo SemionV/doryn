@@ -2,10 +2,8 @@
 
 Tasks:
 * Dynamic module loading(plugin system)
-  * Test multi-module libraries
-  * Clean up old ModuleService code
+  * Deployment(install) of extensions and plugins during development 
   * Configure and load plugins
-  * Restrict events and controllers API to use ILibrary handler for all subscriptions
   * Hot reload of plugins via script commands and file watchers
 * Install boost preliminary
 * CI/CD setup with GitLab
@@ -29,6 +27,12 @@ Tasks:
 * Path finding
 * Build for MacOS
 * Voice control
+
+**18.07.24**
+* Working on hot reload of extensions and plugins. It is basically implemented, but needs some polishing
+* Task done: Test multi-module libraries
+* Task done: lean up old ModuleService code
+* Task done: Restrict events and controllers API to use ILibrary handler for all subscriptions
 
 **05.07.24**
 * Task done: Rework project structure

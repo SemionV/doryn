@@ -110,6 +110,7 @@ namespace dory
         ~DynamicLibrary()
         {
             unloadModules();
+            _dll.unload();
         }
 
         bool isLoadedImpl() noexcept
@@ -137,7 +138,7 @@ namespace dory
             assert(!_isLoaded);
 
             auto path = libraryPath.string() + std::string { ILibrary::systemSharedLibraryFileExtension };
-            _dll.load(path);
+            _dll.load(path, boost::dll::load_mode::rtld_local);
             _isLoaded = true;
         }
     };

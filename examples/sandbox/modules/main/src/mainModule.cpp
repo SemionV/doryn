@@ -59,22 +59,35 @@ namespace dory::sandbox
         registry.devices.terminalDevice.connect(context);
         registry.devices.terminalDevice.writeLine("Start Engine...");
 
-        auto library = libraryService.load("test extension", "modules/extension");
-        if(library)
-        {
-            auto extension = library->loadModule<ExtensionContext>("extension", extensionContext);
-            if(extension)
-            {
-                extension->attach(dory::LibraryHandle{ library });
-            }
-        }
-
         registry.devices.terminalDevice.enterCommandMode();
 
         registry.services.scriptService.addScript("exit", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
         {
             registry.devices.terminalDevice.writeLine(fmt::format("-\u001B[31m{0}\u001B[0m-", "exit"));
             registry.events.applicationDispatcher.fire(context, events::application::Exit{});
+        });
+
+        registry.services.scriptService.addScript("load-ext", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
+        {
+            registry.devices.terminalDevice.writeLine(fmt::format("\u001B[32m{0}\u001B[0m", "load extension"));
+
+            libraryService.unload("test extension");
+            auto library = libraryService.load("test extension", "modules/extension");
+            if(library)
+            {
+                auto extension = library->loadModule<ExtensionContext>("extension", extensionContext);
+                if(extension)
+                {
+                    extension->attach(dory::LibraryHandle{ library });
+                }
+            }
+        });
+
+        registry.services.scriptService.addScript("unload-ext", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
+        {
+            registry.devices.terminalDevice.writeLine(fmt::format("\u001B[32m{0}\u001B[0m", "load extension"));
+
+            libraryService.unload("test extension");
         });
 
         registry.managers.pipelineManager.configurePipeline(context);

@@ -80,7 +80,7 @@ namespace dory::domain::devices
                 currentt.c_lflag &= ~ECHO; /* set no echo mode */
                 tcsetattr(STDIN_FILENO, TCSANOW, &currentt);
 
-                pipe(pipes);
+                auto p = pipe(pipes);
 
                 pollingThread = std::jthread([this, &context](const std::stop_token& stoken, void* pipe)
                 {
