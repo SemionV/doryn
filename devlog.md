@@ -4,6 +4,7 @@ Tasks:
 * Dynamic module loading(plugin system)
   * Hot reload of plugins with file watchers
   * Configure and load plugins
+  * Switch from dynamic library to static(cmake setup and library embedding in the source code(factory))
 * Review and rework header includes(include only headers which are required be the source file), possibly use forward declaration
 * Install boost preliminary
 * CI/CD setup with GitLab

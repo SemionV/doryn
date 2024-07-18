@@ -39,5 +39,7 @@ namespace dory::sandbox
     {
         auto& registry = _extensionContext.registry;
         registry.devices.terminalDevice.writeLine(fmt::format("\u001B[31m{0}\u001B[0m", "Hello from Sandbox Extension module! :-) "));
+
+        registry.services.appLogger.information("Curious message");
     }
 }
