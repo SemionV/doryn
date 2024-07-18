@@ -1,0 +1,51 @@
+<toolSet name="External Tools">
+  <tool name="build all" showInMainMenu="false" showInEditor="false" showInProject="false" showInSearchPopup="false" disabled="false" useConsole="true" showConsoleOnStdOut="false" showConsoleOnStdErr="false" synchronizeAfterRun="true">
+    <exec>
+      <option name="COMMAND" value="sh" />
+      <option name="PARAMETERS" value="build/build-local-dev-cmake.sh" />
+      <option name="WORKING_DIRECTORY" value="$USER_HOME$/dev/doryn" />
+    </exec>
+  </tool>
+  <tool name="build baseTests | Debug" showInMainMenu="false" showInEditor="false" showInProject="false" showInSearchPopup="false" disabled="false" useConsole="true" showConsoleOnStdOut="false" showConsoleOnStdErr="false" synchronizeAfterRun="true">
+    <exec>
+      <option name="COMMAND" value="sh" />
+      <option name="PARAMETERS" value="build/build-local-dev-cmake.sh baseTests Debug" />
+      <option name="WORKING_DIRECTORY" value="$USER_HOME$/dev/doryn" />
+    </exec>
+  </tool>
+  <tool name="build baseTests | Release" showInMainMenu="false" showInEditor="false" showInProject="false" showInSearchPopup="false" disabled="false" useConsole="true" showConsoleOnStdOut="false" showConsoleOnStdErr="false" synchronizeAfterRun="true">
+    <exec>
+      <option name="COMMAND" value="sh" />
+      <option name="PARAMETERS" value="build/build-local-dev-cmake.sh baseTests Release" />
+      <option name="WORKING_DIRECTORY" value="$USER_HOME$/dev/doryn" />
+    </exec>
+  </tool>
+  <tool name="build baseBenchmarks | Debug" showInMainMenu="false" showInEditor="false" showInProject="false" showInSearchPopup="false" disabled="false" useConsole="true" showConsoleOnStdOut="false" showConsoleOnStdErr="false" synchronizeAfterRun="true">
+    <exec>
+      <option name="COMMAND" value="sh" />
+      <option name="PARAMETERS" value="build/build-local-dev-cmake.sh baseBenchmarks Debug" />
+      <option name="WORKING_DIRECTORY" value="$USER_HOME$/dev/doryn" />
+    </exec>
+  </tool>
+  <tool name="build baseBenchmarks | Release" showInMainMenu="false" showInEditor="false" showInProject="false" showInSearchPopup="false" disabled="false" useConsole="true" showConsoleOnStdOut="false" showConsoleOnStdErr="false" synchronizeAfterRun="true">
+    <exec>
+      <option name="COMMAND" value="sh" />
+      <option name="PARAMETERS" value="build/build-local-dev-cmake.sh baseBenchmarks Release" />
+      <option name="WORKING_DIRECTORY" value="$USER_HOME$/dev/doryn" />
+    </exec>
+  </tool>
+  <tool name="sandbox | Debug" showInMainMenu="false" showInEditor="false" showInProject="false" showInSearchPopup="false" disabled="false" useConsole="true" showConsoleOnStdOut="false" showConsoleOnStdErr="false" synchronizeAfterRun="true">
+    <exec>
+      <option name="COMMAND" value="sh" />
+      <option name="PARAMETERS" value="build/build-local-dev-cmake.sh sandbox Debug" />
+      <option name="WORKING_DIRECTORY" value="$USER_HOME$/dev/doryn/" />
+    </exec>
+  </tool>
+  <tool name="sandbox | Release" showInMainMenu="false" showInEditor="false" showInProject="false" showInSearchPopup="false" disabled="false" useConsole="true" showConsoleOnStdOut="false" showConsoleOnStdErr="false" synchronizeAfterRun="true">
+    <exec>
+      <option name="COMMAND" value="sh" />
+      <option name="PARAMETERS" value="build/build-local-dev-cmake.sh sandbox Release" />
+      <option name="WORKING_DIRECTORY" value="$USER_HOME$/dev/doryn/" />
+    </exec>
+  </tool>
+</toolSet>

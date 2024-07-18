@@ -1,5 +1,4 @@
 bin/
-.idea/
 build/cmake-artifacts/
 build/cmake-artifacts-vs/
 build/cmake-artifacts-ninja/

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CLionExternalBuildManager">
+    <target id="54d08b00-7563-4c0c-aedd-26cb86d86ed2" name="Build all" defaultType="TOOL">
+      <configuration id="8926f042-5684-47e3-9631-36a8891f7593" name="Build all">
+        <build type="TOOL">
+          <tool actionId="Tool_External Tools_build all" />
+        </build>
+      </configuration>
+    </target>
+    <target id="23056645-49a2-49b3-9c4f-484466e5b64f" name="Build baseTests | Debug" defaultType="TOOL">
+      <configuration id="da9b4a51-4eae-465d-94b4-5effca364837" name="Build baseTests | Debug">
+        <build type="TOOL">
+          <tool actionId="Tool_External Tools_build baseTests | Debug" />
+        </build>
+      </configuration>
+    </target>
+    <target id="a5b729f2-0184-4a1b-9b4f-ef72cfbf2113" name="Build baseTests | Release" defaultType="TOOL">
+      <configuration id="810ab2eb-ddd0-4a1f-8ae8-ebf2497b7515" name="Build baseTests | Release">
+        <build type="TOOL">
+          <tool actionId="Tool_External Tools_build baseTests | Release" />
+        </build>
+      </configuration>
+    </target>
+    <target id="bbfb0d28-1ad3-4cd0-8454-4c81ef63bbcf" name="Build baseBenchmarks | Debug" defaultType="TOOL">
+      <configuration id="6fb33aa2-1903-4e72-a2b4-e32ee99b71ab" name="Build baseBenchmarks | Debug">
+        <build type="TOOL">
+          <tool actionId="Tool_External Tools_build baseBenchmarks | Debug" />
+        </build>
+      </configuration>
+    </target>
+    <target id="a8539ce8-945e-4b69-a3a9-391512ee6380" name="Build baseBenchmarks | Release" defaultType="TOOL">
+      <configuration id="ad8117a4-2711-4b8d-881c-d30b1afba7df" name="Build baseBenchmarks | Release">
+        <build type="TOOL">
+          <tool actionId="Tool_External Tools_build baseBenchmarks | Release" />
+        </build>
+      </configuration>
+    </target>
+    <target id="034e4b7d-dab5-4673-bbe8-e98ffcf492ee" name="Build sandbox | Debug" defaultType="TOOL">
+      <configuration id="abd83b76-6745-4459-907b-43fd93fb40b8" name="Build sandbox | Debug">
+        <build type="TOOL">
+          <tool actionId="Tool_External Tools_sandbox | Debug" />
+        </build>
+      </configuration>
+    </target>
+    <target id="81476ac7-d548-41af-bc37-5d17fce91be6" name="Build sandbox | Release" defaultType="TOOL">
+      <configuration id="1aa6280c-44e8-4d72-a163-2d8694eda6a5" name="Build sandbox | Release">
+        <build type="TOOL">
+          <tool actionId="Tool_External Tools_sandbox | Release" />
+        </build>
+      </configuration>
+    </target>
+  </component>
+</project>
