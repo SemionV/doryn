@@ -2,9 +2,8 @@
 
 Tasks:
 * Dynamic module loading(plugin system)
-  * Deployment(install) of extensions and plugins during development 
+  * Hot reload of plugins with file watchers
   * Configure and load plugins
-  * Hot reload of plugins via script commands and file watchers
 * Review and rework header includes(include only headers which are required be the source file), possibly use forward declaration
 * Install boost preliminary
 * CI/CD setup with GitLab
@@ -34,6 +33,7 @@ Tasks:
 * Task done: Test multi-module libraries
 * Task done: lean up old ModuleService code
 * Task done: Restrict events and controllers API to use ILibrary handler for all subscriptions
+* Task done: Deployment(install) of extensions and plugins during development
 
 **05.07.24**
 * Task done: Rework project structure

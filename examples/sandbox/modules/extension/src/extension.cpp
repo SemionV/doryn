@@ -30,14 +30,14 @@ namespace dory::sandbox
         std::cout << "Attach extension\n";
 
         auto& registry = _extensionContext.registry;
-        registry.services.scriptService.addScript("ping-ext",
-                                                  library,
-                                                  std::bind(&Extension::pingScript, this, std::placeholders::_1, std::placeholders::_2));
+
+        auto script = std::bind(&Extension::pingScript, this, std::placeholders::_1, std::placeholders::_2);
+        registry.services.scriptService.addScript("ping-ext", library, script);
     }
 
     void Extension::pingScript(Registry::DataContextType& context, const std::map<std::string, std::any>& arguments)
     {
         auto& registry = _extensionContext.registry;
-        registry.devices.terminalDevice.writeLine(fmt::format("\u001B[31m{0}\u001B[0m", "Hi dear Hot Reload! :-) "));
+        registry.devices.terminalDevice.writeLine(fmt::format("\u001B[31m{0}\u001B[0m", "Hello from Sandbox Extension module! :-) "));
     }
 }
