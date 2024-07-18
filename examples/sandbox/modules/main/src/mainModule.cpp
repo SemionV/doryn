@@ -63,7 +63,10 @@ namespace dory::sandbox
         if(library)
         {
             auto extension = library->loadModule<ExtensionContext>("extension");
-            extension->attach(dory::LibraryHandle{ library }, extensionContext);
+            if(extension)
+            {
+                extension->attach(dory::LibraryHandle{ library }, extensionContext);
+            }
         }
 
         registry.devices.terminalDevice.enterCommandMode();

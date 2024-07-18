@@ -3,8 +3,6 @@
 #include <dory/engine/dependencies.h>
 #include <dory/engine/typeComponents.h>
 
-#include <utility>
-
 namespace dory
 {
     class IModule

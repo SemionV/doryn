@@ -6,11 +6,17 @@ namespace dory::domain::services
     struct IScriptService
     {
         using ScriptParametersPackType = std::map<std::string, std::any>;
+        using ScriptFunctionType = std::function<void(TDataContext&, const ScriptParametersPackType&)>;
 
         template<typename F>
         void addScript(const std::string& scriptKey, F&& script)
         {
             toImplementation<TImplementation>(this)->addScriptImpl(scriptKey, std::forward<F>(script));
+        }
+
+        void addScript(const std::string& scriptKey, LibraryHandle libraryHandle, ScriptFunctionType* script)
+        {
+            toImplementation<TImplementation>(this)->addScriptImpl(scriptKey, libraryHandle, script);
         }
 
         bool runScript(TDataContext& context, const std::string& scriptKey, const ScriptParametersPackType& arguments)
@@ -24,26 +30,43 @@ namespace dory::domain::services
     {
     private:
         using ParentScriptParametersPackType = IScriptService<ScriptService<TDataContext>, TDataContext>::ScriptParametersPackType;
-        using ScriptFunctionType = void(TDataContext&, const ParentScriptParametersPackType&);
+        using ScriptFunctionType = IScriptService<ScriptService<TDataContext>, TDataContext>::ScriptFunctionType;
 
-        std::unordered_map<std::string, std::function<ScriptFunctionType>> scripts;
+        std::unordered_map<std::string, std::shared_ptr<IResourceHandle<ScriptFunctionType>>> _scripts;
 
     public:
 
         template<typename F>
         void addScriptImpl(const std::string& scriptKey, F&& script)
         {
-            scripts.emplace(scriptKey, std::forward<F>(script));
+            auto handler = makeResourceHandle<ScriptFunctionType>(script);
+            if(handler)
+            {
+                _scripts.emplace(scriptKey, handler);
+            }
+        }
+
+        void addScriptImpl(const std::string& scriptKey, LibraryHandle libraryHandle, ScriptFunctionType* script)
+        {
+            auto handler = makeResourceHandle<ScriptFunctionType>(libraryHandle, script);
+            if(handler)
+            {
+                _scripts.emplace(scriptKey, handler);
+            }
         }
 
         bool runScriptImpl(TDataContext& context, const std::string& scriptKey, const ParentScriptParametersPackType& arguments)
         {
-            if(scripts.contains(scriptKey))
+            if(_scripts.contains(scriptKey))
             {
-                auto script = scripts[scriptKey];
-                script(context, arguments);
-
-                return true;
+                auto handle = _scripts[scriptKey];
+                auto resourceRef = handle->lock();
+                if(resourceRef) {
+                    (*resourceRef)(context, arguments);
+                }
+                else {
+                    _scripts.erase(scriptKey);
+                }
             }
 
             return false;
