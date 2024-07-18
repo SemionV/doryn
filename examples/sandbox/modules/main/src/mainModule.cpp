@@ -85,7 +85,7 @@ namespace dory::sandbox
 
         registry.services.scriptService.addScript("unload-ext", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
         {
-            registry.devices.terminalDevice.writeLine(fmt::format("\u001B[32m{0}\u001B[0m", "load extension"));
+            registry.devices.terminalDevice.writeLine(fmt::format("\u001B[32m{0}\u001B[0m", "unload extension"));
 
             libraryService.unload("test extension");
         });

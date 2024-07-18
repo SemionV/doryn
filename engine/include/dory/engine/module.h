@@ -138,7 +138,8 @@ namespace dory
             assert(!_isLoaded);
 
             auto path = libraryPath.string() + std::string { ILibrary::systemSharedLibraryFileExtension };
-            _dll.load(path, boost::dll::load_mode::rtld_local);
+            auto flags = boost::dll::load_mode::rtld_local | boost::dll::load_mode::rtld_now;
+            _dll.load(path, flags);
             _isLoaded = true;
         }
     };

@@ -34,6 +34,11 @@ Tasks:
 * Task done: lean up old ModuleService code
 * Task done: Restrict events and controllers API to use ILibrary handler for all subscriptions
 * Task done: Deployment(install) of extensions and plugins during development
+* Task done: Debug modules
+  * The problem was in mismatch in the relative paths in the debug symbols of the dll. A temporary solution is to either load the module from the 
+  * destination where it was built(using absolute or relative path like /home/semion/dev/doryn/build/cmake-artifacts-ninja-clion/examples/sandbox/modules/extension/)
+  * or set gdb symbols search path like:
+  * set solib-search-path /home/semion/dev/doryn/build/cmake-artifacts-ninja-clion/examples/sandbox/modules/extension/
 
 **05.07.24**
 * Task done: Rework project structure
