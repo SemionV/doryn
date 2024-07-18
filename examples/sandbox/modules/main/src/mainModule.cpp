@@ -62,10 +62,10 @@ namespace dory::sandbox
         auto library = libraryService.load("test extension", "modules/extension");
         if(library)
         {
-            auto extension = library->loadModule<ExtensionContext>("extension");
+            auto extension = library->loadModule<ExtensionContext>("extension", extensionContext);
             if(extension)
             {
-                extension->attach(dory::LibraryHandle{ library }, extensionContext);
+                extension->attach(dory::LibraryHandle{ library });
             }
         }
 

@@ -7,9 +7,17 @@ namespace dory::sandbox
 {
     class Extension: public IDynamicModule<ExtensionContext>
     {
+    private:
+        ExtensionContext& _extensionContext;
+        std::function<void(Registry::DataContextType& context, const std::map<std::string, std::any>& arguments)> _pingScriptFunction;
+
     public:
+        Extension(ExtensionContext& extensionContext);
         ~Extension() override;
 
-        void attach(LibraryHandle library, ExtensionContext& moduleContext) override;
+        void attach(LibraryHandle library) override;
+
+    private:
+        void pingScript(Registry::DataContextType& context, const std::map<std::string, std::any>& arguments);
     };
 }

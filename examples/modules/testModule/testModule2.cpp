@@ -2,7 +2,7 @@
 
 namespace testModule
 {
-    void TestModule2::attach(dory::LibraryHandle library, client::Registry& registry)
+    void TestModule2::attach(dory::LibraryHandle library)
     {
         std::cout << "Load TestModule 2" << std::endl;
     }
@@ -11,4 +11,8 @@ namespace testModule
     {
         std::cout << "Unload TestModule 2" << std::endl;
     }
+
+    TestModule2::TestModule2(client::Registry& registry):
+        _registry(registry)
+    {}
 }

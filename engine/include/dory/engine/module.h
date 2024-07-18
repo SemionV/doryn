@@ -18,7 +18,7 @@ namespace dory
     {
     public:
         ~IDynamicModule() override = default;
-        virtual void attach(LibraryHandle library, TModuleContext& moduleContext) = 0;
+        virtual void attach(LibraryHandle library) = 0;
     };
 
     template<typename TModuleContext>
@@ -75,14 +75,14 @@ namespace dory
         }
 
         template<typename TModuleContext>
-        std::shared_ptr<IDynamicModule<TModuleContext>> loadModule(const std::string moduleName)
+        std::shared_ptr<IDynamicModule<TModuleContext>> loadModule(const std::string moduleName, TModuleContext& moduleContext)
         {
             if(_modules.contains(moduleName))
             {
                 _modules.erase(moduleName);
             }
 
-            auto module = this->toImplementation()->template loadModuleImpl<TModuleContext>(moduleName);
+            auto module = this->toImplementation()->template loadModuleImpl<TModuleContext>(moduleName, moduleContext);
             if(module)
             {
                 _modules[moduleName] = module;
@@ -97,7 +97,7 @@ namespace dory
     private:
         constexpr const static std::string_view dynamicModuleFactoryFunctionName = "dynamicModuleFactory";
         template<typename TModuleContext>
-        using LoadableModuleFactory = std::shared_ptr<IDynamicModule<TModuleContext>>(const std::string& moduleName);
+        using LoadableModuleFactory = std::shared_ptr<IDynamicModule<TModuleContext>>(const std::string& moduleName, TModuleContext& moduleContext);
 
         std::atomic<bool> _isLoaded = false;
         boost::dll::shared_library _dll;
@@ -118,12 +118,12 @@ namespace dory
         }
 
         template<typename TModuleContext>
-        std::shared_ptr<IDynamicModule<TModuleContext>> loadModuleImpl(const std::string moduleName)
+        std::shared_ptr<IDynamicModule<TModuleContext>> loadModuleImpl(const std::string moduleName, TModuleContext& moduleContext)
         {
             assert(_dll.is_loaded());
 
             auto moduleFactory = _dll.template get<LoadableModuleFactory<TModuleContext>>(std::string{ dynamicModuleFactoryFunctionName });
-            return moduleFactory(moduleName);
+            return moduleFactory(moduleName, moduleContext);
         }
 
         void unload()

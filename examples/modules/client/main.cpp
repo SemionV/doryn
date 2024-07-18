@@ -19,8 +19,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     auto library = libraryService.load("test module", "modules/testModule");
     if(library)
     {
-        auto testModule2 = library->loadModule<client::Registry>("testModule2");
-        testModule2->attach(dory::LibraryHandle{ library }, registry);
+        auto testModule2 = library->loadModule<client::Registry>("testModule2", registry);
+        testModule2->attach(dory::LibraryHandle{ library });
     }
 
     return 0;

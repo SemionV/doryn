@@ -128,7 +128,7 @@ TEST(RsourceHandleTests, lifetimeOfLibraryAndResource)
 class TestModule: dory::IDynamicModule<TestModuleContext>
 {
 public:
-    MOCK_METHOD(void, attach, (dory::LibraryHandle library, TestModuleContext& moduleContext), (final));
+    MOCK_METHOD(void, attach, (dory::LibraryHandle library), (final));
 };
 
 class InvokeSentinel
