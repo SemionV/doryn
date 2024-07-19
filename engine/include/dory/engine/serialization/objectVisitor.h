@@ -1,7 +1,10 @@
 #pragma once
 
+#include <stack>
+#include <queue>
+
 #include "reflection.h"
-#include <dory/engine/domain/resources/localization.h>
+#include <dory/engine/domain/resources/stringResource.h>
 
 namespace dory::serialization
 {

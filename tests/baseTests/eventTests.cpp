@@ -1,4 +1,5 @@
-#include "dependencies.h"
+#include <functional>
+#include <dory/engine/domain/events/event.h>
 
 using namespace dory::domain::events;
 

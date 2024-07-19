@@ -1,5 +1,7 @@
 #pragma once
 
+#include <random>
+
 namespace dory::testing
 {
     template<typename T, auto N = 10000>

@@ -1,4 +1,11 @@
-#include "dependencies.h"
+#include <refl.hpp>
+#include <filesystem>
+
+#include <dory/engine/domain/configuration.h>
+#include <dory/engine/domain/services/configurationService.h>
+#include <dory/engine/domain/services/serializationService.h>
+#include <dory/engine/domain/services/fileService.h>
+#include <dory/engine/domain/services/logService.h>
 
 enum class TestFormat
 {

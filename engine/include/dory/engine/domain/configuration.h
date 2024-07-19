@@ -1,5 +1,8 @@
 #pragma once
 
+#include <map>
+#include <string>
+
 namespace dory::configuration
 {
     struct RecursiveSection

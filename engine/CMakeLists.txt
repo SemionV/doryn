@@ -1,15 +1,14 @@
 cmake_minimum_required(VERSION ${BUILD_TOOLS_REQUIRED_VERSION})
 project(engine)
 
-add_library(engine STATIC
-        src/rendering/opengl-utils.cpp
-        include/dory/engine.h include/dory/registry.h)
+add_library(${PROJECT_NAME} STATIC
+        src/rendering/opengl-utils.cpp)
 
-target_precompile_headers(engine PRIVATE include/dory/engine/dependencies.h)
+target_precompile_headers(${PROJECT_NAME} PRIVATE include/dory/engine/dependencies.h)
 
-target_include_directories(engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(engine PUBLIC
+target_link_libraries(${PROJECT_NAME} PUBLIC
         opengl-glad
         glfw
         nlohmann_json::nlohmann_json
@@ -17,3 +16,6 @@ target_link_libraries(engine PUBLIC
         Boost::dll
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
         refl-cpp)
+
+add_library(inc_${PROJECT_NAME} INTERFACE include/dory/engine/dependencies.h)
+target_include_directories(inc_${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)

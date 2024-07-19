@@ -1,4 +1,15 @@
-#include "dependencies.h"
+#include <list>
+#include <set>
+#include <mutex>
+#include <condition_variable>
+
+#include <dory/engine/concurrency/log.h>
+#include <dory/engine/concurrency/messaging.h>
+#include <dory/engine/concurrency/worker.h>
+#include <dory/engine/concurrency/queue.h>
+#include <dory/engine/testing/quickSort.h>
+#include <dory/engine/testing/dataGenerators.h>
+#include <dory/engine/testing/stack_lockfree.h>
 
 TEST_CASE( "Get number of CPU cores", "[.][concurrency]" )
 {

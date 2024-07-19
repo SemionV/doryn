@@ -1,1 +1,0 @@
-#include <dory/registry.h>

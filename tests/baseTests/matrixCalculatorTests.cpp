@@ -1,4 +1,5 @@
-#include "dependencies.h"
+#include <dory/engine/math/linearAlgebra.h>
+#include <dory/engine/math/trigonometry.h>
 
 using namespace dory::math;
 

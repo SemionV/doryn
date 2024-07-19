@@ -1,5 +1,11 @@
 #pragma once
 
+#include <map>
+#include <string>
+#include <memory>
+
+#include <dory/engine/module.h>
+
 namespace dory::domain::services
 {
     template<typename TImplementation, typename TDataContext>

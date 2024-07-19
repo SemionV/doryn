@@ -1,4 +1,5 @@
-#include "dependencies.h"
+#include <iostream>
+#include <type_traits>
 
 namespace basics_varprint2_hpp
 {

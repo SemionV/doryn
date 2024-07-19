@@ -1,4 +1,4 @@
-#include "dependencies.h"
+#include <dory/engine/math/linearAlgebra.h>
 
 using namespace dory::math;
 

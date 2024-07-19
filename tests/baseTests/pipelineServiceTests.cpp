@@ -1,4 +1,4 @@
-#include "dependencies.h"
+#include <dory/engine/domain/repositories/pipelineRepository.h>
 
 using namespace dory::domain;
 

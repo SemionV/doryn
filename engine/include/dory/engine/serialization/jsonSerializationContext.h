@@ -1,5 +1,7 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
+
 namespace dory::serialization::json
 {
     using json = nlohmann::json;

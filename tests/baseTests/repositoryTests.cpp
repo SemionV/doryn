@@ -1,4 +1,5 @@
-#include "dependencies.h"
+#include <dory/engine/domain/entity.h>
+#include <dory/engine/domain/entityRepository.h>
 
 using namespace dory::domain;
 

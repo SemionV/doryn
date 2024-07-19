@@ -1,7 +1,6 @@
 #pragma once
 
-#include <dory/engine/dependencies.h>
-#include <dory/engine/module.h>
+#include <dory/engine/typeComponents.h>
 #include "entity.h"
 
 namespace dory::domain

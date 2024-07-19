@@ -1,7 +1,5 @@
 #pragma once
 
-#include <dory/engine/dependencies.h>
-
 namespace dory::concurrency::logging
 {
     struct EmptyLogPolicy

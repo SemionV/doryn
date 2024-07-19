@@ -1,5 +1,8 @@
 #pragma once
 
+#include <condition_variable>
+#include <queue>
+
 namespace dory::testing::messaging
 {
     struct message_base

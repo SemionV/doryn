@@ -1,4 +1,5 @@
-#include "dependencies.h"
+#include <dory/engine/concurrency/log.h>
+#include <dory/engine/concurrency/messaging.h>
 
 static const constexpr std::size_t largeDataCount = 10000;
 static const constexpr std::size_t smallDataCount = 10;

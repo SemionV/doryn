@@ -1,7 +1,5 @@
 #pragma once
 
-#include <dory/engine/concurrency/worker.h>
-
 namespace dory::testing
 {
     template<typename T>

@@ -1,4 +1,7 @@
-#include "dependencies.h"
+#include <dory/engine/domain/entity.h>
+#include <dory/engine/domain/dataContext.h>
+#include <dory/engine/domain/events/event.h>
+#include <dory/engine/domain/events/hub.h>
 
 using namespace dory::domain;
 

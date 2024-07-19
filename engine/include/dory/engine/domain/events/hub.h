@@ -1,5 +1,7 @@
 #pragma once
 
+#include <any>
+
 #include "event.h"
 
 namespace dory::domain::events

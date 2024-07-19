@@ -1,4 +1,6 @@
-#include "dependencies.h"
+#include <refl.hpp>
+
+#include <dory/engine/serialization/structures/dataLayout.h>
 
 struct Point
 {

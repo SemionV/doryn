@@ -1,6 +1,5 @@
 #pragma once
 
-#include <dory/engine/dependencies.h>
 #include <dory/engine/domain/events/hub.h>
 #include "device.h"
 

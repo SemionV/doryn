@@ -1,4 +1,8 @@
-#include "dependencies.h"
+#include <map>
+#include <refl.hpp>
+
+#include <dory/engine/serialization/reflection.h>
+#include <dory/engine/serialization/objectVisitor.h>
 
 namespace dory::serialization
 {

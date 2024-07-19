@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ryml.hpp>
+
 namespace dory::serialization::yaml
 {
     struct YamlContext: TreeStructureContext<ryml::NodeRef>

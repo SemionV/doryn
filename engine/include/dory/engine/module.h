@@ -1,6 +1,8 @@
 #pragma once
 
-#include <dory/engine/dependencies.h>
+#include <filesystem>
+#include <boost/dll.hpp>
+
 #include <dory/engine/typeComponents.h>
 
 namespace dory

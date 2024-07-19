@@ -1,6 +1,17 @@
 #pragma once
 
-#include <dory/engine/dependencies.h>
+#include <cstdint>
+#include <type_traits>
+#include <array>
+#include <vector>
+#include <deque>
+#include <map>
+#include <unordered_map>
+#include <optional>
+#include <string_view>
+#include <algorithm>
+#include <cctype>
+#include <memory>
 
 namespace dory
 {

@@ -1,4 +1,8 @@
-#include "dependencies.h"
+#include <refl.hpp>
+
+#include <dory/engine/serialization/structures/dataLayout.h>
+#include <dory/engine/serialization/binaryLayoutSerializer.h>
+#include <dory/engine/serialization/jsonPrinter.h>
 
 struct TextureCoordinates
 {

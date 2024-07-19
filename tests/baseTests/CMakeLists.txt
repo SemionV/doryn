@@ -19,8 +19,14 @@ add_executable(baseTests linearAlgebra.cpp
         configurationTests.cpp
 )
 
-target_link_libraries(baseTests PRIVATE Catch2::Catch2WithMain)
-target_link_libraries(baseTests PRIVATE engine)
+target_link_libraries(baseTests PRIVATE
+        inc_engine
+        refl-cpp
+        nlohmann_json::nlohmann_json
+        ryml::ryml
+        Boost::dll
+        spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
+        Catch2::Catch2WithMain)
 
 target_precompile_headers(baseTests PRIVATE dependencies.h)
 

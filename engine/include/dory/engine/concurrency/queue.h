@@ -1,7 +1,5 @@
 #pragma once
 
-#include <dory/engine/dependencies.h>
-
 namespace dory::concurrency
 {
     template<typename T, std::size_t UpperBound>
