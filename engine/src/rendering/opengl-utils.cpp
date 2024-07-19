@@ -1,4 +1,5 @@
-#include <dory/engine.h>
+#include <stdlib.h>
+#include <dory/engine/rendering/opengl/graphics/blocks.h>
 
 namespace dory::opengl
 {

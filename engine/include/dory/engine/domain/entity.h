@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "types.h"
 
 namespace dory::domain::entity

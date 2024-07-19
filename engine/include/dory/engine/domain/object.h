@@ -1,5 +1,7 @@
 #pragma once
 
+#include <list>
+
 #include "entity.h"
 
 namespace dory::domain::object

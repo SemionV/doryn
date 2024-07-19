@@ -1,7 +1,11 @@
+#include <catch2/catch_test_macros.hpp>
 #include <list>
 #include <set>
 #include <mutex>
+#include <array>
 #include <condition_variable>
+#include <iostream>
+#include <thread>
 
 #include <dory/engine/concurrency/log.h>
 #include <dory/engine/concurrency/messaging.h>

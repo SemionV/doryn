@@ -1,4 +1,11 @@
+#include <iostream>
+#include <filesystem>
+
+#include <dory/engine/domain/services/moduleService.h>
+
 #include <dory/client/client.h>
+
+
 #ifdef WIN32
 #include <windows.h>
 #include <winnt.h>

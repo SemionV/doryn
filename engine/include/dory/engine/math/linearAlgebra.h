@@ -1,5 +1,9 @@
 #pragma once
 
+#include <array>
+#include <type_traits>
+#include <cmath>
+
 namespace dory::math
 {
     using Dimensions4 = std::integral_constant<std::size_t, 4>;

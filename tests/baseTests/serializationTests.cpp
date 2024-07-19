@@ -1,5 +1,7 @@
+#include <catch2/catch_test_macros.hpp>
 #include <refl.hpp>
 #include <nlohmann/json.hpp>
+#include <iostream>
 
 #include <dory/engine/domain/services/serializationService.h>
 

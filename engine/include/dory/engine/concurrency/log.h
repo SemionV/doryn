@@ -1,5 +1,8 @@
 #pragma once
 
+#include <iostream>
+#include <mutex>
+
 namespace dory::concurrency::logging
 {
     struct EmptyLogPolicy

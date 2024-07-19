@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION ${BUILD_TOOLS_REQUIRED_VERSION})
 project(sandbox-app)
 
-add_executable(${PROJECT_NAME} ${PLATFORM} main.cpp src/app.cpp)
+add_executable(${PROJECT_NAME} ${PLATFORM} main.cpp)
 set_target_properties(${PROJECT_NAME} PROPERTIES
         OUTPUT_NAME "sandbox")
 

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <optional>
+#include <condition_variable>
+
 namespace dory::concurrency
 {
     template<typename T, std::size_t UpperBound>

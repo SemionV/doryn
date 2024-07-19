@@ -1,8 +1,11 @@
 #pragma once
 
+#include <iostream>
+
 #include <boost/config.hpp>
 #include <boost/dll/alias.hpp>
 #include <dory/client/client.h>
+#include <dory/engine/module.h>
 
 namespace testModule
 {

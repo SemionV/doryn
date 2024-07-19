@@ -2,6 +2,7 @@
 
 #include <map>
 #include <string>
+#include <refl.hpp>
 
 namespace dory::configuration
 {

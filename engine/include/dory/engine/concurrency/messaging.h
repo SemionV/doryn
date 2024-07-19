@@ -1,6 +1,9 @@
 #pragma once
 
+#include <functional>
 #include <queue>
+#include <optional>
+#include <condition_variable>
 
 namespace dory::concurrency::messaging
 {

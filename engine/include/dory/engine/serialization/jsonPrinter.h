@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include "objectVisitor.h"
 
 namespace dory::serialization

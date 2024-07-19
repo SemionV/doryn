@@ -1,5 +1,12 @@
+#include <benchmark/benchmark.h>
+
+#include <dory/engine/concurrency/queue.h>
+
 #include <dory/engine/concurrency/log.h>
 #include <dory/engine/concurrency/messaging.h>
+#include <dory/engine/testing/dataGenerators.h>
+#include <dory/engine/testing/quickSort.h>
+#include <dory/engine/testing/atm_book.h>
 
 static const constexpr std::size_t largeDataCount = 10000;
 static const constexpr std::size_t smallDataCount = 10;

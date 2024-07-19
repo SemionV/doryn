@@ -1,5 +1,8 @@
 #pragma once
 
+#include <algorithm>
+#include <future>
+
 namespace dory::testing
 {
     template<typename T>

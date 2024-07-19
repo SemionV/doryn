@@ -28,6 +28,6 @@ target_link_libraries(baseTests PRIVATE
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
         Catch2::Catch2WithMain)
 
-target_precompile_headers(baseTests PRIVATE dependencies.h)
+#target_precompile_headers(baseTests PRIVATE dependencies.h)
 
 install(TARGETS baseTests DESTINATION . COMPONENT Tests)

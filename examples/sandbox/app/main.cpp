@@ -1,4 +1,3 @@
-#include <dory/registry.h>
 #include <dory/sandbox/mainModule.h>
 #include <dory/bootstrap.h>
 

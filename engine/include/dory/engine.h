@@ -16,8 +16,6 @@
 #include <dory/engine/serialization/yamlSerializer.h>
 
 #include <dory/engine/concurrency/worker.h>
-//#include <dory/engine/concurrency/log.h>
-//#include <dory/engine/concurrency/messaging.h>
 #include <dory/engine/concurrency/queue.h>
 #include <dory/engine/concurrency/stack.h>
 
