@@ -36,14 +36,19 @@ FetchContent_Declare(rapid-yaml
         GIT_REPOSITORY https://github.com/biojppm/rapidyaml)
 FetchContent_MakeAvailable(rapid-yaml)
 
-message(STATUS "fetching boost...")
-set(BOOST_INCLUDE_LIBRARIES dll)
-set(BOOST_ENABLE_CMAKE ON)
-FetchContent_Declare(boost
-        GIT_REPOSITORY https://github.com/boostorg/boost.git
-        GIT_TAG boost-1.85.0)
-FetchContent_MakeAvailable(boost)
-
+set(BOOST_VERSION 1.74.0)
+set(BOOST_VERSION_UNDERSCORE 1_74_0)
+find_package(Boost ${BOOST_VERSION} COMPONENTS dll)
+if(NOT Boost_FOUND)
+    message(STATUS "Boost not found on system, using FetchContent to download and build Boost. It might take about 30 minutes.")
+    message(STATUS "fetching boost...")
+    set(BOOST_INCLUDE_LIBRARIES dll)
+    set(BOOST_ENABLE_CMAKE ON)
+    FetchContent_Declare(boost
+            GIT_REPOSITORY https://github.com/boostorg/boost.git
+            GIT_TAG boost-1.85.0)
+    FetchContent_MakeAvailable(boost)
+endif()
 
 FetchContent_Declare(spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog.git

@@ -1,8 +1,6 @@
 # Development log
 
 Tasks:
-* Review and rework header includes(include only headers which are required be the source file), possibly use forward declaration
-* Install boost preliminary
 * CI/CD setup with GitLab
 * Dynamic module loading(plugin system)
   * Hot reload of plugins with file watchers
@@ -28,6 +26,10 @@ Tasks:
 * Path finding
 * Build for MacOS
 * Voice control
+
+**19.07.24**
+* Task done: Review and rework header includes(include only headers which are required be the source file), possibly use forward declaration
+* Task done: Install boost preliminary
 
 **18.07.24**
 * Working on hot reload of extensions and plugins. It is basically implemented, but needs some polishing
