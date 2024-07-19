@@ -1,13 +1,13 @@
 # Development log
 
 Tasks:
+* Review and rework header includes(include only headers which are required be the source file), possibly use forward declaration
+* Install boost preliminary
+* CI/CD setup with GitLab
 * Dynamic module loading(plugin system)
   * Hot reload of plugins with file watchers
   * Configure and load plugins
   * Switch from dynamic library to static(cmake setup and library embedding in the source code(factory))
-* Review and rework header includes(include only headers which are required be the source file), possibly use forward declaration
-* Install boost preliminary
-* CI/CD setup with GitLab
 * Flatten controller pipeline: store entities in a sorted flat array
 * Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
 * OpenGL Renderer

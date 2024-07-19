@@ -61,13 +61,14 @@ namespace dory::sandbox
 
         registry.devices.terminalDevice.enterCommandMode();
 
-        registry.services.scriptService.addScript("exit", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
+        auto& scriptService = registry.services.scriptService;
+        scriptService.addScript("exit", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
         {
             registry.devices.terminalDevice.writeLine(fmt::format("-\u001B[31m{0}\u001B[0m-", "exit"));
             registry.events.applicationDispatcher.fire(context, events::application::Exit{});
         });
 
-        registry.services.scriptService.addScript("load-ext", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
+        scriptService.addScript("load-ext", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
         {
             registry.devices.terminalDevice.writeLine(fmt::format("\u001B[32m{0}\u001B[0m", "load extension"));
 
@@ -83,7 +84,7 @@ namespace dory::sandbox
             }
         });
 
-        registry.services.scriptService.addScript("unload-ext", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
+        scriptService.addScript("unload-ext", [this](DataContextType& context, const std::map<std::string, std::any>& arguments)
         {
             registry.devices.terminalDevice.writeLine(fmt::format("\u001B[32m{0}\u001B[0m", "unload extension"));
 
