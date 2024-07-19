@@ -1,7 +1,6 @@
 #pragma once
 
 #include <dory/bootstrap.h>
-#include "mainModule/registry.h"
 #include "mainModule/extensionContext.h"
 
 namespace dory::sandbox

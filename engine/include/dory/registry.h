@@ -1,6 +1,37 @@
 #pragma once
 
-#include "engine.h"
+#include <dory/engine/domain/dataContext.h>
+#include <dory/engine/domain/events/hub.h>
+
+#ifdef __unix__
+#include <dory/engine/domain/devices/standartIoDeviceUnix.h>
+#endif
+#ifdef WIN32
+#include <dory/engine/domain/devices/standartIoDeviceWin32.h>
+#endif
+
+#include <dory/engine/domain/devices/terminalDevice.h>
+
+#include <dory/engine/domain/entityRepository.h>
+#include <dory/engine/domain/repositories/pipelineRepository.h>
+
+#include <dory/engine/domain/services/configurationService.h>
+#include <dory/engine/domain/services/fileService.h>
+#include <dory/engine/domain/services/frameService.h>
+#include <dory/engine/domain/services/localizationService.h>
+#include <dory/engine/domain/services/logService.h>
+#include <dory/engine/domain/services/moduleService.h>
+#include <dory/engine/domain/services/scriptService.h>
+#include <dory/engine/domain/services/serializationService.h>
+#include <dory/engine/domain/services/windowService.h>
+
+#include <glad/gl.h>
+#include <GLFW/glfw3.h>
+#include <dory/engine/rendering/opengl/windowService.h>
+#include <dory/engine/rendering/opengl/viewControllerOpenGL.h>
+#include <dory/engine/rendering/opengl/glfwWindowController.h>
+
+#include <dory/engine/domain/managers/viewManager.h>
 
 namespace dory
 {

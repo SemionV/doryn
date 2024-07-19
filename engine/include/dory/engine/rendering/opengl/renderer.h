@@ -1,7 +1,7 @@
 #pragma once
 
-#include "graphics/program.h"
 #include "graphics/blocks.h"
+#include "graphics/program.h"
 #include "graphics/vertexArray.h"
 #include "services/openglService.h"
 #include "services/shaderService.h"

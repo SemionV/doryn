@@ -1,5 +1,4 @@
 #include <dory/sandbox/mainModule.h>
-#include <dory/bootstrap.h>
 
 #ifdef __unix__
 int main()

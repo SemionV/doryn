@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace dory::opengl::graphics
 {
     static constexpr GLuint unboundId = GL_INVALID_INDEX;

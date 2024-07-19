@@ -1,6 +1,5 @@
 #pragma once
 
-#include <dory/engine/dependencies.h>
 #include <dory/engine/typeComponents.h>
 #include <dory/engine/module.h>
 

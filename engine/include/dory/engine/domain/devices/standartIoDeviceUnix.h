@@ -1,5 +1,9 @@
 #pragma once
 
+#include <termios.h>
+#include <thread>
+#include <iostream>
+
 #include <dory/engine/domain/events/hub.h>
 #include "device.h"
 

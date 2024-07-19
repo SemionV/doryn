@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <glad/gl.h>
 #include <dory/engine/rendering/opengl/graphics/blocks.h>
 
 namespace dory::opengl
