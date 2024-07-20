@@ -1,9 +1,6 @@
 [submodule "external/opengl-glad"]
 	path = external/opengl-glad
 	url = https://github.com/SemionV/opengl-glad.git
-[submodule "dory-boost-adapter"]
-	path = dory-boost-adapter
-	url = https://github.com/SemionV/dory-boost-adapter.git
 [submodule "external/dory-boost-adapter"]
 	path = external/dory-boost-adapter
 	url = https://github.com/SemionV/dory-boost-adapter.git
