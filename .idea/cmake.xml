@@ -2,7 +2,7 @@
 <project version="4">
   <component name="CMakeSharedSettings">
     <configurations>
-      <configuration PROFILE_NAME="Debug" ENABLED="true" GENERATION_DIR="build/cmake-artifacts-ninja-clion" CONFIG_NAME="Debug" GENERATION_OPTIONS="-G Ninja -B &quot;build/cmake-artifacts-ninja-clion&quot; -DVENDOR_DIR=&quot;/home/semion/dev/doryn-vendor/&quot; -DCMAKE_INSTALL_PREFIX=../../bin/" />
+      <configuration PROFILE_NAME="Debug" ENABLED="true" GENERATION_DIR="build/cmake-artifacts-ninja-clion" CONFIG_NAME="Debug" GENERATION_OPTIONS="-G Ninja -B &quot;build/cmake-artifacts-ninja-clion&quot; -DCMAKE_INSTALL_PREFIX=../../bin/" />
     </configurations>
   </component>
 </project>

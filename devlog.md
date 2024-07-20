@@ -28,6 +28,9 @@ Tasks:
 * Voice control
 
 **19.07.24**
+* Task done: boost problem solved. Now instead of whole boost library a small adapter library is used instead, which contains extract of used boost libraries 
+
+**19.07.24**
 * Task done: Review and rework header includes(include only headers which are required be the source file), possibly use forward declaration
 * Task done: Install boost preliminary
 

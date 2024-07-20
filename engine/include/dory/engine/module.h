@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <atomic>
 #include <boost/dll.hpp>
 
 #include <dory/engine/typeComponents.h>
