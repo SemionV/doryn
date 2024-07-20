@@ -2,6 +2,17 @@
 
 Tasks:
 * CI/CD setup with GitLab
+  * Setup CTest
+  * Setup CPack
+  * Setup linters and code style checks
+  * Setup static analysis tool
+  * Setup memory usage analysis with Valgrind
+  * Setup test coverage checks
+  * Setup pipeline for tests(build, validate, analyze)
+  * Setup pipeline for build and tests on windows
+  * Setup pipeline for releases
+  * Deploy assembled packages to some network storage
+  * Trigger tests pipelines on a commit to the main repository or git submodules
 * Dynamic module loading(plugin system)
   * Hot reload of plugins with file watchers
   * Configure and load plugins
