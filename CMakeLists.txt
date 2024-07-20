@@ -17,8 +17,8 @@ endif()
 add_compile_options(-fno-gnu-unique)
 
 add_subdirectory(external)
-add_subdirectory(engine)
-add_subdirectory(bootstrap)
+add_subdirectory(components/engine)
+add_subdirectory(components/bootstrap)
 
 add_subdirectory(tests/engine)
 add_subdirectory(tests/baseTests)
