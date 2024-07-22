@@ -1,7 +1,9 @@
-set(BUILD_TOOLS_REQUIRED_VERSION 3.18)
-cmake_minimum_required(VERSION ${BUILD_TOOLS_REQUIRED_VERSION})
-project(dory)
+set(DORY_BUILD_TOOLS_REQUIRED_VERSION 3.18)
+cmake_minimum_required(VERSION ${DORY_BUILD_TOOLS_REQUIRED_VERSION})
 
+project(dory VERSION 0.0.1 LANGUAGES CXX)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_CXX_STANDARD 20)
 set(INSTALL_LIBRARIES_DESTINATION ".")
 
@@ -16,13 +18,11 @@ endif()
 #library from unload(broken hot reload functionality). See here https://stackoverflow.com/questions/24467404/dlclose-doesnt-really-unload-shared-object-no-matter-how-many-times-it-is-call
 add_compile_options(-fno-gnu-unique)
 
-add_subdirectory(external)
+add_subdirectory(external EXCLUDE_FROM_ALL)
 add_subdirectory(components/engine)
 add_subdirectory(components/bootstrap)
 
-add_subdirectory(tests/engine)
-add_subdirectory(tests/baseTests)
-add_subdirectory(tests/baseBenchmarks)
+add_subdirectory(tests)
 
 set(EXAMPLES_INSTALL_PREFIX "./examples/")
 add_subdirectory(examples/sandbox)

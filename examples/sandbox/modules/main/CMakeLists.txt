@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION ${BUILD_TOOLS_REQUIRED_VERSION})
+cmake_minimum_required(VERSION ${DORY_BUILD_TOOLS_REQUIRED_VERSION})
 project(mainModule)
 
 add_library(${PROJECT_NAME} STATIC src/mainModule.cpp
