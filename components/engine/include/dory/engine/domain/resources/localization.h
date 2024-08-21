@@ -1,5 +1,6 @@
 #pragma once
 
+#include <refl.hpp>
 #include <dory/engine/typeComponents.h>
 #include "stringResource.h"
 

@@ -12,7 +12,6 @@ namespace dory::sandbox
     private:
         using DataContextType = Registry::DataContextType;
 
-        Registry::ConfigurationType configuration;
         Registry registry;
         Registry::ServiceTypes::FrameServiceType frameService;
         dory::domain::services::module::DynamicLibraryService libraryService;

@@ -18,18 +18,6 @@ namespace dory::sandbox
         registry.services.configurationService.load(configuration);
         registry.services.appLogger.initialize(configuration.loggingConfiguration.mainLogger, dory::makeOptionalRef(registry.devices.terminalDevice));
 
-        Registry::LocalizationType localization;
-        registry.services.localizationService.load(configuration, localization);
-        registry.services.appLogger.information(localization.hello);
-        registry.services.appLogger.information(localization.goodBye.get("Semion"));
-        registry.services.appLogger.information(localization.birthDate.get(11, 03, 1984));
-
-        configuration.userInterface.activeLanguage = "english";
-        registry.services.localizationService.load(configuration, localization);
-        registry.services.appLogger.information(localization.hello);
-        registry.services.appLogger.information(localization.goodBye.get("Semion"));
-        registry.services.appLogger.information(localization.birthDate.get(11, 03, 1984));
-
         attachEventHandlers();
 
         auto context = DataContextType{};
@@ -53,6 +41,18 @@ namespace dory::sandbox
 
     void MainModule::onInitializeEngine(DataContextType& context, const events::engine::Initialize& eventData)
     {
+        auto& localization = context.localization;
+        registry.services.localizationService.load(configuration, localization);
+        registry.services.appLogger.information(localization.hello);
+        registry.services.appLogger.information(localization.goodBye.get("Semion"));
+        registry.services.appLogger.information(localization.birthDate.get(11, 03, 1984));
+
+        configuration.userInterface.activeLanguage = "english";
+        registry.services.localizationService.load(configuration, localization);
+        registry.services.appLogger.information(localization.hello);
+        registry.services.appLogger.information(localization.goodBye.get("Semion"));
+        registry.services.appLogger.information(localization.birthDate.get(11, 03, 1984));
+
         registry.services.appLogger.information("on: initialize engine");
 
         registry.devices.standardIoDevice.connect(context);
@@ -73,7 +73,7 @@ namespace dory::sandbox
             registry.devices.terminalDevice.writeLine(fmt::format("\u001B[32m{0}\u001B[0m", "load extension"));
 
             libraryService.unload("test extension");
-            auto library = libraryService.load("test extension", "modules/extension");
+            auto library = libraryService.load("test extension", "/home/semion/dev/doryn/build/cmake-artifacts-ninja-clion/examples/sandbox/modules/extension/extension");
             if(library)
             {
                 auto extension = library->loadModule<ExtensionContext>("extension", extensionContext);
