@@ -8,68 +8,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 target_link_libraries(${PROJECT_NAME} PRIVATE engine mainModule dory-bootstrap_mod)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+set(FILES_TO_INSTALL settings.yaml)
+set(DIRECTORIES_TO_INSTALL configuration)
+
 install(TARGETS ${PROJECT_NAME} DESTINATION ${DORY_SANDBOX_INSTALL_PREFIX} COMPONENT ${DORY_SANDBOX_COMPONENT})
-install(DIRECTORY configuration DESTINATION ${DORY_SANDBOX_INSTALL_PREFIX} COMPONENT ${DORY_SANDBOX_COMPONENT})
-install(FILES settings.yaml DESTINATION ${DORY_SANDBOX_INSTALL_PREFIX} COMPONENT ${DORY_SANDBOX_COMPONENT})
-
-# Define the source and destination directories
-set(DATA_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/configuration)
-set(DATA_DEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/configuration)
-
-# Custom command to copy the directory
-add_custom_command(
-        OUTPUT ${DATA_DEST_DIR}
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${DATA_SOURCE_DIR} ${DATA_DEST_DIR}
-        DEPENDS ${DATA_SOURCE_DIR}
-        COMMENT "Copying configuration directory to output directory"
-)
-
-# Custom target to invoke the custom command
-add_custom_target(copy_configuration ALL DEPENDS ${DATA_DEST_DIR})
-
-# List of files to copy
-set(FILES_TO_COPY
-    ${CMAKE_CURRENT_SOURCE_DIR}/settings.yaml
-)
-
-# List to store the copy commands' output files
-set(COPIED_FILES)
-
-# Define custom commands for each file
-foreach(file ${FILES_TO_COPY})
-    get_filename_component(filename ${file} NAME)
-    set(destination ${CMAKE_CURRENT_BINARY_DIR}/${filename})
-    add_custom_command(
-            OUTPUT ${destination}
-            COMMAND ${CMAKE_COMMAND} -E copy ${file} ${destination}
-            DEPENDS ${file}
-            COMMENT "Copying ${file} to ${destination}"
-    )
-    list(APPEND COPIED_FILES ${destination})
-endforeach()
-
-message("copied files: ${COPIED_FILES}")
-
-# Custom target to invoke the custom commands
-add_custom_target(copy_files ALL DEPENDS ${COPIED_FILES})
-
-# Ensure the copy_data target is built before the executable
-add_dependencies(${PROJECT_NAME} copy_configuration copy_files)
-
-# Define a custom clean target
-add_custom_target(custom_clean_sandbox
-        COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_CURRENT_BINARY_DIR}/configuration/*
-        COMMENT "Custom clean: Removing contents of configuration directory"
-        COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_CURRENT_BINARY_DIR}/settings.yaml
-        COMMENT "Custom clean: Removing setting.yaml"
-)
-
-# Run the custom clean target before Ninja's clean
-add_custom_target(pre_clean ALL
-        COMMAND echo "running pre-clean target"
-        COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target custom_clean_sandbox
-        COMMENT "Running custom clean before main clean"
-)
-
-# Ensure custom clean target runs during clean
-set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${DATA_DEST_DIR})
+install(DIRECTORY ${DIRECTORIES_TO_INSTALL} DESTINATION ${DORY_SANDBOX_INSTALL_PREFIX} COMPONENT ${DORY_SANDBOX_COMPONENT})
+install(FILES ${FILES_TO_INSTALL} DESTINATION ${DORY_SANDBOX_INSTALL_PREFIX} COMPONENT ${DORY_SANDBOX_COMPONENT})

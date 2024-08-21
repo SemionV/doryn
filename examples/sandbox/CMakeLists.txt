@@ -6,5 +6,5 @@ set(DORY_SANDBOX_MODULES_INSTALL_PREFIX "${DORY_SANDBOX_INSTALL_PREFIX}modules/"
 set(DORY_SANDBOX_COMPONENT Sandbox)
 
 add_subdirectory(modules/main)
-add_subdirectory(modules/extension bin/modules)
-add_subdirectory(app bin)
+add_subdirectory(modules/extension)
+add_subdirectory(app)
