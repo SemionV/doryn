@@ -14,7 +14,7 @@ Tasks:
   * Deploy assembled packages to some network storage
   * Trigger tests pipelines on a commit to the main repository or git submodules
 * Dynamic module loading(plugin system)
-  * Hot reload of plugins with file watchers
+  * Hot reload of plugins with file watchers(see library https://github.com/SpartanJ/efsw)
   * Configure and load plugins
   * Switch from dynamic library to static(cmake setup and library embedding in the source code(factory))
 * Flatten controller pipeline: store entities in a sorted flat array

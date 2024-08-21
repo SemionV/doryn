@@ -5,3 +5,5 @@ build/cmake-artifacts-ninja/
 build/cmake-artifacts-ninja-clion/
 build/cmake-artifacts-make/
 build/settings.sh
+/.idea/editor.xml
+/.idea/inspectionProfiles/Project_Default.xml
