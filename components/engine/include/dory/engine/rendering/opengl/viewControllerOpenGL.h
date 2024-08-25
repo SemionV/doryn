@@ -57,7 +57,7 @@ namespace dory::opengl
                     return false;
                 }
 
-                renderer.initialize();
+                renderer.initialize(context);
             }
 
             return true;

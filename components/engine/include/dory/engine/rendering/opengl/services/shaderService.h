@@ -32,18 +32,18 @@ namespace dory::opengl::services
         std::shared_ptr<ShaderProgramLinkingError> shaderProgramLinkingError;
     };
 
-    template<typename TImplementation>
+    template<typename TImplementation, typename TDataContext>
     class IShaderService: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
-        void loadProgram(graphics::Program& program, const std::function<void(ShaderServiceError&)>& errorHandler = nullptr)
+        void loadProgram(TDataContext& dataContext, graphics::Program& program, const std::function<void(ShaderServiceError&)>& errorHandler = nullptr)
         {
-            this->toImplementation()->loadProgramImpl(program, errorHandler);
+            this->toImplementation()->loadProgramImpl(dataContext, program, errorHandler);
         }
     };
 
-    template<typename TLogger, typename TFileService>
-    class ShaderService: public IShaderService<ShaderService<TLogger, TFileService>>
+    template<typename TDataContext, typename TLogger, typename TFileService>
+    class ShaderService: public IShaderService<ShaderService<TDataContext, TLogger, TFileService>, TDataContext>
     {
     private:
         using LoggerType = domain::services::ILogService<TLogger>;
@@ -52,18 +52,14 @@ namespace dory::opengl::services
         using FileServiceType = domain::services::IFileService<TFileService>;
         FileServiceType& fileService;
 
-        const configuration::ShaderLoader& shaderLoaderSettings;
-
     public:
-        explicit ShaderService(const configuration::ShaderLoader& shaderLoaderSettings,
-                               LoggerType& logger,
+        explicit ShaderService(LoggerType& logger,
                                FileServiceType& fileService):
-            shaderLoaderSettings(shaderLoaderSettings),
             logger(logger),
             fileService(fileService)
         {}
 
-        void loadProgramImpl(graphics::Program& program, const std::function<void(ShaderServiceError&)>& errorHandler)
+        void loadProgramImpl(TDataContext& dataContext, graphics::Program& program, const std::function<void(ShaderServiceError&)>& errorHandler)
         {
             program.id = glCreateProgram();
 
@@ -73,6 +69,7 @@ namespace dory::opengl::services
             {
                 auto& shader = shaders[i];
 
+                auto& shaderLoaderSettings = dataContext.configuration.shaderLoader;
                 auto filename = std::filesystem::path{shaderLoaderSettings.shadersDirectory} /= shader.key;
                 try
                 {

@@ -114,8 +114,8 @@ namespace dory
         using JsonSerializationServiceType = domain::services::serialization::JsonSerializationService<4>;
         using FormatKeyConverterType = domain::services::serialization::FormatKeyConverter;
         using SerializationServiceBundle = domain::services::serialization::SerializationServiceBundle<domain::services::serialization::Format, YamlSerializationServiceType, JsonSerializationServiceType>;
-        using ShaderServiceType = opengl::services::ShaderService<LogServiceType, FileServiceType>;
-        using RendererType = opengl::Renderer<opengl::RendererDependencies<ShaderServiceType>>;
+        using ShaderServiceType = opengl::services::ShaderService<TDataContext, LogServiceType, FileServiceType>;
+        using RendererType = opengl::Renderer<TDataContext, opengl::RendererDependencies<ShaderServiceType>>;
         using RendererFactoryType = RendererType::FactoryType;
         using EngineType = domain::Engine<TDataContext, typename TRepositories::PipelineRepositoryType>;
         using WindowServiceType = opengl::WindowService<opengl::WindowServiceDependencies<typename TRepositories::WindowRepositoryType >>;
@@ -151,8 +151,8 @@ namespace dory
         T::WindowControllerFactoryType windowControllerFactory;
         T::ViewControllerFactoryType viewControllerFactory;
 
-        template<typename TConfiguration, typename TEventLayer, typename TRepositoryLayer>
-        ServiceLayer(TConfiguration& configuration, TEventLayer& events, TRepositoryLayer& repository):
+        template<typename TEventLayer, typename TRepositoryLayer>
+        ServiceLayer(TEventLayer& events, TRepositoryLayer& repository):
                 serializationServiceBundle{
                         {
                                 {domain::services::serialization::Format::yaml, std::ref(yamlSerializationService)},
@@ -161,7 +161,7 @@ namespace dory
                 },
                 configurationService(appConfigurationLogger, fileService, serializationServiceBundle, formatKeyConverter),
                 localizationService(appLogger, fileService, serializationServiceBundle, formatKeyConverter),
-                shaderService(configuration.shaderLoader, appLogger, fileService),
+                shaderService(appLogger, fileService),
                 windowService(repository.windows),
                 rendererFactory(shaderService),
                 windowControllerFactory(repository.windows, events.windowDispatcher),

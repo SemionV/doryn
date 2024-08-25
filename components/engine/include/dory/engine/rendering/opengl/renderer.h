@@ -58,13 +58,13 @@ namespace dory::opengl
         {}
     };
 
-    template<typename TImplementation>
+    template<typename TImplementation, typename TDataContext>
     class IRenderer: public StaticInterface<TImplementation>
     {
     public:
-        void initialize()
+        void initialize(TDataContext& dataContext)
         {
-             this->toImplementation()->initializeImpl();
+             this->toImplementation()->initializeImpl(dataContext);
         }
 
         void draw()
@@ -73,7 +73,7 @@ namespace dory::opengl
         }
     };
 
-    template<typename T>
+    template<typename TDataContext, typename T>
     class RendererFactory;
 
     template<typename TShaderService>
@@ -82,12 +82,12 @@ namespace dory::opengl
         using ShaderServiceType = TShaderService;
     };
 
-    template<typename T>
+    template<typename TDataContext, typename T>
     requires(is_instance_v<T, RendererDependencies>)
-    class Renderer: public IRenderer<Renderer<T>>
+    class Renderer: public IRenderer<Renderer<TDataContext, T>, TDataContext>
     {
     private:
-        using ShaderServiceType = services::IShaderService<typename T::ShaderServiceType>;
+        using ShaderServiceType = services::IShaderService<typename T::ShaderServiceType, TDataContext>;
         ShaderServiceType& shaderService;
 
         TrianglesProgram trianglesProgram;
@@ -114,15 +114,15 @@ namespace dory::opengl
         };
 
     public:
-        using FactoryType = RendererFactory<T>;
+        using FactoryType = RendererFactory<TDataContext, T>;
 
         explicit Renderer(ShaderServiceType& shaderService):
                 shaderService(shaderService)
         {}
 
-        void initializeImpl()
+        void initializeImpl(TDataContext& dataContext)
         {
-            shaderService.loadProgram(trianglesProgram, [](services::ShaderServiceError& error)
+            shaderService.loadProgram(dataContext, trianglesProgram, [](services::ShaderServiceError& error)
             {
                 if(error.shaderCompilationError)
                 {
@@ -167,11 +167,11 @@ namespace dory::opengl
         }
     };
 
-    template<typename T>
-    class RendererFactory: public IServiceFactory<RendererFactory<T>>
+    template<typename TDataContext, typename T>
+    class RendererFactory: public IServiceFactory<RendererFactory<TDataContext, T>>
     {
     private:
-        using ShaderServiceType = services::IShaderService<typename T::ShaderServiceType>;
+        using ShaderServiceType = services::IShaderService<typename T::ShaderServiceType, TDataContext>;
         ShaderServiceType& shaderService;
 
     public:
@@ -181,7 +181,7 @@ namespace dory::opengl
 
         auto createInstanceImpl()
         {
-            return Renderer<T>{shaderService};
+            return Renderer<TDataContext, T>{shaderService};
         }
     };
 }

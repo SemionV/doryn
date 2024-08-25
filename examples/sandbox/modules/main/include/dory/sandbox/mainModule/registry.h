@@ -14,7 +14,6 @@ namespace dory::sandbox
     public:
         using DataContextType = ProjectDataContext;
         using ConfigurationType = dory::configuration::Configuration;
-        using LocalizationType = dory::domain::resources::Localization;
         using RepositoryTypes = dory::RepositoryTypeRegistry<DataContextType>;
         using ServiceTypes = dory::ServiceTypeRegistry<RepositoryTypes, DataContextType>;
 
@@ -24,9 +23,9 @@ namespace dory::sandbox
         dory::ServiceLayer<ServiceTypes> services;
         dory::ManagerLayer<dory::ManagerTypeRegistry<RepositoryTypes, ServiceTypes, DataContextType>> managers;
 
-        explicit Registry(const ConfigurationType& configuration):
+        explicit Registry():
                 devices { events },
-                services { configuration, events, repositories },
+                services { events, repositories },
                 managers { repositories, services }
         {}
     };

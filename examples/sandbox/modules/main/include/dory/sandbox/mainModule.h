@@ -11,6 +11,7 @@ namespace dory::sandbox
     {
     private:
         using DataContextType = Registry::DataContextType;
+        using ConfigurationType = Registry::ConfigurationType;
 
         Registry registry;
         Registry::ServiceTypes::FrameServiceType frameService;
@@ -18,8 +19,6 @@ namespace dory::sandbox
         ExtensionContext extensionContext = ExtensionContext{ registry };
 
     public:
-        MainModule();
-
         int run(bootstrap::StartupModuleContext& moduleContext) final;
 
     private:

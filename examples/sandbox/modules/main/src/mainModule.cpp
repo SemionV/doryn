@@ -2,11 +2,10 @@
 
 namespace dory::sandbox
 {
-    MainModule::MainModule():
-            registry { configuration }
-    {}
-
     int MainModule::run(bootstrap::StartupModuleContext& moduleContext) {
+        auto context = DataContextType{};
+        auto& configuration = context.configuration;
+
         //0 level config
         configuration.section.loadFrom.emplace_back("settings.yaml");
         auto& bootLoggerConfig = configuration.loggingConfiguration.configurationLogger;
@@ -20,7 +19,6 @@ namespace dory::sandbox
 
         attachEventHandlers();
 
-        auto context = DataContextType{};
         auto engine = Registry::ServiceTypes::EngineType { registry.events.engineDispatcher, registry.repositories.pipelines };
 
         frameService.startLoop(context, engine);
@@ -41,6 +39,7 @@ namespace dory::sandbox
 
     void MainModule::onInitializeEngine(DataContextType& context, const events::engine::Initialize& eventData)
     {
+        auto& configuration = context.configuration;
         auto& localization = context.localization;
         registry.services.localizationService.load(configuration, localization);
         registry.services.appLogger.information(localization.hello);
