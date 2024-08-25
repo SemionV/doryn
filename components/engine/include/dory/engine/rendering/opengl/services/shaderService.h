@@ -42,10 +42,12 @@ namespace dory::opengl::services
         }
     };
 
-    template<typename TDataContext, typename TLogger, typename TFileService>
-    class ShaderService: public IShaderService<ShaderService<TDataContext, TLogger, TFileService>, TDataContext>
+    template<typename TLogger, typename TFileService, typename... TDataContextSections>
+    class ShaderService: public IShaderService<ShaderService<TLogger, TFileService, TDataContextSections...>, dory::domain::DataContext<TDataContextSections...>>
     {
     private:
+        using DataContextType = dory::domain::DataContext<TDataContextSections...>;
+
         using LoggerType = domain::services::ILogService<TLogger>;
         LoggerType& logger;
 
@@ -59,7 +61,7 @@ namespace dory::opengl::services
             fileService(fileService)
         {}
 
-        void loadProgramImpl(TDataContext& dataContext, graphics::Program& program, const std::function<void(ShaderServiceError&)>& errorHandler)
+        void loadProgramImpl(DataContextType& dataContext, graphics::Program& program, const std::function<void(ShaderServiceError&)>& errorHandler)
         {
             program.id = glCreateProgram();
 

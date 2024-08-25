@@ -6,18 +6,19 @@
 
 namespace dory::domain
 {
-    struct DataContext
+    template<typename... TCustomSections>
+    struct DataContext: public TCustomSections...
     {
-        dory::domain::entity::IdType inputGroupNodeId;
-        dory::domain::entity::IdType outputGroupNodeId;
-        dory::domain::entity::IdType mainWindowId;
+        entity::IdType inputGroupNodeId;
+        entity::IdType outputGroupNodeId;
+        entity::IdType mainWindowId;
         resources::Localization localization;
         configuration::Configuration configuration;
 
         DataContext():
-                inputGroupNodeId(dory::domain::entity::nullId),
-                outputGroupNodeId(dory::domain::entity::nullId),
-                mainWindowId(dory::domain::entity::nullId)
+                inputGroupNodeId(entity::nullId),
+                outputGroupNodeId(entity::nullId),
+                mainWindowId(entity::nullId)
         {}
     };
 }

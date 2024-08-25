@@ -35,19 +35,21 @@
 
 namespace dory
 {
-    template<typename TDataContext = domain::DataContext>
+    template<typename... TDataContextSections>
     struct EventTypeRegistry
     {
-        using EngineDispatcherType = domain::events::engine::Dispatcher<TDataContext>;
-        using EngineType = domain::events::engine::Hub<TDataContext>;
-        using WindowDispatcherType = domain::events::window::Dispatcher<TDataContext>;
-        using WindowType = domain::events::window::Hub<TDataContext>;
-        using ApplicationDispatcherType = domain::events::application::Dispatcher<TDataContext>;
-        using ApplicationType = domain::events::application::Hub<TDataContext>;
-        using StandartInputDispatcherType = domain::events::io::Dispatcher<TDataContext>;
-        using StandartInputType = domain::events::io::Hub<TDataContext>;
-        using ScriptDispatcherType = domain::events::script::Dispatcher<TDataContext>;
-        using ScriptType = domain::events::script::Hub<TDataContext>;
+        using DataContextType = dory::domain::DataContext<TDataContextSections...>;
+
+        using EngineDispatcherType = domain::events::engine::Dispatcher<DataContextType>;
+        using EngineType = domain::events::engine::Hub<DataContextType>;
+        using WindowDispatcherType = domain::events::window::Dispatcher<DataContextType>;
+        using WindowType = domain::events::window::Hub<DataContextType>;
+        using ApplicationDispatcherType = domain::events::application::Dispatcher<DataContextType>;
+        using ApplicationType = domain::events::application::Hub<DataContextType>;
+        using StandartInputDispatcherType = domain::events::io::Dispatcher<DataContextType>;
+        using StandartInputType = domain::events::io::Hub<DataContextType>;
+        using ScriptDispatcherType = domain::events::script::Dispatcher<DataContextType>;
+        using ScriptType = domain::events::script::Hub<DataContextType>;
     };
 
     template<typename T>
@@ -65,12 +67,13 @@ namespace dory
         T::ScriptType& script = scriptDispatcher;
     };
 
-    template<typename TDataContext = domain::DataContext>
+    template<typename... TDataContextSections>
     struct DeviceTypeRegistry
     {
+        using DataContextType = dory::domain::DataContext<TDataContextSections...>;
 
-        using StandartIODeviceType = domain::devices::ConsoleIODevice<TDataContext>;
-        using TerminalDeviceType = domain::devices::TerminalDevice<TDataContext, StandartIODeviceType>;
+        using StandartIODeviceType = domain::devices::ConsoleIODevice<DataContextType>;
+        using TerminalDeviceType = domain::devices::TerminalDevice<DataContextType, StandartIODeviceType>;
     };
 
     template<typename T>
@@ -86,13 +89,15 @@ namespace dory
         {}
     };
 
-    template<typename TDataContext = domain::DataContext>
+    template<typename... TDataContextSections>
     struct RepositoryTypeRegistry
     {
+        using DataContextType = dory::domain::DataContext<TDataContextSections...>;
+
         using CameraRepositoryType = domain::EntityRepository<domain::entity::Camera>;
         using ViewRepositoryType = domain::EntityRepository<domain::entity::View>;
         using WindowRepositoryType = domain::EntityRepository<opengl::GlfwWindow>;
-        using PipelineRepositoryType = domain::repositories::PipelineRepository<TDataContext, domain::entity::PipelineNode<TDataContext>>;
+        using PipelineRepositoryType = domain::repositories::PipelineRepository<DataContextType, domain::entity::PipelineNode<DataContextType>>;
     };
 
     template<typename T>
@@ -104,9 +109,11 @@ namespace dory
         T::PipelineRepositoryType pipelines;
     };
 
-    template<typename TRepositories, typename TDataContext = domain::DataContext>
+    template<typename TRepositories, typename... TDataContextSections>
     struct ServiceTypeRegistry
     {
+        using DataContextType = dory::domain::DataContext<TDataContextSections...>;
+
         using LogServiceType = domain::services::MultiSinkLogService;
         using FrameServiceType = domain::services::BasicFrameService;
         using FileServiceType = domain::services::FileService;
@@ -114,17 +121,17 @@ namespace dory
         using JsonSerializationServiceType = domain::services::serialization::JsonSerializationService<4>;
         using FormatKeyConverterType = domain::services::serialization::FormatKeyConverter;
         using SerializationServiceBundle = domain::services::serialization::SerializationServiceBundle<domain::services::serialization::Format, YamlSerializationServiceType, JsonSerializationServiceType>;
-        using ShaderServiceType = opengl::services::ShaderService<TDataContext, LogServiceType, FileServiceType>;
-        using RendererType = opengl::Renderer<TDataContext, opengl::RendererDependencies<ShaderServiceType>>;
+        using ShaderServiceType = opengl::services::ShaderService<LogServiceType, FileServiceType, TDataContextSections...>;
+        using RendererType = opengl::Renderer<DataContextType, opengl::RendererDependencies<ShaderServiceType>>;
         using RendererFactoryType = RendererType::FactoryType;
-        using EngineType = domain::Engine<TDataContext, typename TRepositories::PipelineRepositoryType>;
+        using EngineType = domain::Engine<DataContextType, typename TRepositories::PipelineRepositoryType>;
         using WindowServiceType = opengl::WindowService<opengl::WindowServiceDependencies<typename TRepositories::WindowRepositoryType >>;
-        using ScriptServiceType = domain::services::ScriptService<TDataContext>;
+        using ScriptServiceType = domain::services::ScriptService<DataContextType>;
         using ConfigurationServiceType = domain::services::configuration::ConfigurationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;
         using LocalizationServiceType = domain::services::localization::LocalizationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;
-        using WindowControllerType = opengl::GlfwWindowController<TDataContext, typename TRepositories::WindowRepositoryType>;
+        using WindowControllerType = opengl::GlfwWindowController<DataContextType, typename TRepositories::WindowRepositoryType>;
         using WindowControllerFactoryType = WindowControllerType::FactoryType;
-        using ViewControllerType = opengl::ViewControllerOpenGL<opengl::ViewControllerDependencies<TDataContext,
+        using ViewControllerType = opengl::ViewControllerOpenGL<opengl::ViewControllerDependencies<DataContextType,
                 RendererType,
                 typename TRepositories::ViewRepositoryType,
                 typename TRepositories::WindowRepositoryType,
@@ -169,11 +176,13 @@ namespace dory
         {}
     };
 
-    template<typename TRepositories, typename TServices, typename TDataContext = domain::DataContext>
+    template<typename TRepositories, typename TServices, typename... TDataContextSections>
     struct ManagerTypeRegistry
     {
-        using PipelineManagerType = domain::managers::PipelineManager<TDataContext, typename TServices::WindowControllerFactoryType, typename TRepositories::PipelineRepositoryType>;
-        using ViewManagerType = domain::managers::ViewManager<domain::managers::ViewManagerDependencies<TDataContext,
+        using DataContextType = dory::domain::DataContext<TDataContextSections...>;
+
+        using PipelineManagerType = domain::managers::PipelineManager<DataContextType, typename TServices::WindowControllerFactoryType, typename TRepositories::PipelineRepositoryType>;
+        using ViewManagerType = domain::managers::ViewManager<domain::managers::ViewManagerDependencies<DataContextType,
                 typename TRepositories::ViewRepositoryType,
                 typename TRepositories::PipelineRepositoryType,
                 typename TRepositories::CameraRepositoryType,

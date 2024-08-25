@@ -5,23 +5,23 @@
 
 namespace dory::sandbox
 {
-    struct ProjectDataContext: public dory::domain::DataContext
+    struct ProjectDataContext
     {
     };
 
     class Registry
     {
     public:
-        using DataContextType = ProjectDataContext;
+        using DataContextType = dory::domain::DataContext<ProjectDataContext>;
         using ConfigurationType = dory::configuration::Configuration;
-        using RepositoryTypes = dory::RepositoryTypeRegistry<DataContextType>;
-        using ServiceTypes = dory::ServiceTypeRegistry<RepositoryTypes, DataContextType>;
+        using RepositoryTypes = dory::RepositoryTypeRegistry<ProjectDataContext>;
+        using ServiceTypes = dory::ServiceTypeRegistry<RepositoryTypes, ProjectDataContext>;
 
-        dory::EventLayer<dory::EventTypeRegistry<DataContextType>> events;
-        dory::DeviceLayer<dory::DeviceTypeRegistry<DataContextType>> devices;
+        dory::EventLayer<dory::EventTypeRegistry<ProjectDataContext>> events;
+        dory::DeviceLayer<dory::DeviceTypeRegistry<ProjectDataContext>> devices;
         dory::RepositoryLayer<RepositoryTypes> repositories;
         dory::ServiceLayer<ServiceTypes> services;
-        dory::ManagerLayer<dory::ManagerTypeRegistry<RepositoryTypes, ServiceTypes, DataContextType>> managers;
+        dory::ManagerLayer<dory::ManagerTypeRegistry<RepositoryTypes, ServiceTypes, ProjectDataContext>> managers;
 
         explicit Registry():
                 devices { events },
