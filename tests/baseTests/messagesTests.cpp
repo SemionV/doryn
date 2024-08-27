@@ -42,27 +42,27 @@ struct KeyPressed
 class WindowEventHub
 {
     private:
-        events::EventDispatcher<DataContext&, WindowClick&> clickEvent;
-        events::EventDispatcher<DataContext&, KeyPressed&> keyPressedEvent;
+        events::EventDispatcher<DataContext<>&, WindowClick&> clickEvent;
+        events::EventDispatcher<DataContext<>&, KeyPressed&> keyPressedEvent;
 
     public:
-        events::Event<DataContext&, WindowClick&>& onClick()
+        events::Event<DataContext<>&, WindowClick&>& onClick()
         {
             return clickEvent;
         }
 
-        events::Event<DataContext&, KeyPressed&>& onKeyPressed()
+        events::Event<DataContext<>&, KeyPressed&>& onKeyPressed()
         {
             return keyPressedEvent;
         }
 
     protected:
-        events::EventDispatcher<DataContext&, WindowClick&>& onClickDispatcher()
+        events::EventDispatcher<DataContext<>&, WindowClick&>& onClickDispatcher()
         {
             return clickEvent;
         }
 
-        events::EventDispatcher<DataContext&, KeyPressed&>& onKeyPressedDispatcher()
+        events::EventDispatcher<DataContext<>&, KeyPressed&>& onKeyPressedDispatcher()
         {
             return keyPressedEvent;
         }
@@ -71,8 +71,8 @@ class WindowEventHub
 class WindowEventHubDispatcher: public WindowEventHub
 {
     private:
-        events::EventBuffer<DataContext, KeyPressed> keyPressedEventBuffer;
-        events::EventBuffer<DataContext, WindowClick> clickEventBuffer;
+        events::EventBuffer<DataContext<>, KeyPressed> keyPressedEventBuffer;
+        events::EventBuffer<DataContext<>, WindowClick> clickEventBuffer;
 
     public:
         void addCase(WindowClick&& clickData)
@@ -85,7 +85,7 @@ class WindowEventHubDispatcher: public WindowEventHub
             keyPressedEventBuffer.addCase(std::forward<KeyPressed>(clickData));
         }
 
-        void submit(DataContext& dataContext)
+        void submit(DataContext<>& dataContext)
         {
             clickEventBuffer.submitCases(onClickDispatcher(), dataContext);
             keyPressedEventBuffer.submitCases(onKeyPressedDispatcher(), dataContext);
@@ -98,19 +98,19 @@ TEST_CASE( "Event Hub", "[messages]" )
     std::vector<WindowClick> clicks;
     dory::domain::DataContext dataContext;
 
-    eventHub.onClick() += [&](dory::domain::DataContext& context, WindowClick& click)
+    eventHub.onClick() += [&](dory::domain::DataContext<>& context, WindowClick& click)
     {
         clicks.push_back(click);
     };
 
     std::vector<WindowClick> clicks2;
-    eventHub.onClick() += [&](dory::domain::DataContext& context, WindowClick& click)
+    eventHub.onClick() += [&](dory::domain::DataContext<>& context, WindowClick& click)
     {
         clicks2.push_back(click);
     };
 
     std::vector<KeyPressed> keysPressed;
-    eventHub.onKeyPressed() += [&](dory::domain::DataContext& context, KeyPressed& keyPressed)
+    eventHub.onKeyPressed() += [&](dory::domain::DataContext<>& context, KeyPressed& keyPressed)
     {
         keysPressed.push_back(keyPressed);
     };

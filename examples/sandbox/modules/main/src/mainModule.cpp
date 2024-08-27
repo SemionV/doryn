@@ -72,7 +72,7 @@ namespace dory::sandbox
             registry.devices.terminalDevice.writeLine(fmt::format("\u001B[32m{0}\u001B[0m", "load extension"));
 
             libraryService.unload("test extension");
-            auto library = libraryService.load("test extension", "/home/semion/dev/doryn/build/cmake-artifacts-ninja-clion/examples/sandbox/modules/extension/extension");
+            auto library = libraryService.load("test extension", "modules/extension");
             if(library)
             {
                 auto extension = library->loadModule<ExtensionContext>("extension", extensionContext);
