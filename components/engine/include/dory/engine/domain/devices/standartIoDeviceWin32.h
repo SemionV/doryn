@@ -1,5 +1,13 @@
 #pragma once
 
+#include <thread>
+#include <windows.h>
+#include <wincon.h>
+#include <winnt.h>
+#include <fileapi.h>
+#include <winbase.h>
+#include <iostream>
+
 #include <dory/engine/domain/events/hub.h>
 #include "device.h"
 

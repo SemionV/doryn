@@ -7,3 +7,5 @@ build/cmake-artifacts-make/
 build/settings.sh
 /.idea/editor.xml
 /.idea/inspectionProfiles/Project_Default.xml
+.idea/tools/External Tools.xml
+.idea/vcs.xml

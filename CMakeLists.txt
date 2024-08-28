@@ -24,6 +24,6 @@ add_subdirectory(components/bootstrap)
 
 add_subdirectory(tests)
 
-set(EXAMPLES_INSTALL_PREFIX "./examples/")
+set(EXAMPLES_INSTALL_PREFIX "examples/")
 add_subdirectory(examples/sandbox)
 add_subdirectory(examples/modules)
