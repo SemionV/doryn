@@ -2,7 +2,6 @@
 
 Tasks:
 * Cleanup and organize cmake project
-  * Organize cmake ta4gets for convenient development 
   * Cleanup install directory from google-benchmark files
   * Put test executable to a separate folder in install directory
 * CI/CD setup with GitLab
@@ -41,6 +40,9 @@ Tasks:
 * Path finding
 * Build for MacOS
 * Voice control
+
+**28.08.24**
+* Task done: Organize cmake targets for convenient development
 
 **19.07.24**
 * Task done: boost problem solved. Now instead of whole boost library a small adapter library is used instead, which contains extract of used boost libraries 

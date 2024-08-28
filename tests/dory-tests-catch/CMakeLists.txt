@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION ${DORY_BUILD_TOOLS_REQUIRED_VERSION})
 
-project(dory-benchmarks)
+project(dory-tests-catch)
 
-add_executable(baseTests linearAlgebra.cpp
+add_executable(${PROJECT_NAME} linearAlgebra.cpp
         templates.cpp
         eventTests.cpp
         messagesTests.cpp
@@ -19,7 +19,7 @@ add_executable(baseTests linearAlgebra.cpp
         configurationTests.cpp
 )
 
-target_link_libraries(baseTests PRIVATE
+target_link_libraries(${PROJECT_NAME} PRIVATE
         engine_include
         refl-cpp
         nlohmann_json::nlohmann_json
@@ -28,6 +28,4 @@ target_link_libraries(baseTests PRIVATE
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
         Catch2::Catch2WithMain)
 
-#target_precompile_headers(baseTests PRIVATE dependencies.h)
-
-install(TARGETS baseTests DESTINATION . COMPONENT Tests)
+install(TARGETS ${PROJECT_NAME} DESTINATION ${TESTS_INSTALL_PREFIX} COMPONENT Tests)

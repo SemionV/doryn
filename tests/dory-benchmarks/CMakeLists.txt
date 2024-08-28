@@ -1,0 +1,9 @@
+cmake_minimum_required(VERSION ${DORY_BUILD_TOOLS_REQUIRED_VERSION})
+
+project(dory-benchmarks)
+
+add_executable(${PROJECT_NAME} concurrency.cpp)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE engine_include benchmark::benchmark)
+
+install(TARGETS ${PROJECT_NAME} DESTINATION ${TESTS_INSTALL_PREFIX} COMPONENT Tests)

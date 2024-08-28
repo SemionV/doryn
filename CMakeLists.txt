@@ -22,7 +22,10 @@ add_subdirectory(external EXCLUDE_FROM_ALL)
 add_subdirectory(components/engine)
 add_subdirectory(components/bootstrap)
 
-add_subdirectory(tests)
+set(TESTS_INSTALL_PREFIX "tests/")
+add_subdirectory(tests/dory-tests)
+add_subdirectory(tests/dory-tests-catch)
+add_subdirectory(tests/dory-benchmarks)
 
 set(EXAMPLES_INSTALL_PREFIX "examples/")
 add_subdirectory(examples/sandbox)
