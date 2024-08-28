@@ -1,8 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="sandbox-app" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="true" WORKING_DIR="file://$PROJECT_DIR$/bin/examples/sandbox" PASS_PARENT_ENVS_2="true" PROJECT_NAME="dory" TARGET_NAME="sandbox-app" CONFIG_NAME="Debug" RUN_PATH="sandbox.exe">
-    <method v="2">
-      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      <option name="CMake.Install" enabled="true" />
-    </method>
-  </configuration>
-</component>

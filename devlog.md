@@ -1,6 +1,10 @@
 # Development log
 
 Tasks:
+* Cleanup and organize cmake project
+  * Organize cmake ta4gets for convenient development 
+  * Cleanup install directory from google-benchmark files
+  * Put test executable to a separate folder in install directory
 * CI/CD setup with GitLab
   * Setup CTest
   * Setup CPack

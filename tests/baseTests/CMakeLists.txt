@@ -20,7 +20,7 @@ add_executable(baseTests linearAlgebra.cpp
 )
 
 target_link_libraries(baseTests PRIVATE
-        inc_engine
+        engine_include
         refl-cpp
         nlohmann_json::nlohmann_json
         ryml::ryml

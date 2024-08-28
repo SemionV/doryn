@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION ${DORY_BUILD_TOOLS_REQUIRED_VERSION})
 
-project(dory-testModule)
+project(modular-example-testModule)
 
-add_library(testModule MODULE ${PLATFORM}
+add_library(${PROJECT_NAME} MODULE ${PLATFORM}
         testModule2.cpp
         factory.cpp)
 
-set_target_properties(testModule PROPERTIES PREFIX ""
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX ""
         IMPORT_PREFIX ""
         OUTPUT_NAME "testModule")
 
-target_link_libraries(testModule client_mod)
+target_link_libraries(${PROJECT_NAME} modular-example-client_include)
 
-install(TARGETS testModule DESTINATION "${EXAMPLES_INSTALL_PREFIX}modular/modules" COMPONENT Example)
+install(TARGETS ${PROJECT_NAME} DESTINATION "${EXAMPLES_INSTALL_PREFIX}modular/modules" COMPONENT Example)

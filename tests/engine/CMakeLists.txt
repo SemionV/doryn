@@ -5,7 +5,7 @@ add_executable(tests
         modules.cpp)
 
 target_link_libraries(tests PRIVATE
-        inc_engine
+        engine_include
         Boost::dll
         gmock
         gtest_main)

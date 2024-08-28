@@ -17,5 +17,5 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
         refl-cpp)
 
-add_library(inc_${PROJECT_NAME} INTERFACE include/dory/engine/dependencies.h)
-target_include_directories(inc_${PROJECT_NAME} INTERFACE include)
+add_library(${PROJECT_NAME}_include INTERFACE include/dory/engine/dependencies.h)
+target_include_directories(${PROJECT_NAME}_include INTERFACE include)

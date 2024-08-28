@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION ${DORY_BUILD_TOOLS_REQUIRED_VERSION})
-project(sandbox-app)
+project(sandbox)
 
 add_executable(${PROJECT_NAME} ${PLATFORM} main.cpp)
 set_target_properties(${PROJECT_NAME} PROPERTIES
         OUTPUT_NAME "sandbox")
 
-target_link_libraries(${PROJECT_NAME} PRIVATE engine mainModule dory-bootstrap_mod)
+target_link_libraries(${PROJECT_NAME} PRIVATE engine sandbox-mainModule dory-bootstrap_include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(FILES_TO_INSTALL settings.yaml)
