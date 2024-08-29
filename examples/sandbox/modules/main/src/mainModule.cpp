@@ -41,6 +41,12 @@ namespace dory::sandbox
     {
         auto& configuration = context.configuration;
         auto& localization = context.localization;
+
+        registry.services.appLogger.information(fmt::format("Dory Sandbox, {0}.{1}, {2}",
+                                                            configuration.buildInfo.version,
+                                                            configuration.buildInfo.commitSHA,
+                                                            configuration.buildInfo.timestamp));
+
         registry.services.localizationService.load(configuration, localization);
         registry.services.appLogger.information(localization.hello);
         registry.services.appLogger.information(localization.goodBye.get("Semion"));

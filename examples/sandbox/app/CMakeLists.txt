@@ -1,4 +1,4 @@
-project(sandbox)
+project(sandbox VERSION 0.0.2)
 
 add_executable(${PROJECT_NAME} ${PLATFORM} main.cpp)
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -6,6 +6,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 target_link_libraries(${PROJECT_NAME} PRIVATE engine sandbox-mainModule dory-bootstrap_include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+include(BuildInfoSettings)
+BuildInfoSettings(${DORY_SANDBOX_INSTALL_PREFIX} ${DORY_SANDBOX_COMPONENT})
 
 set(FILES_TO_INSTALL settings.yaml)
 set(DIRECTORIES_TO_INSTALL configuration)

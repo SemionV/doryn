@@ -3,9 +3,10 @@ project(engine)
 add_library(${PROJECT_NAME} STATIC
         src/rendering/opengl-utils.cpp)
 
-#target_precompile_headers(${PROJECT_NAME} PRIVATE include/dory/engine/dependencies.h)
-
-target_include_directories(${PROJECT_NAME} PUBLIC include)
+target_include_directories(${PROJECT_NAME} PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
         opengl-glad
@@ -17,4 +18,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         refl-cpp)
 
 add_library(${PROJECT_NAME}_include INTERFACE include/dory/engine/typeComponents.h)
-target_include_directories(${PROJECT_NAME}_include INTERFACE include)
+target_include_directories(${PROJECT_NAME}_include INTERFACE
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)

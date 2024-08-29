@@ -91,9 +91,24 @@ REFL_TYPE(dory::configuration::Interface)
 REFL_END
 
 namespace dory::configuration {
+    struct BuildInfo
+    {
+        std::string commitSHA;
+        std::string timestamp;
+        std::string version;
+    };
+}
+REFL_TYPE(dory::configuration::BuildInfo)
+        REFL_FIELD(commitSHA)
+        REFL_FIELD(timestamp)
+        REFL_FIELD(version)
+REFL_END
+
+namespace dory::configuration {
     struct Configuration
     {
         RecursiveSection section;
+        BuildInfo buildInfo;
         std::map<std::string, std::string> modules;
         std::map<std::string, std::vector<std::string>> localizations;
         LoggingConfiguration loggingConfiguration;
@@ -103,6 +118,7 @@ namespace dory::configuration {
 }
 REFL_TYPE(dory::configuration::Configuration)
     REFL_FIELD(section)
+    REFL_FIELD(buildInfo)
     REFL_FIELD(localizations)
     REFL_FIELD(loggingConfiguration)
     REFL_FIELD(shaderLoader)

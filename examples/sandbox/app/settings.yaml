@@ -1,6 +1,6 @@
 section:
   description: app settings
-  loadFrom: [ configuration/settings.json ]
+  loadFrom: [ buildinfo.yaml, configuration/settings.json ]
 loggingConfiguration:
   mainLogger:
     name: engine

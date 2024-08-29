@@ -1,0 +1,4 @@
+buildInfo:
+    commitSHA: "@COMMIT_SHA@"
+    timestamp: "@BUILD_TIMESTAMP@"
+    version: "@PROJECT_VERSION@"
