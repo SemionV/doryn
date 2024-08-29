@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION ${DORY_BUILD_TOOLS_REQUIRED_VERSION})
-
 project(modular-example-client)
 
 add_executable(${PROJECT_NAME} ${PLATFORM} main.cpp)

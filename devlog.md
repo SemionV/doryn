@@ -13,6 +13,7 @@ Tasks:
   * Setup pipeline for releases
   * Deploy assembled packages to some network storage
   * Trigger tests pipelines on a commit to the main repository or git submodules
+* Divide components/engine on smaller components like serialization, math, concurrency, events, rendering, engine-template, etc
 * Dynamic module loading(plugin system)
   * Hot reload of plugins with file watchers(see library https://github.com/SpartanJ/efsw)
   * Configure and load plugins
