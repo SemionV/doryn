@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION ${DORY_BUILD_TOOLS_REQUIRED_VERSION})
 project(engine)
 
 add_library(${PROJECT_NAME} STATIC

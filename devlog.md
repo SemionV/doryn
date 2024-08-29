@@ -1,9 +1,6 @@
 # Development log
 
 Tasks:
-* Cleanup and organize cmake project
-  * Cleanup install directory from google-benchmark files
-  * Put test executable to a separate folder in install directory
 * CI/CD setup with GitLab
   * Setup CTest
   * Setup CPack
@@ -43,6 +40,8 @@ Tasks:
 
 **28.08.24**
 * Task done: Organize cmake targets for convenient development
+* Task done: Cleanup install directory from google-benchmark files
+* Task done: Put test executable to a separate folder in install directory
 
 **19.07.24**
 * Task done: boost problem solved. Now instead of whole boost library a small adapter library is used instead, which contains extract of used boost libraries 

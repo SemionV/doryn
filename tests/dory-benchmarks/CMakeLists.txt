@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION ${DORY_BUILD_TOOLS_REQUIRED_VERSION})
-
 project(dory-benchmarks)
 
 add_executable(${PROJECT_NAME} concurrency.cpp)
