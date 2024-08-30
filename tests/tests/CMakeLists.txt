@@ -5,8 +5,10 @@ add_executable(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         engine_include
-        Boost::dll
-        gmock
-        gtest_main)
+        Boost::dll)
+
+AddTests(${PROJECT_NAME})
+
+add_test(NAME gtests COMMAND ${PROJECT_NAME})
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${TESTS_INSTALL_PREFIX} COMPONENT Tests)
