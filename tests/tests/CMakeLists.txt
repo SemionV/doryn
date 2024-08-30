@@ -1,4 +1,4 @@
-project(dory-tests)
+project(tests)
 
 add_executable(${PROJECT_NAME}
         modules.cpp)

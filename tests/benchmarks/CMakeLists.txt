@@ -1,4 +1,4 @@
-project(dory-benchmarks)
+project(benchmarks)
 
 add_executable(${PROJECT_NAME} concurrency.cpp)
 

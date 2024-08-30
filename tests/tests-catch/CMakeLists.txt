@@ -1,4 +1,4 @@
-project(dory-tests-catch)
+project(tests-catch)
 
 add_executable(${PROJECT_NAME} linearAlgebra.cpp
         templates.cpp

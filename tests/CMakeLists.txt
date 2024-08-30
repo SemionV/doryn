@@ -1,4 +1,4 @@
 set(TESTS_INSTALL_PREFIX "tests/")
-add_subdirectory(dory-tests)
-add_subdirectory(dory-tests-catch)
-add_subdirectory(dory-benchmarks)
+add_subdirectory(tests)
+add_subdirectory(tests-catch)
+add_subdirectory(benchmarks)
