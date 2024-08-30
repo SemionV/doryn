@@ -1,4 +1,4 @@
-project(dory-sandbox-example)
+project(sandbox)
 
 set(DORY_SANDBOX_INSTALL_PREFIX "${EXAMPLES_INSTALL_PREFIX}sandbox/")
 set(DORY_SANDBOX_MODULES_INSTALL_PREFIX "${DORY_SANDBOX_INSTALL_PREFIX}modules/")

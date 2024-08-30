@@ -1,13 +1,13 @@
-project(modular-example-testModule)
+set(DORY_MODULE_NAME ${PROJECT_NAME}-testModule)
 
-add_library(${PROJECT_NAME} MODULE ${PLATFORM}
+add_library(${DORY_MODULE_NAME} MODULE ${PLATFORM}
         testModule2.cpp
         factory.cpp)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX ""
+set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""
         IMPORT_PREFIX ""
         OUTPUT_NAME "testModule")
 
-target_link_libraries(${PROJECT_NAME} modular-example-client_include)
+target_link_libraries(${DORY_MODULE_NAME} modular-example-client_include)
 
-install(TARGETS ${PROJECT_NAME} DESTINATION "${EXAMPLES_INSTALL_PREFIX}modular/modules" COMPONENT Example)
+install(TARGETS ${DORY_MODULE_NAME} DESTINATION "${EXAMPLES_INSTALL_PREFIX}modular/modules" COMPONENT Example)
