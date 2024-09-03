@@ -2,12 +2,11 @@
 
 Tasks:
 * CI/CD setup with GitLab
-  * Setup CTest
-  * Setup CPack
   * Setup linters and code style checks
   * Setup static analysis tool
   * Setup memory usage analysis with Valgrind
   * Setup test coverage checks
+  * Setup CPack
   * Setup pipeline for tests(build, validate, analyze)
   * Setup pipeline for build and tests on windows
   * Setup pipeline for releases
@@ -38,6 +37,9 @@ Tasks:
 * Path finding
 * Build for MacOS
 * Voice control
+
+**03.09.24**
+* Task done: Setup CTest
 
 **28.08.24**
 * Task done: Organize cmake targets for convenient development
