@@ -23,7 +23,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         nlohmann_json::nlohmann_json
         ryml::ryml
         Boost::dll
-        spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
-        Catch2::Catch2WithMain)
+        spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
+
+AddCatchTests(${PROJECT_NAME})
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${TESTS_INSTALL_PREFIX} COMPONENT Tests)

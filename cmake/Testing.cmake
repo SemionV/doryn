@@ -25,10 +25,14 @@ FetchContent_Declare(catch2
 FetchContent_MakeAvailable(catch2)
 
 include(GoogleTest)
+include(Catch)
 
-macro(AddTests target)
+macro(AddGoogleTests target)
     target_link_libraries(${target} PRIVATE gtest_main gmock)
     gtest_discover_tests(${target})
-    #AddCoverage(${target})
-    #AddMemcheck(${target})
+endmacro()
+
+macro(AddCatchTests target)
+    target_link_libraries(${target} PRIVATE Catch2::Catch2WithMain)
+    catch_discover_tests(${target})
 endmacro()
