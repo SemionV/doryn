@@ -2,17 +2,18 @@
 
 Tasks:
 * CI/CD setup with GitLab
+  * Setup memory usage analysis with Valgrind
   * Setup linters and code style checks
   * Setup static analysis tool
-  * Setup memory usage analysis with Valgrind
-  * Setup test coverage checks
   * Setup CPack
   * Setup pipeline for tests(build, validate, analyze)
   * Setup pipeline for build and tests on windows
   * Setup pipeline for releases
   * Deploy assembled packages to some network storage
-  * Trigger tests pipelines on a commit to the main repository or git submodules
-* Divide components/engine on smaller components like serialization, math, concurrency, events, rendering, engine-template, etc
+* Move engine to a static shared library
+  * Move generic components like EventHub system, Reflection/Serialization, etc to header only libraries, each per component/system
+  * Compose an engine shared library out of generic components
+  * Cover the engine with tests
 * Dynamic module loading(plugin system)
   * Hot reload of plugins with file watchers(see library https://github.com/SpartanJ/efsw)
   * Configure and load plugins
@@ -37,6 +38,9 @@ Tasks:
 * Path finding
 * Build for MacOS
 * Voice control
+
+**04.09.24**
+* Task done: Setup test coverage checks
 
 **03.09.24**
 * Task done: Setup CTest
