@@ -4,6 +4,7 @@ project(dory VERSION 0.0.1 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
+option(DORY_TEST_COVERAGE "Enable test coverage report" OFF)
 enable_testing()
 
 include(NoInSourceBuilds)
