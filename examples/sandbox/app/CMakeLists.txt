@@ -10,6 +10,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/i
 include(BuildInfoSettings)
 BuildInfoSettings(${DORY_SANDBOX_INSTALL_PREFIX} ${DORY_SANDBOX_COMPONENT})
 
+include(Memcheck)
+GenerateValgrindScript(${PROJECT_NAME} ${DORY_SANDBOX_INSTALL_PREFIX} ${DORY_SANDBOX_COMPONENT})
+
 set(FILES_TO_INSTALL settings.yaml)
 set(DIRECTORIES_TO_INSTALL configuration)
 

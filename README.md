@@ -9,3 +9,18 @@ To setup project localy:
 * Execute build/install-dependencies.sh script
 * Execute build/build-local-dev-cmake.sh script
 * Enjoy!
+
+**To run tests coverage:**
+* Install lcov:
+  * sudo apt-get -y install lcov
+* cmake -B <binary_tree> -S <source_tree> -DCMAKE_BUILD_TYPE=Debug
+* cmake --build <binary_tree> -t coverage-tests
+* * go to <binary_tree>/coverage-tests/index.html 
+
+**To run memory check with Valgrind:**
+* Install valgrind and gawk:
+    * sudo apt-get install valgrind
+    * sudo apt-get install gawk
+* cmake -B <binary_tree> -S <source_tree> -DCMAKE_BUILD_TYPE=Debug
+* cmake --build <binary_tree> -t memcheck-tests
+* go to <binary_tree>/memcheck-tests/index.html

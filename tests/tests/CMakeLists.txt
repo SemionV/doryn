@@ -13,5 +13,6 @@ if(DORY_TEST_COVERAGE)
     CleanCoverage(${PROJECT_NAME})
     EnableCoverage(${PROJECT_NAME})
 endif()
+AddMemcheck(${PROJECT_NAME})
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${TESTS_INSTALL_PREFIX} COMPONENT Tests)
