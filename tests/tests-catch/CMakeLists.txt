@@ -18,10 +18,8 @@ add_executable(${PROJECT_NAME} linearAlgebra.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
+        dory-serialization
         engine_include
-        refl-cpp
-        nlohmann_json::nlohmann_json
-        ryml::ryml
         Boost::dll
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
 

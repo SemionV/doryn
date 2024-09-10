@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/engine/serialization/objectVisitor.h>
+#include <dory/serialization/objectVisitor.h>
 #include <dory/engine/domain/configuration.h>
 #include "logService.h"
 #include "fileService.h"

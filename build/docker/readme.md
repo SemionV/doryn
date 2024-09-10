@@ -6,6 +6,7 @@
 **Steps**:
 * Switch to the directory containing Dockerfile
 * `$ docker login registry.gitlab.com`
+* (use access token from gitlab as password, see the token in the access file in google docks)
 * `$ docker build -t registry.gitlab.com/game-engine4894225/dory .`
   _(instead of "dory" at the very end of the image tag you can use your own image name)_
 * `$ docker container run -it registry.gitlab.com/game-engine4894225/dory`

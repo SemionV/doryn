@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/engine/serialization/reflection.h>
+#include <dory/serialization/reflection.h>
 #include "typeMap.h"
 
 namespace dory::serialization

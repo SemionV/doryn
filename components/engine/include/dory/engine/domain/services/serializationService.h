@@ -1,9 +1,9 @@
 #pragma once
 
-#include <dory/engine/serialization/yamlSerializer.h>
-#include <dory/engine/serialization/yamlDeserializer.h>
-#include <dory/engine/serialization/jsonSerializer.h>
-#include <dory/engine/serialization/jsonDeserializer.h>
+#include <dory/serialization/yamlSerializer.h>
+#include <dory/serialization/yamlDeserializer.h>
+#include <dory/serialization/jsonSerializer.h>
+#include <dory/serialization/jsonDeserializer.h>
 
 namespace dory::domain::services::serialization
 {

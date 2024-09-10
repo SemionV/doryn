@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <refl.hpp>
 
-#include <dory/engine/serialization/structures/dataLayout.h>
+#include <dory/serialization/structures/dataLayout.h>
 
 struct Point
 {

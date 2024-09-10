@@ -1,2 +1,3 @@
+add_subdirectory(serialization)
 add_subdirectory(engine)
 add_subdirectory(bootstrap)

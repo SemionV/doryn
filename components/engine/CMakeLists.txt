@@ -9,13 +9,11 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
+        dory-serialization
         opengl-glad
         glfw
-        nlohmann_json::nlohmann_json
-        ryml::ryml
         Boost::dll
-        spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
-        refl-cpp)
+        spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
 
 add_library(${PROJECT_NAME}_include INTERFACE include/dory/engine/typeComponents.h)
 target_include_directories(${PROJECT_NAME}_include INTERFACE
