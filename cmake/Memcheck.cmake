@@ -24,17 +24,19 @@ function(AddMemcheck target)
 endfunction()
 
 function(GenerateValgrindScript target installDestination installComponent)
-    set(BUILDINFO_TEMPLATE_DIR ${DORY_CMAKE_SCRIPTS_PATH})
+    set(TEMPLATES_DIR ${DORY_CMAKE_SCRIPTS_PATH}/templates)
     set(DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/scripts")
 
-    set(MEMCHECK_PATH ${memcheck-cover_SOURCE_DIR}/bin)
-    set(REPORT_PATH "memcheck-report")
-    set(EXECUTABLE ${target})
+    get_target_property(EXECUTABLE_FILENAME ${target} OUTPUT_NAME)
+    set(DESTINATION_SCRIPT_FILE "${DESTINATION}/memcheck-${EXECUTABLE_FILENAME}.sh")
 
     configure_file(
-            "${BUILDINFO_TEMPLATE_DIR}/run-memcheck.sh.in"
-            "${DESTINATION}/run-memcheck.sh" @ONLY
+            "${TEMPLATES_DIR}/memcheck.sh.in"
+            ${DESTINATION_SCRIPT_FILE} @ONLY
     )
 
-    install(FILES ${DESTINATION}/run-memcheck.sh DESTINATION ${installDestination} COMPONENT ${installComponent})
+    set(TARGET_MEMCHECK_COMPONENT ${installComponent}-MEMCHECK)
+
+    install(FILES ${DESTINATION_SCRIPT_FILE} DESTINATION ${installDestination} COMPONENT ${TARGET_MEMCHECK_COMPONENT})
+    install(FILES ${TEMPLATES_DIR}/valgrind.supp DESTINATION ${installDestination} COMPONENT ${TARGET_MEMCHECK_COMPONENT})
 endfunction()

@@ -1,0 +1,6 @@
+{
+   glfw_suppression
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib/libGL.so.*
+}

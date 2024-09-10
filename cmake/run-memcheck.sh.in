@@ -1,2 +1,0 @@
-@MEMCHECK_PATH@/memcheck_runner.sh -o @REPORT_PATH@ -- @EXECUTABLE@
-@MEMCHECK_PATH@/generate_html_report.sh -i @REPORT_PATH@ -o @REPORT_PATH@

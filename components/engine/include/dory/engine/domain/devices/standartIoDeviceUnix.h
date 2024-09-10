@@ -90,7 +90,7 @@ namespace dory::domain::devices
                     //see more about this thread unblocking technic here: https://stackoverflow.com/questions/11513593/cancelling-getchar
                     int readPipe = *(int*)pipe;
                     fd_set rfds;
-                    int inputKey;
+                    int inputKey = 0;
 
                     while(!stoken.stop_requested())
                     {
