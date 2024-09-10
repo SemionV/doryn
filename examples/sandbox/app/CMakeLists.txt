@@ -13,6 +13,9 @@ BuildInfoSettings(${DORY_SANDBOX_INSTALL_PREFIX} ${DORY_SANDBOX_COMPONENT})
 include(Memcheck)
 GenerateValgrindScript(${DORY_MODULE_NAME} ${DORY_SANDBOX_INSTALL_PREFIX} ${DORY_SANDBOX_COMPONENT})
 
+include(CppCheck)
+AddCppCheck(${DORY_MODULE_NAME})
+
 set(FILES_TO_INSTALL settings.yaml)
 set(DIRECTORIES_TO_INSTALL configuration)
 

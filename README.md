@@ -24,3 +24,9 @@ To setup project localy:
 * cmake -B <binary_tree> -S <source_tree> -DCMAKE_BUILD_TYPE=Debug
 * cmake --build <binary_tree> -t memcheck-tests
 * go to <binary_tree>/memcheck-tests/index.html
+
+**To use performance profiling tool:**
+* sudo apt install linux-tools-$(uname -r)
+
+**To use static analysis tool:**
+* sudo apt-get install cppcheck
