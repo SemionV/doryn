@@ -1,9 +1,9 @@
 #include <benchmark/benchmark.h>
 
-#include <dory/engine/concurrency/queue.h>
+#include <dory/concurrency/queue.h>
 
-#include <dory/engine/concurrency/log.h>
-#include <dory/engine/concurrency/messaging.h>
+#include <dory/concurrency/log.h>
+#include <dory/concurrency/messaging.h>
 #include <dory/engine/testing/dataGenerators.h>
 #include <dory/engine/testing/quickSort.h>
 #include <dory/engine/testing/atm_book.h>

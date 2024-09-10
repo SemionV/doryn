@@ -9,13 +9,15 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
+        dory-generics
         dory-serialization
+        dory-concurrency
         opengl-glad
         glfw
         Boost::dll
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
 
-add_library(${PROJECT_NAME}_include INTERFACE include/dory/engine/typeComponents.h)
+add_library(${PROJECT_NAME}_include INTERFACE include/dory/engine/domain/engine.h)
 target_include_directories(${PROJECT_NAME}_include INTERFACE
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"

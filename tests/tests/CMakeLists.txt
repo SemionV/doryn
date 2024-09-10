@@ -4,6 +4,7 @@ add_executable(${PROJECT_NAME}
         modules.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
+        dory-generics
         engine_include
         Boost::dll)
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/engine/typeComponents.h>
+#include <dory/generics/typeComponents.h>
 #include <dory/engine/module.h>
 
 namespace dory::domain::events

@@ -1,3 +1,5 @@
+add_subdirectory(generics)
 add_subdirectory(serialization)
+add_subdirectory(concurrency)
 add_subdirectory(engine)
 add_subdirectory(bootstrap)

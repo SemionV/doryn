@@ -4,7 +4,7 @@
 #include <atomic>
 #include <boost/dll.hpp>
 
-#include <dory/engine/typeComponents.h>
+#include <dory/generics/typeComponents.h>
 
 namespace dory
 {

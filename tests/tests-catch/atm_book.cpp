@@ -3,7 +3,7 @@
 #include <thread>
 
 #include <dory/engine/testing/atm_book.h>
-#include <dory/engine/concurrency/log.h>
+#include <dory/concurrency/log.h>
 
 using namespace dory::testing::atm_book;
 
