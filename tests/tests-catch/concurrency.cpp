@@ -11,9 +11,9 @@
 #include <dory/concurrency/messaging.h>
 #include <dory/concurrency/worker.h>
 #include <dory/concurrency/queue.h>
-#include <dory/engine/testing/quickSort.h>
-#include <dory/engine/testing/dataGenerators.h>
-#include <dory/engine/testing/stack_lockfree.h>
+#include "../../components/testing/include/dory/testing/quickSort.h"
+#include "../../components/testing/include/dory/testing/dataGenerators.h"
+#include "../../components/testing/include/dory/testing/stack_lockfree.h"
 
 TEST_CASE( "Get number of CPU cores", "[.][concurrency]" )
 {

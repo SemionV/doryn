@@ -4,9 +4,9 @@
 
 #include <dory/concurrency/log.h>
 #include <dory/concurrency/messaging.h>
-#include <dory/engine/testing/dataGenerators.h>
-#include <dory/engine/testing/quickSort.h>
-#include <dory/engine/testing/atm_book.h>
+#include "../../components/testing/include/dory/testing/dataGenerators.h"
+#include "../../components/testing/include/dory/testing/quickSort.h"
+#include "../../components/testing/include/dory/testing/atm_book.h"
 
 static const constexpr std::size_t largeDataCount = 10000;
 static const constexpr std::size_t smallDataCount = 10;

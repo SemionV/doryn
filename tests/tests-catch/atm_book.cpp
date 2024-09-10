@@ -2,7 +2,7 @@
 #include <iostream>
 #include <thread>
 
-#include <dory/engine/testing/atm_book.h>
+#include "../../components/testing/include/dory/testing/atm_book.h"
 #include <dory/concurrency/log.h>
 
 using namespace dory::testing::atm_book;
