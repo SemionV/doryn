@@ -1,15 +1,6 @@
 # Development log
 
 Tasks:
-* CI/CD setup with GitLab
-  * Setup memory usage analysis with Valgrind
-  * Setup linters and code style checks
-  * Setup static analysis tool
-  * Setup CPack
-  * Setup pipeline for tests(build, validate, analyze)
-  * Setup pipeline for build and tests on windows
-  * Setup pipeline for releases
-  * Deploy assembled packages to some network storage
 * Move engine to a static shared library
   * Move generic components like EventHub system, Reflection/Serialization, etc to header only libraries, each per component/system
   * Compose an engine shared library out of generic components
@@ -38,6 +29,16 @@ Tasks:
 * Path finding
 * Build for MacOS
 * Voice control
+* CI/CD setup with GitLab
+  * Setup CPack
+  * Setup pipeline for build and tests on windows
+  * Setup pipeline for releases
+  * Deploy assembled packages to some network storage
+
+**10.09.24**
+* Task done: Setup memory usage analysis with Valgrind
+* Task done: Setup static analysis tool
+* Task done: Setup pipeline for tests(build, validate, analyze)
 
 **04.09.24**
 * Task done: Setup test coverage checks
