@@ -24,7 +24,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-serialization
         dory-concurrency
         engine_include
-        Boost::dll
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
 
 AddCatchTests(${PROJECT_NAME})

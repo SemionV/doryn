@@ -16,7 +16,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         dory-module
         opengl-glad
         glfw
-        Boost::dll
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
 
 add_library(${PROJECT_NAME}_include INTERFACE include/dory/engine/domain/engine.h)
