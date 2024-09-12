@@ -3,7 +3,7 @@
 #include "dory/engine/object.h"
 #include "dory/engine/entityRepository.h"
 #include "dory/engine/entity.h"
-#include "dory/generics/typeComponents.h"
+#include "dory/generics/typeTraits.h"
 
 namespace dory::domain::repositories
 {

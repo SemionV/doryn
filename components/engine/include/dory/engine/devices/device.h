@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dory/generics/typeComponents.h"
+#include "dory/generics/typeTraits.h"
 
 namespace dory::domain::devices
 {

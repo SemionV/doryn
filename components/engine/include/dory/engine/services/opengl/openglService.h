@@ -1,9 +1,9 @@
 #pragma once
 
 #include "bufferBlockService.h"
-#include "dory/engine/resources/opengl/blocks.h"
-#include "dory/engine/resources/opengl/program.h"
-#include "dory/engine/resources/opengl/vertexArray.h"
+#include <dory/engine/resources/opengl/blocks.h>
+#include <dory/engine/resources/opengl/program.h>
+#include <dory/engine/resources/opengl/vertexArray.h>
 
 namespace dory::opengl::services
 {

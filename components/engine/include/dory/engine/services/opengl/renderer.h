@@ -1,10 +1,12 @@
 #pragma once
 
-#include "dory/engine/resources/opengl/blocks.h"
-#include "dory/engine/resources/opengl/program.h"
-#include "dory/engine/resources/opengl/vertexArray.h"
-#include "services/openglService.h"
-#include "services/shaderService.h"
+#include <glad/gl.h>
+#include <GLFW/glfw3.h>
+#include <dory/engine/resources/opengl/blocks.h>
+#include <dory/engine/resources/opengl/program.h>
+#include <dory/engine/resources/opengl/vertexArray.h>
+#include <dory/engine/services/opengl/openglService.h>
+#include <dory/engine/services/opengl/shaderService.h>
 
 namespace dory::opengl
 {

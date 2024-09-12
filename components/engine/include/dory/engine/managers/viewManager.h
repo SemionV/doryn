@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dory/generics/typeComponents.h"
+#include "dory/generics/typeTraits.h"
 #include "dory/engine/entity.h"
 #include "pipelineManager.h"
 

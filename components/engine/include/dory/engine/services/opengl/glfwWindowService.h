@@ -5,8 +5,8 @@
 #include <dory/engine/services/windowService.h>
 #include <dory/engine/entityRepository.h>
 #include <dory/engine/entity.h>
-#include <dory/engine/resources/glfwWindow.h>
-#include <dory/engine/resources/glfwWindowParameters.h>
+#include <dory/engine/resources/opengl/glfwWindow.h>
+#include <dory/engine/resources/opengl/glfwWindowParameters.h>
 
 namespace dory::opengl
 {
