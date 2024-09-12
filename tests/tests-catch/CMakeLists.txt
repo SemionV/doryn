@@ -20,6 +20,7 @@ add_executable(${PROJECT_NAME} linearAlgebra.cpp
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-generics
         dory-math
+        dory-module
         dory-serialization
         dory-concurrency
         engine_include

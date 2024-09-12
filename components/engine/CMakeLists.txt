@@ -13,6 +13,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         dory-math
         dory-serialization
         dory-concurrency
+        dory-module
         opengl-glad
         glfw
         Boost::dll

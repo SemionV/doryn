@@ -5,7 +5,7 @@
 #include <boost/config.hpp>
 #include <boost/dll/alias.hpp>
 #include <dory/client/client.h>
-#include <dory/engine/module.h>
+#include <dory/module.h>
 
 namespace testModule
 {

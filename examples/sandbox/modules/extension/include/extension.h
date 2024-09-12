@@ -1,7 +1,7 @@
 #pragma once
 
 #include <dory/sandbox/mainModule/extensionContext.h>
-#include <dory/engine/module.h>
+#include <dory/module.h>
 
 namespace dory::sandbox
 {

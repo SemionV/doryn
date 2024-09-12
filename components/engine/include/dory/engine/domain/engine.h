@@ -1,7 +1,7 @@
 #pragma once
 
 #include <dory/generics/typeComponents.h>
-#include <dory/engine/module.h>
+#include <dory/module.h>
 
 #include "controller.h"
 #include "events/hub.h"
