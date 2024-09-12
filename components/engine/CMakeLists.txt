@@ -1,14 +1,13 @@
 project(engine)
 
-add_library(${PROJECT_NAME} STATIC
-        src/rendering/opengl-utils.cpp)
+add_library(${PROJECT_NAME} INTERFACE include/dory/registry.h)
 
-target_include_directories(${PROJECT_NAME} PUBLIC
+target_include_directories(${PROJECT_NAME} INTERFACE
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-target_link_libraries(${PROJECT_NAME} PUBLIC
+target_link_libraries(${PROJECT_NAME} INTERFACE
         dory-generics
         dory-math
         dory-serialization
@@ -18,9 +17,3 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         opengl-glad
         glfw
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
-
-add_library(${PROJECT_NAME}_include INTERFACE include/dory/engine/controllers/mainController.h)
-target_include_directories(${PROJECT_NAME}_include INTERFACE
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-)

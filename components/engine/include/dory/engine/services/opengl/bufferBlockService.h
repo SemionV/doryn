@@ -4,8 +4,8 @@
 
 namespace dory::opengl::services
 {
-    graphics::Buffer allocateBuffer(GLint bufferSize);
-    void deallocateBuffer(graphics::Buffer& buffer) noexcept;
+    //graphics::Buffer allocateBuffer(GLint bufferSize);
+    //void deallocateBuffer(graphics::Buffer& buffer) noexcept;
 
     class BufferBlockService
     {

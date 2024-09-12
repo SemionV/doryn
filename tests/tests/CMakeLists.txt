@@ -6,7 +6,7 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-generics
         dory-module
-        engine_include)
+        engine)
 
 AddGoogleTests(${PROJECT_NAME})
 if(DORY_TEST_COVERAGE)
