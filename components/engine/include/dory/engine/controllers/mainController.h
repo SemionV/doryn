@@ -3,9 +3,9 @@
 #include "dory/generics/typeComponents.h"
 #include "dory/module.h"
 
-#include "controller.h"
+#include "dory/engine/controllers/controller.h"
 #include "dory/engine/events/hub.h"
-#include "object.h"
+#include "dory/engine/object.h"
 #include "dory/engine/managers/pipelineManager.h"
 
 namespace dory::domain

@@ -1,29 +1,31 @@
 #pragma once
 
+#include <glad/gl.h>
+#include <GLFW/glfw3.h>
 #include <dory/engine/services/windowService.h>
-#include "dory/engine/entityRepository.h"
-#include "dory/engine/entity.h"
-#include "glfwWindow.h"
-#include "glfwWindowParameters.h"
+#include <dory/engine/entityRepository.h>
+#include <dory/engine/entity.h>
+#include <dory/engine/resources/glfwWindow.h>
+#include <dory/engine/resources/glfwWindowParameters.h>
 
 namespace dory::opengl
 {
     template<typename TWindowRepository>
-    struct WindowServiceDependencies
+    struct GlfwWindowServiceDependencies
     {
         using WindowRepositoryType = TWindowRepository;
     };
 
     template<typename T>
-    requires(is_instance_v<T, WindowServiceDependencies>)
-    class WindowService: public domain::services::IWindowService<WindowService<T>>
+    requires(is_instance_v<T, GlfwWindowServiceDependencies>)
+    class GlfwWindowService: public domain::services::IWindowService<GlfwWindowService<T>>
     {
     private:
         using WindowRepositoryType = domain::IEntityRepository<typename T::WindowRepositoryType, GlfwWindow, domain::entity::IdType>;
         WindowRepositoryType& windowRepository;
 
     public:
-        explicit WindowService(WindowRepositoryType& windowRepository):
+        explicit GlfwWindowService(WindowRepositoryType& windowRepository):
                 windowRepository(windowRepository)
         {}
 

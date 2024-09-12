@@ -2,7 +2,7 @@
 
 #include "dory/engine/configuration.h"
 #include <dory/engine/services/logService.h>
-#include "../graphics/program.h"
+#include "dory/engine/resources/opengl/program.h"
 
 namespace dory::opengl::services
 {

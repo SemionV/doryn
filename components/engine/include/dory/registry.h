@@ -25,11 +25,9 @@
 #include <dory/engine/services/serializationService.h>
 #include <dory/engine/services/windowService.h>
 
-#include <glad/gl.h>
-#include <GLFW/glfw3.h>
-#include <dory/engine/rendering/opengl/windowService.h>
-#include <dory/engine/rendering/opengl/viewControllerOpenGL.h>
-#include <dory/engine/rendering/opengl/glfwWindowController.h>
+#include "dory/engine/services/glfwWindowService.h"
+#include "dory/engine/controllers/viewControllerOpenGL.h"
+#include <dory/engine/controllers/glfwWindowController.h>
 
 #include <dory/engine/managers/viewManager.h>
 
@@ -125,7 +123,7 @@ namespace dory
         using RendererType = opengl::Renderer<DataContextType, opengl::RendererDependencies<ShaderServiceType>>;
         using RendererFactoryType = RendererType::FactoryType;
         using MainControllerType = domain::MainController<DataContextType, typename TRepositories::PipelineRepositoryType>;
-        using WindowServiceType = opengl::WindowService<opengl::WindowServiceDependencies<typename TRepositories::WindowRepositoryType >>;
+        using WindowServiceType = opengl::GlfwWindowService<opengl::GlfwWindowServiceDependencies<typename TRepositories::WindowRepositoryType >>;
         using ScriptServiceType = domain::services::ScriptService<DataContextType>;
         using ConfigurationServiceType = domain::services::configuration::ConfigurationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;
         using LocalizationServiceType = domain::services::localization::LocalizationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;

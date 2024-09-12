@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../graphics/blocks.h"
+#include "dory/engine/resources/opengl/blocks.h"
 
 namespace dory::opengl::services
 {

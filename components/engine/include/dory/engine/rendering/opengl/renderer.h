@@ -1,8 +1,8 @@
 #pragma once
 
-#include "graphics/blocks.h"
-#include "graphics/program.h"
-#include "graphics/vertexArray.h"
+#include "dory/engine/resources/opengl/blocks.h"
+#include "dory/engine/resources/opengl/program.h"
+#include "dory/engine/resources/opengl/vertexArray.h"
 #include "services/openglService.h"
 #include "services/shaderService.h"
 

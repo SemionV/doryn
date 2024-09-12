@@ -1,11 +1,13 @@
 #pragma once
 
-#include "dory/engine/controller.h"
+#include <glad/gl.h>
+#include <GLFW/glfw3.h>
+#include "dory/engine/controllers/controller.h"
 #include "dory/engine/entityRepository.h"
 #include "dory/engine/entity.h"
 
-#include "glfwWindow.h"
-#include "renderer.h"
+#include "dory/engine/resources/glfwWindow.h"
+#include "dory/engine/rendering/opengl/renderer.h"
 
 namespace dory::opengl
 {

@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <glad/gl.h>
-#include <dory/engine/rendering/opengl/graphics/blocks.h>
+#include "dory/engine/resources/opengl/blocks.h"
 
 namespace dory::opengl
 {
