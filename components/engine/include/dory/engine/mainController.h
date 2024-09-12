@@ -11,7 +11,7 @@
 namespace dory::domain
 {
     template<typename TImplementation, typename TDataContext>
-    class IEngine: NonCopyable, public StaticInterface<TImplementation>
+    class IMainController: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         void update(TDataContext& context, const TimeSpan& timeStep)
@@ -31,22 +31,22 @@ namespace dory::domain
     };
 
     template<typename TDataContext, typename TPipelineRepository>
-    class Engine: public IEngine<Engine<TDataContext, TPipelineRepository>, TDataContext>
+    class MainController: public IMainController<MainController<TDataContext, TPipelineRepository>, TDataContext>
     {
     private:
-        events::engine::Dispatcher<TDataContext>& engineEventHub;
-        repositories::IPipelineRepository<TPipelineRepository, TDataContext>& pipelineRepository;
+        events::mainController::Dispatcher<TDataContext>& _mainControllerEventHub;
+        repositories::IPipelineRepository<TPipelineRepository, TDataContext>& _pipelineRepository;
 
     public:
-        explicit Engine(events::engine::Dispatcher<TDataContext>& engineEventHub,
-                        repositories::IPipelineRepository<TPipelineRepository, TDataContext>& pipelineRepository):
-                engineEventHub(engineEventHub),
-                pipelineRepository(pipelineRepository)
+        explicit MainController(events::mainController::Dispatcher<TDataContext>& mainControllerEventHub,
+                                repositories::IPipelineRepository<TPipelineRepository, TDataContext>& pipelineRepository):
+                _mainControllerEventHub(mainControllerEventHub),
+                _pipelineRepository(pipelineRepository)
         {}
 
         void updateImpl(TDataContext& context, const TimeSpan& timeStep)
         {
-            auto pipelineNodes = pipelineRepository.getPipeline();
+            auto pipelineNodes = _pipelineRepository.getPipeline();
 
             touchPipelineNodes(pipelineNodes, context, [](const std::shared_ptr<object::PipelineNode<TDataContext>>& node, TDataContext& context, const TimeSpan& timeStep)
             {
@@ -66,14 +66,14 @@ namespace dory::domain
 
         void initializeImpl(TDataContext& context)
         {
-            engineEventHub.fire(context, events::engine::Initialize{});
+            _mainControllerEventHub.fire(context, events::mainController::Initialize{});
         };
 
         void stopImpl(TDataContext& context)
         {
-            engineEventHub.fire(context, events::engine::Stop{});
+            _mainControllerEventHub.fire(context, events::mainController::Stop{});
 
-            auto pipelineNodes = pipelineRepository.getPipeline();
+            auto pipelineNodes = _pipelineRepository.getPipeline();
             auto expiredNodes = std::vector<typename repositories::IPipelineRepository<TPipelineRepository, TDataContext>::IdType>{};
 
             touchPipelineNodes(pipelineNodes, context, [&expiredNodes](const std::shared_ptr<object::PipelineNode<TDataContext>>& node, TDataContext& context)
@@ -87,7 +87,7 @@ namespace dory::domain
 
             for(auto id : expiredNodes)
             {
-                pipelineRepository.remove(id);
+                _pipelineRepository.remove(id);
             }
         }
 

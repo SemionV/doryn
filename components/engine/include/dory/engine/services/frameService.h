@@ -1,7 +1,7 @@
 #pragma once
 
 #include "dory/engine/types.h"
-#include "dory/engine/engine.h"
+#include "dory/engine/mainController.h"
 
 namespace dory::domain::services
 {
@@ -10,7 +10,7 @@ namespace dory::domain::services
     {
     public:
         template<typename TDataContext, typename TEngine>
-        void startLoop(TDataContext& context, IEngine<TEngine, TDataContext>& engine)
+        void startLoop(TDataContext& context, IMainController<TEngine, TDataContext>& engine)
         {
             this->toImplementation()->startLoopImpl(context, engine);
         }
@@ -29,7 +29,7 @@ namespace dory::domain::services
     public:
 
         template<typename TDataContext, typename TEngine>
-        void startLoopImpl(TDataContext& context, IEngine<TEngine, TDataContext>& engine)
+        void startLoopImpl(TDataContext& context, IMainController<TEngine, TDataContext>& engine)
         {
             engine.initialize(context);
 

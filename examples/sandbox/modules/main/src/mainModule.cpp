@@ -19,9 +19,9 @@ namespace dory::sandbox
 
         attachEventHandlers();
 
-        auto engine = Registry::ServiceTypes::EngineType { registry.events.engineDispatcher, registry.repositories.pipelines };
+        auto mainController = Registry::ServiceTypes::MainControllerType {registry.events.mainControllerDispatcher, registry.repositories.pipelines };
 
-        frameService.startLoop(context, engine);
+        frameService.startLoop(context, mainController);
 
         return 0;
     }
@@ -30,14 +30,14 @@ namespace dory::sandbox
     {
         registry.services.appLogger.information("attach event handlers");
 
-        registry.events.engine.attach(this, &MainModule::onInitializeEngine);
-        registry.events.engine.attach(this, &MainModule::onStopEngine);
+        registry.events.mainController.attach(this, &MainModule::onInitializeEngine);
+        registry.events.mainController.attach(this, &MainModule::onStopEngine);
         registry.events.application.attach(this, &MainModule::onApplicationExit);
         registry.events.window.attach(this, &MainModule::onCloseWindow);
         registry.events.script.attach(this, &MainModule::onRunScript);
     }
 
-    void MainModule::onInitializeEngine(DataContextType& context, const events::engine::Initialize& eventData)
+    void MainModule::onInitializeEngine(DataContextType& context, const events::mainController::Initialize& eventData)
     {
         auto& configuration = context.configuration;
         auto& localization = context.localization;
@@ -125,7 +125,7 @@ namespace dory::sandbox
         registry.managers.viewManager.createView(context, window.id, context.outputGroupNodeId);
     }
 
-    void MainModule::onStopEngine(DataContextType& context, const events::engine::Stop& eventData)
+    void MainModule::onStopEngine(DataContextType& context, const events::mainController::Stop& eventData)
     {
         registry.devices.terminalDevice.exitCommandMode();
         registry.devices.terminalDevice.writeLine("Stop Engine...");

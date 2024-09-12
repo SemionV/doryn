@@ -23,8 +23,8 @@ namespace dory::sandbox
 
     private:
         void attachEventHandlers();
-        void onInitializeEngine(DataContextType& context, const events::engine::Initialize& eventData);
-        void onStopEngine(DataContextType& context, const events::engine::Stop& eventData);
+        void onInitializeEngine(DataContextType& context, const events::mainController::Initialize& eventData);
+        void onStopEngine(DataContextType& context, const events::mainController::Stop& eventData);
         void onApplicationExit(DataContextType& context, const events::application::Exit& eventData);
         void onCloseWindow(DataContextType& context, events::window::Close& eventData);
         void onRunScript(DataContextType& context, const events::script::Run& eventData);

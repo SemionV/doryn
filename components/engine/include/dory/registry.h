@@ -40,8 +40,8 @@ namespace dory
     {
         using DataContextType = dory::domain::DataContext<TDataContextSections...>;
 
-        using EngineDispatcherType = domain::events::engine::Dispatcher<DataContextType>;
-        using EngineType = domain::events::engine::Hub<DataContextType>;
+        using EngineDispatcherType = domain::events::mainController::Dispatcher<DataContextType>;
+        using MainControllerType = domain::events::mainController::Hub<DataContextType>;
         using WindowDispatcherType = domain::events::window::Dispatcher<DataContextType>;
         using WindowType = domain::events::window::Hub<DataContextType>;
         using ApplicationDispatcherType = domain::events::application::Dispatcher<DataContextType>;
@@ -55,8 +55,8 @@ namespace dory
     template<typename T>
     struct EventLayer
     {
-        T::EngineDispatcherType engineDispatcher;
-        T::EngineType& engine = engineDispatcher;
+        T::EngineDispatcherType mainControllerDispatcher;
+        T::MainControllerType& mainController = mainControllerDispatcher;
         T::WindowDispatcherType windowDispatcher;
         T::WindowType& window = windowDispatcher;
         T::ApplicationDispatcherType applicationDispatcher;
@@ -124,7 +124,7 @@ namespace dory
         using ShaderServiceType = opengl::services::ShaderService<LogServiceType, FileServiceType, TDataContextSections...>;
         using RendererType = opengl::Renderer<DataContextType, opengl::RendererDependencies<ShaderServiceType>>;
         using RendererFactoryType = RendererType::FactoryType;
-        using EngineType = domain::Engine<DataContextType, typename TRepositories::PipelineRepositoryType>;
+        using MainControllerType = domain::MainController<DataContextType, typename TRepositories::PipelineRepositoryType>;
         using WindowServiceType = opengl::WindowService<opengl::WindowServiceDependencies<typename TRepositories::WindowRepositoryType >>;
         using ScriptServiceType = domain::services::ScriptService<DataContextType>;
         using ConfigurationServiceType = domain::services::configuration::ConfigurationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;

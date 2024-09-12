@@ -6,7 +6,7 @@
 
 namespace dory::domain::events
 {
-    namespace engine
+    namespace mainController
     {
         struct Initialize
         {
