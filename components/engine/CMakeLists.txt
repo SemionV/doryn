@@ -10,6 +10,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
         dory-generics
+        dory-math
         dory-serialization
         dory-concurrency
         opengl-glad
