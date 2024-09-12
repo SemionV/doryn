@@ -4,31 +4,31 @@
 
 namespace dory::domain::devices
 {
-    template<typename TImpelementation, typename TDataContext>
+    template<typename TImplementation, typename TDataContext>
     struct IDevice
     {
         void connect(TDataContext& context)
         {
-            toImplementation<TImpelementation>(this)->connectImpl(context);
+            toImplementation<TImplementation>(this)->connectImpl(context);
         }
 
         void disconnect(TDataContext& context)
         {
-            toImplementation<TImpelementation>(this)->disconnectImpl(context);
+            toImplementation<TImplementation>(this)->disconnectImpl(context);
         }
     };
 
-    template<typename TImpelementation, typename TOutputData>
-    struct IStandartOutputDevice
+    template<typename TImplementation, typename TOutputData>
+    struct IStandardOutputDevice
     {
         void out(const TOutputData& data)
         {
-            toImplementation<TImpelementation>(this)->outImpl(data);
+            toImplementation<TImplementation>(this)->outImpl(data);
         }
 
         void flush()
         {
-            toImplementation<TImpelementation>(this)->flushImpl();
+            toImplementation<TImplementation>(this)->flushImpl();
         }
     };
 }

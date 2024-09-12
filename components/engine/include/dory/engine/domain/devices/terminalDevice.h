@@ -44,7 +44,7 @@ namespace dory::domain::devices
         std::string currentCommand;
         bool commandMode = false;
 
-        using OutputDeviceType = IStandartOutputDevice<TOutputDevice, std::string>;
+        using OutputDeviceType = IStandardOutputDevice<TOutputDevice, std::string>;
         OutputDeviceType& outputDevice;
 
         using InputEventHubType = events::io::Hub<TDataContext>;

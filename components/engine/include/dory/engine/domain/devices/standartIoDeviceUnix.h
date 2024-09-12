@@ -14,7 +14,7 @@ namespace dory::domain::devices
     template<typename TDataContext>
     class ConsoleIODevice: NonCopyable,
                                public IDevice<ConsoleIODevice<TDataContext>, TDataContext>,
-                               public IStandartOutputDevice<ConsoleIODevice<TDataContext>, std::string>
+                               public IStandardOutputDevice<ConsoleIODevice<TDataContext>, std::string>
     {
     private:
         using InputEventDispatcherType =  events::io::Dispatcher<TDataContext>;
