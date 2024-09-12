@@ -1,7 +1,7 @@
 #pragma once
 
-#include "dory/generics/typeTraits.h"
-#include "entity.h"
+#include <dory/generics/typeTraits.h>
+#include <dory/engine/resources/entity.h>
 
 namespace dory::domain
 {

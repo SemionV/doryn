@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dory/engine/types.h"
+#include "dory/engine/resources/types.h"
 #include "dory/engine/controllers/mainController.h"
 
 namespace dory::domain::services

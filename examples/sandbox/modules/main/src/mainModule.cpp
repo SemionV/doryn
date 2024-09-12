@@ -96,7 +96,7 @@ namespace dory::sandbox
             libraryService.unload("test extension");
         });
 
-        registry.managers.pipelineManager.configurePipeline(context);
+        registry.services.pipelineService.configurePipeline(context);
 
         auto supmitInputEvents = [this](auto referenceId, const auto& timeStep, DataContextType& context)
         {
@@ -122,7 +122,7 @@ namespace dory::sandbox
 
         auto window = registry.services.windowService.createWindow();
         context.mainWindowId = window.id;
-        registry.managers.viewManager.createView(context, window.id, context.outputGroupNodeId);
+        registry.services.viewService.createView(context, window.id, context.outputGroupNodeId);
     }
 
     void MainModule::onStopEngine(DataContextType& context, const events::mainController::Stop& eventData)
@@ -141,7 +141,7 @@ namespace dory::sandbox
     void MainModule::onCloseWindow(DataContextType& context, events::window::Close& eventData)
     {
         registry.services.windowService.closeWindow(eventData.windowId);
-        registry.managers.viewManager.destroyView(eventData.windowId);
+        registry.services.viewService.destroyView(eventData.windowId);
 
         if(eventData.windowId == context.mainWindowId)
         {

@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "dory/engine/entity.h"
-#include "dory/engine/entityRepository.h"
+#include "dory/engine/resources/entity.h"
+#include "dory/engine/repositories/entityRepository.h"
 
 using namespace dory::domain;
 

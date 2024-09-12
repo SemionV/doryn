@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dory/engine/configuration.h"
+#include "dory/engine/resources/configuration.h"
 #include "logService.h"
 #include "fileService.h"
 #include "serializationService.h"

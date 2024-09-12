@@ -23,6 +23,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-module
         dory-serialization
         dory-concurrency
+        dory-events
         engine_include
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
 

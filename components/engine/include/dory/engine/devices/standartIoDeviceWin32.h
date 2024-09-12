@@ -8,7 +8,7 @@
 #include <winbase.h>
 #include <iostream>
 
-#include "dory/engine/events/hub.h"
+#include <dory/engine/resources/eventTypes.h>
 #include "device.h"
 
 namespace dory::domain::devices

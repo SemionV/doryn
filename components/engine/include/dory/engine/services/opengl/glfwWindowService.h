@@ -3,8 +3,8 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <dory/engine/services/windowService.h>
-#include <dory/engine/entityRepository.h>
-#include <dory/engine/entity.h>
+#include "dory/engine/repositories/entityRepository.h"
+#include "dory/engine/resources/entity.h"
 #include <dory/engine/resources/opengl/glfwWindow.h>
 #include <dory/engine/resources/opengl/glfwWindowParameters.h>
 

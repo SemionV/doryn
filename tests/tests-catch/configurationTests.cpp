@@ -2,7 +2,7 @@
 #include <refl.hpp>
 #include <filesystem>
 
-#include "dory/engine/configuration.h"
+#include "dory/engine/resources/configuration.h"
 #include <dory/engine/services/configurationService.h>
 #include <dory/engine/services/serializationService.h>
 #include <dory/engine/services/fileService.h>

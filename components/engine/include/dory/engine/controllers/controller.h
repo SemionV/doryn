@@ -1,8 +1,8 @@
 #pragma once
 
-#include "dory/engine/dataContext.h"
-#include "dory/engine/types.h"
-#include "dory/engine/entity.h"
+#include "dory/engine/resources/dataContext.h"
+#include "dory/engine/resources/types.h"
+#include "dory/engine/resources/entity.h"
 
 namespace dory::domain
 {

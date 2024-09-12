@@ -5,7 +5,7 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/null_sink.h"
 
-#include "dory/engine/configuration.h"
+#include "dory/engine/resources/configuration.h"
 #include "dory/engine/devices/terminalDevice.h"
 
 namespace dory::domain::services

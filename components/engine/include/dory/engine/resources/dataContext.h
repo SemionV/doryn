@@ -2,7 +2,7 @@
 
 #include "entity.h"
 #include "dory/engine/resources/localization.h"
-#include "configuration.h"
+#include "dory/engine/resources/configuration.h"
 
 namespace dory::domain
 {

@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <functional>
-#include <dory/engine/events/event.h>
+#include <dory/events.h>
 
 using namespace dory::domain::events;
 

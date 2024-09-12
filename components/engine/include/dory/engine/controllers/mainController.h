@@ -4,9 +4,9 @@
 #include "dory/module.h"
 
 #include "dory/engine/controllers/controller.h"
-#include "dory/engine/events/hub.h"
-#include "dory/engine/object.h"
-#include "dory/engine/managers/pipelineManager.h"
+#include <dory/engine/resources/eventTypes.h>
+#include "dory/engine/resources/object.h"
+#include "dory/engine/services/pipelineService.h"
 
 namespace dory::domain
 {

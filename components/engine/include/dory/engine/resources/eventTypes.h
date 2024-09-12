@@ -1,8 +1,7 @@
 #pragma once
 
 #include <any>
-
-#include "event.h"
+#include "dory/events.h"
 
 namespace dory::domain::events
 {

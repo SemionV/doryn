@@ -1,7 +1,7 @@
 #pragma once
 
-#include "dory/engine/dataContext.h"
-#include <dory/engine/events/hub.h>
+#include "dory/engine/resources/dataContext.h"
+#include <dory/engine/resources/eventTypes.h>
 
 #ifdef __unix__
 #include <dory/engine/devices/standartIoDeviceUnix.h>
@@ -12,7 +12,7 @@
 
 #include <dory/engine/devices/terminalDevice.h>
 
-#include "dory/engine/entityRepository.h"
+#include "dory/engine/repositories/entityRepository.h"
 #include <dory/engine/repositories/pipelineRepository.h>
 
 #include <dory/engine/services/configurationService.h>
@@ -25,11 +25,11 @@
 #include <dory/engine/services/serializationService.h>
 #include <dory/engine/services/windowService.h>
 
-#include "dory/engine/services/opengl/glfwWindowService.h"
-#include "dory/engine/controllers/opengl/viewControllerOpenGL.h"
-#include "dory/engine/controllers/opengl/glfwWindowController.h"
+#include <dory/engine/services/opengl/glfwWindowService.h>
+#include <dory/engine/controllers/opengl/viewControllerOpenGL.h>
+#include <dory/engine/controllers/opengl/glfwWindowController.h>
 
-#include <dory/engine/managers/viewManager.h>
+#include "dory/engine/services/viewService.h"
 
 namespace dory
 {
@@ -135,6 +135,12 @@ namespace dory
                 typename TRepositories::WindowRepositoryType,
                 RendererFactoryType>>;
         using ViewControllerFactoryType = ViewControllerType::FactoryType;
+        using PipelineServiceType = domain::managers::PipelineService<DataContextType, WindowControllerFactoryType, typename TRepositories::PipelineRepositoryType>;
+        using ViewServiceType = domain::managers::ViewService<domain::managers::ViewManagerDependencies<DataContextType,
+                typename TRepositories::ViewRepositoryType,
+                typename TRepositories::PipelineRepositoryType,
+                typename TRepositories::CameraRepositoryType,
+                ViewControllerFactoryType>>;
     };
 
     template<typename T>
@@ -155,6 +161,8 @@ namespace dory
         T::ScriptServiceType scriptService;
         T::WindowControllerFactoryType windowControllerFactory;
         T::ViewControllerFactoryType viewControllerFactory;
+        T::PipelineServiceType pipelineService;
+        T::ViewServiceType viewService;
 
         template<typename TEventLayer, typename TRepositoryLayer>
         ServiceLayer(TEventLayer& events, TRepositoryLayer& repository):
@@ -170,33 +178,9 @@ namespace dory
                 windowService(repository.windows),
                 rendererFactory(shaderService),
                 windowControllerFactory(repository.windows, events.windowDispatcher),
-                viewControllerFactory(rendererFactory, repository.views, repository.windows)
-        {}
-    };
-
-    template<typename TRepositories, typename TServices, typename... TDataContextSections>
-    struct ManagerTypeRegistry
-    {
-        using DataContextType = dory::domain::DataContext<TDataContextSections...>;
-
-        using PipelineManagerType = domain::managers::PipelineManager<DataContextType, typename TServices::WindowControllerFactoryType, typename TRepositories::PipelineRepositoryType>;
-        using ViewManagerType = domain::managers::ViewManager<domain::managers::ViewManagerDependencies<DataContextType,
-                typename TRepositories::ViewRepositoryType,
-                typename TRepositories::PipelineRepositoryType,
-                typename TRepositories::CameraRepositoryType,
-                typename TServices::ViewControllerFactoryType>>;
-    };
-
-    template<typename T>
-    struct ManagerLayer
-    {
-        T::PipelineManagerType pipelineManager;
-        T::ViewManagerType viewManager;
-
-        template<typename TRepositoryLayer, typename TServiceLayer>
-        ManagerLayer(TRepositoryLayer& repository, TServiceLayer& services):
-                pipelineManager(services.windowControllerFactory, repository.pipelines),
-                viewManager(repository.views, repository.pipelines, repository.cameras, services.viewControllerFactory)
+                viewControllerFactory(rendererFactory, repository.views, repository.windows),
+                pipelineService(windowControllerFactory, repository.pipelines),
+                viewService(repository.views, repository.pipelines, repository.cameras, viewControllerFactory)
         {}
     };
 }

@@ -1,13 +1,13 @@
 #pragma once
 
 #include "dory/generics/typeTraits.h"
-#include "dory/engine/entity.h"
-#include "pipelineManager.h"
+#include "dory/engine/resources/entity.h"
+#include "pipelineService.h"
 
 namespace dory::domain::managers
 {
     template<typename TImplementation, typename TDataContext>
-    class IViewManager: NonCopyable, public StaticInterface<TImplementation>
+    class IViewService: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         auto createView(TDataContext& dataContext, entity::IdType windowId, entity::IdType parentPipelineNodeId)
@@ -37,7 +37,7 @@ namespace dory::domain::managers
 
     template<typename T>
     requires(is_instance_v<T, ViewManagerDependencies>)
-    class ViewManager: public IViewManager<ViewManager<T>, typename T::DataContextType>
+    class ViewService: public IViewService<ViewService<T>, typename T::DataContextType>
     {
     private:
         using DataContextType = typename T::DataContextType;
@@ -55,7 +55,7 @@ namespace dory::domain::managers
         ViewControllerFactoryType& viewControllerFactory;
 
     public:
-        explicit ViewManager(ViewRepositoryType& viewRepository,
+        explicit ViewService(ViewRepositoryType& viewRepository,
                              PipelineRepositoryType& pipelineRepository,
                              CameraRepositoryType& cameraRepository,
                              ViewControllerFactoryType& viewControllerFactory):

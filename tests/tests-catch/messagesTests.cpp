@@ -1,8 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "dory/engine/entity.h"
-#include "dory/engine/dataContext.h"
-#include <dory/engine/events/event.h>
+#include "dory/engine/resources/entity.h"
+#include "dory/engine/resources/dataContext.h"
+#include <dory/events.h>
 
 using namespace dory::domain;
 

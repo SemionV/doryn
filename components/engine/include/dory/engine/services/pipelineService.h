@@ -1,15 +1,15 @@
 #pragma once
 
-#include "dory/engine/object.h"
-#include "dory/engine/entityRepository.h"
-#include "dory/engine/entity.h"
+#include "dory/engine/resources/object.h"
+#include "dory/engine/repositories/entityRepository.h"
+#include "dory/engine/resources/entity.h"
 #include "dory/generics/typeTraits.h"
 #include "dory/engine/repositories/pipelineRepository.h"
 
 namespace dory::domain::managers
 {
     template<typename TImplementation, typename TDataContext>
-    class IPipelineManager: NonCopyable, public StaticInterface<TImplementation>
+    class IPipelineService: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         void configurePipeline(TDataContext&  context)
@@ -21,7 +21,7 @@ namespace dory::domain::managers
     template<typename TDataContext,
             typename TWindowControllerFactory,
             typename TPipelineRepository>
-    class PipelineManager: public IPipelineManager<PipelineManager<TDataContext, TWindowControllerFactory, TPipelineRepository>, TDataContext>
+    class PipelineService: public IPipelineService<PipelineService<TDataContext, TWindowControllerFactory, TPipelineRepository>, TDataContext>
     {
     private:
         using PipelineNodeType = entity::PipelineNode<TDataContext>;
@@ -33,7 +33,7 @@ namespace dory::domain::managers
         PipelineRepositoryType& pipelineRepository;
 
     public:
-        explicit PipelineManager(WindowControllerFactoryType& windowControllerFactory,
+        explicit PipelineService(WindowControllerFactoryType& windowControllerFactory,
                                  PipelineRepositoryType& pipelineRepository):
                 windowControllerFactory(windowControllerFactory),
                 pipelineRepository(pipelineRepository)

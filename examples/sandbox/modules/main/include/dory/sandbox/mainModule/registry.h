@@ -21,12 +21,10 @@ namespace dory::sandbox
         dory::DeviceLayer<dory::DeviceTypeRegistry<ProjectDataContext>> devices;
         dory::RepositoryLayer<RepositoryTypes> repositories;
         dory::ServiceLayer<ServiceTypes> services;
-        dory::ManagerLayer<dory::ManagerTypeRegistry<RepositoryTypes, ServiceTypes, ProjectDataContext>> managers;
 
         explicit Registry():
                 devices { events },
-                services { events, repositories },
-                managers { repositories, services }
+                services { events, repositories }
         {}
     };
 }

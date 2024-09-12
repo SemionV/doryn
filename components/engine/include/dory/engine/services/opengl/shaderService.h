@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/engine/configuration.h>
+#include "dory/engine/resources/configuration.h"
 #include <dory/engine/services/logService.h>
 #include <dory/engine/resources/opengl/program.h>
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "dory/engine/object.h"
-#include "dory/engine/entityRepository.h"
-#include "dory/engine/entity.h"
+#include "dory/engine/resources/object.h"
+#include "entityRepository.h"
+#include "dory/engine/resources/entity.h"
 #include "dory/generics/typeTraits.h"
 
 namespace dory::domain::repositories

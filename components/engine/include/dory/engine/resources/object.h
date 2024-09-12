@@ -2,7 +2,7 @@
 
 #include <list>
 
-#include "entity.h"
+#include "dory/engine/resources/entity.h"
 
 namespace dory::domain::object
 {

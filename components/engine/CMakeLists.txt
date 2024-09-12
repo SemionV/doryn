@@ -14,6 +14,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         dory-serialization
         dory-concurrency
         dory-module
+        dory-events
         opengl-glad
         glfw
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
