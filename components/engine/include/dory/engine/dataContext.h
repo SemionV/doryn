@@ -1,7 +1,7 @@
 #pragma once
 
 #include "entity.h"
-#include "resources/localization.h"
+#include "dory/engine/resources/localization.h"
 #include "configuration.h"
 
 namespace dory::domain

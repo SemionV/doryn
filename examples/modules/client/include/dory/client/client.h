@@ -3,5 +3,5 @@
 #include <iostream>
 #include <filesystem>
 
-#include <dory/engine/domain/services/moduleService.h>
+#include <dory/engine/services/moduleService.h>
 #include "registry.h"

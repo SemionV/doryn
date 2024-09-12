@@ -3,7 +3,7 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 
-#include <dory/engine/domain/services/serializationService.h>
+#include <dory/engine/services/serializationService.h>
 
 using json = nlohmann::json;
 

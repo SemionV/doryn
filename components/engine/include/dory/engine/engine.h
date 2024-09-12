@@ -1,12 +1,12 @@
 #pragma once
 
-#include <dory/generics/typeComponents.h>
-#include <dory/module.h>
+#include "dory/generics/typeComponents.h"
+#include "dory/module.h"
 
 #include "controller.h"
-#include "events/hub.h"
+#include "dory/engine/events/hub.h"
 #include "object.h"
-#include "managers/pipelineManager.h"
+#include "dory/engine/managers/pipelineManager.h"
 
 namespace dory::domain
 {

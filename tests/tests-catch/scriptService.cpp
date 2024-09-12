@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <any>
 
-#include <dory/engine/domain/services/scriptService.h>
+#include <dory/engine/services/scriptService.h>
 
 namespace services = dory::domain::services;
 

@@ -4,7 +4,7 @@
 #include <queue>
 
 #include "reflection.h"
-#include <dory/engine/domain/resources/stringResource.h>
+#include <dory/engine/resources/stringResource.h>
 
 namespace dory::serialization
 {

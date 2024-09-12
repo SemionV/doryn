@@ -1,29 +1,29 @@
 #pragma once
 
-#include <dory/engine/domain/dataContext.h>
-#include <dory/engine/domain/events/hub.h>
+#include "dory/engine/dataContext.h"
+#include <dory/engine/events/hub.h>
 
 #ifdef __unix__
-#include <dory/engine/domain/devices/standartIoDeviceUnix.h>
+#include <dory/engine/devices/standartIoDeviceUnix.h>
 #endif
 #ifdef WIN32
-#include <dory/engine/domain/devices/standartIoDeviceWin32.h>
+#include <dory/engine/devices/standartIoDeviceWin32.h>
 #endif
 
-#include <dory/engine/domain/devices/terminalDevice.h>
+#include <dory/engine/devices/terminalDevice.h>
 
-#include <dory/engine/domain/entityRepository.h>
-#include <dory/engine/domain/repositories/pipelineRepository.h>
+#include "dory/engine/entityRepository.h"
+#include <dory/engine/repositories/pipelineRepository.h>
 
-#include <dory/engine/domain/services/configurationService.h>
-#include <dory/engine/domain/services/fileService.h>
-#include <dory/engine/domain/services/frameService.h>
-#include <dory/engine/domain/services/localizationService.h>
-#include <dory/engine/domain/services/logService.h>
-#include <dory/engine/domain/services/moduleService.h>
-#include <dory/engine/domain/services/scriptService.h>
-#include <dory/engine/domain/services/serializationService.h>
-#include <dory/engine/domain/services/windowService.h>
+#include <dory/engine/services/configurationService.h>
+#include <dory/engine/services/fileService.h>
+#include <dory/engine/services/frameService.h>
+#include <dory/engine/services/localizationService.h>
+#include <dory/engine/services/logService.h>
+#include <dory/engine/services/moduleService.h>
+#include <dory/engine/services/scriptService.h>
+#include <dory/engine/services/serializationService.h>
+#include <dory/engine/services/windowService.h>
 
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
@@ -31,7 +31,7 @@
 #include <dory/engine/rendering/opengl/viewControllerOpenGL.h>
 #include <dory/engine/rendering/opengl/glfwWindowController.h>
 
-#include <dory/engine/domain/managers/viewManager.h>
+#include <dory/engine/managers/viewManager.h>
 
 namespace dory
 {

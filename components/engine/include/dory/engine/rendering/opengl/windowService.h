@@ -1,8 +1,8 @@
 #pragma once
 
-#include <dory/engine/domain/services/windowService.h>
-#include <dory/engine/domain/entityRepository.h>
-#include <dory/engine/domain/entity.h>
+#include <dory/engine/services/windowService.h>
+#include "dory/engine/entityRepository.h"
+#include "dory/engine/entity.h"
 #include "glfwWindow.h"
 #include "glfwWindowParameters.h"
 

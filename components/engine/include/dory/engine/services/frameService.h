@@ -1,7 +1,7 @@
 #pragma once
 
-#include <dory/engine/domain/types.h>
-#include <dory/engine/domain/engine.h>
+#include "dory/engine/types.h"
+#include "dory/engine/engine.h"
 
 namespace dory::domain::services
 {

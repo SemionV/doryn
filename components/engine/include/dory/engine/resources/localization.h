@@ -1,7 +1,7 @@
 #pragma once
 
 #include <refl.hpp>
-#include <dory/generics/typeComponents.h>
+#include "dory/generics/typeComponents.h"
 #include "stringResource.h"
 
 namespace dory::domain::resources

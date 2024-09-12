@@ -1,7 +1,7 @@
 #pragma once
 
-#include <dory/generics/typeComponents.h>
-#include <spdlog/fmt/fmt.h>
+#include "dory/generics/typeComponents.h"
+#include "spdlog/fmt/fmt.h"
 
 namespace dory::domain::resources
 {

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <dory/engine/domain/entity.h>
-#include <dory/engine/domain/events/hub.h>
-#include <dory/engine/domain/controller.h>
-#include <dory/engine/domain/entityRepository.h>
+#include "dory/engine/entity.h"
+#include <dory/engine/events/hub.h>
+#include "dory/engine/controller.h"
+#include "dory/engine/entityRepository.h"
 #include "glfwWindow.h"
 
 namespace dory::opengl

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/module.h>
+#include "dory/module.h"
 #include "logService.h"
 
 namespace dory::domain::services::module

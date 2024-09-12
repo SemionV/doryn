@@ -4,7 +4,7 @@
 #include <string>
 #include <memory>
 
-#include <dory/module.h>
+#include "dory/module.h"
 
 namespace dory::domain::services
 {

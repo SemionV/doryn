@@ -1,9 +1,9 @@
 #pragma once
 
-#include <dory/engine/domain/object.h>
-#include <dory/engine/domain/entityRepository.h>
-#include <dory/engine/domain/entity.h>
-#include <dory/generics/typeComponents.h>
+#include "dory/engine/object.h"
+#include "dory/engine/entityRepository.h"
+#include "dory/engine/entity.h"
+#include "dory/generics/typeComponents.h"
 
 namespace dory::domain::repositories
 {

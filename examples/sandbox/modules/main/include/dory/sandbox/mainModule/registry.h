@@ -1,7 +1,7 @@
 #pragma once
 
 #include <dory/registry.h>
-#include <dory/engine/domain/resources/localization.h>
+#include <dory/engine/resources/localization.h>
 
 namespace dory::sandbox
 {

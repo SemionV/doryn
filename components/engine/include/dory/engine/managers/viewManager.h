@@ -1,8 +1,8 @@
 #pragma once
 
-#include <dory/generics/typeComponents.h>
-#include <dory/engine/domain/entity.h>
-#include <dory/engine/domain/managers/pipelineManager.h>
+#include "dory/generics/typeComponents.h"
+#include "dory/engine/entity.h"
+#include "pipelineManager.h"
 
 namespace dory::domain::managers
 {
