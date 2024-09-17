@@ -11,4 +11,4 @@ AddCppCheck(${DORY_MODULE_NAME})
 
 add_library(${DORY_MODULE_NAME}_include INTERFACE include/dory/sandbox/mainModule.h)
 target_include_directories(${DORY_MODULE_NAME}_include INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(${DORY_MODULE_NAME}_include INTERFACE engine)
+target_link_libraries(${DORY_MODULE_NAME}_include INTERFACE dory-engine)

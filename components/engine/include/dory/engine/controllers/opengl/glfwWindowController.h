@@ -3,7 +3,7 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include "dory/engine/resources/entity.h"
-#include <dory/engine/resources/eventTypes.h>
+#include "dory/engine/events/eventTypes.h"
 #include <dory/engine/controllers/controller.h>
 #include "dory/engine/repositories/entityRepository.h"
 #include <dory/engine/resources/opengl/glfwWindow.h>
@@ -20,7 +20,7 @@ namespace dory::engine::controllers::opengl
         using WindowRepositoryType = repositories::IEntityRepository<TWindowRepository, resources::opengl::GlfwWindow, resources::entity::IdType>;
         WindowRepositoryType& windowRepository;
 
-        using WindowEventHubType = resources::eventTypes::window::Dispatcher<TDataContext>;
+        using WindowEventHubType = events::window::Dispatcher<TDataContext>;
         WindowEventHubType& windowEventHubDispatcher;
 
     public:
@@ -50,7 +50,7 @@ namespace dory::engine::controllers::opengl
             {
                 if(glfwWindowShouldClose(window.handler))
                 {
-                    this->windowEventHubDispatcher.charge(resources::eventTypes::window::Close(window.id));
+                    this->windowEventHubDispatcher.charge(events::window::Close(window.id));
                     glfwSetWindowShouldClose(window.handler, 0);
                 }
             });
@@ -68,7 +68,7 @@ namespace dory::engine::controllers::opengl
         using WindowRepositoryType = repositories::IEntityRepository<TWindowRepository, resources::opengl::GlfwWindow, resources::entity::IdType>;
         WindowRepositoryType& windowRepository;
 
-        using WindowEventHubType = resources::eventTypes::window::Dispatcher<TDataContext>;
+        using WindowEventHubType = events::window::Dispatcher<TDataContext>;
         WindowEventHubType& windowEventHubDispatcher;
 
     public:

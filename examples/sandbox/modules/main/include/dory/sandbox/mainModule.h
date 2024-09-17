@@ -5,7 +5,7 @@
 
 namespace dory::sandbox
 {
-    namespace events = engine::resources::eventTypes;
+    namespace events = engine::events;
 
     class MainModule: public IExecutableModule<bootstrap::StartupModuleContext>
     {

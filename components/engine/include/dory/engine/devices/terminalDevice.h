@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/engine/resources/eventTypes.h>
+#include "dory/engine/events/eventTypes.h"
 #include "device.h"
 
 namespace dory::engine::devices
@@ -47,13 +47,13 @@ namespace dory::engine::devices
         using OutputDeviceType = IStandardOutputDevice<TOutputDevice, std::string>;
         OutputDeviceType& outputDevice;
 
-        using InputEventHubType = resources::eventTypes::io::Hub<TDataContext>;
+        using InputEventHubType = events::io::Hub<TDataContext>;
         InputEventHubType& inputEventHub;
 
-        using ScriptEventDispatcherType = resources::eventTypes::script::Dispatcher<TDataContext>;
+        using ScriptEventDispatcherType = events::script::Dispatcher<TDataContext>;
         ScriptEventDispatcherType& scriptEventDispatcher;
 
-        using ApplicationEventDispatcherType = resources::eventTypes::application::Dispatcher<TDataContext>;
+        using ApplicationEventDispatcherType = events::application::Dispatcher<TDataContext>;
         ApplicationEventDispatcherType& applicationEventDispatcher;
 
     public:
@@ -156,20 +156,20 @@ namespace dory::engine::devices
             currentCommand = "";
         }
 
-        void onPressReturn(TDataContext& context, resources::eventTypes::io::KeyPressEvent eventData)
+        void onPressReturn(TDataContext& context, events::io::KeyPressEvent eventData)
         {
             if(commandMode)
             {
                 auto command = currentCommand;
                 exitCommandModeImpl();
 
-                scriptEventDispatcher.fire(context, resources::eventTypes::script::Run{command});
+                scriptEventDispatcher.fire(context, events::script::Run{command});
 
                 enterCommandModeImpl();
             }
         }
 
-        void onPressEscape(TDataContext& context, resources::eventTypes::io::KeyPressEvent eventData)
+        void onPressEscape(TDataContext& context, events::io::KeyPressEvent eventData)
         {
             if(commandMode)
             {
@@ -177,7 +177,7 @@ namespace dory::engine::devices
             }
         }
 
-        void onPressBackspace(TDataContext& context, resources::eventTypes::io::KeyPressEvent eventData)
+        void onPressBackspace(TDataContext& context, events::io::KeyPressEvent eventData)
         {
             if(commandMode && !currentCommand.empty())
             {
@@ -186,12 +186,12 @@ namespace dory::engine::devices
             }
         }
 
-        void onPressTerminate(TDataContext& context, resources::eventTypes::io::KeyPressEvent eventData)
+        void onPressTerminate(TDataContext& context, events::io::KeyPressEvent eventData)
         {
-            applicationEventDispatcher.fire(context, resources::eventTypes::application::Exit{});
+            applicationEventDispatcher.fire(context, events::application::Exit{});
         }
 
-        void onEnterSymbol(TDataContext& context, resources::eventTypes::io::KeyPressEvent eventData)
+        void onEnterSymbol(TDataContext& context, events::io::KeyPressEvent eventData)
         {
             if(commandMode)
             {
@@ -199,36 +199,36 @@ namespace dory::engine::devices
             }
         }
 
-        void onKeyPress(TDataContext& context, resources::eventTypes::io::KeyPressEvent& eventData)
+        void onKeyPress(TDataContext& context, events::io::KeyPressEvent& eventData)
         {
             switch(eventData.keyCode)
             {
-                case resources::eventTypes::io::KeyCode::Return:
+                case events::io::KeyCode::Return:
                 {
                     onPressReturn(context, eventData);
                     break;
                 }
-                case resources::eventTypes::io::KeyCode::Backspace:
+                case events::io::KeyCode::Backspace:
                 {
                     onPressBackspace(context, eventData);
                     break;
                 }
-                case resources::eventTypes::io::KeyCode::Escape:
+                case events::io::KeyCode::Escape:
                 {
                     onPressEscape(context, eventData);
                     break;
                 }
-                case resources::eventTypes::io::KeyCode::Terminate:
+                case events::io::KeyCode::Terminate:
                 {
                     onPressTerminate(context, eventData);
                     break;
                 }
-                case resources::eventTypes::io::KeyCode::Character:
+                case events::io::KeyCode::Character:
                 {
                     onEnterSymbol(context, eventData);
                     break;
                 }
-                case resources::eventTypes::io::KeyCode::Unknown:
+                case events::io::KeyCode::Unknown:
                 default:
                     break;
             }

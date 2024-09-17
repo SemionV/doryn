@@ -4,7 +4,7 @@
 #include "dory/module.h"
 
 #include "dory/engine/controllers/controller.h"
-#include <dory/engine/resources/eventTypes.h>
+#include "dory/engine/events/eventTypes.h"
 #include "dory/engine/resources/object.h"
 #include "dory/engine/services/pipelineService.h"
 
@@ -34,11 +34,11 @@ namespace dory::engine::controllers
     class MainController: public IMainController<MainController<TDataContext, TPipelineRepository>, TDataContext>
     {
     private:
-        resources::eventTypes::mainController::Dispatcher<TDataContext>& _mainControllerEventHub;
+        events::mainController::Dispatcher<TDataContext>& _mainControllerEventHub;
         repositories::IPipelineRepository<TPipelineRepository, TDataContext>& _pipelineRepository;
 
     public:
-        explicit MainController(resources::eventTypes::mainController::Dispatcher<TDataContext>& mainControllerEventHub,
+        explicit MainController(events::mainController::Dispatcher<TDataContext>& mainControllerEventHub,
                                 repositories::IPipelineRepository<TPipelineRepository, TDataContext>& pipelineRepository):
                 _mainControllerEventHub(mainControllerEventHub),
                 _pipelineRepository(pipelineRepository)
@@ -66,12 +66,12 @@ namespace dory::engine::controllers
 
         void initializeImpl(TDataContext& context)
         {
-            _mainControllerEventHub.fire(context, resources::eventTypes::mainController::Initialize{});
+            _mainControllerEventHub.fire(context, events::mainController::Initialize{});
         };
 
         void stopImpl(TDataContext& context)
         {
-            _mainControllerEventHub.fire(context, resources::eventTypes::mainController::Stop{});
+            _mainControllerEventHub.fire(context, events::mainController::Stop{});
 
             auto pipelineNodes = _pipelineRepository.getPipeline();
             auto expiredNodes = std::vector<typename repositories::IPipelineRepository<TPipelineRepository, TDataContext>::IdType>{};

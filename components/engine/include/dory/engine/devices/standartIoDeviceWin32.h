@@ -8,7 +8,7 @@
 #include <winbase.h>
 #include <iostream>
 
-#include <dory/engine/resources/eventTypes.h>
+#include "dory/engine/events/eventTypes.h"
 #include "device.h"
 
 namespace dory::engine::devices
@@ -19,7 +19,7 @@ namespace dory::engine::devices
             public IStandartOutputDevice<ConsoleIODevice<TDataContext>, std::string>
     {
     private:
-        using InputEventDispatcherType =  resources::eventTypes::io::Dispatcher<TDataContext>;
+        using InputEventDispatcherType =  events::io::Dispatcher<TDataContext>;
         InputEventDispatcherType& inputEventDispatcher;
 
         std::jthread pollingThread;
@@ -59,27 +59,27 @@ namespace dory::engine::devices
         {
             if(inputRecord.Event.KeyEvent.uChar.AsciiChar == 3)//CTRL+C
             {
-                inputEventDispatcher.charge(resources::eventTypes::io::KeyPressEvent{ resources::eventTypes::io::KeyCode::Terminate });
+                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Terminate });
             }
             else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 27)//ESC
             {
-                inputEventDispatcher.charge(resources::eventTypes::io::KeyPressEvent{ resources::eventTypes::io::KeyCode::Escape });
+                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Escape });
             }
             else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 8)//BACKSPACE
             {
-                inputEventDispatcher.charge(resources::eventTypes::io::KeyPressEvent{ resources::eventTypes::io::KeyCode::Backspace });
+                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Backspace });
             }
             else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 13)//RETURN
             {
-                inputEventDispatcher.charge(resources::eventTypes::io::KeyPressEvent{ resources::eventTypes::io::KeyCode::Return });
+                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Return });
             }
             else if(inputRecord.Event.KeyEvent.uChar.AsciiChar != 0)// Character
             {
-                inputEventDispatcher.charge(resources::eventTypes::io::KeyPressEvent{ resources::eventTypes::io::KeyCode::Character, inputRecord.Event.KeyEvent.uChar.AsciiChar });
+                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Character, inputRecord.Event.KeyEvent.uChar.AsciiChar });
             }
             else
             {
-                inputEventDispatcher.charge(resources::eventTypes::io::KeyPressEvent{ resources::eventTypes::io::KeyCode::Unknown });
+                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Unknown });
             }
         }
 

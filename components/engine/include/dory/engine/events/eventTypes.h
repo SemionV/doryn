@@ -3,7 +3,7 @@
 #include <any>
 #include "dory/events.h"
 
-namespace dory::engine::resources::eventTypes
+namespace dory::engine::events
 {
     namespace mainController
     {
@@ -16,10 +16,10 @@ namespace dory::engine::resources::eventTypes
         };
 
         template<typename TDataContext>
-        using Hub = events::EventHub<TDataContext, const Initialize, const Stop>;
+        using Hub = dory::events::EventHub<TDataContext, const Initialize, const Stop>;
 
         template<typename TDataContext>
-        using Dispatcher = events::EventCannon<Hub<TDataContext>>;
+        using Dispatcher = dory::events::EventCannon<Hub<TDataContext>>;
     }
 
     namespace application
@@ -29,10 +29,10 @@ namespace dory::engine::resources::eventTypes
         };
 
         template<typename TDataContext>
-        using Hub = events::EventHub<TDataContext, const Exit>;
+        using Hub = dory::events::EventHub<TDataContext, const Exit>;
 
         template<typename TDataContext>
-        using Dispatcher = events::EventCannon<Hub<TDataContext>>;
+        using Dispatcher = dory::events::EventCannon<Hub<TDataContext>>;
     }
 
     namespace io
@@ -54,10 +54,10 @@ namespace dory::engine::resources::eventTypes
         };
 
         template<typename TDataContext>
-        using Hub = events::EventHub<TDataContext, KeyPressEvent>;
+        using Hub = dory::events::EventHub<TDataContext, KeyPressEvent>;
 
         template<typename TDataContext>
-        using Dispatcher = events::EventCannonBuffer<Hub<TDataContext>>;
+        using Dispatcher = dory::events::EventCannonBuffer<Hub<TDataContext>>;
     }
 
     namespace script
@@ -69,10 +69,10 @@ namespace dory::engine::resources::eventTypes
         };
 
         template<typename TDataContext>
-        using Hub = events::EventHub<TDataContext, const Run>;
+        using Hub = dory::events::EventHub<TDataContext, const Run>;
 
         template<typename TDataContext>
-        using Dispatcher = events::EventCannon<Hub<TDataContext>>;
+        using Dispatcher = dory::events::EventCannon<Hub<TDataContext>>;
     }
 
     namespace window
@@ -86,9 +86,9 @@ namespace dory::engine::resources::eventTypes
         };
 
         template<typename TDataContext>
-        using Hub = events::EventHub<TDataContext, Close>;
+        using Hub = dory::events::EventHub<TDataContext, Close>;
 
         template<typename TDataContext>
-        using Dispatcher = events::EventCannonBuffer<Hub<TDataContext>>;
+        using Dispatcher = dory::events::EventCannonBuffer<Hub<TDataContext>>;
     }
 }

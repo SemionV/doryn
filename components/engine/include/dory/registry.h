@@ -1,7 +1,7 @@
 #pragma once
 
 #include "dory/engine/resources/dataContext.h"
-#include <dory/engine/resources/eventTypes.h>
+#include "dory/engine/events/eventTypes.h"
 
 #ifdef __unix__
 #include <dory/engine/devices/standartIoDeviceUnix.h>
@@ -34,7 +34,7 @@
 namespace dory
 {
     namespace engineResources = dory::engine::resources;
-    namespace engineEventTypes = engineResources::eventTypes;
+    namespace engineEvents = dory::engine::events;
     namespace engineDevices = dory::engine::devices;
     namespace engineServices = dory::engine::services;
     namespace engineRepositories = dory::engine::repositories;
@@ -45,16 +45,16 @@ namespace dory
     {
         using DataContextType = engineResources::DataContext<TDataContextSections...>;
 
-        using EngineDispatcherType = engineEventTypes::mainController::Dispatcher<DataContextType>;
-        using MainControllerType = engineEventTypes::mainController::Hub<DataContextType>;
-        using WindowDispatcherType = engineEventTypes::window::Dispatcher<DataContextType>;
-        using WindowType = engineEventTypes::window::Hub<DataContextType>;
-        using ApplicationDispatcherType = engineEventTypes::application::Dispatcher<DataContextType>;
-        using ApplicationType = engineEventTypes::application::Hub<DataContextType>;
-        using StandartInputDispatcherType = engineEventTypes::io::Dispatcher<DataContextType>;
-        using StandartInputType = engineEventTypes::io::Hub<DataContextType>;
-        using ScriptDispatcherType = engineEventTypes::script::Dispatcher<DataContextType>;
-        using ScriptType = engineEventTypes::script::Hub<DataContextType>;
+        using EngineDispatcherType = engineEvents::mainController::Dispatcher<DataContextType>;
+        using MainControllerType = engineEvents::mainController::Hub<DataContextType>;
+        using WindowDispatcherType = engineEvents::window::Dispatcher<DataContextType>;
+        using WindowType = engineEvents::window::Hub<DataContextType>;
+        using ApplicationDispatcherType = engineEvents::application::Dispatcher<DataContextType>;
+        using ApplicationType = engineEvents::application::Hub<DataContextType>;
+        using StandartInputDispatcherType = engineEvents::io::Dispatcher<DataContextType>;
+        using StandartInputType = engineEvents::io::Hub<DataContextType>;
+        using ScriptDispatcherType = engineEvents::script::Dispatcher<DataContextType>;
+        using ScriptType = engineEvents::script::Hub<DataContextType>;
     };
 
     template<typename T>
