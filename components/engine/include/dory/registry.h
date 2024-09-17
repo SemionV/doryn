@@ -29,7 +29,7 @@
 #include <dory/engine/controllers/opengl/viewControllerOpenGL.h>
 #include <dory/engine/controllers/opengl/glfwWindowController.h>
 
-#include "dory/engine/services/viewService.h"
+#include <dory/engine/services/viewService.h>
 
 namespace dory
 {

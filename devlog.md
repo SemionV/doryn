@@ -1,10 +1,9 @@
 # Development log
 
 Tasks:
-* Move mainController to a static shared library
-  * Move generic components like EventHub system, Reflection/Serialization, etc to header only libraries, each per component/system
-  * Compose an mainController shared library out of generic components
-  * Cover the mainController with tests
+* Move engine to a static shared library
+  * Compose an engine shared library out of generic components
+  * Cover the engine with tests
 * Dynamic module loading(plugin system)
   * Hot reload of plugins with file watchers(see library https://github.com/SpartanJ/efsw)
   * Configure and load plugins
@@ -34,6 +33,9 @@ Tasks:
   * Setup pipeline for build and tests on windows
   * Setup pipeline for releases
   * Deploy assembled packages to some network storage
+
+**17.09.24**
+* Task done: Move generic components like EventHub system, Reflection/Serialization, etc to header only libraries, each per component/system
 
 **10.09.24**
 * Task done: Setup memory usage analysis with Valgrind
