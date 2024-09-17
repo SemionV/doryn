@@ -1,27 +1,29 @@
 #pragma once
 
 #include <dory/generics/typeTraits.h>
+#include <dory/serialization/structures/parameterizedString.h>
 #include <spdlog/fmt/fmt.h>
 
 namespace dory::engine::resources
 {
-    class ParameterizedString
+    class ParameterizedString: dory::serialization::IParameterizedString
     {
-        private:
+    private:
         std::string value;
         fmt::runtime_format_string<> compiledValue;
-        public:
-        std::string& getTemplate()
+
+    public:
+        std::string& getTemplate() override
         {
             return value;
         }
 
-        [[nodiscard]] decltype(auto) getTemplate() const
+        [[nodiscard]] const std::string& getTemplate() const override
         {
             return value;
         }
 
-        void updateTemplate()
+        void updateTemplate() override
         {
             compiledValue = fmt::runtime(value);
         }

@@ -4,7 +4,7 @@
 #include <queue>
 
 #include "reflection.h"
-#include <dory/engine/resources/stringResource.h>
+#include "structures/parameterizedString.h"
 
 namespace dory::serialization
 {
@@ -234,7 +234,7 @@ namespace dory::serialization
         }
 
         template<typename T, typename TContext>
-        requires(std::is_base_of_v<dory::engine::resources::ParameterizedString, std::decay_t<T>>)
+        requires(std::is_base_of_v<dory::serialization::IParameterizedString, std::decay_t<T>>)
         static void visit(T&& object, TContext& context)
         {
             TPolicies::ValuePolicy::process(object.getTemplate(), context);
@@ -293,7 +293,7 @@ namespace dory::serialization
         requires(std::is_class_v<std::decay_t<T>>
                  && !is_fixed_array_v<std::decay_t<T>>
                  && !std::is_same_v<std::decay_t<T>, std::string>
-                 && !std::is_base_of_v<dory::engine::resources::ParameterizedString, std::decay_t<T>>
+                 && !std::is_base_of_v<dory::serialization::IParameterizedString, std::decay_t<T>>
                  && !is_optional_v<std::decay_t<T>>
                  && !is_dynamic_collection_v<T>
                  && !is_dictionary_v<T>)
