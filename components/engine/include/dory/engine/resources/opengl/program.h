@@ -2,7 +2,7 @@
 
 #include "blocks.h"
 
-namespace dory::opengl::graphics
+namespace dory::engine::resources::opengl
 {
     struct Shader
     {

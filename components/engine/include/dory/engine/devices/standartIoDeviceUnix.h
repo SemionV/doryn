@@ -7,7 +7,7 @@
 #include <dory/engine/resources/eventTypes.h>
 #include "device.h"
 
-namespace dory::domain::devices
+namespace dory::engine::devices
 {
     static struct termios oldt, currentt;
 
@@ -17,7 +17,7 @@ namespace dory::domain::devices
                                public IStandardOutputDevice<ConsoleIODevice<TDataContext>, std::string>
     {
     private:
-        using InputEventDispatcherType =  events::io::Dispatcher<TDataContext>;
+        using InputEventDispatcherType =  resources::eventTypes::io::Dispatcher<TDataContext>;
         InputEventDispatcherType& inputEventDispatcher;
 
         std::jthread pollingThread;
@@ -28,27 +28,27 @@ namespace dory::domain::devices
         {
             if(key == 3)//CTRL+C
             {
-                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Terminate });
+                inputEventDispatcher.charge(resources::eventTypes::io::KeyPressEvent{ resources::eventTypes::io::KeyCode::Terminate });
             }
             else if(key == 27)//ESC
             {
-                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Escape });
+                inputEventDispatcher.charge(resources::eventTypes::io::KeyPressEvent{ resources::eventTypes::io::KeyCode::Escape });
             }
             else if(key == 127)//BACKSPACE
             {
-                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Backspace });
+                inputEventDispatcher.charge(resources::eventTypes::io::KeyPressEvent{ resources::eventTypes::io::KeyCode::Backspace });
             }
             else if(key == 10)//END OF LINE
             {
-                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Return });
+                inputEventDispatcher.charge(resources::eventTypes::io::KeyPressEvent{ resources::eventTypes::io::KeyCode::Return });
             }
             else if(key != 0)// Character
             {
-                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Character, key });
+                inputEventDispatcher.charge(resources::eventTypes::io::KeyPressEvent{ resources::eventTypes::io::KeyCode::Character, key });
             }
             else
             {
-                inputEventDispatcher.charge(events::io::KeyPressEvent{ events::io::KeyCode::Unknown });
+                inputEventDispatcher.charge(resources::eventTypes::io::KeyPressEvent{ resources::eventTypes::io::KeyCode::Unknown });
             }
         }
 

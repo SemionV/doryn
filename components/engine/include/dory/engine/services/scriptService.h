@@ -6,7 +6,7 @@
 
 #include "dory/module.h"
 
-namespace dory::domain::services
+namespace dory::engine::services
 {
     template<typename TImplementation, typename TDataContext>
     struct IScriptService

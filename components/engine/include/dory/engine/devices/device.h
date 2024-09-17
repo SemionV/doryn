@@ -2,7 +2,7 @@
 
 #include "dory/generics/typeTraits.h"
 
-namespace dory::domain::devices
+namespace dory::engine::devices
 {
     template<typename TImplementation, typename TDataContext>
     struct IDevice

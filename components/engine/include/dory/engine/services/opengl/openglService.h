@@ -5,12 +5,12 @@
 #include <dory/engine/resources/opengl/program.h>
 #include <dory/engine/resources/opengl/vertexArray.h>
 
-namespace dory::opengl::services
+namespace dory::engine::services::opengl
 {
     class OpenglService
     {
         private:
-            static std::size_t getSingleVertexSize(const graphics::VertexArray& vertexArray) noexcept
+            static std::size_t getSingleVertexSize(const resources::opengl::VertexArray& vertexArray) noexcept
             {
                 std::size_t size {};
 
@@ -26,7 +26,7 @@ namespace dory::opengl::services
                 return size;
             }
 
-            static std::size_t getVerticiesCount(const graphics::VertexArray& vertexArray) noexcept
+            static std::size_t getVerticiesCount(const resources::opengl::VertexArray& vertexArray) noexcept
             {
                 auto vertexSize = getSingleVertexSize(vertexArray);
                 if(vertexSize > 0)
@@ -81,28 +81,28 @@ namespace dory::opengl::services
                 return size;
             }
 
-            static void useProgram(const graphics::Program& program)
+            static void useProgram(const resources::opengl::Program& program)
             {
                 glUseProgram(program.id);
             }
 
-            static void useVertextArray(const graphics::VertexArray& vertexArray)
+            static void useVertextArray(const resources::opengl::VertexArray& vertexArray)
             {
                 glBindVertexArray(vertexArray.id);
             }
 
         public:
-            static void clearViewport(const domain::Color& clearColor)
+            static void clearViewport(const resources::Color& clearColor)
             {
                 GLfloat color[] = {clearColor.r, clearColor.g, clearColor.b, clearColor.a};
                 glClearBufferfv(GL_COLOR, 0, color);
             }
 
             template<std::size_t N>
-            static void loadUniformBlock(GLuint programId, graphics::ArrayUniformBlock<N>& block)
+            static void loadUniformBlock(GLuint programId, resources::opengl::ArrayUniformBlock<N>& block)
             {
                 block.index = glGetUniformBlockIndex(programId, block.key.c_str());
-                if(block.index != graphics::unboundId)
+                if(block.index != resources::opengl::unboundId)
                 {
                     glGetActiveUniformBlockiv(programId, block.index, GL_UNIFORM_BLOCK_DATA_SIZE, &block.size);
                     
@@ -123,7 +123,7 @@ namespace dory::opengl::services
                     auto members = block.getMembers();
                     for(std::size_t i = 0; i < N; ++i)
                     {
-                        graphics::Uniform& member = members[i];
+                        resources::opengl::Uniform& member = members[i];
                         member.index = memberIndices[i];
                         member.offset = memberOffset[i];
                         member.type = memberType[i];
@@ -136,12 +136,12 @@ namespace dory::opengl::services
                 }
             }
 
-            static void setUniformBlockData(graphics::UniformBlock& block, GLvoid* data, GLsizeiptr dataSize)
+            static void setUniformBlockData(resources::opengl::UniformBlock& block, GLvoid* data, GLsizeiptr dataSize)
             {
                 block.buffer.data = data;
                 block.buffer.size = dataSize;
 
-                if(block.buffer.index != graphics::unboundId)
+                if(block.buffer.index != resources::opengl::unboundId)
                 {
                     glNamedBufferSubData(block.buffer.index, 0, dataSize, data);
                 }
@@ -154,12 +154,12 @@ namespace dory::opengl::services
                 }
             }
 
-            static void loadVertexArray(graphics::VertexArray& vertexArray)
+            static void loadVertexArray(resources::opengl::VertexArray& vertexArray)
             {
                 glGenVertexArrays(1, &vertexArray.id);
             }
 
-            static void setVertexArrayData(graphics::VertexArray& vertexArray, GLvoid* data, GLsizeiptr dataSize) noexcept
+            static void setVertexArrayData(resources::opengl::VertexArray& vertexArray, GLvoid* data, GLsizeiptr dataSize) noexcept
             {
                 vertexArray.buffer.data = data;
                 vertexArray.buffer.size = dataSize;
@@ -167,7 +167,7 @@ namespace dory::opengl::services
 
                 glBindVertexArray(vertexArray.id);
 
-                if(vertexArray.buffer.index != graphics::unboundId)
+                if(vertexArray.buffer.index != resources::opengl::unboundId)
                 {
                     glNamedBufferSubData(vertexArray.buffer.index, 0, dataSize, data);
                 }
@@ -182,7 +182,7 @@ namespace dory::opengl::services
 
                     for(std::size_t i = 0; i < attributesCount; ++i)
                     {
-                        graphics::VertexAttribute& attribute = attributes[i];
+                        resources::opengl::VertexAttribute& attribute = attributes[i];
                         glVertexAttribPointer(i, attribute.count, attribute.type, attribute.normalized, attribute.stride, attribute.pointer);
                         glEnableVertexAttribArray(i);
                     }
@@ -190,7 +190,7 @@ namespace dory::opengl::services
             }
 
             template<typename TVertexArray>
-            static void drawObject(const graphics::Program& program, const TVertexArray& vertexArray)
+            static void drawObject(const resources::opengl::Program& program, const TVertexArray& vertexArray)
             {
                 useProgram(program);
                 useVertextArray(vertexArray);

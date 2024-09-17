@@ -3,7 +3,7 @@
 #include "dory/generics/typeTraits.h"
 #include "dory/module.h"
 
-namespace dory::domain::events
+namespace dory::events
 {
     template<class... Ts>
     class Callable

@@ -5,7 +5,7 @@
 #include "dory/serialization/jsonSerializer.h"
 #include "dory/serialization/jsonDeserializer.h"
 
-namespace dory::domain::services::serialization
+namespace dory::engine::services::serialization
 {
     template<typename TImplementation>
     class ISerializationService: NonCopyable, public StaticInterface<TImplementation>

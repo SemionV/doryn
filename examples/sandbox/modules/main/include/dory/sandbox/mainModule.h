@@ -5,7 +5,7 @@
 
 namespace dory::sandbox
 {
-    namespace events = dory::domain::events;
+    namespace events = engine::resources::eventTypes;
 
     class MainModule: public IExecutableModule<bootstrap::StartupModuleContext>
     {
@@ -15,7 +15,7 @@ namespace dory::sandbox
 
         Registry registry;
         Registry::ServiceTypes::FrameServiceType frameService;
-        dory::domain::services::module::DynamicLibraryService libraryService;
+        engine::services::module::DynamicLibraryService libraryService;
         ExtensionContext extensionContext = ExtensionContext{ registry };
 
     public:

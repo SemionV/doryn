@@ -9,7 +9,7 @@
 #include <dory/engine/resources/opengl/glfwWindow.h>
 #include <dory/engine/services/opengl/renderer.h>
 
-namespace dory::opengl
+namespace dory::engine::controllers::opengl
 {
     template<typename T>
     class ViewControllerFactory;
@@ -26,16 +26,16 @@ namespace dory::opengl
 
     template<typename T>
     requires(is_instance_v<T, ViewControllerDependencies>)
-    class ViewControllerOpenGL: public domain::Controller<typename T::DataContextType>
+    class ViewControllerOpenGL: public Controller<typename T::DataContextType>
     {
     private:
         using RendererType = T::RendererType;
         RendererType renderer;
 
-        using ViewRepositoryType = domain::IEntityRepository<typename T::ViewRepositoryType, domain::entity::View, domain::entity::IdType>;
+        using ViewRepositoryType = repositories::IEntityRepository<typename T::ViewRepositoryType, resources::entity::View, resources::entity::IdType>;
         ViewRepositoryType& viewRepository;
 
-        using WindowRepositoryType = domain::IEntityRepository<typename T::WindowRepositoryType, GlfwWindow, domain::entity::IdType>;
+        using WindowRepositoryType = repositories::IEntityRepository<typename T::WindowRepositoryType, resources::opengl::GlfwWindow, resources::entity::IdType>;
         WindowRepositoryType& windowRepository;
 
     public:
@@ -47,7 +47,7 @@ namespace dory::opengl
                 windowRepository(windowRepository)
         {}
 
-        bool initialize(domain::entity::IdType referenceId, T::DataContextType& context) override
+        bool initialize(resources::entity::IdType referenceId, T::DataContextType& context) override
         {
             auto windowHandler = getWindowHandler(referenceId);
             if(windowHandler != nullptr)
@@ -65,11 +65,11 @@ namespace dory::opengl
             return true;
         }
 
-        void stop(domain::entity::IdType referenceId, T::DataContextType& context) override
+        void stop(resources::entity::IdType referenceId, T::DataContextType& context) override
         {
         }
 
-        void update(domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, T::DataContextType& context) override
+        void update(resources::entity::IdType referenceId, const resources::TimeSpan& timeStep, T::DataContextType& context) override
         {
             auto windowHandler = getWindowHandler(referenceId);
             if(windowHandler != nullptr)
@@ -81,9 +81,9 @@ namespace dory::opengl
         }
 
     private:
-        GLFWwindow* getWindowHandler(domain::entity::IdType referenceId)
+        GLFWwindow* getWindowHandler(resources::entity::IdType referenceId)
         {
-            auto view = viewRepository.find([&referenceId](const domain::entity::View& view)
+            auto view = viewRepository.find([&referenceId](const resources::entity::View& view)
             {
                 return view.controllerNodeId == referenceId;
             });
@@ -105,15 +105,15 @@ namespace dory::opengl
     class ViewControllerFactory: public IServiceFactory<ViewControllerFactory<T>>
     {
     private:
-        using ControllerInterfaceType = domain::Controller<typename T::DataContextType>;
+        using ControllerInterfaceType = Controller<typename T::DataContextType>;
 
         using RendererFactoryType = IServiceFactory<typename T::RendererFactoryType>;
         RendererFactoryType& rendererFactory;
 
-        using ViewRepositoryType = domain::IEntityRepository<typename T::ViewRepositoryType, domain::entity::View, domain::entity::IdType>;
+        using ViewRepositoryType = repositories::IEntityRepository<typename T::ViewRepositoryType, resources::entity::View, resources::entity::IdType>;
         ViewRepositoryType& viewRepository;
 
-        using WindowRepositoryType = domain::IEntityRepository<typename T::WindowRepositoryType, GlfwWindow, domain::entity::IdType>;
+        using WindowRepositoryType = repositories::IEntityRepository<typename T::WindowRepositoryType, resources::opengl::GlfwWindow, resources::entity::IdType>;
         WindowRepositoryType& windowRepository;
 
     public:

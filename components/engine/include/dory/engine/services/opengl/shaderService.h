@@ -4,7 +4,7 @@
 #include <dory/engine/services/logService.h>
 #include <dory/engine/resources/opengl/program.h>
 
-namespace dory::opengl::services
+namespace dory::engine::services::opengl
 {
     struct ShaderCompilationError
     {
@@ -36,22 +36,22 @@ namespace dory::opengl::services
     class IShaderService: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
-        void loadProgram(TDataContext& dataContext, graphics::Program& program, const std::function<void(ShaderServiceError&)>& errorHandler = nullptr)
+        void loadProgram(TDataContext& dataContext, resources::opengl::Program& program, const std::function<void(ShaderServiceError&)>& errorHandler = nullptr)
         {
             this->toImplementation()->loadProgramImpl(dataContext, program, errorHandler);
         }
     };
 
     template<typename TLogger, typename TFileService, typename... TDataContextSections>
-    class ShaderService: public IShaderService<ShaderService<TLogger, TFileService, TDataContextSections...>, dory::domain::DataContext<TDataContextSections...>>
+    class ShaderService: public IShaderService<ShaderService<TLogger, TFileService, TDataContextSections...>, resources::DataContext<TDataContextSections...>>
     {
     private:
-        using DataContextType = dory::domain::DataContext<TDataContextSections...>;
+        using DataContextType = resources::DataContext<TDataContextSections...>;
 
-        using LoggerType = domain::services::ILogService<TLogger>;
+        using LoggerType = ILogService<TLogger>;
         LoggerType& logger;
 
-        using FileServiceType = domain::services::IFileService<TFileService>;
+        using FileServiceType = IFileService<TFileService>;
         FileServiceType& fileService;
 
     public:
@@ -61,7 +61,7 @@ namespace dory::opengl::services
             fileService(fileService)
         {}
 
-        void loadProgramImpl(DataContextType& dataContext, graphics::Program& program, const std::function<void(ShaderServiceError&)>& errorHandler)
+        void loadProgramImpl(DataContextType& dataContext, resources::opengl::Program& program, const std::function<void(ShaderServiceError&)>& errorHandler)
         {
             program.id = glCreateProgram();
 

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace dory::domain::services
+namespace dory::engine::services
 {
     template<typename TImplementation>
     class IWindowService: NonCopyable, public StaticInterface<TImplementation>
@@ -11,7 +11,7 @@ namespace dory::domain::services
             return this->toImplementation()->createWindowImpl();
         }
 
-        void closeWindow(entity::IdType windowId)
+        void closeWindow(resources::entity::IdType windowId)
         {
             this->toImplementation()->closeWindowImpl(windowId);
         }

@@ -5,7 +5,7 @@
 #include "dory/engine/resources/entity.h"
 #include "dory/generics/typeTraits.h"
 
-namespace dory::domain::repositories
+namespace dory::engine::repositories
 {
     template<typename T>
     bool compareNodes(const std::shared_ptr<T>& a, const std::shared_ptr<T>& b)
@@ -14,18 +14,18 @@ namespace dory::domain::repositories
     }
 
     template<typename TImplementation, typename TDataContext>
-    class IPipelineRepository: public IEntityRepository<TImplementation, entity::PipelineNode<TDataContext>, entity::IdType>
+    class IPipelineRepository: public IEntityRepository<TImplementation, resources::entity::PipelineNode<TDataContext>, resources::entity::IdType>
     {
     public:
-        using IdType = entity::IdType;
+        using IdType = resources::entity::IdType;
 
-        std::list<std::shared_ptr<object::PipelineNode<TDataContext>>> getPipeline()
+        std::list<std::shared_ptr<resources::object::PipelineNode<TDataContext>>> getPipeline()
         {
             return this->toImplementation()->getPipelineImpl();
         }
     };
 
-    template<typename TDataContext, typename TEntity, typename TIdType = entity::IdType>
+    template<typename TDataContext, typename TEntity, typename TIdType = resources::entity::IdType>
     class PipelineRepository:
             public IPipelineRepository<PipelineRepository<TDataContext, TEntity, TIdType>, TDataContext>,
             public EntityRepository<TEntity, TIdType>
@@ -40,27 +40,27 @@ namespace dory::domain::repositories
                 EntityRepository<TEntity, TIdType>(std::move(entities))
         {}
 
-        std::list<std::shared_ptr<object::PipelineNode<TDataContext>>> getPipelineImpl()
+        std::list<std::shared_ptr<resources::object::PipelineNode<TDataContext>>> getPipelineImpl()
         {
-            std::list<std::shared_ptr<object::PipelineNode<TDataContext>>> nodes;
+            std::list<std::shared_ptr<resources::object::PipelineNode<TDataContext>>> nodes;
 
             InterfaceType::forEach([this, &nodes](const TEntity& nodeEntity)
                                    {
-                                       if(nodeEntity.parentNodeId == entity::nullId)
+                                       if(nodeEntity.parentNodeId == resources::entity::nullId)
                                        {
                                            nodes.emplace_back(loadNode(nodeEntity));
                                        }
                                    });
 
-            nodes.sort(compareNodes<object::PipelineNode<TDataContext>>);
+            nodes.sort(compareNodes<resources::object::PipelineNode<TDataContext>>);
 
             return nodes;
         }
 
     private:
-        std::shared_ptr<object::PipelineNode<TDataContext>> loadNode(const TEntity& nodeEntity)
+        std::shared_ptr<resources::object::PipelineNode<TDataContext>> loadNode(const TEntity& nodeEntity)
         {
-            auto node = std::make_shared<object::PipelineNode<TDataContext>>(nodeEntity);
+            auto node = std::make_shared<resources::object::PipelineNode<TDataContext>>(nodeEntity);
 
             InterfaceType::forEach([this, &node](const auto& nodeEntity)
                                    {
@@ -70,7 +70,7 @@ namespace dory::domain::repositories
                                        }
                                    });
 
-            node->children.sort(compareNodes<object::PipelineNode<TDataContext>>);
+            node->children.sort(compareNodes<resources::object::PipelineNode<TDataContext>>);
 
             return node;
         }

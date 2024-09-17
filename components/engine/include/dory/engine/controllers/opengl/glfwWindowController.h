@@ -8,19 +8,19 @@
 #include "dory/engine/repositories/entityRepository.h"
 #include <dory/engine/resources/opengl/glfwWindow.h>
 
-namespace dory::opengl
+namespace dory::engine::controllers::opengl
 {
     template<class TDataContext, typename TWindowRepository>
     class GlfwWindowControllerFactory;
 
     template<class TDataContext, typename TWindowRepository>
-    class GlfwWindowController: public domain::Controller<TDataContext>
+    class GlfwWindowController: public Controller<TDataContext>
     {
     private:
-        using WindowRepositoryType = domain::IEntityRepository<TWindowRepository, GlfwWindow, domain::entity::IdType>;
+        using WindowRepositoryType = repositories::IEntityRepository<TWindowRepository, resources::opengl::GlfwWindow, resources::entity::IdType>;
         WindowRepositoryType& windowRepository;
 
-        using WindowEventHubType = domain::events::window::Dispatcher<TDataContext>;
+        using WindowEventHubType = resources::eventTypes::window::Dispatcher<TDataContext>;
         WindowEventHubType& windowEventHubDispatcher;
 
     public:
@@ -32,17 +32,17 @@ namespace dory::opengl
                 windowEventHubDispatcher(windowEventHubDispatcher)
         {}
 
-        bool initialize(domain::entity::IdType referenceId, TDataContext& context) override
+        bool initialize(resources::entity::IdType referenceId, TDataContext& context) override
         {
             return glfwInit();
         };
 
-        void stop(domain::entity::IdType referenceId, TDataContext& context) override
+        void stop(resources::entity::IdType referenceId, TDataContext& context) override
         {
             glfwTerminate();
         }
 
-        void update(domain::entity::IdType referenceId, const domain::TimeSpan& timeStep, TDataContext& context) override
+        void update(resources::entity::IdType referenceId, const resources::TimeSpan& timeStep, TDataContext& context) override
         {
             glfwPollEvents();
 
@@ -50,7 +50,7 @@ namespace dory::opengl
             {
                 if(glfwWindowShouldClose(window.handler))
                 {
-                    this->windowEventHubDispatcher.charge(domain::events::window::Close(window.id));
+                    this->windowEventHubDispatcher.charge(resources::eventTypes::window::Close(window.id));
                     glfwSetWindowShouldClose(window.handler, 0);
                 }
             });
@@ -63,12 +63,12 @@ namespace dory::opengl
     class GlfwWindowControllerFactory: public IServiceFactory<GlfwWindowControllerFactory<TDataContext, TWindowRepository>>
     {
     private:
-        using ControllerInterfaceType = domain::Controller<TDataContext>;
+        using ControllerInterfaceType = Controller<TDataContext>;
 
-        using WindowRepositoryType = domain::IEntityRepository<TWindowRepository, GlfwWindow, domain::entity::IdType>;
+        using WindowRepositoryType = repositories::IEntityRepository<TWindowRepository, resources::opengl::GlfwWindow, resources::entity::IdType>;
         WindowRepositoryType& windowRepository;
 
-        using WindowEventHubType = domain::events::window::Dispatcher<TDataContext>;
+        using WindowEventHubType = resources::eventTypes::window::Dispatcher<TDataContext>;
         WindowEventHubType& windowEventHubDispatcher;
 
     public:

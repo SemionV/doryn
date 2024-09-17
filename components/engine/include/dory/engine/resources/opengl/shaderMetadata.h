@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <string>
 
-namespace dory::opengl
+namespace dory::engine::resources::opengl
 {
     struct ShaderMetadata
     {

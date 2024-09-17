@@ -8,7 +8,7 @@
 #include <dory/engine/resources/opengl/glfwWindow.h>
 #include <dory/engine/resources/opengl/glfwWindowParameters.h>
 
-namespace dory::opengl
+namespace dory::engine::services::opengl
 {
     template<typename TWindowRepository>
     struct GlfwWindowServiceDependencies
@@ -18,10 +18,10 @@ namespace dory::opengl
 
     template<typename T>
     requires(is_instance_v<T, GlfwWindowServiceDependencies>)
-    class GlfwWindowService: public domain::services::IWindowService<GlfwWindowService<T>>
+    class GlfwWindowService: public IWindowService<GlfwWindowService<T>>
     {
     private:
-        using WindowRepositoryType = domain::IEntityRepository<typename T::WindowRepositoryType, GlfwWindow, domain::entity::IdType>;
+        using WindowRepositoryType = repositories::IEntityRepository<typename T::WindowRepositoryType, resources::opengl::GlfwWindow, resources::entity::IdType>;
         WindowRepositoryType& windowRepository;
 
     public:
@@ -31,14 +31,14 @@ namespace dory::opengl
 
         auto createWindowImpl()
         {
-            GlfwWindowParameters glfwWindowParameters;
+            resources::opengl::GlfwWindowParameters glfwWindowParameters;
             auto glfwWindowHandler = glfwCreateWindow(800, 600, "dory - glfw window", nullptr, nullptr);
-            auto window = windowRepository.store(GlfwWindow(domain::entity::nullId, glfwWindowHandler));
+            auto window = windowRepository.store(resources::opengl::GlfwWindow(resources::entity::nullId, glfwWindowHandler));
 
             return window;
         }
 
-        void closeWindowImpl(domain::entity::IdType windowId)
+        void closeWindowImpl(resources::entity::IdType windowId)
         {
             auto window = windowRepository.get(windowId);
 

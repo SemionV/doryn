@@ -5,14 +5,14 @@
 #include "fileService.h"
 #include "serializationService.h"
 
-namespace dory::domain::services::localization
+namespace dory::engine::services::localization
 {
     template<typename TImplementation>
     class ILocalizationService: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         template<typename TLocalization>
-        void load(const dory::configuration::Configuration& configuration, TLocalization& localization)
+        void load(const resources::configuration::Configuration& configuration, TLocalization& localization)
         {
             this->toImplementation()->loadImpl(configuration, localization);
         }
@@ -47,7 +47,7 @@ namespace dory::domain::services::localization
         {}
 
         template<typename TLocalization>
-        void loadImpl(const dory::configuration::Configuration& configuration, TLocalization& localization)
+        void loadImpl(const resources::configuration::Configuration& configuration, TLocalization& localization)
         {
             auto& activeLanguage = configuration.userInterface.activeLanguage;
             if(configuration.localizations.contains(activeLanguage))

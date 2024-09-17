@@ -6,7 +6,7 @@
 #include "dory/generics/typeTraits.h"
 #include "dory/engine/repositories/pipelineRepository.h"
 
-namespace dory::domain::managers
+namespace dory::engine::services
 {
     template<typename TImplementation, typename TDataContext>
     class IPipelineService: NonCopyable, public StaticInterface<TImplementation>
@@ -24,7 +24,7 @@ namespace dory::domain::managers
     class PipelineService: public IPipelineService<PipelineService<TDataContext, TWindowControllerFactory, TPipelineRepository>, TDataContext>
     {
     private:
-        using PipelineNodeType = entity::PipelineNode<TDataContext>;
+        using PipelineNodeType = resources::entity::PipelineNode<TDataContext>;
 
         using WindowControllerFactoryType = dory::IServiceFactory<TWindowControllerFactory>;
         WindowControllerFactoryType& windowControllerFactory;
@@ -41,26 +41,26 @@ namespace dory::domain::managers
 
         void configurePipelineImpl(TDataContext&  context)
         {
-            auto inputGroupNode = pipelineRepository.store(PipelineNodeType(entity::nullId,
+            auto inputGroupNode = pipelineRepository.store(PipelineNodeType(resources::entity::nullId,
                                                                                 nullptr,
-                                                                                entity::PipelineNodePriority::Default,
-                                                                                entity::nullId,
+                                                                                resources::entity::PipelineNodePriority::Default,
+                                                                                resources::entity::nullId,
                                                                                 "input group"));
 
-            auto outputGroupNode = pipelineRepository.store(PipelineNodeType(entity::nullId,
-                                                                                 nullptr,
-                                                                                 entity::PipelineNodePriority::First,
-                                                                                 entity::nullId,
-                                                                                 "output group"));
+            auto outputGroupNode = pipelineRepository.store(PipelineNodeType(resources::entity::nullId,
+                                                                                nullptr,
+                                                                                resources::entity::PipelineNodePriority::First,
+                                                                                resources::entity::nullId,
+                                                                                "output group"));
 
             context.inputGroupNodeId = inputGroupNode.id;
             context.outputGroupNodeId = outputGroupNode.id;
 
             auto windowController = windowControllerFactory.createInstance();
-            auto windowControllerNode = pipelineRepository.store(PipelineNodeType(entity::nullId,
-                                                                                      windowController,
-                                                                                      entity::PipelineNodePriority::Default,
-                                                                                      inputGroupNode.id));
+            auto windowControllerNode = pipelineRepository.store(PipelineNodeType(resources::entity::nullId,
+                                                                                  windowController,
+                                                                                  resources::entity::PipelineNodePriority::Default,
+                                                                                  inputGroupNode.id));
             windowController->initialize(windowControllerNode.id, context);
         }
     };

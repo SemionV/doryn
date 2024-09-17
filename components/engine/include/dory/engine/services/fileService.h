@@ -1,6 +1,6 @@
 #pragma once
 
-namespace dory::domain::services
+namespace dory::engine::services
 {
     template<typename TImplementation>
     class IFileService: NonCopyable, public StaticInterface<TImplementation>

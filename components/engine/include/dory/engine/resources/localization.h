@@ -5,7 +5,7 @@
 
 #include "stringResource.h"
 
-namespace dory::domain::resources
+namespace dory::engine::resources::localization
 {
     struct Localization
     {
@@ -27,7 +27,7 @@ namespace dory::domain::resources
         BirthDateParameterizedString birthDate;
     };
 }
-REFL_TYPE(dory::domain::resources::Localization)
+REFL_TYPE(dory::engine::resources::localization::Localization)
     REFL_FIELD(hello)
     REFL_FIELD(goodBye)
     REFL_FIELD(birthDate)

@@ -6,7 +6,7 @@
 #include "fileService.h"
 #include "serializationService.h"
 
-namespace dory::domain::services::configuration
+namespace dory::engine::services::configuration
 {
     template<typename TImplementation>
     class IConfigurationService: NonCopyable, public StaticInterface<TImplementation>
@@ -51,7 +51,7 @@ namespace dory::domain::services::configuration
     template<typename T>
     concept IsRecursiveSectionMetadata = requires (T x)
     {
-        requires std::is_base_of_v<dory::configuration::RecursiveSection, T>;
+        requires std::is_base_of_v<resources::configuration::RecursiveSection, T>;
     };
 
     template<typename T>

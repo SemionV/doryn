@@ -10,8 +10,8 @@ namespace dory::sandbox
         configuration.section.loadFrom.emplace_back("settings.yaml");
         auto& bootLoggerConfig = configuration.loggingConfiguration.configurationLogger;
         bootLoggerConfig.name = "boot";
-        bootLoggerConfig.rotationLogger = dory::configuration::RotationLogSink{"logs/boot.log"};
-        bootLoggerConfig.stdoutLogger = dory::configuration::StdoutLogSink{};
+        bootLoggerConfig.rotationLogger = engineResources::configuration::RotationLogSink{"logs/boot.log"};
+        bootLoggerConfig.stdoutLogger = engineResources::configuration::StdoutLogSink{};
 
         registry.services.appConfigurationLogger.initialize(bootLoggerConfig, dory::makeOptionalRef(registry.devices.terminalDevice));
         registry.services.configurationService.load(configuration);
@@ -108,16 +108,16 @@ namespace dory::sandbox
             registry.devices.standardIoDevice.flush();
         };
 
-        dory::domain::repositories::IPipelineRepository<Registry::RepositoryTypes::PipelineRepositoryType, DataContextType>& pipelines = registry.repositories.pipelines;
+        engineRepositories::IPipelineRepository<Registry::RepositoryTypes::PipelineRepositoryType, DataContextType>& pipelines = registry.repositories.pipelines;
 
-        pipelines.store(dory::domain::entity::PipelineNode<DataContextType> {
+        pipelines.store(engineResources::entity::PipelineNode<DataContextType> {
                 supmitInputEvents,
-                dory::domain::entity::PipelineNodePriority::Default,
+                engineResources::entity::PipelineNodePriority::Default,
                 context.inputGroupNodeId});
 
-        pipelines.store(dory::domain::entity::PipelineNode<DataContextType> {
+        pipelines.store(engineResources::entity::PipelineNode<DataContextType> {
                 flushOutput,
-                dory::domain::entity::PipelineNodePriority::Default,
+                engineResources::entity::PipelineNodePriority::Default,
                 context.outputGroupNodeId});
 
         auto window = registry.services.windowService.createWindow();

@@ -3,7 +3,7 @@
 #include <any>
 #include "dory/events.h"
 
-namespace dory::domain::events
+namespace dory::engine::resources::eventTypes
 {
     namespace mainController
     {
@@ -16,10 +16,10 @@ namespace dory::domain::events
         };
 
         template<typename TDataContext>
-        using Hub = EventHub<TDataContext, const Initialize, const Stop>;
+        using Hub = events::EventHub<TDataContext, const Initialize, const Stop>;
 
         template<typename TDataContext>
-        using Dispatcher = EventCannon<Hub<TDataContext>>;
+        using Dispatcher = events::EventCannon<Hub<TDataContext>>;
     }
 
     namespace application
@@ -29,10 +29,10 @@ namespace dory::domain::events
         };
 
         template<typename TDataContext>
-        using Hub = EventHub<TDataContext, const Exit>;
+        using Hub = events::EventHub<TDataContext, const Exit>;
 
         template<typename TDataContext>
-        using Dispatcher = EventCannon<Hub<TDataContext>>;
+        using Dispatcher = events::EventCannon<Hub<TDataContext>>;
     }
 
     namespace io
@@ -54,10 +54,10 @@ namespace dory::domain::events
         };
 
         template<typename TDataContext>
-        using Hub = EventHub<TDataContext, KeyPressEvent>;
+        using Hub = events::EventHub<TDataContext, KeyPressEvent>;
 
         template<typename TDataContext>
-        using Dispatcher = EventCannonBuffer<Hub<TDataContext>>;
+        using Dispatcher = events::EventCannonBuffer<Hub<TDataContext>>;
     }
 
     namespace script
@@ -69,10 +69,10 @@ namespace dory::domain::events
         };
 
         template<typename TDataContext>
-        using Hub = EventHub<TDataContext, const Run>;
+        using Hub = events::EventHub<TDataContext, const Run>;
 
         template<typename TDataContext>
-        using Dispatcher = EventCannon<Hub<TDataContext>>;
+        using Dispatcher = events::EventCannon<Hub<TDataContext>>;
     }
 
     namespace window
@@ -86,9 +86,9 @@ namespace dory::domain::events
         };
 
         template<typename TDataContext>
-        using Hub = EventHub<TDataContext, Close>;
+        using Hub = events::EventHub<TDataContext, Close>;
 
         template<typename TDataContext>
-        using Dispatcher = EventCannonBuffer<Hub<TDataContext>>;
+        using Dispatcher = events::EventCannonBuffer<Hub<TDataContext>>;
     }
 }

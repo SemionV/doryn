@@ -8,6 +8,9 @@
 #include <dory/engine/services/fileService.h>
 #include <dory/engine/services/logService.h>
 
+namespace engineResources = dory::engine::resources;
+namespace engineServices = dory::engine::services;
+
 enum class TestFormat
 {
     unknown,
@@ -17,7 +20,7 @@ enum class TestFormat
 
 struct UserPreferences
 {
-    dory::configuration::RecursiveSection section;
+    engineResources::configuration::RecursiveSection section;
     std::string language;
     int difficulty = 0;
 };
@@ -29,7 +32,7 @@ REFL_END
 
 struct AppSettings
 {
-    dory::configuration::RecursiveSection section;
+    engineResources::configuration::RecursiveSection section;
     std::string appName;
     std::string description;
     UserPreferences userPreferences;
@@ -64,7 +67,7 @@ struct Constants
     };
 };
 
-class SerializationServiceMock: public dory::domain::services::serialization::ISerializationService<SerializationServiceMock>
+class SerializationServiceMock: public engineServices::serialization::ISerializationService<SerializationServiceMock>
 {
 public:
     template<typename T>
@@ -85,7 +88,7 @@ public:
     }
 };
 
-class SerializationServiceBundleMock: public dory::domain::services::serialization::ISerializationServiceBundle<TestFormat, SerializationServiceBundleMock>
+class SerializationServiceBundleMock: public engineServices::serialization::ISerializationServiceBundle<TestFormat, SerializationServiceBundleMock>
 {
 public:
     template<typename T>
@@ -137,7 +140,7 @@ public:
     }
 };
 
-class FileServiceMock: public dory::domain::services::IFileService<FileServiceMock>
+class FileServiceMock: public engineServices::IFileService<FileServiceMock>
 {
 public:
     static std::string readImpl(const std::filesystem::path& filePath)
@@ -167,7 +170,7 @@ public:
     }
 };
 
-class FormatKeyConverterMock: public dory::domain::services::serialization::IFormatKeyConverter<TestFormat, FormatKeyConverterMock>
+class FormatKeyConverterMock: public engineServices::serialization::IFormatKeyConverter<TestFormat, FormatKeyConverterMock>
 {
 public:
     using FormatType = TestFormat;
@@ -191,12 +194,12 @@ public:
 
 TEST_CASE( "Load settings", "[configuration]" )
 {
-    auto logger = dory::domain::services::LogServiceNull{};
+    auto logger = engineServices::LogServiceNull{};
     auto fileService = FileServiceMock{};
     auto serializationServiceBundle = SerializationServiceBundleMock{};
     auto formatKeyConverter = FormatKeyConverterMock{};
 
-    auto configurationService = dory::domain::services::configuration::ConfigurationService<decltype(logger),
+    auto configurationService = engineServices::configuration::ConfigurationService<decltype(logger),
         FileServiceMock, SerializationServiceBundleMock, FormatKeyConverterMock>{logger, fileService, serializationServiceBundle, formatKeyConverter};
 
     auto appSettings = AppSettings{};

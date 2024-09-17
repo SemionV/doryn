@@ -8,28 +8,28 @@
 #include <dory/engine/services/opengl/openglService.h>
 #include <dory/engine/services/opengl/shaderService.h>
 
-namespace dory::opengl
+namespace dory::engine::services::opengl
 {
-    struct TrianglesVertexArray: public graphics::AttributedVertexArray<1>
+    struct TrianglesVertexArray: public resources::opengl::AttributedVertexArray<1>
     {
         TrianglesVertexArray():
-            graphics::AttributedVertexArray<1>({graphics::VertexAttribute(2, GL_FLOAT)})
+                resources::opengl::AttributedVertexArray<1>({resources::opengl::VertexAttribute(2, GL_FLOAT)})
         {}
     };
 
     struct ColorsBufferInterface
     {
-        domain::Color brightColor;
-        domain::Color hippieColor;
-        domain::Color darkColor;
+        resources::Color brightColor;
+        resources::Color hippieColor;
+        resources::Color darkColor;
 
-        ColorsBufferInterface(const domain::Color& brightColor, const domain::Color& hippieColor, const domain::Color& darkColor):
+        ColorsBufferInterface(const resources::Color& brightColor, const resources::Color& hippieColor, const resources::Color& darkColor):
             brightColor(brightColor), hippieColor(hippieColor), darkColor(darkColor)
         {}
 
     };
 
-    struct ColorsUniformBlock: public graphics::ArrayUniformBlock<3>
+    struct ColorsUniformBlock: public resources::opengl::ArrayUniformBlock<3>
     {
         static constexpr std::string_view pointLiteral = ".";
         static constexpr std::string_view blockNameLiteral = "ColorsBlock";
@@ -40,22 +40,22 @@ namespace dory::opengl
         static constexpr std::string_view darkColorLiteral = "darkColor";
 
         ColorsUniformBlock():
-            graphics::ArrayUniformBlock<3>(blockNameLiteral, 
+                resources::opengl::ArrayUniformBlock<3>(blockNameLiteral,
                 dory::JoinStringLiterals<prefixLiteral, brightColorLiteral>,
                 dory::JoinStringLiterals<prefixLiteral, hippieColorLiteral>,
                 dory::JoinStringLiterals<prefixLiteral, darkColorLiteral>)
         {}
     };
 
-    struct TrianglesProgram: graphics::Program
+    struct TrianglesProgram: resources::opengl::Program
     {
         ColorsUniformBlock colorsUniformBlock;
 
         TrianglesProgram():
-            graphics::Program("Triangles Program",
-            { 
-                graphics::Shader(GL_VERTEX_SHADER, "shaders/triangles/triangles.vert"), 
-                graphics::Shader(GL_FRAGMENT_SHADER, "shaders/triangles/triangles.frag") 
+            resources::opengl::Program("Triangles Program",
+            {
+                resources::opengl::Shader(GL_VERTEX_SHADER, "shaders/triangles/triangles.vert"),
+                resources::opengl   ::Shader(GL_FRAGMENT_SHADER, "shaders/triangles/triangles.frag")
             })
         {}
     };
@@ -89,20 +89,20 @@ namespace dory::opengl
     class Renderer: public IRenderer<Renderer<TDataContext, T>, TDataContext>
     {
     private:
-        using ShaderServiceType = services::IShaderService<typename T::ShaderServiceType, TDataContext>;
+        using ShaderServiceType = IShaderService<typename T::ShaderServiceType, TDataContext>;
         ShaderServiceType& shaderService;
 
         TrianglesProgram trianglesProgram;
         TrianglesVertexArray trianglesVertexArray;
-        domain::Color clearScreenColor {0.0f, 0.0f, 0.0f};
+        resources::Color clearScreenColor {0.0f, 0.0f, 0.0f};
 
         float colorDelta = 0.0001f;
         float hippieColorDelta = colorDelta;
 
         ColorsBufferInterface colorsUniformData {
-                domain::Color(0.7f, 0.7f, 0.7f, 1.0f),
-                domain::Color(0.2f, 0.2, 0.f, 1.0f),
-                domain::Color(0.2f, 0.2f, 0.2f, 1.0f)
+                resources::Color(0.7f, 0.7f, 0.7f, 1.0f),
+                resources::Color(0.2f, 0.2, 0.f, 1.0f),
+                resources::Color(0.2f, 0.2f, 0.2f, 1.0f)
         };
 
         std::array<GLfloat, 12> verticesData = {
@@ -124,7 +124,7 @@ namespace dory::opengl
 
         void initializeImpl(TDataContext& dataContext)
         {
-            shaderService.loadProgram(dataContext, trianglesProgram, [](services::ShaderServiceError& error)
+            shaderService.loadProgram(dataContext, trianglesProgram, [](ShaderServiceError& error)
             {
                 if(error.shaderCompilationError)
                 {
@@ -137,16 +137,16 @@ namespace dory::opengl
                 }
             });
 
-            services::OpenglService::loadUniformBlock(trianglesProgram.id, trianglesProgram.colorsUniformBlock);
-            services::OpenglService::setUniformBlockData(trianglesProgram.colorsUniformBlock, &colorsUniformData, sizeof(colorsUniformData));
+            OpenglService::loadUniformBlock(trianglesProgram.id, trianglesProgram.colorsUniformBlock);
+            OpenglService::setUniformBlockData(trianglesProgram.colorsUniformBlock, &colorsUniformData, sizeof(colorsUniformData));
 
-            services::OpenglService::loadVertexArray(trianglesVertexArray);
-            services::OpenglService::setVertexArrayData(trianglesVertexArray, verticesData.data(), sizeof(verticesData));
+            OpenglService::loadVertexArray(trianglesVertexArray);
+            OpenglService::setVertexArrayData(trianglesVertexArray, verticesData.data(), sizeof(verticesData));
         }
 
         void drawImpl()
         {
-            services::OpenglService::clearViewport(clearScreenColor);
+            OpenglService::clearViewport(clearScreenColor);
 
             auto& hippieColor = colorsUniformData.hippieColor;
 
@@ -163,9 +163,9 @@ namespace dory::opengl
             hippieColor.g += hippieColorDelta;
             hippieColor.b += hippieColorDelta;
 
-            services::OpenglService::setUniformBlockData(trianglesProgram.colorsUniformBlock, &colorsUniformData, sizeof(colorsUniformData));
+            OpenglService::setUniformBlockData(trianglesProgram.colorsUniformBlock, &colorsUniformData, sizeof(colorsUniformData));
 
-            services::OpenglService::drawObject(trianglesProgram, trianglesVertexArray);
+            OpenglService::drawObject(trianglesProgram, trianglesVertexArray);
         }
     };
 
@@ -173,7 +173,7 @@ namespace dory::opengl
     class RendererFactory: public IServiceFactory<RendererFactory<TDataContext, T>>
     {
     private:
-        using ShaderServiceType = services::IShaderService<typename T::ShaderServiceType, TDataContext>;
+        using ShaderServiceType = IShaderService<typename T::ShaderServiceType, TDataContext>;
         ShaderServiceType& shaderService;
 
     public:

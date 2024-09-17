@@ -3,9 +3,9 @@
 #include <dory/generics/typeTraits.h>
 #include <dory/engine/resources/entity.h>
 
-namespace dory::domain
+namespace dory::engine::repositories
 {
-    template<typename TImpelementation, typename TEntity, typename TId = entity::IdType>
+    template<typename TImpelementation, typename TEntity, typename TId = resources::entity::IdType>
     class IEntityRepository: NonCopyable, public StaticInterface<TImpelementation>
     {
     public:
@@ -52,7 +52,7 @@ namespace dory::domain
         }
     };
 
-    template<typename TEntity, typename TId = entity::IdType, template<typename T> class TContainer = std::vector>
+    template<typename TEntity, typename TId = resources::entity::IdType, template<typename T> class TContainer = std::vector>
     class EntityRepository: public IEntityRepository<EntityRepository<TEntity, TId, TContainer>, TEntity, TId>
     {
     private:

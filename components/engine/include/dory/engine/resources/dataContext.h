@@ -4,7 +4,7 @@
 #include "dory/engine/resources/localization.h"
 #include "dory/engine/resources/configuration.h"
 
-namespace dory::domain
+namespace dory::engine::resources
 {
     template<typename... TCustomSections>
     struct DataContext: public TCustomSections...
@@ -12,7 +12,7 @@ namespace dory::domain
         entity::IdType inputGroupNodeId;
         entity::IdType outputGroupNodeId;
         entity::IdType mainWindowId;
-        resources::Localization localization;
+        localization::Localization localization;
         configuration::Configuration configuration;
 
         DataContext():

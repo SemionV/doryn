@@ -2,9 +2,10 @@
 
 #include <map>
 #include <string>
+#include <vector>
 #include <refl.hpp>
 
-namespace dory::configuration
+namespace dory::engine::resources::configuration
 {
     struct RecursiveSection
     {
@@ -13,13 +14,13 @@ namespace dory::configuration
         std::string description;
     };
 }
-REFL_TYPE(dory::configuration::RecursiveSection)
+REFL_TYPE(dory::engine::resources::configuration::RecursiveSection)
     REFL_FIELD(loadFrom)
     REFL_FIELD(saveTo)
     REFL_FIELD(description)
 REFL_END
 
-namespace dory::configuration {
+namespace dory::engine::resources::configuration {
     struct RotationLogSink
     {
         std::string logFileName = "logs/main.log";
@@ -27,21 +28,21 @@ namespace dory::configuration {
         std::size_t maximumFilesCount = 3;
     };
 }
-REFL_TYPE(dory::configuration::RotationLogSink)
+REFL_TYPE(dory::engine::resources::configuration::RotationLogSink)
     REFL_FIELD(logFileName)
     REFL_FIELD(maximumFileSize)
     REFL_FIELD(maximumFilesCount)
 REFL_END
 
-namespace dory::configuration {
+namespace dory::engine::resources::configuration {
     struct StdoutLogSink
     {
     };
 }
-REFL_TYPE(dory::configuration::StdoutLogSink)
+REFL_TYPE(dory::engine::resources::configuration::StdoutLogSink)
 REFL_END
 
-namespace dory::configuration {
+namespace dory::engine::resources::configuration {
     struct Logger
     {
         std::string name;
@@ -49,48 +50,48 @@ namespace dory::configuration {
         std::optional<StdoutLogSink> stdoutLogger;
     };
 }
-REFL_TYPE(dory::configuration::Logger)
+REFL_TYPE(dory::engine::resources::configuration::Logger)
     REFL_FIELD(name)
     REFL_FIELD(rotationLogger)
     REFL_FIELD(stdoutLogger)
 REFL_END
 
 
-namespace dory::configuration {
+namespace dory::engine::resources::configuration {
     struct LoggingConfiguration
     {
         Logger mainLogger;
         Logger configurationLogger;
     };
 }
-REFL_TYPE(dory::configuration::LoggingConfiguration)
+REFL_TYPE(dory::engine::resources::configuration::LoggingConfiguration)
     REFL_FIELD(mainLogger)
     REFL_FIELD(configurationLogger)
 REFL_END
 
-namespace dory::configuration {
+namespace dory::engine::resources::configuration {
     struct ShaderLoader
     {
         std::string shadersDirectory;
     };
 }
-REFL_TYPE(dory::configuration::ShaderLoader)
+REFL_TYPE(dory::engine::resources::configuration::ShaderLoader)
     REFL_FIELD(shadersDirectory)
 REFL_END
 
-namespace dory::configuration {
+namespace dory::engine::resources::configuration {
     struct Interface
     {
         RecursiveSection section;
         std::string activeLanguage;
     };
 }
-REFL_TYPE(dory::configuration::Interface)
+REFL_TYPE(dory::engine::resources::configuration::Interface)
     REFL_FIELD(section)
     REFL_FIELD(activeLanguage)
 REFL_END
 
-namespace dory::configuration {
+namespace dory::engine::resources::configuration {
     struct BuildInfo
     {
         std::string commitSHA;
@@ -98,13 +99,13 @@ namespace dory::configuration {
         std::string version;
     };
 }
-REFL_TYPE(dory::configuration::BuildInfo)
+REFL_TYPE(dory::engine::resources::configuration::BuildInfo)
         REFL_FIELD(commitSHA)
         REFL_FIELD(timestamp)
         REFL_FIELD(version)
 REFL_END
 
-namespace dory::configuration {
+namespace dory::engine::resources::configuration {
     struct Configuration
     {
         RecursiveSection section;
@@ -116,7 +117,7 @@ namespace dory::configuration {
         Interface userInterface;
     };
 }
-REFL_TYPE(dory::configuration::Configuration)
+REFL_TYPE(dory::engine::resources::configuration::Configuration)
     REFL_FIELD(section)
     REFL_FIELD(buildInfo)
     REFL_FIELD(localizations)

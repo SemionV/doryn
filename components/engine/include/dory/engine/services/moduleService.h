@@ -3,7 +3,7 @@
 #include "dory/module.h"
 #include "logService.h"
 
-namespace dory::domain::services::module
+namespace dory::engine::services::module
 {
     template<typename TImplementation>
     class IDynamicLibraryService: NonCopyable

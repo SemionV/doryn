@@ -17,7 +17,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 
     std::cout << "current dir: " << std::filesystem::current_path().string() << std::endl;
 
-    auto libraryService = dory::domain::services::module::DynamicLibraryService{};
+    auto libraryService = dory::engine::services::module::DynamicLibraryService{};
     auto library = libraryService.load("test module", "modules/testModule");
     if(library)
     {

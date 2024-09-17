@@ -4,7 +4,9 @@
 #include "dory/engine/resources/dataContext.h"
 #include <dory/events.h>
 
-using namespace dory::domain;
+using namespace dory;
+using namespace dory::engine;
+using namespace dory::engine::resources;
 
 struct MessageData
 {
@@ -14,12 +16,12 @@ struct MessageData
 struct WindowClick
 {
     public:
-        const std::shared_ptr<dory::domain::entity::Window> window;
+        const std::shared_ptr<entity::Window> window;
         const int x;
         const int y;
 
     public:
-        WindowClick(std::shared_ptr<dory::domain::entity::Window> window, int x, int y):
+        WindowClick(std::shared_ptr<entity::Window> window, int x, int y):
             window(window),
             x(x),
             y(y)
@@ -96,21 +98,21 @@ TEST_CASE( "Event Hub", "[messages]" )
 {
     WindowEventHubDispatcher eventHub;
     std::vector<WindowClick> clicks;
-    dory::domain::DataContext dataContext;
+    DataContext dataContext;
 
-    eventHub.onClick() += [&](dory::domain::DataContext<>& context, WindowClick& click)
+    eventHub.onClick() += [&](DataContext<>& context, WindowClick& click)
     {
         clicks.push_back(click);
     };
 
     std::vector<WindowClick> clicks2;
-    eventHub.onClick() += [&](dory::domain::DataContext<>& context, WindowClick& click)
+    eventHub.onClick() += [&](DataContext<>& context, WindowClick& click)
     {
         clicks2.push_back(click);
     };
 
     std::vector<KeyPressed> keysPressed;
-    eventHub.onKeyPressed() += [&](dory::domain::DataContext<>& context, KeyPressed& keyPressed)
+    eventHub.onKeyPressed() += [&](DataContext<>& context, KeyPressed& keyPressed)
     {
         keysPressed.push_back(keyPressed);
     };

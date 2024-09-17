@@ -3,14 +3,14 @@
 #include "dory/engine/resources/types.h"
 #include "dory/engine/controllers/mainController.h"
 
-namespace dory::domain::services
+namespace dory::engine::services
 {
     template<typename TImplementation>
     class IFrameService: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         template<typename TDataContext, typename TEngine>
-        void startLoop(TDataContext& context, IMainController<TEngine, TDataContext>& engine)
+        void startLoop(TDataContext& context, controllers::IMainController<TEngine, TDataContext>& engine)
         {
             this->toImplementation()->startLoopImpl(context, engine);
         }
@@ -29,12 +29,12 @@ namespace dory::domain::services
     public:
 
         template<typename TDataContext, typename TEngine>
-        void startLoopImpl(TDataContext& context, IMainController<TEngine, TDataContext>& engine)
+        void startLoopImpl(TDataContext& context, controllers::IMainController<TEngine, TDataContext>& engine)
         {
             engine.initialize(context);
 
             isStop = false;
-            TimeSpan timeStep(UnitScale::Nano);
+            resources::TimeSpan timeStep(resources::UnitScale::Nano);
 
             std::chrono::steady_clock::time_point lastTimestamp = std::chrono::steady_clock::now();
             std::chrono::steady_clock::time_point currentTimestamp;

@@ -2,13 +2,14 @@
 
 #include <dory/engine/repositories/pipelineRepository.h>
 
-using namespace dory::domain;
+using namespace dory::engine::resources;
+using namespace dory::engine::repositories;
 
 TEST_CASE( "Load Pipeline", "[pipelineRepository]" )
 {
     using PipelineNodeType = entity::PipelineNode<int>;
 
-    auto pipelineService = repositories::PipelineRepository<int, PipelineNodeType, entity::IdType>(
+    auto pipelineService = PipelineRepository<int, PipelineNodeType, entity::IdType>(
             std::initializer_list<PipelineNodeType>{
                     PipelineNodeType(2, nullptr, entity::PipelineNodePriority::First, entity::nullId),
                     PipelineNodeType(1, nullptr, entity::PipelineNodePriority::Default, entity::nullId),

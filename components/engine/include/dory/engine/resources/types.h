@@ -1,6 +1,6 @@
 #pragma once
 
-namespace dory::domain
+namespace dory::engine::resources
 {
     enum UnitScale
     {

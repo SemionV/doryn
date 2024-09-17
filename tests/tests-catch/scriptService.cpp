@@ -3,7 +3,7 @@
 
 #include <dory/engine/services/scriptService.h>
 
-namespace services = dory::domain::services;
+namespace services = dory::engine::services;
 
 TEST_CASE("Run script", "ScriptService")
 {

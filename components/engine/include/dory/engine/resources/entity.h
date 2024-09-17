@@ -5,7 +5,7 @@
 
 #include "types.h"
 
-namespace dory::domain::entity
+namespace dory::engine::resources::entity
 {
     using IdType = unsigned int;
     constexpr static const IdType nullId = 0;

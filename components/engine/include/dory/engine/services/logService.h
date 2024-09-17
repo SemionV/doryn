@@ -8,7 +8,7 @@
 #include "dory/engine/resources/configuration.h"
 #include "dory/engine/devices/terminalDevice.h"
 
-namespace dory::domain::services
+namespace dory::engine::services
 {
     template<typename TImplementation>
     class ILogService: NonCopyable, public StaticInterface<TImplementation>
@@ -204,7 +204,7 @@ namespace dory::domain::services
     {
     public:
         template<typename TTerminal>
-        void initialize(const configuration::Logger& loggerConfiguration, OptionalReference<TTerminal> terminal)
+        void initialize(const resources::configuration::Logger& loggerConfiguration, OptionalReference<TTerminal> terminal)
         {
             std::shared_ptr<spdlog::sinks::sink> consoleSink;
             if(loggerConfiguration.stdoutLogger && terminal)

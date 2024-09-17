@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <string>
 
-namespace dory::opengl::graphics
+namespace dory::engine::resources::opengl
 {
     static constexpr GLuint unboundId = GL_INVALID_INDEX;
 

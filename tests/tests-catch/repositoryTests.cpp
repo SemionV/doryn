@@ -3,7 +3,8 @@
 #include "dory/engine/resources/entity.h"
 #include "dory/engine/repositories/entityRepository.h"
 
-using namespace dory::domain;
+using namespace dory::engine::resources;
+using namespace dory::engine::repositories;
 
 struct TestEntity: public entity::Entity<entity::IdType>
 {
@@ -16,7 +17,7 @@ struct TestEntity: public entity::Entity<entity::IdType>
 
 TEST_CASE( "Get entities count", "[repository]" )
 {
-    auto repository = dory::domain::EntityRepository<TestEntity>(
+    auto repository = EntityRepository<TestEntity>(
         std::initializer_list<TestEntity>
         {
             TestEntity(1),
@@ -28,7 +29,7 @@ TEST_CASE( "Get entities count", "[repository]" )
 
 TEST_CASE( "Iterator", "[repository]" )
 {
-    auto repository = dory::domain::EntityRepository<TestEntity>(
+    auto repository = EntityRepository<TestEntity>(
         std::initializer_list<TestEntity>
         {
             TestEntity(1),
@@ -49,7 +50,7 @@ TEST_CASE( "Iterator", "[repository]" )
 
 TEST_CASE( "Store entity", "[repository]" )
 {
-    auto repository = dory::domain::EntityRepository<TestEntity>();
+    auto repository = EntityRepository<TestEntity>();
 
     auto entity = repository.store(TestEntity(1));
 
@@ -59,7 +60,7 @@ TEST_CASE( "Store entity", "[repository]" )
 
 TEST_CASE( "Remove", "[repository]" )
 {
-    auto repository = dory::domain::EntityRepository<TestEntity>(
+    auto repository = EntityRepository<TestEntity>(
         std::initializer_list<TestEntity>
         {
             TestEntity(1),
@@ -81,7 +82,7 @@ TEST_CASE( "Remove", "[repository]" )
 
 TEST_CASE( "create/count/get/update/remove entity", "[static poly repository]" )
 {
-    auto repository = dory::domain::EntityRepository<TestEntity>{};
+    auto repository = EntityRepository<TestEntity>{};
 
     repository.store(TestEntity(1));
 
@@ -124,7 +125,7 @@ TEST_CASE( "create/count/get/update/remove entity", "[static poly repository]" )
 
 TEST_CASE( "forEach", "[static poly repository]" )
 {
-    auto repository = dory::domain::EntityRepository<TestEntity>(
+    auto repository = EntityRepository<TestEntity>(
         {
             TestEntity(1),
             TestEntity(2)

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace dory::opengl
+namespace dory::engine::resources::opengl
 {
     class GlfwWindowParameters
     {

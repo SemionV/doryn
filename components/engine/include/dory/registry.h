@@ -33,21 +33,28 @@
 
 namespace dory
 {
+    namespace engineResources = dory::engine::resources;
+    namespace engineEventTypes = engineResources::eventTypes;
+    namespace engineDevices = dory::engine::devices;
+    namespace engineServices = dory::engine::services;
+    namespace engineRepositories = dory::engine::repositories;
+    namespace engineControllers = dory::engine::controllers;
+
     template<typename... TDataContextSections>
     struct EventTypeRegistry
     {
-        using DataContextType = dory::domain::DataContext<TDataContextSections...>;
+        using DataContextType = engineResources::DataContext<TDataContextSections...>;
 
-        using EngineDispatcherType = domain::events::mainController::Dispatcher<DataContextType>;
-        using MainControllerType = domain::events::mainController::Hub<DataContextType>;
-        using WindowDispatcherType = domain::events::window::Dispatcher<DataContextType>;
-        using WindowType = domain::events::window::Hub<DataContextType>;
-        using ApplicationDispatcherType = domain::events::application::Dispatcher<DataContextType>;
-        using ApplicationType = domain::events::application::Hub<DataContextType>;
-        using StandartInputDispatcherType = domain::events::io::Dispatcher<DataContextType>;
-        using StandartInputType = domain::events::io::Hub<DataContextType>;
-        using ScriptDispatcherType = domain::events::script::Dispatcher<DataContextType>;
-        using ScriptType = domain::events::script::Hub<DataContextType>;
+        using EngineDispatcherType = engineEventTypes::mainController::Dispatcher<DataContextType>;
+        using MainControllerType = engineEventTypes::mainController::Hub<DataContextType>;
+        using WindowDispatcherType = engineEventTypes::window::Dispatcher<DataContextType>;
+        using WindowType = engineEventTypes::window::Hub<DataContextType>;
+        using ApplicationDispatcherType = engineEventTypes::application::Dispatcher<DataContextType>;
+        using ApplicationType = engineEventTypes::application::Hub<DataContextType>;
+        using StandartInputDispatcherType = engineEventTypes::io::Dispatcher<DataContextType>;
+        using StandartInputType = engineEventTypes::io::Hub<DataContextType>;
+        using ScriptDispatcherType = engineEventTypes::script::Dispatcher<DataContextType>;
+        using ScriptType = engineEventTypes::script::Hub<DataContextType>;
     };
 
     template<typename T>
@@ -68,10 +75,10 @@ namespace dory
     template<typename... TDataContextSections>
     struct DeviceTypeRegistry
     {
-        using DataContextType = dory::domain::DataContext<TDataContextSections...>;
+        using DataContextType = engineResources::DataContext<TDataContextSections...>;
 
-        using StandartIODeviceType = domain::devices::ConsoleIODevice<DataContextType>;
-        using TerminalDeviceType = domain::devices::TerminalDevice<DataContextType, StandartIODeviceType>;
+        using StandartIODeviceType = engineDevices::ConsoleIODevice<DataContextType>;
+        using TerminalDeviceType = engineDevices::TerminalDevice<DataContextType, StandartIODeviceType>;
     };
 
     template<typename T>
@@ -90,12 +97,12 @@ namespace dory
     template<typename... TDataContextSections>
     struct RepositoryTypeRegistry
     {
-        using DataContextType = dory::domain::DataContext<TDataContextSections...>;
+        using DataContextType = engineResources::DataContext<TDataContextSections...>;
 
-        using CameraRepositoryType = domain::EntityRepository<domain::entity::Camera>;
-        using ViewRepositoryType = domain::EntityRepository<domain::entity::View>;
-        using WindowRepositoryType = domain::EntityRepository<opengl::GlfwWindow>;
-        using PipelineRepositoryType = domain::repositories::PipelineRepository<DataContextType, domain::entity::PipelineNode<DataContextType>>;
+        using CameraRepositoryType = engineRepositories::EntityRepository<engineResources::entity::Camera>;
+        using ViewRepositoryType = engineRepositories::EntityRepository<engineResources::entity::View>;
+        using WindowRepositoryType = engineRepositories::EntityRepository<engineResources::opengl::GlfwWindow>;
+        using PipelineRepositoryType = engineRepositories::PipelineRepository<DataContextType, engineResources::entity::PipelineNode<DataContextType>>;
     };
 
     template<typename T>
@@ -110,33 +117,33 @@ namespace dory
     template<typename TRepositories, typename... TDataContextSections>
     struct ServiceTypeRegistry
     {
-        using DataContextType = dory::domain::DataContext<TDataContextSections...>;
+        using DataContextType = engineResources::DataContext<TDataContextSections...>;
 
-        using LogServiceType = domain::services::MultiSinkLogService;
-        using FrameServiceType = domain::services::BasicFrameService;
-        using FileServiceType = domain::services::FileService;
-        using YamlSerializationServiceType = domain::services::serialization::YamlSerializationService;
-        using JsonSerializationServiceType = domain::services::serialization::JsonSerializationService<4>;
-        using FormatKeyConverterType = domain::services::serialization::FormatKeyConverter;
-        using SerializationServiceBundle = domain::services::serialization::SerializationServiceBundle<domain::services::serialization::Format, YamlSerializationServiceType, JsonSerializationServiceType>;
-        using ShaderServiceType = opengl::services::ShaderService<LogServiceType, FileServiceType, TDataContextSections...>;
-        using RendererType = opengl::Renderer<DataContextType, opengl::RendererDependencies<ShaderServiceType>>;
+        using LogServiceType = engineServices::MultiSinkLogService;
+        using FrameServiceType = engineServices::BasicFrameService;
+        using FileServiceType = engineServices::FileService;
+        using YamlSerializationServiceType = engineServices::serialization::YamlSerializationService;
+        using JsonSerializationServiceType = engineServices::serialization::JsonSerializationService<4>;
+        using FormatKeyConverterType = engineServices::serialization::FormatKeyConverter;
+        using SerializationServiceBundle = engineServices::serialization::SerializationServiceBundle<engineServices::serialization::Format, YamlSerializationServiceType, JsonSerializationServiceType>;
+        using ShaderServiceType = engineServices::opengl::ShaderService<LogServiceType, FileServiceType, TDataContextSections...>;
+        using RendererType = engineServices::opengl::Renderer<DataContextType, engineServices::opengl::RendererDependencies<ShaderServiceType>>;
         using RendererFactoryType = RendererType::FactoryType;
-        using MainControllerType = domain::MainController<DataContextType, typename TRepositories::PipelineRepositoryType>;
-        using WindowServiceType = opengl::GlfwWindowService<opengl::GlfwWindowServiceDependencies<typename TRepositories::WindowRepositoryType >>;
-        using ScriptServiceType = domain::services::ScriptService<DataContextType>;
-        using ConfigurationServiceType = domain::services::configuration::ConfigurationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;
-        using LocalizationServiceType = domain::services::localization::LocalizationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;
-        using WindowControllerType = opengl::GlfwWindowController<DataContextType, typename TRepositories::WindowRepositoryType>;
+        using MainControllerType = engineControllers::MainController<DataContextType, typename TRepositories::PipelineRepositoryType>;
+        using WindowServiceType = engineServices::opengl::GlfwWindowService<engineServices::opengl::GlfwWindowServiceDependencies<typename TRepositories::WindowRepositoryType >>;
+        using ScriptServiceType = engineServices::ScriptService<DataContextType>;
+        using ConfigurationServiceType = engineServices::configuration::ConfigurationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;
+        using LocalizationServiceType = engineServices::localization::LocalizationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;
+        using WindowControllerType = engineControllers::opengl::GlfwWindowController<DataContextType, typename TRepositories::WindowRepositoryType>;
         using WindowControllerFactoryType = WindowControllerType::FactoryType;
-        using ViewControllerType = opengl::ViewControllerOpenGL<opengl::ViewControllerDependencies<DataContextType,
+        using ViewControllerType = engineControllers::opengl::ViewControllerOpenGL<engineControllers::opengl::ViewControllerDependencies<DataContextType,
                 RendererType,
                 typename TRepositories::ViewRepositoryType,
                 typename TRepositories::WindowRepositoryType,
                 RendererFactoryType>>;
         using ViewControllerFactoryType = ViewControllerType::FactoryType;
-        using PipelineServiceType = domain::managers::PipelineService<DataContextType, WindowControllerFactoryType, typename TRepositories::PipelineRepositoryType>;
-        using ViewServiceType = domain::managers::ViewService<domain::managers::ViewManagerDependencies<DataContextType,
+        using PipelineServiceType = engineServices::PipelineService<DataContextType, WindowControllerFactoryType, typename TRepositories::PipelineRepositoryType>;
+        using ViewServiceType = engineServices::ViewService<engineServices::ViewManagerDependencies<DataContextType,
                 typename TRepositories::ViewRepositoryType,
                 typename TRepositories::PipelineRepositoryType,
                 typename TRepositories::CameraRepositoryType,
@@ -168,8 +175,8 @@ namespace dory
         ServiceLayer(TEventLayer& events, TRepositoryLayer& repository):
                 serializationServiceBundle{
                         {
-                                {domain::services::serialization::Format::yaml, std::ref(yamlSerializationService)},
-                                {domain::services::serialization::Format::json, std::ref(jsonSerializationService)}
+                                {engineServices::serialization::Format::yaml, std::ref(yamlSerializationService)},
+                                {engineServices::serialization::Format::json, std::ref(jsonSerializationService)}
                         }
                 },
                 configurationService(appConfigurationLogger, fileService, serializationServiceBundle, formatKeyConverter),

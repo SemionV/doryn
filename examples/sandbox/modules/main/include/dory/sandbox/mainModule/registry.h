@@ -12,8 +12,8 @@ namespace dory::sandbox
     class Registry
     {
     public:
-        using DataContextType = dory::domain::DataContext<ProjectDataContext>;
-        using ConfigurationType = dory::configuration::Configuration;
+        using DataContextType = engineResources::DataContext<ProjectDataContext>;
+        using ConfigurationType = engineResources::configuration::Configuration;
         using RepositoryTypes = dory::RepositoryTypeRegistry<ProjectDataContext>;
         using ServiceTypes = dory::ServiceTypeRegistry<RepositoryTypes, ProjectDataContext>;
 

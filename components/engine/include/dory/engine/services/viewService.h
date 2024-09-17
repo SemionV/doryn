@@ -4,18 +4,18 @@
 #include "dory/engine/resources/entity.h"
 #include "pipelineService.h"
 
-namespace dory::domain::managers
+namespace dory::engine::services
 {
     template<typename TImplementation, typename TDataContext>
     class IViewService: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
-        auto createView(TDataContext& dataContext, entity::IdType windowId, entity::IdType parentPipelineNodeId)
+        auto createView(TDataContext& dataContext, resources::entity::IdType windowId, resources::entity::IdType parentPipelineNodeId)
         {
             this->toImplementation()->createViewImpl(dataContext, windowId, parentPipelineNodeId);
         }
 
-        void destroyView(entity::IdType windowId)
+        void destroyView(resources::entity::IdType windowId)
         {
             this->toImplementation()->destroyViewImpl(windowId);
         }
@@ -42,13 +42,13 @@ namespace dory::domain::managers
     private:
         using DataContextType = typename T::DataContextType;
 
-        using ViewRepositoryType = IEntityRepository<typename T::ViewRepositoryType, entity::View, entity::IdType>;
+        using ViewRepositoryType = repositories::IEntityRepository<typename T::ViewRepositoryType, resources::entity::View, resources::entity::IdType>;
         ViewRepositoryType& viewRepository;
 
         using PipelineRepositoryType = repositories::IPipelineRepository<typename T::PipelineRepositoryType, typename T::DataContextType>;
         PipelineRepositoryType& pipelineRepository;
 
-        using CameraRepositoryType = IEntityRepository<typename T::CameraRepositoryType, entity::Camera, entity::IdType>;
+        using CameraRepositoryType = repositories::IEntityRepository<typename T::CameraRepositoryType, resources::entity::Camera, resources::entity::IdType>;
         CameraRepositoryType&cameraRepository;
 
         using ViewControllerFactoryType = IServiceFactory<typename T::ViewControllerFactoryType>;
@@ -65,30 +65,30 @@ namespace dory::domain::managers
                 viewControllerFactory(viewControllerFactory)
         {}
 
-        auto createViewImpl(DataContextType& dataContext, entity::IdType windowId, entity::IdType parentPipelineNodeId)
+        auto createViewImpl(DataContextType& dataContext, resources::entity::IdType windowId, resources::entity::IdType parentPipelineNodeId)
         {
-            auto camera = cameraRepository.store(entity::Camera{entity::nullId});
+            auto camera = cameraRepository.store(resources::entity::Camera{resources::entity::nullId});
 
             auto viewController = viewControllerFactory.createInstance();
-            auto viewControllerNode = pipelineRepository.store(entity::PipelineNode<DataContextType>{entity::nullId,
+            auto viewControllerNode = pipelineRepository.store(resources::entity::PipelineNode<DataContextType>{resources::entity::nullId,
                                                                                     viewController,
-                                                                                    entity::PipelineNodePriority::Default,
+                                                                                    resources::entity::PipelineNodePriority::Default,
                                                                                     parentPipelineNodeId});
 
-            auto view = viewRepository.store(entity::View(entity::nullId,
+            auto view = viewRepository.store(resources::entity::View(resources::entity::nullId,
                                                           windowId,
                                                           viewControllerNode.id,
                                                           camera.id,
-                                                          dory::domain::entity::Viewport{0, 0, 0, 0}));
+                                                          resources::entity::Viewport{0, 0, 0, 0}));
 
             viewController->initialize(viewControllerNode.id, dataContext);
 
             return view;
         }
 
-        void destroyViewImpl(entity::IdType windowId)
+        void destroyViewImpl(resources::entity::IdType windowId)
         {
-            auto view = viewRepository.find([&windowId](const entity::View& view)
+            auto view = viewRepository.find([&windowId](const resources::entity::View& view)
             {
                 return view.windowId == windowId;
             });

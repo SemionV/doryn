@@ -2,15 +2,13 @@
 #include <functional>
 #include <dory/events.h>
 
-using namespace dory::domain::events;
-
 TEST_CASE( "Emit event", "[events]" ) 
 {
     bool handle1 = false;
     bool handle2 = false;
     int ap = 3, bp = 4;
 
-    EventDispatcher<int, int> event;
+    dory::events::EventDispatcher<int, int> event;
 
     event.attachHandler([&](int a, int b)
     {
@@ -36,7 +34,7 @@ TEST_CASE( "Detach event handler", "[events]" )
 {
     bool handle = false;
 
-    EventDispatcher<int, int> event;
+    dory::events::EventDispatcher<int, int> event;
 
     auto handler = event.attachHandler([&](int a, int b)
     {
@@ -63,7 +61,7 @@ TEST_CASE( "Member function as handler", "[events]" )
 {
     bool handle = false;
 
-    EventDispatcher<bool&> event;
+    dory::events::EventDispatcher<bool&> event;
 
     TestClass testObject;
     std::function<void(bool&)> f = std::bind(&TestClass::eventHandler, &testObject, std::placeholders::_1);

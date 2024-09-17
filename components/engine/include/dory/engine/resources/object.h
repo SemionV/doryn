@@ -4,7 +4,7 @@
 
 #include "dory/engine/resources/entity.h"
 
-namespace dory::domain::object
+namespace dory::engine::resources::object
 {
     template<typename TDataContext>
     struct PipelineNode

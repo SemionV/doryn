@@ -1,13 +1,13 @@
 #pragma once
 
-namespace dory::opengl
+namespace dory::engine::resources::opengl
 {
-    struct GlfwWindow: public domain::entity::Window
+    struct GlfwWindow: public resources::entity::Window
     {
-        GLFWwindow* handler;
+        GLFWwindow* handler{};
 
-        explicit GlfwWindow(dory::domain::entity::IdType id, GLFWwindow* handler):
-            domain::entity::Window(id),
+        explicit GlfwWindow(resources::entity::IdType id, GLFWwindow* handler):
+            resources::entity::Window(id),
             handler(handler)
         {}
     };

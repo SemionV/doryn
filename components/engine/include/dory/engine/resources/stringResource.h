@@ -3,7 +3,7 @@
 #include <dory/generics/typeTraits.h>
 #include <spdlog/fmt/fmt.h>
 
-namespace dory::domain::resources
+namespace dory::engine::resources
 {
     class ParameterizedString
     {

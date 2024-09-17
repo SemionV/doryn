@@ -2,7 +2,7 @@
 
 #include <dory/engine/resources/opengl/blocks.h>
 
-namespace dory::opengl::services
+namespace dory::engine::services::opengl
 {
     //graphics::Buffer allocateBuffer(GLint bufferSize);
     //void deallocateBuffer(graphics::Buffer& buffer) noexcept;
@@ -10,7 +10,7 @@ namespace dory::opengl::services
     class BufferBlockService
     {
         public:
-            static void getBlockMemberNames(const graphics::UniformBlock& block, 
+            static void getBlockMemberNames(const resources::opengl::UniformBlock& block,
                 const char** memberNames) noexcept
             {
                 auto membersCount = block.getMembersCount();
