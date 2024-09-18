@@ -2,26 +2,10 @@
 
 #include <any>
 #include "dory/events.h"
+#include "mainController.h"
 
 namespace dory::engine::events
 {
-    namespace mainController
-    {
-        struct Initialize
-        {
-        };
-
-        struct Stop
-        {
-        };
-
-        template<typename TDataContext>
-        using Hub = dory::events::EventHub<TDataContext, const Initialize, const Stop>;
-
-        template<typename TDataContext>
-        using Dispatcher = dory::events::EventCannon<Hub<TDataContext>>;
-    }
-
     namespace application
     {
         struct Exit
