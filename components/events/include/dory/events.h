@@ -1,7 +1,8 @@
 #pragma once
 
-#include "dory/generics/typeTraits.h"
-#include "dory/module.h"
+#include <dory/generics/typeTraits.h>
+#include <dory/generics/typeList.h>
+#include <dory/module.h>
 
 namespace dory::events
 {
@@ -236,6 +237,9 @@ namespace dory::events
     };
 
     template<typename TDataContext, typename... TEvents>
+    class EventHub;
+
+    template<typename TDataContext, typename... TEvents>
     class EventHub: NonCopyable, public EventController<TDataContext, TEvents>...
     {
     protected:
@@ -258,6 +262,10 @@ namespace dory::events
             return getDispatcher<TEvent>().attachHandler(std::move(predicate));
         }
     };
+
+    template<typename TDataContext, typename... TEvents>
+    class EventHub<TDataContext, dory::generics::TypeList<TEvents...>>: public EventHub<TDataContext, TEvents...>
+    {};
 
     template<typename TEventHub>
     class EventCannon;

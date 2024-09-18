@@ -12,8 +12,10 @@ namespace dory::engine::events::mainController
     {
     };
 
+    using EventTypes = generics::TypeList<const Initialize, const Stop>;
+
     template<typename TDataContext>
-    using Hub = dory::events::EventHub<TDataContext, const Initialize, const Stop>;
+    using Hub = dory::events::EventHub<TDataContext, EventTypes>;
 
     template<typename TDataContext>
     using Dispatcher = dory::events::EventCannon<Hub<TDataContext>>;

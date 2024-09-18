@@ -2,5 +2,6 @@
 
 namespace dory
 {
-    template class dory::events::EventHub<DataContextType, const engine::events::mainController::Initialize, const engine::events::mainController::Stop>;
+    template class dory::events::EventHub<DataContextType, engine::events::mainController::EventTypes>;
+    template class dory::events::EventCannon<dory::events::EventHub<DataContextType, engine::events::mainController::EventTypes>>;
 }

@@ -5,5 +5,6 @@
 
 namespace dory
 {
-    extern template class dory::events::EventHub<DataContextType, const engine::events::mainController::Initialize, const engine::events::mainController::Stop>;
+    extern template class dory::events::EventHub<DataContextType, engine::events::mainController::EventTypes>;
+    extern template class dory::events::EventCannon<dory::events::EventHub<DataContextType, engine::events::mainController::EventTypes>>;
 }

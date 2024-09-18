@@ -2,13 +2,10 @@
 
 #include <dory/registry.h>
 #include <dory/engine/resources/localization.h>
+#include <dory/engineObjects/resources/dataContext.h>
 
 namespace dory::sandbox
 {
-    struct ProjectDataContext
-    {
-    };
-
     class Registry
     {
     public:
