@@ -33,8 +33,6 @@ namespace dory::sandbox
 
         auto script = std::bind(&Extension::pingScript, this, std::placeholders::_1, std::placeholders::_2);
         registry.services.scriptService.addScript("ping-ext", library, script);
-
-        registry.events.mainController.attach(this, &Extension::onStopEngine);
     }
 
     void Extension::pingScript(Registry::DataContextType& context, const std::map<std::string, std::any>& arguments)
@@ -43,9 +41,5 @@ namespace dory::sandbox
         registry.devices.terminalDevice.writeLine(fmt::format("\u001B[31m{0}\u001B[0m", "Hello from Sandbox Extension module :-) "));
 
         registry.services.appLogger.information(context.localization.hello);
-    }
-
-    void Extension::onStopEngine(Registry::DataContextType &context, const engine::events::mainController::Stop &eventData) {
-
     }
 }
