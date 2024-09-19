@@ -1,6 +1,7 @@
 #pragma once
 
-#include <dory/engineObjects/resources/dataContext.h>
+#include "dataContext.h"
+#include <dory/engineObjects/events.h>
 
 #ifdef __unix__
 #include <dory/engine/devices/standartIoDeviceUnix.h>
@@ -21,4 +22,15 @@ namespace dory::engine::devices
 
     extern template class ConsoleIODevice<DataContextType>;
     extern template class TerminalDevice<DataContextType, DeviceTypeRegistry::StandartIODeviceType>;
+
+    struct DeviceLayer
+    {
+        DeviceTypeRegistry::StandartIODeviceType standardIoDevice;
+        DeviceTypeRegistry::TerminalDeviceType terminalDevice;
+
+        explicit DeviceLayer(events::EventLayer& events):
+                standardIoDevice(events.standardIoDispatcher),
+                terminalDevice{ standardIoDevice, events.standardInput, events.scriptDispatcher, events.applicationDispatcher }
+        {}
+    };
 }

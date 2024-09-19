@@ -1,8 +1,7 @@
 set(DORY_MODULE_NAME ${PROJECT_NAME}-engine-objects)
 
 add_library(${DORY_MODULE_NAME} SHARED
-        src/resources/dataContext.cpp
-        src/events/mainController.cpp
+        src/dataContext.cpp
         src/resources/entity.cpp
         src/repositories/pipelineRepository.cpp
         src/controllers/mainController.cpp

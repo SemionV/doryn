@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/engineObjects/resources/dataContext.h>
+#include "dory/engineObjects/dataContext.h"
 #include <dory/engineObjects/repositories/pipelineRepository.h>
 #include <dory/engine/controllers/mainController.h>
 
