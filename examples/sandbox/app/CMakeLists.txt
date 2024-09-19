@@ -4,8 +4,12 @@ add_executable(${DORY_MODULE_NAME} ${PLATFORM} main.cpp)
 set_target_properties(${DORY_MODULE_NAME} PROPERTIES
         OUTPUT_NAME "sandbox")
 
-target_link_libraries(${DORY_MODULE_NAME} PRIVATE dory-engine sandbox-mainModule bootstrap_include)
+target_link_libraries(${DORY_MODULE_NAME} PRIVATE dory-engine-objects sandbox-mainModule bootstrap_include)
 target_include_directories(${DORY_MODULE_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+set_target_properties(${DORY_MODULE_NAME} PROPERTIES
+        INSTALL_RPATH "$ORIGIN"
+)
 
 include(BuildInfoSettings)
 BuildInfoSettings(${DORY_SANDBOX_INSTALL_PREFIX} ${DORY_SANDBOX_COMPONENT})
@@ -20,5 +24,6 @@ set(FILES_TO_INSTALL settings.yaml)
 set(DIRECTORIES_TO_INSTALL configuration)
 
 install(TARGETS ${DORY_MODULE_NAME} DESTINATION ${DORY_SANDBOX_INSTALL_PREFIX} COMPONENT ${DORY_SANDBOX_COMPONENT})
+install(TARGETS dory-engine-objects DESTINATION ${DORY_SANDBOX_INSTALL_PREFIX} COMPONENT ${DORY_SANDBOX_COMPONENT})
 install(DIRECTORY ${DIRECTORIES_TO_INSTALL} DESTINATION ${DORY_SANDBOX_INSTALL_PREFIX} COMPONENT ${DORY_SANDBOX_COMPONENT})
 install(FILES ${FILES_TO_INSTALL} DESTINATION ${DORY_SANDBOX_INSTALL_PREFIX} COMPONENT ${DORY_SANDBOX_COMPONENT})

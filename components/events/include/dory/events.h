@@ -237,9 +237,6 @@ namespace dory::events
     };
 
     template<typename TDataContext, typename... TEvents>
-    class EventHub;
-
-    template<typename TDataContext, typename... TEvents>
     class EventHub: NonCopyable, public EventController<TDataContext, TEvents>...
     {
     protected:
@@ -267,11 +264,8 @@ namespace dory::events
     class EventHub<TDataContext, dory::generics::TypeList<TEvents...>>: public EventHub<TDataContext, TEvents...>
     {};
 
-    template<typename TEventHub>
-    class EventCannon;
-
     template<typename TDataContext, typename... TEvents>
-    class EventCannon<EventHub<TDataContext, TEvents...>>: public EventHub<TDataContext, TEvents...>
+    class EventCannon: public EventHub<TDataContext, TEvents...>
     {
     public:
         template<typename TEvent>
@@ -288,6 +282,10 @@ namespace dory::events
             dispatcher(context, eventData);
         }
     };
+
+    template<typename TDataContext, typename... TEvents>
+    class EventCannon<EventHub<TDataContext, TEvents...>>: public EventCannon<TDataContext, TEvents...>
+    {};
 
     template<typename TEventHub>
     class EventCannonBuffer;
