@@ -1,5 +1,8 @@
 #pragma once
 
+#include <glad/gl.h>
+#include <GLFW/glfw3.h>
+
 namespace dory::engine::resources::opengl
 {
     struct GlfwWindow: public resources::entity::Window

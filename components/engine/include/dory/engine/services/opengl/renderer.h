@@ -2,6 +2,7 @@
 
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+#include <iostream>
 #include <dory/engine/resources/opengl/blocks.h>
 #include <dory/engine/resources/opengl/program.h>
 #include <dory/engine/resources/opengl/vertexArray.h>

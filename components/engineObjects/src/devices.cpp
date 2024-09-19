@@ -3,5 +3,5 @@
 namespace dory::engine::devices
 {
     template class ConsoleIODevice<DataContextType>;
-    template class TerminalDevice<DataContextType, DeviceTypeRegistry::StandartIODeviceType>;
+    template class TerminalDevice<DataContextType, StandartIODeviceType>;
 }

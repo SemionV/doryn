@@ -14,19 +14,16 @@
 
 namespace dory::engine::devices
 {
-    struct DeviceTypeRegistry
-    {
-        using StandartIODeviceType = ConsoleIODevice<DataContextType>;
-        using TerminalDeviceType = TerminalDevice<DataContextType, StandartIODeviceType>;
-    };
-
     extern template class ConsoleIODevice<DataContextType>;
-    extern template class TerminalDevice<DataContextType, DeviceTypeRegistry::StandartIODeviceType>;
+    using StandartIODeviceType = ConsoleIODevice<DataContextType>;
+
+    extern template class TerminalDevice<DataContextType, StandartIODeviceType>;
+    using TerminalDeviceType = TerminalDevice<DataContextType, StandartIODeviceType>;
 
     struct DeviceLayer
     {
-        DeviceTypeRegistry::StandartIODeviceType standardIoDevice;
-        DeviceTypeRegistry::TerminalDeviceType terminalDevice;
+        StandartIODeviceType standardIoDevice;
+        TerminalDeviceType terminalDevice;
 
         explicit DeviceLayer(events::EventLayer& events):
                 standardIoDevice(events.standardIoDispatcher),

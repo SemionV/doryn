@@ -24,12 +24,11 @@
 #include <dory/engine/services/scriptService.h>
 #include <dory/engine/services/serializationService.h>
 #include <dory/engine/services/windowService.h>
+#include <dory/engine/services/viewService.h>
 
 #include <dory/engine/services/opengl/glfwWindowService.h>
 #include <dory/engine/controllers/opengl/viewControllerOpenGL.h>
 #include <dory/engine/controllers/opengl/glfwWindowController.h>
-
-#include <dory/engine/services/viewService.h>
 
 namespace dory
 {
