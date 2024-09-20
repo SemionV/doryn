@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ranges>
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
@@ -203,6 +204,25 @@ namespace dory::engine::services
     class MultiSinkLogService: public LogService<MultiSinkLogService>
     {
     public:
+        void initialize(const std::string& loggerName, const std::ranges::range auto& sinks)
+        {
+            this->logger = std::make_shared<spdlog::logger>(loggerName, sinks.begin(), sinks.end());
+        }
+
+        static auto createSink(const resources::configuration::RotationLogSink& sinkConfig)
+        {
+            return std::make_shared<spdlog::sinks::rotating_file_sink_mt>(sinkConfig.logFileName,
+                                                                          sinkConfig.maximumFileSize,
+                                                                          sinkConfig.maximumFilesCount);
+        }
+
+        template<typename TTerminal>
+        static auto createSink(const resources::configuration::StdoutLogSink& sinkConfig, TTerminal& terminal)
+        {
+            auto consoleSinkImpl = std::make_unique<spdlog::sinks::stdout_color_sink_mt>();
+            return std::make_shared<TerminalSink<TTerminal>>(std::move(consoleSinkImpl), terminal);
+        }
+
         template<typename TTerminal>
         void initialize(const resources::configuration::Logger& loggerConfiguration, OptionalReference<TTerminal> terminal)
         {
@@ -210,7 +230,7 @@ namespace dory::engine::services
             if(loggerConfiguration.stdoutLogger && terminal)
             {
                 auto consoleSinkImpl = std::make_unique<spdlog::sinks::stdout_color_sink_mt>();
-                consoleSink = std::make_shared<TerminalSink<TTerminal>>(std::move(consoleSinkImpl), *terminal);
+                consoleSink = createSink(*loggerConfiguration.stdoutLogger, terminal->get());
             }
             else
             {
@@ -220,16 +240,15 @@ namespace dory::engine::services
             std::shared_ptr<spdlog::sinks::sink> rotationFileSink;
             if(loggerConfiguration.rotationLogger)
             {
-                rotationFileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(loggerConfiguration.rotationLogger->logFileName,
-                                                                                          loggerConfiguration.rotationLogger->maximumFileSize,
-                                                                                          loggerConfiguration.rotationLogger->maximumFilesCount);
+                rotationFileSink = createSink(*loggerConfiguration.rotationLogger);
             }
             else
             {
                 rotationFileSink = std::make_shared<spdlog::sinks::null_sink_mt>();
             }
 
-            this->logger = std::make_shared<spdlog::logger>(loggerConfiguration.name, spdlog::sinks_init_list{rotationFileSink, consoleSink});
+            std::array<std::shared_ptr<spdlog::sinks::sink>, 2> sinks = { consoleSink, rotationFileSink };
+            initialize(loggerConfiguration.name, sinks);
         }
     };
 
