@@ -10,48 +10,48 @@
 
 namespace dory::engine::controllers
 {
-    template<typename TImplementation, typename TDataContext>
+    template<typename TImplementation>
     class IMainController: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
-        void update(TDataContext& context, const resources::TimeSpan& timeStep)
+        void update(DataContextType& context, const resources::TimeSpan& timeStep)
         {
             this->toImplementation()->updateImpl(context, timeStep);
         }
 
-        void initialize(TDataContext& context)
+        void initialize(DataContextType& context)
         {
             this->toImplementation()->initializeImpl(context);
         };
 
-        void stop(TDataContext& context)
+        void stop(DataContextType& context)
         {
             this->toImplementation()->stopImpl(context);
         }
     };
 
-    template<typename TDataContext, typename TPipelineRepository>
-    class MainController: public IMainController<MainController<TDataContext, TPipelineRepository>, TDataContext>
+    template<typename TPipelineRepository>
+    class MainController: public IMainController<MainController<TPipelineRepository>>
     {
     private:
-        events::mainController::Dispatcher<TDataContext>& _mainControllerEventHub;
-        repositories::IPipelineRepository<TPipelineRepository, TDataContext>& _pipelineRepository;
+        events::mainController::Dispatcher<DataContextType>& _mainControllerEventHub;
+        repositories::IPipelineRepository<TPipelineRepository, DataContextType>& _pipelineRepository;
 
     public:
-        explicit MainController(events::mainController::Dispatcher<TDataContext>& mainControllerEventHub,
-                                repositories::IPipelineRepository<TPipelineRepository, TDataContext>& pipelineRepository):
+        explicit MainController(events::mainController::Dispatcher<DataContextType>& mainControllerEventHub,
+                                repositories::IPipelineRepository<TPipelineRepository, DataContextType>& pipelineRepository):
                 _mainControllerEventHub(mainControllerEventHub),
                 _pipelineRepository(pipelineRepository)
         {}
 
-        void updateImpl(TDataContext& context, const resources::TimeSpan& timeStep)
+        void updateImpl(DataContextType& context, const resources::TimeSpan& timeStep)
         {
             auto pipelineNodes = _pipelineRepository.getPipeline();
 
-            touchPipelineNodes(pipelineNodes, context, [](const std::shared_ptr<resources::object::PipelineNode<TDataContext>>& node, TDataContext& context, const resources::TimeSpan& timeStep)
+            touchPipelineNodes(pipelineNodes, context, [](const std::shared_ptr<resources::object::PipelineNode<DataContextType>>& node, DataContextType& context, const resources::TimeSpan& timeStep)
             {
                 auto controller = node->nodeEntity.attachedController ?
-                                  std::static_pointer_cast<Controller<TDataContext>>(node->nodeEntity.attachedController)
+                                  std::static_pointer_cast<Controller<DataContextType>>(node->nodeEntity.attachedController)
                                                                       : nullptr;
                 if(controller)
                 {
@@ -64,24 +64,24 @@ namespace dory::engine::controllers
             }, timeStep);
         }
 
-        void initializeImpl(TDataContext& context)
+        void initializeImpl(DataContextType& context)
         {
             _mainControllerEventHub.fire(context, events::mainController::Initialize{});
         };
 
-        void stopImpl(TDataContext& context)
+        void stopImpl(DataContextType& context)
         {
             _mainControllerEventHub.fire(context, events::mainController::Stop{});
 
             auto pipelineNodes = _pipelineRepository.getPipeline();
-            auto expiredNodes = std::vector<typename repositories::IPipelineRepository<TPipelineRepository, TDataContext>::IdType>{};
+            auto expiredNodes = std::vector<typename repositories::IPipelineRepository<TPipelineRepository, DataContextType>::IdType>{};
 
-            touchPipelineNodes(pipelineNodes, context, [&expiredNodes](const std::shared_ptr<resources::object::PipelineNode<TDataContext>>& node, TDataContext& context)
+            touchPipelineNodes(pipelineNodes, context, [&expiredNodes](const std::shared_ptr<resources::object::PipelineNode<DataContextType>>& node, DataContextType& context)
             {
                 auto controller = node->nodeEntity.attachedController;
                 if(controller)
                 {
-                    std::static_pointer_cast<Controller<TDataContext>>(controller)->stop(node->nodeEntity.id, context);
+                    std::static_pointer_cast<Controller<DataContextType>>(controller)->stop(node->nodeEntity.id, context);
                 }
             });
 
@@ -93,7 +93,7 @@ namespace dory::engine::controllers
 
     private:
         template<typename F, typename... Ts>
-        static void touchPipelineNodes(std::list<std::shared_ptr<resources::object::PipelineNode<TDataContext>>> pipelineNodes, TDataContext& context, F functor, Ts... arguments)
+        static void touchPipelineNodes(std::list<std::shared_ptr<resources::object::PipelineNode<DataContextType>>> pipelineNodes, DataContextType& context, F functor, Ts... arguments)
         {
             auto end = pipelineNodes.end();
 
@@ -104,7 +104,7 @@ namespace dory::engine::controllers
         }
 
         template<typename F, typename... Ts>
-        static void touchNode(std::shared_ptr<resources::object::PipelineNode<TDataContext>> node, TDataContext& context, F functor, Ts... arguments)
+        static void touchNode(std::shared_ptr<resources::object::PipelineNode<DataContextType>> node, DataContextType& context, F functor, Ts... arguments)
         {
             functor(node, context, arguments...);
 

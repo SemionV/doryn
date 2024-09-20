@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dory/engine/resources/dataContext.h"
+#include <dory/engineObjects/dataContext.h>
 #include "dory/engine/events/eventTypes.h"
 
 #ifdef __unix__
@@ -128,7 +128,7 @@ namespace dory
         using ShaderServiceType = engineServices::opengl::ShaderService<LogServiceType, FileServiceType, TDataContextSections...>;
         using RendererType = engineServices::opengl::Renderer<DataContextType, engineServices::opengl::RendererDependencies<ShaderServiceType>>;
         using RendererFactoryType = RendererType::FactoryType;
-        using MainControllerType = engineControllers::MainController<DataContextType, typename TRepositories::PipelineRepositoryType>;
+        using MainControllerType = engineControllers::MainController<typename TRepositories::PipelineRepositoryType>;
         using WindowServiceType = engineServices::opengl::GlfwWindowService<engineServices::opengl::GlfwWindowServiceDependencies<typename TRepositories::WindowRepositoryType >>;
         using ScriptServiceType = engineServices::ScriptService<DataContextType>;
         using ConfigurationServiceType = engineServices::configuration::ConfigurationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;

@@ -10,7 +10,7 @@ namespace dory::engine::services
     {
     public:
         template<typename TDataContext, typename TEngine>
-        void startLoop(TDataContext& context, controllers::IMainController<TEngine, TDataContext>& engine)
+        void startLoop(TDataContext& context, controllers::IMainController<TEngine>& engine)
         {
             this->toImplementation()->startLoopImpl(context, engine);
         }
@@ -29,7 +29,7 @@ namespace dory::engine::services
     public:
 
         template<typename TDataContext, typename TEngine>
-        void startLoopImpl(TDataContext& context, controllers::IMainController<TEngine, TDataContext>& engine)
+        void startLoopImpl(TDataContext& context, controllers::IMainController<TEngine>& engine)
         {
             engine.initialize(context);
 

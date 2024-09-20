@@ -2,6 +2,7 @@
 
 #include "dataContext.h"
 #include "repositories.h"
+#include "controllers/pipelineController.h"
 #include <dory/engine/services/configurationService.h>
 #include <dory/engine/services/fileService.h>
 #include <dory/engine/services/frameService.h>
@@ -21,10 +22,10 @@ namespace dory::engine::services
 {
     using LogServiceType = MultiSinkLogService;
 
-    using MainControllerType = controllers::MainController<DataContextType, repositories::PipelineRepositoryType>;
+    using MainControllerType = controllers::MainController<repositories::PipelineRepositoryType>;
 
     extern template class IFrameService<BasicFrameService>;
-    extern template void IFrameService<BasicFrameService>::startLoop(DataContextType& context, controllers::IMainController<MainControllerType, DataContextType>& engine);
+    extern template void IFrameService<BasicFrameService>::startLoop(DataContextType& context, controllers::IMainController<MainControllerType>& engine);
     using FrameServiceType = BasicFrameService;
 
     extern template class IFileService<FileService>;
