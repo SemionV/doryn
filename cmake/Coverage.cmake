@@ -9,7 +9,7 @@ endfunction()
 function(CleanCoverage target)
     add_custom_command(TARGET ${target} PRE_BUILD COMMAND
             find ${CMAKE_BINARY_DIR} -type f
-            -name '*.gcda' -exec rm {} +)
+            -name '*.gcda' -exec rm {} + || true)
 endfunction()
 
 function(AddCoverage target)
