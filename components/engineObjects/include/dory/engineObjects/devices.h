@@ -6,7 +6,7 @@
 #ifdef __unix__
 #include <dory/engine/devices/standartIoDeviceUnix.h>
 #endif
-#ifdef WIN32
+#if (defined(_WIN32) || defined(_WIN64) || defined(WIN32))
 #include <dory/engine/devices/standartIoDeviceWin32.h>
 #endif
 

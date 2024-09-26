@@ -35,10 +35,9 @@ namespace dory
     class ILibrary: NonCopyable
     {
     public:
-#ifdef WIN32
+#if (defined(_WIN32) || defined(_WIN64) || defined(WIN32))
         const constexpr static std::string_view systemSharedLibraryFileExtension = ".dll";
 #endif
-
 #ifdef __unix__
         const constexpr static std::string_view systemSharedLibraryFileExtension = ".so";
 #endif

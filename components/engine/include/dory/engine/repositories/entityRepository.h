@@ -52,11 +52,11 @@ namespace dory::engine::repositories
         }
     };
 
-    template<typename TEntity, typename TId = resources::entity::IdType, template<typename T> class TContainer = std::vector>
+    template<typename TEntity, typename TId = resources::entity::IdType, template<class, class> class TContainer = std::vector>
     class EntityRepository: public IEntityRepository<EntityRepository<TEntity, TId, TContainer>, TEntity, TId>
     {
     private:
-        TContainer<TEntity> container;
+        TContainer<TEntity, std::allocator<TEntity>> container;
         TId counter;
 
     public:

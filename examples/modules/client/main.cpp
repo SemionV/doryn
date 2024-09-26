@@ -1,7 +1,7 @@
 #include <dory/client/client.h>
 
 
-#ifdef WIN32
+#if (defined(_WIN32) || defined(_WIN64) || defined(WIN32))
 #include <windows.h>
 #include <winnt.h>
 #endif
@@ -9,7 +9,7 @@
 #ifdef __unix__
 int main()
 #endif
-#ifdef WIN32
+#if (defined(_WIN32) || defined(_WIN64) || defined(WIN32))
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 #endif
 {

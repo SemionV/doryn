@@ -1,4 +1,11 @@
-set(CMAKE_CXX_STANDARD 20)#
+set(CMAKE_CXX_STANDARD 20)
+
+# Set the C++ standard to C++20
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Ensure compiler extensions are disabled (use -std=c++20 instead of -std=gnu++20)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
     add_compile_options(/std:c++latest)
