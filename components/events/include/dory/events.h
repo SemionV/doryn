@@ -3,6 +3,7 @@
 #include <dory/generics/typeTraits.h>
 #include <dory/generics/typeList.h>
 #include <dory/module.h>
+#include <mutex>
 
 namespace dory::events
 {

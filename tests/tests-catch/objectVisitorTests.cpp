@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <map>
 #include <refl.hpp>
+#include <variant>
 
 #include <dory/serialization/reflection.h>
 #include <dory/serialization/objectVisitor.h>
