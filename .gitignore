@@ -10,3 +10,4 @@ build/settings.sh
 /.idea/inspectionProfiles/Project_Default.xml
 .idea/tools/External Tools.xml
 .idea/vcs.xml
+/.idea/cmake.xml

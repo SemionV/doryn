@@ -9,7 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
     add_compile_options(/std:c++latest)
-    set(PLATFORM base/win32)
+    #set(PLATFORM base/win32)
 else()
     set(PLATFORM "")
 endif()

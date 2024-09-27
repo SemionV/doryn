@@ -1,5 +1,7 @@
 #pragma once
 
+#include <variant>
+
 #include "dory/serialization/yamlSerializer.h"
 #include "dory/serialization/yamlDeserializer.h"
 #include "dory/serialization/jsonSerializer.h"
@@ -105,8 +107,8 @@ namespace dory::engine::services::serialization
     class FormatKeyConverter: public IFormatKeyConverter<Format, FormatKeyConverter>
     {
     private:
-        constexpr const static std::string yaml = "yaml";
-        constexpr const static std::string json = "json";
+        constexpr const static char* yaml = "yaml";
+        constexpr const static char* json = "json";
 
     public:
         using FormatType = Format;
