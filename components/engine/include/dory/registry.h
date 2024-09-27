@@ -3,10 +3,10 @@
 #include <dory/engineObjects/dataContext.h>
 #include "dory/engine/events/eventTypes.h"
 
-#ifdef __unix__
+#ifdef DORY_PLATFORM_LINUX
 #include <dory/engine/devices/standartIoDeviceUnix.h>
 #endif
-#if (defined(_WIN32) || defined(_WIN64) || defined(WIN32))
+#ifdef DORY_PLATFORM_WIN32
 #include <dory/engine/devices/standartIoDeviceWin32.h>
 #endif
 

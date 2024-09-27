@@ -1,9 +1,9 @@
 #include <dory/sandbox/mainModule.h>
 
-#ifdef __unix__
+#ifdef DORY_PLATFORM_LINUX
 int main()
 #endif
-#if (defined(_WIN32) || defined(_WIN64) || defined(WIN32))
+#ifdef DORY_PLATFORM_WIN32
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 #endif
 {
