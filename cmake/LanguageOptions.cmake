@@ -26,6 +26,9 @@ endif()
 
 if(WIN32)
     add_definitions(-DDORY_PLATFORM_WIN32)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        add_definitions(-DC4_MINGW) #fix rapid-yaml library
+    endif()
 elseif (LINUX)
     add_definitions(-DDORY_PLATFORM_LINUX)
 endif()
