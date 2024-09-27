@@ -5,7 +5,7 @@
 
 namespace dory::sandbox
 {
-    class Extension: public IDynamicModule<ExtensionContext>
+    class Extension: public dory::IDynamicModule
     {
     private:
         ExtensionContext& _extensionContext;

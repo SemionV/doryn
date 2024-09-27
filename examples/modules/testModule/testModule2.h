@@ -9,7 +9,7 @@
 
 namespace testModule
 {
-    class TestModule2: public dory::IDynamicModule<client::Registry>
+    class TestModule2: public dory::IDynamicModule
     {
     private:
         client::Registry& _registry;

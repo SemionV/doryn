@@ -16,7 +16,6 @@ namespace dory
 
     class LibraryHandle;
 
-    template<typename TModuleContext>
     class IDynamicModule: public IModule
     {
     public:
@@ -77,7 +76,7 @@ namespace dory
         }
 
         template<typename TModuleContext>
-        std::shared_ptr<IDynamicModule<TModuleContext>> loadModule(const std::string moduleName, TModuleContext& moduleContext)
+        std::shared_ptr<IDynamicModule> loadModule(const std::string moduleName, TModuleContext& moduleContext)
         {
             if(_modules.contains(moduleName))
             {
@@ -99,7 +98,7 @@ namespace dory
     private:
         constexpr const static std::string_view dynamicModuleFactoryFunctionName = "dynamicModuleFactory";
         template<typename TModuleContext>
-        using LoadableModuleFactory = std::shared_ptr<IDynamicModule<TModuleContext>>(const std::string& moduleName, TModuleContext& moduleContext);
+        using LoadableModuleFactory = IDynamicModule*(const std::string& moduleName, TModuleContext& moduleContext);
 
         std::atomic<bool> _isLoaded = false;
         boost::dll::shared_library _dll;
@@ -121,12 +120,13 @@ namespace dory
         }
 
         template<typename TModuleContext>
-        std::shared_ptr<IDynamicModule<TModuleContext>> loadModuleImpl(const std::string moduleName, TModuleContext& moduleContext)
+        std::shared_ptr<IDynamicModule> loadModuleImpl(const std::string moduleName, TModuleContext& moduleContext)
         {
             assert(_dll.is_loaded());
 
             auto moduleFactory = _dll.template get<LoadableModuleFactory<TModuleContext>>(std::string{ dynamicModuleFactoryFunctionName });
-            return moduleFactory(moduleName, moduleContext);
+            IDynamicModule* module = moduleFactory(moduleName, moduleContext);
+            return std::shared_ptr<IDynamicModule>{module};
         }
 
         void unload()

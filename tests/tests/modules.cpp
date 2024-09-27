@@ -90,7 +90,7 @@ class TestLibrary: public dory::ILibrary
 public:
     MOCK_METHOD(bool, isLoaded, (), (final));
     MOCK_METHOD(void, load, (const std::filesystem::path& libraryPath));
-    MOCK_METHOD(std::shared_ptr<dory::IDynamicModule<TestModuleContext>>, loadModule, (const std::string moduleName));
+    MOCK_METHOD(std::shared_ptr<dory::IDynamicModule>, loadModule, (const std::string moduleName));
 };
 
 TEST(RsourceHandleTests, lifetimeOfLibraryAndResource)
@@ -126,7 +126,7 @@ TEST(RsourceHandleTests, lifetimeOfLibraryAndResource)
     EXPECT_FALSE((bool)resource3);
 }
 
-class TestModule: dory::IDynamicModule<TestModuleContext>
+class TestModule: dory::IDynamicModule
 {
 public:
     MOCK_METHOD(void, attach, (dory::LibraryHandle library), (final));
