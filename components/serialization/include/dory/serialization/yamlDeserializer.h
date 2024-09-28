@@ -52,7 +52,8 @@ namespace dory::serialization::yaml
         template<class T>
         inline static bool beginMember(const std::string_view& memberName, std::optional<T>& value, const std::size_t i, YamlContext& context)
         {
-            if(beginMember(memberName, *value, i, context))
+            T tempValue;
+            if(beginMember(memberName, tempValue, i, context))
             {
                 value = T{};
                 return true;
