@@ -1,6 +1,6 @@
 set(DORY_MODULE_NAME ${PROJECT_NAME}-client)
 
-add_executable(${DORY_MODULE_NAME} ${PLATFORM} main.cpp)
+add_executable(${DORY_MODULE_NAME} ${DORY_MAIN_FUNCTION_TYPE} main.cpp)
 target_include_directories(${DORY_MODULE_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_link_libraries(${DORY_MODULE_NAME} dory-engine)
 
