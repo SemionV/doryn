@@ -1,6 +1,6 @@
 set(DORY_MODULE_NAME ${PROJECT_NAME}-testModule)
 
-add_library(${DORY_MODULE_NAME} MODULE ${PLATFORM}
+add_library(${DORY_MODULE_NAME} MODULE
         testModule2.cpp
         factory.cpp)
 

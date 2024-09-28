@@ -1,6 +1,6 @@
 set(DORY_MODULE_NAME ${PROJECT_NAME})
 
-add_executable(${DORY_MODULE_NAME} ${PLATFORM} main.cpp)
+add_executable(${DORY_MODULE_NAME} ${DORY_MAIN_FUNCTION_TYPE} main.cpp)
 set_target_properties(${DORY_MODULE_NAME} PROPERTIES
         OUTPUT_NAME "sandbox")
 

@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <iostream>
 #include <type_traits>
+#include <array>
 
 namespace basics_varprint2_hpp
 {

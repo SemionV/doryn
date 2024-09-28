@@ -1,6 +1,6 @@
 set(DORY_MODULE_NAME ${PROJECT_NAME}-engine-objects)
 
-add_library(${DORY_MODULE_NAME} SHARED
+add_library(${DORY_MODULE_NAME} STATIC
         src/dataContext.cpp
         src/devices.cpp
         src/repositories.cpp
