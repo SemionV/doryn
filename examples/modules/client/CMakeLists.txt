@@ -1,8 +1,10 @@
 set(DORY_MODULE_NAME ${PROJECT_NAME}-client)
 
-add_executable(${DORY_MODULE_NAME} ${DORY_MAIN_FUNCTION_TYPE} main.cpp)
+add_executable(${DORY_MODULE_NAME} main.cpp)
 target_include_directories(${DORY_MODULE_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_link_libraries(${DORY_MODULE_NAME} dory-engine)
+
+target_compile_definitions(${DORY_MODULE_NAME} PRIVATE -DDORY_MAIN_FUNCTION_UNIX)
 
 install(TARGETS ${DORY_MODULE_NAME} DESTINATION "${EXAMPLES_INSTALL_PREFIX}modular" COMPONENT Example)
 
