@@ -11,3 +11,4 @@ build/settings.sh
 .idea/tools/External Tools.xml
 .idea/vcs.xml
 /.idea/cmake.xml
+/build/cmake-artifacts-vs2022-clion/

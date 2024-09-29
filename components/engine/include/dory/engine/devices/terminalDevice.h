@@ -10,27 +10,27 @@ namespace dory::engine::devices
     {
         void write(const TOutputData& data)
         {
-            toImplementation<TImplementation>(this)->writeImpl(data);
+            static_cast<TImplementation*>(this)->writeImpl(data);
         }
 
         void writeLine(const TOutputData& data)
         {
-            toImplementation<TImplementation>(this)->writeLineImpl(data);
+            static_cast<TImplementation*>(this)->writeLineImpl(data);
         }
 
         void enterCommandMode()
         {
-            toImplementation<TImplementation>(this)->enterCommandModeImpl();
+            static_cast<TImplementation*>(this)->enterCommandModeImpl();
         }
 
         void exitCommandMode()
         {
-            toImplementation<TImplementation>(this)->exitCommandModeImpl();
+            static_cast<TImplementation*>(this)->exitCommandModeImpl();
         }
 
         bool isCommandMode()
         {
-            return toImplementation<TImplementation>(this)->isCommandModeImpl();
+            return static_cast<TImplementation*>(this)->isCommandModeImpl();
         }
     };
 
