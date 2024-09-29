@@ -13,3 +13,4 @@ build/settings.sh
 .idea/vcs.xml
 /.idea/cmake.xml
 /build/cmake-artifacts-vs2022-clion/
+/build/cmake-build-artifacts-clang-clion/
