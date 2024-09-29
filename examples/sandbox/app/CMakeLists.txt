@@ -1,8 +1,10 @@
 set(DORY_MODULE_NAME ${PROJECT_NAME})
 
-add_executable(${DORY_MODULE_NAME} ${DORY_MAIN_FUNCTION_TYPE} main.cpp)
+add_executable(${DORY_MODULE_NAME} main.cpp)
 set_target_properties(${DORY_MODULE_NAME} PROPERTIES
         OUTPUT_NAME "sandbox")
+
+target_compile_definitions(${DORY_MODULE_NAME} PRIVATE -DDORY_MAIN_FUNCTION_UNIX)
 
 target_link_libraries(${DORY_MODULE_NAME} PRIVATE dory-engine-objects sandbox-mainModule bootstrap_include)
 target_include_directories(${DORY_MODULE_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)

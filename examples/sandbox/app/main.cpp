@@ -1,9 +1,9 @@
 #include <dory/sandbox/mainModule.h>
 
-#ifdef DORY_PLATFORM_LINUX
+#ifdef DORY_MAIN_FUNCTION_UNIX
 int main()
 #endif
-#ifdef DORY_PLATFORM_WIN32
+#ifdef DORY_MAIN_FUNCTION_WIN32
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 #endif
 {
