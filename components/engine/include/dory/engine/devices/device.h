@@ -9,12 +9,12 @@ namespace dory::engine::devices
     {
         void connect(TDataContext& context)
         {
-            toImplementation<TImplementation>(this)->connectImpl(context);
+            static_cast<TImplementation*>(this)->connectImpl(context);
         }
 
         void disconnect(TDataContext& context)
         {
-            toImplementation<TImplementation>(this)->disconnectImpl(context);
+            static_cast<TImplementation*>(this)->disconnectImpl(context);
         }
     };
 
@@ -23,12 +23,12 @@ namespace dory::engine::devices
     {
         void out(const TOutputData& data)
         {
-            toImplementation<TImplementation>(this)->outImpl(data);
+            static_cast<TImplementation*>(this)->outImpl(data);
         }
 
         void flush()
         {
-            toImplementation<TImplementation>(this)->flushImpl();
+            static_cast<TImplementation*>(this)->flushImpl();
         }
     };
 }
