@@ -12,6 +12,7 @@ include(NoInSourceBuilds)
 include(LanguageOptions)
 
 add_subdirectory(external EXCLUDE_FROM_ALL)
+add_subdirectory(core)
 add_subdirectory(components)
 add_subdirectory(tests)
 add_subdirectory(examples)

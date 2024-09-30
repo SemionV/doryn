@@ -2,10 +2,6 @@ set(DORY_MODULE_NAME ${PROJECT_NAME}-engine)
 
 add_library(${DORY_MODULE_NAME} STATIC include/dory/registry.h)
 
-target_sources(${DORY_MODULE_NAME}
-        PUBLIC FILE_SET CXX_MODULES FILES
-        modules/engine.ixx)
-
 target_include_directories(${DORY_MODULE_NAME} PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
