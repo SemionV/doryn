@@ -1,13 +1,14 @@
-/*module;
+module;
 
 #include <string>
 #include <filesystem>
+#include <fstream>
 
 module dory.core.engine.services.fileService;
 
 namespace dory::core::engine::services
 {
-    static std::string FileService::readImpl(const std::filesystem::path& filePath)
+    std::string FileService::readImpl(const std::filesystem::path& filePath)
     {
         auto stream = std::ifstream(filePath);
         stream.exceptions(std::ios_base::badbit);
@@ -30,7 +31,7 @@ namespace dory::core::engine::services
         return result;
     }
 
-    static void FileService::writeImpl(const std::filesystem::path& filePath, const std::string& content)
+    void FileService::writeImpl(const std::filesystem::path& filePath, const std::string& content)
     {
         std::ofstream stream(filePath.string(), std::ios::trunc);
         if(!stream.is_open())
@@ -41,6 +42,4 @@ namespace dory::core::engine::services
         stream << content;
         stream.close();
     }
-}*/
-
-module dory.core.engine.services.fileService;
+}
