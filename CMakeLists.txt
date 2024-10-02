@@ -1,5 +1,4 @@
-set(DORY_BUILD_TOOLS_REQUIRED_VERSION 3.18)
-cmake_minimum_required(VERSION ${DORY_BUILD_TOOLS_REQUIRED_VERSION})
+cmake_minimum_required(VERSION 3.30)
 project(dory VERSION 0.0.1 LANGUAGES CXX)
 
 set(DORY_CMAKE_SCRIPTS_PATH "${CMAKE_SOURCE_DIR}/cmake")
@@ -13,5 +12,7 @@ include(LanguageOptions)
 
 add_subdirectory(external EXCLUDE_FROM_ALL)
 add_subdirectory(components)
+add_subdirectory(core-interfaces)
+add_subdirectory(core)
 add_subdirectory(tests)
 add_subdirectory(examples)

@@ -1,0 +1,11 @@
+set(DORY_MODULE_NAME ${PROJECT_NAME}-engine)
+
+add_library(${DORY_MODULE_NAME} SHARED src/registryFactory.cpp)
+
+set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""
+        IMPORT_PREFIX ""
+        OUTPUT_NAME ${DORY_MODULE_NAME})
+
+target_link_libraries(${DORY_MODULE_NAME} PUBLIC dory-core)
+target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_definitions(${DORY_MODULE_NAME} PRIVATE -DDORY_DLL_EXPORTS)
