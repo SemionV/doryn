@@ -4,6 +4,8 @@ build/cmake-artifacts/
 build/cmake-artifacts-vs/
 build/cmake-artifacts-ninja/
 build/cmake-artifacts-ninja-clion/
+build/cmake-artifacts-clang-clion/
+build/cmake-artifacts-gcc-clion/
 build/cmake-artifacts-ninja-clion-release/
 build/cmake-artifacts-make/
 build/settings.sh
