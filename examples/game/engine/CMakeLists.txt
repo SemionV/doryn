@@ -1,0 +1,36 @@
+set(DORY_MODULE_NAME ${PROJECT_NAME}-engine)
+
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN TRUE)
+
+add_library(${DORY_MODULE_NAME} SHARED)
+set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""
+        IMPORT_PREFIX ""
+        OUTPUT_NAME "engine")
+
+target_link_libraries(${DORY_MODULE_NAME} PRIVATE dory-core)
+
+target_include_directories(${DORY_MODULE_NAME} PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
+
+target_compile_definitions(${DORY_MODULE_NAME} PRIVATE -DDORY_DLL_EXPORT)
+
+target_sources(${DORY_MODULE_NAME} PUBLIC
+        FILE_SET modules TYPE CXX_MODULES
+        BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
+        FILES
+        registry.cppm
+)
+
+target_sources(${DORY_MODULE_NAME} PRIVATE
+        registry.cpp
+)
+
+install(TARGETS ${DORY_MODULE_NAME}
+        DESTINATION ${DORY_GAME_INSTALL_PREFIX}
+        ARCHIVE DESTINATION ${DORY_GAME_INSTALL_PREFIX}/dev
+        FILE_SET modules DESTINATION ${DORY_GAME_INSTALL_PREFIX}/dev/modules
+        CXX_MODULES_BMI DESTINATION ${DORY_GAME_INSTALL_PREFIX}/dev
+        COMPONENT ${DORY_GAME_COMPONENT})

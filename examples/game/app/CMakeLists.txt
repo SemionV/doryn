@@ -1,0 +1,15 @@
+set(DORY_MODULE_NAME ${PROJECT_NAME})
+
+add_executable(${DORY_MODULE_NAME} main.cpp)
+set_target_properties(${DORY_MODULE_NAME} PROPERTIES
+        OUTPUT_NAME "game")
+
+target_compile_definitions(${DORY_MODULE_NAME} PRIVATE -DDORY_MAIN_FUNCTION_UNIX)
+
+set_target_properties(${DORY_MODULE_NAME} PROPERTIES
+        INSTALL_RPATH "$ORIGIN"
+)
+
+target_link_libraries(${DORY_MODULE_NAME} PRIVATE game-engine)
+
+install(TARGETS ${DORY_MODULE_NAME} DESTINATION ${DORY_GAME_INSTALL_PREFIX} COMPONENT ${DORY_GAME_COMPONENT})
