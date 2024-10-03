@@ -46,6 +46,7 @@ namespace dory
         const std::filesystem::path path;
 
         ILibrary() = default;
+        virtual ~ILibrary() = default;
 
         ILibrary(std::string  libraryName, std::filesystem::path libraryPath):
             name(std::move(libraryName)), path(std::move(libraryPath))
@@ -108,7 +109,7 @@ namespace dory
                 Library(libraryName, libraryPath)
         {}
 
-        ~DynamicLibrary()
+        ~DynamicLibrary() override
         {
             unloadModules();
             _dll.unload();
