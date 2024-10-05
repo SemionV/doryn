@@ -6,7 +6,7 @@
 namespace dory::core::extensionPlatform
 {
     template<typename TResource>
-    class IResourceHandle: public NonCopyable
+    class IResourceHandle
     {
     public:
         virtual ~IResourceHandle() = default;

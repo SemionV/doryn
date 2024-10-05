@@ -1,10 +1,11 @@
 #pragma once
 
-#include "iLibrary.h"
 #include <cassert>
 
 namespace dory::core::extensionPlatform
 {
+    class ILibrary;
+
     class LibraryHandle
     {
     private:

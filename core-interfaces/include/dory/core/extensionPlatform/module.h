@@ -1,6 +1,7 @@
 #pragma once
 
 #include "libraryHandle.h"
+#include <dory/core/resources/moduleContext.h>
 
 namespace dory::core::extensionPlatform
 {
@@ -10,18 +11,17 @@ namespace dory::core::extensionPlatform
         virtual ~IModule() = default;
     };
 
-    class IDynamicModule: public IModule
+    class IExtensionModule: public IModule
     {
     public:
-        ~IDynamicModule() override = default;
-        virtual void attach(LibraryHandle library) = 0;
+        ~IExtensionModule() override = default;
+        virtual void attach(LibraryHandle library, const resources::ExtensionContext& extensionContext) = 0;
     };
 
-    template<typename TModuleContext>
     class IExecutableModule: public IModule
     {
     public:
         ~IExecutableModule() override = default;
-        virtual int run(TModuleContext& moduleContext) = 0;
+        virtual int run(const resources::ExecuteContext& moduleContext) = 0;
     };
 }

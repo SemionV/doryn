@@ -1,11 +1,13 @@
 #pragma once
 
-#include <dory/core/typeTraits.h>
 #include <filesystem>
+#include "module.h"
+#include "dory/core/resources/moduleContext.h"
+#include <memory>
 
 namespace dory::core::extensionPlatform
 {
-    class ILibrary: NonCopyable
+    class ILibrary
     {
     public:
 #ifdef DORY_PLATFORM_WIN32
@@ -27,5 +29,7 @@ namespace dory::core::extensionPlatform
         {}
 
         virtual bool isLoaded() = 0;
+        virtual std::shared_ptr<IExtensionModule> loadModule(const std::string& moduleName, const resources::ExtensionContext& moduleContext) = 0;
+        virtual std::shared_ptr<IExecutableModule> loadModule(const std::string& moduleName, const resources::ExecuteContext& moduleContext) = 0;
     };
 }
