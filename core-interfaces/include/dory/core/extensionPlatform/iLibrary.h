@@ -4,6 +4,7 @@
 #include "module.h"
 #include "dory/core/resources/moduleContext.h"
 #include <memory>
+#include <utility>
 
 namespace dory::core::extensionPlatform
 {
@@ -24,7 +25,7 @@ namespace dory::core::extensionPlatform
         ILibrary() = default;
         virtual ~ILibrary() = default;
 
-        ILibrary(std::string libraryName, std::filesystem::path libraryPath):
+        ILibrary(std::string  libraryName, std::filesystem::path  libraryPath):
                 name(std::move(libraryName)), path(std::move(libraryPath))
         {}
 

@@ -10,6 +10,10 @@ target_link_libraries(${DORY_MODULE_NAME} PUBLIC dory-core)
 target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_definitions(${DORY_MODULE_NAME} PRIVATE -DDORY_DLL_EXPORTS)
 
+if(LINUX)
+    target_compile_options(${DORY_MODULE_NAME} PRIVATE -fPIC)
+endif()
+
 install(TARGETS ${DORY_MODULE_NAME}
         DESTINATION ${DORY_GAME_INSTALL_PREFIX}
         ARCHIVE DESTINATION ${DORY_GAME_INSTALL_PREFIX}/dev

@@ -42,6 +42,10 @@ namespace dory::core::extensionPlatform
         }
 
     public:
+        explicit DynamicLibrary(const std::string &libraryName, const std::filesystem::path &libraryPath)
+                : IDynamicLibrary(libraryName, libraryPath)
+        {}
+
         ~DynamicLibrary() override;
 
         void load(const std::filesystem::path& libraryPath) override;
