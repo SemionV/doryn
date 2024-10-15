@@ -8,6 +8,6 @@ namespace dory::game::engine
     class DORY_DLLEXPORT RegistryFactory: public core::IRegistryFactory
     {
     public:
-        std::unique_ptr<core::Registry> createRegistry() override;
+        std::shared_ptr<core::Registry> createRegistry() override;
     };
 }

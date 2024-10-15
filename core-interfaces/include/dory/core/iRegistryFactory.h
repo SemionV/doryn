@@ -9,6 +9,6 @@ namespace dory::core
     public:
         virtual ~IRegistryFactory() = default;
 
-        virtual std::unique_ptr<Registry> createRegistry() = 0;
+        virtual std::shared_ptr<Registry> createRegistry() = 0;
     };
 }

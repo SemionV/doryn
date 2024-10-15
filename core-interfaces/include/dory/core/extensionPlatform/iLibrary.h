@@ -1,13 +1,15 @@
 #pragma once
 
 #include <filesystem>
-#include "module.h"
-#include "dory/core/resources/moduleContext.h"
+#include "iModule.h"
 #include <memory>
 #include <utility>
 
 namespace dory::core::extensionPlatform
 {
+    class IExtensionModule;
+    class IExecutableModule;
+
     class ILibrary
     {
     public:
@@ -30,7 +32,7 @@ namespace dory::core::extensionPlatform
         {}
 
         virtual bool isLoaded() = 0;
-        virtual std::shared_ptr<IExtensionModule> loadModule(const std::string& moduleName, const resources::ExtensionContext& moduleContext) = 0;
-        virtual std::shared_ptr<IExecutableModule> loadModule(const std::string& moduleName, const resources::ExecuteContext& moduleContext) = 0;
+        virtual std::shared_ptr<IExtensionModule> loadExtensionModule(const std::string& moduleName) = 0;
+        virtual std::shared_ptr<IExecutableModule> loadExecutableModule(const std::string& moduleName) = 0;
     };
 }

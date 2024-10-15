@@ -2,7 +2,7 @@ set(DORY_MODULE_NAME ${PROJECT_NAME}-test-extension)
 
 add_library(${DORY_MODULE_NAME} MODULE src/extension.cpp
         src/factory.cpp)
-target_link_libraries(${DORY_MODULE_NAME} PRIVATE ${PROJECT_NAME}-engine)
+target_link_libraries(${DORY_MODULE_NAME} PRIVATE dory-core-interfaces Boost::dll)
 target_include_directories(${DORY_MODULE_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""

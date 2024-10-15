@@ -8,24 +8,6 @@ namespace dory::core::extensionPlatform
         _dll.unload();
     }
 
-    std::shared_ptr<IExtensionModule> DynamicLibrary::loadModuleInstance(const std::string &moduleName, const resources::ExtensionContext &moduleContext)
-    {
-        assert(_dll.is_loaded());
-
-        auto moduleFactory = _dll.template get<ExtensionModuleFactory>(std::string{ extensionModuleFactoryFunctionName });
-        IExtensionModule* module = moduleFactory(moduleName, moduleContext);
-        return std::shared_ptr<IExtensionModule>{module};
-    }
-
-    std::shared_ptr<IExecutableModule> DynamicLibrary::loadModuleInstance(const std::string &moduleName, const resources::ExecuteContext& moduleContext)
-    {
-        assert(_dll.is_loaded());
-
-        auto moduleFactory = _dll.template get<ExecutableModuleFactory>(std::string{ executableModuleFactoryFunctionName });
-        IExecutableModule* module = moduleFactory(moduleName, moduleContext);
-        return std::shared_ptr<IExecutableModule>{module};
-    }
-
     void DynamicLibrary::load(const std::filesystem::path &libraryPath)
     {
         assert(!_isLoaded);
@@ -47,14 +29,15 @@ namespace dory::core::extensionPlatform
         return _isLoaded;
     }
 
-    std::shared_ptr<IExtensionModule> DynamicLibrary::loadModule(const std::string &moduleName, const resources::ExtensionContext& moduleContext)
+    std::shared_ptr<IExtensionModule> DynamicLibrary::loadExtensionModule(const std::string& moduleName)
     {
-        return loadModule<IExtensionModule, resources::ExtensionContext>(moduleName, moduleContext);
+        auto moduleFactory = _dll.template get<ExtensionModuleFactory>(std::string{ extensionModuleFactoryFunctionName });
+        return loadModule<IExtensionModule>(moduleName, moduleFactory);
     }
 
-    std::shared_ptr<IExecutableModule>
-    DynamicLibrary::loadModule(const std::string &moduleName, const resources::ExecuteContext &moduleContext)
+    std::shared_ptr<IExecutableModule> DynamicLibrary::loadExecutableModule(const std::string& moduleName)
     {
-        return loadModule<IExecutableModule, resources::ExecuteContext>(moduleName, moduleContext);
+        auto moduleFactory = _dll.template get<ExecutableModuleFactory>(std::string{ executableModuleFactoryFunctionName });
+        return loadModule<IExecutableModule>(moduleName, moduleFactory);
     }
 }

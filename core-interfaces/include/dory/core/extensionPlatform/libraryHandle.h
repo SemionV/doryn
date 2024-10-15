@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cassert>
+#include <optional>
+#include <memory>
 
 namespace dory::core::extensionPlatform
 {
