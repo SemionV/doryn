@@ -14,14 +14,12 @@ namespace dory::core::extensionPlatform
     class IExtensionModule: public IModule
     {
     public:
-        ~IExtensionModule() override = default;
         virtual void attach(LibraryHandle library, const resources::ExtensionContext& extensionContext) = 0;
     };
 
     class IExecutableModule: public IModule
     {
     public:
-        ~IExecutableModule() override = default;
         virtual int run(const resources::ExecuteContext& moduleContext) = 0;
     };
 }
