@@ -1,7 +1,6 @@
 #pragma once
 
 #include <dory/core/services/iFileService.h>
-#include "dory/core/typeTraits.h"
 
 namespace dory::core::services
 {
