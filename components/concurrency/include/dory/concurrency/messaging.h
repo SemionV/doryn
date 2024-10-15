@@ -128,6 +128,11 @@ namespace dory::concurrency::messaging
         std::mutex recieverMutex;
         std::condition_variable recieveCondition;
 
+        bool isMessageRecieved()
+        {
+            return (this->MessageReciever<TQueue<Ts>, Ts>::checkInbox() || ...);
+        }
+
     public:
         MessageSenderHub<TQueue, Ts...> getSender()
         {
@@ -145,7 +150,7 @@ namespace dory::concurrency::messaging
             std::unique_lock<std::mutex> lock(recieverMutex);
             recieveCondition.wait(lock, [this]
             {
-                return (MessageReciever<TQueue<Ts>, Ts>::checkInbox() || ...);
+                return isMessageRecieved();
             });
 
             return (MessageReciever<TQueue<Ts>, Ts>::notifySubscriber() && ...);

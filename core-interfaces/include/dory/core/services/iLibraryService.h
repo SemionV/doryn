@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <filesystem>
 #include <dory/core/extensionPlatform/iLibrary.h>
 
 namespace dory::core::services

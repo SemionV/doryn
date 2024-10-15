@@ -9,6 +9,8 @@ build/cmake-build-artifacts-clang-clion/
 build/cmake-artifacts-gcc-clion/
 build/cmake-artifacts-ninja-clion-release/
 build/cmake-artifacts-make/
+build/cmake-build-vs-ninja/
+build/cmake-build-clang-ninja/
 build/settings.sh
 /.idea/editor.xml
 /.idea/inspectionProfiles/Project_Default.xml
