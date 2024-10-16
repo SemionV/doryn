@@ -14,16 +14,20 @@ namespace dory::core
 
     struct EventLayer
     {
-        events::mainController::EventHub mainControllerHub;
         events::mainController::EventDispatcher mainControllerDispatcher;
-        events::application::EventHub applicationHub;
+        events::mainController::EventHub& mainControllerHub = mainControllerDispatcher;
+
         events::application::EventDispatcher applicationDispatcher;
-        events::io::EventHub standardIOHub;
+        events::application::EventHub& applicationHub = applicationDispatcher;
+
         events::io::EventDispatcher standardIODispatcher;
-        events::script::EventHub scriptHub;
+        events::io::EventHub& standardIOHub = standardIODispatcher;
+
         events::script::EventDispatcher scriptDispatcher;
-        events::window::EventHub windowHub;
+        events::script::EventHub& scriptHub = scriptDispatcher;
+
         events::window::EventDispatcher windowDispatcher;
+        events::window::EventHub& windowHub = windowDispatcher;
     };
 
     struct ServiceLayer

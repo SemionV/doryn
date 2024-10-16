@@ -15,7 +15,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 
     registry->events.scriptHub.attach(std::function<void(dory::core::resources::DataContext&, const dory::core::events::script::Run&)>{[](dory::core::resources::DataContext& dataContext, const dory::core::events::script::Run& event)
                                       {
-                                          std::cout << "script even is fired\n";
+                                          std::cout << "script event is fired\n";
                                       }});
 
     auto testExtensionLibrary = registry->services.libraryService->load("test extension library", "modules/test-extension");
