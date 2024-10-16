@@ -1,5 +1,6 @@
 #include <extension.h>
 #include <iostream>
+#include <dory/core/registry.h>
 
 namespace dory::game::test_extension
 {
@@ -8,6 +9,9 @@ namespace dory::game::test_extension
         _registry = extensionContext.registry;
 
         std::cout << "dory::game::test_extension::Extension: Attach extension\n";
+
+        auto dataContext = core::resources::DataContext{};
+        extensionContext.registry->events.scriptDispatcher.fire(dataContext, core::events::script::Run{"test-script"});
     }
 
     Extension::~Extension()

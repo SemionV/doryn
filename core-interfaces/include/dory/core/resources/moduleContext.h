@@ -1,9 +1,13 @@
 #pragma once
 
-#include <dory/core/registry.h>
 #include <memory>
 
 namespace dory::core
+{
+    class Registry;
+}
+
+namespace core
 {
     class Registry;
 }
