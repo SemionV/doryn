@@ -3,7 +3,8 @@
 
 namespace dory::core::services
 {
-    std::string FileService::read(const std::filesystem::path &filePath) {
+    std::string FileService::read(const std::filesystem::path &filePath)
+    {
         auto stream = std::ifstream(filePath);
         stream.exceptions(std::ios_base::badbit);
 

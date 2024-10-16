@@ -11,7 +11,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     dory::game::engine::RegistryFactory factory;
 
     auto registry = factory.createRegistry();
-    std::cout << registry->services.fileService->getMessage() << "\n";
+    std::cout << registry->services.getFileService()->getMessage() << "\n";
 
     registry->events.scriptHub->attach([](dory::core::resources::DataContext& dataContext, const dory::core::events::script::Run& event)
         {
@@ -27,6 +27,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
         if(extension)
         {
             extension->attach(dory::core::extensionPlatform::LibraryHandle{testExtensionLibrary }, extensionContext);
+
+            auto fileServiceRef = registry->services.getFileService();
+            if(fileServiceRef)
+            {
+                auto message = fileServiceRef->getMessage();
+                std::cout << message << "\n";
+            }
         }
     }
 
