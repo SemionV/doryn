@@ -23,8 +23,8 @@ namespace dory::core
         events::io::EventDispatcher standardIODispatcher;
         events::io::EventHub& standardIOHub = standardIODispatcher;
 
-        events::script::EventDispatcher scriptDispatcher;
-        events::script::EventHub& scriptHub = scriptDispatcher;
+        std::shared_ptr<events::script::IEventDispatcher> scriptDispatcher;
+        std::shared_ptr<events::script::IEventHub> scriptHub;
 
         events::window::EventDispatcher windowDispatcher;
         events::window::EventHub& windowHub = windowDispatcher;

@@ -16,9 +16,6 @@ namespace dory::core::events
         using EventDispatcher = dory::core::events::EventCannon<EventHub>;
     }
 
-    extern template class dory::core::events::EventHub<resources::DataContext, mainController::EventList>;
-    extern template class dory::core::events::EventCannon<mainController::EventHub>;
-
     namespace application
     {
         struct Exit {};
@@ -27,9 +24,6 @@ namespace dory::core::events
         using EventHub = dory::core::events::EventHub<resources::DataContext, EventList>;
         using EventDispatcher = dory::core::events::EventCannon<EventHub>;
     }
-
-    extern template class dory::core::events::EventHub<resources::DataContext, application::EventList>;
-    extern template class dory::core::events::EventCannon<application::EventHub>;
 
     namespace io
     {
@@ -54,9 +48,6 @@ namespace dory::core::events
         using EventDispatcher = dory::core::events::EventCannon<EventHub>;
     }
 
-    extern template class dory::core::events::EventHub<resources::DataContext, io::EventList>;
-    extern template class dory::core::events::EventCannon<io::EventHub>;
-
     namespace script
     {
         struct Run
@@ -65,13 +56,22 @@ namespace dory::core::events
             const std::map<std::string, std::any> arguments;
         };
 
-        using EventList = generic::TypeList<const Run>;
-        using EventHub = dory::core::events::EventHub<resources::DataContext, EventList>;
-        using EventDispatcher = dory::core::events::EventCannon<EventHub>;
-    }
+        class IEventDispatcher
+        {
+        public:
+            virtual ~IEventDispatcher() = default;
 
-    extern template class dory::core::events::EventHub<resources::DataContext, script::EventList>;
-    extern template class dory::core::events::EventCannon<script::EventHub>;
+            virtual void fire(resources::DataContext& context, const Run& eventData) = 0;
+        };
+
+        class IEventHub
+        {
+        public:
+            virtual ~IEventHub() = default;
+
+            virtual std::size_t attach(std::function<void(resources::DataContext&, const Run&)> handler) = 0;
+        };
+    }
 
     namespace window
     {
@@ -84,7 +84,4 @@ namespace dory::core::events
         using EventHub = dory::core::events::EventHub<resources::DataContext, EventList>;
         using EventDispatcher = dory::core::events::EventCannon<EventHub>;
     }
-
-    extern template class dory::core::events::EventHub<resources::DataContext, window::EventList>;
-    extern template class dory::core::events::EventCannon<window::EventHub>;
 }

@@ -11,7 +11,7 @@ namespace dory::game::test_extension
         std::cout << "dory::game::test_extension::Extension: Attach extension\n";
 
         auto dataContext = core::resources::DataContext{};
-        extensionContext.registry->events.scriptDispatcher.fire(dataContext, core::events::script::Run{"test-script"});
+        extensionContext.registry->events.scriptDispatcher->fire(dataContext, core::events::script::Run{"test-script"});
     }
 
     Extension::~Extension()
