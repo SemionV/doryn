@@ -2,6 +2,10 @@
 
 namespace dory::core::extensionPlatform
 {
+    DynamicLibrary::DynamicLibrary(const std::string &libraryName, const std::filesystem::path &libraryPath)
+            : IDynamicLibrary(libraryName, libraryPath)
+    {}
+
     DynamicLibrary::~DynamicLibrary()
     {
         _modules.clear();
@@ -29,15 +33,22 @@ namespace dory::core::extensionPlatform
         return _isLoaded;
     }
 
-    std::shared_ptr<IExtensionModule> DynamicLibrary::loadExtensionModule(const std::string& moduleName)
+    std::shared_ptr<IModule> DynamicLibrary::loadModule(const std::string& moduleName)
     {
-        auto moduleFactory = _dll.template get<ExtensionModuleFactory>(std::string{ extensionModuleFactoryFunctionName });
-        return loadModule<IExtensionModule>(moduleName, moduleFactory);
-    }
+        if(_modules.contains(moduleName))
+        {
+            _modules.erase(moduleName);
+        }
 
-    std::shared_ptr<IExecutableModule> DynamicLibrary::loadExecutableModule(const std::string& moduleName)
-    {
-        auto moduleFactory = _dll.template get<ExecutableModuleFactory>(std::string{ executableModuleFactoryFunctionName });
-        return loadModule<IExecutableModule>(moduleName, moduleFactory);
+        assert(_dll.is_loaded());
+        auto moduleFactory = _dll.template get<ModuleFactory>(std::string{ moduleFactoryFunctionName });
+        auto module = std::shared_ptr<IModule>{moduleFactory(moduleName)};
+
+        if(module)
+        {
+            _modules[moduleName] = module;
+        }
+
+        return module;
     }
 }

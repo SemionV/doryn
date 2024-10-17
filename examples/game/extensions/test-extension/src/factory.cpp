@@ -16,7 +16,7 @@ void on_unload() {
 
 #define API extern "C" BOOST_SYMBOL_EXPORT
 
-API dory::core::extensionPlatform::IExtensionModule* extensionModuleFactory(const std::string& moduleName)
+API dory::core::extensionPlatform::IModule* moduleFactory(const std::string& moduleName)
 {
     if(moduleName == "test-extension")
     {

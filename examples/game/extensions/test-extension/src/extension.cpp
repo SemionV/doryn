@@ -1,37 +1,33 @@
 #include <extension.h>
 #include <iostream>
-#include <dory/core/registry.h>
 
 namespace dory::game::test_extension
 {
-    class FileService: public core::services::IFileService
+    std::string FileService::read(const std::filesystem::path& filePath)
     {
-    public:
-        std::string read(const std::filesystem::path& filePath) final
-        {
-            return "";
-        }
+        return "";
+    }
 
-        void write(const std::filesystem::path& filePath, const std::string& content) final
-        {
-        }
-
-        std::string getMessage() final
-        {
-            return "Hello from Extension!";
-        }
-    };
-
-    void dory::game::test_extension::Extension::attach(dory::core::extensionPlatform::LibraryHandle library, const dory::core::resources::ExtensionContext& extensionContext)
+    void FileService::write(const std::filesystem::path& filePath, const std::string& content)
     {
-        _registry = &extensionContext.registry;
+    }
+
+    std::string FileService::getMessage()
+    {
+        return "Hello from Extension!";
+    }
+
+    void dory::game::test_extension::Extension::attach(dory::core::extensionPlatform::LibraryHandle library, dory::core::resources::DataContext& dataContext, dory::core::Registry& registry)
+    {
+        _registry = &registry;
+        _dataContext = &dataContext;
 
         std::cout << "dory::game::test_extension::Extension: Attach extension\n";
 
         auto fileService = std::make_shared<FileService>();
         _registry->services.setFileService(library, fileService);
 
-        _registry->events.scriptDispatcher->fire(extensionContext.dataContext, core::events::script::Run{"test-script"});
+        _registry->events.scriptDispatcher->fire(*_dataContext, core::events::script::Run{"test-script"});
     }
 
     Extension::~Extension()

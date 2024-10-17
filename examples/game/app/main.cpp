@@ -23,12 +23,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     auto testExtensionLibrary = registry.services.libraryService->load("test extension library", "modules/test-extension");
     if(testExtensionLibrary)
     {
-        auto extensionContext = dory::core::resources::ExtensionContext{ registry, dataContext };
-
-        auto extension = testExtensionLibrary->loadExtensionModule("test-extension");
+        auto extension = testExtensionLibrary->loadModule("test-extension");
         if(extension)
         {
-            extension->attach(dory::core::extensionPlatform::LibraryHandle{testExtensionLibrary }, extensionContext);
+            extension->attach(dory::core::extensionPlatform::LibraryHandle{testExtensionLibrary }, dataContext, registry);
 
             auto fileServiceRef = registry.services.getFileService();
             if(fileServiceRef)
