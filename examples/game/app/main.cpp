@@ -37,5 +37,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
         }
     }
 
+    registry.services.libraryService->unload("test extension library");
+
     return 0;
 }

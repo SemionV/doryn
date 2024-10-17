@@ -2,23 +2,22 @@
 
 namespace dory::core::services
 {
-    std::shared_ptr<extensionPlatform::ILibrary> LibraryService::load(const std::filesystem::path &libraryName, const std::filesystem::path &libraryPath)
+    std::shared_ptr<extensionPlatform::ILibrary> LibraryService::load(const std::string& libraryName, const std::filesystem::path &libraryPath)
     {
-        const std::string& libraryKey = libraryName.string();
-        if(_libraries.contains(libraryKey))
+        if(_libraries.contains(libraryName))
         {
-            return _libraries[libraryKey];
+            return _libraries[libraryName];
         }
 
-        auto library = std::make_shared<extensionPlatform::DynamicLibrary>(libraryKey, libraryPath);
+        auto library = std::make_shared<extensionPlatform::DynamicLibrary>(libraryName, libraryPath);
         library->load(libraryPath);
 
-        _libraries[libraryKey] = library;
+        _libraries[libraryName] = library;
 
         return library;
     }
 
-    void LibraryService::unload(const std::string &libraryName)
+    void LibraryService::unload(const std::string& libraryName)
     {
         if(_libraries.contains(libraryName))
         {

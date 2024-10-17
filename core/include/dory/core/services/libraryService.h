@@ -12,7 +12,7 @@ namespace dory::core::services
         std::map<std::string, std::shared_ptr<extensionPlatform::IDynamicLibrary>> _libraries;
 
     public:
-        std::shared_ptr<extensionPlatform::ILibrary> load(const std::filesystem::path& libraryName, const std::filesystem::path& libraryPath) override;
+        std::shared_ptr<extensionPlatform::ILibrary> load(const std::string& libraryName, const std::filesystem::path& libraryPath) override;
         void unload(const std::string& libraryName) override;
     };
 }

@@ -32,6 +32,9 @@ namespace dory::core
 
     struct ServiceLayer
     {
+    public:
+        std::shared_ptr<services::ILibraryService> libraryService;
+
     private:
         using FileServiceType = std::shared_ptr<services::IFileService>;
         std::shared_ptr<extensionPlatform::IResourceHandle<FileServiceType>> fileServiceHandle;
@@ -49,11 +52,15 @@ namespace dory::core
 
         extensionPlatform::ResourceRef<FileServiceType> getFileService()
         {
-            return fileServiceHandle->lock();
+            if(fileServiceHandle)
+            {
+                return fileServiceHandle->lock();
+            }
+
+            return extensionPlatform::ResourceRef<FileServiceType>{{}, nullptr};
         }
 
         std::shared_ptr<services::IFileService> fileService;
-        std::shared_ptr<services::ILibraryService> libraryService;
     };
 
     struct Registry

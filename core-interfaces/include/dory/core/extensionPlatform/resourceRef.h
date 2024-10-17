@@ -6,6 +6,24 @@
 namespace dory::core::extensionPlatform
 {
     template<typename TResource>
+    struct ResourcePresentTrait
+    {
+        static bool isResourcePresent(const TResource& resource)
+        {
+            return true;
+        }
+    };
+
+    template<typename T>
+    struct ResourcePresentTrait<std::shared_ptr<T>>
+    {
+        static bool isResourcePresent(const std::shared_ptr<T>& resource)
+        {
+            return static_cast<bool>(resource);
+        }
+    };
+
+    template<typename TResource>
     class ResourceRef
     {
     private:
@@ -18,9 +36,14 @@ namespace dory::core::extensionPlatform
                 _resource(std::move(resource))
         {}
 
-        explicit operator bool()
+        bool isLibraryPresent()
         {
             return (!_library || (bool) *_library);
+        }
+
+        explicit operator bool()
+        {
+            return isLibraryPresent() && ResourcePresentTrait<TResource>::isResourcePresent(_resource);
         }
 
         inline TResource& operator*()
