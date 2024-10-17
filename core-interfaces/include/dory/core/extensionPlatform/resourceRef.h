@@ -57,5 +57,10 @@ namespace dory::core::extensionPlatform
             assert((bool)this);
             return _resource;
         }
+
+        inline bool operator==(const TResource& otherResource)
+        {
+            return otherResource == _resource;
+        }
     };
 }

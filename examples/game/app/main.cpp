@@ -20,24 +20,28 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
             std::cout << "script event is fired\n";
         });
 
-    auto testExtensionLibrary = registry.services.libraryService->load("test extension library", "modules/test-extension");
-    if(testExtensionLibrary)
     {
-        auto extension = testExtensionLibrary->loadModule("test-extension");
-        if(extension)
+        auto testExtensionLibrary = registry.services.libraryService->load("test extension library", "modules/test-extension");
+        if(testExtensionLibrary)
         {
-            extension->attach(dory::core::extensionPlatform::LibraryHandle{testExtensionLibrary }, dataContext, registry);
-
-            auto fileServiceRef = registry.services.getFileService();
-            if(fileServiceRef)
+            auto extension = testExtensionLibrary->loadModule("test-extension");
+            if(extension)
             {
-                auto message = fileServiceRef->getMessage();
-                std::cout << message << "\n";
+                extension->attach(dory::core::extensionPlatform::LibraryHandle{testExtensionLibrary }, dataContext, registry);
+
+                auto fileServiceRef = registry.services.getFileService();
+                if(fileServiceRef)
+                {
+                    auto message = fileServiceRef->getMessage();
+                    std::cout << message << "\n";
+                }
             }
         }
     }
 
     registry.services.libraryService->unload("test extension library");
+
+    std::cout << "End main" << std::endl;
 
     return 0;
 }

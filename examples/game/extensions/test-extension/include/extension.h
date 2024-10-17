@@ -20,6 +20,7 @@ namespace dory::game::test_extension
     private:
         core::Registry* _registry;
         core::resources::DataContext* _dataContext;
+        std::shared_ptr<dory::core::services::IFileService> _fileService;
 
     public:
         ~Extension() override;

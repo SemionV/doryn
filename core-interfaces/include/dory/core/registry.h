@@ -50,6 +50,11 @@ namespace dory::core
             fileServiceHandle = extensionPlatform::makeResourceHandle<FileServiceType>(std::move(fileServices));
         }
 
+        void resetFileService()
+        {
+            fileServiceHandle.reset();
+        }
+
         extensionPlatform::ResourceRef<FileServiceType> getFileService()
         {
             if(fileServiceHandle)
@@ -59,6 +64,7 @@ namespace dory::core
 
             return extensionPlatform::ResourceRef<FileServiceType>{{}, nullptr};
         }
+
 
         std::shared_ptr<services::IFileService> fileService;
     };
