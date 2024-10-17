@@ -8,6 +8,6 @@ namespace dory::game::engine
     class DORY_DLLEXPORT RegistryFactory: public core::IRegistryFactory
     {
     public:
-        core::Registry createRegistry() override;
+        core::Registry createRegistry(const core::extensionPlatform::LibraryHandle& libraryHandle) override;
     };
 }

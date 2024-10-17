@@ -54,7 +54,7 @@ namespace dory::core::extensionPlatform
 
         inline TResource& operator->()
         {
-            assert((bool)this);
+            assert(this->operator bool());
             return _resource;
         }
 

@@ -9,6 +9,6 @@ namespace dory::core
     public:
         virtual ~IRegistryFactory() = default;
 
-        virtual Registry createRegistry() = 0;
+        virtual Registry createRegistry(const extensionPlatform::LibraryHandle& libraryHandle) = 0;
     };
 }

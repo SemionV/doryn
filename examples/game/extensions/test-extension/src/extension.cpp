@@ -25,18 +25,18 @@ namespace dory::game::test_extension
         std::cout << "dory::game::test_extension::Extension: Attach extension\n";
 
         _fileService = std::make_shared<FileService>();
-        _registry->services.setFileService(library, _fileService);
+        _registry->services.setService(library, _fileService);
 
         _registry->events.scriptDispatcher->fire(*_dataContext, core::events::script::Run{"test-script"});
     }
 
     Extension::~Extension()
     {
-        auto fileServiceRef = _registry->services.getFileService();
+        auto fileServiceRef = _registry->services.getService<core::services::IFileService>();
         std::cout.flush();
         if(fileServiceRef == _fileService)
         {
-            _registry->services.resetFileService();
+            _registry->services.resetService<core::services::IFileService>();
         }
         std::cout << "dory::game::test_extension::Extension: Detach extension\n";
     }

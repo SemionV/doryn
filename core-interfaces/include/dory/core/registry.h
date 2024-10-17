@@ -35,69 +35,56 @@ namespace dory::core
     {
     private:
         using ServicePtrType = std::shared_ptr<TService>;
-        std::shared_ptr<extensionPlatform::IResourceHandle<ServicePtrType>> serviceHandle;
+        std::shared_ptr<extensionPlatform::IResourceHandle<ServicePtrType>> _serviceHandle;
 
-    public:
-        void setServiceHandle(extensionPlatform::LibraryHandle libraryHandle, ServicePtrType service)
+    protected:
+        void _setServiceHandle(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TService> service)
         {
-            serviceHandle = extensionPlatform::makeResourceHandle<ServicePtrType>(libraryHandle, std::move(service));
+            _serviceHandle = extensionPlatform::makeResourceHandle<ServicePtrType>(libraryHandle, std::move(service));
         }
 
-        void resetServiceHandle()
+        void _resetServiceHandle()
         {
-            serviceHandle.reset();
+            _serviceHandle.reset();
         }
 
-        auto getServiceReference()
+        auto _getServiceReference()
         {
-            if(serviceHandle)
+            if(_serviceHandle)
             {
-                return serviceHandle->lock();
+                return _serviceHandle->lock();
             }
 
             return extensionPlatform::ResourceRef<ServicePtrType>{{}, nullptr};
         }
     };
 
-    struct ServiceLayer: ServiceHandleController<services::ILibraryService>
+    template<typename... TServices>
+    struct ServiceLayer: public ServiceHandleController<TServices>...
     {
     public:
-        std::shared_ptr<services::ILibraryService> libraryService;
-
-    private:
-        using FileServiceType = std::shared_ptr<services::IFileService>;
-        std::shared_ptr<extensionPlatform::IResourceHandle<FileServiceType>> fileServiceHandle;
-
-    public:
-        void setFileService(extensionPlatform::LibraryHandle libraryHandle, FileServiceType fileService)
+        template<typename TService>
+        void setService(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TService> service)
         {
-            fileServiceHandle = extensionPlatform::makeResourceHandle<FileServiceType>(libraryHandle, std::move(fileService));
+            this->ServiceHandleController<TService>::_setServiceHandle(libraryHandle, service);
         }
 
-        void setFileService(FileServiceType fileService)
+        template<typename TService>
+        void resetService()
         {
-            fileServiceHandle = extensionPlatform::makeResourceHandle<FileServiceType>(std::move(fileService));
+            ServiceHandleController<TService>::_resetServiceHandle();
         }
 
-        void resetFileService()
+        template<typename TService>
+        auto getService()
         {
-            fileServiceHandle.reset();
-        }
-
-        extensionPlatform::ResourceRef<FileServiceType> getFileService()
-        {
-            if(fileServiceHandle)
-            {
-                return fileServiceHandle->lock();
-            }
-
-            return extensionPlatform::ResourceRef<FileServiceType>{{}, nullptr};
+            return ServiceHandleController<TService>::_getServiceReference();;
         }
     };
 
     struct Registry
     {
         EventLayer events;
-        ServiceLayer services;
+        ServiceLayer<services::ILibraryService, services::IFileService> services;
     };
 }
