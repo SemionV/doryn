@@ -7,7 +7,7 @@ namespace dory::game::test_extension
     class Extension: public dory::core::extensionPlatform::IExtensionModule
     {
     private:
-        std::weak_ptr<core::Registry> _registry;
+        core::Registry* _registry;
 
     public:
         ~Extension() override;

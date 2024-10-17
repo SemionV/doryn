@@ -5,14 +5,14 @@
 
 namespace dory::game::engine
 {
-    std::shared_ptr<core::Registry> dory::game::engine::RegistryFactory::createRegistry() {
-        auto registry = std::make_shared<core::Registry>();
-        registry->services.setFileService(std::make_shared<core::services::FileService>());
-        registry->services.libraryService = std::make_shared<core::services::LibraryService>();
+    core::Registry dory::game::engine::RegistryFactory::createRegistry() {
+        auto registry = core::Registry{};
+        registry.services.setFileService(std::make_shared<core::services::FileService>());
+        registry.services.libraryService = std::make_shared<core::services::LibraryService>();
 
         auto scriptEvents = std::make_shared<core::events::script::EventDispatcher>();
-        registry->events.scriptDispatcher = scriptEvents;
-        registry->events.scriptHub = scriptEvents;
+        registry.events.scriptDispatcher = scriptEvents;
+        registry.events.scriptHub = scriptEvents;
 
         return registry;
     }

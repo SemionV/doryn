@@ -11,24 +11,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     dory::game::engine::RegistryFactory factory;
 
     auto registry = factory.createRegistry();
-    std::cout << registry->services.getFileService()->getMessage() << "\n";
+    std::cout << registry.services.getFileService()->getMessage() << "\n";
 
-    registry->events.scriptHub->attach([](dory::core::resources::DataContext& dataContext, const dory::core::events::script::Run& event)
+    auto dataContext = dory::core::resources::DataContext{};
+
+    registry.events.scriptHub->attach([](dory::core::resources::DataContext& dataContext, const dory::core::events::script::Run& event)
         {
             std::cout << "script event is fired\n";
         });
 
-    auto testExtensionLibrary = registry->services.libraryService->load("test extension library", "modules/test-extension");
+    auto testExtensionLibrary = registry.services.libraryService->load("test extension library", "modules/test-extension");
     if(testExtensionLibrary)
     {
-        auto extensionContext = dory::core::resources::ExtensionContext{ registry };
+        auto extensionContext = dory::core::resources::ExtensionContext{ registry, dataContext };
 
         auto extension = testExtensionLibrary->loadExtensionModule("test-extension");
         if(extension)
         {
             extension->attach(dory::core::extensionPlatform::LibraryHandle{testExtensionLibrary }, extensionContext);
 
-            auto fileServiceRef = registry->services.getFileService();
+            auto fileServiceRef = registry.services.getFileService();
             if(fileServiceRef)
             {
                 auto message = fileServiceRef->getMessage();

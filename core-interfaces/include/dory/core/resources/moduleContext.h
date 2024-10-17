@@ -14,9 +14,12 @@ namespace core
 
 namespace dory::core::resources
 {
+    class DataContext;
+
     struct ExtensionContext
     {
-        std::shared_ptr<core::Registry> registry;
+        Registry& registry;
+        DataContext& dataContext;
     };
 
     struct ExecuteContext

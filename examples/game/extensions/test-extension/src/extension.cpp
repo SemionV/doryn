@@ -24,15 +24,14 @@ namespace dory::game::test_extension
 
     void dory::game::test_extension::Extension::attach(dory::core::extensionPlatform::LibraryHandle library, const dory::core::resources::ExtensionContext& extensionContext)
     {
-        _registry = extensionContext.registry;
+        _registry = &extensionContext.registry;
 
         std::cout << "dory::game::test_extension::Extension: Attach extension\n";
 
         auto fileService = std::make_shared<FileService>();
-        extensionContext.registry->services.setFileService(library, fileService);
+        _registry->services.setFileService(library, fileService);
 
-        auto dataContext = core::resources::DataContext{};
-        extensionContext.registry->events.scriptDispatcher->fire(dataContext, core::events::script::Run{"test-script"});
+        _registry->events.scriptDispatcher->fire(extensionContext.dataContext, core::events::script::Run{"test-script"});
     }
 
     Extension::~Extension()
