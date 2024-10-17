@@ -30,7 +30,36 @@ namespace dory::core
         events::window::EventHub& windowHub = windowDispatcher;*/
     };
 
-    struct ServiceLayer
+    template<typename TService>
+    class ServiceHandleController
+    {
+    private:
+        using ServicePtrType = std::shared_ptr<TService>;
+        std::shared_ptr<extensionPlatform::IResourceHandle<ServicePtrType>> serviceHandle;
+
+    public:
+        void setServiceHandle(extensionPlatform::LibraryHandle libraryHandle, ServicePtrType service)
+        {
+            serviceHandle = extensionPlatform::makeResourceHandle<ServicePtrType>(libraryHandle, std::move(service));
+        }
+
+        void resetServiceHandle()
+        {
+            serviceHandle.reset();
+        }
+
+        auto getServiceReference()
+        {
+            if(serviceHandle)
+            {
+                return serviceHandle->lock();
+            }
+
+            return extensionPlatform::ResourceRef<ServicePtrType>{{}, nullptr};
+        }
+    };
+
+    struct ServiceLayer: ServiceHandleController<services::ILibraryService>
     {
     public:
         std::shared_ptr<services::ILibraryService> libraryService;
@@ -40,14 +69,14 @@ namespace dory::core
         std::shared_ptr<extensionPlatform::IResourceHandle<FileServiceType>> fileServiceHandle;
 
     public:
-        void setFileService(extensionPlatform::LibraryHandle libraryHandle, FileServiceType fileServices)
+        void setFileService(extensionPlatform::LibraryHandle libraryHandle, FileServiceType fileService)
         {
-            fileServiceHandle = extensionPlatform::makeResourceHandle<FileServiceType>(libraryHandle, std::move(fileServices));
+            fileServiceHandle = extensionPlatform::makeResourceHandle<FileServiceType>(libraryHandle, std::move(fileService));
         }
 
-        void setFileService(FileServiceType fileServices)
+        void setFileService(FileServiceType fileService)
         {
-            fileServiceHandle = extensionPlatform::makeResourceHandle<FileServiceType>(std::move(fileServices));
+            fileServiceHandle = extensionPlatform::makeResourceHandle<FileServiceType>(std::move(fileService));
         }
 
         void resetFileService()
@@ -64,9 +93,6 @@ namespace dory::core
 
             return extensionPlatform::ResourceRef<FileServiceType>{{}, nullptr};
         }
-
-
-        std::shared_ptr<services::IFileService> fileService;
     };
 
     struct Registry

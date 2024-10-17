@@ -29,26 +29,13 @@ namespace dory::core::extensionPlatform
 
         inline ResourceRef<TResource> lock() final
         {
+            if(_library.isStatic())
+            {
+                return ResourceRef<TResource>{{}, _resource};
+            }
+
             auto library = _library.lock();
             return ResourceRef<TResource>{ library && library->isLoaded() ? library : nullptr, _resource };
-        }
-    };
-
-    template<typename TResource>
-    class StaticResourceHandle: public IResourceHandle<TResource>
-    {
-    private:
-        TResource _resource;
-
-    public:
-        template<typename... Ts>
-        explicit StaticResourceHandle(Ts&&... args):
-                _resource{std::forward<Ts>(args)...}
-        {}
-
-        inline ResourceRef<TResource> lock() final
-        {
-            return ResourceRef<TResource>{{}, _resource };
         }
     };
 
@@ -56,11 +43,5 @@ namespace dory::core::extensionPlatform
     std::shared_ptr<IResourceHandle<TResource>> makeResourceHandle(LibraryHandle& libraryHandle, TResource resource)
     {
         return std::make_shared<dory::core::extensionPlatform::ResourceHandle<TResource>>(libraryHandle, resource);
-    }
-
-    template<typename TResource, typename... Ts>
-    std::shared_ptr<IResourceHandle<TResource>> makeResourceHandle(Ts&&... resourceParameters)
-    {
-        return std::make_shared<StaticResourceHandle<TResource>>(std::forward<Ts>(resourceParameters)...);
     }
 }
