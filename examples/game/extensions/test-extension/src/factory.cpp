@@ -16,11 +16,11 @@ void on_unload() {
 
 #define API extern "C" BOOST_SYMBOL_EXPORT
 
-API dory::core::extensionPlatform::IModule* moduleFactory(const std::string& moduleName)
+API dory::core::extensionPlatform::IModule* moduleFactory(const std::string& moduleName, dory::core::Registry& registry)
 {
     if(moduleName == "test-extension")
     {
-        return new dory::game::test_extension::Extension();
+        return new dory::game::test_extension::Extension(registry);
     }
 
     return nullptr;

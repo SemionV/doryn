@@ -42,6 +42,6 @@ namespace dory::core::extensionPlatform
     template<typename TResource>
     std::shared_ptr<IResourceHandle<TResource>> makeResourceHandle(LibraryHandle& libraryHandle, TResource resource)
     {
-        return std::make_shared<dory::core::extensionPlatform::ResourceHandle<TResource>>(libraryHandle, resource);
+        return std::make_shared<ResourceHandle<TResource>>(libraryHandle, resource);
     }
 }

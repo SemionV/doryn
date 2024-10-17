@@ -1,6 +1,7 @@
 #pragma once
 
 #include <dory/core/extensionPlatform/iModule.h>
+#include <dory/core/extensionPlatform/registryResourceScope.h>
 #include <dory/core/registry.h>
 
 namespace dory::game::test_extension
@@ -18,13 +19,14 @@ namespace dory::game::test_extension
     class Extension: public dory::core::extensionPlatform::IModule
     {
     private:
-        core::Registry* _registry;
-        core::resources::DataContext* _dataContext;
-        std::shared_ptr<dory::core::services::IFileService> _fileService;
+        core::Registry& _registry;
+        core::extensionPlatform::RegistryResourceScope<dory::core::services::IFileService> _fileService;
 
     public:
+        explicit Extension(core::Registry& registry);
+
         ~Extension() override;
 
-        void attach(dory::core::extensionPlatform::LibraryHandle library, dory::core::resources::DataContext& dataContext, dory::core::Registry& registry) final;
+        void attach(dory::core::extensionPlatform::LibraryHandle library, dory::core::resources::DataContext& dataContext) final;
     };
 }

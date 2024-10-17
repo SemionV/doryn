@@ -31,24 +31,24 @@ namespace dory::core
     };
 
     template<typename TService>
-    class ServiceHandleController
+    class ResourceHandleController
     {
     private:
         using ServicePtrType = std::shared_ptr<TService>;
         std::shared_ptr<extensionPlatform::IResourceHandle<ServicePtrType>> _serviceHandle;
 
     protected:
-        void _setServiceHandle(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TService> service)
+        void _set(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TService> service)
         {
             _serviceHandle = extensionPlatform::makeResourceHandle<ServicePtrType>(libraryHandle, std::move(service));
         }
 
-        void _resetServiceHandle()
+        void _reset()
         {
             _serviceHandle.reset();
         }
 
-        auto _getServiceReference()
+        auto _get()
         {
             if(_serviceHandle)
             {
@@ -60,31 +60,30 @@ namespace dory::core
     };
 
     template<typename... TServices>
-    struct ServiceLayer: public ServiceHandleController<TServices>...
+    struct RegistryLayer: public ResourceHandleController<TServices>...
     {
     public:
         template<typename TService>
-        void setService(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TService> service)
+        void set(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TService> service)
         {
-            this->ServiceHandleController<TService>::_setServiceHandle(libraryHandle, service);
+            this->ResourceHandleController<TService>::_set(libraryHandle, service);
         }
 
         template<typename TService>
-        void resetService()
+        void reset()
         {
-            ServiceHandleController<TService>::_resetServiceHandle();
+            ResourceHandleController<TService>::_reset();
         }
 
         template<typename TService>
-        auto getService()
+        auto get()
         {
-            return ServiceHandleController<TService>::_getServiceReference();;
+            return ResourceHandleController<TService>::_get();;
         }
     };
 
-    struct Registry
+    struct Registry: RegistryLayer<services::ILibraryService, services::IFileService>
     {
         EventLayer events;
-        ServiceLayer<services::ILibraryService, services::IFileService> services;
     };
 }

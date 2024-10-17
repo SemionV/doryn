@@ -1,4 +1,4 @@
-#include "dory/game/engine/registryFactory.h"
+#include "dory/game/engine/setup.h"
 #include <iostream>
 
 #ifdef DORY_MAIN_FUNCTION_UNIX
@@ -8,13 +8,20 @@ int main()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 #endif
 {
-    dory::game::engine::RegistryFactory factory;
+    dory::game::engine::Setup setup;
     dory::core::extensionPlatform::LibraryHandle staticLibraryHandle {};
-
-    auto registry = factory.createRegistry(staticLibraryHandle);
-    std::cout << registry.services.getService<dory::core::services::IFileService>()->getMessage() << "\n";
-
+    auto registry = dory::core::Registry{};
     auto dataContext = dory::core::resources::DataContext{};
+
+    setup.setupRegistry(staticLibraryHandle, registry);
+
+    {
+        auto fileService = registry.get<dory::core::services::IFileService>();
+        if(fileService)
+        {
+            std::cout << fileService->getMessage() << "\n";
+        }
+    }
 
     registry.events.scriptHub->attach([](dory::core::resources::DataContext& dataContext, const dory::core::events::script::Run& event)
         {
@@ -22,21 +29,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
         });
 
     {
-        auto libraryService = registry.services.getService<dory::core::services::ILibraryService>();
+        auto libraryService = registry.get<dory::core::services::ILibraryService>();
         if(libraryService)
         {
             auto testExtensionLibrary = libraryService->load("test extension library", "modules/test-extension");
             if(testExtensionLibrary)
             {
-                auto extension = testExtensionLibrary->loadModule("test-extension");
+                auto extension = testExtensionLibrary->loadModule("test-extension", registry);
                 if(extension)
                 {
-                    extension->attach(dory::core::extensionPlatform::LibraryHandle{testExtensionLibrary }, dataContext, registry);
+                    extension->attach(dory::core::extensionPlatform::LibraryHandle{testExtensionLibrary }, dataContext);
 
-                    auto fileServiceRef = registry.services.getService<dory::core::services::IFileService>();
-                    if(fileServiceRef)
+                    auto fileService = registry.get<dory::core::services::IFileService>();
+                    if(fileService)
                     {
-                        auto message = fileServiceRef->getMessage();
+                        auto message = fileService->getMessage();
                         std::cout << message << "\n";
                     }
                 }
@@ -44,10 +51,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
         }
     }
 
-    auto libraryService = registry.services.getService<dory::core::services::ILibraryService>();
-    if(libraryService)
     {
-        libraryService->unload("test extension library");
+        auto libraryService = registry.get<dory::core::services::ILibraryService>();
+        if(libraryService)
+        {
+            libraryService->unload("test extension library");
+        }
     }
 
     std::cout << "End main" << std::endl;

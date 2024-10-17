@@ -33,7 +33,7 @@ namespace dory::core::extensionPlatform
         return _isLoaded;
     }
 
-    std::shared_ptr<IModule> DynamicLibrary::loadModule(const std::string& moduleName)
+    std::shared_ptr<IModule> DynamicLibrary::loadModule(const std::string& moduleName, Registry& registry)
     {
         if(_modules.contains(moduleName))
         {
@@ -42,7 +42,7 @@ namespace dory::core::extensionPlatform
 
         assert(_dll.is_loaded());
         auto moduleFactory = _dll.template get<ModuleFactory>(std::string{ moduleFactoryFunctionName });
-        auto module = std::shared_ptr<IModule>{moduleFactory(moduleName)};
+        auto module = std::shared_ptr<IModule>{moduleFactory(moduleName, registry)};
 
         if(module)
         {

@@ -1,6 +1,6 @@
 set(DORY_MODULE_NAME ${PROJECT_NAME}-engine)
 
-add_library(${DORY_MODULE_NAME} SHARED src/registryFactory.cpp)
+add_library(${DORY_MODULE_NAME} SHARED src/setup.cpp)
 
 set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""
         IMPORT_PREFIX ""

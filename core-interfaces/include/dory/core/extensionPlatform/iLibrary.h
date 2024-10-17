@@ -7,6 +7,11 @@
 
 namespace dory::core::extensionPlatform
 {
+    namespace dory::core
+    {
+        class Registry;
+    }
+
     class ILibrary
     {
     public:
@@ -29,6 +34,6 @@ namespace dory::core::extensionPlatform
         {}
 
         virtual bool isLoaded() = 0;
-        virtual std::shared_ptr<IModule> loadModule(const std::string& moduleName) = 0;
+        virtual std::shared_ptr<IModule> loadModule(const std::string& moduleName, Registry& registry) = 0;
     };
 }

@@ -19,6 +19,6 @@ namespace dory::core::extensionPlatform
     public:
         virtual ~IModule() = default;
 
-        virtual void attach(LibraryHandle library, resources::DataContext& dataContext, Registry& registry) = 0;
+        virtual void attach(LibraryHandle library, resources::DataContext& dataContext) = 0;
     };
 }

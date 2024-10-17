@@ -17,27 +17,22 @@ namespace dory::game::test_extension
         return "Hello from Extension!";
     }
 
-    void dory::game::test_extension::Extension::attach(dory::core::extensionPlatform::LibraryHandle library, dory::core::resources::DataContext& dataContext, dory::core::Registry& registry)
+    void dory::game::test_extension::Extension::attach(dory::core::extensionPlatform::LibraryHandle library, dory::core::resources::DataContext& dataContext)
     {
-        _registry = &registry;
-        _dataContext = &dataContext;
-
         std::cout << "dory::game::test_extension::Extension: Attach extension\n";
 
-        _fileService = std::make_shared<FileService>();
-        _registry->services.setService(library, _fileService);
+        _registry.set<core::services::IFileService>(library, _fileService.get());
 
-        _registry->events.scriptDispatcher->fire(*_dataContext, core::events::script::Run{"test-script"});
+        _registry.events.scriptDispatcher->fire(dataContext, core::events::script::Run{"test-script"});
     }
+
+    Extension::Extension(core::Registry &registry):
+        _registry(registry),
+        _fileService(registry, std::make_shared<FileService>())
+    {}
 
     Extension::~Extension()
     {
-        auto fileServiceRef = _registry->services.getService<core::services::IFileService>();
-        std::cout.flush();
-        if(fileServiceRef == _fileService)
-        {
-            _registry->services.resetService<core::services::IFileService>();
-        }
         std::cout << "dory::game::test_extension::Extension: Detach extension\n";
     }
 }

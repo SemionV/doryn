@@ -10,7 +10,7 @@ namespace dory::core::extensionPlatform
     {
     private:
         constexpr const static std::string_view moduleFactoryFunctionName = "moduleFactory";
-        using ModuleFactory = IModule*(const std::string& moduleName);
+        using ModuleFactory = IModule*(const std::string& moduleName, Registry& registry);
 
         std::atomic<bool> _isLoaded = false;
         boost::dll::shared_library _dll;
@@ -23,6 +23,6 @@ namespace dory::core::extensionPlatform
         void load(const std::filesystem::path& libraryPath) override;
         void unload() override;
         bool isLoaded() override;
-        std::shared_ptr<IModule> loadModule(const std::string& moduleName) override;
+        std::shared_ptr<IModule> loadModule(const std::string& moduleName, Registry& registry) override;
     };
 }
