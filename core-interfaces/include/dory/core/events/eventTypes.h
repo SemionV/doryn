@@ -11,18 +11,44 @@ namespace dory::core::events
         struct Initialize {};
         struct Stop {};
 
-        using EventList = generic::TypeList<const Initialize, const Stop>;
-        using EventHub = dory::core::events::EventHub<resources::DataContext, EventList>;
-        using EventDispatcher = dory::core::events::EventCannon<EventHub>;
+        class IEventDispatcher
+        {
+        public:
+            virtual ~IEventDispatcher() = default;
+
+            virtual void fire(resources::DataContext& context, const Initialize& eventData) = 0;
+            virtual void fire(resources::DataContext& context, const Stop& eventData) = 0;
+        };
+
+        class IEventHub
+        {
+        public:
+            virtual ~IEventHub() = default;
+
+            virtual std::size_t attach(std::function<void(resources::DataContext&, const Initialize&)> handler) = 0;
+            virtual std::size_t attach(std::function<void(resources::DataContext&, const Stop&)> handler) = 0;
+        };
     }
 
     namespace application
     {
         struct Exit {};
 
-        using EventList = generic::TypeList<const Exit>;
-        using EventHub = dory::core::events::EventHub<resources::DataContext, EventList>;
-        using EventDispatcher = dory::core::events::EventCannon<EventHub>;
+        class IEventDispatcher
+        {
+        public:
+            virtual ~IEventDispatcher() = default;
+
+            virtual void fire(resources::DataContext& context, const Exit& eventData) = 0;
+        };
+
+        class IEventHub
+        {
+        public:
+            virtual ~IEventHub() = default;
+
+            virtual std::size_t attach(std::function<void(resources::DataContext&, const Exit&)> handler) = 0;
+        };
     }
 
     namespace io
@@ -43,9 +69,21 @@ namespace dory::core::events
             int character = 0;
         };
 
-        using EventList = generic::TypeList<const KeyPressEvent>;
-        using EventHub = dory::core::events::EventHub<resources::DataContext, EventList>;
-        using EventDispatcher = dory::core::events::EventCannon<EventHub>;
+        class IEventDispatcher
+        {
+        public:
+            virtual ~IEventDispatcher() = default;
+
+            virtual void fire(resources::DataContext& context, const KeyCode& eventData) = 0;
+        };
+
+        class IEventHub
+        {
+        public:
+            virtual ~IEventHub() = default;
+
+            virtual std::size_t attach(std::function<void(resources::DataContext&, const KeyCode&)> handler) = 0;
+        };
     }
 
     namespace script
@@ -80,8 +118,20 @@ namespace dory::core::events
             int windowId;
         };
 
-        using EventList = generic::TypeList<const Close>;
-        using EventHub = dory::core::events::EventHub<resources::DataContext, EventList>;
-        using EventDispatcher = dory::core::events::EventCannon<EventHub>;
+        class IEventDispatcher
+        {
+        public:
+            virtual ~IEventDispatcher() = default;
+
+            virtual void fire(resources::DataContext& context, const Close& eventData) = 0;
+        };
+
+        class IEventHub
+        {
+        public:
+            virtual ~IEventHub() = default;
+
+            virtual std::size_t attach(std::function<void(resources::DataContext&, const Close&)> handler) = 0;
+        };
     }
 }

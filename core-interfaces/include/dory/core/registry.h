@@ -13,24 +13,6 @@ namespace dory::core
         class ILibraryService;
     }
 
-    struct EventLayer
-    {
-        /*events::mainController::EventDispatcher mainControllerDispatcher;
-        events::mainController::EventHub& mainControllerHub = mainControllerDispatcher;
-
-        events::application::EventDispatcher applicationDispatcher;
-        events::application::EventHub& applicationHub = applicationDispatcher;
-
-        events::io::EventDispatcher standardIODispatcher;
-        events::io::EventHub& standardIOHub = standardIODispatcher;*/
-
-        std::shared_ptr<events::script::IEventDispatcher> scriptDispatcher;
-        std::shared_ptr<events::script::IEventHub> scriptHub;
-
-        /*events::window::EventDispatcher windowDispatcher;
-        events::window::EventHub& windowHub = windowDispatcher;*/
-    };
-
     template<typename TService>
     class ResourceHandleController
     {
@@ -85,7 +67,15 @@ namespace dory::core
 
     struct Registry: RegistryLayer<services::ILibraryService,
             services::IFileService,
+            events::mainController::IEventDispatcher,
+            events::mainController::IEventHub,
+            events::application::IEventDispatcher,
+            events::application::IEventHub,
+            events::io::IEventDispatcher,
+            events::io::IEventHub,
             events::script::IEventDispatcher,
-            events::script::IEventHub>
+            events::script::IEventHub,
+            events::window::IEventDispatcher,
+            events::window::IEventHub>
     {};
 }
