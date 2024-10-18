@@ -75,7 +75,7 @@ namespace dory::core::events
     protected:
         std::map<KeyType, std::shared_ptr<Callable<Ts...>>> handlers;
         //TODO: if the event used concurrently, it can lead to data race
-        std::unordered_map<KeyType, std::shared_ptr<extensionPlatform::IResourceHandle<HandlerType>>> _handlers;
+        std::unordered_map<KeyType, std::shared_ptr<extensionPlatform::ResourceHandle<HandlerType>>> _handlers;
 
     public:
         template<typename F>
@@ -108,7 +108,7 @@ namespace dory::core::events
             return attachMemberFunction(instance, memberFunction);
         }
 
-        KeyType attachHandlerLib(std::shared_ptr<extensionPlatform::IResourceHandle<HandlerType>> handler)
+        KeyType attachHandlerLib(std::shared_ptr<extensionPlatform::ResourceHandle<HandlerType>> handler)
         {
             KeyType key = getNewKey();
             _handlers[key] = handler;
@@ -171,7 +171,7 @@ namespace dory::core::events
             {
                 auto expiredHandles = std::vector<EventKeyType>{};
 
-                for (std::pair<const EventKeyType, std::shared_ptr<extensionPlatform::IResourceHandle<HandlerType>>>& handlerPair: this->_handlers) {
+                for (std::pair<const EventKeyType, std::shared_ptr<extensionPlatform::ResourceHandle<HandlerType>>>& handlerPair: this->_handlers) {
                     auto resourceRef = handlerPair.second->lock();
                     if(resourceRef) {
                         (*resourceRef)(arguments...);

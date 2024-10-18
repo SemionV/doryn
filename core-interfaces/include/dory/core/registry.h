@@ -19,7 +19,7 @@ namespace dory::core
     {
     private:
         using ServicePtrType = std::shared_ptr<TService>;
-        std::shared_ptr<extensionPlatform::IResourceHandle<ServicePtrType>> _serviceHandle;
+        std::shared_ptr<extensionPlatform::ResourceHandle<ServicePtrType>> _serviceHandle;
 
     protected:
         void _set(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TService> service)

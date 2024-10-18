@@ -6,16 +6,7 @@
 namespace dory::core::extensionPlatform
 {
     template<typename TResource>
-    class IResourceHandle
-    {
-    public:
-        virtual ~IResourceHandle() = default;
-
-        virtual ResourceRef<TResource> lock() = 0;
-    };
-
-    template<typename TResource>
-    class ResourceHandle: public IResourceHandle<TResource>
+    class ResourceHandle
     {
     private:
         TResource _resource;
@@ -27,7 +18,7 @@ namespace dory::core::extensionPlatform
                 _resource(resource)
         {}
 
-        inline ResourceRef<TResource> lock() final
+        ResourceRef<TResource> lock()
         {
             if(_library.isStatic())
             {
@@ -40,7 +31,7 @@ namespace dory::core::extensionPlatform
     };
 
     template<typename TResource>
-    std::shared_ptr<IResourceHandle<TResource>> makeResourceHandle(LibraryHandle& libraryHandle, TResource resource)
+    std::shared_ptr<ResourceHandle<TResource>> makeResourceHandle(LibraryHandle& libraryHandle, TResource resource)
     {
         return std::make_shared<ResourceHandle<TResource>>(libraryHandle, resource);
     }
