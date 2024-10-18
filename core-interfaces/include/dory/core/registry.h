@@ -4,6 +4,7 @@
 #include "services/iFileService.h"
 #include "services/iLibraryService.h"
 #include "events/eventTypes.h"
+#include "generic/typeTraits.h"
 
 namespace dory::core
 {
@@ -63,10 +64,10 @@ namespace dory::core
     struct RegistryLayer: public ResourceHandleController<TServices>...
     {
     public:
-        template<typename TService>
-        void set(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TService> service)
+        template<typename... TInterfaces, typename TImplementation = generic::FirstTypeT<TInterfaces...>>
+        void set(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TImplementation> service)
         {
-            this->ResourceHandleController<TService>::_set(libraryHandle, service);
+            (this->ResourceHandleController<TInterfaces>::_set(libraryHandle, service), ...);
         }
 
         template<typename TService>
@@ -82,8 +83,9 @@ namespace dory::core
         }
     };
 
-    struct Registry: RegistryLayer<services::ILibraryService, services::IFileService>
-    {
-        EventLayer events;
-    };
+    struct Registry: RegistryLayer<services::ILibraryService,
+            services::IFileService,
+            events::script::IEventDispatcher,
+            events::script::IEventHub>
+    {};
 }

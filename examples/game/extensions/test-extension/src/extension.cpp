@@ -23,7 +23,11 @@ namespace dory::game::test_extension
 
         _registry.set<core::services::IFileService>(library, _fileService.get());
 
-        _registry.events.scriptDispatcher->fire(dataContext, core::events::script::Run{"test-script"});
+        auto dispatcher = _registry.get<dory::core::events::script::IEventDispatcher>();
+        if(dispatcher)
+        {
+            dispatcher->fire(dataContext, core::events::script::Run{"test-script"});
+        }
     }
 
     Extension::Extension(core::Registry &registry):

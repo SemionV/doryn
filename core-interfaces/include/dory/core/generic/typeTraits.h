@@ -104,6 +104,24 @@ namespace dory::core::generic
         static size_t const size = N;
     };
 
+    template<typename... Ts>
+    struct FirstType;
+
+    template<typename T, typename... Ts>
+    struct FirstType<T, Ts...>
+    {
+        using Type = T;
+    };
+
+    template<>
+    struct FirstType<>
+    {
+        using Type = void;
+    };
+
+    template<typename... Ts>
+    using FirstTypeT = FirstType<Ts...>::Type;
+
     template<class T>
     struct CollectionValueType;
 

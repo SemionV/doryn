@@ -23,10 +23,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
         }
     }
 
-    registry.events.scriptHub->attach([](dory::core::resources::DataContext& dataContext, const dory::core::events::script::Run& event)
+    {
+        auto eventHub = registry.get<dory::core::events::script::IEventHub>();
+        if(eventHub)
         {
-            std::cout << "script event is fired\n";
-        });
+            eventHub->attach([](dory::core::resources::DataContext& dataContext, const dory::core::events::script::Run& event)
+                {
+                    std::cout << "script event is fired\n";
+                });
+        }
+    }
 
     {
         auto libraryService = registry.get<dory::core::services::ILibraryService>();
