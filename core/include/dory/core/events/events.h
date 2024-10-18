@@ -1,8 +1,8 @@
 #pragma once
 
-#include "typeTraits.h"
-#include "typeList.h"
-#include <dory/core/extensionPlatform/resourceHandle.h>
+#include "dory/core/generic/typeTraits.h"
+#include "dory/core/generic/typeList.h"
+#include "dory/core/extensionPlatform/resourceHandle.h"
 #include <mutex>
 #include <functional>
 
@@ -301,7 +301,7 @@ namespace dory::core::events
 
     template<class TDataContext, typename... TEvents>
     class EventCannonBuffer<EventHub<TDataContext, TEvents...>>: public EventBufferController<TDataContext, TEvents>...,
-                                                                 public EventHub<TDataContext, TEvents...>
+                                                                 public EventHub<TDataContext, generic::TypeList<TEvents...>>
     {
     public:
         template<typename TEvent>
@@ -315,4 +315,8 @@ namespace dory::core::events
             (EventBufferController<TDataContext, TEvents>::eventBuffer.submitCases(this->template getDispatcher<TEvents>(), context), ...);
         }
     };
+
+    template<typename TDataContext, typename... TEvents>
+    class EventCannonBuffer<EventHub<TDataContext, generic::TypeList<TEvents...>>>: public EventCannonBuffer<EventHub<TDataContext, TEvents...>>
+    {};
 }

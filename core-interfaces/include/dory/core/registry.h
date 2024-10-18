@@ -5,6 +5,7 @@
 #include "services/iLibraryService.h"
 #include "events/eventTypes.h"
 #include "generic/typeTraits.h"
+#include <dory/core/extensionPlatform/resourceHandle.h>
 
 namespace dory::core
 {
@@ -67,6 +68,7 @@ namespace dory::core
 
     struct Registry: RegistryLayer<services::ILibraryService,
             services::IFileService,
+            /*Events*/
             events::mainController::IEventDispatcher,
             events::mainController::IEventHub,
             events::application::IEventDispatcher,

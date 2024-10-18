@@ -1,7 +1,9 @@
 #pragma once
 
 #include <any>
-#include <dory/core/generic/events.h>
+#include <functional>
+#include <map>
+#include <string>
 #include <dory/core/resources/dataContext.h>
 
 namespace dory::core::events
@@ -74,7 +76,8 @@ namespace dory::core::events
         public:
             virtual ~IEventDispatcher() = default;
 
-            virtual void fire(resources::DataContext& context, const KeyCode& eventData) = 0;
+            virtual void fireAll(resources::DataContext& context) = 0;
+            virtual void charge(KeyPressEvent eventData) = 0;
         };
 
         class IEventHub
@@ -82,7 +85,7 @@ namespace dory::core::events
         public:
             virtual ~IEventHub() = default;
 
-            virtual std::size_t attach(std::function<void(resources::DataContext&, const KeyCode&)> handler) = 0;
+            virtual std::size_t attach(std::function<void(resources::DataContext&, KeyPressEvent&)> handler) = 0;
         };
     }
 
