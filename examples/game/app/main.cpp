@@ -74,6 +74,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
         }
     }
 
+    {
+        auto ioDevice = registry.get<dory::core::devices::IStandardIODevice>();
+        if(ioDevice)
+        {
+            ioDevice->disconnect(dataContext);
+        }
+    }
+
     std::cout << "End main" << std::endl;
 
     return 0;

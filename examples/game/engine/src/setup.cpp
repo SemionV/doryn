@@ -7,8 +7,13 @@
 #include <dory/core/events/scriptEvents.h>
 #include <dory/core/events/windowEvents.h>
 
-
+#ifdef DORY_PLATFORM_LINUX
 #include <dory/core/devices/standardIoDeviceUnix.h>
+#endif
+
+#ifdef DORY_PLATFORM_WIN32
+#include <dory/core/devices/standardIoDeviceWin32.h>
+#endif
 
 namespace dory::game::engine
 {
