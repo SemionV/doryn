@@ -7,6 +7,9 @@
 #include <dory/core/events/scriptEvents.h>
 #include <dory/core/events/windowEvents.h>
 
+
+#include <dory/core/devices/standardIoDeviceUnix.h>
+
 namespace dory::game::engine
 {
     void dory::game::engine::Setup::setupRegistry(const core::extensionPlatform::LibraryHandle& libraryHandle, core::Registry& registry)
@@ -28,5 +31,11 @@ namespace dory::game::engine
 
         registry.set<core::events::window::IEventDispatcher, core::events::window::IEventHub>(libraryHandle,
                 std::make_shared<core::events::window::EventDispatcher>());
+
+        auto ioEventDispatcher = registry.get<core::events::io::IEventDispatcher>();
+        if(ioEventDispatcher)
+        {
+            registry.set<core::devices::IStandardIODevice>(libraryHandle, std::make_shared<core::devices::StandardIODevice>(*ioEventDispatcher));
+        }
     }
 }

@@ -16,6 +16,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     setup.setupRegistry(staticLibraryHandle, registry);
 
     {
+        auto ioDevice = registry.get<dory::core::devices::IStandardIODevice>();
+        if(ioDevice)
+        {
+            ioDevice->connect(dataContext);
+            ioDevice->out("Hello from IODevice!\n");
+        }
+    }
+
+    {
         auto fileService = registry.get<dory::core::services::IFileService>();
         if(fileService)
         {

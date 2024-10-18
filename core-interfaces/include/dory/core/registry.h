@@ -6,6 +6,7 @@
 #include "events/eventTypes.h"
 #include "generic/typeTraits.h"
 #include <dory/core/extensionPlatform/resourceHandle.h>
+#include <dory/core/devices/iStandardIODevice.h>
 
 namespace dory::core
 {
@@ -78,6 +79,8 @@ namespace dory::core
             events::script::IEventDispatcher,
             events::script::IEventHub,
             events::window::IEventDispatcher,
-            events::window::IEventHub>
+            events::window::IEventHub,
+            /*Devices*/
+            devices::IStandardIODevice>
     {};
 }
