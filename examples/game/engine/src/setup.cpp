@@ -22,7 +22,7 @@ namespace dory::game::engine
         registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
         registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>());
 
-        registry.set<core::events::mainController::IEventDispatcher, core::events::mainController::IEventHub>(libraryHandle,
+        registry.set<core::events::mainController::IDispatcher, core::events::mainController::IListener>(libraryHandle,
                 std::make_shared<core::events::mainController::EventDispatcher>());
 
         registry.set<core::events::application::IEventDispatcher, core::events::application::IEventHub>(libraryHandle,

@@ -70,8 +70,8 @@ namespace dory::core
     struct Registry: RegistryLayer<services::ILibraryService,
             services::IFileService,
             /*Events*/
-            events::mainController::IEventDispatcher,
-            events::mainController::IEventHub,
+            events::mainController::IDispatcher,
+            events::mainController::IListener,
             events::application::IEventDispatcher,
             events::application::IEventHub,
             events::io::IEventDispatcher,

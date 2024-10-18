@@ -325,4 +325,46 @@ namespace dory::core::events
     template<typename TDataContext, typename... TEvents>
     class EventCannonBuffer<EventHub<TDataContext, generic::TypeList<TEvents...>>>: public EventCannonBuffer<EventHub<TDataContext, TEvents...>>
     {};
+
+    template<typename TInterface, typename TEventList>
+    class EventDispatcherImpl;
+
+    template<typename TInterface, typename TEvent, typename... TEvents>
+    class EventDispatcherImpl<TInterface, generic::TypeList<TEvent, TEvents...>>: public EventDispatcherImpl<TInterface, generic::TypeList<TEvents...>>
+    {
+    private:
+        EventDispatcher<resources::DataContext&, TEvent&> _dispatcher;
+
+    public:
+        void fire(resources::DataContext& context, TEvent& eventData) final
+        {
+            _dispatcher(context, eventData);
+        }
+    };
+
+    template<typename TInterface>
+    class EventDispatcherImpl<TInterface, generic::TypeList<>>: public TInterface
+    {
+    };
+
+    template<typename TInterface, typename TEventList>
+    class EventListenerImpl;
+
+    template<typename TInterface, typename TEvent, typename... TEvents>
+    class EventListenerImpl<TInterface, generic::TypeList<TEvent, TEvents...>>: public EventListenerImpl<TInterface, generic::TypeList<TEvents...>>
+    {
+    private:
+        EventDispatcher<resources::DataContext&, TEvent&> _dispatcher;
+
+    public:
+        std::size_t attach(std::function<void(resources::DataContext&, TEvent&)> handler) final
+        {
+            return _dispatcher.attachHandler(handler);
+        }
+    };
+
+    template<typename TInterface>
+    class EventListenerImpl<TInterface, generic::TypeList<>>: public TInterface
+    {
+    };
 }
