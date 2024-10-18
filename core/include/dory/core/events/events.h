@@ -152,7 +152,7 @@ namespace dory::core::events
     template<class... Ts>
     class EventDispatcher: public Event<Ts...>
     {
-    private:
+    public:
         using EventKeyType = Event<Ts...>::KeyType;
         using HandlerType = Event<Ts...>::HandlerType;
 
@@ -259,6 +259,12 @@ namespace dory::core::events
         auto attach(std::function<void(TDataContext&, TEvent&)>&& predicate)
         {
             return getDispatcher<TEvent>().attachHandler(std::move(predicate));
+        }
+
+        template<typename TEvent>
+        void detach(EventController<TDataContext, TEvent>::EventKeyType handlerKey)
+        {
+            getDispatcher<TEvent>().detachHandler(handlerKey);
         }
     };
 

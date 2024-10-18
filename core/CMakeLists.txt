@@ -16,7 +16,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/events/ioEvents.cpp
         src/events/scriptEvents.cpp
         src/events/windowEvents.cpp
-        src/devices/standardIoDeviceUnix.cpp
+        src/devices/terminalDevice.cpp
         src/extensionPlatform/dynamicLibrary.cpp
         ${DORY_PLATFORM_MODULES})
 target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
