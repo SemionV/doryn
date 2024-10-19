@@ -69,7 +69,7 @@ namespace dory::core::devices
 
     void TerminalDevice::connect(resources::DataContext& context)
     {
-        auto inputEventHub = _registry.get<events::io::IEventHub>();
+        auto inputEventHub = _registry.get<events::io::Bundle::IListener>();
         if(inputEventHub)
         {
             _inputListenerId = inputEventHub->attach([this](resources::DataContext& context, events::io::KeyPressEvent& event)
@@ -81,7 +81,7 @@ namespace dory::core::devices
 
     void TerminalDevice::disconnect(resources::DataContext& context)
     {
-        auto inputEventHub = _registry.get<events::io::IEventHub>();
+        auto inputEventHub = _registry.get<events::io::Bundle::IListener>();
         if(inputEventHub)
         {
             /*inputEventHub->detach(_inputListenerId);

@@ -70,16 +70,16 @@ namespace dory::core
     struct Registry: RegistryLayer<services::ILibraryService,
             services::IFileService,
             /*Events*/
-            events::mainController::IDispatcher,
-            events::mainController::IListener,
-            events::application::IEventDispatcher,
-            events::application::IEventHub,
-            events::io::IEventDispatcher,
-            events::io::IEventHub,
-            events::script::IEventDispatcher,
-            events::script::IEventHub,
-            events::window::IEventDispatcher,
-            events::window::IEventHub,
+            events::mainController::Bundle::IDispatcher,
+            events::mainController::Bundle::IListener,
+            events::application::Bundle::IDispatcher,
+            events::application::Bundle::IListener,
+            events::io::Bundle::IDispatcher,
+            events::io::Bundle::IListener,
+            events::script::Bundle::IDispatcher,
+            events::script::Bundle::IListener,
+            events::window::Bundle::IDispatcher,
+            events::window::Bundle::IListener,
             /*Devices*/
             devices::IStandardIODevice>
     {};

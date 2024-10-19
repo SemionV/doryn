@@ -11,9 +11,6 @@ endif()
 add_library(${DORY_MODULE_NAME} STATIC
         src/services/fileService.cpp
         src/services/libraryService.cpp
-        src/events/applicationEvents.cpp
-        src/events/ioEvents.cpp
-        src/events/windowEvents.cpp
         src/devices/terminalDevice.cpp
         src/extensionPlatform/dynamicLibrary.cpp
         ${DORY_PLATFORM_MODULES})

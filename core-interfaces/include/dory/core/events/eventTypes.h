@@ -6,72 +6,23 @@
 #include <string>
 #include <dory/core/resources/dataContext.h>
 #include <dory/core/generic/typeList.h>
+#include <dory/core/generic/events.h>
 
 namespace dory::core::events
 {
-    template<typename TEvent>
-    class IEventListener
-    {
-        virtual std::size_t attach(std::function<void(resources::DataContext&, TEvent&)> handler) = 0;
-    };
-
-    template<typename... TEvents>
-    class IEventsListener: IEventListener<TEvents>...
-    {
-    public:
-        virtual ~IEventsListener() = default;
-    };
-
-    template<typename... TEvents>
-    class IEventsListener<generic::TypeList<TEvents...>>: IEventsListener<TEvents...>
-    {};
-
-    template<typename TEvent>
-    class IEventDispatcher
-    {
-        virtual void fire(resources::DataContext& context, TEvent& eventData) = 0;
-    };
-
-    template<typename... TEvents>
-    class IEventsDispatcher: IEventDispatcher<TEvents>...
-    {
-    public:
-        virtual ~IEventsDispatcher() = default;
-    };
-
-    template<typename... TEvents>
-    class IEventsDispatcher<generic::TypeList<TEvents...>>: IEventsDispatcher<TEvents...>
-    {};
-
-    namespace mainController
+    struct mainController
     {
         struct Initialize {};
         struct Stop {};
 
-        using EventListType = generic::TypeList<const Initialize, const Stop>;
-        class IDispatcher: public IEventsDispatcher<EventListType> {};
-        class IListener: public IEventsListener<EventListType> {};
-    }
+        using Bundle = EventBundle<const Initialize, const Stop>;
+    };
 
     namespace application
     {
         struct Exit {};
 
-        class IEventDispatcher
-        {
-        public:
-            virtual ~IEventDispatcher() = default;
-
-            virtual void fire(resources::DataContext& context, const Exit& eventData) = 0;
-        };
-
-        class IEventHub
-        {
-        public:
-            virtual ~IEventHub() = default;
-
-            virtual std::size_t attach(std::function<void(resources::DataContext&, const Exit&)> handler) = 0;
-        };
+        using Bundle = EventBundle<const Exit>;
     }
 
     namespace io
@@ -92,22 +43,7 @@ namespace dory::core::events
             int character = 0;
         };
 
-        class IEventDispatcher
-        {
-        public:
-            virtual ~IEventDispatcher() = default;
-
-            virtual void fireAll(resources::DataContext& context) = 0;
-            virtual void charge(KeyPressEvent eventData) = 0;
-        };
-
-        class IEventHub
-        {
-        public:
-            virtual ~IEventHub() = default;
-
-            virtual std::size_t attach(std::function<void(resources::DataContext&, KeyPressEvent&)> handler) = 0;
-        };
+        using Bundle = EventBufferBundle<KeyPressEvent>;
     }
 
     namespace script
@@ -118,23 +54,7 @@ namespace dory::core::events
             const std::map<std::string, std::any> arguments;
         };
 
-        using EventListType = generic::TypeList<const Run>;
-
-        class IEventDispatcher
-        {
-        public:
-            virtual ~IEventDispatcher() = default;
-
-            virtual void fire(resources::DataContext& context, const Run& eventData) = 0;
-        };
-
-        class IEventHub
-        {
-        public:
-            virtual ~IEventHub() = default;
-
-            virtual std::size_t attach(std::function<void(resources::DataContext&, const Run&)> handler) = 0;
-        };
+        using Bundle = EventBundle<const Run>;
     }
 
     namespace window
@@ -144,20 +64,6 @@ namespace dory::core::events
             int windowId;
         };
 
-        class IEventDispatcher
-        {
-        public:
-            virtual ~IEventDispatcher() = default;
-
-            virtual void fire(resources::DataContext& context, const Close& eventData) = 0;
-        };
-
-        class IEventHub
-        {
-        public:
-            virtual ~IEventHub() = default;
-
-            virtual std::size_t attach(std::function<void(resources::DataContext&, const Close&)> handler) = 0;
-        };
+        using Bundle = EventBundle<const Close>;;
     }
 }

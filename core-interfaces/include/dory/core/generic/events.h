@@ -410,4 +410,77 @@ namespace dory::core::events
 
     template<typename TIListener, typename TIDispatcher, typename TEventList>
     using DispatcherCannonBuffer = EventHubImpl<EventHubImplPolicy<TIListener, TIDispatcher, TEventList, EventCannonBufferImpl, EventCannonBufferHub>, TEventList>;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    template<typename TEvent>
+    class IEventListener
+    {
+    public:
+        virtual std::size_t attach(std::function<void(resources::DataContext&, TEvent&)> handler) = 0;
+    };
+
+    template<typename... TEvents>
+    class IEventsListener: public IEventListener<TEvents>...
+    {
+    public:
+        virtual ~IEventsListener() = default;
+    };
+
+    template<typename... TEvents>
+    class IEventsListener<generic::TypeList<TEvents...>>: public IEventsListener<TEvents...>
+    {};
+
+    template<typename TEvent>
+    class IEventDispatcher
+    {
+    public:
+        virtual void fire(resources::DataContext& context, TEvent& eventData) = 0;
+    };
+
+    template<typename... TEvents>
+    class IEventsDispatcher: public IEventDispatcher<TEvents>...
+    {
+    public:
+        virtual ~IEventsDispatcher() = default;
+    };
+
+    template<typename... TEvents>
+    class IEventsDispatcher<generic::TypeList<TEvents...>>: public IEventsDispatcher<TEvents...>
+    {};
+
+    template<typename TEvent>
+    class IEventBufferDispatcher
+    {
+    public:
+        virtual void charge(TEvent eventData) = 0;
+        virtual void fireAll(resources::DataContext& context) = 0;
+    };
+
+    template<typename... TEvents>
+    class IEventsBufferDispatcher: public IEventBufferDispatcher<TEvents>...
+    {
+    public:
+        virtual ~IEventsBufferDispatcher() = default;
+    };
+
+    template<typename... TEvents>
+    class IEventsBufferDispatcher<generic::TypeList<TEvents...>>: public IEventsBufferDispatcher<TEvents...>
+    {};
+
+    template<typename... TEvents>
+    struct EventBundle
+    {
+        using EventListType = generic::TypeList<TEvents...>;
+        using IDispatcher = IEventsDispatcher<EventListType>;
+        using IListener = IEventsListener<EventListType>;
+    };
+
+    template<typename... TEvents>
+    struct EventBufferBundle
+    {
+        using EventListType = generic::TypeList<TEvents...>;
+        using IDispatcher = IEventsBufferDispatcher<EventListType>;
+        using IListener = IEventsListener<EventListType>;
+    };
 }

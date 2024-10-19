@@ -1,9 +1,6 @@
 #include "dory/game/engine/setup.h"
 #include <dory/core/services/fileService.h>
 #include <dory/core/services/libraryService.h>
-#include <dory/core/events/applicationEvents.h>
-#include <dory/core/events/ioEvents.h>
-#include <dory/core/events/windowEvents.h>
 
 #ifdef DORY_PLATFORM_LINUX
 #include <dory/core/devices/standardIoDeviceUnix.h>
@@ -20,22 +17,13 @@ namespace dory::game::engine
         registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
         registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>());
 
-        registry.set<core::events::mainController::IDispatcher, core::events::mainController::IListener>(libraryHandle,
-                std::make_shared<core::events::DispatcherCannon<core::events::mainController::IListener, core::events::mainController::IDispatcher, core::events::mainController::EventListType>>());
+        registerEventBundle<core::events::mainController::Bundle>(libraryHandle, registry);
+        registerEventBundle<core::events::application::Bundle>(libraryHandle, registry);
+        registerEventBufferBundle<core::events::io::Bundle>(libraryHandle, registry);
+        registerEventBundle<core::events::script::Bundle>(libraryHandle, registry);
+        registerEventBundle<core::events::window::Bundle>(libraryHandle, registry);
 
-        registry.set<core::events::application::IEventDispatcher, core::events::application::IEventHub>(libraryHandle,
-                std::make_shared<core::events::application::EventDispatcher>());
-
-        registry.set<core::events::io::IEventDispatcher, core::events::io::IEventHub>(libraryHandle,
-                std::make_shared<core::events::io::EventDispatcher>());
-
-        registry.set<core::events::script::IEventDispatcher, core::events::script::IEventHub>(libraryHandle,
-                std::make_shared<core::events::DispatcherCannon<core::events::script::IEventHub, core::events::script::IEventDispatcher, core::events::script::EventListType>>());
-
-        registry.set<core::events::window::IEventDispatcher, core::events::window::IEventHub>(libraryHandle,
-                std::make_shared<core::events::window::EventDispatcher>());
-
-        auto ioEventDispatcher = registry.get<core::events::io::IEventDispatcher>();
+        auto ioEventDispatcher = registry.get<core::events::io::Bundle::IDispatcher>();
         if(ioEventDispatcher)
         {
             registry.set<core::devices::IStandardIODevice>(libraryHandle, std::make_shared<core::devices::StandardIODevice>(*ioEventDispatcher));

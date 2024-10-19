@@ -20,12 +20,12 @@ namespace dory::core::devices
         bool connected = false;
         int pipes[2];
 
-        std::shared_ptr<events::io::IEventDispatcher> _inputEventsDispatcher;
+        std::shared_ptr<events::io::Bundle::IDispatcher> _inputEventsDispatcher;
 
         void onKeyPressed(resources::DataContext& context, int key);
 
     public:
-        explicit StandardIODevice(std::shared_ptr<events::io::IEventDispatcher> inputEventsDispatcher);
+        explicit StandardIODevice(std::shared_ptr<events::io::Bundle::IDispatcher> inputEventsDispatcher);
 
         void out(const std::string& data) final;
         void flush() final;

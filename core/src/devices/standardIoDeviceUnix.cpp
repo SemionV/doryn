@@ -2,7 +2,7 @@
 
 namespace dory::core::devices
 {
-    StandardIODevice::StandardIODevice(std::shared_ptr<events::io::IEventDispatcher> inputEventsDispatcher):
+    StandardIODevice::StandardIODevice(std::shared_ptr<events::io::Bundle::IDispatcher> inputEventsDispatcher):
             _inputEventsDispatcher(inputEventsDispatcher)
     {}
 

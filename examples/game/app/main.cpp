@@ -33,7 +33,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     }
 
     {
-        auto eventHub = registry.get<dory::core::events::script::IEventHub>();
+        auto eventHub = registry.get<dory::core::events::script::Bundle::IListener>();
         if(eventHub)
         {
             eventHub->attach([](dory::core::resources::DataContext& dataContext, const dory::core::events::script::Run& event)
