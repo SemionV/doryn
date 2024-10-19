@@ -2,8 +2,8 @@
 
 namespace dory::core::devices
 {
-    StandardIODevice::StandardIODevice(std::shared_ptr<events::io::IEventDispatcher> inputEventsDispatcher):
-            _inputEventsDispatcher(inputEventsDispatcher)
+    StandardIODevice::StandardIODevice(Registry& registry):
+            _registry(registry)
     {}
 
     void bindStdHandlesToConsole()
@@ -38,29 +38,33 @@ namespace dory::core::devices
 
     void StandardIODevice::onKeyPressed(resources::DataContext& context, INPUT_RECORD inputRecord)
     {
-        if(inputRecord.Event.KeyEvent.uChar.AsciiChar == 3)//CTRL+C
+        auto inputEventDispatcher = _registry.get<events::io::Bundle::IDispatcher>();
+        if(inputEventDispatcher)
         {
-            _inputEventsDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Terminate });
-        }
-        else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 27)//ESC
-        {
-            _inputEventsDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Escape });
-        }
-        else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 8)//BACKSPACE
-        {
-            _inputEventsDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Backspace });
-        }
-        else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 13)//RETURN
-        {
-            _inputEventsDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Return });
-        }
-        else if(inputRecord.Event.KeyEvent.uChar.AsciiChar != 0)// Character
-        {
-            _inputEventsDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Character, inputRecord.Event.KeyEvent.uChar.AsciiChar });
-        }
-        else
-        {
-            _inputEventsDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Unknown });
+            if(inputRecord.Event.KeyEvent.uChar.AsciiChar == 3)//CTRL+C
+            {
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Terminate });
+            }
+            else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 27)//ESC
+            {
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Escape });
+            }
+            else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 8)//BACKSPACE
+            {
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Backspace });
+            }
+            else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 13)//RETURN
+            {
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Return });
+            }
+            else if(inputRecord.Event.KeyEvent.uChar.AsciiChar != 0)// Character
+            {
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Character, inputRecord.Event.KeyEvent.uChar.AsciiChar });
+            }
+            else
+            {
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Unknown });
+            }
         }
     }
 

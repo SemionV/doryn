@@ -21,13 +21,13 @@ namespace dory::core::devices
         std::jthread pollingThread;
         bool connected = false;
 
-        std::shared_ptr<events::io::IEventDispatcher> _inputEventsDispatcher;
+        Registry& _registry;
 
         void bindStdHandlesToConsole();
         void onKeyPressed(resources::DataContext& context, INPUT_RECORD inputRecord);
 
     public:
-        explicit StandardIODevice(std::shared_ptr<events::io::IEventDispatcher> inputEventsDispatcher);
+        explicit StandardIODevice(Registry& registry);
 
         void out(const std::string& data) final;
         void flush() final;
