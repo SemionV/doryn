@@ -7,6 +7,7 @@
 #include "generic/typeTraits.h"
 #include <dory/core/extensionPlatform/resourceHandle.h>
 #include <dory/core/devices/iStandardIODevice.h>
+#include <dory/core/devices/iTerminalDevice.h>
 
 namespace dory::core
 {
@@ -81,6 +82,7 @@ namespace dory::core
             events::window::Bundle::IDispatcher,
             events::window::Bundle::IListener,
             /*Devices*/
-            devices::IStandardIODevice>
+            devices::IStandardIODevice,
+            devices::ITerminalDevice>
     {};
 }

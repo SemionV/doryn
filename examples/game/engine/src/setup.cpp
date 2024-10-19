@@ -5,10 +5,11 @@
 #ifdef DORY_PLATFORM_LINUX
 #include <dory/core/devices/standardIoDeviceUnix.h>
 #endif
-
 #ifdef DORY_PLATFORM_WIN32
 #include <dory/core/devices/standardIoDeviceWin32.h>
 #endif
+
+#include <dory/core/devices/terminalDevice.h>
 
 namespace dory::game::engine
 {
@@ -21,6 +22,7 @@ namespace dory::game::engine
         registerEventBundle<core::events::window::Bundle>(libraryHandle, registry);
 
         registry.set<core::devices::IStandardIODevice>(libraryHandle, std::make_shared<core::devices::StandardIODevice>(registry));
+        registry.set<core::devices::ITerminalDevice>(libraryHandle, std::make_shared<core::devices::TerminalDevice>(registry));
 
         registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
         registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>());

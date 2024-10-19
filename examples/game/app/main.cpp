@@ -25,6 +25,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     }
 
     {
+        auto terminalDevice = registry.get<dory::core::devices::ITerminalDevice>();
+        if(terminalDevice)
+        {
+            terminalDevice->connect(dataContext);
+            terminalDevice->enterCommandMode();
+            terminalDevice->writeLine("Hello Terminal!");
+            terminalDevice->exitCommandMode();
+        }
+    }
+
+    {
         auto fileService = registry.get<dory::core::services::IFileService>();
         if(fileService)
         {

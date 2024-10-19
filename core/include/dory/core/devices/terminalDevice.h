@@ -18,11 +18,6 @@ namespace dory::core::devices
 
         Registry& _registry;
 
-        /*std::shared_ptr<IStandardIODevice> _outputDevice;
-        std::shared_ptr<events::io::IEventHub> _inputEventHub;
-        std::shared_ptr<events::script::IEventDispatcher> _scriptEventDispatcher;
-        std::shared_ptr<events::application::IEventDispatcher> _applicationEventDispatcher;*/
-
     public:
         explicit TerminalDevice(Registry& registry);
 
@@ -35,6 +30,14 @@ namespace dory::core::devices
         void disconnect(resources::DataContext& context) final;
 
     private:
+        inline void out(const std::string& message);
         void onKeyPress(resources::DataContext& context, events::io::KeyPressEvent& eventData);
+        inline void appendToCurrentCommand(char symbol);
+        inline void clearCurrentCommand();
+        inline void onPressReturn(resources::DataContext& context, events::io::KeyPressEvent eventData);
+        inline void onPressEscape(resources::DataContext& context, events::io::KeyPressEvent eventData);
+        inline void onPressBackspace(resources::DataContext& context, events::io::KeyPressEvent eventData);
+        inline void onPressTerminate(resources::DataContext& context, events::io::KeyPressEvent eventData);
+        inline void onEnterSymbol(resources::DataContext& context, events::io::KeyPressEvent eventData);
     };
 }

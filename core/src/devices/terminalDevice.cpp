@@ -11,20 +11,12 @@ namespace dory::core::devices
         if(commandMode)
         {
             exitCommandMode();
-            auto outputDevice = _registry.get<devices::IStandardIODevice>();
-            if(outputDevice)
-            {
-                outputDevice->out(message);
-            }
+            out(message);
             enterCommandMode();
         }
         else
         {
-            auto outputDevice = _registry.get<devices::IStandardIODevice>();
-            if(outputDevice)
-            {
-                outputDevice->out(message);
-            }
+            out(message);
         }
     }
 
@@ -35,36 +27,32 @@ namespace dory::core::devices
         if(commandMode)
         {
             exitCommandMode();
-            auto outputDevice = _registry.get<devices::IStandardIODevice>();
-            if(outputDevice)
-            {
-                outputDevice->out(message);
-            }
+            out(data);
             enterCommandMode();
         }
         else
         {
-            auto outputDevice = _registry.get<devices::IStandardIODevice>();
-            if(outputDevice)
-            {
-                outputDevice->out(message);
-            }
+            out(data);
         }
     }
 
     void TerminalDevice::enterCommandMode()
     {
-
+        out(commandModePrefix);
+        currentCommand = "";
+        commandMode = true;
     }
 
     void TerminalDevice::exitCommandMode()
     {
-
+        currentCommand = "";
+        commandMode = false;
+        out("\n");
     }
 
     bool TerminalDevice::isCommandMode()
     {
-
+        return commandMode;
     }
 
     void TerminalDevice::connect(resources::DataContext& context)
@@ -84,17 +72,13 @@ namespace dory::core::devices
         auto inputEventHub = _registry.get<events::io::Bundle::IListener>();
         if(inputEventHub)
         {
-            /*inputEventHub->detach(_inputListenerId);
-            inputEventHub->attach([this](resources::DataContext& context, events::io::KeyPressEvent& event)
-            {
-                onKeyPress(context, event);
-            });*/
+            inputEventHub->detach(_inputListenerId, events::io::KeyPressEvent{});
         }
     }
 
     void TerminalDevice::onKeyPress(resources::DataContext& context, events::io::KeyPressEvent& eventData)
     {
-        /*switch(eventData.keyCode)
+        switch(eventData.keyCode)
         {
             case events::io::KeyCode::Return:
             {
@@ -124,6 +108,94 @@ namespace dory::core::devices
             case events::io::KeyCode::Unknown:
             default:
                 break;
-        }*/
+        }
+    }
+
+    void TerminalDevice::out(const std::string& message)
+    {
+        auto outputDevice = _registry.get<devices::IStandardIODevice>();
+        if(outputDevice)
+        {
+            outputDevice->out(message);
+        }
+    }
+
+    void TerminalDevice::appendToCurrentCommand(char symbol)
+    {
+        currentCommand += symbol;
+        out(std::string{symbol});
+    }
+
+    void TerminalDevice::clearCurrentCommand()
+    {
+        auto count = currentCommand.size();
+
+        std::string message;
+        for(std::size_t i = 0; i < count; ++i)
+        {
+            message += "\b";
+        }
+        for(std::size_t i = 0; i < count; ++i)
+        {
+            message += " ";
+        }
+        for(std::size_t i = 0; i < count; ++i)
+        {
+            message += "\b";
+        }
+
+        out(message);
+        currentCommand = "";
+    }
+
+    void TerminalDevice::onPressReturn(resources::DataContext &context, events::io::KeyPressEvent eventData)
+    {
+        if(commandMode)
+        {
+            auto command = currentCommand;
+            exitCommandMode();
+
+            auto scriptEventDispatcher = _registry.get<events::script::Bundle::IDispatcher>();
+            if(scriptEventDispatcher)
+            {
+                scriptEventDispatcher->fire(context, events::script::Run{command});
+            }
+
+            enterCommandMode();
+        }
+    }
+
+    void TerminalDevice::onPressEscape(resources::DataContext &context, events::io::KeyPressEvent eventData)
+    {
+        if(commandMode)
+        {
+            clearCurrentCommand();
+        }
+    }
+
+    void TerminalDevice::onPressBackspace(resources::DataContext &context, events::io::KeyPressEvent eventData)
+    {
+        if(commandMode && !currentCommand.empty())
+        {
+            currentCommand.erase(currentCommand.end() - 1);
+            out("\b \b");
+        }
+    }
+
+    void TerminalDevice::onPressTerminate(resources::DataContext &context, events::io::KeyPressEvent eventData)
+    {
+        auto eventDispatcher = _registry.get<events::application::Bundle::IDispatcher>();
+        if(eventDispatcher)
+        {
+            eventDispatcher->fire(context, events::application::Exit{});
+        }
+    }
+
+    void TerminalDevice::onEnterSymbol(resources::DataContext &context, events::io::KeyPressEvent eventData)
+    {
+        if(commandMode)
+        {
+            appendToCurrentCommand(eventData.character);
+        }
     }
 }
