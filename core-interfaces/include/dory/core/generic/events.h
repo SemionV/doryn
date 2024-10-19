@@ -62,11 +62,13 @@ namespace dory::core::events
         }
     };
 
+    using EventKeyType = std::size_t;
+
     template<class... Ts>
     class Event
     {
     public:
-        using KeyType = std::size_t;
+        using KeyType = EventKeyType;
         using HandlerType = std::function<void(Ts...)>;
 
     private:
@@ -262,9 +264,9 @@ namespace dory::core::events
         }
 
         template<typename TEvent>
-        void detach(EventController<TDataContext, TEvent>::EventKeyType handlerKey)
+        void detach(EventKeyType eventKey)
         {
-            getDispatcher<TEvent>().detachHandler(handlerKey);
+            getDispatcher<TEvent>().detachHandler(eventKey);
         }
     };
 
@@ -385,9 +387,13 @@ namespace dory::core::events
             public TImplPolicy::template CannonImplType<TEvent, TImplPolicy, generic::TypeList<TEvents...>>
     {
     public:
-        std::size_t attach(std::function<void(resources::DataContext&, TEvent&)> handler) override
+        EventKeyType attach(std::function<void(resources::DataContext&, TEvent&)> handler) override
         {
             return this->_hub.attach(std::move(handler));
+        }
+        void detach(EventKeyType eventKey, const TEvent& event) override
+        {
+            this->_hub.template detach<TEvent>(eventKey);
         }
     };
 
@@ -418,6 +424,7 @@ namespace dory::core::events
     {
     public:
         virtual std::size_t attach(std::function<void(resources::DataContext&, TEvent&)> handler) = 0;
+        virtual void detach(std::size_t eventKey, const TEvent& event) = 0;
     };
 
     template<typename... TEvents>
