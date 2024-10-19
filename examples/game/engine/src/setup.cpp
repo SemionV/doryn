@@ -14,19 +14,15 @@ namespace dory::game::engine
 {
     void dory::game::engine::Setup::setupRegistry(const core::extensionPlatform::LibraryHandle& libraryHandle, core::Registry& registry)
     {
-        registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
-        registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>());
-
         registerEventBundle<core::events::mainController::Bundle>(libraryHandle, registry);
         registerEventBundle<core::events::application::Bundle>(libraryHandle, registry);
         registerEventBufferBundle<core::events::io::Bundle>(libraryHandle, registry);
         registerEventBundle<core::events::script::Bundle>(libraryHandle, registry);
         registerEventBundle<core::events::window::Bundle>(libraryHandle, registry);
 
-        auto ioEventDispatcher = registry.get<core::events::io::Bundle::IDispatcher>();
-        if(ioEventDispatcher)
-        {
-            registry.set<core::devices::IStandardIODevice>(libraryHandle, std::make_shared<core::devices::StandardIODevice>(*ioEventDispatcher));
-        }
+        registry.set<core::devices::IStandardIODevice>(libraryHandle, std::make_shared<core::devices::StandardIODevice>(registry));
+
+        registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
+        registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>());
     }
 }

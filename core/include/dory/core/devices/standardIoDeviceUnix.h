@@ -5,9 +5,9 @@
 #include <iostream>
 #include <memory>
 
-#include <dory/core/devices/iDevice.h>
 #include <dory/core/devices/iStandardIODevice.h>
 #include <dory/core/events/eventTypes.h>
+#include <dory/core/registry.h>
 
 namespace dory::core::devices
 {
@@ -20,12 +20,12 @@ namespace dory::core::devices
         bool connected = false;
         int pipes[2];
 
-        std::shared_ptr<events::io::Bundle::IDispatcher> _inputEventsDispatcher;
+        Registry& _registry;
 
         void onKeyPressed(resources::DataContext& context, int key);
 
     public:
-        explicit StandardIODevice(std::shared_ptr<events::io::Bundle::IDispatcher> inputEventsDispatcher);
+        explicit StandardIODevice(Registry& registry);
 
         void out(const std::string& data) final;
         void flush() final;

@@ -2,35 +2,39 @@
 
 namespace dory::core::devices
 {
-    StandardIODevice::StandardIODevice(std::shared_ptr<events::io::Bundle::IDispatcher> inputEventsDispatcher):
-            _inputEventsDispatcher(inputEventsDispatcher)
+    StandardIODevice::StandardIODevice(Registry& registry):
+            _registry(registry)
     {}
 
     void StandardIODevice::onKeyPressed(resources::DataContext& context, int key)
     {
-        if(key == 3)//CTRL+C
+        auto inputEventDispatcher = _registry.get<events::io::Bundle::IDispatcher>();
+        if(inputEventDispatcher)
         {
-            _inputEventsDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Terminate });
-        }
-        else if(key == 27)//ESC
-        {
-            _inputEventsDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Escape });
-        }
-        else if(key == 127)//BACKSPACE
-        {
-            _inputEventsDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Backspace });
-        }
-        else if(key == 10)//END OF LINE
-        {
-            _inputEventsDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Return });
-        }
-        else if(key != 0)// Character
-        {
-            _inputEventsDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Character, key });
-        }
-        else
-        {
-            _inputEventsDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Unknown });
+            if(key == 3)//CTRL+C
+            {
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Terminate });
+            }
+            else if(key == 27)//ESC
+            {
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Escape });
+            }
+            else if(key == 127)//BACKSPACE
+            {
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Backspace });
+            }
+            else if(key == 10)//END OF LINE
+            {
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Return });
+            }
+            else if(key != 0)// Character
+            {
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Character, key });
+            }
+            else
+            {
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Unknown });
+            }
         }
     }
 
