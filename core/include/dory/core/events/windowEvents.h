@@ -1,7 +1,7 @@
 #pragma once
 
 #include <dory/core/events/eventTypes.h>
-#include "events.h"
+#include "dory/core/generic/events.h"
 
 namespace dory::core::events::window
 {

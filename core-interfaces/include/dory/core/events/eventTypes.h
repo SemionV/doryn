@@ -118,6 +118,8 @@ namespace dory::core::events
             const std::map<std::string, std::any> arguments;
         };
 
+        using EventListType = generic::TypeList<const Run>;
+
         class IEventDispatcher
         {
         public:

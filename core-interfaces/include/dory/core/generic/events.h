@@ -295,6 +295,9 @@ namespace dory::core::events
     class EventCannon<EventHub<TDataContext, TEvents...>>: public EventCannon<TDataContext, TEvents...>
     {};
 
+    template<typename EventHub>
+    using EventCannonHub = EventCannon<EventHub>;
+
     template<typename TEventHub>
     class EventCannonBuffer;
 
@@ -326,45 +329,85 @@ namespace dory::core::events
     class EventCannonBuffer<EventHub<TDataContext, generic::TypeList<TEvents...>>>: public EventCannonBuffer<EventHub<TDataContext, TEvents...>>
     {};
 
-    template<typename TInterface, typename TEventList>
-    class EventDispatcherImpl;
+    template<typename EventHub>
+    using EventCannonBufferHub = EventCannonBuffer<EventHub>;
 
-    template<typename TInterface, typename TEvent, typename... TEvents>
-    class EventDispatcherImpl<TInterface, generic::TypeList<TEvent, TEvents...>>: public EventDispatcherImpl<TInterface, generic::TypeList<TEvents...>>
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    template<typename TIListener,
+            typename TIDispatcher,
+            typename TEventList,
+            template<typename, typename, typename> class TCannonImpl,
+            template<typename> class TCannon>
+    struct EventHubImplPolicy
     {
-    private:
-        EventDispatcher<resources::DataContext&, TEvent&> _dispatcher;
+        using IListenerType = TIListener;
+        using IDispatcherType = TIDispatcher;
+        using EventListType = TEventList;
 
+        template<typename TEvent, typename TImplPolicy, typename TEvents>
+        using CannonImplType = TCannonImpl<TEvent, TImplPolicy, TEvents>;
+
+        template<typename TEventHub>
+        using CannonType = TCannon<TEventHub>;
+    };
+
+    template<typename TImplPolicy, typename TEventList>
+    class EventHubImpl;
+
+    template<typename TEvent, typename TImplPolicy, typename TEventList>
+    class EventCannonImpl: public EventHubImpl<TImplPolicy, TEventList>
+    {
     public:
-        void fire(resources::DataContext& context, TEvent& eventData) final
+        void fire(resources::DataContext& context, TEvent& eventData) override
         {
-            _dispatcher(context, eventData);
+            this->_dispatcher.fire(context, eventData);
         }
     };
 
-    template<typename TInterface>
-    class EventDispatcherImpl<TInterface, generic::TypeList<>>: public TInterface
+    template<typename TEvent, typename TImplPolicy, typename TEventList>
+    class EventCannonBufferImpl: public EventHubImpl<TImplPolicy, TEventList>
     {
-    };
-
-    template<typename TInterface, typename TEventList>
-    class EventListenerImpl;
-
-    template<typename TInterface, typename TEvent, typename... TEvents>
-    class EventListenerImpl<TInterface, generic::TypeList<TEvent, TEvents...>>: public EventListenerImpl<TInterface, generic::TypeList<TEvents...>>
-    {
-    private:
-        EventDispatcher<resources::DataContext&, TEvent&> _dispatcher;
-
     public:
-        std::size_t attach(std::function<void(resources::DataContext&, TEvent&)> handler) final
+        void fireAll(resources::DataContext& context) override
         {
-            return _dispatcher.attachHandler(handler);
+            this->_dispatcher.fireAll(context);
+        }
+
+        void charge(TEvent eventData) override
+        {
+            this->_dispatcher.charge(eventData);
         }
     };
 
-    template<typename TInterface>
-    class EventListenerImpl<TInterface, generic::TypeList<>>: public TInterface
+    template<typename TImplPolicy, typename TEvent, typename... TEvents>
+    class EventHubImpl<TImplPolicy, generic::TypeList<TEvent, TEvents...>>:
+            public TImplPolicy::template CannonImplType<TEvent, TImplPolicy, generic::TypeList<TEvents...>>
     {
+    public:
+        std::size_t attach(std::function<void(resources::DataContext&, TEvent&)> handler) override
+        {
+            return this->_hub.attach(std::move(handler));
+        }
     };
+
+    template<typename TImplPolicy>
+    class EventHubImpl<TImplPolicy, generic::TypeList<>>:
+        public TImplPolicy::IListenerType,
+        public TImplPolicy::IDispatcherType
+    {
+    private:
+        using EventHubType = EventHub<resources::DataContext, typename TImplPolicy::EventListType>;
+        using EventDispatcherType = typename TImplPolicy::template CannonType<EventHubType>;
+
+    protected:
+        EventDispatcherType _dispatcher;
+        EventHubType& _hub = _dispatcher;
+    };
+
+    template<typename TIListener, typename TIDispatcher, typename TEventList>
+    using DispatcherCannon = EventHubImpl<EventHubImplPolicy<TIListener, TIDispatcher, TEventList, EventCannonImpl, EventCannonHub>, TEventList>;
+
+    template<typename TIListener, typename TIDispatcher, typename TEventList>
+    using DispatcherCannonBuffer = EventHubImpl<EventHubImplPolicy<TIListener, TIDispatcher, TEventList, EventCannonBufferImpl, EventCannonBufferHub>, TEventList>;
 }

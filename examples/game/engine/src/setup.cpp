@@ -1,10 +1,8 @@
 #include "dory/game/engine/setup.h"
 #include <dory/core/services/fileService.h>
 #include <dory/core/services/libraryService.h>
-#include <dory/core/events/mainControllerEvents.h>
 #include <dory/core/events/applicationEvents.h>
 #include <dory/core/events/ioEvents.h>
-#include <dory/core/events/scriptEvents.h>
 #include <dory/core/events/windowEvents.h>
 
 #ifdef DORY_PLATFORM_LINUX
@@ -23,7 +21,7 @@ namespace dory::game::engine
         registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>());
 
         registry.set<core::events::mainController::IDispatcher, core::events::mainController::IListener>(libraryHandle,
-                std::make_shared<core::events::mainController::EventDispatcher>());
+                std::make_shared<core::events::DispatcherCannon<core::events::mainController::IListener, core::events::mainController::IDispatcher, core::events::mainController::EventListType>>());
 
         registry.set<core::events::application::IEventDispatcher, core::events::application::IEventHub>(libraryHandle,
                 std::make_shared<core::events::application::EventDispatcher>());
@@ -32,7 +30,7 @@ namespace dory::game::engine
                 std::make_shared<core::events::io::EventDispatcher>());
 
         registry.set<core::events::script::IEventDispatcher, core::events::script::IEventHub>(libraryHandle,
-                std::make_shared<core::events::script::EventDispatcher>());
+                std::make_shared<core::events::DispatcherCannon<core::events::script::IEventHub, core::events::script::IEventDispatcher, core::events::script::EventListType>>());
 
         registry.set<core::events::window::IEventDispatcher, core::events::window::IEventHub>(libraryHandle,
                 std::make_shared<core::events::window::EventDispatcher>());

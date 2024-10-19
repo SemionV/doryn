@@ -4,7 +4,6 @@
 #include <dory/core/devices/iTerminalDevice.h>
 #include <dory/core/devices/iStandardIODevice.h>
 #include <dory/core/events/ioEvents.h>
-#include <dory/core/events/scriptEvents.h>
 #include <dory/core/events/applicationEvents.h>
 
 #include <dory/core/registry.h>

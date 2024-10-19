@@ -13,7 +13,6 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/libraryService.cpp
         src/events/applicationEvents.cpp
         src/events/ioEvents.cpp
-        src/events/scriptEvents.cpp
         src/events/windowEvents.cpp
         src/devices/terminalDevice.cpp
         src/extensionPlatform/dynamicLibrary.cpp
