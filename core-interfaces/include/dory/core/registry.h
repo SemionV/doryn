@@ -70,6 +70,13 @@ namespace dory::core
         }
     };
 
+    namespace repositories
+    {
+        using ICameraRepository = repositories::IRepository<resources::entity::Camera>;
+        using IViewRepository = repositories::IRepository<resources::entity::View>;
+        using IWindowRepository = repositories::IRepository<resources::entity::Window>;
+    }
+
     struct Registry: RegistryLayer<
             /*Events*/
             events::mainController::Bundle::IDispatcher,
@@ -86,9 +93,9 @@ namespace dory::core
             devices::IStandardIODevice,
             devices::ITerminalDevice,
             /*Repositories*/
-            repositories::IRepository<resources::entity::Camera>,
-            repositories::IRepository<resources::entity::View>,
-            repositories::IRepository<resources::entity::Window>,
+            repositories::ICameraRepository,
+            repositories::IViewRepository,
+            repositories::IWindowRepository,
             /*Services*/
             services::ILibraryService,
             services::IFileService>
