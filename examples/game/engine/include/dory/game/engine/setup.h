@@ -2,6 +2,7 @@
 
 #include <dory/core/iSetup.h>
 #include <dory/core/macros.h>
+#include <dory/core/generic/repository.h>
 
 namespace dory::game::engine
 {
@@ -26,6 +27,13 @@ namespace dory::game::engine
                     typename TEventBundle::EventListType>>();
 
             registry.set<typename TEventBundle::IDispatcher, typename TEventBundle::IListener>(libraryHandle, instance);
+        }
+
+        template<typename TEntity>
+        void registerRepository(const core::extensionPlatform::LibraryHandle& libraryHandle,core::Registry& registry)
+        {
+            auto instance = std::make_shared<core::generic::repository::Repository<TEntity>>();
+            registry.set<core::repositories::IRepository<TEntity>>(libraryHandle, instance);
         }
 
     public:
