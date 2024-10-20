@@ -5,8 +5,8 @@
 
 namespace dory::engine::repositories
 {
-    template<typename TImpelementation, typename TEntity, typename TId = resources::entity::IdType>
-    class IEntityRepository: NonCopyable, public StaticInterface<TImpelementation>
+    template<typename TImplementation, typename TEntity, typename TId = resources::entity::IdType>
+    class IEntityRepository: NonCopyable, public StaticInterface<TImplementation>
     {
     public:
         std::size_t count()

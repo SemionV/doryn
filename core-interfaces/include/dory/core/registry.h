@@ -5,9 +5,11 @@
 #include "services/iLibraryService.h"
 #include "events/eventTypes.h"
 #include "generic/typeTraits.h"
+#include <dory/core/resources/entity.h>
 #include <dory/core/extensionPlatform/resourceHandle.h>
 #include <dory/core/devices/iStandardIODevice.h>
 #include <dory/core/devices/iTerminalDevice.h>
+#include <dory/core/repositories/iRepository.h>
 
 namespace dory::core
 {
@@ -68,8 +70,7 @@ namespace dory::core
         }
     };
 
-    struct Registry: RegistryLayer<services::ILibraryService,
-            services::IFileService,
+    struct Registry: RegistryLayer<
             /*Events*/
             events::mainController::Bundle::IDispatcher,
             events::mainController::Bundle::IListener,
@@ -83,6 +84,12 @@ namespace dory::core
             events::window::Bundle::IListener,
             /*Devices*/
             devices::IStandardIODevice,
-            devices::ITerminalDevice>
+            devices::ITerminalDevice,
+            /*Repositories*/
+            repositories::IRepository<resources::entity::Camera>,
+            repositories::IRepository<resources::entity::View>,
+            /*Services*/
+            services::ILibraryService,
+            services::IFileService>
     {};
 }
