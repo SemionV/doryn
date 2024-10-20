@@ -6,7 +6,7 @@
 namespace dory::core::generic::repository
 {
     template<typename TEntity, typename TId = resources::entity::IdType, template<class, class> class TContainer = std::vector>
-    class Repository: repositories::IRepository<TEntity, TId>
+    class Repository: public repositories::IRepository<TEntity, TId>
     {
     private:
         TContainer<TEntity, std::allocator<TEntity>> container;

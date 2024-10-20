@@ -79,11 +79,26 @@ namespace dory::core::resources::entity
         {}
     };
 
+    enum class WindowSubsystemType
+    {
+        GLFW
+    };
+
+    class IWindowSubsystemData
+    {
+    public:
+        virtual ~IWindowSubsystemData() = default;
+    };
+
     struct Window: public Entity<IdType>
     {
-        explicit Window(IdType id):
-                Entity(id)
+        explicit Window(IdType id, WindowSubsystemType subsystemType):
+                Entity(id),
+                subsystemType(subsystemType)
         {}
+
+        WindowSubsystemType subsystemType {};
+        std::shared_ptr<IWindowSubsystemData> subsystemData;
     };
 
     struct Viewport

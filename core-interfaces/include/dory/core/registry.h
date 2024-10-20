@@ -88,6 +88,7 @@ namespace dory::core
             /*Repositories*/
             repositories::IRepository<resources::entity::Camera>,
             repositories::IRepository<resources::entity::View>,
+            repositories::IRepository<resources::entity::Window>,
             /*Services*/
             services::ILibraryService,
             services::IFileService>

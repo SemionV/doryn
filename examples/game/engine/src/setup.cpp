@@ -10,6 +10,8 @@
 #endif
 
 #include <dory/core/devices/terminalDevice.h>
+#include <dory/core/generic/repository.h>
+#include <dory/core/repositories/iRepository.h>
 
 namespace dory::game::engine
 {
@@ -23,6 +25,15 @@ namespace dory::game::engine
 
         registry.set<core::devices::IStandardIODevice>(libraryHandle, std::make_shared<core::devices::StandardIODevice>(registry));
         registry.set<core::devices::ITerminalDevice>(libraryHandle, std::make_shared<core::devices::TerminalDevice>(registry));
+
+        registry.set<core::repositories::IRepository<core::resources::entity::Camera>>(libraryHandle,
+                std::make_shared<core::generic::repository::Repository<core::resources::entity::Camera>>());
+
+        registry.set<core::repositories::IRepository<core::resources::entity::View>>(libraryHandle,
+                std::make_shared<core::generic::repository::Repository<core::resources::entity::View>>());
+
+        registry.set<core::repositories::IRepository<core::resources::entity::Window>>(libraryHandle,
+                std::make_shared<core::generic::repository::Repository<core::resources::entity::Window>>());
 
         registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
         registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>());
