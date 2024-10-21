@@ -35,6 +35,6 @@ namespace dory::game::engine
 
         registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
         registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>());
-        registry.set<core::services::ILogService>(libraryHandle, std::make_shared<core::services::LogServiceNull>());
+        registry.set<core::services::ILogService>(libraryHandle, std::make_shared<core::services::LogServiceNull2>());
     }
 }

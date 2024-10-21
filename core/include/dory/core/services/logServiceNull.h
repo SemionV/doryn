@@ -1,6 +1,9 @@
 #pragma once
 
 #include <dory/core/services/iLogService.h>
+#include <dory/core/generic/implementation.h>
+
+#include <iostream>
 
 namespace dory::core::services
 {
@@ -40,4 +43,31 @@ namespace dory::core::services
 
     class LogServiceNull: public LogServiceBundle<ILogService, ILogService::MessageTypes>
     {};
+
+    template<typename TMessage, typename TImplPolicy, typename TState>
+    class LogServiceNullGeneric2: public generic::implementation::ImplementationLevel<TImplPolicy, TState>
+    {
+    public:
+        inline void trace(const TMessage& message) final
+        {
+            std::cout << message << std::endl;
+        }
+
+        inline void debug(const TMessage& message) final
+        {}
+
+        inline void information(const TMessage& message) final
+        {}
+
+        inline void warning(const TMessage& message) final
+        {}
+
+        inline void error(const TMessage& message) final
+        {}
+
+        inline void critical(const TMessage& message) final
+        {}
+    };
+
+    using LogServiceNull2 = generic::implementation::Implementation<generic::implementation::ImplementationPolicy<generic::TypeList<ILogService>, generic::implementation::ImplementationList<LogServiceNullGeneric2>, ILogService::MessageTypes>>;
 }

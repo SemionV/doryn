@@ -30,5 +30,25 @@ namespace dory::core::services
     class ILogServiceBundle<generic::TypeList<TMessages...>>: public ILogServiceBundle<TMessages...>
     {};
 
-    using ILogService = ILogServiceBundle<std::string_view, std::string>;
+    //using ILogService = ILogServiceBundle<std::string_view, std::string>;
+    class ILogService
+    {
+    public:
+        using MessageTypes = generic::TypeList<std::string_view, std::string>;
+
+        virtual ~ILogService() = default;
+
+        virtual void trace(const std::string_view& message) = 0;
+        virtual void trace(const std::string& message) = 0;
+        virtual void debug(const std::string_view& message) = 0;
+        virtual void debug(const std::string& message) = 0;
+        virtual void information(const std::string_view& message) = 0;
+        virtual void information(const std::string& message) = 0;
+        virtual void warning(const std::string_view& message) = 0;
+        virtual void warning(const std::string& message) = 0;
+        virtual void error(const std::string_view& message) = 0;
+        virtual void error(const std::string& message) = 0;
+        virtual void critical(const std::string_view& message) = 0;
+        virtual void critical(const std::string& message) = 0;
+    };
 }

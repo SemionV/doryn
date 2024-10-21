@@ -93,6 +93,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
         }
     }
 
+    {
+        auto logger = registry.get<dory::core::services::ILogService>();
+        if(logger)
+        {
+            logger->trace(std::string{"Hello from Logger!"});
+        }
+    }
+
     std::cout << "End main" << std::endl;
 
     return 0;
