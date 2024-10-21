@@ -10,6 +10,7 @@
 #include <dory/core/devices/iStandardIODevice.h>
 #include <dory/core/devices/iTerminalDevice.h>
 #include <dory/core/repositories/iRepository.h>
+#include <dory/core/repositories/iPipelineRepository.h>
 
 namespace dory::core
 {
@@ -75,6 +76,7 @@ namespace dory::core
         using ICameraRepository = repositories::IRepository<resources::entity::Camera>;
         using IViewRepository = repositories::IRepository<resources::entity::View>;
         using IWindowRepository = repositories::IRepository<resources::entity::Window>;
+        using IPipelineNodeRepository = core::repositories::IRepository<core::resources::entity::PipelineNode<core::resources::DataContext>>;
     }
 
     struct Registry: RegistryLayer<
@@ -96,6 +98,8 @@ namespace dory::core
             repositories::ICameraRepository,
             repositories::IViewRepository,
             repositories::IWindowRepository,
+            repositories::IPipelineRepository,
+            repositories::IPipelineNodeRepository,
             /*Services*/
             services::ILibraryService,
             services::IFileService>

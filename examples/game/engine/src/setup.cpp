@@ -12,6 +12,7 @@
 #include <dory/core/devices/terminalDevice.h>
 #include <dory/core/generic/repository.h>
 #include <dory/core/repositories/iRepository.h>
+#include <dory/core/repositories/pipelineRepository.h>
 
 namespace dory::game::engine
 {
@@ -29,6 +30,7 @@ namespace dory::game::engine
         registerRepository<core::resources::entity::Camera>(libraryHandle, registry);
         registerRepository<core::resources::entity::View>(libraryHandle, registry);
         registerRepository<core::resources::entity::Window>(libraryHandle, registry);
+        registry.set<core::repositories::IPipelineRepository, core::repositories::IPipelineNodeRepository>(libraryHandle, std::make_shared<core::repositories::PipelineRepository>());
 
         registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
         registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>());

@@ -8,11 +8,17 @@ namespace dory::core::generic::repository
     template<typename TEntity, typename TId = resources::entity::IdType, template<class, class> class TContainer = std::vector>
     class Repository: public repositories::IRepository<TEntity, TId>
     {
-    private:
+    protected:
         TContainer<TEntity, std::allocator<TEntity>> container;
         TId counter {};
 
     public:
+        Repository(std::initializer_list<TEntity>&& entities):
+            container(std::move(entities))
+        {}
+
+        Repository() = default;
+
         std::size_t count() override
         {
             return container.size();

@@ -3,6 +3,8 @@
 #include <memory>
 #include <string>
 #include <functional>
+#include <utility>
+#include <type_traits>
 
 namespace dory::core::resources::entity
 {
@@ -142,8 +144,10 @@ namespace dory::core::resources::entity
     template<typename TDataContext>
     struct PipelineNode: Entity<IdType>
     {
+        using UpdateFunctionType = std::function<void(IdType referenceId, const TimeSpan& timeStep, TDataContext& context)>;
+
         std::shared_ptr<void> attachedController;
-        std::function<void(IdType referenceId, const TimeSpan& timeStep, TDataContext& context)> update;
+        UpdateFunctionType update;
         IdType parentNodeId;
         std::string name;
         PipelineNodePriority priority;
@@ -160,7 +164,7 @@ namespace dory::core::resources::entity
                 name(std::move(name))
         {}
 
-        template<typename F>
+        template<typename F, typename T = std::enable_if_t<std::is_convertible_v<F, UpdateFunctionType>>>
         explicit PipelineNode(F&& update,
                               PipelineNodePriority priority = PipelineNodePriority::Default,
                               IdType parentNodeId = nullId,
