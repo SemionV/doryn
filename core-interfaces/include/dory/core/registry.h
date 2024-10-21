@@ -11,6 +11,7 @@
 #include <dory/core/devices/iTerminalDevice.h>
 #include <dory/core/repositories/iRepository.h>
 #include <dory/core/repositories/iPipelineRepository.h>
+#include "services/iLogService.h"
 
 namespace dory::core
 {
@@ -102,6 +103,7 @@ namespace dory::core
             repositories::IPipelineNodeRepository,
             /*Services*/
             services::ILibraryService,
-            services::IFileService>
+            services::IFileService,
+            services::ILogService>
     {};
 }

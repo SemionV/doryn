@@ -9,11 +9,12 @@ if(WIN32)
 endif()
 
 add_library(${DORY_MODULE_NAME} STATIC
-        src/services/fileService.cpp
-        src/services/libraryService.cpp
         src/devices/terminalDevice.cpp
         src/extensionPlatform/dynamicLibrary.cpp
         src/repositories/pipelineRepository.cpp
+        src/services/fileService.cpp
+        src/services/libraryService.cpp
+        src/services/logServiceNull.cpp
         ${DORY_PLATFORM_MODULES})
 target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(${DORY_MODULE_NAME} PUBLIC dory-core-interfaces core::boost)
