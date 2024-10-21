@@ -432,6 +432,9 @@ namespace dory::core::events
     {
     public:
         virtual ~IEventsListener() = default;
+
+        using IEventListener<TEvents>::attach...;
+        using IEventListener<TEvents>::detach...;
     };
 
     template<typename... TEvents>
@@ -450,6 +453,8 @@ namespace dory::core::events
     {
     public:
         virtual ~IEventsDispatcher() = default;
+
+        using IEventDispatcher<TEvents>::fire...;
     };
 
     template<typename... TEvents>
@@ -469,6 +474,9 @@ namespace dory::core::events
     {
     public:
         virtual ~IEventsBufferDispatcher() = default;
+
+        using IEventBufferDispatcher<TEvents>::charge...;
+        using IEventBufferDispatcher<TEvents>::fireAll...;
     };
 
     template<typename... TEvents>
