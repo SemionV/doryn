@@ -14,6 +14,7 @@
 #include <dory/core/repositories/pipelineRepository.h>
 #include <dory/core/services/logServiceNull.h>
 #include <dory/core/services/logService.h>
+#include <dory/core/services/serializationService.h>
 
 namespace dory::game::engine
 {
