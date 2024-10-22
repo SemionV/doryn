@@ -104,6 +104,8 @@ namespace dory::core
             /*Services*/
             services::ILibraryService,
             services::IFileService,
-            services::ILogService>
+            services::ILogService,
+            services::IAppLogger,
+            services::IConfigLogger>
     {};
 }

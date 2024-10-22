@@ -12,6 +12,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     dory::core::extensionPlatform::LibraryHandle staticLibraryHandle {};
     auto registry = dory::core::Registry{};
     auto dataContext = dory::core::resources::DataContext{};
+    auto config = dory::core::resources::configuration::Configuration{};
 
     setup.setupRegistry(staticLibraryHandle, registry);
 
@@ -94,10 +95,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     }
 
     {
-        auto logger = registry.get<dory::core::services::ILogService>();
+        auto logger = registry.get<dory::core::services::IAppLogger>();
         if(logger)
         {
-            logger->trace(std::string{"Hello from Logger!"});
+            config.loggingConfiguration.mainLogger.name = "AppLogger";
+            config.loggingConfiguration.mainLogger.stdoutLogger = dory::core::resources::configuration::StdoutLogSink{};
+            logger->initialize(config.loggingConfiguration.mainLogger, registry);
+            logger->information(std::string{"Hello from AppLogger!"});
+        }
+
+        auto logger2 = registry.get<dory::core::services::IAppLogger>();
+        if(logger2)
+        {
+            config.loggingConfiguration.mainLogger.name = "ConfigLogger";
+            config.loggingConfiguration.mainLogger.stdoutLogger = dory::core::resources::configuration::StdoutLogSink{};
+            logger2->initialize(config.loggingConfiguration.mainLogger, registry);
+            logger2->information(std::string{"Hello from ConfigLogger!"});
         }
     }
 

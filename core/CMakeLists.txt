@@ -14,10 +14,18 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/repositories/pipelineRepository.cpp
         src/services/fileService.cpp
         src/services/libraryService.cpp
-        src/services/logServiceNull.cpp
+        src/services/logService.cpp
         ${DORY_PLATFORM_MODULES})
 target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(${DORY_MODULE_NAME} PUBLIC dory-core-interfaces core::boost)
+
+target_link_libraries(${DORY_MODULE_NAME} PUBLIC
+        dory-core-interfaces
+        core::boost
+        spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
+        nlohmann_json::nlohmann_json
+        ryml::ryml
+        refl-cpp)
+
 set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""
         IMPORT_PREFIX ""
         OUTPUT_NAME "dory-core")

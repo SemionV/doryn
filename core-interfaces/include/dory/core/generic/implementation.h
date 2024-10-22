@@ -50,8 +50,7 @@ namespace dory::core::generic::implementation
             typename TInterface,
             typename... TInterfaces,
             typename TCurrentParameter>
-    struct ImplementationLevel<TImplementationPolicy,
-            HierarchyState<TypeList<TInterface, TInterfaces...>, ImplementationList<>, TypeList<>, TCurrentParameter>>:
+    struct ImplementationLevel<TImplementationPolicy, HierarchyState<TypeList<TInterface, TInterfaces...>, ImplementationList<>, TypeList<>, TCurrentParameter>>:
         public TInterface,
         public ImplementationLevel<TImplementationPolicy, HierarchyState<TypeList<TInterfaces...>, ImplementationList<>, TypeList<>, TCurrentParameter>>
     {};

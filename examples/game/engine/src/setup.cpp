@@ -10,10 +10,10 @@
 #endif
 
 #include <dory/core/devices/terminalDevice.h>
-#include <dory/core/generic/repository.h>
 #include <dory/core/repositories/iRepository.h>
 #include <dory/core/repositories/pipelineRepository.h>
 #include <dory/core/services/logServiceNull.h>
+#include <dory/core/services/logService.h>
 
 namespace dory::game::engine
 {
@@ -35,6 +35,7 @@ namespace dory::game::engine
 
         registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
         registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>());
-        registry.set<core::services::ILogService>(libraryHandle, std::make_shared<core::services::LogServiceNull>());
+        registry.set<core::services::IAppLogger>(libraryHandle, std::make_shared<core::services::LogService<core::services::IAppLogger>>());
+        registry.set<core::services::IConfigLogger>(libraryHandle, std::make_shared<core::services::LogService<core::services::IConfigLogger>>());
     }
 }
