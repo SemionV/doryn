@@ -15,14 +15,14 @@ namespace dory::core::events
         struct Initialize {};
         struct Stop {};
 
-        using Bundle = EventBundle<const Initialize, const Stop>;
+        using Bundle = generic::events::EventBundle<const Initialize, const Stop>;
     };
 
     namespace application
     {
         struct Exit {};
 
-        using Bundle = EventBundle<const Exit>;
+        using Bundle = generic::events::EventBundle<const Exit>;
     }
 
     namespace io
@@ -43,7 +43,7 @@ namespace dory::core::events
             int character = 0;
         };
 
-        using Bundle = EventBufferBundle<KeyPressEvent>;
+        using Bundle = generic::events::EventBufferBundle<KeyPressEvent>;
     }
 
     namespace script
@@ -54,7 +54,7 @@ namespace dory::core::events
             const std::map<std::string, std::any> arguments;
         };
 
-        using Bundle = EventBundle<const Run>;
+        using Bundle = generic::events::EventBundle<const Run>;
     }
 
     namespace window
@@ -64,6 +64,6 @@ namespace dory::core::events
             int windowId;
         };
 
-        using Bundle = EventBundle<const Close>;;
+        using Bundle = generic::events::EventBundle<const Close>;;
     }
 }

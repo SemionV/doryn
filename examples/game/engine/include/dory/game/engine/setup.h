@@ -12,7 +12,7 @@ namespace dory::game::engine
         template<typename TEventBundle>
         void registerEventBundle(const core::extensionPlatform::LibraryHandle& libraryHandle,core::Registry& registry)
         {
-            auto instance = std::make_shared<core::events::DispatcherCannon<typename TEventBundle::IListener,
+            auto instance = std::make_shared<core::generic::events::DispatcherCannon<typename TEventBundle::IListener,
                     typename TEventBundle::IDispatcher,
                     typename TEventBundle::EventListType>>();
 
@@ -20,9 +20,9 @@ namespace dory::game::engine
         }
 
         template<typename TEventBundle>
-        void registerEventBufferBundle(const core::extensionPlatform::LibraryHandle& libraryHandle,core::Registry& registry)
+        void registerEventBufferBundle(const core::extensionPlatform::LibraryHandle& libraryHandle, core::Registry& registry)
         {
-            auto instance = std::make_shared<core::events::DispatcherCannonBuffer<typename TEventBundle::IListener,
+            auto instance = std::make_shared<core::generic::events::DispatcherCannonBuffer<typename TEventBundle::IListener,
                     typename TEventBundle::IDispatcher,
                     typename TEventBundle::EventListType>>();
 

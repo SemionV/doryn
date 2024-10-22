@@ -30,10 +30,8 @@ namespace dory::core::services
         {}
     };
 
-    using LogServiceNull = generic::implementation::Implementation<
-            generic::implementation::ImplementationPolicy<
-                    generic::TypeList<ILogService>,
-                    generic::implementation::ImplementationList<LogServiceNullGeneric>,
-                    ILogService::MessageTypes>
-                >;
+    struct LogServiceNullPolicy: generic::implementation::ImplementationPolicy<generic::implementation::ImplementationList<LogServiceNullGeneric>>
+    {};
+
+    using LogServiceNull = generic::implementation::Implementation<generic::TypeList<ILogService>, ILogService::MessageTypes, LogServiceNullPolicy>;
 }
