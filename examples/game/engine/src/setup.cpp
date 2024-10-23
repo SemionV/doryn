@@ -32,11 +32,15 @@ namespace dory::game::engine
         registerRepository<core::resources::entity::Camera>(libraryHandle, registry);
         registerRepository<core::resources::entity::View>(libraryHandle, registry);
         registerRepository<core::resources::entity::Window>(libraryHandle, registry);
-        registry.set<core::repositories::IPipelineRepository, core::repositories::IPipelineNodeRepository>(libraryHandle, std::make_shared<core::repositories::PipelineRepository>());
+        auto pipelineRepository = std::make_shared<core::repositories::PipelineRepository>();
+        registry.set<core::repositories::IPipelineRepository>(libraryHandle, pipelineRepository);
+        registry.set<core::repositories::IPipelineNodeRepository>(libraryHandle, pipelineRepository);
 
         registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
         registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>());
-        registry.set<core::services::IAppLogger>(libraryHandle, std::make_shared<core::services::LogService<core::services::IAppLogger>>());
-        registry.set<core::services::IConfigLogger>(libraryHandle, std::make_shared<core::services::LogService<core::services::IConfigLogger>>());
+
+        std::shared_ptr<core::services::IMultiSinkLogService> appLogger = std::make_shared<core::services::LogService>();
+        registry.set<core::services::IMultiSinkLogService, core::Logger::App>(libraryHandle, appLogger);
+        registry.set<core::services::IMultiSinkLogService, core::Logger::Config>(libraryHandle, std::make_shared<core::services::LogService>());
     }
 }

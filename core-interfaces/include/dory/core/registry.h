@@ -15,20 +15,20 @@
 
 namespace dory::core
 {
-    namespace services
+    enum class Identifier
     {
-        class ILibraryService;
-    }
+        General
+    };
 
-    template<typename TService>
+    template<typename TServiceInterface, auto identifier = Identifier::General>
     class ResourceHandleController
     {
     private:
-        using ServicePtrType = std::shared_ptr<TService>;
+        using ServicePtrType = std::shared_ptr<TServiceInterface>;
         std::shared_ptr<extensionPlatform::ResourceHandle<ServicePtrType>> _serviceHandle;
 
     protected:
-        void _set(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TService> service)
+        void _set(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TServiceInterface> service)
         {
             _serviceHandle = extensionPlatform::makeResourceHandle<ServicePtrType>(libraryHandle, std::move(service));
         }
@@ -49,26 +49,33 @@ namespace dory::core
         }
     };
 
+    template<typename TInterface, auto Identifier = Identifier::General>
+    struct ServiceEntry
+    {
+        using InterfaceType = TInterface;
+        static const constexpr decltype(Identifier) identifier = Identifier;
+    };
+
     template<typename... TServices>
-    struct RegistryLayer: public ResourceHandleController<TServices>...
+    struct RegistryLayer: public ResourceHandleController<typename TServices::InterfaceType, TServices::identifier>...
     {
     public:
-        template<typename... TInterfaces, typename TImplementation = generic::FirstTypeT<TInterfaces...>>
-        void set(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TImplementation> service)
+        template<typename TInterface, auto identifier = Identifier::General>
+        void set(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TInterface> service)
         {
-            (this->ResourceHandleController<TInterfaces>::_set(libraryHandle, service), ...);
+            this->ResourceHandleController<TInterface, identifier>::_set(libraryHandle, service);
         }
 
-        template<typename TService>
+        template<typename TService, auto identifier = Identifier::General>
         void reset()
         {
-            ResourceHandleController<TService>::_reset();
+            this->ResourceHandleController<TService, identifier>::_reset();
         }
 
-        template<typename TService>
+        template<typename TService, auto identifier = Identifier::General>
         auto get()
         {
-            return ResourceHandleController<TService>::_get();;
+            return this->ResourceHandleController<TService, identifier>::_get();;
         }
     };
 
@@ -80,32 +87,37 @@ namespace dory::core
         using IPipelineNodeRepository = core::repositories::IRepository<core::resources::entity::PipelineNode<core::resources::DataContext>>;
     }
 
-    struct Registry: RegistryLayer<
+    enum class Logger
+    {
+        App,
+        Config
+    };
+
+    struct Registry: public RegistryLayer<
             /*Events*/
-            events::mainController::Bundle::IDispatcher,
-            events::mainController::Bundle::IListener,
-            events::application::Bundle::IDispatcher,
-            events::application::Bundle::IListener,
-            events::io::Bundle::IDispatcher,
-            events::io::Bundle::IListener,
-            events::script::Bundle::IDispatcher,
-            events::script::Bundle::IListener,
-            events::window::Bundle::IDispatcher,
-            events::window::Bundle::IListener,
+            ServiceEntry<events::mainController::Bundle::IDispatcher>,
+            ServiceEntry<events::mainController::Bundle::IListener>,
+            ServiceEntry<events::application::Bundle::IDispatcher>,
+            ServiceEntry<events::application::Bundle::IListener>,
+            ServiceEntry<events::io::Bundle::IDispatcher>,
+            ServiceEntry<events::io::Bundle::IListener>,
+            ServiceEntry<events::script::Bundle::IDispatcher>,
+            ServiceEntry<events::script::Bundle::IListener>,
+            ServiceEntry<events::window::Bundle::IDispatcher>,
+            ServiceEntry<events::window::Bundle::IListener>,
             /*Devices*/
-            devices::IStandardIODevice,
-            devices::ITerminalDevice,
+            ServiceEntry<devices::IStandardIODevice>,
+            ServiceEntry<devices::ITerminalDevice>,
             /*Repositories*/
-            repositories::ICameraRepository,
-            repositories::IViewRepository,
-            repositories::IWindowRepository,
-            repositories::IPipelineRepository,
-            repositories::IPipelineNodeRepository,
+            ServiceEntry<repositories::ICameraRepository>,
+            ServiceEntry<repositories::IViewRepository>,
+            ServiceEntry<repositories::IWindowRepository>,
+            ServiceEntry<repositories::IPipelineRepository>,
+            ServiceEntry<repositories::IPipelineNodeRepository>,
             /*Services*/
-            services::ILibraryService,
-            services::IFileService,
-            services::ILogService,
-            services::IAppLogger,
-            services::IConfigLogger>
+            ServiceEntry<services::ILibraryService>,
+            ServiceEntry<services::IFileService>,
+            ServiceEntry<services::IMultiSinkLogService, Logger::App>,
+            ServiceEntry<services::IMultiSinkLogService, Logger::Config>>
     {};
 }

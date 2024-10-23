@@ -88,8 +88,7 @@ namespace dory::core::services
         std::shared_ptr<spdlog::logger> _logger;
     };
 
-    template<typename TLoggerInterface>
-    class MultiSinkLogService: public LogServiceRoot, public TLoggerInterface
+    class MultiSinkLogService: public LogServiceRoot, public IMultiSinkLogService
     {
     private:
         void buildLogger(const std::string& loggerName, const std::ranges::range auto& sinks)
@@ -140,15 +139,11 @@ namespace dory::core::services
     };
 
     template<typename TPolicy>
-    class LoggerHierarchyTop: public MultiSinkLogService<typename TPolicy::LoggerInterfaceType>
+    class LoggerHierarchyTop: public MultiSinkLogService
     {};
 
-    template<typename TLoggerInterface>
     struct LogServicePolicy: generic::implementation::ImplementationPolicy<generic::implementation::ImplementationList<LogServiceGeneric>, LoggerHierarchyTop>
-    {
-        using LoggerInterfaceType = TLoggerInterface;
-    };
+    {};
 
-    template<typename TLoggerInterface>
-    using LogService = generic::implementation::Implementation<generic::TypeList<>, ILogService::MessageTypes, LogServicePolicy<TLoggerInterface>>;
+    using LogService = generic::implementation::Implementation<generic::TypeList<>, ILogService::MessageTypes, LogServicePolicy>;
 }

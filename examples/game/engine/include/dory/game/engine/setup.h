@@ -16,7 +16,8 @@ namespace dory::game::engine
                     typename TEventBundle::IDispatcher,
                     typename TEventBundle::EventListType>>();
 
-            registry.set<typename TEventBundle::IDispatcher, typename TEventBundle::IListener>(libraryHandle, instance);
+            registry.set<typename TEventBundle::IDispatcher>(libraryHandle, instance);
+            registry.set<typename TEventBundle::IListener>(libraryHandle, instance);
         }
 
         template<typename TEventBundle>
@@ -26,7 +27,8 @@ namespace dory::game::engine
                     typename TEventBundle::IDispatcher,
                     typename TEventBundle::EventListType>>();
 
-            registry.set<typename TEventBundle::IDispatcher, typename TEventBundle::IListener>(libraryHandle, instance);
+            registry.set<typename TEventBundle::IDispatcher>(libraryHandle, instance);
+            registry.set<typename TEventBundle::IListener>(libraryHandle, instance);
         }
 
         template<typename TEntity>

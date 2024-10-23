@@ -45,11 +45,5 @@ namespace dory::core
         public:
             virtual void initialize(const resources::configuration::Logger& loggerConfiguration, Registry& registry) = 0;
         };
-
-        class IAppLogger: public IMultiSinkLogService
-        {};
-
-        class IConfigLogger: public IMultiSinkLogService
-        {};
     }
 }
