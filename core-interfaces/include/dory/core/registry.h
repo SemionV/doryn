@@ -14,6 +14,7 @@
 #include <dory/core/repositories/iPipelineRepository.h>
 #include "services/iLogService.h"
 #include "resources/serviceIdentifer.h"
+#include <dory/core/services/iSerializationService.h>
 
 namespace dory::core
 {
@@ -150,6 +151,12 @@ namespace dory::core
         Config
     };
 
+    enum class DataFormat
+    {
+        Yaml,
+        Json
+    };
+
     struct Registry: public RegistryLayer<
             /*Events*/
             ServiceEntry<events::mainController::Bundle::IDispatcher>,
@@ -174,6 +181,7 @@ namespace dory::core
             /*Services*/
             ServiceEntry<services::ILibraryService>,
             ServiceEntry<services::IFileService>,
-            ServiceEntry<services::IMultiSinkLogService, Logger>>
+            ServiceEntry<services::IMultiSinkLogService, Logger>,
+            ServiceEntry<services::serialization::ISerializationService, DataFormat>>
     {};
 }

@@ -31,12 +31,5 @@ namespace dory::core::services::serialization
     {};
 
     using SerializationTypes = generic::TypeList<>;
-
     using ISerializationService = ISerializationServiceBundle<SerializationTypes>;
-
-    class IYamlSerializationService: public ISerializationService
-    {};
-
-    class IJsonSerializationService: public ISerializationService
-    {};
 }

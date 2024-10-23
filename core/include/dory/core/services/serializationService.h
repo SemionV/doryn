@@ -32,5 +32,5 @@ namespace dory::core::services::serialization
     struct YamlSerializationServicePolicy: generic::implementation::ImplementationPolicy<generic::implementation::ImplementationList<YamlSerializationServiceGeneric>>
     {};
 
-    using YamlSerializationService = generic::implementation::Implementation<generic::TypeList<IYamlSerializationService>, IYamlSerializationService::Types, YamlSerializationServicePolicy>;
+    using YamlSerializationService = generic::implementation::Implementation<generic::TypeList<ISerializationService>, ISerializationService ::Types, YamlSerializationServicePolicy>;
 }
