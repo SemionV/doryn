@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <map>
 #include "services/iFileService.h"
 #include "services/iLibraryService.h"
 #include "events/eventTypes.h"
@@ -15,17 +16,17 @@
 
 namespace dory::core
 {
+    //General service identifier type
     enum class Identifier
-    {
-        General
-    };
+    {};
 
-    template<typename TServiceInterface, auto identifier = Identifier::General>
+    template<typename TServiceInterface, typename TIdentifier = Identifier>
     class ResourceHandleController
     {
     private:
         using ServicePtrType = std::shared_ptr<TServiceInterface>;
         std::shared_ptr<extensionPlatform::ResourceHandle<ServicePtrType>> _serviceHandle;
+        std::map<TIdentifier, std::shared_ptr<extensionPlatform::ResourceHandle<ServicePtrType>>> _serviceHandles;
 
     protected:
         void _set(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TServiceInterface> service)
@@ -33,9 +34,22 @@ namespace dory::core
             _serviceHandle = extensionPlatform::makeResourceHandle<ServicePtrType>(libraryHandle, std::move(service));
         }
 
+        void _set(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TServiceInterface> service, TIdentifier identifier)
+        {
+            _serviceHandles[identifier] = extensionPlatform::makeResourceHandle<ServicePtrType>(libraryHandle, std::move(service));
+        }
+
         void _reset()
         {
             _serviceHandle.reset();
+        }
+
+        void _reset(TIdentifier identifier)
+        {
+            if(_serviceHandles.contains(identifier))
+            {
+                _serviceHandles.erase(identifier);
+            }
         }
 
         auto _get()
@@ -47,35 +61,85 @@ namespace dory::core
 
             return extensionPlatform::ResourceRef<ServicePtrType>{{}, nullptr};
         }
+
+        auto _get(TIdentifier identifier)
+        {
+            if(_serviceHandles.contains(identifier))
+            {
+                auto serviceHandle = _serviceHandles[identifier];
+                if(serviceHandle)
+                {
+                    return serviceHandle->lock();
+                }
+            }
+
+            return extensionPlatform::ResourceRef<ServicePtrType>{{}, nullptr};
+        }
     };
 
-    template<typename TInterface, auto Identifier = Identifier::General>
+    template<typename TInterface, typename TIdentifier = Identifier>
     struct ServiceEntry
     {
         using InterfaceType = TInterface;
-        static const constexpr decltype(Identifier) identifier = Identifier;
+        using IdentifierType = TIdentifier;
     };
 
     template<typename... TServices>
-    struct RegistryLayer: public ResourceHandleController<typename TServices::InterfaceType, TServices::identifier>...
+    struct RegistryLayer: public ResourceHandleController<typename TServices::InterfaceType, typename TServices::IdentifierType>...
     {
     public:
-        template<typename TInterface, auto identifier = Identifier::General>
+        template<typename TInterface>
         void set(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TInterface> service)
         {
-            this->ResourceHandleController<TInterface, identifier>::_set(libraryHandle, service);
+            this->ResourceHandleController<TInterface, Identifier>::_set(libraryHandle, service);
         }
 
-        template<typename TService, auto identifier = Identifier::General>
+        template<typename TInterface, auto identifier>
+        void set(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TInterface> service)
+        {
+            this->ResourceHandleController<TInterface, decltype(identifier)>::_set(libraryHandle, service, identifier);
+        }
+
+        template<typename TInterface, typename TIdentifier>
+        void set(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TInterface> service, TIdentifier identifier)
+        {
+            this->ResourceHandleController<TInterface, TIdentifier>::_set(libraryHandle, service, identifier);
+        }
+
+        template<typename TService>
         void reset()
         {
-            this->ResourceHandleController<TService, identifier>::_reset();
+            this->ResourceHandleController<TService, Identifier>::_reset();
         }
 
-        template<typename TService, auto identifier = Identifier::General>
+        template<typename TService, auto identifier>
+        void reset()
+        {
+            this->ResourceHandleController<TService, decltype(identifier)>::_reset(identifier);
+        }
+
+        template<typename TService, typename TIdentifier>
+        void reset(TIdentifier identifier)
+        {
+            this->ResourceHandleController<TService, TIdentifier>::_reset(identifier);
+        }
+
+        template<typename TService>
         auto get()
         {
-            return this->ResourceHandleController<TService, identifier>::_get();;
+            return this->ResourceHandleController<TService, Identifier>::_get();;
+        }
+
+        template<typename TService, auto identifier>
+        auto get()
+        {
+            return this->ResourceHandleController<TService, decltype(identifier)>::_get(identifier);;
+        }
+
+        template<typename TService, typename TIdentifier>
+        auto get(TIdentifier identifier)
+        {
+            return this->ResourceHandleController<TService, TIdentifier>::_get(identifier);;
         }
     };
 
@@ -117,7 +181,6 @@ namespace dory::core
             /*Services*/
             ServiceEntry<services::ILibraryService>,
             ServiceEntry<services::IFileService>,
-            ServiceEntry<services::IMultiSinkLogService, Logger::App>,
-            ServiceEntry<services::IMultiSinkLogService, Logger::Config>>
+            ServiceEntry<services::IMultiSinkLogService, Logger>>
     {};
 }

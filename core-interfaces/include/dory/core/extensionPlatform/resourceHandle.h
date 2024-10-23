@@ -13,6 +13,8 @@ namespace dory::core::extensionPlatform
         LibraryHandle _library;
 
     public:
+        ResourceHandle() = default;
+
         explicit ResourceHandle(LibraryHandle library, TResource resource):
                 _library(std::move(library)),
                 _resource(resource)

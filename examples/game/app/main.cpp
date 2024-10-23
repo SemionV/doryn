@@ -104,7 +104,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
             logger->information(std::string{"Hello from AppLogger!"});
         }
 
-        auto logger2 = registry.get<dory::core::services::IMultiSinkLogService, dory::core::Logger::Config>();
+        auto logger2 = registry.get<dory::core::services::IMultiSinkLogService>(dory::core::Logger::Config);
         if(logger2)
         {
             config.loggingConfiguration.mainLogger.name = "ConfigLogger";
