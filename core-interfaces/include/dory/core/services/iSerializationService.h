@@ -6,7 +6,7 @@
 namespace dory::core::services::serialization
 {
     template<typename T>
-    class ISerializationServiceGeneric
+    class ISerializerGeneric
     {
     public:
         virtual std::string serialize(T&& object) = 0;
@@ -15,21 +15,21 @@ namespace dory::core::services::serialization
     };
 
     template<typename... Ts>
-    class ISerializationServiceBundle: public ISerializationServiceGeneric<Ts>...
+    class ISerializerBundle: public ISerializerGeneric<Ts>...
     {
     public:
         using Types =  generic::TypeList<Ts...>;
 
-        using ISerializationServiceGeneric<Ts>::serialize...;
-        using ISerializationServiceGeneric<Ts>::deserialize...;
+        using ISerializerGeneric<Ts>::serialize...;
+        using ISerializerGeneric<Ts>::deserialize...;
 
-        virtual ~ISerializationServiceBundle() = default;
+        virtual ~ISerializerBundle() = default;
     };
 
     template<typename... Ts>
-    class ISerializationServiceBundle<generic::TypeList<Ts...>>: public ISerializationServiceBundle<Ts...>
+    class ISerializerBundle<generic::TypeList<Ts...>>: public ISerializerBundle<Ts...>
     {};
 
     using SerializationTypes = generic::TypeList<>;
-    using ISerializationService = ISerializationServiceBundle<SerializationTypes>;
+    using ISerializer = ISerializerBundle<SerializationTypes>;
 }

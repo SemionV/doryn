@@ -20,6 +20,7 @@ target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR
 
 target_link_libraries(${DORY_MODULE_NAME} PUBLIC
         dory-core-interfaces
+        dory-generic-tools
         dory-serialization
         core::boost
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)

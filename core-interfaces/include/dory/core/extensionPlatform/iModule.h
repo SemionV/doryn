@@ -1,6 +1,6 @@
 #pragma once
 
-#include "libraryHandle.h"
+#include "../../../../../components/generic/include/dory/generic/extension/libraryHandle.h"
 
 namespace dory::core
 {
@@ -10,15 +10,15 @@ namespace dory::core
     {
         class DataContext;
     }
-}
 
-namespace dory::core::extensionPlatform
-{
-    class IModule
+    namespace extensionPlatform
     {
-    public:
-        virtual ~IModule() = default;
+        class IModule
+        {
+        public:
+            virtual ~IModule() = default;
 
-        virtual void attach(LibraryHandle library, resources::DataContext& dataContext) = 0;
-    };
+            virtual void attach(LibraryHandle library, resources::DataContext& dataContext) = 0;
+        };
+    }
 }

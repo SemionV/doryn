@@ -5,9 +5,9 @@
 #include <iostream>
 #include <memory>
 
+#include <dory/core/registry.h>
 #include <dory/core/devices/iStandardIODevice.h>
 #include <dory/core/events/eventTypes.h>
-#include <dory/core/registry.h>
 
 namespace dory::core::devices
 {

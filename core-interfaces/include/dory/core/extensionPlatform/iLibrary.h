@@ -5,35 +5,36 @@
 #include <memory>
 #include <utility>
 
-namespace dory::core::extensionPlatform
-{
-    namespace dory::core
-    {
-        class Registry;
-    }
 
-    class ILibrary
+namespace dory::core
+{
+    class Registry;
+
+    namespace extensionPlatform
     {
-    public:
+        class ILibrary
+        {
+        public:
 #ifdef DORY_PLATFORM_WIN32
-        const constexpr static std::string_view systemSharedLibraryFileExtension = ".dll";
+            const constexpr static std::string_view systemSharedLibraryFileExtension = ".dll";
 #endif
 #ifdef DORY_PLATFORM_LINUX
-        const constexpr static std::string_view systemSharedLibraryFileExtension = ".so";
+            const constexpr static std::string_view systemSharedLibraryFileExtension = ".so";
 #endif
 
-    public:
-        const std::string name;
-        const std::filesystem::path path;
+        public:
+            const std::string name;
+            const std::filesystem::path path;
 
-        ILibrary() = default;
-        virtual ~ILibrary() = default;
+            ILibrary() = default;
+            virtual ~ILibrary() = default;
 
-        ILibrary(std::string  libraryName, std::filesystem::path  libraryPath):
-                name(std::move(libraryName)), path(std::move(libraryPath))
-        {}
+            ILibrary(std::string  libraryName, std::filesystem::path  libraryPath):
+                    name(std::move(libraryName)), path(std::move(libraryPath))
+            {}
 
-        virtual bool isLoaded() = 0;
-        virtual std::shared_ptr<IModule> loadModule(const std::string& moduleName, Registry& registry) = 0;
-    };
+            virtual bool isLoaded() = 0;
+            virtual std::shared_ptr<IModule> loadModule(const std::string& moduleName, Registry& registry) = 0;
+        };
+    }
 }

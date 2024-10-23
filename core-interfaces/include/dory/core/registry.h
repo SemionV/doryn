@@ -7,7 +7,7 @@
 #include "events/eventTypes.h"
 #include "generic/typeTraits.h"
 #include <dory/core/resources/entity.h>
-#include <dory/core/extensionPlatform/resourceHandle.h>
+#include "../../../../components/generic/include/dory/generic/extension/resourceHandle.h"
 #include <dory/core/devices/iStandardIODevice.h>
 #include <dory/core/devices/iTerminalDevice.h>
 #include <dory/core/repositories/iRepository.h>
@@ -182,6 +182,6 @@ namespace dory::core
             ServiceEntry<services::ILibraryService>,
             ServiceEntry<services::IFileService>,
             ServiceEntry<services::IMultiSinkLogService, Logger>,
-            ServiceEntry<services::serialization::ISerializationService, DataFormat>>
+            ServiceEntry<services::serialization::ISerializer, DataFormat>>
     {};
 }

@@ -10,7 +10,7 @@
 namespace dory::core::services::serialization
 {
     template<typename T, typename TPolicy, typename TState>
-    class YamlSerializationServiceGeneric: public generic::implementation::ImplementationLevel<TPolicy, TState>
+    class YamlSerializerGeneric: public generic::implementation::ImplementationLevel<TPolicy, TState>
     {
     public:
         inline std::string serialize(T&& object) final
@@ -29,8 +29,8 @@ namespace dory::core::services::serialization
         }
     };
 
-    struct YamlSerializationServicePolicy: generic::implementation::ImplementationPolicy<generic::implementation::ImplementationList<YamlSerializationServiceGeneric>>
+    struct YamlSerializerPolicy: generic::implementation::ImplementationPolicy<generic::implementation::ImplementationList<YamlSerializerGeneric>>
     {};
 
-    using YamlSerializationService = generic::implementation::Implementation<generic::TypeList<ISerializationService>, ISerializationService ::Types, YamlSerializationServicePolicy>;
+    using YamlSerializer = generic::implementation::Implementation<generic::TypeList<ISerializer>, ISerializer::Types, YamlSerializerPolicy>;
 }

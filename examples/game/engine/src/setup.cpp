@@ -43,6 +43,6 @@ namespace dory::game::engine
         registry.set<core::services::IMultiSinkLogService, core::Logger::App>(libraryHandle, appLogger);
         registry.set<core::services::IMultiSinkLogService, core::Logger::Config>(libraryHandle, std::make_shared<core::services::LogService>());
 
-        registry.set<core::services::serialization::ISerializationService, core::DataFormat::Yaml>(libraryHandle, std::make_shared<core::services::serialization::YamlSerializationService>());
+        registry.set<core::services::serialization::ISerializer, core::DataFormat::Yaml>(libraryHandle, std::make_shared<core::services::serialization::YamlSerializer>());
     }
 }

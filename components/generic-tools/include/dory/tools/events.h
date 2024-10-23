@@ -1,8 +1,8 @@
 #pragma once
 
-#include "dory/core/generic/typeTraits.h"
-#include "dory/core/generic/typeList.h"
-#include "../../../../../components/generic/include/dory/generic/extension/resourceHandle.h"
+#include "typeTraits.h"
+#include "typeList.h"
+#include "../../../../generic/include/dory/generic/extension/resourceHandle.h"
 #include "implementation.h"
 #include <mutex>
 #include <functional>

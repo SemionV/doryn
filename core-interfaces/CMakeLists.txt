@@ -4,6 +4,8 @@ add_library(${DORY_MODULE_NAME} INTERFACE
         include/dory/core/services/iFileService.h
         include/dory/core/registry.h)
 
+target_link_libraries(${DORY_MODULE_NAME} INTERFACE dory-generic)
+
 target_sources(${DORY_MODULE_NAME} INTERFACE
     FILE_SET HEADERS
     BASE_DIRS
