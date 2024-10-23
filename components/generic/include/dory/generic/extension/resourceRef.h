@@ -4,8 +4,6 @@
 
 namespace dory::core
 {
-    class ILibrary;
-
     namespace extensionPlatform
     {
         template<typename TResource>

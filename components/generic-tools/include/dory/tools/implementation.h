@@ -1,6 +1,6 @@
 #pragma once
 
-#include "typeList.h"
+#include "dory/generic/typeList.h"
 
 namespace dory::core::generic::implementation
 {

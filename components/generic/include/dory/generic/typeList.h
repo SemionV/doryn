@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-namespace dory::core::generic
+namespace dory::generic
 {
     template <typename... Types>
     struct TypeList {};

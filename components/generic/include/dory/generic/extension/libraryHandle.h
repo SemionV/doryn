@@ -3,11 +3,10 @@
 #include <cassert>
 #include <optional>
 #include <memory>
+#include "iLibrary.h"
 
 namespace dory::core::extensionPlatform
 {
-    class ILibrary;
-
     class LibraryHandle
     {
     private:

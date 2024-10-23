@@ -9,7 +9,7 @@ Tasks:
   * Configure and load plugins
   * Switch from dynamic library to static(cmake setup and library embedding in the source code(factory))
 * Flatten controller pipeline: store entities in a sorted flat array
-* Integrate C# dotnet core as scripting mainController(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
+* Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
 * OpenGL Renderer
   * Static mapping of Vertex Attributes
   * Fill Buffers with mapped data

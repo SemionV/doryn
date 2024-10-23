@@ -13,7 +13,7 @@
 #include <cctype>
 #include <memory>
 
-namespace dory::core::generic
+namespace dory::generic
 {
     using Byte = std::uint8_t;
 

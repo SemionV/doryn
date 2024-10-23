@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <filesystem>
-#include <dory/core/extensionPlatform/iLibrary.h>
+#include <dory/core/extensionPlatform/iDynamicLibrary.h>
 
 namespace dory::core::services
 {
@@ -11,7 +11,7 @@ namespace dory::core::services
     public:
         virtual ~ILibraryService() = default;
 
-        virtual std::shared_ptr<extensionPlatform::ILibrary> load(const std::string& libraryName, const std::filesystem::path& libraryPath) = 0;
+        virtual std::shared_ptr<extensionPlatform::IDynamicLibrary> load(const std::string& libraryName, const std::filesystem::path& libraryPath) = 0;
         virtual void unload(const std::string& libraryName) = 0;
     };
 }

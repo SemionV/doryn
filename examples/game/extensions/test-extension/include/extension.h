@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/core/extensionPlatform/iModule.h>
+#include "dory/generic/extension/iModule.h"
 #include "../../../../../components/generic/include/dory/generic/extension/registryResourceScope.h"
 #include <dory/core/registry.h>
 

@@ -1,6 +1,8 @@
 #pragma once
 
-#include "iLibrary.h"
+#include <dory/core/registry.h>
+#include <dory/generic/extension/iLibrary.h>
+#include <dory/generic/extension/iModule.h>
 
 namespace dory::core::extensionPlatform
 {
@@ -13,5 +15,6 @@ namespace dory::core::extensionPlatform
 
         virtual void load(const std::filesystem::path& libraryPath) = 0;
         virtual void unload() = 0;
+        virtual std::shared_ptr<IModule> loadModule(const std::string& moduleName, Registry& registry) = 0;
     };
 }

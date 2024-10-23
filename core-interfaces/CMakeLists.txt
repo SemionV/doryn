@@ -14,6 +14,5 @@ target_sources(${DORY_MODULE_NAME} INTERFACE
     FILES
         include/dory/core/services/iFileService.h
         include/dory/core/services/iLibraryService.h
-        include/dory/core/extensionPlatform/iLibrary.h
         include/dory/core/registry.h
         include/dory/core/iSetup.h)

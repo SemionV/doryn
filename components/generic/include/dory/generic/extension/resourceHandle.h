@@ -1,5 +1,6 @@
 #pragma once
 
+#include "iLibrary.h"
 #include "resourceRef.h"
 #include "libraryHandle.h"
 
@@ -15,8 +16,8 @@ namespace dory::core::extensionPlatform
     public:
         ResourceHandle() = default;
 
-        explicit ResourceHandle(LibraryHandle library, TResource resource):
-                _library(std::move(library)),
+        explicit ResourceHandle(const LibraryHandle& library, TResource resource):
+                _library(library),
                 _resource(resource)
         {}
 
@@ -33,7 +34,7 @@ namespace dory::core::extensionPlatform
     };
 
     template<typename TResource>
-    std::shared_ptr<ResourceHandle<TResource>> makeResourceHandle(LibraryHandle& libraryHandle, TResource resource)
+    auto makeResourceHandle(LibraryHandle& libraryHandle, TResource resource)
     {
         return std::make_shared<ResourceHandle<TResource>>(libraryHandle, resource);
     }
