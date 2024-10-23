@@ -1,35 +1,24 @@
 #pragma once
 
 #include <dory/core/registry.h>
+#include <dory/core/resources/serviceIdentifer.h>
 #include <memory>
 
 namespace dory::core::extensionPlatform
 {
     template<typename T>
-    class RegistryResourceScope
+    class RegistryResourceScopeRoot
     {
-    public:
+    protected:
         Registry& _registry;
         std::shared_ptr<T> _resource;
 
-    public:
-        RegistryResourceScope(Registry& registry, std::shared_ptr<T> resource):
+        RegistryResourceScopeRoot(Registry& registry, std::shared_ptr<T> resource):
                 _registry(registry),
                 _resource(resource)
         {}
 
-        ~RegistryResourceScope()
-        {
-            if(_resource)
-            {
-                auto resourceRef = _registry.get<T>();
-                if(resourceRef == _resource)
-                {
-                    _registry.reset<T>();
-                }
-            }
-        }
-
+    public:
         std::shared_ptr<T>& get()
         {
             return _resource;
@@ -44,6 +33,47 @@ namespace dory::core::extensionPlatform
         {
             return *_resource;
         }
+    };
 
+    template<typename T, typename TIdentifier = resources::ServiceIdentifier>
+    class RegistryResourceScope;
+
+    template<typename T, typename TIdentifier>
+    class RegistryResourceScope: public RegistryResourceScopeRoot<T>
+    {
+        TIdentifier _identifier;
+
+    public:
+        RegistryResourceScope(Registry& registry, std::shared_ptr<T> resource, TIdentifier identifier):
+                RegistryResourceScopeRoot<T>(registry, resource),
+                _identifier(identifier)
+        {}
+
+        ~RegistryResourceScope()
+        {
+            auto resourceRef = this->_registry.template get<T>(_identifier);
+            if(resourceRef == this->_resource)
+            {
+                this->_registry.template reset<T>(_identifier);
+            }
+        }
+    };
+
+    template<typename T>
+    class RegistryResourceScope<T, resources::ServiceIdentifier>: public RegistryResourceScopeRoot<T>
+    {
+    public:
+        RegistryResourceScope(Registry& registry, std::shared_ptr<T> resource):
+                RegistryResourceScopeRoot<T>(registry, resource)
+        {}
+
+        ~RegistryResourceScope()
+        {
+            auto resourceRef = this->_registry.template get<T>();
+            if(resourceRef == this->_resource)
+            {
+                this->_registry.template reset<T>();
+            }
+        }
     };
 }
