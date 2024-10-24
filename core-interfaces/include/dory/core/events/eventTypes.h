@@ -1,12 +1,9 @@
 #pragma once
 
 #include <any>
-#include <functional>
 #include <map>
 #include <string>
-#include <dory/core/resources/dataContext.h>
-#include <dory/core/generic/typeList.h>
-#include <dory/core/generic/events.h>
+#include "interface.h"
 
 namespace dory::core::events
 {
@@ -15,14 +12,14 @@ namespace dory::core::events
         struct Initialize {};
         struct Stop {};
 
-        using Bundle = generic::events::EventBundle<const Initialize, const Stop>;
+        using Bundle = EventBundle<const Initialize, const Stop>;
     };
 
     namespace application
     {
         struct Exit {};
 
-        using Bundle = generic::events::EventBundle<const Exit>;
+        using Bundle = EventBundle<const Exit>;
     }
 
     namespace io
@@ -43,7 +40,7 @@ namespace dory::core::events
             int character = 0;
         };
 
-        using Bundle = generic::events::EventBufferBundle<KeyPressEvent>;
+        using Bundle = EventBufferBundle<KeyPressEvent>;
     }
 
     namespace script
@@ -54,7 +51,7 @@ namespace dory::core::events
             const std::map<std::string, std::any> arguments;
         };
 
-        using Bundle = generic::events::EventBundle<const Run>;
+        using Bundle = EventBundle<const Run>;
     }
 
     namespace window
@@ -64,6 +61,6 @@ namespace dory::core::events
             int windowId;
         };
 
-        using Bundle = generic::events::EventBundle<const Close>;;
+        using Bundle = EventBundle<const Close>;;
     }
 }

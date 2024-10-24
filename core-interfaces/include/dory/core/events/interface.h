@@ -1,9 +1,9 @@
 #pragma once
 
 #include <functional>
-#include "typeList.h"
+#include <dory/generic/typeList.h>
 
-namespace dory::generic::events
+namespace dory::core::events
 {
     template<typename TEvent>
     class IEventListener

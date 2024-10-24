@@ -1,7 +1,7 @@
 #pragma once
 
 #include <dory/core/services/iSerializationService.h>
-#include <dory/core/generic/implementation.h>
+#include <dory/core/implementation.h>
 #include <dory/serialization/yamlSerializer.h>
 #include <dory/serialization/yamlDeserializer.h>
 #include <dory/serialization/jsonSerializer.h>
@@ -10,7 +10,7 @@
 namespace dory::core::services::serialization
 {
     template<typename T, typename TPolicy, typename TState>
-    class YamlSerializerGeneric: public generic::implementation::ImplementationLevel<TPolicy, TState>
+    class YamlSerializerGeneric: public implementation::ImplementationLevel<TPolicy, TState>
     {
     public:
         inline std::string serialize(T&& object) final
@@ -29,8 +29,8 @@ namespace dory::core::services::serialization
         }
     };
 
-    struct YamlSerializerPolicy: generic::implementation::ImplementationPolicy<generic::implementation::ImplementationList<YamlSerializerGeneric>>
+    struct YamlSerializerPolicy: implementation::ImplementationPolicy<implementation::ImplementationList<YamlSerializerGeneric>>
     {};
 
-    using YamlSerializer = generic::implementation::Implementation<generic::TypeList<ISerializer>, ISerializer::Types, YamlSerializerPolicy>;
+    using YamlSerializer = implementation::Implementation<generic::TypeList<ISerializer>, ISerializer::Types, YamlSerializerPolicy>;
 }

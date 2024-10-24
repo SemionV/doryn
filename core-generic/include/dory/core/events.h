@@ -1,13 +1,13 @@
 #pragma once
 
-#include "dory/core/generic/typeTraits.h"
-#include "dory/core/generic/typeList.h"
+#include <dory/generic/typeTraits.h>
+#include <dory/generic/typeList.h>
 #include <dory/generic/extension/resourceHandle.h>
 #include "implementation.h"
 #include <mutex>
 #include <functional>
 
-namespace dory::core::generic::events
+namespace dory::core::events
 {
     template<class... Ts>
     class Callable
@@ -401,90 +401,8 @@ namespace dory::core::generic::events
     };
 
     template<typename TIListener, typename TIDispatcher, typename TEventList>
-    using DispatcherCannon = implementation::Implementation<TypeList<TIListener, TIDispatcher>, TEventList, DispatcherImplPolicy<TEventList, EventCannonHub, ListenerImpl, DispatcherImpl>>;
+    using DispatcherCannon = implementation::Implementation<generic::TypeList<TIListener, TIDispatcher>, TEventList, DispatcherImplPolicy<TEventList, EventCannonHub, ListenerImpl, DispatcherImpl>>;
 
     template<typename TIListener, typename TIDispatcher, typename TEventList>
-    using DispatcherCannonBuffer = implementation::Implementation<TypeList<TIListener, TIDispatcher>, TEventList, DispatcherImplPolicy<TEventList, EventCannonBufferHub, ListenerImpl, DispatcherBufferImpl>>;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    template<typename TEvent>
-    class IEventListener
-    {
-    public:
-        virtual std::size_t attach(std::function<void(resources::DataContext&, TEvent&)> handler) = 0;
-        virtual void detach(std::size_t eventKey, const TEvent& event) = 0;
-    };
-
-    template<typename... TEvents>
-    class IEventsListener: public IEventListener<TEvents>...
-    {
-    public:
-        virtual ~IEventsListener() = default;
-
-        using IEventListener<TEvents>::attach...;
-        using IEventListener<TEvents>::detach...;
-    };
-
-    template<typename... TEvents>
-    class IEventsListener<generic::TypeList<TEvents...>>: public IEventsListener<TEvents...>
-    {};
-
-    template<typename TEvent>
-    class IEventDispatcher
-    {
-    public:
-        virtual void fire(resources::DataContext& context, TEvent& eventData) = 0;
-    };
-
-    template<typename... TEvents>
-    class IEventsDispatcher: public IEventDispatcher<TEvents>...
-    {
-    public:
-        virtual ~IEventsDispatcher() = default;
-
-        using IEventDispatcher<TEvents>::fire...;
-    };
-
-    template<typename... TEvents>
-    class IEventsDispatcher<generic::TypeList<TEvents...>>: public IEventsDispatcher<TEvents...>
-    {};
-
-    template<typename TEvent>
-    class IEventBufferDispatcher
-    {
-    public:
-        virtual void charge(TEvent eventData) = 0;
-        virtual void fireAll(resources::DataContext& context) = 0;
-    };
-
-    template<typename... TEvents>
-    class IEventsBufferDispatcher: public IEventBufferDispatcher<TEvents>...
-    {
-    public:
-        virtual ~IEventsBufferDispatcher() = default;
-
-        using IEventBufferDispatcher<TEvents>::charge...;
-        using IEventBufferDispatcher<TEvents>::fireAll...;
-    };
-
-    template<typename... TEvents>
-    class IEventsBufferDispatcher<generic::TypeList<TEvents...>>: public IEventsBufferDispatcher<TEvents...>
-    {};
-
-    template<typename... TEvents>
-    struct EventBundle
-    {
-        using EventListType = generic::TypeList<TEvents...>;
-        using IDispatcher = IEventsDispatcher<EventListType>;
-        using IListener = IEventsListener<EventListType>;
-    };
-
-    template<typename... TEvents>
-    struct EventBufferBundle
-    {
-        using EventListType = generic::TypeList<TEvents...>;
-        using IDispatcher = IEventsBufferDispatcher<EventListType>;
-        using IListener = IEventsListener<EventListType>;
-    };
+    using DispatcherCannonBuffer = implementation::Implementation<generic::TypeList<TIListener, TIDispatcher>, TEventList, DispatcherImplPolicy<TEventList, EventCannonBufferHub, ListenerImpl, DispatcherBufferImpl>>;
 }

@@ -1,6 +1,5 @@
 add_subdirectory(generics)
 add_subdirectory(generic)
-add_subdirectory(generic-tools)
 add_subdirectory(serialization)
 add_subdirectory(concurrency)
 add_subdirectory(math)

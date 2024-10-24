@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <dory/core/generic/typeList.h>
+#include <dory/generic/typeList.h>
 #include <dory/core/resources/configuration.h>
 
 namespace dory::core

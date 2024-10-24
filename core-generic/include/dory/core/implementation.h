@@ -1,8 +1,8 @@
 #pragma once
 
-#include "typeList.h"
+#include "dory/generic/typeList.h"
 
-namespace dory::core::generic::implementation
+namespace dory::core::implementation
 {
     template<template<typename TParameter, typename TPolicy, typename TState> class... TImplementations>
     struct ImplementationList
@@ -42,21 +42,21 @@ namespace dory::core::generic::implementation
             typename TParameter,
             typename... TParameters,
             typename TCurrentParameter>
-    struct ImplementationLevel<TImplementationPolicy, HierarchyState<TInterfaces, ImplementationList<>, TypeList<TParameter, TParameters...>, TCurrentParameter>>:
-        public ImplementationLevel<TImplementationPolicy, HierarchyState<TInterfaces, typename TImplementationPolicy::ImplementationTypes, TypeList<TParameters...>, TParameter>>
+    struct ImplementationLevel<TImplementationPolicy, HierarchyState<TInterfaces, ImplementationList<>, generic::TypeList<TParameter, TParameters...>, TCurrentParameter>>:
+        public ImplementationLevel<TImplementationPolicy, HierarchyState<TInterfaces, typename TImplementationPolicy::ImplementationTypes, generic::TypeList<TParameters...>, TParameter>>
     {};
 
     template<typename TImplementationPolicy,
             typename TInterface,
             typename... TInterfaces,
             typename TCurrentParameter>
-    struct ImplementationLevel<TImplementationPolicy, HierarchyState<TypeList<TInterface, TInterfaces...>, ImplementationList<>, TypeList<>, TCurrentParameter>>:
+    struct ImplementationLevel<TImplementationPolicy, HierarchyState<generic::TypeList<TInterface, TInterfaces...>, ImplementationList<>, generic::TypeList<>, TCurrentParameter>>:
         public TInterface,
-        public ImplementationLevel<TImplementationPolicy, HierarchyState<TypeList<TInterfaces...>, ImplementationList<>, TypeList<>, TCurrentParameter>>
+        public ImplementationLevel<TImplementationPolicy, HierarchyState<generic::TypeList<TInterfaces...>, ImplementationList<>, generic::TypeList<>, TCurrentParameter>>
     {};
 
     template<typename TImplementationPolicy, typename TCurrentParameter>
-    struct ImplementationLevel<TImplementationPolicy, HierarchyState<TypeList<>, ImplementationList<>, TypeList<>, TCurrentParameter>>:
+    struct ImplementationLevel<TImplementationPolicy, HierarchyState<generic::TypeList<>, ImplementationList<>, generic::TypeList<>, TCurrentParameter>>:
         public TImplementationPolicy::template HierarchyTopType<TImplementationPolicy>
     {};
 

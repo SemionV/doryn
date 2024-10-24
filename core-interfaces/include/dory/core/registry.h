@@ -5,7 +5,6 @@
 #include "services/iFileService.h"
 #include "services/iLibraryService.h"
 #include "events/eventTypes.h"
-#include "generic/typeTraits.h"
 #include <dory/core/resources/entity.h>
 #include <dory/generic/extension/resourceHandle.h>
 #include <dory/core/devices/iStandardIODevice.h>

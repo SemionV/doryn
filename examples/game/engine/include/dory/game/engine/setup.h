@@ -2,7 +2,8 @@
 
 #include <dory/core/iSetup.h>
 #include <dory/core/macros.h>
-#include <dory/core/generic/repository.h>
+#include <dory/core/repository.h>
+#include <dory/core/events.h>
 
 namespace dory::game::engine
 {
@@ -12,7 +13,7 @@ namespace dory::game::engine
         template<typename TEventBundle>
         void registerEventBundle(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
         {
-            auto instance = std::make_shared<core::generic::events::DispatcherCannon<typename TEventBundle::IListener,
+            auto instance = std::make_shared<core::events::DispatcherCannon<typename TEventBundle::IListener,
                     typename TEventBundle::IDispatcher,
                     typename TEventBundle::EventListType>>();
 
@@ -23,7 +24,7 @@ namespace dory::game::engine
         template<typename TEventBundle>
         void registerEventBufferBundle(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
         {
-            auto instance = std::make_shared<core::generic::events::DispatcherCannonBuffer<typename TEventBundle::IListener,
+            auto instance = std::make_shared<core::events::DispatcherCannonBuffer<typename TEventBundle::IListener,
                     typename TEventBundle::IDispatcher,
                     typename TEventBundle::EventListType>>();
 
@@ -34,7 +35,7 @@ namespace dory::game::engine
         template<typename TEntity>
         void registerRepository(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
         {
-            auto instance = std::make_shared<core::generic::repository::Repository<TEntity>>();
+            auto instance = std::make_shared<core::repository::Repository<TEntity>>();
             registry.set<core::repositories::IRepository<TEntity>>(libraryHandle, instance);
         }
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <dory/core/services/iLogService.h>
-#include <dory/core/generic/implementation.h>
+#include <dory/core/implementation.h>
 #include <dory/core/registry.h>
 #include <dory/core/resources/configuration.h>
 #include <memory>
@@ -14,7 +14,7 @@
 namespace dory::core::services
 {
     template<typename TMessage, typename TImplPolicy, typename TState>
-    class LogServiceGeneric: public generic::implementation::ImplementationLevel<TImplPolicy, TState>
+    class LogServiceGeneric: public implementation::ImplementationLevel<TImplPolicy, TState>
     {
     public:
         inline void trace(const TMessage& message) override
@@ -142,8 +142,8 @@ namespace dory::core::services
     class LoggerHierarchyTop: public MultiSinkLogService
     {};
 
-    struct LogServicePolicy: generic::implementation::ImplementationPolicy<generic::implementation::ImplementationList<LogServiceGeneric>, LoggerHierarchyTop>
+    struct LogServicePolicy: implementation::ImplementationPolicy<implementation::ImplementationList<LogServiceGeneric>, LoggerHierarchyTop>
     {};
 
-    using LogService = generic::implementation::Implementation<generic::TypeList<>, ILogService::MessageTypes, LogServicePolicy>;
+    using LogService = implementation::Implementation<generic::TypeList<>, ILogService::MessageTypes, LogServicePolicy>;
 }

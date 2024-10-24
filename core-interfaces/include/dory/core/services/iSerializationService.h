@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <dory/core/generic/typeList.h>
+#include <dory/generic/typeList.h>
 
 namespace dory::core::services::serialization
 {

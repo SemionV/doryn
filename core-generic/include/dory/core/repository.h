@@ -3,7 +3,7 @@
 #include <dory/core/repositories/iRepository.h>
 #include <vector>
 
-namespace dory::core::generic::repository
+namespace dory::core::repository
 {
     template<typename TEntity, typename TId = resources::entity::IdType, template<class, class> class TContainer = std::vector>
     class Repository: public repositories::IRepository<TEntity, TId>
