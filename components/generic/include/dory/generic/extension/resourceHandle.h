@@ -4,7 +4,7 @@
 #include "resourceRef.h"
 #include "libraryHandle.h"
 
-namespace dory::core::extensionPlatform
+namespace dory::generic::extension
 {
     template<typename TResource>
     class ResourceHandle

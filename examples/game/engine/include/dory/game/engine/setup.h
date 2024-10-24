@@ -10,7 +10,7 @@ namespace dory::game::engine
     {
     private:
         template<typename TEventBundle>
-        void registerEventBundle(const core::extensionPlatform::LibraryHandle& libraryHandle,core::Registry& registry)
+        void registerEventBundle(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
         {
             auto instance = std::make_shared<core::generic::events::DispatcherCannon<typename TEventBundle::IListener,
                     typename TEventBundle::IDispatcher,
@@ -21,7 +21,7 @@ namespace dory::game::engine
         }
 
         template<typename TEventBundle>
-        void registerEventBufferBundle(const core::extensionPlatform::LibraryHandle& libraryHandle, core::Registry& registry)
+        void registerEventBufferBundle(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
         {
             auto instance = std::make_shared<core::generic::events::DispatcherCannonBuffer<typename TEventBundle::IListener,
                     typename TEventBundle::IDispatcher,
@@ -32,13 +32,13 @@ namespace dory::game::engine
         }
 
         template<typename TEntity>
-        void registerRepository(const core::extensionPlatform::LibraryHandle& libraryHandle,core::Registry& registry)
+        void registerRepository(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
         {
             auto instance = std::make_shared<core::generic::repository::Repository<TEntity>>();
             registry.set<core::repositories::IRepository<TEntity>>(libraryHandle, instance);
         }
 
     public:
-        void setupRegistry(const core::extensionPlatform::LibraryHandle& libraryHandle, core::Registry& registry) override;
+        void setupRegistry(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry) override;
     };
 }

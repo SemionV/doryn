@@ -5,7 +5,7 @@
 #include <memory>
 #include "iLibrary.h"
 
-namespace dory::core::extensionPlatform
+namespace dory::generic::extension
 {
     class LibraryHandle
     {

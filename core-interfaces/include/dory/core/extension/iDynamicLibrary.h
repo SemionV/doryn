@@ -1,12 +1,17 @@
-#pragma once
+    #pragma once
 
-#include <dory/core/registry.h>
 #include <dory/generic/extension/iLibrary.h>
 #include <dory/generic/extension/iModule.h>
+#include <dory/core/resources/dataContext.h>
 
-namespace dory::core::extensionPlatform
+namespace dory::core
 {
-    class IDynamicLibrary: public ILibrary
+    class Registry;
+}
+
+namespace dory::core::extension
+{
+    class IDynamicLibrary: public dory::generic::extension::ILibrary
     {
     public:
         explicit IDynamicLibrary(const std::string &libraryName, const std::filesystem::path &libraryPath)
@@ -15,6 +20,6 @@ namespace dory::core::extensionPlatform
 
         virtual void load(const std::filesystem::path& libraryPath) = 0;
         virtual void unload() = 0;
-        virtual std::shared_ptr<IModule> loadModule(const std::string& moduleName, Registry& registry) = 0;
+        virtual std::shared_ptr<dory::generic::extension::IModule<resources::DataContext>> loadModule(const std::string& moduleName, Registry& registry) = 0;
     };
 }

@@ -2,9 +2,9 @@
 
 #include <cassert>
 
-namespace dory::core
+namespace dory::generic
 {
-    namespace extensionPlatform
+    namespace extension
     {
         template<typename TResource>
         struct ResourcePresentTrait

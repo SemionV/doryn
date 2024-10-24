@@ -5,7 +5,7 @@
 #include <utility>
 
 
-namespace dory::core::extensionPlatform
+namespace dory::generic::extension
 {
     class ILibrary
     {

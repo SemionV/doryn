@@ -1,10 +1,9 @@
 #pragma once
 
 #include <memory>
+#include <dory/core/registry.h>
 #include <dory/core/devices/iTerminalDevice.h>
 #include <dory/core/devices/iStandardIODevice.h>
-
-#include <dory/core/registry.h>
 
 namespace dory::core::devices
 {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "dory/generic/extension/iModule.h"
-#include "../../../../../components/generic/include/dory/generic/extension/registryResourceScope.h"
+#include <dory/generic/extension/registryResourceScope.h>
 #include <dory/core/registry.h>
 
 namespace dory::game::test_extension
@@ -16,17 +16,17 @@ namespace dory::game::test_extension
         std::string getMessage() final;
     };
 
-    class Extension: public dory::core::extensionPlatform::IModule
+    class Extension: public dory::generic::extension::IModule<dory::core::resources::DataContext>
     {
     private:
         core::Registry& _registry;
-        core::extensionPlatform::RegistryResourceScope<dory::core::services::IFileService> _fileService;
+        core::RegistryResourceScope<dory::core::services::IFileService> _fileService;
 
     public:
         explicit Extension(core::Registry& registry);
 
         ~Extension() override;
 
-        void attach(dory::core::extensionPlatform::LibraryHandle library, dory::core::resources::DataContext& dataContext) final;
+        void attach(dory::generic::extension::LibraryHandle library, dory::core::resources::DataContext& dataContext) final;
     };
 }

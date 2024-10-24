@@ -10,7 +10,7 @@ endif()
 
 add_library(${DORY_MODULE_NAME} STATIC
         src/devices/terminalDevice.cpp
-        src/extensionPlatform/dynamicLibrary.cpp
+        src/extension/dynamicLibrary.cpp
         src/repositories/pipelineRepository.cpp
         src/services/fileService.cpp
         src/services/libraryService.cpp

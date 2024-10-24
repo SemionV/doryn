@@ -9,7 +9,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 #endif
 {
     dory::game::engine::Setup setup;
-    dory::core::extensionPlatform::LibraryHandle staticLibraryHandle {};
+    dory::generic::extension::LibraryHandle staticLibraryHandle {};
     auto registry = dory::core::Registry{};
     auto dataContext = dory::core::resources::DataContext{};
     auto config = dory::core::resources::configuration::Configuration{};
@@ -65,7 +65,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
                 auto extension = testExtensionLibrary->loadModule("test-extension", registry);
                 if(extension)
                 {
-                    extension->attach(dory::core::extensionPlatform::LibraryHandle{testExtensionLibrary }, dataContext);
+                    extension->attach(dory::generic::extension::LibraryHandle{testExtensionLibrary }, dataContext);
 
                     auto fileService = registry.get<dory::core::services::IFileService>();
                     if(fileService)

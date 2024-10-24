@@ -2,7 +2,7 @@
 
 #include "dory/core/generic/typeTraits.h"
 #include "dory/core/generic/typeList.h"
-#include "../../../../../components/generic/include/dory/generic/extension/resourceHandle.h"
+#include <dory/generic/extension/resourceHandle.h>
 #include "implementation.h"
 #include <mutex>
 #include <functional>
@@ -78,7 +78,7 @@ namespace dory::core::generic::events
     protected:
         std::map<KeyType, std::shared_ptr<Callable<Ts...>>> handlers;
         //TODO: if the event used concurrently, it can lead to data race
-        std::unordered_map<KeyType, std::shared_ptr<extensionPlatform::ResourceHandle<HandlerType>>> _handlers;
+        std::unordered_map<KeyType, std::shared_ptr<dory::generic::extension::ResourceHandle<HandlerType>>> _handlers;
 
     public:
         template<typename F>
@@ -111,7 +111,7 @@ namespace dory::core::generic::events
             return attachMemberFunction(instance, memberFunction);
         }
 
-        KeyType attachHandlerLib(std::shared_ptr<extensionPlatform::ResourceHandle<HandlerType>> handler)
+        KeyType attachHandlerLib(std::shared_ptr<dory::generic::extension::ResourceHandle<HandlerType>> handler)
         {
             KeyType key = getNewKey();
             _handlers[key] = handler;
@@ -174,7 +174,7 @@ namespace dory::core::generic::events
             {
                 auto expiredHandles = std::vector<EventKeyType>{};
 
-                for (std::pair<const EventKeyType, std::shared_ptr<extensionPlatform::ResourceHandle<HandlerType>>>& handlerPair: this->_handlers) {
+                for (std::pair<const EventKeyType, std::shared_ptr<dory::generic::extension::ResourceHandle<HandlerType>>>& handlerPair: this->_handlers) {
                     auto resourceRef = handlerPair.second->lock();
                     if(resourceRef) {
                         (*resourceRef)(arguments...);

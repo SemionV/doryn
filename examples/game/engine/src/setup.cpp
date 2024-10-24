@@ -18,7 +18,7 @@
 
 namespace dory::game::engine
 {
-    void dory::game::engine::Setup::setupRegistry(const core::extensionPlatform::LibraryHandle& libraryHandle, core::Registry& registry)
+    void dory::game::engine::Setup::setupRegistry(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
     {
         registerEventBundle<core::events::mainController::Bundle>(libraryHandle, registry);
         registerEventBundle<core::events::application::Bundle>(libraryHandle, registry);

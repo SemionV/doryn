@@ -7,7 +7,7 @@
 #include "events/eventTypes.h"
 #include "generic/typeTraits.h"
 #include <dory/core/resources/entity.h>
-#include "../../../../components/generic/include/dory/generic/extension/resourceHandle.h"
+#include <dory/generic/extension/resourceHandle.h>
 #include <dory/core/devices/iStandardIODevice.h>
 #include <dory/core/devices/iTerminalDevice.h>
 #include <dory/core/repositories/iRepository.h>
@@ -15,6 +15,7 @@
 #include "services/iLogService.h"
 #include "resources/serviceIdentifer.h"
 #include <dory/core/services/iSerializationService.h>
+#include <dory/generic/extension/registryResourceScope.h>
 
 namespace dory::core
 {
@@ -23,18 +24,18 @@ namespace dory::core
     {
     private:
         using ServicePtrType = std::shared_ptr<TServiceInterface>;
-        std::optional<extensionPlatform::ResourceHandle<ServicePtrType>> _serviceHandle;
-        std::map<TIdentifier, extensionPlatform::ResourceHandle<ServicePtrType>> _serviceHandles;
+        std::optional<dory::generic::extension::ResourceHandle<ServicePtrType>> _serviceHandle;
+        std::map<TIdentifier, dory::generic::extension::ResourceHandle<ServicePtrType>> _serviceHandles;
 
     protected:
-        void _set(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TServiceInterface> service)
+        void _set(dory::generic::extension::LibraryHandle libraryHandle, std::shared_ptr<TServiceInterface> service)
         {
-            _serviceHandle = extensionPlatform::ResourceHandle(libraryHandle, std::move(service));
+            _serviceHandle = dory::generic::extension::ResourceHandle(libraryHandle, std::move(service));
         }
 
-        void _set(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TServiceInterface> service, TIdentifier identifier)
+        void _set(dory::generic::extension::LibraryHandle libraryHandle, std::shared_ptr<TServiceInterface> service, TIdentifier identifier)
         {
-            _serviceHandles.emplace(identifier, extensionPlatform::ResourceHandle(libraryHandle, std::move(service)));
+            _serviceHandles.emplace(identifier, dory::generic::extension::ResourceHandle(libraryHandle, std::move(service)));
         }
 
         void _reset()
@@ -57,7 +58,7 @@ namespace dory::core
                 return _serviceHandle->lock();
             }
 
-            return extensionPlatform::ResourceRef<ServicePtrType>{{}, nullptr};
+            return dory::generic::extension::ResourceRef<ServicePtrType>{{}, nullptr};
         }
 
         auto _get(TIdentifier identifier)
@@ -67,7 +68,7 @@ namespace dory::core
                 return _serviceHandles[identifier].lock();
             }
 
-            return extensionPlatform::ResourceRef<ServicePtrType>{{}, nullptr};
+            return dory::generic::extension::ResourceRef<ServicePtrType>{{}, nullptr};
         }
     };
 
@@ -83,19 +84,19 @@ namespace dory::core
     {
     public:
         template<typename TInterface>
-        void set(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TInterface> service)
+        void set(dory::generic::extension::LibraryHandle libraryHandle, std::shared_ptr<TInterface> service)
         {
             this->ResourceHandleController<TInterface, resources::ServiceIdentifier>::_set(libraryHandle, service);
         }
 
         template<typename TInterface, auto identifier>
-        void set(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TInterface> service)
+        void set(dory::generic::extension::LibraryHandle libraryHandle, std::shared_ptr<TInterface> service)
         {
             this->ResourceHandleController<TInterface, decltype(identifier)>::_set(libraryHandle, service, identifier);
         }
 
         template<typename TInterface, typename TIdentifier>
-        void set(extensionPlatform::LibraryHandle libraryHandle, std::shared_ptr<TInterface> service, TIdentifier identifier)
+        void set(dory::generic::extension::LibraryHandle libraryHandle, std::shared_ptr<TInterface> service, TIdentifier identifier)
         {
             this->ResourceHandleController<TInterface, TIdentifier>::_set(libraryHandle, service, identifier);
         }
@@ -184,4 +185,7 @@ namespace dory::core
             ServiceEntry<services::IMultiSinkLogService, Logger>,
             ServiceEntry<services::serialization::ISerializer, DataFormat>>
     {};
+
+    template<typename T>
+    using RegistryResourceScope = dory::generic::extension::RegistryResourceScope<dory::generic::extension::RegistryResourceScopePolicy<T, core::Registry, core::resources::ServiceIdentifier>>;
 }
