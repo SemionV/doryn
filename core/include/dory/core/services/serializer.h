@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/core/services/iSerializationService.h>
+#include <dory/core/services/iSerializer.h>
 #include <dory/core/implementation.h>
 #include <dory/serialization/yamlSerializer.h>
 #include <dory/serialization/yamlDeserializer.h>

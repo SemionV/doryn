@@ -14,7 +14,7 @@
 #include <dory/core/repositories/iPipelineRepository.h>
 #include "services/iLogService.h"
 #include "resources/serviceIdentifer.h"
-#include <dory/core/services/iSerializationService.h>
+#include <dory/core/services/iSerializer.h>
 #include <dory/generic/extension/registryResourceScope.h>
 #include <dory/core/services/iDataFormatResolver.h>
 
