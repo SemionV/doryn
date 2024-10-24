@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <map>
+#include <type_traits>
 #include "extension/resourceHandle.h"
 
 namespace dory::generic::registry
@@ -13,6 +14,15 @@ namespace dory::generic::registry
         using ServicePtrType = std::shared_ptr<TServiceInterface>;
         std::optional<extension::ResourceHandle<ServicePtrType>> _serviceHandle;
         std::map<TIdentifier, extension::ResourceHandle<ServicePtrType>> _serviceHandles;
+
+        template<typename T, typename A>
+        void invoke(extension::ResourceRef<T>& resourceRef, const A& action)
+        {
+            if(resourceRef.operator bool())
+            {
+                action((*resourceRef).get());
+            }
+        }
 
     protected:
         void _set(extension::LibraryHandle libraryHandle, std::shared_ptr<TServiceInterface> service)
@@ -48,7 +58,7 @@ namespace dory::generic::registry
             return extension::ResourceRef<ServicePtrType>{{}, nullptr};
         }
 
-        auto _get(TIdentifier identifier)
+        auto _get(const TIdentifier& identifier)
         {
             if(_serviceHandles.contains(identifier))
             {
@@ -57,6 +67,22 @@ namespace dory::generic::registry
 
             return extension::ResourceRef<ServicePtrType>{{}, nullptr};
         }
+
+        template<typename A>
+        requires(std::is_invocable_v<A, TServiceInterface*>)
+        void _get(A&& action)
+        {
+            auto resourceRef = _get();
+            invoke(resourceRef, std::forward<A>(action));
+        }
+
+        template<typename A>
+        void _get(TIdentifier identifier, A&& action)
+        {
+            auto resourceRef = _get(identifier);
+            invoke(resourceRef, std::forward<A>(action));
+        }
+
     };
 
     template<typename TIdentifierDefault, typename... TServices>
@@ -102,19 +128,41 @@ namespace dory::generic::registry
         template<typename TService>
         auto get()
         {
-            return this->RegistrationEntry<TService, TIdentifierDefault>::_get();;
+            return this->RegistrationEntry<TService, TIdentifierDefault>::_get();
         }
 
         template<typename TService, auto identifier>
         auto get()
         {
-            return this->RegistrationEntry<TService, decltype(identifier)>::_get(identifier);;
+            return this->RegistrationEntry<TService, decltype(identifier)>::_get(identifier);
         }
 
         template<typename TService, typename TIdentifier>
-        auto get(TIdentifier identifier)
+        requires(!std::is_invocable_v<TIdentifier, TService*>)
+        auto get(TIdentifier&& identifier)
         {
-            return this->RegistrationEntry<TService, TIdentifier>::_get(identifier);;
+            return this->RegistrationEntry<TService, TIdentifier>::_get(std::forward<TIdentifier>(identifier));
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        template<typename TService, typename A>
+        requires(std::is_invocable_v<A, TService*>)
+        void get(A&& action)
+        {
+            this->RegistrationEntry<TService, TIdentifierDefault>::_get(std::forward<A>(action));
+        }
+
+        template<typename TService, auto identifier, typename A>
+        void get(A&& action)
+        {
+            this->RegistrationEntry<TService, decltype(identifier)>::_get(identifier, std::forward<A>(action));
+        }
+
+        template<typename TService, typename TIdentifier, typename A>
+        void get(TIdentifier identifier, A&& action)
+        {
+            this->RegistrationEntry<TService, TIdentifier>::_get(identifier, std::forward<A>(action));
         }
     };
 }

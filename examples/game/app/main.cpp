@@ -87,31 +87,28 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     }
 
     {
-        auto ioDevice = registry.get<dory::core::devices::IStandardIODevice>();
-        if(ioDevice)
+        registry.get<dory::core::devices::IStandardIODevice>([&dataContext](dory::core::devices::IStandardIODevice* device)
         {
-            ioDevice->disconnect(dataContext);
-        }
+            device->disconnect(dataContext);
+        });
     }
 
     {
-        auto logger = registry.get<dory::core::services::IMultiSinkLogService, dory::core::Logger::App>();
-        if(logger)
+        registry.get<dory::core::services::IMultiSinkLogService, dory::core::Logger::App>([&config, &registry](dory::core::services::IMultiSinkLogService* logger)
         {
             config.loggingConfiguration.mainLogger.name = "AppLogger";
             config.loggingConfiguration.mainLogger.stdoutLogger = dory::core::resources::configuration::StdoutLogSink{};
             logger->initialize(config.loggingConfiguration.mainLogger, registry);
             logger->information(std::string{"Hello from AppLogger!"});
-        }
+        });
 
-        auto logger2 = registry.get<dory::core::services::IMultiSinkLogService>(dory::core::Logger::Config);
-        if(logger2)
+        registry.get<dory::core::services::IMultiSinkLogService>(dory::core::Logger::Config, [&config, &registry](dory::core::services::IMultiSinkLogService* logger)
         {
             config.loggingConfiguration.mainLogger.name = "ConfigLogger";
             config.loggingConfiguration.mainLogger.stdoutLogger = dory::core::resources::configuration::StdoutLogSink{};
-            logger2->initialize(config.loggingConfiguration.mainLogger, registry);
-            logger2->information(std::string{"Hello from ConfigLogger!"});
-        }
+            logger->initialize(config.loggingConfiguration.mainLogger, registry);
+            logger->information(std::string{"Hello from ConfigLogger!"});
+        });
     }
 
     std::cout << "End main" << std::endl;
