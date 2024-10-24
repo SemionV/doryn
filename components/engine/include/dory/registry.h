@@ -130,7 +130,7 @@ namespace dory
         using LocalizationServiceType = engineServices::localization::LocalizationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;
         using MainControllerType = engineControllers::MainController<typename TRepositories::PipelineRepositoryType>;
         using FrameServiceType = engineServices::BasicFrameService;
-        
+
         using WindowServiceType = engineServices::opengl::GlfwWindowService<engineServices::opengl::GlfwWindowServiceDependencies<typename TRepositories::WindowRepositoryType >>;
         using WindowControllerType = engineControllers::opengl::GlfwWindowController<DataContextType, typename TRepositories::WindowRepositoryType>;
         using WindowControllerFactoryType = WindowControllerType::FactoryType;

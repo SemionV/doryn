@@ -17,6 +17,7 @@
 #include <dory/core/services/iSerializer.h>
 #include <dory/generic/extension/registryResourceScope.h>
 #include <dory/core/services/iDataFormatResolver.h>
+#include <dory/core/services/iScriptService.h>
 
 namespace dory::core
 {
@@ -67,7 +68,8 @@ namespace dory::core
             ServiceEntry<services::IFileService>,
             ServiceEntry<services::IMultiSinkLogService, Logger>,
             ServiceEntry<services::serialization::ISerializer, resources::DataFormat>,
-            ServiceEntry<services::IDataFormatResolver>>
+            ServiceEntry<services::IDataFormatResolver>,
+            ServiceEntry<services::IScriptService>>
     {};
 
     template<typename T>

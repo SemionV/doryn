@@ -16,6 +16,7 @@
 #include <dory/core/services/logService.h>
 #include <dory/core/services/serializer.h>
 #include <dory/core/services/dataFormatResolver.h>
+#include <dory/core/services/scriptService.h>
 
 namespace dory::game::engine
 {
@@ -47,5 +48,7 @@ namespace dory::game::engine
         registry.set<core::services::serialization::ISerializer, core::resources::DataFormat::yaml>(libraryHandle, std::make_shared<core::services::serialization::YamlSerializer>());
         registry.set<core::services::serialization::ISerializer, core::resources::DataFormat::json>(libraryHandle, std::make_shared<core::services::serialization::JsonSerializer>());
         registry.set<core::services::IDataFormatResolver>(libraryHandle, std::make_shared<core::services::DataFormatResolver>());
+
+        registry.set<core::services::IScriptService>(libraryHandle, std::make_shared<core::services::ScriptService>());
     }
 }
