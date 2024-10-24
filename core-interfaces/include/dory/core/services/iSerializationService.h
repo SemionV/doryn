@@ -2,6 +2,7 @@
 
 #include <string>
 #include <dory/generic/typeList.h>
+#include <dory/core/resources/dataFormat.h>
 
 namespace dory::core::services::serialization
 {

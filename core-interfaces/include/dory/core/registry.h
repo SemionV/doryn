@@ -6,6 +6,7 @@
 #include "services/iLibraryService.h"
 #include "events/eventTypes.h"
 #include <dory/core/resources/entity.h>
+#include <dory/core/resources/dataFormat.h>
 #include <dory/generic/extension/resourceHandle.h>
 #include <dory/core/devices/iStandardIODevice.h>
 #include <dory/core/devices/iTerminalDevice.h>
@@ -15,6 +16,7 @@
 #include "resources/serviceIdentifer.h"
 #include <dory/core/services/iSerializationService.h>
 #include <dory/generic/extension/registryResourceScope.h>
+#include <dory/core/services/iDataFormatResolver.h>
 
 namespace dory::core
 {
@@ -30,12 +32,6 @@ namespace dory::core
     {
         App,
         Config
-    };
-
-    enum class DataFormat
-    {
-        Yaml,
-        Json
     };
 
     template<typename TInterface, typename TIdentifier = resources::ServiceIdentifier>
@@ -70,7 +66,8 @@ namespace dory::core
             ServiceEntry<services::ILibraryService>,
             ServiceEntry<services::IFileService>,
             ServiceEntry<services::IMultiSinkLogService, Logger>,
-            ServiceEntry<services::serialization::ISerializer, DataFormat>>
+            ServiceEntry<services::serialization::ISerializer, resources::DataFormat>,
+            ServiceEntry<services::IDataFormatResolver>>
     {};
 
     template<typename T>
