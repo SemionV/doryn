@@ -1,7 +1,7 @@
 #pragma once
 
-#include <memory>
 #include <map>
+#include <dory/generic/registryLayer.h>
 #include "services/iFileService.h"
 #include "services/iLibraryService.h"
 #include "events/eventTypes.h"
@@ -18,125 +18,6 @@
 
 namespace dory::core
 {
-    template<typename TServiceInterface, typename TIdentifier = resources::ServiceIdentifier>
-    class ResourceHandleController
-    {
-    private:
-        using ServicePtrType = std::shared_ptr<TServiceInterface>;
-        std::optional<dory::generic::extension::ResourceHandle<ServicePtrType>> _serviceHandle;
-        std::map<TIdentifier, dory::generic::extension::ResourceHandle<ServicePtrType>> _serviceHandles;
-
-    protected:
-        void _set(dory::generic::extension::LibraryHandle libraryHandle, std::shared_ptr<TServiceInterface> service)
-        {
-            _serviceHandle = dory::generic::extension::ResourceHandle(libraryHandle, std::move(service));
-        }
-
-        void _set(dory::generic::extension::LibraryHandle libraryHandle, std::shared_ptr<TServiceInterface> service, TIdentifier identifier)
-        {
-            _serviceHandles.emplace(identifier, dory::generic::extension::ResourceHandle(libraryHandle, std::move(service)));
-        }
-
-        void _reset()
-        {
-            _serviceHandle = {};
-        }
-
-        void _reset(TIdentifier identifier)
-        {
-            if(_serviceHandles.contains(identifier))
-            {
-                _serviceHandles.erase(identifier);
-            }
-        }
-
-        auto _get()
-        {
-            if(_serviceHandle)
-            {
-                return _serviceHandle->lock();
-            }
-
-            return dory::generic::extension::ResourceRef<ServicePtrType>{{}, nullptr};
-        }
-
-        auto _get(TIdentifier identifier)
-        {
-            if(_serviceHandles.contains(identifier))
-            {
-                return _serviceHandles[identifier].lock();
-            }
-
-            return dory::generic::extension::ResourceRef<ServicePtrType>{{}, nullptr};
-        }
-    };
-
-    template<typename TInterface, typename TIdentifier = resources::ServiceIdentifier>
-    struct ServiceEntry
-    {
-        using InterfaceType = TInterface;
-        using IdentifierType = TIdentifier;
-    };
-
-    template<typename... TServices>
-    struct RegistryLayer: public ResourceHandleController<typename TServices::InterfaceType, typename TServices::IdentifierType>...
-    {
-    public:
-        template<typename TInterface>
-        void set(dory::generic::extension::LibraryHandle libraryHandle, std::shared_ptr<TInterface> service)
-        {
-            this->ResourceHandleController<TInterface, resources::ServiceIdentifier>::_set(libraryHandle, service);
-        }
-
-        template<typename TInterface, auto identifier>
-        void set(dory::generic::extension::LibraryHandle libraryHandle, std::shared_ptr<TInterface> service)
-        {
-            this->ResourceHandleController<TInterface, decltype(identifier)>::_set(libraryHandle, service, identifier);
-        }
-
-        template<typename TInterface, typename TIdentifier>
-        void set(dory::generic::extension::LibraryHandle libraryHandle, std::shared_ptr<TInterface> service, TIdentifier identifier)
-        {
-            this->ResourceHandleController<TInterface, TIdentifier>::_set(libraryHandle, service, identifier);
-        }
-
-        template<typename TService>
-        void reset()
-        {
-            this->ResourceHandleController<TService, resources::ServiceIdentifier>::_reset();
-        }
-
-        template<typename TService, auto identifier>
-        void reset()
-        {
-            this->ResourceHandleController<TService, decltype(identifier)>::_reset(identifier);
-        }
-
-        template<typename TService, typename TIdentifier>
-        void reset(TIdentifier identifier)
-        {
-            this->ResourceHandleController<TService, TIdentifier>::_reset(identifier);
-        }
-
-        template<typename TService>
-        auto get()
-        {
-            return this->ResourceHandleController<TService, resources::ServiceIdentifier>::_get();;
-        }
-
-        template<typename TService, auto identifier>
-        auto get()
-        {
-            return this->ResourceHandleController<TService, decltype(identifier)>::_get(identifier);;
-        }
-
-        template<typename TService, typename TIdentifier>
-        auto get(TIdentifier identifier)
-        {
-            return this->ResourceHandleController<TService, TIdentifier>::_get(identifier);;
-        }
-    };
-
     namespace repositories
     {
         using ICameraRepository = repositories::IRepository<resources::entity::Camera>;
@@ -157,7 +38,14 @@ namespace dory::core
         Json
     };
 
-    struct Registry: public RegistryLayer<
+    template<typename TInterface, typename TIdentifier = resources::ServiceIdentifier>
+    struct ServiceEntry
+    {
+        using InterfaceType = TInterface;
+        using IdentifierType = TIdentifier;
+    };
+
+    struct Registry: public generic::registry::RegistryLayer<resources::ServiceIdentifier,
             /*Events*/
             ServiceEntry<events::mainController::Bundle::IDispatcher>,
             ServiceEntry<events::mainController::Bundle::IListener>,
@@ -186,5 +74,5 @@ namespace dory::core
     {};
 
     template<typename T>
-    using RegistryResourceScope = dory::generic::extension::RegistryResourceScope<dory::generic::extension::RegistryResourceScopePolicy<T, core::Registry, core::resources::ServiceIdentifier>>;
+    using RegistryResourceScope = generic::extension::RegistryResourceScope<generic::extension::RegistryResourceScopePolicy<T, Registry, resources::ServiceIdentifier>>;
 }
