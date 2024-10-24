@@ -119,22 +119,24 @@ namespace dory
         using DataContextType = engineResources::DataContext<TDataContextSections...>;
 
         using LogServiceType = engineServices::MultiSinkLogService;
-        using FrameServiceType = engineServices::BasicFrameService;
         using FileServiceType = engineServices::FileService;
         using YamlSerializationServiceType = engineServices::serialization::YamlSerializationService;
         using JsonSerializationServiceType = engineServices::serialization::JsonSerializationService<4>;
         using FormatKeyConverterType = engineServices::serialization::FormatKeyConverter;
         using SerializationServiceBundle = engineServices::serialization::SerializationServiceBundle<engineServices::serialization::Format, YamlSerializationServiceType, JsonSerializationServiceType>;
-        using ShaderServiceType = engineServices::opengl::ShaderService<LogServiceType, FileServiceType, TDataContextSections...>;
-        using RendererType = engineServices::opengl::Renderer<DataContextType, engineServices::opengl::RendererDependencies<ShaderServiceType>>;
-        using RendererFactoryType = RendererType::FactoryType;
-        using MainControllerType = engineControllers::MainController<typename TRepositories::PipelineRepositoryType>;
-        using WindowServiceType = engineServices::opengl::GlfwWindowService<engineServices::opengl::GlfwWindowServiceDependencies<typename TRepositories::WindowRepositoryType >>;
+
         using ScriptServiceType = engineServices::ScriptService<DataContextType>;
         using ConfigurationServiceType = engineServices::configuration::ConfigurationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;
         using LocalizationServiceType = engineServices::localization::LocalizationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;
+        using MainControllerType = engineControllers::MainController<typename TRepositories::PipelineRepositoryType>;
+        using FrameServiceType = engineServices::BasicFrameService;
+        
+        using WindowServiceType = engineServices::opengl::GlfwWindowService<engineServices::opengl::GlfwWindowServiceDependencies<typename TRepositories::WindowRepositoryType >>;
         using WindowControllerType = engineControllers::opengl::GlfwWindowController<DataContextType, typename TRepositories::WindowRepositoryType>;
         using WindowControllerFactoryType = WindowControllerType::FactoryType;
+        using ShaderServiceType = engineServices::opengl::ShaderService<LogServiceType, FileServiceType, TDataContextSections...>;
+        using RendererType = engineServices::opengl::Renderer<DataContextType, engineServices::opengl::RendererDependencies<ShaderServiceType>>;
+        using RendererFactoryType = RendererType::FactoryType;
         using ViewControllerType = engineControllers::opengl::ViewControllerOpenGL<engineControllers::opengl::ViewControllerDependencies<DataContextType,
                 RendererType,
                 typename TRepositories::ViewRepositoryType,
