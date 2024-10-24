@@ -118,9 +118,9 @@ TEST_CASE( "Layout typeMap test", "[typeMapping]" )
     const std::size_t& meshId = 12;
 
     constexpr std::size_t VertexSize = dory::serialization::LayoutSizeV<LayoutMap>;
-    dory::Byte buffer[VertexSize * VerticesCount];
+    dory::generic::Byte buffer[VertexSize * VerticesCount];
 
-    dory::Byte* cursor = buffer;
+    dory::generic::Byte* cursor = buffer;
     for(std::size_t i = 0; i < VerticesCount; ++i)
     {
         VertexSerializer::writeAttribute<AttributeId::meshId>(meshId, cursor);

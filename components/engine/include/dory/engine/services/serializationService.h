@@ -10,7 +10,7 @@
 namespace dory::engine::services::serialization
 {
     template<typename TImplementation>
-    class ISerializationService: NonCopyable, public StaticInterface<TImplementation>
+    class ISerializationService: generic::NonCopyable, public generic::StaticInterface<TImplementation>
     {
     public:
         template<typename T>
@@ -85,7 +85,7 @@ namespace dory::engine::services::serialization
     };
 
     template<typename TFormat, typename TImplementation>
-    class IFormatKeyConverter: NonCopyable, public StaticInterface<TImplementation>
+    class IFormatKeyConverter: generic::NonCopyable, public generic::StaticInterface<TImplementation>
     {
     public:
         TFormat getFormat(const std::string& key)
@@ -115,7 +115,7 @@ namespace dory::engine::services::serialization
 
         static Format getFormatImpl(const std::string& key)
         {
-            auto lowerCaseKey = dory::toLower(key);
+            auto lowerCaseKey = dory::generic::toLower(key);
             if(lowerCaseKey == yaml)
             {
                 return Format::yaml;
@@ -146,7 +146,7 @@ namespace dory::engine::services::serialization
     };
 
     template<typename TFormat, typename TImplementation>
-    class ISerializationServiceBundle: NonCopyable, public StaticInterface<TImplementation>
+    class ISerializationServiceBundle: generic::NonCopyable, public generic::StaticInterface<TImplementation>
     {
     public:
         template<typename T>

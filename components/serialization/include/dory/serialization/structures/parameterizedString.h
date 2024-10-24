@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/generics/typeTraits.h>
+#include <dory/generic/typeTraits.h>
 
 namespace dory::serialization
 {

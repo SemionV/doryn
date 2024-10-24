@@ -7,10 +7,10 @@ namespace dory::serialization
 {
     struct BinarySerializationContext
     {
-        Byte* buffer;
+        generic::Byte* buffer;
         std::size_t offset {};
 
-        explicit BinarySerializationContext(Byte* buffer):
+        explicit BinarySerializationContext(generic::Byte* buffer):
                 buffer(buffer) {}
     };
 
@@ -51,7 +51,7 @@ namespace dory::serialization
     {
     private:
         template<auto Id, typename TPolicies, typename T>
-        static std::size_t processAttribute(T&& attributeValue, Byte* buffer)
+        static std::size_t processAttribute(T&& attributeValue, generic::Byte* buffer)
         {
             auto offset = LayoutAttributeOffsetV<Id, TLayout>;
             BinarySerializationContext context(buffer + offset);
@@ -62,13 +62,13 @@ namespace dory::serialization
 
     public:
         template<auto Id, typename T>
-        static std::size_t writeAttribute(const T& attributeValue, Byte* buffer)
+        static std::size_t writeAttribute(const T& attributeValue, generic::Byte* buffer)
         {
             return processAttribute<Id, WriteBinaryPolicies>(attributeValue, buffer);
         }
 
         template<auto Id, typename T>
-        static std::size_t readAttribute(T& attributeValue, Byte* buffer)
+        static std::size_t readAttribute(T& attributeValue, generic::Byte* buffer)
         {
             return processAttribute<Id, ReadBinaryPolicies>(attributeValue, buffer);
         }

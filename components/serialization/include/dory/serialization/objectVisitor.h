@@ -5,6 +5,7 @@
 
 #include "reflection.h"
 #include "structures/parameterizedString.h"
+#include <dory/generic/typeTraits.h>
 
 namespace dory::serialization
 {
@@ -84,7 +85,7 @@ namespace dory::serialization
         }
 
         template<typename T, typename TContext>
-        inline static std::optional<std::reference_wrapper<GetCollectionValueType<T>>> nextItem(T& collection, TContext& context)
+        inline static std::optional<std::reference_wrapper<generic::GetCollectionValueType<T>>> nextItem(T& collection, TContext& context)
         {
             return {};
         }
@@ -119,7 +120,7 @@ namespace dory::serialization
         using ContextType = TreeStructureContext<TNode, Ts...>;
 
         template<typename TCollection>
-        requires(is_dynamic_collection_v<TCollection>)
+        requires(generic::is_dynamic_collection_v<TCollection>)
         inline static void beginCollection(TCollection& collection, ContextType& context)
         {
             context.collectionIndexesStack.emplace(0);
@@ -128,7 +129,7 @@ namespace dory::serialization
         }
 
         template<typename TCollection>
-        requires(is_dictionary_v<TCollection>)
+        requires(generic::is_dictionary_v<TCollection>)
         inline static void beginCollection(TCollection& collection, ContextType& context)
         {
             auto& keys = context.dictionaryKeysStack.emplace();
@@ -149,14 +150,14 @@ namespace dory::serialization
         }
 
         template<typename TCollection>
-        requires(is_dynamic_collection_v<TCollection>)
+        requires(generic::is_dynamic_collection_v<TCollection>)
         inline static bool itemsLeft(ContextType& context)
         {
             return context.collectionIndexesStack.top() < context.collectionSizesStack.top();
         }
 
         template<typename TCollection>
-        requires(is_dictionary_v<TCollection>)
+        requires(generic::is_dictionary_v<TCollection>)
         inline static bool itemsLeft(ContextType& context)
         {
             auto& keys = context.dictionaryKeysStack.top();
@@ -164,7 +165,7 @@ namespace dory::serialization
         }
 
         template<typename TCollection>
-        requires(is_dynamic_collection_v<TCollection>)
+        requires(generic::is_dynamic_collection_v<TCollection>)
         inline static auto& getItem(TCollection& collection, ContextType& context)
         {
             auto& index = context.collectionIndexesStack.top();
@@ -174,7 +175,7 @@ namespace dory::serialization
         }
 
         template<typename TCollection>
-        requires(is_dictionary_v<TCollection>)
+        requires(generic::is_dictionary_v<TCollection>)
         inline static auto& getItem(TCollection& collection, ContextType& context)
         {
             auto& keys = context.dictionaryKeysStack.top();
@@ -191,14 +192,14 @@ namespace dory::serialization
         }
 
         template<typename TCollection>
-        requires(is_dynamic_collection_v<TCollection>)
+        requires(generic::is_dynamic_collection_v<TCollection>)
         inline static void endCollection(TCollection& collection, ContextType& context)
         {
             context.collectionIndexesStack.pop();
             context.collectionSizesStack.pop();
         }
         template<typename TCollection>
-        requires(is_dictionary_v<TCollection>)
+        requires(generic::is_dictionary_v<TCollection>)
         inline static void endCollection(TCollection& collection, ContextType& context)
         {
             context.dictionaryKeysStack.pop();
@@ -242,18 +243,18 @@ namespace dory::serialization
         }
 
         template<typename T, typename TContext>
-        requires(is_optional_v<std::decay_t<T>>)
+        requires(generic::is_optional_v<std::decay_t<T>>)
         static void visit(T&& object, TContext& context)
         {
             visit(*object, context);
         }
 
         template<typename T, typename TContext>
-        requires(is_fixed_array_v<std::decay_t<T>>)
+        requires(generic::is_fixed_array_v<std::decay_t<T>>)
         static void visit(T&& object, TContext& context)
         {
             using TArray = std::decay_t<T>;
-            constexpr const typename TArray::size_type size = array_size<TArray>::size;
+            constexpr const typename TArray::size_type size = generic::array_size<TArray>::size;
 
             TPolicies::CollectionPolicy::template beginCollection<typename TArray::value_type, size>(context);
 
@@ -271,7 +272,7 @@ namespace dory::serialization
         }
 
         template<typename T, typename TContext>
-        requires(is_dynamic_collection_v<T> || is_dictionary_v<T>)
+        requires(generic::is_dynamic_collection_v<T> || generic::is_dictionary_v<T>)
         static void visit(T&& object, TContext& context)
         {
             TPolicies::ContainerPolicyType::beginCollection(std::forward<T>(object), context);
@@ -291,12 +292,12 @@ namespace dory::serialization
 
         template<typename T, typename TContext>
         requires(std::is_class_v<std::decay_t<T>>
-                 && !is_fixed_array_v<std::decay_t<T>>
+                 && !generic::is_fixed_array_v<std::decay_t<T>>
                  && !std::is_same_v<std::decay_t<T>, std::string>
                  && !std::is_base_of_v<dory::serialization::IParameterizedString, std::decay_t<T>>
-                 && !is_optional_v<std::decay_t<T>>
-                 && !is_dynamic_collection_v<T>
-                 && !is_dictionary_v<T>)
+                 && !generic::is_optional_v<std::decay_t<T>>
+                 && !generic::is_dynamic_collection_v<T>
+                 && !generic::is_dictionary_v<T>)
         static void visit(T&& object, TContext& context)
         {
             if(TPolicies::ObjectPolicy::beginObject(std::forward<T>(object), context))
