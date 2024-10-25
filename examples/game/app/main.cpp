@@ -94,7 +94,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     }
 
     {
-        registry.get<dory::core::services::IMultiSinkLogService, dory::core::Logger::App>([&config, &registry](dory::core::services::IMultiSinkLogService* logger)
+        registry.get<dory::core::services::IMultiSinkLogService, dory::core::resources::Logger::App>([&config, &registry](dory::core::services::IMultiSinkLogService* logger)
         {
             config.loggingConfiguration.mainLogger.name = "AppLogger";
             config.loggingConfiguration.mainLogger.stdoutLogger = dory::core::resources::configuration::StdoutLogSink{};
@@ -102,7 +102,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
             logger->information(std::string{"Hello from AppLogger!"});
         });
 
-        registry.get<dory::core::services::IMultiSinkLogService>(dory::core::Logger::Config, [&config, &registry](dory::core::services::IMultiSinkLogService* logger)
+        registry.get<dory::core::services::IMultiSinkLogService>(dory::core::resources::Logger::Config, [&config, &registry](dory::core::services::IMultiSinkLogService* logger)
         {
             config.loggingConfiguration.mainLogger.name = "ConfigLogger";
             config.loggingConfiguration.mainLogger.stdoutLogger = dory::core::resources::configuration::StdoutLogSink{};

@@ -17,6 +17,7 @@
 #include <dory/core/services/serializer.h>
 #include <dory/core/services/dataFormatResolver.h>
 #include <dory/core/services/scriptService.h>
+#include <dory/core/services/configurationService.h>
 
 namespace dory::game::engine
 {
@@ -42,13 +43,18 @@ namespace dory::game::engine
         registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>());
 
         std::shared_ptr<core::services::IMultiSinkLogService> appLogger = std::make_shared<core::services::LogService>();
-        registry.set<core::services::IMultiSinkLogService, core::Logger::App>(libraryHandle, appLogger);
-        registry.set<core::services::IMultiSinkLogService, core::Logger::Config>(libraryHandle, std::make_shared<core::services::LogService>());
+        registry.set<core::services::IMultiSinkLogService, core::resources::Logger::App>(libraryHandle, appLogger);
+        registry.set<core::services::ILogService, core::resources::Logger::App>(libraryHandle, appLogger);
+
+        std::shared_ptr<core::services::IMultiSinkLogService> configLogger = std::make_shared<core::services::LogService>();
+        registry.set<core::services::IMultiSinkLogService, core::resources::Logger::Config>(libraryHandle, configLogger);
+        registry.set<core::services::ILogService, core::resources::Logger::Config>(libraryHandle, configLogger);
 
         registry.set<core::services::serialization::ISerializer, core::resources::DataFormat::yaml>(libraryHandle, std::make_shared<core::services::serialization::YamlSerializer>());
         registry.set<core::services::serialization::ISerializer, core::resources::DataFormat::json>(libraryHandle, std::make_shared<core::services::serialization::JsonSerializer>());
         registry.set<core::services::IDataFormatResolver>(libraryHandle, std::make_shared<core::services::DataFormatResolver>());
 
         registry.set<core::services::IScriptService>(libraryHandle, std::make_shared<core::services::ScriptService>());
+        registry.set<core::services::IConfigurationService>(libraryHandle, std::make_shared<core::services::ConfigurationService>(registry));
     }
 }

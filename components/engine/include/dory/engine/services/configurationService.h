@@ -204,7 +204,7 @@ namespace dory::engine::services::configuration
         void saveImpl(TConfiguration& configuration)
         {
             //save recursive sections
-            auto context = ConfigurationSectionContext<ConfigurationService>{*this };
+            auto context = ConfigurationSectionContext<ConfigurationService>{ *this };
             dory::serialization::ObjectVisitor<SaveConfigurationSectionPolicies>::visit(configuration, context);
         }
 

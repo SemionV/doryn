@@ -7,6 +7,7 @@
 #include "events/eventTypes.h"
 #include <dory/core/resources/entity.h>
 #include <dory/core/resources/dataFormat.h>
+#include <dory/core/resources/logger.h>
 #include <dory/generic/extension/resourceHandle.h>
 #include <dory/core/devices/iStandardIODevice.h>
 #include <dory/core/devices/iTerminalDevice.h>
@@ -18,6 +19,7 @@
 #include <dory/generic/extension/registryResourceScope.h>
 #include <dory/core/services/iDataFormatResolver.h>
 #include <dory/core/services/iScriptService.h>
+#include <dory/core/services/iConfigurationService.h>
 
 namespace dory::core
 {
@@ -28,12 +30,6 @@ namespace dory::core
         using IWindowRepository = repositories::IRepository<resources::entity::Window>;
         using IPipelineNodeRepository = core::repositories::IRepository<core::resources::entity::PipelineNode<core::resources::DataContext>>;
     }
-
-    enum class Logger
-    {
-        App,
-        Config
-    };
 
     template<typename TInterface, typename TIdentifier = resources::ServiceIdentifier>
     struct ServiceEntry
@@ -66,10 +62,12 @@ namespace dory::core
             /*Services*/
             ServiceEntry<services::ILibraryService>,
             ServiceEntry<services::IFileService>,
-            ServiceEntry<services::IMultiSinkLogService, Logger>,
+            ServiceEntry<services::IMultiSinkLogService, resources::Logger>,
+            ServiceEntry<services::ILogService , resources::Logger>,
             ServiceEntry<services::serialization::ISerializer, resources::DataFormat>,
             ServiceEntry<services::IDataFormatResolver>,
-            ServiceEntry<services::IScriptService>>
+            ServiceEntry<services::IScriptService>,
+            ServiceEntry<services::IConfigurationService>>
     {};
 
     template<typename T>

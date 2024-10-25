@@ -124,8 +124,8 @@ namespace dory
         using JsonSerializationServiceType = engineServices::serialization::JsonSerializationService<4>;
         using FormatKeyConverterType = engineServices::serialization::FormatKeyConverter;
         using SerializationServiceBundle = engineServices::serialization::SerializationServiceBundle<engineServices::serialization::Format, YamlSerializationServiceType, JsonSerializationServiceType>;
-
         using ScriptServiceType = engineServices::ScriptService<DataContextType>;
+
         using ConfigurationServiceType = engineServices::configuration::ConfigurationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;
         using LocalizationServiceType = engineServices::localization::LocalizationService<LogServiceType, FileServiceType, SerializationServiceBundle, FormatKeyConverterType>;
         using MainControllerType = engineControllers::MainController<typename TRepositories::PipelineRepositoryType>;
