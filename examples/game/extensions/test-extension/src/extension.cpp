@@ -12,11 +12,6 @@ namespace dory::game::test_extension
     {
     }
 
-    std::string FileService::getMessage()
-    {
-        return "Hello from Extension!";
-    }
-
     void dory::game::test_extension::Extension::attach(dory::generic::extension::LibraryHandle library, dory::core::resources::DataContext& dataContext)
     {
         std::cout << "dory::game::test_extension::Extension: Attach extension\n";

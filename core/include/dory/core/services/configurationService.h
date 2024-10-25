@@ -6,6 +6,10 @@
 #include <dory/core/resources/configurationRefl.h>
 #include <dory/core/services/iLogService.h>
 #include <dory/core/resources/logger.h>
+#include <dory/core/services/iFileService.h>
+#include <dory/core/services/iDataFormatResolver.h>
+#include <dory/core/resources/dataFormat.h>
+#include <dory/core/services/iSerializer.h>
 
 namespace dory::core
 {
@@ -132,6 +136,13 @@ namespace dory::core::services
             implementation::ImplementationLevel<TPolicy, TState>(registry)
         {}
 
+        void load(T& configuration) final
+        {
+            //load recursive sections
+            auto context = ConfigurationSectionContext{ *this };
+            dory::serialization::ObjectVisitor<LoadConfigurationSectionPolicies>::visit(configuration, context);
+        }
+
         bool load(const std::filesystem::path& configurationPath, T& configuration) final
         {
             try
@@ -141,8 +152,26 @@ namespace dory::core::services
                     logger->information(fmt::format("load configuration from: {0}", configurationPath.string()));
                 });
 
-                //auto source = fileService.read(configurationPath);
-                //serializationServiceBundle.deserialize(formatKeyConverter.getFormat(configurationPath), source, configuration);
+                std::string data{};
+                this->_registry.template get<IFileService>([&configurationPath, &data](IFileService* fileService)
+                {
+                    auto source = fileService->read(configurationPath);
+                    data = std::move(source);
+                });
+
+                resources::DataFormat dataFormat{};
+                this->_registry.template get<IDataFormatResolver>([&configurationPath, &dataFormat](IDataFormatResolver* resolver)
+                {
+                    dataFormat = resolver->resolveFormat(configurationPath);
+                });
+
+                this->_registry.template get<serialization::ISerializer>(dataFormat, [&data, &configuration](serialization::ISerializer* serializer)
+                {
+                    if(serializer)
+                    {
+                        serializer->deserialize(data, configuration);
+                    }
+                });
 
                 //load recursive sections
                 auto context = ConfigurationSectionContext{ *this };
@@ -168,23 +197,60 @@ namespace dory::core::services
             return false;
         }
 
-        bool load(T& configuration) final
+        void save(const T& configuration) final
         {
-            //load recursive sections
+            //save recursive sections
             auto context = ConfigurationSectionContext{ *this };
-            dory::serialization::ObjectVisitor<LoadConfigurationSectionPolicies>::visit(configuration, context);
-
-            return true;
+            dory::serialization::ObjectVisitor<SaveConfigurationSectionPolicies>::visit(configuration, context);
         }
 
         bool save(const std::filesystem::path& configurationPath, const T& configuration) final
         {
-            return true;
-        }
+            try
+            {
+                this->_registry.template get<ILogService, resources::Logger::Config>([&configurationPath](ILogService* logger)
+                {
+                    logger->information(fmt::format("save configuration to: {0}", configurationPath.string()));
+                });
 
-        bool save(const T& configuration) final
-        {
-            return true;
+                resources::DataFormat dataFormat{};
+                this->_registry.template get<IDataFormatResolver>([&configurationPath, &dataFormat](IDataFormatResolver* resolver)
+                {
+                    dataFormat = resolver->resolveFormat(configurationPath);
+                });
+
+                std::string data {};
+                this->_registry.template get<serialization::ISerializer>(dataFormat, [&data, &configuration](serialization::ISerializer* serializer)
+                {
+                    if(serializer)
+                    {
+                        data = serializer->serialize(configuration);
+                    }
+                });
+
+                this->_registry.template get<IFileService>([&configurationPath, &data](IFileService* fileService)
+                {
+                    fileService->write(configurationPath, data);
+                });
+
+                return true;
+            }
+            catch(const std::exception& e)
+            {
+                this->_registry.template get<ILogService, resources::Logger::Config>([&e](ILogService* logger)
+                {
+                    logger->error(fmt::format("cannot save configuration: {0}", e.what()));
+                });
+            }
+            catch(...)
+            {
+                this->_registry.template get<ILogService, resources::Logger::Config>([](ILogService* logger)
+                {
+                    logger->error(std::string_view("cannot save configuration: unknown exception type"));
+                });
+            }
+
+            return false;
         }
     };
 

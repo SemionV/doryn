@@ -25,6 +25,7 @@ FetchContent_MakeAvailable(nlohmann-json)
 FetchContent_Declare(rapid-yaml
         GIT_REPOSITORY https://github.com/biojppm/rapidyaml)
 FetchContent_MakeAvailable(rapid-yaml)
+target_compile_options(ryml PRIVATE -fPIC)
 
 FetchContent_Declare(spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog.git

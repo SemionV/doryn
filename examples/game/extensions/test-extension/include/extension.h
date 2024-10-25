@@ -12,8 +12,6 @@ namespace dory::game::test_extension
         std::string read(const std::filesystem::path& filePath) final;
 
         void write(const std::filesystem::path& filePath, const std::string& content) final;
-
-        std::string getMessage() final;
     };
 
     class Extension: public dory::generic::extension::IModule<dory::core::resources::DataContext>

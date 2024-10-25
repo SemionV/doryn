@@ -13,19 +13,14 @@ namespace dory::core::services::serialization
     class YamlSerializerGeneric: public implementation::ImplementationLevel<TPolicy, TState>
     {
     public:
-        inline std::string serialize(T&& object) final
+        inline std::string serialize(const T& object) final
         {
-            return dory::serialization::yaml::serialize(std::forward<T>(object));
-        }
-
-        inline T deserialize(const std::string& source) final
-        {
-            return dory::serialization::yaml::deserialize<T>(source);
+            return dory::serialization::yaml::serialize(object);
         }
 
         inline void deserialize(const std::string& source, T& object) final
         {
-            dory::serialization::yaml::deserialize(source, std::forward<T>(object));
+            dory::serialization::yaml::deserialize(source, object);
         }
     };
 
@@ -38,19 +33,14 @@ namespace dory::core::services::serialization
     class JsonSerializerGeneric: public implementation::ImplementationLevel<TPolicy, TState>
     {
     public:
-        inline std::string serialize(T&& object) final
+        inline std::string serialize(const T& object) final
         {
-            return dory::serialization::json::serialize(std::forward<T>(object));
-        }
-
-        inline T deserialize(const std::string& source) final
-        {
-            return dory::serialization::json::deserialize<T>(source);
+            return dory::serialization::json::serialize(object);
         }
 
         inline void deserialize(const std::string& source, T& object) final
         {
-            dory::serialization::json::deserialize(source, std::forward<T>(object));
+            dory::serialization::json::deserialize(source, object);
         }
     };
 

@@ -1,5 +1,6 @@
 #include "dory/game/engine/setup.h"
 #include <iostream>
+#include <dory/core/services/logService.h>
 
 #ifdef DORY_MAIN_FUNCTION_UNIX
 int main()
@@ -12,9 +13,39 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     dory::generic::extension::LibraryHandle staticLibraryHandle {};
     auto registry = dory::core::Registry{};
     auto dataContext = dory::core::resources::DataContext{};
-    auto config = dory::core::resources::configuration::Configuration{};
+    auto configuration = dory::core::resources::configuration::Configuration{};
 
     setup.setupRegistry(staticLibraryHandle, registry);
+
+    //initial config
+    configuration.section.loadFrom.emplace_back("settings.yaml");
+    auto& bootLoggerConfig = configuration.loggingConfiguration.configurationLogger;
+    bootLoggerConfig.name = "boot";
+    bootLoggerConfig.rotationLogger = dory::core::resources::configuration::RotationLogSink{"logs/boot.log"};
+    bootLoggerConfig.stdoutLogger = dory::core::resources::configuration::StdoutLogSink{};
+
+    registry.get<dory::core::services::IMultiSinkLogService>(dory::core::resources::Logger::Config, [&bootLoggerConfig, &registry](dory::core::services::IMultiSinkLogService* logger)
+    {
+        logger->initialize(bootLoggerConfig, registry);
+    });
+
+    registry.get<dory::core::services::IConfigurationService>([&configuration](dory::core::services::IConfigurationService* configurationService)
+    {
+        configurationService->load(configuration);
+    });
+
+    registry.get<dory::core::services::IMultiSinkLogService, dory::core::resources::Logger::App>([&configuration, &registry](dory::core::services::IMultiSinkLogService* logger)
+    {
+        logger->initialize(configuration.loggingConfiguration.mainLogger, registry);
+    });
+
+    registry.get<dory::core::services::ILogService, dory::core::resources::Logger::App>([&configuration](dory::core::services::ILogService* logger)
+    {
+        logger->information(fmt::format("Dory Game, {0}.{1}, {2}",
+                                                            configuration.buildInfo.version,
+                                                            configuration.buildInfo.commitSHA,
+                                                            configuration.buildInfo.timestamp));
+    });
 
     {
         auto ioDevice = registry.get<dory::core::devices::IStandardIODevice>();
@@ -33,14 +64,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
             terminalDevice->enterCommandMode();
             terminalDevice->writeLine("Hello Terminal!");
             terminalDevice->exitCommandMode();
-        }
-    }
-
-    {
-        auto fileService = registry.get<dory::core::services::IFileService>();
-        if(fileService)
-        {
-            std::cout << fileService->getMessage() << "\n";
         }
     }
 
@@ -70,8 +93,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
                     auto fileService = registry.get<dory::core::services::IFileService>();
                     if(fileService)
                     {
-                        auto message = fileService->getMessage();
-                        std::cout << message << "\n";
+                        //auto message = fileService->getMessage();
+                        //std::cout << message << "\n";
                     }
                 }
             }
@@ -93,23 +116,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
         });
     }
 
-    {
-        registry.get<dory::core::services::IMultiSinkLogService, dory::core::resources::Logger::App>([&config, &registry](dory::core::services::IMultiSinkLogService* logger)
+    /*{
+        registry.get<dory::core::services::IMultiSinkLogService, dory::core::resources::Logger::App>([&configuration, &registry](dory::core::services::IMultiSinkLogService* logger)
         {
-            config.loggingConfiguration.mainLogger.name = "AppLogger";
-            config.loggingConfiguration.mainLogger.stdoutLogger = dory::core::resources::configuration::StdoutLogSink{};
-            logger->initialize(config.loggingConfiguration.mainLogger, registry);
+            configuration.loggingConfiguration.mainLogger.name = "AppLogger";
+            configuration.loggingConfiguration.mainLogger.stdoutLogger = dory::core::resources::configuration::StdoutLogSink{};
+            logger->initialize(configuration.loggingConfiguration.mainLogger, registry);
             logger->information(std::string{"Hello from AppLogger!"});
         });
 
-        registry.get<dory::core::services::IMultiSinkLogService>(dory::core::resources::Logger::Config, [&config, &registry](dory::core::services::IMultiSinkLogService* logger)
+        registry.get<dory::core::services::IMultiSinkLogService>(dory::core::resources::Logger::Config, [&configuration, &registry](dory::core::services::IMultiSinkLogService* logger)
         {
-            config.loggingConfiguration.mainLogger.name = "ConfigLogger";
-            config.loggingConfiguration.mainLogger.stdoutLogger = dory::core::resources::configuration::StdoutLogSink{};
-            logger->initialize(config.loggingConfiguration.mainLogger, registry);
+            configuration.loggingConfiguration.mainLogger.name = "ConfigLogger";
+            configuration.loggingConfiguration.mainLogger.stdoutLogger = dory::core::resources::configuration::StdoutLogSink{};
+            logger->initialize(configuration.loggingConfiguration.mainLogger, registry);
             logger->information(std::string{"Hello from ConfigLogger!"});
         });
-    }
+    }*/
 
     std::cout << "End main" << std::endl;
 

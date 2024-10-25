@@ -9,6 +9,5 @@ namespace dory::core::services
     public:
         std::string read(const std::filesystem::path& filePath) final;
         void write(const std::filesystem::path& filePath, const std::string& content) final;
-        std::string getMessage() final;
     };
 }

@@ -36,8 +36,4 @@ namespace dory::core::services
         stream << content;
         stream.close();
     }
-
-    std::string FileService::getMessage() {
-        return "Hello world!";
-    }
 }

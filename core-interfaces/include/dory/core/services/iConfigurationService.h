@@ -12,9 +12,9 @@ namespace dory::core::services
     {
     public:
         virtual bool load(const std::filesystem::path& configurationPath, T& configuration) = 0;
-        virtual bool load(T& configuration) = 0;
+        virtual void load(T& configuration) = 0;
         virtual bool save(const std::filesystem::path& configurationPath, const T& configuration) = 0;
-        virtual bool save(const T& configuration) = 0;
+        virtual void save(const T& configuration) = 0;
     };
 
     template<typename... Ts>
