@@ -1,12 +1,12 @@
 #pragma once
 
 #include <dory/generics/typeTraits.h>
-#include <dory/serialization/structures/parameterizedString.h>
+#include <dory/generic/parameterizedString.h>
 #include <spdlog/fmt/fmt.h>
 
 namespace dory::engine::resources
 {
-    class ParameterizedString: dory::serialization::IParameterizedString
+    class ParameterizedString: dory::generic::IParameterizedString
     {
     private:
         std::string value;
