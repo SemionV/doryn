@@ -1,8 +1,8 @@
 #pragma once
 
-#include <dory/generic/typeTraits.h>
+#include <string>
 
-namespace dory::serialization
+namespace dory::generic
 {
     class IParameterizedString
     {

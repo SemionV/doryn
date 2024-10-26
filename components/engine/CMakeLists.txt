@@ -9,6 +9,7 @@ target_include_directories(${DORY_MODULE_NAME} INTERFACE
 
 target_link_libraries(${DORY_MODULE_NAME} INTERFACE
         dory-generics
+        dory-generic #it is not the same as above
         dory-math
         dory-serialization
         dory-concurrency

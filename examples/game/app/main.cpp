@@ -1,6 +1,7 @@
 #include "dory/game/engine/setup.h"
 #include <iostream>
 #include <dory/core/services/logService.h>
+#include <dory/core/resources/localizationImpl.h>
 
 #ifdef DORY_MAIN_FUNCTION_UNIX
 int main()
@@ -14,6 +15,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     auto registry = dory::core::Registry{};
     auto dataContext = dory::core::resources::DataContext{};
     auto configuration = dory::core::resources::configuration::Configuration{};
+    auto localization = dory::core::resources::LocalizationImpl{};
 
     setup.setupRegistry(staticLibraryHandle, registry);
 
