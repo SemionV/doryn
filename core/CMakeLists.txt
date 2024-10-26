@@ -17,6 +17,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/logService.cpp
         src/services/dataFormatResolver.cpp
         src/services/scriptService.cpp
+        src/services/localizationService.cpp
         ${DORY_PLATFORM_MODULES})
 
 target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

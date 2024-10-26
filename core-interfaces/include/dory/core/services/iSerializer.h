@@ -4,6 +4,7 @@
 #include <dory/generic/typeList.h>
 #include <dory/core/resources/dataFormat.h>
 #include <dory/core/resources/configuration.h>
+#include <dory/core/resources/localization.h>
 
 namespace dory::core::services::serialization
 {
@@ -33,7 +34,8 @@ namespace dory::core::services::serialization
 
     using SerializationTypes = generic::TypeList<
             resources::configuration::Configuration,
-            resources::configuration::Interface>;
+            resources::configuration::Interface,
+            resources::Localization>;
 
     using ISerializer = ISerializerBundle<SerializationTypes>;
 }
