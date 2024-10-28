@@ -21,6 +21,7 @@
 #include <dory/core/services/iScriptService.h>
 #include <dory/core/services/iConfigurationService.h>
 #include <dory/core/services/iLocalizationService.h>
+#include <dory/core/services/iFrameService.h>
 
 namespace dory::core
 {
@@ -29,7 +30,7 @@ namespace dory::core
         using ICameraRepository = repositories::IRepository<resources::entity::Camera>;
         using IViewRepository = repositories::IRepository<resources::entity::View>;
         using IWindowRepository = repositories::IRepository<resources::entity::Window>;
-        using IPipelineNodeRepository = core::repositories::IRepository<core::resources::entity::PipelineNode<core::resources::DataContext>>;
+        using IPipelineNodeRepository = core::repositories::IRepository<core::resources::entity::PipelineNode>;
     }
 
     template<typename TInterface, typename TIdentifier = resources::ServiceIdentifier>
@@ -69,7 +70,8 @@ namespace dory::core
             ServiceEntry<services::IDataFormatResolver>,
             ServiceEntry<services::IScriptService>,
             ServiceEntry<services::IConfigurationService>,
-            ServiceEntry<services::ILocalizationService>>
+            ServiceEntry<services::ILocalizationService>,
+            ServiceEntry<services::IFrameService>>
     {};
 
     template<typename T>
