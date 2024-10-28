@@ -8,9 +8,9 @@ namespace dory::core::repositories
         return a->nodeEntity.priority < b->nodeEntity.priority;
     }
 
-    std::list<std::shared_ptr<resources::object::PipelineNode<resources::DataContext>>> PipelineRepository::getPipeline()
+    std::list<std::shared_ptr<resources::object::PipelineNode>> PipelineRepository::getPipeline()
     {
-        std::list<std::shared_ptr<resources::object::PipelineNode<resources::DataContext>>> nodes;
+        std::list<std::shared_ptr<resources::object::PipelineNode>> nodes;
 
         for(const auto& nodeEntity : this->container)
         {
@@ -20,14 +20,14 @@ namespace dory::core::repositories
             }
         }
 
-        nodes.sort(compareNodes<resources::object::PipelineNode<resources::DataContext>>);
+        nodes.sort(compareNodes<resources::object::PipelineNode>);
 
         return nodes;
     }
 
-    std::shared_ptr<resources::object::PipelineNode<resources::DataContext>> PipelineRepository::loadNode(const PipelineRepository::EntityType& nodeEntity)
+    std::shared_ptr<resources::object::PipelineNode> PipelineRepository::loadNode(const PipelineRepository::EntityType& nodeEntity)
     {
-        auto node = std::make_shared<resources::object::PipelineNode<resources::DataContext>>(nodeEntity);
+        auto node = std::make_shared<resources::object::PipelineNode>(nodeEntity);
 
         for(const auto& entity : this->container)
         {
@@ -37,7 +37,7 @@ namespace dory::core::repositories
             }
         }
 
-        node->children.sort(compareNodes<resources::object::PipelineNode<resources::DataContext>>);
+        node->children.sort(compareNodes<resources::object::PipelineNode>);
 
         return node;
     }

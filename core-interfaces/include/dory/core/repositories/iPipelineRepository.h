@@ -10,6 +10,6 @@ namespace dory::core::repositories
     {
     public:
         virtual ~IPipelineRepository() = default;
-        virtual std::list<std::shared_ptr<resources::object::PipelineNode<resources::DataContext>>> getPipeline() = 0;
+        virtual std::list<std::shared_ptr<resources::object::PipelineNode>> getPipeline() = 0;
     };
 }

@@ -5,6 +5,7 @@
 #include <functional>
 #include <utility>
 #include <type_traits>
+#include "dataContext.h"
 
 namespace dory::core::resources::entity
 {
@@ -141,10 +142,9 @@ namespace dory::core::resources::entity
         First = 1
     };
 
-    template<typename TDataContext>
     struct PipelineNode: Entity<IdType>
     {
-        using UpdateFunctionType = std::function<void(IdType referenceId, const TimeSpan& timeStep, TDataContext& context)>;
+        using UpdateFunctionType = std::function<void(IdType referenceId, const TimeSpan& timeStep, DataContext& context)>;
 
         std::shared_ptr<void> attachedController;
         UpdateFunctionType update;
