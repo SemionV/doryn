@@ -36,9 +36,7 @@ namespace dory::game::engine
         registerRepository<core::resources::entity::Camera>(libraryHandle, registry);
         registerRepository<core::resources::entity::View>(libraryHandle, registry);
         registerRepository<core::resources::entity::Window>(libraryHandle, registry);
-        auto pipelineRepository = std::make_shared<core::repositories::PipelineRepository>();
-        registry.set<core::repositories::IPipelineRepository>(libraryHandle, pipelineRepository);
-        registry.set<core::repositories::IPipelineNodeRepository>(libraryHandle, pipelineRepository);
+        registry.set<core::repositories::IPipelineRepository>(libraryHandle, std::make_shared<core::repositories::PipelineRepository>());
 
         registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
         registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>());

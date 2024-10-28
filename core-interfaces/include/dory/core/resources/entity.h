@@ -6,6 +6,7 @@
 #include <utility>
 #include <type_traits>
 #include "dataContext.h"
+#include <dory/generic/extension/resourceHandle.h>
 
 namespace dory::core::resources::entity
 {
@@ -136,44 +137,32 @@ namespace dory::core::resources::entity
         {}
     };
 
-    enum class PipelineNodePriority
-    {
-        Default = 0,
-        First = 1
-    };
-
     struct PipelineNode: Entity<IdType>
     {
         using UpdateFunctionType = std::function<void(IdType referenceId, const TimeSpan& timeStep, DataContext& context)>;
+        using ControllerPointerType = std::shared_ptr<void>;
 
-        std::shared_ptr<void> attachedController;
-        UpdateFunctionType update;
+        std::optional<generic::extension::ResourceHandle<ControllerPointerType>> attachedController {};
+        std::optional<generic::extension::ResourceHandle<UpdateFunctionType>> updateFunction {};
         IdType parentNodeId;
         std::string name;
-        PipelineNodePriority priority;
 
         explicit PipelineNode(IdType id,
-                              std::shared_ptr<void> attachedController = nullptr,
-                              PipelineNodePriority priority = PipelineNodePriority::Default,
+                              generic::extension::ResourceHandle<ControllerPointerType> attachedController,
                               IdType parentNodeId = nullId,
                               std::string name = ""):
                 Entity(id),
                 attachedController(std::move(attachedController)),
                 parentNodeId(parentNodeId),
-                priority(priority),
                 name(std::move(name))
         {}
 
-        template<typename F, typename T = std::enable_if_t<std::is_convertible_v<F, UpdateFunctionType>>>
-        explicit PipelineNode(F&& update,
-                              PipelineNodePriority priority = PipelineNodePriority::Default,
+        explicit PipelineNode(generic::extension::ResourceHandle<UpdateFunctionType> updateFunction,
                               IdType parentNodeId = nullId,
                               std::string name = ""):
                 Entity(nullId),
-                update(std::forward<F>(update)),
-                attachedController(nullptr),
+                updateFunction(std::move(updateFunction)),
                 parentNodeId(parentNodeId),
-                priority(priority),
                 name(std::move(name))
         {}
     };

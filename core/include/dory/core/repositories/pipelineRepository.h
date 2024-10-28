@@ -9,16 +9,16 @@ namespace dory::core::repositories
     {
     private:
         using EntityType = resources::entity::PipelineNode;
-
-        std::shared_ptr<resources::object::PipelineNode> loadNode(const EntityType& nodeEntity);
+        std::vector<EntityType> _nodes;
 
     public:
         PipelineRepository() = default;
 
         PipelineRepository(std::initializer_list<EntityType>&& entities):
-                repository::Repository<resources::entity::PipelineNode>(std::move(entities))
+                _nodes(entities)
         {}
 
-        std::list<std::shared_ptr<resources::object::PipelineNode>> getPipeline() override;
+        std::span<resources::entity::PipelineNode> getPipelineNodes() override;
+        bool addNode(const resources::entity::PipelineNode& pipelineNode) override;
     };
 }

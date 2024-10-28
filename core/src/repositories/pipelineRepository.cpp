@@ -2,43 +2,51 @@
 
 namespace dory::core::repositories
 {
-    template<typename T>
-    bool compareNodes(const std::shared_ptr<T>& a, const std::shared_ptr<T>& b)
+    std::span<resources::entity::PipelineNode> PipelineRepository::getPipelineNodes()
     {
-        return a->nodeEntity.priority < b->nodeEntity.priority;
+        return std::span<resources::entity::PipelineNode>{ _nodes };
     }
 
-    std::list<std::shared_ptr<resources::object::PipelineNode>> PipelineRepository::getPipeline()
+    bool PipelineRepository::addNode(const resources::entity::PipelineNode& pipelineNode)
     {
-        std::list<std::shared_ptr<resources::object::PipelineNode>> nodes;
+        auto parentId = pipelineNode.parentNodeId;
+        std::optional<decltype(_nodes)::iterator> precedingNode {};
 
-        for(const auto& nodeEntity : this->container)
+        if(pipelineNode.parentNodeId != resources::entity::nullId)
         {
-            if(nodeEntity.parentNodeId == resources::entity::nullId)
+            auto it = _nodes.begin();
+            auto end = _nodes.end();
+            while (it != end)
             {
-                nodes.emplace_back(loadNode(nodeEntity));
+                if(!precedingNode)
+                {
+                    if(it->id == parentId)
+                    {
+                        precedingNode = it;
+                    }
+                }
+                else if(it->parentNodeId == parentId)
+                {
+                    precedingNode = it;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if(precedingNode)
+            {
+                _nodes.emplace(*precedingNode, pipelineNode);
+                return true;
             }
         }
-
-        nodes.sort(compareNodes<resources::object::PipelineNode>);
-
-        return nodes;
-    }
-
-    std::shared_ptr<resources::object::PipelineNode> PipelineRepository::loadNode(const PipelineRepository::EntityType& nodeEntity)
-    {
-        auto node = std::make_shared<resources::object::PipelineNode>(nodeEntity);
-
-        for(const auto& entity : this->container)
+        else
         {
-            if(entity.parentNodeId == node->nodeEntity.id)
-            {
-                node->children.emplace_back(loadNode(entity));
-            }
+            _nodes.emplace_back(pipelineNode);
+            return true;
         }
 
-        node->children.sort(compareNodes<resources::object::PipelineNode>);
-
-        return node;
+        return false;
     }
 }

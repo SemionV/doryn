@@ -30,7 +30,6 @@ namespace dory::core
         using ICameraRepository = repositories::IRepository<resources::entity::Camera>;
         using IViewRepository = repositories::IRepository<resources::entity::View>;
         using IWindowRepository = repositories::IRepository<resources::entity::Window>;
-        using IPipelineNodeRepository = core::repositories::IRepository<core::resources::entity::PipelineNode>;
     }
 
     template<typename TInterface, typename TIdentifier = resources::ServiceIdentifier>
@@ -60,7 +59,6 @@ namespace dory::core
             ServiceEntry<repositories::IViewRepository>,
             ServiceEntry<repositories::IWindowRepository>,
             ServiceEntry<repositories::IPipelineRepository>,
-            ServiceEntry<repositories::IPipelineNodeRepository>,
             /*Services*/
             ServiceEntry<services::ILibraryService>,
             ServiceEntry<services::IFileService>,

@@ -3,7 +3,7 @@ section:
   loadFrom: [ buildinfo.yaml, configuration/settings.json ]
 loggingConfiguration:
   mainLogger:
-    name: engine
+    name: game
     rotationLogger:
       logFileName: "logs/engine.log"
       maximumFileSize: 5242880
