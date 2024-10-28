@@ -2,6 +2,7 @@
 
 #include <dory/core/services/iSerializer.h>
 #include <dory/core/implementation.h>
+#include <dory/core/resources/localizationRefl.h>
 #include <dory/serialization/yamlSerializer.h>
 #include <dory/serialization/yamlDeserializer.h>
 #include <dory/serialization/jsonSerializer.h>

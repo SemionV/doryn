@@ -26,27 +26,31 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     bootLoggerConfig.rotationLogger = dory::core::resources::configuration::RotationLogSink{"logs/boot.log"};
     bootLoggerConfig.stdoutLogger = dory::core::resources::configuration::StdoutLogSink{};
 
-    registry.get<dory::core::services::IMultiSinkLogService>(dory::core::resources::Logger::Config, [&bootLoggerConfig, &registry](dory::core::services::IMultiSinkLogService* logger)
-    {
+    registry.get<dory::core::services::IMultiSinkLogService>(dory::core::resources::Logger::Config, [&bootLoggerConfig, &registry](dory::core::services::IMultiSinkLogService* logger){
         logger->initialize(bootLoggerConfig, registry);
     });
 
-    registry.get<dory::core::services::IConfigurationService>([&configuration](dory::core::services::IConfigurationService* configurationService)
-    {
+    registry.get<dory::core::services::IConfigurationService>([&configuration](dory::core::services::IConfigurationService* configurationService){
         configurationService->load(configuration);
     });
 
-    registry.get<dory::core::services::IMultiSinkLogService, dory::core::resources::Logger::App>([&configuration, &registry](dory::core::services::IMultiSinkLogService* logger)
-    {
+    registry.get<dory::core::services::IMultiSinkLogService, dory::core::resources::Logger::App>([&configuration, &registry](dory::core::services::IMultiSinkLogService* logger){
         logger->initialize(configuration.loggingConfiguration.mainLogger, registry);
     });
 
-    registry.get<dory::core::services::ILogService, dory::core::resources::Logger::App>([&configuration](dory::core::services::ILogService* logger)
-    {
+    registry.get<dory::core::services::ILocalizationService>([&configuration, &localization](dory::core::services::ILocalizationService* localizationService){
+        localizationService->load(configuration, localization);
+    });
+
+    registry.get<dory::core::services::ILogService, dory::core::resources::Logger::App>([&configuration, &localization](dory::core::services::ILogService* logger){
         logger->information(fmt::format("Dory Game, {0}.{1}, {2}",
                                                             configuration.buildInfo.version,
                                                             configuration.buildInfo.commitSHA,
                                                             configuration.buildInfo.timestamp));
+
+        logger->information(localization.hello);
+        logger->information(localization.goodBye->get("Semion"));
+        logger->information(localization.birthDate->get(11, 03, 1984));
     });
 
     {

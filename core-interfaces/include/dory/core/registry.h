@@ -20,6 +20,7 @@
 #include <dory/core/services/iDataFormatResolver.h>
 #include <dory/core/services/iScriptService.h>
 #include <dory/core/services/iConfigurationService.h>
+#include <dory/core/services/iLocalizationService.h>
 
 namespace dory::core
 {
@@ -67,7 +68,8 @@ namespace dory::core
             ServiceEntry<services::serialization::ISerializer, resources::DataFormat>,
             ServiceEntry<services::IDataFormatResolver>,
             ServiceEntry<services::IScriptService>,
-            ServiceEntry<services::IConfigurationService>>
+            ServiceEntry<services::IConfigurationService>,
+            ServiceEntry<services::ILocalizationService>>
     {};
 
     template<typename T>

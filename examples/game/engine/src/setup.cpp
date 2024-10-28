@@ -18,6 +18,7 @@
 #include <dory/core/services/dataFormatResolver.h>
 #include <dory/core/services/scriptService.h>
 #include <dory/core/services/configurationService.h>
+#include <dory/core/services/localizationService.h>
 
 namespace dory::game::engine
 {
@@ -56,5 +57,6 @@ namespace dory::game::engine
 
         registry.set<core::services::IScriptService>(libraryHandle, std::make_shared<core::services::ScriptService>());
         registry.set<core::services::IConfigurationService>(libraryHandle, std::make_shared<core::services::ConfigurationService>(registry));
+        registry.set<core::services::ILocalizationService>(libraryHandle, std::make_shared<core::services::LocalizationService>(registry));
     }
 }

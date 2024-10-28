@@ -5,7 +5,8 @@
 
 namespace dory::core::resources
 {
-    class ParameterizedString: public dory::generic::IParameterizedString
+    template<typename TInterface>
+    class ParameterizedString: public TInterface
     {
     private:
         std::string value;

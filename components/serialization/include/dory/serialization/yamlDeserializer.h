@@ -154,13 +154,11 @@ namespace dory::serialization::yaml
     };
 
     template<typename T>
-    static T deserialize(std::string source, T& object)
+    static void deserialize(std::string source, T& object)
     {
         auto tree = ryml::parse_in_place(toRymlStr(source));
         YamlContext context(tree.rootref());
         ObjectVisitor<YamlDeserializationPolicies>::visit(object, context);
-
-        return object;
     }
 
     template<typename T>

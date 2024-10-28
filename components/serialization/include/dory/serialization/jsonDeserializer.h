@@ -144,12 +144,10 @@ namespace dory::serialization::json
     }
 
     template<typename T>
-    static T deserialize(const std::string& source, T& object)
+    static void deserialize(const std::string& source, T& object)
     {
         auto data = json::parse(source);
         JsonContext context(&data);
         ObjectVisitor<JsonDeserializationPolicies>::visit(object, context);
-
-        return object;
     }
 }

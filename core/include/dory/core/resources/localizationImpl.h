@@ -8,14 +8,14 @@ namespace dory::core::resources
     struct LocalizationImpl: public Localization
     {
     private:
-        class GoodByeTemplate: public IGoodByeTemplate, public ParameterizedString {
+        class GoodByeTemplate: public ParameterizedString<IGoodByeTemplate> {
         public:
             std::string get(const std::string& name) final {
                 return format(name);
             }
         };
 
-        class BirthDateTemplate: public IBirthDateTemplate, public ParameterizedString {
+        class BirthDateTemplate: public ParameterizedString<IBirthDateTemplate> {
         public:
             std::string get(unsigned int day, unsigned int month, unsigned int year) final {
                 return format(day, month, year);

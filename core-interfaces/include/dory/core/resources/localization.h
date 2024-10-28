@@ -10,13 +10,13 @@ namespace dory::core::resources
     struct Localization
     {
     protected:
-        class IGoodByeTemplate: public generic::Interface
+        class IGoodByeTemplate: public generic::IParameterizedString
         {
         public:
             virtual std::string get(const std::string& name) = 0;
         };
 
-        class IBirthDateTemplate: public generic::Interface
+        class IBirthDateTemplate: public generic::IParameterizedString
         {
         public:
             virtual std::string get(unsigned int day, unsigned int month, unsigned int year) = 0;

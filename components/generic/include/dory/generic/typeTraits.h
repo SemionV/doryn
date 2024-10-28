@@ -122,6 +122,18 @@ namespace dory::generic
     template<typename... Ts>
     using FirstTypeT = FirstType<Ts...>::Type;
 
+    template<typename T>
+    struct ElementType
+    {
+        using Type = void;
+    };
+
+    template<typename T>
+    struct ElementType<std::unique_ptr<T>>
+    {
+        using Type = T;
+    };
+
     template<class T>
     struct CollectionValueType;
 
