@@ -53,6 +53,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
         logger->information(localization.birthDate->get(11, 03, 1984));
     });
 
+    registry.getMany<
+            dory::core::GetService<dory::core::devices::IStandardIODevice>,
+            dory::core::GetService<dory::core::services::ILogService, dory::core::resources::Logger::App>,
+            dory::core::GetService<dory::core::devices::ITerminalDevice>>(
+    [&dataContext](dory::core::devices::IStandardIODevice* ioDevice, dory::core::devices::ITerminalDevice* terminalDevice)
+    {
+        ioDevice->connect(dataContext);
+        terminalDevice->connect(dataContext);
+        terminalDevice->enterCommandMode();
+    });
+
     registry.get<dory::core::services::IFrameService>([&dataContext](dory::core::services::IFrameService* frameService) {
         frameService->startLoop(dataContext);
     });

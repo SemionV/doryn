@@ -88,6 +88,16 @@ namespace dory::generic::registry
     template<typename TIdentifierDefault, typename... TServices>
     struct RegistryLayer: public RegistrationEntry<typename TServices::InterfaceType, typename TServices::IdentifierType>...
     {
+    private:
+        template<typename TAction, typename... TService>
+        void invoke(TAction&& action, generic::extension::ResourceRef<std::shared_ptr<TService>>... serviceRefs)
+        {
+            if((serviceRefs && ...))
+            {
+                action((*serviceRefs).get()...);
+            }
+        }
+
     public:
         template<typename TInterface>
         void set(extension::LibraryHandle libraryHandle, std::shared_ptr<TInterface> service)
@@ -163,6 +173,13 @@ namespace dory::generic::registry
         void get(TIdentifier identifier, A&& action)
         {
             this->RegistrationEntry<TService, TIdentifier>::_get(identifier, std::forward<A>(action));
+        }
+
+        template<typename... TServiceEntry, typename A>
+        requires(std::is_invocable_v<A, typename TServiceEntry::InterfaceType*...>)
+        void getMany(A&& action)
+        {
+            invoke(std::forward<A>(action), this->RegistrationEntry<typename TServiceEntry::InterfaceType, decltype(TServiceEntry::identifier)>::_get(TServiceEntry::identifier)...);
         }
     };
 }

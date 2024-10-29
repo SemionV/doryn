@@ -40,6 +40,13 @@ namespace dory::core
         using IdentifierType = TIdentifier;
     };
 
+    template<typename TInterface, auto Identifier = resources::ServiceIdentifier{}>
+    struct GetService
+    {
+        using InterfaceType = TInterface;
+        static const constexpr decltype(Identifier) identifier = Identifier;
+    };
+
     struct Registry: public generic::registry::RegistryLayer<resources::ServiceIdentifier,
             /*Events*/
             ServiceEntry<events::pipeline::Bundle::IDispatcher>,
