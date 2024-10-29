@@ -14,6 +14,7 @@ namespace dory::core::repositories
         virtual ~IPipelineRepository() = default;
 
         virtual std::span<resources::entity::PipelineNode> getPipelineNodes() = 0;
-        virtual bool addNode(const resources::entity::PipelineNode& pipelineNode) = 0;
+        virtual resources::entity::PipelineNode::IdType addNode(const resources::entity::PipelineNode& pipelineNode) = 0;
+        virtual resources::entity::PipelineNode::IdType removeNode(resources::entity::PipelineNode::IdType id) = 0;
     };
 }

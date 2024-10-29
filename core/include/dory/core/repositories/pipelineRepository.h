@@ -9,7 +9,13 @@ namespace dory::core::repositories
     {
     private:
         using EntityType = resources::entity::PipelineNode;
-        std::vector<EntityType> _nodes;
+        using IdType = EntityType::IdType;
+        using NodeListType = std::vector<EntityType>;
+        NodeListType _nodes;
+        IdType _counter {};
+
+        IdType insertNode(const resources::entity::PipelineNode& node, const NodeListType::iterator& after);
+        IdType insertNode(const resources::entity::PipelineNode& node);
 
     public:
         PipelineRepository() = default;
@@ -19,6 +25,7 @@ namespace dory::core::repositories
         {}
 
         std::span<resources::entity::PipelineNode> getPipelineNodes() override;
-        bool addNode(const resources::entity::PipelineNode& pipelineNode) override;
+        resources::entity::PipelineNode::IdType addNode(const resources::entity::PipelineNode& pipelineNode) override;
+        resources::entity::PipelineNode::IdType removeNode(IdType id) override;
     };
 }

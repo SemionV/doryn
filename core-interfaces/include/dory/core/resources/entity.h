@@ -70,6 +70,8 @@ namespace dory::core::resources::entity
     template<typename T = IdType>
     struct Entity
     {
+        using IdType = IdType;
+
         T id;
         explicit Entity(T id):
                 id(id)
