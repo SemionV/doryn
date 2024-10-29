@@ -5,7 +5,7 @@
 
 namespace dory::core::services
 {
-    class IMainController: public generic::Interface
+    class IPipelineService: public generic::Interface
     {
 
     };
