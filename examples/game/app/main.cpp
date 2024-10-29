@@ -53,6 +53,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
         logger->information(localization.birthDate->get(11, 03, 1984));
     });
 
+    registry.get<dory::core::services::IFrameService>([&dataContext](dory::core::services::IFrameService* frameService) {
+        frameService->startLoop(dataContext);
+    });
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     {
         auto ioDevice = registry.get<dory::core::devices::IStandardIODevice>();
         if(ioDevice)
@@ -121,24 +127,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
             device->disconnect(dataContext);
         });
     }
-
-    /*{
-        registry.get<dory::core::services::IMultiSinkLogService, dory::core::resources::Logger::App>([&configuration, &registry](dory::core::services::IMultiSinkLogService* logger)
-        {
-            configuration.loggingConfiguration.mainLogger.name = "AppLogger";
-            configuration.loggingConfiguration.mainLogger.stdoutLogger = dory::core::resources::configuration::StdoutLogSink{};
-            logger->initialize(configuration.loggingConfiguration.mainLogger, registry);
-            logger->information(std::string{"Hello from AppLogger!"});
-        });
-
-        registry.get<dory::core::services::IMultiSinkLogService>(dory::core::resources::Logger::Config, [&configuration, &registry](dory::core::services::IMultiSinkLogService* logger)
-        {
-            configuration.loggingConfiguration.mainLogger.name = "ConfigLogger";
-            configuration.loggingConfiguration.mainLogger.stdoutLogger = dory::core::resources::configuration::StdoutLogSink{};
-            logger->initialize(configuration.loggingConfiguration.mainLogger, registry);
-            logger->information(std::string{"Hello from ConfigLogger!"});
-        });
-    }*/
 
     std::cout << "End main" << std::endl;
 

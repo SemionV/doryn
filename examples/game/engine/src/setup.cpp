@@ -59,6 +59,6 @@ namespace dory::game::engine
         registry.set<core::services::IConfigurationService>(libraryHandle, std::make_shared<core::services::ConfigurationService>(registry));
         registry.set<core::services::ILocalizationService>(libraryHandle, std::make_shared<core::services::LocalizationService>(registry));
         registry.set<core::services::IPipelineService>(libraryHandle, std::make_shared<core::services::PipelineService>(registry));
-        registry.set<core::services::IFrameService>(libraryHandle, std::make_shared<core::services::FrameService>());
+        registry.set<core::services::IFrameService>(libraryHandle, std::make_shared<core::services::FrameService>(registry));
     }
 }

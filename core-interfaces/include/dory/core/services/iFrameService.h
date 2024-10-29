@@ -9,7 +9,7 @@ namespace dory::core::services
     class IFrameService: public generic::Interface
     {
     public:
-        virtual void startLoop(resources::DataContext& context, IPipelineService* pipelineService) = 0;
+        virtual void startLoop(resources::DataContext& context) = 0;
         virtual void endLoop() = 0;
     };
 }
