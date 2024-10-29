@@ -19,12 +19,13 @@
 #include <dory/core/services/scriptService.h>
 #include <dory/core/services/configurationService.h>
 #include <dory/core/services/localizationService.h>
+#include <dory/core/services/pipelineService.h>
 
 namespace dory::game::engine
 {
     void dory::game::engine::Setup::setupRegistry(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
     {
-        registerEventBundle<core::events::mainController::Bundle>(libraryHandle, registry);
+        registerEventBundle<core::events::pipeline::Bundle>(libraryHandle, registry);
         registerEventBundle<core::events::application::Bundle>(libraryHandle, registry);
         registerEventBufferBundle<core::events::io::Bundle>(libraryHandle, registry);
         registerEventBundle<core::events::script::Bundle>(libraryHandle, registry);
@@ -56,5 +57,6 @@ namespace dory::game::engine
         registry.set<core::services::IScriptService>(libraryHandle, std::make_shared<core::services::ScriptService>());
         registry.set<core::services::IConfigurationService>(libraryHandle, std::make_shared<core::services::ConfigurationService>(registry));
         registry.set<core::services::ILocalizationService>(libraryHandle, std::make_shared<core::services::LocalizationService>(registry));
+        registry.set<core::services::IPipelineService>(libraryHandle, std::make_shared<core::services::PipelineService>(registry));
     }
 }

@@ -22,6 +22,7 @@
 #include <dory/core/services/iConfigurationService.h>
 #include <dory/core/services/iLocalizationService.h>
 #include <dory/core/services/iFrameService.h>
+#include <dory/core/services/iPipelineService.h>
 
 namespace dory::core
 {
@@ -41,8 +42,8 @@ namespace dory::core
 
     struct Registry: public generic::registry::RegistryLayer<resources::ServiceIdentifier,
             /*Events*/
-            ServiceEntry<events::mainController::Bundle::IDispatcher>,
-            ServiceEntry<events::mainController::Bundle::IListener>,
+            ServiceEntry<events::pipeline::Bundle::IDispatcher>,
+            ServiceEntry<events::pipeline::Bundle::IListener>,
             ServiceEntry<events::application::Bundle::IDispatcher>,
             ServiceEntry<events::application::Bundle::IListener>,
             ServiceEntry<events::io::Bundle::IDispatcher>,
@@ -69,6 +70,7 @@ namespace dory::core
             ServiceEntry<services::IScriptService>,
             ServiceEntry<services::IConfigurationService>,
             ServiceEntry<services::ILocalizationService>,
+            ServiceEntry<services::IPipelineService>,
             ServiceEntry<services::IFrameService>>
     {};
 

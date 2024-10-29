@@ -7,7 +7,7 @@
 
 namespace dory::core::events
 {
-    struct mainController
+    struct pipeline
     {
         struct Initialize {};
         struct Stop {};
