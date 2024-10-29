@@ -17,7 +17,7 @@ TEST(PipelineRepository, addNode)
     EXPECT_EQ(id, nodes[0].id);
 }
 
-TEST(PipelineRepository, addChildNode)
+TEST(PipelineRepository, addNodes)
 {
     auto pipelineRepository = dory::core::repositories::PipelineRepository{
         {
@@ -57,4 +57,56 @@ TEST(PipelineRepository, addChildNode)
     nodes = pipelineRepository.getPipelineNodes();
     EXPECT_EQ(std::distance(nodes.begin(),nodes.end()), 16);
     EXPECT_EQ(nodes[15].id, id);
+}
+
+TEST(PipelineRepository, removeNode)
+{
+    auto pipelineRepository = dory::core::repositories::PipelineRepository{
+            {
+                    dory::core::resources::entity::PipelineNode{ 1 }
+            }
+    };
+
+    pipelineRepository.removeNode(1);
+
+    auto nodes = pipelineRepository.getPipelineNodes();
+    EXPECT_EQ(std::distance(nodes.begin(),nodes.end()), 0);
+}
+
+TEST(PipelineRepository, removeNodes)
+{
+    auto pipelineRepository = dory::core::repositories::PipelineRepository{
+            {
+                    dory::core::resources::entity::PipelineNode{ 1 },
+                    dory::core::resources::entity::PipelineNode{ 2, 1 },
+                    dory::core::resources::entity::PipelineNode{ 4, 2 },
+                    dory::core::resources::entity::PipelineNode{ 5, 2 },
+                    dory::core::resources::entity::PipelineNode{ 3, 1 },
+                    dory::core::resources::entity::PipelineNode{ 6, 3 },
+                    dory::core::resources::entity::PipelineNode{ 7 },
+                    dory::core::resources::entity::PipelineNode{ 8, 7 },
+                    dory::core::resources::entity::PipelineNode{ 10, 8 },
+                    dory::core::resources::entity::PipelineNode{ 11, 8 },
+                    dory::core::resources::entity::PipelineNode{ 9, 7 },
+                    dory::core::resources::entity::PipelineNode{ 12, 9 },
+                    dory::core::resources::entity::PipelineNode{ 13, 9 },
+            }
+    };
+
+    pipelineRepository.removeNode(9);
+    auto nodes = pipelineRepository.getPipelineNodes();
+    EXPECT_EQ(std::distance(nodes.begin(),nodes.end()), 10);
+    EXPECT_EQ(nodes[9].id, 11);
+
+    pipelineRepository.removeNode(1);
+    nodes = pipelineRepository.getPipelineNodes();
+    EXPECT_EQ(std::distance(nodes.begin(),nodes.end()), 4);
+    EXPECT_EQ(nodes[0].id, 7);
+    EXPECT_EQ(nodes[3].id, 11);
+
+    pipelineRepository.removeNode(10);
+    nodes = pipelineRepository.getPipelineNodes();
+    EXPECT_EQ(std::distance(nodes.begin(),nodes.end()), 3);
+    EXPECT_EQ(nodes[0].id, 7);
+    EXPECT_EQ(nodes[2].id, 11);
 }

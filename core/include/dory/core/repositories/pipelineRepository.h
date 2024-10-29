@@ -27,6 +27,6 @@ namespace dory::core::repositories
 
         std::span<EntityType> getPipelineNodes() override;
         IdType addNode(const EntityType& pipelineNode) override;
-        IdType removeNode(IdType id) override;
+        void removeNode(IdType id) override;
     };
 }

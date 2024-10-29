@@ -81,8 +81,49 @@ namespace dory::core::repositories
         return newNode.id = _counter++;
     }
 
-    PipelineRepository::IdType PipelineRepository::removeNode(IdType id)
+    void PipelineRepository::removeNode(IdType id)
     {
+        std::stack<IdType> tree;
 
+        auto it = _nodes.begin();
+        auto end = _nodes.end();
+        std::optional<NodeListType::iterator> firstNode {};
+        while (it != end)
+        {
+            if(tree.empty())
+            {
+                if(it->id == id)
+                {
+                    tree.emplace(id);
+                    firstNode = it;
+                }
+            }
+            else
+            {
+                while(!tree.empty())
+                {
+                    if(tree.top() == it->parentNodeId)
+                    {
+                        tree.emplace(it->id);
+                        break;
+                    }
+
+                    tree.pop();
+                }
+
+                if(tree.empty())
+                {
+                    _nodes.erase(*firstNode, it);
+                    break;
+                }
+            }
+
+            it++;
+        }
+
+        if(!tree.empty() && firstNode)
+        {
+            _nodes.erase(*firstNode, end);
+        }
     }
 }

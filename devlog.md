@@ -8,8 +8,6 @@ Tasks:
   * Hot reload of plugins with file watchers(see library https://github.com/SpartanJ/efsw)
   * Configure and load plugins
   * Switch from dynamic library to static(cmake setup and library embedding in the source code(factory))
-* Flatten controller pipeline: store entities in a sorted flat array
-* Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
 * OpenGL Renderer
   * Static mapping of Vertex Attributes
   * Fill Buffers with mapped data
@@ -18,14 +16,15 @@ Tasks:
 * Ray casting(for mouse picking and other features)
 * Mouse picking(redirect event to the corresponding event hub of a view)
 * Multithreaded rendering
-* Networking/Mutliplayer
 * Camera Control
 * Animation
 * Collision detection
 * Scene
 * Serialization of scene state
+* Networking/Mutliplayer
 * Spatial partition: https://youtube.com/watch?v=eED4bSkYCB8&si=uOxianrO-zNMLAG3, https://youtu.be/MzUxOe5x24w?si=3PLIEqPTq8w8RLet, https://youtu.be/4r_EvmPKOvY?si=iINNvyGsoYzdaftY, https://youtu.be/6BIfqfC1i7U?si=rJSwRj3xuANSJZ4o
 * Path finding
+* Integrate C# dotnet core as scripting engine(https://learn.microsoft.com/en-us/dotnet/core/tutorials/netcore-hosting)
 * Build for MacOS
 * Voice control
 * CI/CD setup with GitLab
@@ -33,6 +32,9 @@ Tasks:
   * Setup pipeline for build and tests on windows
   * Setup pipeline for releases
   * Deploy assembled packages to some network storage
+
+**29.10.24**
+* Task done: Flatten controller pipeline: store entities in a sorted flat array
 
 **17.09.24**
 * Task done: Move generic components like EventHub system, Reflection/Serialization, etc to header only libraries, each per component/system

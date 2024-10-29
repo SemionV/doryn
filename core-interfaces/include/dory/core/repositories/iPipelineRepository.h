@@ -17,6 +17,6 @@ namespace dory::core::repositories
 
         virtual std::span<EntityType> getPipelineNodes() = 0;
         virtual IdType addNode(const EntityType& pipelineNode) = 0;
-        virtual IdType removeNode(IdType id) = 0;
+        virtual void removeNode(IdType id) = 0;
     };
 }

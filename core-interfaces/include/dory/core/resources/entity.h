@@ -72,7 +72,7 @@ namespace dory::core::resources::entity
     {
         using IdType = IdType;
 
-        T id;
+        T id {};
 
         Entity() = default;
 
@@ -149,7 +149,7 @@ namespace dory::core::resources::entity
 
         std::optional<generic::extension::ResourceHandle<ControllerPointerType>> attachedController {};
         std::optional<generic::extension::ResourceHandle<UpdateFunctionType>> updateFunction {};
-        IdType parentNodeId;
+        IdType parentNodeId {};
         std::string name;
 
         PipelineNode() = default;
