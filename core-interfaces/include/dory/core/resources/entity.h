@@ -73,6 +73,9 @@ namespace dory::core::resources::entity
         using IdType = IdType;
 
         T id;
+
+        Entity() = default;
+
         explicit Entity(T id):
                 id(id)
         {}
@@ -148,6 +151,16 @@ namespace dory::core::resources::entity
         std::optional<generic::extension::ResourceHandle<UpdateFunctionType>> updateFunction {};
         IdType parentNodeId;
         std::string name;
+
+        PipelineNode() = default;
+
+        explicit PipelineNode(IdType id,
+                              IdType parentNodeId = nullId,
+                              std::string name = ""):
+                Entity(id),
+                parentNodeId(parentNodeId),
+                name(std::move(name))
+        {}
 
         explicit PipelineNode(IdType id,
                               generic::extension::ResourceHandle<ControllerPointerType> attachedController,

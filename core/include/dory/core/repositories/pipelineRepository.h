@@ -5,27 +5,28 @@
 
 namespace dory::core::repositories
 {
-    class PipelineRepository: public IPipelineRepository, public repository::Repository<resources::entity::PipelineNode>
+    class PipelineRepository: public IPipelineRepository
     {
-    private:
-        using EntityType = resources::entity::PipelineNode;
-        using IdType = EntityType::IdType;
+    public:
         using NodeListType = std::vector<EntityType>;
-        NodeListType _nodes;
-        IdType _counter {};
 
-        IdType insertNode(const resources::entity::PipelineNode& node, const NodeListType::iterator& after);
-        IdType insertNode(const resources::entity::PipelineNode& node);
+    private:
+        NodeListType _nodes;
+        IdType _counter { 1 };
+
+        IdType insertNode(const EntityType& node, const NodeListType::iterator& after);
+        IdType insertNode(const EntityType& node);
 
     public:
         PipelineRepository() = default;
 
         PipelineRepository(std::initializer_list<EntityType>&& entities):
-                _nodes(entities)
+                _nodes(entities),
+                _counter(entities.size() + 1)
         {}
 
-        std::span<resources::entity::PipelineNode> getPipelineNodes() override;
-        resources::entity::PipelineNode::IdType addNode(const resources::entity::PipelineNode& pipelineNode) override;
-        resources::entity::PipelineNode::IdType removeNode(IdType id) override;
+        std::span<EntityType> getPipelineNodes() override;
+        IdType addNode(const EntityType& pipelineNode) override;
+        IdType removeNode(IdType id) override;
     };
 }

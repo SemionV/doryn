@@ -3,12 +3,12 @@
 
 namespace dory::core::repositories
 {
-    std::span<resources::entity::PipelineNode> PipelineRepository::getPipelineNodes()
+    std::span<PipelineRepository::EntityType> PipelineRepository::getPipelineNodes()
     {
-        return std::span<resources::entity::PipelineNode>{ _nodes };
+        return std::span<PipelineRepository::EntityType>{ _nodes };
     }
 
-    PipelineRepository::IdType PipelineRepository::addNode(const resources::entity::PipelineNode& pipelineNode)
+    PipelineRepository::IdType PipelineRepository::addNode(const PipelineRepository::EntityType& pipelineNode)
     {
         auto nodeId = IdType {};
 
@@ -16,17 +16,15 @@ namespace dory::core::repositories
         {
             auto parentId = pipelineNode.parentNodeId;
             std::stack<IdType> tree;
-            std::optional<NodeListType::iterator> precedingNode {};
 
             auto it = _nodes.begin();
             auto end = _nodes.end();
             while (it != end)
             {
-                if(!precedingNode)
+                if(tree.empty())
                 {
                     if(it->id == parentId)
                     {
-                        precedingNode = it;
                         tree.emplace(parentId);
                     }
                 }
@@ -36,7 +34,6 @@ namespace dory::core::repositories
                     {
                         if(tree.top() == it->parentNodeId)
                         {
-                            precedingNode = it;
                             tree.emplace(it->id);
                             break;
                         }
@@ -46,40 +43,41 @@ namespace dory::core::repositories
 
                     if(tree.empty())
                     {
+                        nodeId = insertNode(pipelineNode, it);
                         break;
                     }
                 }
+
+                it++;
             }
 
-            if(precedingNode)
+            if(!tree.empty())
             {
-                nodeId = insertNode(pipelineNode, *precedingNode);
+                nodeId = insertNode(pipelineNode);
             }
         }
         else
         {
-            nodeId = insertNode(pipelineNode, {});
+            nodeId = insertNode(pipelineNode);
         }
 
         return nodeId;
     }
 
-    PipelineRepository::IdType PipelineRepository::insertNode(const resources::entity::PipelineNode& node, const NodeListType::iterator& after)
+    PipelineRepository::IdType PipelineRepository::insertNode(const PipelineRepository::EntityType& node, const NodeListType::iterator& position)
     {
-        auto nodeId = IdType {};
-
-        auto newNode = _nodes.emplace(after, node);
+        auto newNode = _nodes.emplace(position, node);
         if(newNode != _nodes.end())
         {
-            newNode->id = nodeId = _counter++;
+            return newNode->id = _counter++;
         }
 
-        return nodeId;
+        return {};
     }
 
-    PipelineRepository::IdType PipelineRepository::insertNode(const resources::entity::PipelineNode& node)
+    PipelineRepository::IdType PipelineRepository::insertNode(const PipelineRepository::EntityType& node)
     {
-        auto newNode = _nodes.emplace_back(node);
+        auto& newNode = _nodes.emplace_back(node);
         return newNode.id = _counter++;
     }
 

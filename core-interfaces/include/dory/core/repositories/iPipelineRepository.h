@@ -4,17 +4,19 @@
 #include <dory/core/resources/object.h>
 #include <dory/core/resources/entity.h>
 #include <dory/core/resources/dataContext.h>
+#include <dory/generic/baseTypes.h>
 #include "iRepository.h"
 
 namespace dory::core::repositories
 {
-    class IPipelineRepository
+    class IPipelineRepository: public generic::Interface
     {
     public:
-        virtual ~IPipelineRepository() = default;
+        using EntityType = resources::entity::PipelineNode;
+        using IdType = EntityType::IdType;
 
-        virtual std::span<resources::entity::PipelineNode> getPipelineNodes() = 0;
-        virtual resources::entity::PipelineNode::IdType addNode(const resources::entity::PipelineNode& pipelineNode) = 0;
-        virtual resources::entity::PipelineNode::IdType removeNode(resources::entity::PipelineNode::IdType id) = 0;
+        virtual std::span<EntityType> getPipelineNodes() = 0;
+        virtual IdType addNode(const EntityType& pipelineNode) = 0;
+        virtual IdType removeNode(IdType id) = 0;
     };
 }
