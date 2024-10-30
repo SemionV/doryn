@@ -109,11 +109,9 @@ namespace dory::core::resources::entity
                 name(std::move(name))
         {}
 
-        explicit PipelineNode(IdType id,
-                              generic::extension::ResourceHandle<ControllerPointerType> attachedController,
+        explicit PipelineNode(generic::extension::ResourceHandle<ControllerPointerType> attachedController,
                               IdType parentNodeId = nullId,
                               std::string name = ""):
-                Entity(id),
                 attachedController(std::move(attachedController)),
                 parentNodeId(parentNodeId),
                 name(std::move(name))
@@ -122,7 +120,6 @@ namespace dory::core::resources::entity
         explicit PipelineNode(generic::extension::ResourceHandle<UpdateFunctionType> updateFunction,
                               IdType parentNodeId = nullId,
                               std::string name = ""):
-                Entity(nullId),
                 updateFunction(std::move(updateFunction)),
                 parentNodeId(parentNodeId),
                 name(std::move(name))

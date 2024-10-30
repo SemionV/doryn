@@ -47,9 +47,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
             dory::generic::registry::Service<dory::core::devices::IStandardIODevice>,
             dory::generic::registry::Service<dory::core::devices::ITerminalDevice>>(
     [&configuration, &localization, &dataContext](
-            dory::core::services::ILogService* logger,
-            dory::core::devices::IStandardIODevice* ioDevice,
-            dory::core::devices::ITerminalDevice* terminalDevice)
+    dory::core::services::ILogService* logger,
+    dory::core::devices::IStandardIODevice* ioDevice,
+    dory::core::devices::ITerminalDevice* terminalDevice)
     {
         logger->information(fmt::format("Dory Game, {0}.{1}, {2}",
                                         configuration.buildInfo.version,
@@ -65,31 +65,31 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
         terminalDevice->enterCommandMode();
     });
 
+    registry.get<dory::core::repositories::IPipelineRepository>([&registry, &staticLibraryHandle](dory::core::repositories::IPipelineRepository* pipelineRepository){
+        auto submitInputEvents = [&registry](auto referenceId, const auto& timeStep, dory::core::resources::DataContext& context){
+            registry.get<dory::core::events::io::Bundle::IDispatcher>([&context](dory::core::events::io::Bundle::IDispatcher* dispatcher){
+                dispatcher->fireAll(context);
+            });
+        };
+        auto resourceHandle = dory::generic::extension::ResourceHandle<dory::core::resources::entity::PipelineNode::UpdateFunctionType>{ staticLibraryHandle, submitInputEvents };
+        auto node = dory::core::resources::entity::PipelineNode(resourceHandle);
+        pipelineRepository->addNode(node);
+
+        auto flushOutput = [&registry](auto referenceId, const auto& timeStep, dory::core::resources::DataContext& context){
+            registry.get<dory::core::devices::IStandardIODevice>([](dory::core::devices::IStandardIODevice* ioDevice){
+                ioDevice->flush();
+            });
+        };
+        resourceHandle = dory::generic::extension::ResourceHandle<dory::core::resources::entity::PipelineNode::UpdateFunctionType>{ staticLibraryHandle, flushOutput };
+        node = dory::core::resources::entity::PipelineNode(resourceHandle);
+        pipelineRepository->addNode(node);
+    });
+
     registry.get<dory::core::services::IFrameService>([&dataContext](dory::core::services::IFrameService* frameService) {
         frameService->startLoop(dataContext);
     });
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    {
-        auto ioDevice = registry.get<dory::core::devices::IStandardIODevice>();
-        if(ioDevice)
-        {
-            ioDevice->connect(dataContext);
-            ioDevice->out("Hello from IODevice!\n");
-        }
-    }
-
-    {
-        auto terminalDevice = registry.get<dory::core::devices::ITerminalDevice>();
-        if(terminalDevice)
-        {
-            terminalDevice->connect(dataContext);
-            terminalDevice->enterCommandMode();
-            terminalDevice->writeLine("Hello Terminal!");
-            terminalDevice->exitCommandMode();
-        }
-    }
 
     {
         auto eventHub = registry.get<dory::core::events::script::Bundle::IListener>();
@@ -123,21 +123,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
                 }
             }
         }
-    }
-
-    {
-        auto libraryService = registry.get<dory::core::services::ILibraryService>();
-        if(libraryService)
-        {
-            libraryService->unload("test extension library");
-        }
-    }
-
-    {
-        registry.get<dory::core::devices::IStandardIODevice>([&dataContext](dory::core::devices::IStandardIODevice* device)
-        {
-            device->disconnect(dataContext);
-        });
     }
 
     std::cout << "End main" << std::endl;
