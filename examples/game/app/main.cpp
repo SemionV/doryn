@@ -42,23 +42,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
         localizationService->load(configuration, localization);
     });
 
-    registry.get<dory::core::services::ILogService, dory::core::resources::Logger::App>([&configuration, &localization](dory::core::services::ILogService* logger){
+    registry.get<
+            dory::generic::registry::Service<dory::core::services::ILogService, dory::core::resources::Logger::App>,
+            dory::generic::registry::Service<dory::core::devices::IStandardIODevice>,
+            dory::generic::registry::Service<dory::core::devices::ITerminalDevice>>(
+    [&configuration, &localization, &dataContext](
+            dory::core::services::ILogService* logger,
+            dory::core::devices::IStandardIODevice* ioDevice,
+            dory::core::devices::ITerminalDevice* terminalDevice)
+    {
         logger->information(fmt::format("Dory Game, {0}.{1}, {2}",
-                                                            configuration.buildInfo.version,
-                                                            configuration.buildInfo.commitSHA,
-                                                            configuration.buildInfo.timestamp));
+                                        configuration.buildInfo.version,
+                                        configuration.buildInfo.commitSHA,
+                                        configuration.buildInfo.timestamp));
 
         logger->information(localization.hello);
         logger->information(localization.goodBye->get("Semion"));
         logger->information(localization.birthDate->get(11, 03, 1984));
-    });
 
-    registry.getMany<
-            dory::core::GetService<dory::core::devices::IStandardIODevice>,
-            dory::core::GetService<dory::core::services::ILogService, dory::core::resources::Logger::App>,
-            dory::core::GetService<dory::core::devices::ITerminalDevice>>(
-    [&dataContext](dory::core::devices::IStandardIODevice* ioDevice, dory::core::devices::ITerminalDevice* terminalDevice)
-    {
         ioDevice->connect(dataContext);
         terminalDevice->connect(dataContext);
         terminalDevice->enterCommandMode();

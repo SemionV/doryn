@@ -7,37 +7,52 @@
 
 namespace dory::generic::registry
 {
-    template<typename TServiceInterface, typename TIdentifier>
-    class RegistrationEntry
+    enum class ServiceIdentifier
     {
-    private:
-        using ServicePtrType = std::shared_ptr<TServiceInterface>;
-        std::optional<extension::ResourceHandle<ServicePtrType>> _serviceHandle;
-        std::map<TIdentifier, extension::ResourceHandle<ServicePtrType>> _serviceHandles;
+        Default
+    };
 
-        template<typename T, typename A>
-        void invoke(extension::ResourceRef<T>& resourceRef, const A& action)
+    template<typename TInterface, typename TIdentifier = ServiceIdentifier>
+    struct ServiceEntry
+    {
+        using InterfaceType = TInterface;
+        using IdentifierType = TIdentifier;
+    };
+
+    template<typename TInterface, auto Identifier = ServiceIdentifier::Default>
+    struct Service
+    {
+        using InterfaceType = TInterface;
+        static const constexpr decltype(Identifier) identifier = Identifier;
+    };
+
+    template<typename TServiceInterface>
+    class RegistrationEntryRoot
+    {
+    public:
+        using ServicePtrType = std::shared_ptr<TServiceInterface>;
+
+    protected:
+        template<typename A>
+        static void invoke(extension::ResourceRef<ServicePtrType>& resourceRef, const A& action)
         {
             if(resourceRef.operator bool())
             {
                 action((*resourceRef).get());
             }
         }
+    };
+
+    template<typename TServiceInterface, typename TIdentifier>
+    class RegistrationEntry: RegistrationEntryRoot<TServiceInterface>
+    {
+    private:
+        std::map<TIdentifier, extension::ResourceHandle<typename RegistrationEntryRoot<TServiceInterface>::ServicePtrType>> _serviceHandles;
 
     protected:
-        void _set(extension::LibraryHandle libraryHandle, std::shared_ptr<TServiceInterface> service)
-        {
-            _serviceHandle = extension::ResourceHandle(libraryHandle, std::move(service));
-        }
-
         void _set(extension::LibraryHandle libraryHandle, std::shared_ptr<TServiceInterface> service, TIdentifier identifier)
         {
             _serviceHandles.emplace(identifier, extension::ResourceHandle(libraryHandle, std::move(service)));
-        }
-
-        void _reset()
-        {
-            _serviceHandle = {};
         }
 
         void _reset(TIdentifier identifier)
@@ -48,16 +63,6 @@ namespace dory::generic::registry
             }
         }
 
-        auto _get()
-        {
-            if(_serviceHandle)
-            {
-                return _serviceHandle->lock();
-            }
-
-            return extension::ResourceRef<ServicePtrType>{{}, nullptr};
-        }
-
         auto _get(const TIdentifier& identifier)
         {
             if(_serviceHandles.contains(identifier))
@@ -65,7 +70,47 @@ namespace dory::generic::registry
                 return _serviceHandles[identifier].lock();
             }
 
-            return extension::ResourceRef<ServicePtrType>{{}, nullptr};
+            return extension::ResourceRef<typename RegistrationEntryRoot<TServiceInterface>::ServicePtrType>{{}, nullptr};
+        }
+
+        template<typename A>
+        void _get(TIdentifier identifier, A&& action)
+        {
+            auto resourceRef = _get(identifier);
+            RegistrationEntryRoot<TServiceInterface>::invoke(resourceRef, std::forward<A>(action));
+        }
+    };
+
+    template<typename TServiceInterface>
+    class RegistrationEntry<TServiceInterface, ServiceIdentifier>: RegistrationEntryRoot<TServiceInterface>
+    {
+    private:
+        std::optional<extension::ResourceHandle<typename RegistrationEntryRoot<TServiceInterface>::ServicePtrType>> _serviceHandle;
+
+    protected:
+        void _set(extension::LibraryHandle libraryHandle, std::shared_ptr<TServiceInterface> service)
+        {
+            _serviceHandle = extension::ResourceHandle(libraryHandle, std::move(service));
+        }
+
+        void _reset()
+        {
+            _serviceHandle = {};
+        }
+
+        auto _get()
+        {
+            if(_serviceHandle)
+            {
+                return _serviceHandle->lock();
+            }
+
+            return extension::ResourceRef<typename RegistrationEntryRoot<TServiceInterface>::ServicePtrType>{{}, nullptr};
+        }
+
+        auto _get(const ServiceIdentifier& identifier)
+        {
+            return _get();
         }
 
         template<typename A>
@@ -73,19 +118,11 @@ namespace dory::generic::registry
         void _get(A&& action)
         {
             auto resourceRef = _get();
-            invoke(resourceRef, std::forward<A>(action));
+            RegistrationEntryRoot<TServiceInterface>::invoke(resourceRef, std::forward<A>(action));
         }
-
-        template<typename A>
-        void _get(TIdentifier identifier, A&& action)
-        {
-            auto resourceRef = _get(identifier);
-            invoke(resourceRef, std::forward<A>(action));
-        }
-
     };
 
-    template<typename TIdentifierDefault, typename... TServices>
+    template<typename... TServices>
     struct RegistryLayer: public RegistrationEntry<typename TServices::InterfaceType, typename TServices::IdentifierType>...
     {
     private:
@@ -102,7 +139,7 @@ namespace dory::generic::registry
         template<typename TInterface>
         void set(extension::LibraryHandle libraryHandle, std::shared_ptr<TInterface> service)
         {
-            this->RegistrationEntry<TInterface, TIdentifierDefault>::_set(libraryHandle, service);
+            this->RegistrationEntry<TInterface, ServiceIdentifier>::_set(libraryHandle, service);
         }
 
         template<typename TInterface, auto identifier>
@@ -120,7 +157,7 @@ namespace dory::generic::registry
         template<typename TService>
         void reset()
         {
-            this->RegistrationEntry<TService, TIdentifierDefault>::_reset();
+            this->RegistrationEntry<TService, ServiceIdentifier>::_reset();
         }
 
         template<typename TService, auto identifier>
@@ -138,7 +175,7 @@ namespace dory::generic::registry
         template<typename TService>
         auto get()
         {
-            return this->RegistrationEntry<TService, TIdentifierDefault>::_get();
+            return this->RegistrationEntry<TService, ServiceIdentifier>::_get();
         }
 
         template<typename TService, auto identifier>
@@ -160,7 +197,7 @@ namespace dory::generic::registry
         requires(std::is_invocable_v<A, TService*>)
         void get(A&& action)
         {
-            this->RegistrationEntry<TService, TIdentifierDefault>::_get(std::forward<A>(action));
+            this->RegistrationEntry<TService, ServiceIdentifier>::_get(std::forward<A>(action));
         }
 
         template<typename TService, auto identifier, typename A>
@@ -177,9 +214,9 @@ namespace dory::generic::registry
 
         template<typename... TServiceEntry, typename A>
         requires(std::is_invocable_v<A, typename TServiceEntry::InterfaceType*...>)
-        void getMany(A&& action)
+        void get(A&& action)
         {
-            invoke(std::forward<A>(action), this->RegistrationEntry<typename TServiceEntry::InterfaceType, decltype(TServiceEntry::identifier)>::_get(TServiceEntry::identifier)...);
+            invoke(std::forward<A>(action), this->RegistrationEntry<typename TServiceEntry::InterfaceType, std::decay_t<decltype(TServiceEntry::identifier)>>::_get(TServiceEntry::identifier)...);
         }
     };
 }

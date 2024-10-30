@@ -14,7 +14,6 @@
 #include <dory/core/repositories/iRepository.h>
 #include <dory/core/repositories/iPipelineRepository.h>
 #include "services/iLogService.h"
-#include "resources/serviceIdentifer.h"
 #include <dory/core/services/iSerializer.h>
 #include <dory/generic/extension/registryResourceScope.h>
 #include <dory/core/services/iDataFormatResolver.h>
@@ -33,54 +32,40 @@ namespace dory::core
         using IWindowRepository = repositories::IRepository<resources::entity::Window>;
     }
 
-    template<typename TInterface, typename TIdentifier = resources::ServiceIdentifier>
-    struct ServiceEntry
-    {
-        using InterfaceType = TInterface;
-        using IdentifierType = TIdentifier;
-    };
-
-    template<typename TInterface, auto Identifier = resources::ServiceIdentifier{}>
-    struct GetService
-    {
-        using InterfaceType = TInterface;
-        static const constexpr decltype(Identifier) identifier = Identifier;
-    };
-
-    struct Registry: public generic::registry::RegistryLayer<resources::ServiceIdentifier,
+    struct Registry: public generic::registry::RegistryLayer<
             /*Events*/
-            ServiceEntry<events::pipeline::Bundle::IDispatcher>,
-            ServiceEntry<events::pipeline::Bundle::IListener>,
-            ServiceEntry<events::application::Bundle::IDispatcher>,
-            ServiceEntry<events::application::Bundle::IListener>,
-            ServiceEntry<events::io::Bundle::IDispatcher>,
-            ServiceEntry<events::io::Bundle::IListener>,
-            ServiceEntry<events::script::Bundle::IDispatcher>,
-            ServiceEntry<events::script::Bundle::IListener>,
-            ServiceEntry<events::window::Bundle::IDispatcher>,
-            ServiceEntry<events::window::Bundle::IListener>,
+            generic::registry::ServiceEntry<events::pipeline::Bundle::IDispatcher>,
+            generic::registry::ServiceEntry<events::pipeline::Bundle::IListener>,
+            generic::registry::ServiceEntry<events::application::Bundle::IDispatcher>,
+            generic::registry::ServiceEntry<events::application::Bundle::IListener>,
+            generic::registry::ServiceEntry<events::io::Bundle::IDispatcher>,
+            generic::registry::ServiceEntry<events::io::Bundle::IListener>,
+            generic::registry::ServiceEntry<events::script::Bundle::IDispatcher>,
+            generic::registry::ServiceEntry<events::script::Bundle::IListener>,
+            generic::registry::ServiceEntry<events::window::Bundle::IDispatcher>,
+            generic::registry::ServiceEntry<events::window::Bundle::IListener>,
             /*Devices*/
-            ServiceEntry<devices::IStandardIODevice>,
-            ServiceEntry<devices::ITerminalDevice>,
+            generic::registry::ServiceEntry<devices::IStandardIODevice>,
+            generic::registry::ServiceEntry<devices::ITerminalDevice>,
             /*Repositories*/
-            ServiceEntry<repositories::ICameraRepository>,
-            ServiceEntry<repositories::IViewRepository>,
-            ServiceEntry<repositories::IWindowRepository>,
-            ServiceEntry<repositories::IPipelineRepository>,
+            generic::registry::ServiceEntry<repositories::ICameraRepository>,
+            generic::registry::ServiceEntry<repositories::IViewRepository>,
+            generic::registry::ServiceEntry<repositories::IWindowRepository>,
+            generic::registry::ServiceEntry<repositories::IPipelineRepository>,
             /*Services*/
-            ServiceEntry<services::ILibraryService>,
-            ServiceEntry<services::IFileService>,
-            ServiceEntry<services::IMultiSinkLogService, resources::Logger>,
-            ServiceEntry<services::ILogService , resources::Logger>,
-            ServiceEntry<services::serialization::ISerializer, resources::DataFormat>,
-            ServiceEntry<services::IDataFormatResolver>,
-            ServiceEntry<services::IScriptService>,
-            ServiceEntry<services::IConfigurationService>,
-            ServiceEntry<services::ILocalizationService>,
-            ServiceEntry<services::IPipelineService>,
-            ServiceEntry<services::IFrameService>>
+            generic::registry::ServiceEntry<services::ILibraryService>,
+            generic::registry::ServiceEntry<services::IFileService>,
+            generic::registry::ServiceEntry<services::IMultiSinkLogService, resources::Logger>,
+            generic::registry::ServiceEntry<services::ILogService , resources::Logger>,
+            generic::registry::ServiceEntry<services::serialization::ISerializer, resources::DataFormat>,
+            generic::registry::ServiceEntry<services::IDataFormatResolver>,
+            generic::registry::ServiceEntry<services::IScriptService>,
+            generic::registry::ServiceEntry<services::IConfigurationService>,
+            generic::registry::ServiceEntry<services::ILocalizationService>,
+            generic::registry::ServiceEntry<services::IPipelineService>,
+            generic::registry::ServiceEntry<services::IFrameService>>
     {};
 
     template<typename T>
-    using RegistryResourceScope = generic::extension::RegistryResourceScope<generic::extension::RegistryResourceScopePolicy<T, Registry, resources::ServiceIdentifier>>;
+    using RegistryResourceScope = generic::extension::RegistryResourceScope<generic::extension::RegistryResourceScopePolicy<T, Registry, generic::registry::ServiceIdentifier>>;
 }
