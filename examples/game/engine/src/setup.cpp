@@ -1,4 +1,4 @@
-#include "dory/game/engine/setup.h"
+#include "dory/game/setup.h"
 #include <dory/core/services/fileService.h>
 #include <dory/core/services/libraryService.h>
 
@@ -22,9 +22,9 @@
 #include <dory/core/services/pipelineService.h>
 #include <dory/core/services/frameService.h>
 
-namespace dory::game::engine
+namespace dory::game
 {
-    void dory::game::engine::Setup::setupRegistry(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
+    void Setup::setupRegistry(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
     {
         registerEventBundle<core::events::pipeline::Bundle>(libraryHandle, registry);
         registerEventBundle<core::events::application::Bundle>(libraryHandle, registry);

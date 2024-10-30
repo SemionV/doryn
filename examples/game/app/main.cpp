@@ -1,7 +1,8 @@
-#include "dory/game/engine/setup.h"
+#include "dory/game/setup.h"
 #include <iostream>
 #include <dory/core/services/logService.h>
 #include <dory/core/resources/localizationImpl.h>
+#include <dory/game/bootstrap.h>
 
 #ifdef DORY_MAIN_FUNCTION_UNIX
 int main()
@@ -10,12 +11,12 @@ int main()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 #endif
 {
-    dory::game::engine::Setup setup;
+    dory::game::Setup setup;
     dory::generic::extension::LibraryHandle staticLibraryHandle {};
     auto registry = dory::core::Registry{};
-    auto dataContext = dory::core::resources::DataContext{};
     auto configuration = dory::core::resources::configuration::Configuration{};
     auto localization = dory::core::resources::LocalizationImpl{};
+    auto dataContext = dory::core::resources::DataContext{ configuration, localization };
 
     setup.setupRegistry(staticLibraryHandle, registry);
 
@@ -26,68 +27,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     bootLoggerConfig.rotationLogger = dory::core::resources::configuration::RotationLogSink{"logs/boot.log"};
     bootLoggerConfig.stdoutLogger = dory::core::resources::configuration::StdoutLogSink{};
 
-    registry.get<dory::core::services::IMultiSinkLogService>(dory::core::resources::Logger::Config, [&bootLoggerConfig, &registry](dory::core::services::IMultiSinkLogService* logger){
-        logger->initialize(bootLoggerConfig, registry);
-    });
+    auto bootstrap = dory::game::Bootstrap{};
+    bootstrap.initialize(staticLibraryHandle, dataContext, registry);
 
-    registry.get<dory::core::services::IConfigurationService>([&configuration](dory::core::services::IConfigurationService* configurationService){
-        configurationService->load(configuration);
-    });
-
-    registry.get<dory::core::services::IMultiSinkLogService, dory::core::resources::Logger::App>([&configuration, &registry](dory::core::services::IMultiSinkLogService* logger){
-        logger->initialize(configuration.loggingConfiguration.mainLogger, registry);
-    });
-
-    registry.get<dory::core::services::ILocalizationService>([&configuration, &localization](dory::core::services::ILocalizationService* localizationService){
-        localizationService->load(configuration, localization);
-    });
-
-    registry.get<
-            dory::generic::registry::Service<dory::core::services::ILogService, dory::core::resources::Logger::App>,
-            dory::generic::registry::Service<dory::core::devices::IStandardIODevice>,
-            dory::generic::registry::Service<dory::core::devices::ITerminalDevice>>(
-    [&configuration, &localization, &dataContext](
-    dory::core::services::ILogService* logger,
-    dory::core::devices::IStandardIODevice* ioDevice,
-    dory::core::devices::ITerminalDevice* terminalDevice)
-    {
-        logger->information(fmt::format("Dory Game, {0}.{1}, {2}",
-                                        configuration.buildInfo.version,
-                                        configuration.buildInfo.commitSHA,
-                                        configuration.buildInfo.timestamp));
-
-        logger->information(localization.hello);
-        logger->information(localization.goodBye->get("Semion"));
-        logger->information(localization.birthDate->get(11, 03, 1984));
-
-        ioDevice->connect(dataContext);
-        terminalDevice->connect(dataContext);
-        terminalDevice->enterCommandMode();
-    });
-
-    registry.get<dory::core::repositories::IPipelineRepository>([&registry, &staticLibraryHandle](dory::core::repositories::IPipelineRepository* pipelineRepository){
-        auto submitInputEvents = [&registry](auto referenceId, const auto& timeStep, dory::core::resources::DataContext& context){
-            registry.get<dory::core::events::io::Bundle::IDispatcher>([&context](dory::core::events::io::Bundle::IDispatcher* dispatcher){
-                dispatcher->fireAll(context);
-            });
-        };
-        auto resourceHandle = dory::generic::extension::ResourceHandle<dory::core::resources::entity::PipelineNode::UpdateFunctionType>{ staticLibraryHandle, submitInputEvents };
-        auto node = dory::core::resources::entity::PipelineNode(resourceHandle);
-        pipelineRepository->addNode(node);
-
-        auto flushOutput = [&registry](auto referenceId, const auto& timeStep, dory::core::resources::DataContext& context){
-            registry.get<dory::core::devices::IStandardIODevice>([](dory::core::devices::IStandardIODevice* ioDevice){
-                ioDevice->flush();
-            });
-        };
-        resourceHandle = dory::generic::extension::ResourceHandle<dory::core::resources::entity::PipelineNode::UpdateFunctionType>{ staticLibraryHandle, flushOutput };
-        node = dory::core::resources::entity::PipelineNode(resourceHandle);
-        pipelineRepository->addNode(node);
-    });
-
-    registry.get<dory::core::services::IFrameService>([&dataContext](dory::core::services::IFrameService* frameService) {
-        frameService->startLoop(dataContext);
-    });
+    bootstrap.run(dataContext, registry);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

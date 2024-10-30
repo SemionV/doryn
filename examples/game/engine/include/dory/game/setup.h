@@ -1,11 +1,11 @@
 #pragma once
 
-#include <dory/core/iSetup.h>
-#include <dory/core/macros.h>
-#include <dory/core/repository.h>
-#include <dory/core/events.h>
+#include "dory/core/iSetup.h"
+#include "dory/core/macros.h"
+#include "dory/core/repository.h"
+#include "dory/core/events.h"
 
-namespace dory::game::engine
+namespace dory::game
 {
     class DORY_DLLEXPORT Setup: public core::ISetup
     {
