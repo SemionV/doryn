@@ -42,6 +42,17 @@ namespace dory::game
                     terminalDevice->disconnect(context);
                     ioDevice->disconnect(context);
                 });
+
+        _registry.getAll<core::devices::IWindowSystemDevice, core::resources::WindowSystem>([&context](const auto& devices) {
+            for(const auto& [key, value] : devices)
+            {
+                auto deviceRef = value.lock();
+                if(deviceRef)
+                {
+                    deviceRef->disconnect(context);
+                }
+            }
+        });
     }
 
     void Bootstrap::loadConfiguration(const generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
@@ -86,6 +97,17 @@ namespace dory::game
             ioDevice->connect(context);
             terminalDevice->connect(context);
             terminalDevice->enterCommandMode();
+        });
+
+        _registry.getAll<core::devices::IWindowSystemDevice, core::resources::WindowSystem>([&context](const auto& devices) {
+            for(const auto& [key, value] : devices)
+            {
+                auto deviceRef = value.lock();
+                if(deviceRef)
+                {
+                    deviceRef->connect(context);
+                }
+            }
         });
     }
 

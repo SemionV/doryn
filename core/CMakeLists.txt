@@ -10,6 +10,7 @@ endif()
 
 add_library(${DORY_MODULE_NAME} STATIC
         src/devices/terminalDevice.cpp
+        src/devices/glfwWindowSystemDevice.cpp
         src/extension/dynamicLibrary.cpp
         src/repositories/pipelineRepository.cpp
         src/services/fileService.cpp
@@ -29,7 +30,8 @@ target_link_libraries(${DORY_MODULE_NAME} PUBLIC
         dory-core-generic
         dory-serialization
         core::boost
-        spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
+        spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
+        glfw)
 
 set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""
         IMPORT_PREFIX ""

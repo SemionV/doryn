@@ -9,6 +9,7 @@
 #include <dory/generic/model.h>
 #include "id.h"
 #include "dataContext.h"
+#include "windowSystem.h"
 
 namespace dory::core::resources::entity
 {
@@ -33,11 +34,6 @@ namespace dory::core::resources::entity
         {}
     };
 
-    enum class WindowSubsystemType
-    {
-        GLFW
-    };
-
     class IWindowSubsystemData
     {
     public:
@@ -46,12 +42,12 @@ namespace dory::core::resources::entity
 
     struct Window: public Entity<IdType>
     {
-        explicit Window(IdType id, WindowSubsystemType subsystemType):
+        explicit Window(IdType id, WindowSystem subsystemType):
                 Entity(id),
-                subsystemType(subsystemType)
+                windowSystemType(subsystemType)
         {}
 
-        WindowSubsystemType subsystemType {};
+        WindowSystem windowSystemType {};
         std::shared_ptr<IWindowSubsystemData> subsystemData;
     };
 

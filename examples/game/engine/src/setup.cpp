@@ -10,6 +10,7 @@
 #endif
 
 #include <dory/core/devices/terminalDevice.h>
+#include <dory/core/devices/glfwWindowSystemDevice.h>
 #include <dory/core/repositories/iRepository.h>
 #include <dory/core/repositories/pipelineRepository.h>
 #include <dory/core/services/logServiceNull.h>
@@ -34,6 +35,7 @@ namespace dory::game
 
         registry.set<core::devices::IStandardIODevice>(libraryHandle, std::make_shared<core::devices::StandardIODevice>(registry));
         registry.set<core::devices::ITerminalDevice>(libraryHandle, std::make_shared<core::devices::TerminalDevice>(registry));
+        registry.set<core::devices::IWindowSystemDevice, core::resources::WindowSystem::glfw>(libraryHandle, std::make_shared<core::devices::GlfwWindowSystemDevice>(registry));
 
         registerRepository<core::resources::entity::Camera>(libraryHandle, registry);
         registerRepository<core::resources::entity::View>(libraryHandle, registry);
