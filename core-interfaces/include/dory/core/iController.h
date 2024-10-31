@@ -1,11 +1,11 @@
 #pragma once
 
-#include <dory/generic/baseTypes.h>
-#include <dory/generic/model.h>
-#include <dory/core/resources/entity.h>
-#include <dory/core/resources/dataContext.h>
+#include "dory/generic/baseTypes.h"
+#include "dory/generic/model.h"
+#include "resources/entity.h"
+#include "resources/dataContext.h"
 
-namespace dory::core::controllers
+namespace dory::core
 {
     class IController: public generic::Interface
     {

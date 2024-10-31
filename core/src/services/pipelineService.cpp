@@ -2,7 +2,7 @@
 #include <dory/core/services/pipelineService.h>
 #include <dory/core/events/eventTypes.h>
 #include <dory/core/repositories/iPipelineRepository.h>
-#include <dory/core/controllers/iController.h>
+#include "dory/core/iController.h"
 
 namespace dory::core::services
 {
@@ -22,7 +22,7 @@ namespace dory::core::services
                     auto controllerRef = node.attachedController->lock();
                     if(controllerRef)
                     {
-                        auto controller = std::static_pointer_cast<controllers::IController>(*controllerRef);
+                        auto controller = std::static_pointer_cast<IController>(*controllerRef);
                         if(controller)
                         {
                             controller->update(node.id, timeStep, context);
@@ -60,7 +60,7 @@ namespace dory::core::services
                     auto controllerRef = node.attachedController->lock();
                     if(controllerRef)
                     {
-                        auto controller = std::static_pointer_cast<controllers::IController>(*controllerRef);
+                        auto controller = std::static_pointer_cast<IController>(*controllerRef);
                         if(controller)
                         {
                             controller->stop(node.id, context);

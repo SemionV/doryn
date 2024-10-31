@@ -22,6 +22,8 @@
 #include <dory/core/services/iLocalizationService.h>
 #include <dory/core/services/iFrameService.h>
 #include <dory/core/services/iPipelineService.h>
+#include <dory/core/devices/iWindowSystemDevice.h>
+#include <dory/core/resources/windowSystem.h>
 
 namespace dory::core
 {
@@ -47,6 +49,7 @@ namespace dory::core
             /*Devices*/
             generic::registry::ServiceEntry<devices::IStandardIODevice>,
             generic::registry::ServiceEntry<devices::ITerminalDevice>,
+            generic::registry::ServiceEntry<devices::IWindowSystemDevice, resources::WindowSystem>,
             /*Repositories*/
             generic::registry::ServiceEntry<repositories::ICameraRepository>,
             generic::registry::ServiceEntry<repositories::IViewRepository>,
