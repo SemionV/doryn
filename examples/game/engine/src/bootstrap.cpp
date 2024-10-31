@@ -2,26 +2,29 @@
 
 namespace dory::game
 {
+    Bootstrap::Bootstrap(core::Registry &registry):
+        _registry(registry)
+    {}
 
-    bool Bootstrap::initialize(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context, core::Registry& registry)
+    bool Bootstrap::initialize(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
     {
-        registry.get<dory::core::services::IMultiSinkLogService>(dory::core::resources::Logger::Config, [&context, &registry](dory::core::services::IMultiSinkLogService* logger){
-            logger->initialize(context.configuration.loggingConfiguration.configurationLogger, registry);
+        _registry.get<dory::core::services::IMultiSinkLogService>(dory::core::resources::Logger::Config, [this, &context](dory::core::services::IMultiSinkLogService* logger){
+            logger->initialize(context.configuration.loggingConfiguration.configurationLogger, _registry);
         });
 
-        registry.get<dory::core::services::IConfigurationService>([&context](dory::core::services::IConfigurationService* configurationService){
+        _registry.get<dory::core::services::IConfigurationService>([&context](dory::core::services::IConfigurationService* configurationService){
             configurationService->load(context.configuration);
         });
 
-        registry.get<dory::core::services::IMultiSinkLogService, dory::core::resources::Logger::App>([&context, &registry](dory::core::services::IMultiSinkLogService* logger){
-            logger->initialize(context.configuration.loggingConfiguration.mainLogger, registry);
+        _registry.get<dory::core::services::IMultiSinkLogService, dory::core::resources::Logger::App>([this, &context](dory::core::services::IMultiSinkLogService* logger){
+            logger->initialize(context.configuration.loggingConfiguration.mainLogger, _registry);
         });
 
-        registry.get<dory::core::services::ILocalizationService>([&context](dory::core::services::ILocalizationService* localizationService){
+        _registry.get<dory::core::services::ILocalizationService>([&context](dory::core::services::ILocalizationService* localizationService){
             localizationService->load(context.configuration, context.localization);
         });
 
-        registry.get<
+        _registry.get<
                 dory::generic::registry::Service<dory::core::services::ILogService, dory::core::resources::Logger::App>,
                 dory::generic::registry::Service<dory::core::devices::IStandardIODevice>,
                 dory::generic::registry::Service<dory::core::devices::ITerminalDevice>>(
@@ -44,9 +47,9 @@ namespace dory::game
             terminalDevice->enterCommandMode();
         });
 
-        registry.get<dory::core::repositories::IPipelineRepository>([&registry, &libraryHandle](dory::core::repositories::IPipelineRepository* pipelineRepository){
-            auto submitInputEvents = [&registry](auto referenceId, const auto& timeStep, dory::core::resources::DataContext& context){
-                registry.get<dory::core::events::io::Bundle::IDispatcher>([&context](dory::core::events::io::Bundle::IDispatcher* dispatcher){
+        _registry.get<dory::core::repositories::IPipelineRepository>([this, &libraryHandle](dory::core::repositories::IPipelineRepository* pipelineRepository){
+            auto submitInputEvents = [this](auto referenceId, const auto& timeStep, dory::core::resources::DataContext& context){
+                _registry.get<dory::core::events::io::Bundle::IDispatcher>([&context](dory::core::events::io::Bundle::IDispatcher* dispatcher){
                     dispatcher->fireAll(context);
                 });
             };
@@ -54,8 +57,8 @@ namespace dory::game
             auto node = dory::core::resources::entity::PipelineNode(resourceHandle);
             pipelineRepository->addNode(node);
 
-            auto flushOutput = [&registry](auto referenceId, const auto& timeStep, dory::core::resources::DataContext& context){
-                registry.get<dory::core::devices::IStandardIODevice>([](dory::core::devices::IStandardIODevice* ioDevice){
+            auto flushOutput = [this](auto referenceId, const auto& timeStep, dory::core::resources::DataContext& context){
+                _registry.get<dory::core::devices::IStandardIODevice>([](dory::core::devices::IStandardIODevice* ioDevice){
                     ioDevice->flush();
                 });
             };
@@ -64,19 +67,66 @@ namespace dory::game
             pipelineRepository->addNode(node);
         });
 
-        registry.get<dory::core::services::IScriptService>([](dory::core::services::IScriptService* scriptService){
+        attachEventHandlers(libraryHandle, context);
+        attachScrips(libraryHandle, context);
 
+        return true;
+    }
+
+    bool Bootstrap::run(core::resources::DataContext& context)
+    {
+        _registry.get<dory::core::services::IFrameService>([&context](dory::core::services::IFrameService* frameService) {
+            frameService->startLoop(context);
         });
 
         return true;
     }
 
-    bool Bootstrap::run(core::resources::DataContext& context, core::Registry& registry)
+    void Bootstrap::cleanup(core::resources::DataContext &context)
     {
-        registry.get<dory::core::services::IFrameService>([&context](dory::core::services::IFrameService* frameService) {
-            frameService->startLoop(context);
-        });
+        _registry.get<
+                generic::registry::Service<dory::core::services::ILogService, core::resources::Logger::App>,
+                generic::registry::Service<core::devices::ITerminalDevice>,
+                generic::registry::Service<core::devices::IStandardIODevice>>
+                ([&context](dory::core::services::ILogService* logger,
+                    core::devices::ITerminalDevice* terminalDevice,
+                    core::devices::IStandardIODevice* ioDevice)
+                {
+                    terminalDevice->exitCommandMode();
+                    logger->information(std::string_view {"Cleanup..."});
+                    terminalDevice->disconnect(context);
+                    ioDevice->disconnect(context);
+                });
+    }
 
-        return true;
+    void Bootstrap::attachEventHandlers(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
+    {
+        _registry.get<core::events::application::Bundle::IListener>([this](core::events::application::Bundle::IListener* listener){
+            listener->attach([this](auto& context, const auto& event){ this->onApplicationExit(context, event); });
+        });
+    }
+
+    void Bootstrap::onApplicationExit(core::resources::DataContext& context, const core::events::application::Exit& eventData)
+    {
+        _registry.get<dory::core::services::IFrameService>([](dory::core::services::IFrameService* frameService) {
+            frameService->endLoop();
+        });
+    }
+
+    void Bootstrap::attachScrips(const generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
+    {
+        _registry.get<dory::core::services::IScriptService>([this, &libraryHandle](dory::core::services::IScriptService* scriptService){
+
+            scriptService->addScript("exit", libraryHandle, [this](core::resources::DataContext& context, const std::map<std::string, std::any>& arguments){
+                _registry.get<
+                        generic::registry::Service<core::devices::ITerminalDevice>,
+                        generic::registry::Service<core::events::application::Bundle::IDispatcher>>(
+                [&context](core::devices::ITerminalDevice* terminalDevice, core::events::application::Bundle::IDispatcher* applicationDispatcher){
+                    terminalDevice->writeLine(fmt::format("-\u001B[31m{0}\u001B[0m-", "exit"));
+                    applicationDispatcher->fire(context, core::events::application::Exit{});
+                });
+            });
+
+        });
     }
 }

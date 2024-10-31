@@ -10,7 +10,8 @@ namespace dory::core
     class IBootstrap: public generic::Interface
     {
     public:
-        virtual bool initialize(const dory::generic::extension::LibraryHandle& libraryHandle, resources::DataContext& context, Registry& registry) = 0;
-        virtual bool run(resources::DataContext& context, Registry& registry) = 0;
+        virtual bool initialize(const dory::generic::extension::LibraryHandle& libraryHandle, resources::DataContext& context) = 0;
+        virtual bool run(resources::DataContext& context) = 0;
+        virtual void cleanup(resources::DataContext& context) = 0;
     };
 }

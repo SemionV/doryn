@@ -155,10 +155,10 @@ namespace dory::core::devices
             auto command = currentCommand;
             exitCommandMode();
 
-            auto scriptEventDispatcher = _registry.get<events::script::Bundle::IDispatcher>();
-            if(scriptEventDispatcher)
+            auto scriptService = _registry.get<services::IScriptService>();
+            if(scriptService)
             {
-                scriptEventDispatcher->fire(context, events::script::Run{command});
+                scriptService->runScript(context, command, {});
             }
 
             enterCommandMode();

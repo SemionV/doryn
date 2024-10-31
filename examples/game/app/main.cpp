@@ -27,14 +27,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     bootLoggerConfig.rotationLogger = dory::core::resources::configuration::RotationLogSink{"logs/boot.log"};
     bootLoggerConfig.stdoutLogger = dory::core::resources::configuration::StdoutLogSink{};
 
-    auto bootstrap = dory::game::Bootstrap{};
-    bootstrap.initialize(staticLibraryHandle, dataContext, registry);
-
-    bootstrap.run(dataContext, registry);
+    auto bootstrap = dory::game::Bootstrap{registry};
+    bootstrap.initialize(staticLibraryHandle, dataContext);
+    bootstrap.run(dataContext);
+    bootstrap.cleanup(dataContext);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    {
+    /*{
         auto eventHub = registry.get<dory::core::events::script::Bundle::IListener>();
         if(eventHub)
         {
@@ -43,9 +43,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
                     std::cout << "script event is fired\n";
                 });
         }
-    }
+    }*/
 
-    {
+    /*{
         auto libraryService = registry.get<dory::core::services::ILibraryService>();
         if(libraryService)
         {
@@ -66,9 +66,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
                 }
             }
         }
-    }
-
-    std::cout << "End main" << std::endl;
+    }*/
 
     return 0;
 }

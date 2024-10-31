@@ -10,10 +10,18 @@ namespace dory::game
     class Bootstrap: public core::IBootstrap
     {
     private:
-        core::resources::LocalizationImpl _localization;
+        core::Registry& _registry;
+
+        void attachEventHandlers(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
+        void attachScrips(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
+        void onApplicationExit(core::resources::DataContext& context, const core::events::application::Exit& eventData);
+        void onRunScript(core::resources::DataContext& context, const core::events::application::Exit& eventData);
 
     public:
-        bool initialize(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context, core::Registry& registry) final;
-        bool run(core::resources::DataContext& context, core::Registry& registry) final;
+        explicit Bootstrap(core::Registry& registry);
+
+        bool initialize(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context) final;
+        bool run(core::resources::DataContext& context) final;
+        void cleanup(core::resources::DataContext& context) final;
     };
 }
