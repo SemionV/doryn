@@ -5,7 +5,7 @@
 
 namespace dory::core::repository
 {
-    template<typename TEntity, typename TId = resources::entity::IdType, template<class, class> class TContainer = std::vector>
+    template<typename TEntity, typename TId = resources::IdType, template<class, class> class TContainer = std::vector>
     class Repository: public repositories::IRepository<TEntity, TId>
     {
     protected:

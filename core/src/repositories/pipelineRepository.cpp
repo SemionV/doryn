@@ -12,7 +12,7 @@ namespace dory::core::repositories
     {
         auto nodeId = IdType {};
 
-        if(pipelineNode.parentNodeId != resources::entity::nullId)
+        if(pipelineNode.parentNodeId != resources::nullId)
         {
             auto parentId = pipelineNode.parentNodeId;
             std::stack<IdType> tree;

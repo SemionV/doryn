@@ -90,14 +90,21 @@ namespace dory::game
 
     void Bootstrap::buildPipeline(const generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
     {
-        _registry.get<dory::core::repositories::IPipelineRepository>([this, &libraryHandle](dory::core::repositories::IPipelineRepository* pipelineRepository){
+        _registry.get<dory::core::repositories::IPipelineRepository>([this, &libraryHandle, &context](dory::core::repositories::IPipelineRepository* pipelineRepository){
+
+            auto inputGroup = core::resources::entity::PipelineNode{};
+            auto outputGroup = core::resources::entity::PipelineNode{};
+
+            auto inputGroupId = context.inputGroupNodeId = pipelineRepository->addNode(inputGroup);
+            auto outputGroupId = context.outputGroupNodeId = pipelineRepository->addNode(outputGroup);
+
             auto submitInputEvents = [this](auto referenceId, const auto& timeStep, dory::core::resources::DataContext& context){
                 _registry.get<dory::core::events::io::Bundle::IDispatcher>([&context](dory::core::events::io::Bundle::IDispatcher* dispatcher){
                     dispatcher->fireAll(context);
                 });
             };
             auto resourceHandle = dory::generic::extension::ResourceHandle<dory::core::resources::entity::PipelineNode::UpdateFunctionType>{ libraryHandle, submitInputEvents };
-            auto node = dory::core::resources::entity::PipelineNode(resourceHandle);
+            auto node = dory::core::resources::entity::PipelineNode(resourceHandle, inputGroupId);
             pipelineRepository->addNode(node);
 
             auto flushOutput = [this](auto referenceId, const auto& timeStep, dory::core::resources::DataContext& context){
@@ -106,7 +113,7 @@ namespace dory::game
                 });
             };
             resourceHandle = dory::generic::extension::ResourceHandle<dory::core::resources::entity::PipelineNode::UpdateFunctionType>{ libraryHandle, flushOutput };
-            node = dory::core::resources::entity::PipelineNode(resourceHandle);
+            node = dory::core::resources::entity::PipelineNode(resourceHandle, outputGroupId);
             pipelineRepository->addNode(node);
         });
     }

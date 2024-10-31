@@ -5,15 +5,13 @@
 #include <functional>
 #include <utility>
 #include <type_traits>
-#include "dataContext.h"
 #include <dory/generic/extension/resourceHandle.h>
 #include <dory/generic/model.h>
+#include "id.h"
+#include "dataContext.h"
 
 namespace dory::core::resources::entity
 {
-    using IdType = unsigned int;
-    constexpr static const IdType nullId = 0;
-
     template<typename T = IdType>
     struct Entity
     {

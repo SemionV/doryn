@@ -5,7 +5,7 @@
 
 namespace dory::core::repositories
 {
-    template<typename TEntity, typename TId = resources::entity::IdType>
+    template<typename TEntity, typename TId = resources::IdType>
     class IRepository
     {
     public:
