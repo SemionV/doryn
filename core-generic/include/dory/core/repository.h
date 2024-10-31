@@ -67,5 +67,10 @@ namespace dory::core::repository
                 container.erase(position);
             }
         }
+
+        std::span<TEntity> getAll() override
+        {
+            return std::span<TEntity>{ container };
+        }
     };
 }

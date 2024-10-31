@@ -2,6 +2,7 @@
 #include <dory/core/devices/glfwWindowSystemDevice.h>
 #include <GLFW/glfw3.h>
 #include <dory/core/repositories/iRepository.h>
+#include <dory/core/resources/window.h>
 
 namespace dory::core::devices
 {
@@ -23,19 +24,28 @@ namespace dory::core::devices
     {
         glfwPollEvents();
 
-        /*_registry.get<repositories::IRepository<resources::entity::Window>>([](repositories::IRepository<resources::entity::Window>* repository) {
-            repository.
-        });*/
-
-        /*windowRepository.forEach([this](auto& window)
-        {
-            if(glfwWindowShouldClose(window.handler))
+        _registry.get<repositories::IRepository<resources::entity::Window>>([this, &context](repositories::IRepository<resources::entity::Window>* repository) {
+            auto windows = repository->getAll();
+            for(auto& window : windows)
             {
-                this->windowEventHubDispatcher.charge(events::window::Close(window.id));
-                glfwSetWindowShouldClose(window.handler, 0);
-            }
-        });
+                if(window.windowSystemType == resources::WindowSystem::glfw)
+                {
+                    auto specificData = std::static_pointer_cast<resources::entity::GlfwWindow>(window.subsystemData);
 
-        windowEventHubDispatcher.fireAll(context);*/
+                    if(glfwWindowShouldClose(specificData->handler))
+                    {
+                        _registry.get<events::window::Bundle::IDispatcher>([&window](auto* dispatcher) {
+                            dispatcher->charge(events::window::Close{ window.id });
+                        });
+
+                        glfwSetWindowShouldClose(specificData->handler, 0);
+                    }
+                }
+            }
+
+            _registry.get<events::window::Bundle::IDispatcher>([&context](auto* dispatcher) {
+                dispatcher->fireAll(context);
+            });
+        });
     }
 }

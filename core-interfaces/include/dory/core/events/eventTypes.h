@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include "interface.h"
+#include <dory/core/resources/id.h>
 
 namespace dory::core::events
 {
@@ -58,9 +59,9 @@ namespace dory::core::events
     {
         struct Close
         {
-            int windowId;
+            resources::IdType windowId;
         };
 
-        using Bundle = EventBundle<const Close>;;
+        using Bundle = EventBufferBundle<Close>;;
     }
 }

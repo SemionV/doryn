@@ -17,5 +17,6 @@ namespace dory::core::repositories
         virtual TEntity store(TEntity&& entity) = 0;
         virtual void store(TEntity& entity) = 0;
         virtual void remove(TId id) = 0;
+        virtual std::span<TEntity> getAll() = 0;
     };
 }
