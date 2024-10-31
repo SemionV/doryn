@@ -8,65 +8,9 @@ namespace dory::game
 
     bool Bootstrap::initialize(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
     {
-        _registry.get<dory::core::services::IMultiSinkLogService>(dory::core::resources::Logger::Config, [this, &context](dory::core::services::IMultiSinkLogService* logger){
-            logger->initialize(context.configuration.loggingConfiguration.configurationLogger, _registry);
-        });
-
-        _registry.get<dory::core::services::IConfigurationService>([&context](dory::core::services::IConfigurationService* configurationService){
-            configurationService->load(context.configuration);
-        });
-
-        _registry.get<dory::core::services::IMultiSinkLogService, dory::core::resources::Logger::App>([this, &context](dory::core::services::IMultiSinkLogService* logger){
-            logger->initialize(context.configuration.loggingConfiguration.mainLogger, _registry);
-        });
-
-        _registry.get<dory::core::services::ILocalizationService>([&context](dory::core::services::ILocalizationService* localizationService){
-            localizationService->load(context.configuration, context.localization);
-        });
-
-        _registry.get<
-                dory::generic::registry::Service<dory::core::services::ILogService, dory::core::resources::Logger::App>,
-                dory::generic::registry::Service<dory::core::devices::IStandardIODevice>,
-                dory::generic::registry::Service<dory::core::devices::ITerminalDevice>>(
-        [&context](
-        dory::core::services::ILogService* logger,
-        dory::core::devices::IStandardIODevice* ioDevice,
-        dory::core::devices::ITerminalDevice* terminalDevice)
-        {
-            logger->information(fmt::format("Dory Game, {0}.{1}, {2}",
-                                            context.configuration.buildInfo.version,
-                                            context.configuration.buildInfo.commitSHA,
-                                            context.configuration.buildInfo.timestamp));
-
-            logger->information(context.localization.hello);
-            logger->information(context.localization.goodBye->get("Semion"));
-            logger->information(context.localization.birthDate->get(11, 03, 1984));
-
-            ioDevice->connect(context);
-            terminalDevice->connect(context);
-            terminalDevice->enterCommandMode();
-        });
-
-        _registry.get<dory::core::repositories::IPipelineRepository>([this, &libraryHandle](dory::core::repositories::IPipelineRepository* pipelineRepository){
-            auto submitInputEvents = [this](auto referenceId, const auto& timeStep, dory::core::resources::DataContext& context){
-                _registry.get<dory::core::events::io::Bundle::IDispatcher>([&context](dory::core::events::io::Bundle::IDispatcher* dispatcher){
-                    dispatcher->fireAll(context);
-                });
-            };
-            auto resourceHandle = dory::generic::extension::ResourceHandle<dory::core::resources::entity::PipelineNode::UpdateFunctionType>{ libraryHandle, submitInputEvents };
-            auto node = dory::core::resources::entity::PipelineNode(resourceHandle);
-            pipelineRepository->addNode(node);
-
-            auto flushOutput = [this](auto referenceId, const auto& timeStep, dory::core::resources::DataContext& context){
-                _registry.get<dory::core::devices::IStandardIODevice>([](dory::core::devices::IStandardIODevice* ioDevice){
-                    ioDevice->flush();
-                });
-            };
-            resourceHandle = dory::generic::extension::ResourceHandle<dory::core::resources::entity::PipelineNode::UpdateFunctionType>{ libraryHandle, flushOutput };
-            node = dory::core::resources::entity::PipelineNode(resourceHandle);
-            pipelineRepository->addNode(node);
-        });
-
+        loadConfiguration(libraryHandle, context);
+        connectDevices(libraryHandle, context);
+        buildPipeline(libraryHandle, context);
         attachEventHandlers(libraryHandle, context);
         attachScrips(libraryHandle, context);
 
@@ -97,6 +41,74 @@ namespace dory::game
                     terminalDevice->disconnect(context);
                     ioDevice->disconnect(context);
                 });
+    }
+
+    void Bootstrap::loadConfiguration(const generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
+    {
+        _registry.get<dory::core::services::IMultiSinkLogService>(dory::core::resources::Logger::Config, [this, &context](dory::core::services::IMultiSinkLogService* logger){
+            logger->initialize(context.configuration.loggingConfiguration.configurationLogger, _registry);
+        });
+
+        _registry.get<dory::core::services::IConfigurationService>([&context](dory::core::services::IConfigurationService* configurationService){
+            configurationService->load(context.configuration);
+        });
+
+        _registry.get<dory::core::services::IMultiSinkLogService, dory::core::resources::Logger::App>([this, &context](dory::core::services::IMultiSinkLogService* logger){
+            logger->initialize(context.configuration.loggingConfiguration.mainLogger, _registry);
+        });
+
+        _registry.get<dory::core::services::ILocalizationService>([&context](dory::core::services::ILocalizationService* localizationService){
+            localizationService->load(context.configuration, context.localization);
+        });
+    }
+
+    void Bootstrap::connectDevices(const generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
+    {
+        _registry.get<
+                dory::generic::registry::Service<dory::core::services::ILogService, dory::core::resources::Logger::App>,
+                dory::generic::registry::Service<dory::core::devices::IStandardIODevice>,
+                dory::generic::registry::Service<dory::core::devices::ITerminalDevice>>(
+        [&context](
+        dory::core::services::ILogService* logger,
+        dory::core::devices::IStandardIODevice* ioDevice,
+        dory::core::devices::ITerminalDevice* terminalDevice)
+        {
+            logger->information(fmt::format("Dory Game, {0}.{1}, {2}",
+                                            context.configuration.buildInfo.version,
+                                            context.configuration.buildInfo.commitSHA,
+                                            context.configuration.buildInfo.timestamp));
+
+            logger->information(context.localization.hello);
+            logger->information(context.localization.goodBye->get("Semion"));
+            logger->information(context.localization.birthDate->get(11, 03, 1984));
+
+            ioDevice->connect(context);
+            terminalDevice->connect(context);
+            terminalDevice->enterCommandMode();
+        });
+    }
+
+    void Bootstrap::buildPipeline(const generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
+    {
+        _registry.get<dory::core::repositories::IPipelineRepository>([this, &libraryHandle](dory::core::repositories::IPipelineRepository* pipelineRepository){
+            auto submitInputEvents = [this](auto referenceId, const auto& timeStep, dory::core::resources::DataContext& context){
+                _registry.get<dory::core::events::io::Bundle::IDispatcher>([&context](dory::core::events::io::Bundle::IDispatcher* dispatcher){
+                    dispatcher->fireAll(context);
+                });
+            };
+            auto resourceHandle = dory::generic::extension::ResourceHandle<dory::core::resources::entity::PipelineNode::UpdateFunctionType>{ libraryHandle, submitInputEvents };
+            auto node = dory::core::resources::entity::PipelineNode(resourceHandle);
+            pipelineRepository->addNode(node);
+
+            auto flushOutput = [this](auto referenceId, const auto& timeStep, dory::core::resources::DataContext& context){
+                _registry.get<dory::core::devices::IStandardIODevice>([](dory::core::devices::IStandardIODevice* ioDevice){
+                    ioDevice->flush();
+                });
+            };
+            resourceHandle = dory::generic::extension::ResourceHandle<dory::core::resources::entity::PipelineNode::UpdateFunctionType>{ libraryHandle, flushOutput };
+            node = dory::core::resources::entity::PipelineNode(resourceHandle);
+            pipelineRepository->addNode(node);
+        });
     }
 
     void Bootstrap::attachEventHandlers(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
