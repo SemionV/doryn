@@ -12,7 +12,7 @@ namespace dory::generic::extension
     private:
         std::optional<std::weak_ptr<ILibrary>> _libraryOption;
 
-        std::shared_ptr<ILibrary> lock()
+        std::shared_ptr<ILibrary> lock() const
         {
             assert(!isStatic());
             return (*_libraryOption).lock();
@@ -25,7 +25,7 @@ namespace dory::generic::extension
                 _libraryOption(std::move(library))
         {}
 
-        bool isStatic()
+        bool isStatic() const
         {
             return !(bool)_libraryOption;
         }

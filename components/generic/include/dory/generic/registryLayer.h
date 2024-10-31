@@ -47,7 +47,8 @@ namespace dory::generic::registry
     class RegistrationEntry: RegistrationEntryRoot<TServiceInterface>
     {
     private:
-        std::map<TIdentifier, extension::ResourceHandle<typename RegistrationEntryRoot<TServiceInterface>::ServicePtrType>> _serviceHandles;
+        using HandlesMapType = std::map<TIdentifier, extension::ResourceHandle<typename RegistrationEntryRoot<TServiceInterface>::ServicePtrType>>;
+        HandlesMapType _serviceHandles;
 
     protected:
         void _set(extension::LibraryHandle libraryHandle, std::shared_ptr<TServiceInterface> service, TIdentifier identifier)
@@ -78,6 +79,13 @@ namespace dory::generic::registry
         {
             auto resourceRef = _get(identifier);
             RegistrationEntryRoot<TServiceInterface>::invoke(resourceRef, std::forward<A>(action));
+        }
+
+        template<typename A>
+        requires(std::is_invocable_v<A, const HandlesMapType&>)
+        void _getAll(A&& action)
+        {
+            action(_serviceHandles);
         }
     };
 
@@ -217,6 +225,12 @@ namespace dory::generic::registry
         void get(A&& action)
         {
             invoke(std::forward<A>(action), this->RegistrationEntry<typename TServiceEntry::InterfaceType, std::decay_t<decltype(TServiceEntry::identifier)>>::_get(TServiceEntry::identifier)...);
+        }
+
+        template<typename TService, typename TIdentifier, typename A>
+        void getAll(A&& action)
+        {
+            this->RegistrationEntry<TService, TIdentifier>::_getAll(std::forward<A>(action));
         }
     };
 }

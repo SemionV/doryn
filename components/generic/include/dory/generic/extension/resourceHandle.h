@@ -21,7 +21,7 @@ namespace dory::generic::extension
                 _resource(resource)
         {}
 
-        ResourceRef<TResource> lock()
+        ResourceRef<TResource> lock() const
         {
             if(_library.isStatic())
             {

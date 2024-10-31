@@ -19,12 +19,15 @@ namespace dory::core::controllers
 
     void WindowSystemController::update(resources::IdType referenceId, const generic::model::TimeSpan& timeStep, resources::DataContext& context)
     {
-        _registry.get<devices::IWindowSystemDevice, resources::WindowSystem::glfw>([&context](devices::IWindowSystemDevice* device){
-            device->pollEvents(context);
-        });
-
-        _registry.get<devices::IWindowSystemDevice, resources::WindowSystem::win32>([&context](devices::IWindowSystemDevice* device){
-            device->pollEvents(context);
+        _registry.getAll<devices::IWindowSystemDevice, resources::WindowSystem>([&context](const auto& devices) {
+            for(const auto& [key, value] : devices)
+            {
+                auto deviceRef = value.lock();
+                if(deviceRef)
+                {
+                    deviceRef->pollEvents(context);
+                }
+            }
         });
     }
 }
