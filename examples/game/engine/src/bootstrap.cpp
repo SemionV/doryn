@@ -15,10 +15,6 @@ namespace dory::game
         attachEventHandlers(libraryHandle, context);
         attachScrips(libraryHandle, context);
 
-        _registry.get<core::services::IWindowService>([&context](core::services::IWindowService* windowService) {
-            context.mainWindowId = windowService->createWindow({800, 600, "dory game"});
-        });
-
         return true;
     }
 
@@ -93,10 +89,6 @@ namespace dory::game
                                             context.configuration.buildInfo.version,
                                             context.configuration.buildInfo.commitSHA,
                                             context.configuration.buildInfo.timestamp));
-
-            logger->information(context.localization.hello);
-            logger->information(context.localization.goodBye->get("Semion"));
-            logger->information(context.localization.birthDate->get(11, 03, 1984));
 
             ioDevice->connect(context);
             terminalDevice->connect(context);

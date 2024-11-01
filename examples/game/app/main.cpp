@@ -3,6 +3,7 @@
 #include <dory/core/services/logService.h>
 #include <dory/core/resources/localizationImpl.h>
 #include <dory/game/bootstrap.h>
+#include "game.h"
 
 #ifdef DORY_MAIN_FUNCTION_UNIX
 int main()
@@ -16,7 +17,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     auto registry = dory::core::Registry{};
     auto configuration = dory::core::resources::configuration::Configuration{};
     auto localization = dory::core::resources::LocalizationImpl{};
-    auto dataContext = dory::core::resources::DataContext{ configuration, localization };
+    auto context = dory::core::resources::DataContext{ configuration, localization };
 
     setup.setupRegistry(staticLibraryHandle, registry);
 
@@ -28,9 +29,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     bootLoggerConfig.stdoutLogger = dory::core::resources::configuration::StdoutLogSink{};
 
     auto bootstrap = dory::game::Bootstrap{registry};
-    bootstrap.initialize(staticLibraryHandle, dataContext);
-    bootstrap.run(dataContext);
-    bootstrap.cleanup(dataContext);
+    bootstrap.initialize(staticLibraryHandle, context);
+
+    auto game = dory::game::Game{registry};
+    game.initialize(context);
+
+    bootstrap.run(context);
+    bootstrap.cleanup(context);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
