@@ -8,18 +8,33 @@ namespace dory::core::services
 {
     bool OpenglGraphicalSystem::initializeGraphics(const resources::entity::Window& window)
     {
-        if(window.graphicalSystem == resources::GraphicalSystem::opengl)
+        if(window.windowSystem == resources::WindowSystem::glfw)
         {
-            if(window.windowSystem == resources::WindowSystem::glfw)
-            {
-                auto specificData = std::static_pointer_cast<resources::entity::GlfwWindow>(window.windowSystemData);
+            auto specificData = std::static_pointer_cast<resources::entity::GlfwWindow>(window.windowSystemData);
 
-                glfwMakeContextCurrent(specificData->handler);
-                int version = gladLoadGL(glfwGetProcAddress);
-                return version != 0;
-            }
+            glfwMakeContextCurrent(specificData->handler);
+            int version = gladLoadGL(glfwGetProcAddress);
+            return version != 0;
         }
 
         return false;
+    }
+
+    void OpenglGraphicalSystem::setCurrentWindow(const resources::entity::Window& window)
+    {
+        if(window.windowSystem == resources::WindowSystem::glfw)
+        {
+            auto specificData = std::static_pointer_cast<resources::entity::GlfwWindow>(window.windowSystemData);
+            glfwMakeContextCurrent(specificData->handler);
+        }
+    }
+
+    void OpenglGraphicalSystem::swapBuffers(const resources::entity::Window& window)
+    {
+        if(window.windowSystem == resources::WindowSystem::glfw)
+        {
+            auto specificData = std::static_pointer_cast<resources::entity::GlfwWindow>(window.windowSystemData);
+            glfwSwapBuffers(specificData->handler);
+        }
     }
 }

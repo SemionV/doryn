@@ -1,3 +1,6 @@
+if(LINUX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+endif()
 find_package(opengl-glad QUIET)
 if(NOT opengl-glad_FOUND)
     message(STATUS "opengl-glad is not found, initializing git submodule")
@@ -31,9 +34,6 @@ FetchContent_Declare(spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog.git
         GIT_TAG v1.14.1)
 set(SAVED_CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-if(LINUX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-endif()
 FetchContent_MakeAvailable(spdlog)
 set(CMAKE_CXX_FLAGS "${SAVED_CMAKE_CXX_FLAGS}")
 

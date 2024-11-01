@@ -69,5 +69,7 @@ namespace dory::game
         registry.set<core::services::IWindowService, core::resources::WindowSystem::glfw>(libraryHandle, glfwWindowService);
 
         registry.set<core::services::IWindowService>(libraryHandle, glfwWindowService);
+
+        registry.set<core::services::IGraphicalSystem, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::services::OpenglGraphicalSystem>());
     }
 }

@@ -8,5 +8,7 @@ namespace dory::core::services
     {
     public:
         bool initializeGraphics(const resources::entity::Window& window) override;
+        void setCurrentWindow(const resources::entity::Window& window) override;
+        void swapBuffers(const resources::entity::Window& window) override;
     };
 }

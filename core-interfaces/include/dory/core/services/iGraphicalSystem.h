@@ -9,5 +9,7 @@ namespace dory::core::services
     {
     public:
         virtual bool initializeGraphics(const resources::entity::Window& window) = 0;
+        virtual void setCurrentWindow(const resources::entity::Window& window) = 0;
+        virtual void swapBuffers(const resources::entity::Window& window) = 0;
     };
 }
