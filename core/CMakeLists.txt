@@ -22,6 +22,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/pipelineService.cpp
         src/services/frameService.cpp
         src/services/glfwWindowService.cpp
+        src/services/openglGraphicalSystem.cpp
         src/controllers/windowSystemController.cpp
         ${DORY_PLATFORM_MODULES})
 
@@ -32,6 +33,7 @@ target_link_libraries(${DORY_MODULE_NAME} PUBLIC
         dory-serialization
         core::boost
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
+        opengl-glad
         glfw)
 
 set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""

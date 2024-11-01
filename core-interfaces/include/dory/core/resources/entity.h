@@ -10,6 +10,7 @@
 #include "id.h"
 #include "dataContext.h"
 #include "windowSystem.h"
+#include "graphicalSystem.h"
 
 namespace dory::core::resources::entity
 {
@@ -42,13 +43,15 @@ namespace dory::core::resources::entity
 
     struct Window: public Entity<IdType>
     {
-        explicit Window(IdType id, WindowSystem subsystemType):
+        explicit Window(IdType id, WindowSystem windowSystem, GraphicalSystem graphicalSystem):
                 Entity(id),
-                windowSystemType(subsystemType)
+                windowSystem(windowSystem),
+                graphicalSystem(graphicalSystem)
         {}
 
-        WindowSystem windowSystemType {};
-        std::shared_ptr<IWindowSubsystemData> subsystemData;
+        WindowSystem windowSystem {};
+        GraphicalSystem graphicalSystem {};
+        std::shared_ptr<IWindowSubsystemData> windowSystemData;
     };
 
     struct Viewport

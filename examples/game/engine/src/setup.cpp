@@ -22,7 +22,8 @@
 #include <dory/core/services/localizationService.h>
 #include <dory/core/services/pipelineService.h>
 #include <dory/core/services/frameService.h>
-#include <dory/core/services/glfwWindowSercvice.h>
+#include <dory/core/services/glfwWindowService.h>
+#include <dory/core/services/openglGraphicalSystem.h>
 
 namespace dory::game
 {

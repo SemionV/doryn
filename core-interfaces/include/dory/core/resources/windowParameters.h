@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "graphicalSystem.h"
 
 namespace dory::core::resources
 {
@@ -9,5 +10,6 @@ namespace dory::core::resources
         unsigned int width;
         unsigned int height;
         std::string title;
+        GraphicalSystem graphicalSystem;
     };
 }

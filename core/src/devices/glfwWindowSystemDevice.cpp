@@ -28,14 +28,14 @@ namespace dory::core::devices
             auto windows = repository->getAll();
             for(auto& window : windows)
             {
-                if(window.windowSystemType == resources::WindowSystem::glfw)
+                if(window.windowSystem == resources::WindowSystem::glfw)
                 {
-                    auto specificData = std::static_pointer_cast<resources::entity::GlfwWindow>(window.subsystemData);
+                    auto specificData = std::static_pointer_cast<resources::entity::GlfwWindow>(window.windowSystemData);
 
                     if(glfwWindowShouldClose(specificData->handler))
                     {
                         _registry.get<events::window::Bundle::IDispatcher>([&window](auto* dispatcher) {
-                            dispatcher->charge(events::window::Close{ window.id, window.windowSystemType });
+                            dispatcher->charge(events::window::Close{ window.id, window.windowSystem });
                         });
 
                         glfwSetWindowShouldClose(specificData->handler, 0);
