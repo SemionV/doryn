@@ -35,7 +35,7 @@ namespace dory::core::devices
                     if(glfwWindowShouldClose(specificData->handler))
                     {
                         _registry.get<events::window::Bundle::IDispatcher>([&window](auto* dispatcher) {
-                            dispatcher->charge(events::window::Close{ window.id });
+                            dispatcher->charge(events::window::Close{ window.id, window.windowSystemType });
                         });
 
                         glfwSetWindowShouldClose(specificData->handler, 0);

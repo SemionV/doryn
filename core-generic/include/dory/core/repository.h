@@ -40,10 +40,12 @@ namespace dory::core::repository
             return {};
         }
 
-        TEntity store(TEntity&& entity) override
+        TId insert(const TEntity& entity) override
         {
-            entity.id = getFreeId();
-            return container.emplace_back(std::move(entity));
+            TEntity& newEntity = container.emplace_back(std::move(entity));
+            newEntity.id = getFreeId();
+
+            return newEntity.id;
         }
 
         void store(TEntity& entity) override
@@ -68,9 +70,9 @@ namespace dory::core::repository
             }
         }
 
-        std::span<TEntity> getAll() override
+        std::span<const TEntity> getAll() override
         {
-            return std::span<TEntity>{ container };
+            return std::span<const TEntity>{ container };
         }
     };
 }

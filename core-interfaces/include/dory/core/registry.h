@@ -24,6 +24,8 @@
 #include <dory/core/services/iPipelineService.h>
 #include <dory/core/devices/iWindowSystemDevice.h>
 #include <dory/core/resources/windowSystem.h>
+#include <dory/core/services/iWindowService.h>
+#include <dory/core/services/iWindowService.h>
 
 namespace dory::core
 {
@@ -66,7 +68,9 @@ namespace dory::core
             generic::registry::ServiceEntry<services::IConfigurationService>,
             generic::registry::ServiceEntry<services::ILocalizationService>,
             generic::registry::ServiceEntry<services::IPipelineService>,
-            generic::registry::ServiceEntry<services::IFrameService>>
+            generic::registry::ServiceEntry<services::IFrameService>,
+            generic::registry::ServiceEntry<services::IWindowService>,//default window service
+            generic::registry::ServiceEntry<services::IWindowService, resources::WindowSystem>>
     {};
 
     template<typename T>

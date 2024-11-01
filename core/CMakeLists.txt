@@ -21,6 +21,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/localizationService.cpp
         src/services/pipelineService.cpp
         src/services/frameService.cpp
+        src/services/glfwWindowService.cpp
         src/controllers/windowSystemController.cpp
         ${DORY_PLATFORM_MODULES})
 

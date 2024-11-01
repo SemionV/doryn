@@ -22,6 +22,7 @@
 #include <dory/core/services/localizationService.h>
 #include <dory/core/services/pipelineService.h>
 #include <dory/core/services/frameService.h>
+#include <dory/core/services/glfwWindowSercvice.h>
 
 namespace dory::game
 {
@@ -62,5 +63,10 @@ namespace dory::game
         registry.set<core::services::ILocalizationService>(libraryHandle, std::make_shared<core::services::LocalizationService>(registry));
         registry.set<core::services::IPipelineService>(libraryHandle, std::make_shared<core::services::PipelineService>(registry));
         registry.set<core::services::IFrameService>(libraryHandle, std::make_shared<core::services::FrameService>(registry));
+
+        auto glfwWindowService = std::make_shared<core::services::GlfwWindowService>(registry);
+        registry.set<core::services::IWindowService, core::resources::WindowSystem::glfw>(libraryHandle, glfwWindowService);
+
+        registry.set<core::services::IWindowService>(libraryHandle, glfwWindowService);
     }
 }

@@ -15,6 +15,10 @@ namespace dory::game
         attachEventHandlers(libraryHandle, context);
         attachScrips(libraryHandle, context);
 
+        _registry.get<core::services::IWindowService>([&context](core::services::IWindowService* windowService) {
+            context.mainWindowId = windowService->createWindow({800, 600, "dory game"});
+        });
+
         return true;
     }
 
@@ -150,12 +154,9 @@ namespace dory::game
         _registry.get<core::events::application::Bundle::IListener>([this](core::events::application::Bundle::IListener* listener){
             listener->attach([this](auto& context, const auto& event){ this->onApplicationExit(context, event); });
         });
-    }
 
-    void Bootstrap::onApplicationExit(core::resources::DataContext& context, const core::events::application::Exit& eventData)
-    {
-        _registry.get<dory::core::services::IFrameService>([](dory::core::services::IFrameService* frameService) {
-            frameService->endLoop();
+        _registry.get<core::events::window::Bundle::IListener>([this](core::events::window::Bundle::IListener* listener){
+            listener->attach([this](auto& context, const auto& event){ this->onWindowClose(context, event); });
         });
     }
 
@@ -173,6 +174,29 @@ namespace dory::game
                 });
             });
 
+        });
+    }
+
+    void Bootstrap::onApplicationExit(core::resources::DataContext& context, const core::events::application::Exit& eventData)
+    {
+        _registry.get<dory::core::services::IFrameService>([](dory::core::services::IFrameService* frameService) {
+            frameService->endLoop();
+        });
+    }
+
+    void Bootstrap::onWindowClose(core::resources::DataContext& context, const core::events::window::Close& eventData)
+    {
+        _registry.get<core::services::IWindowService>(eventData.windowSystem, [this, &eventData, &context](core::services::IWindowService* windowService) {
+            windowService->closeWindow(eventData.windowId);
+
+            if(eventData.windowId == context.mainWindowId)
+            {
+                auto dispatcher = _registry.get<core::events::application::Bundle::IDispatcher>();
+                if(dispatcher)
+                {
+                    dispatcher->fire(context, core::events::application::Exit{});
+                }
+            }
         });
     }
 }

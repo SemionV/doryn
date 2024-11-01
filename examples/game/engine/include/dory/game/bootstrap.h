@@ -19,6 +19,7 @@ namespace dory::game
         void attachScrips(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
 
         void onApplicationExit(core::resources::DataContext& context, const core::events::application::Exit& eventData);
+        void onWindowClose(core::resources::DataContext& context, const core::events::window::Close& eventData);
 
     public:
         explicit Bootstrap(core::Registry& registry);
