@@ -1,5 +1,6 @@
 #include "dory/game/bootstrap.h"
 #include <dory/core/controllers/windowSystemController.h>
+#include <dory/core/controllers/viewController.h>
 
 namespace dory::game
 {
@@ -138,6 +139,10 @@ namespace dory::game
             auto windowSystemController = std::make_shared<core::controllers::WindowSystemController>(_registry);
             auto controllerHandle = generic::extension::ResourceHandle<core::resources::entity::PipelineNode::ControllerPointerType>{ libraryHandle, windowSystemController };
             pipelineRepository->addNode(core::resources::entity::PipelineNode{controllerHandle, inputGroupId});
+
+            auto viewController = std::make_shared<core::controllers::ViewController>(_registry);
+            controllerHandle = generic::extension::ResourceHandle<core::resources::entity::PipelineNode::ControllerPointerType>{ libraryHandle, viewController };
+            pipelineRepository->addNode(core::resources::entity::PipelineNode{controllerHandle, outputGroupId});
         });
     }
 

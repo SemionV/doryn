@@ -1,6 +1,7 @@
 if(LINUX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 endif()
+
 find_package(opengl-glad QUIET)
 if(NOT opengl-glad_FOUND)
     message(STATUS "opengl-glad is not found, initializing git submodule")

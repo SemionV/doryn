@@ -27,6 +27,7 @@
 #include <dory/core/services/iWindowService.h>
 #include <dory/core/services/iGraphicalSystem.h>
 #include <dory/core/resources/graphicalSystem.h>
+#include <dory/core/services/iRenderer.h>
 
 namespace dory::core
 {
@@ -72,7 +73,8 @@ namespace dory::core
             generic::registry::ServiceEntry<services::IFrameService>,
             generic::registry::ServiceEntry<services::IGraphicalSystem, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<services::IWindowService>,//default window service
-            generic::registry::ServiceEntry<services::IWindowService, resources::WindowSystem>>
+            generic::registry::ServiceEntry<services::IWindowService, resources::WindowSystem>,
+            generic::registry::ServiceEntry<services::IRenderer, resources::GraphicalSystem>>
     {};
 
     template<typename T>

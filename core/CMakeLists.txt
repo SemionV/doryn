@@ -23,7 +23,9 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/frameService.cpp
         src/services/glfwWindowService.cpp
         src/services/openglGraphicalSystem.cpp
+        src/services/openglRenderer.cpp
         src/controllers/windowSystemController.cpp
+        src/controllers/viewController.cpp
         ${DORY_PLATFORM_MODULES})
 
 target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

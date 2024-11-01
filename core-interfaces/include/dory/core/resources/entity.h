@@ -56,31 +56,30 @@ namespace dory::core::resources::entity
 
     struct Viewport
     {
-        int x;
-        int y;
-        int width;
-        int height;
+        int x {};
+        int y {};
+        int width {};
+        int height {};
+
+        Viewport() = default;
 
         Viewport(int x, int y, int width, int height):
                 x(x),
                 y(y),
                 width(width),
                 height(height)
-        {
-        }
+        {}
     };
 
     struct View: public Entity<IdType>
     {
         IdType windowId;
-        IdType controllerNodeId;
-        IdType cameraId;
+        IdType cameraId {};
         Viewport viewport;
 
-        View(IdType id, IdType windowId, IdType controllerNodeId, IdType cameraId, Viewport viewport):
+        View(IdType id, IdType windowId, Viewport viewport = {}, IdType cameraId = nullId):
                 Entity(id),
                 windowId(windowId),
-                controllerNodeId(controllerNodeId),
                 cameraId(cameraId),
                 viewport(viewport)
         {}

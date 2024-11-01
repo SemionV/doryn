@@ -20,6 +20,11 @@ namespace dory::game
                 context.mainWindowId = windowService->createWindow({800, 600, "dory game"});
             });
 
+            _registry.get<dory::core::repositories::IRepository<dory::core::resources::entity::View>>([&context](dory::core::repositories::IRepository<dory::core::resources::entity::View>* viewRepository) {
+                auto view = dory::core::resources::entity::View{dory::core::resources::nullId, context.mainWindowId};
+                viewRepository->insert(view);
+            });
+
             return true;
         }
     };
