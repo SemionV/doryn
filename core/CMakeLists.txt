@@ -34,10 +34,11 @@ target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR
 target_link_libraries(${DORY_MODULE_NAME} PUBLIC
         dory-core-generic
         dory-serialization
-        core::boost
+        Boost::dll
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
         opengl-glad
-        glfw)
+        glfw
+        efsw)
 
 set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""
         IMPORT_PREFIX ""
@@ -46,5 +47,3 @@ set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""
 if(LINUX)
     target_compile_options(${DORY_MODULE_NAME} PRIVATE -fPIC)
 endif()
-
-add_subdirectory(external)
