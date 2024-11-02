@@ -25,6 +25,7 @@
 #include <dory/core/services/glfwWindowService.h>
 #include <dory/core/services/openglGraphicalSystem.h>
 #include <dory/core/services/openglRenderer.h>
+#include <dory/core/repositories/viewRepository.h>
 
 namespace dory::game
 {
@@ -40,10 +41,10 @@ namespace dory::game
         registry.set<core::devices::ITerminalDevice>(libraryHandle, std::make_shared<core::devices::TerminalDevice>(registry));
         registry.set<core::devices::IWindowSystemDevice, core::resources::WindowSystem::glfw>(libraryHandle, std::make_shared<core::devices::GlfwWindowSystemDevice>(registry));
 
-        registerRepository<core::resources::entity::Camera>(libraryHandle, registry);
-        registerRepository<core::resources::entity::View>(libraryHandle, registry);
-        registerRepository<core::resources::entity::Window>(libraryHandle, registry);
+        registry.set<core::repositories::IViewRepository>(libraryHandle, std::make_shared<core::repositories::ViewRepository>());
         registry.set<core::repositories::IPipelineRepository>(libraryHandle, std::make_shared<core::repositories::PipelineRepository>());
+        registerRepository<core::resources::entity::Camera>(libraryHandle, registry);
+        registerRepository<core::resources::entity::Window>(libraryHandle, registry);
 
         registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
         registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>());

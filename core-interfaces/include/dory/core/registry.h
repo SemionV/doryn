@@ -28,13 +28,13 @@
 #include <dory/core/services/iGraphicalSystem.h>
 #include <dory/core/resources/graphicalSystem.h>
 #include <dory/core/services/iRenderer.h>
+#include <dory/core/repositories/iViewRepository.h>
 
 namespace dory::core
 {
     namespace repositories
     {
         using ICameraRepository = repositories::IRepository<resources::entity::Camera>;
-        using IViewRepository = repositories::IRepository<resources::entity::View>;
         using IWindowRepository = repositories::IRepository<resources::entity::Window>;
     }
 

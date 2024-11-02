@@ -13,6 +13,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/devices/glfwWindowSystemDevice.cpp
         src/extension/dynamicLibrary.cpp
         src/repositories/pipelineRepository.cpp
+        src/repositories/viewRepository.cpp
         src/services/fileService.cpp
         src/services/libraryService.cpp
         src/services/logService.cpp
@@ -21,6 +22,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/localizationService.cpp
         src/services/pipelineService.cpp
         src/services/frameService.cpp
+        src/services/windowService.cpp
         src/services/glfwWindowService.cpp
         src/services/openglGraphicalSystem.cpp
         src/services/openglRenderer.cpp

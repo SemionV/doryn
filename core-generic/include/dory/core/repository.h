@@ -3,10 +3,13 @@
 #include <dory/core/repositories/iRepository.h>
 #include <vector>
 
-namespace dory::core::repository
+namespace dory::core::repositories
 {
-    template<typename TEntity, typename TId = resources::IdType, template<class, class> class TContainer = std::vector>
-    class Repository: public repositories::IRepository<TEntity, TId>
+    template<typename TEntity,
+            typename TId = resources::IdType,
+            typename TInterface = repositories::IRepository<TEntity, TId>,
+            template<class, class> class TContainer = std::vector>
+    class Repository: public TInterface
     {
     protected:
         TContainer<TEntity, std::allocator<TEntity>> container;

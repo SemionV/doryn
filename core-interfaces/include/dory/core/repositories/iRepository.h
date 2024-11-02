@@ -1,16 +1,15 @@
 #pragma once
 
 #include <dory/core/resources/entity.h>
+#include <dory/generic/baseTypes.h>
 #include <optional>
 
 namespace dory::core::repositories
 {
     template<typename TEntity, typename TId = resources::IdType>
-    class IRepository
+    class IRepository: public generic::Interface
     {
     public:
-        virtual ~IRepository() = default;
-
         virtual std::size_t count() = 0;
         virtual TId getFreeId() = 0;
         virtual std::optional<TEntity> get(TId id) = 0;

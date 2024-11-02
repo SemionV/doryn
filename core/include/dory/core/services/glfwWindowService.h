@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/core/services/iWindowService.h>
+#include <dory/core/services/windowService.h>
 
 namespace dory::core
 {
@@ -9,11 +9,8 @@ namespace dory::core
 
 namespace dory::core::services
 {
-    class GlfwWindowService: public IWindowService
+    class GlfwWindowService: public WindowService
     {
-    private:
-        Registry& _registry;
-
     public:
         explicit GlfwWindowService(Registry& registry);
 

@@ -35,7 +35,7 @@ namespace dory::game
         template<typename TEntity>
         void registerRepository(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
         {
-            auto instance = std::make_shared<core::repository::Repository<TEntity>>();
+            auto instance = std::make_shared<core::repositories::Repository<TEntity>>();
             registry.set<core::repositories::IRepository<TEntity>>(libraryHandle, instance);
         }
 

@@ -22,9 +22,9 @@ namespace dory::core::controllers
     {
         _registry.get<
                 generic::registry::Service<repositories::IRepository<resources::entity::Window>>,
-                generic::registry::Service<repositories::IRepository<resources::entity::View>>>(
+                generic::registry::Service<repositories::IViewRepository>>(
         [this, &context](repositories::IRepository<resources::entity::Window>* windowRepository,
-           repositories::IRepository<resources::entity::View>* viewRepository)
+           repositories::IViewRepository* viewRepository)
         {
             auto views = viewRepository->getAll();
             auto windows = windowRepository->getAll();
