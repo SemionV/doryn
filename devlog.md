@@ -1,13 +1,9 @@
 # Development log
 
 Tasks:
-* Move engine to a static shared library
-  * Compose an engine shared library out of generic components
-  * Cover the engine with tests
 * Dynamic module loading(plugin system)
   * Hot reload of plugins with file watchers(see library https://github.com/SpartanJ/efsw)
   * Configure and load plugins
-  * Switch from dynamic library to static(cmake setup and library embedding in the source code(factory))
 * OpenGL Renderer
   * Static mapping of Vertex Attributes
   * Fill Buffers with mapped data
@@ -32,6 +28,10 @@ Tasks:
   * Setup pipeline for build and tests on windows
   * Setup pipeline for releases
   * Deploy assembled packages to some network storage
+
+**02.11.24**
+* Task done: Move engine to a static shared library
+* Task done: Switch from dynamic library to static(cmake setup and library embedding in the source code(factory))
 
 **29.10.24**
 * Task done: Flatten controller pipeline: store entities in a sorted flat array

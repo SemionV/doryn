@@ -56,7 +56,7 @@ namespace dory::engine::services::opengl
             resources::opengl::Program("Triangles Program",
             {
                 resources::opengl::Shader(GL_VERTEX_SHADER, "shaders/triangles/triangles.vert"),
-                resources::opengl   ::Shader(GL_FRAGMENT_SHADER, "shaders/triangles/triangles.frag")
+                resources::opengl::Shader(GL_FRAGMENT_SHADER, "shaders/triangles/triangles.frag")
             })
         {}
     };

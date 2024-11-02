@@ -75,13 +75,12 @@ namespace dory::core::resources::entity
     {
         IdType windowId;
         IdType cameraId {};
-        Viewport viewport;
+        std::optional<Viewport> viewport {};
 
-        View(IdType id, IdType windowId, Viewport viewport = {}, IdType cameraId = nullId):
+        View(IdType id, IdType windowId, IdType cameraId = nullId):
                 Entity(id),
                 windowId(windowId),
-                cameraId(cameraId),
-                viewport(viewport)
+                cameraId(cameraId)
         {}
     };
 
