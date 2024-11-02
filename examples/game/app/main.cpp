@@ -32,46 +32,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     bootstrap.initialize(staticLibraryHandle, context);
 
     auto game = dory::game::Game{registry};
-    game.initialize(context);
+    game.initialize(staticLibraryHandle, context);
 
     bootstrap.run(context);
     bootstrap.cleanup(context);
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /*{
-        auto eventHub = registry.get<dory::core::events::script::Bundle::IListener>();
-        if(eventHub)
-        {
-            eventHub->attach([](dory::core::resources::DataContext& dataContext, const dory::core::events::script::Run& event)
-                {
-                    std::cout << "script event is fired\n";
-                });
-        }
-    }*/
-
-    /*{
-        auto libraryService = registry.get<dory::core::services::ILibraryService>();
-        if(libraryService)
-        {
-            auto testExtensionLibrary = libraryService->load("test extension library", "modules/test-extension");
-            if(testExtensionLibrary)
-            {
-                auto extension = testExtensionLibrary->loadModule("test-extension", registry);
-                if(extension)
-                {
-                    extension->attach(dory::generic::extension::LibraryHandle{testExtensionLibrary }, dataContext);
-
-                    auto fileService = registry.get<dory::core::services::IFileService>();
-                    if(fileService)
-                    {
-                        //auto message = fileService->getMessage();
-                        //std::cout << message << "\n";
-                    }
-                }
-            }
-        }
-    }*/
 
     return 0;
 }
