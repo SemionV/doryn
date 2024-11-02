@@ -96,6 +96,10 @@ namespace dory::game
             terminalDevice->enterCommandMode();
         });
 
+        _registry.get<dory::core::devices::IFileWatcherDevice>([&context](dory::core::devices::IFileWatcherDevice* fileWatcherDevice) {
+            fileWatcherDevice->connect(context);
+        });
+
         _registry.getAll<core::devices::IWindowSystemDevice, core::resources::WindowSystem>([&context](const auto& devices) {
             for(const auto& [key, value] : devices)
             {
