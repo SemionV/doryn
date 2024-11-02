@@ -24,7 +24,6 @@
 #include <dory/core/services/frameService.h>
 #include <dory/core/services/glfwWindowService.h>
 #include <dory/core/services/openglGraphicalSystem.h>
-#include <dory/core/services/openglRenderer.h>
 #include <dory/core/repositories/viewRepository.h>
 
 namespace dory::game
@@ -69,10 +68,7 @@ namespace dory::game
 
         auto glfwWindowService = std::make_shared<core::services::GlfwWindowService>(registry);
         registry.set<core::services::IWindowService, core::resources::WindowSystem::glfw>(libraryHandle, glfwWindowService);
-
         registry.set<core::services::IWindowService>(libraryHandle, glfwWindowService);
-
         registry.set<core::services::IGraphicalSystem, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::services::OpenglGraphicalSystem>());
-        registry.set<core::services::IRenderer, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::services::OpenglRenderer>(registry));
     }
 }

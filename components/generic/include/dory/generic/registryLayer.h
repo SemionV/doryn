@@ -53,14 +53,14 @@ namespace dory::generic::registry
     protected:
         void _set(extension::LibraryHandle libraryHandle, std::shared_ptr<TServiceInterface> service, TIdentifier identifier)
         {
-            _serviceHandles.emplace(identifier, extension::ResourceHandle(libraryHandle, std::move(service)));
+            _serviceHandles[identifier] = extension::ResourceHandle(libraryHandle, std::move(service));
         }
 
         void _reset(TIdentifier identifier)
         {
             if(_serviceHandles.contains(identifier))
             {
-                _serviceHandles.erase(identifier);
+                _serviceHandles[identifier] = {};
             }
         }
 
@@ -196,7 +196,7 @@ namespace dory::generic::registry
         requires(!std::is_invocable_v<TIdentifier, TService*>)
         auto get(TIdentifier&& identifier)
         {
-            return this->RegistrationEntry<TService, TIdentifier>::_get(std::forward<TIdentifier>(identifier));
+            return this->RegistrationEntry<TService, std::decay_t<TIdentifier>>::_get(std::forward<TIdentifier>(identifier));
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

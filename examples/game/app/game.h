@@ -25,6 +25,36 @@ namespace dory::game
                 viewRepository->insert(view);
             });
 
+            bool isCommandMode {};
+            _registry.get<core::devices::ITerminalDevice>([&isCommandMode](core::devices::ITerminalDevice* terminal) {
+                isCommandMode = terminal->isCommandMode();
+                if(isCommandMode)
+                {
+                    terminal->exitCommandMode();
+                }
+            });
+
+            auto libraryService = _registry.get<core::services::ILibraryService>();
+            if(libraryService)
+            {
+                auto openglLibrary = libraryService->load("RendererOpengl", "modules/renderer-opengl");
+                if(openglLibrary)
+                {
+                    auto extension = openglLibrary->loadModule("renderer-opengl", _registry);
+                    if(extension)
+                    {
+                        extension->attach(generic::extension::LibraryHandle{openglLibrary }, context);
+                    }
+                }
+            }
+
+            _registry.get<core::devices::ITerminalDevice>([&isCommandMode](core::devices::ITerminalDevice* terminal) {
+                if(isCommandMode)
+                {
+                    terminal->enterCommandMode();
+                }
+            });
+
             return true;
         }
     };

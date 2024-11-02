@@ -1,84 +1,77 @@
 #pragma once
 
 #include <memory>
+#include <dory/generic/registryLayer.h>
 
 namespace dory::generic::extension
 {
-    template<typename TService, typename TRegistry, typename TIdentifierDefault>
-    struct RegistryResourceScopePolicy
-    {
-        using ServiceType = TService;
-        using RegistryType = TRegistry;
-        using IdentifierDefaultType = TIdentifierDefault;
-    };
-
-    template<typename TPolicy>
+    template<typename TService, typename TRegistry>
     class RegistryResourceScopeRoot
     {
     protected:
-        typename TPolicy::RegistryType& _registry;
-        std::shared_ptr<typename TPolicy::ServiceType> _resource;
+        TRegistry& _registry;
+        std::shared_ptr<TService> _resource;
 
-        RegistryResourceScopeRoot(typename TPolicy::RegistryType& registry, std::shared_ptr<typename TPolicy::ServiceType> resource):
+        RegistryResourceScopeRoot(TRegistry& registry, std::shared_ptr<TService> resource):
                 _registry(registry),
                 _resource(resource)
         {}
 
     public:
-        std::shared_ptr<typename TPolicy::ServiceType>& get()
+        std::shared_ptr<TService>& get()
         {
             return _resource;
         }
 
-        typename TPolicy::ServiceType* operator ->()
+        TService* operator ->()
         {
             return _resource.get();
         }
 
-        typename TPolicy::ServiceType& operator *()
+        TService& operator *()
         {
             return *_resource;
         }
     };
 
-    template<typename TPolicy, typename TIdentifier = typename TPolicy::IdentifierDefaultType>
+    template<typename TService, typename TRegistry, typename TIdentifier = dory::generic::registry::ServiceIdentifier>
     class RegistryResourceScope;
 
-    template<typename TPolicy, typename TIdentifier>
-    class RegistryResourceScope: public RegistryResourceScopeRoot<TPolicy>
+    template<typename TService, typename TRegistry, typename TIdentifier>
+    class RegistryResourceScope: public RegistryResourceScopeRoot<TService, TRegistry>
     {
         TIdentifier _identifier;
 
     public:
-        RegistryResourceScope(typename TPolicy::RegistryType& registry, std::shared_ptr<typename TPolicy::ServiceType> resource, TIdentifier identifier):
-                RegistryResourceScopeRoot<TPolicy>(registry, resource),
+        RegistryResourceScope(TRegistry& registry, std::shared_ptr<TService> resource, TIdentifier identifier):
+                RegistryResourceScopeRoot<TService, TRegistry>(registry, resource),
                 _identifier(identifier)
         {}
 
         ~RegistryResourceScope()
         {
-            auto resourceRef = this->_registry.template get<typename TPolicy::ServiceType>(_identifier);
+            auto resourceRef = this->_registry.template get<TService>(_identifier);
             if(resourceRef == this->_resource)
             {
-                this->_registry.template reset<typename TPolicy::ServiceType>(_identifier);
+                this->_registry.template reset<TService>(_identifier);
             }
         }
     };
 
-    template<typename TPolicy>
-    class RegistryResourceScope<TPolicy, typename TPolicy::IdentifierDefaultType>: public RegistryResourceScopeRoot<TPolicy>
+    template<typename TService, typename TRegistry>
+    class RegistryResourceScope<TService, TRegistry, registry::ServiceIdentifier>: public RegistryResourceScopeRoot<TService, TRegistry>
     {
     public:
-        RegistryResourceScope(typename TPolicy::RegistryType& registry, std::shared_ptr<typename TPolicy::ServiceType> resource):
-                RegistryResourceScopeRoot<TPolicy>(registry, resource)
+        RegistryResourceScope(TRegistry& registry, std::shared_ptr<TService> resource):
+                RegistryResourceScopeRoot<TService, TRegistry>(registry, resource)
         {}
 
         ~RegistryResourceScope()
         {
-            auto resourceRef = this->_registry.template get<typename TPolicy::ServiceType>();
+            auto resourceRef = this->_registry.template get<TService>();
             if(resourceRef == this->_resource)
             {
-                this->_registry.template reset<typename TPolicy::ServiceType>();
+                this->_registry.template reset<TService>();
             }
         }
     };

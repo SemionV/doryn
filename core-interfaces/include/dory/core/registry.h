@@ -78,5 +78,8 @@ namespace dory::core
     {};
 
     template<typename T>
-    using RegistryResourceScope = generic::extension::RegistryResourceScope<generic::extension::RegistryResourceScopePolicy<T, Registry, generic::registry::ServiceIdentifier>>;
+    using RegistryResourceScope = generic::extension::RegistryResourceScope<T, Registry>;
+    template<typename T, typename TIdentifier>
+    using RegistryResourceScopeWithId = generic::extension::RegistryResourceScope<T, Registry, TIdentifier>;
+
 }
