@@ -8,34 +8,31 @@ namespace dory::core::devices
 {
     FileWatcherDevice::FileWatcherDevice(Registry &registry):
             _registry(registry),
-            _updateListener(std::make_unique<FileWatcherDevice::UpdateListener>()),
             _fileWatcher(std::make_unique<efsw::FileWatcher>(true))
     {}
 
-    void FileWatcherDevice::UpdateListener::handleFileAction(efsw::WatchID watchid, const std::string &dir,
-                                                             const std::string &filename, efsw::Action action,
+    void FileWatcherDevice::handleFileAction(efsw::WatchID watchid, const std::string& dir,
+                                                             const std::string& filename, efsw::Action action,
                                                              std::string oldFilename)
     {
-        switch ( action ) {
-            case efsw::Actions::Add:
-                std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Added"
-                          << std::endl;
-                break;
-            case efsw::Actions::Delete:
-                std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Delete"
-                          << std::endl;
-                break;
-            case efsw::Actions::Modified:
-                std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Modified"
-                          << std::endl;
-                break;
-            case efsw::Actions::Moved:
-                std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Moved from ("
-                          << oldFilename << ")" << std::endl;
-                break;
-            default:
-                std::cout << "Should never happen!" << std::endl;
-        }
+        _registry.get<repositories::IFileWatchRepository>([this, &watchid, &filename](repositories::IFileWatchRepository* fileWatchRepository){
+            auto fileWatches = fileWatchRepository->getAll();
+            for(auto& fileWatch : fileWatches)
+            {
+                if(fileWatch.fileWatchSystem == resources::FileWatchSystem::entropia && fileWatch.specificData)
+                {
+                    auto specificData = std::static_pointer_cast<resources::entity::EntropiaFileWatch>(fileWatch.specificData);
+                    if(specificData->watchId == watchid && fileWatch.file == filename && efsw::Actions::Modified)
+                    {
+                        auto logger = _registry.get<services::ILogService, resources::Logger::App>();
+                        if(logger)
+                        {
+                            logger->information("File is modified: " + fileWatch.file);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     void FileWatcherDevice::updateWatches()
@@ -49,12 +46,13 @@ namespace dory::core::devices
             {
                 if(fileWatch.fileWatchSystem == resources::FileWatchSystem::entropia)
                 {
-                    auto id = _fileWatcher->addWatch(fileWatch.directory, _updateListener.get(), false);
+                    auto id = _fileWatcher->addWatch(fileWatch.directory, this, false);
                     auto specificData = std::make_shared<resources::entity::EntropiaFileWatch>();
-                    if(fileWatch.specificData)
+                    if(specificData)
                     {
                         specificData->watchId = id;
                         fileWatch.specificData = specificData;
+                        fileWatchRepository->store(fileWatch);
                     }
                 }
             }

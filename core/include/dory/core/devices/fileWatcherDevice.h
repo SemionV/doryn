@@ -10,23 +10,18 @@ namespace dory::core
 
 namespace dory::core::devices
 {
-    class FileWatcherDevice: public IFileWatcherDevice
+    class FileWatcherDevice: public IFileWatcherDevice, public efsw::FileWatchListener
     {
     private:
-        class UpdateListener: public efsw::FileWatchListener
-        {
-        public:
-            void handleFileAction( efsw::WatchID watchid, const std::string& dir,
-                                   const std::string& filename, efsw::Action action,
-                                   std::string oldFilename ) override;
-        };
-
         Registry& _registry;
-        std::unique_ptr<UpdateListener> _updateListener;
         std::unique_ptr<efsw::FileWatcher> _fileWatcher;
 
     public:
         explicit FileWatcherDevice(Registry& registry);
+
+        void handleFileAction( efsw::WatchID watchid, const std::string& dir,
+                               const std::string& filename, efsw::Action action,
+                               std::string oldFilename ) override;
 
         void updateWatches() override;
         void connect(resources::DataContext& context) override;
