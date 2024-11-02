@@ -25,6 +25,8 @@
 #include <dory/core/services/glfwWindowService.h>
 #include <dory/core/services/openglGraphicalSystem.h>
 #include <dory/core/repositories/viewRepository.h>
+#include <dory/core/repositories/fileWatchRepository.h>
+#include <dory/core/devices/fileWatcherDevice.h>
 
 namespace dory::game
 {
@@ -39,11 +41,13 @@ namespace dory::game
         registry.set<core::devices::IStandardIODevice>(libraryHandle, std::make_shared<core::devices::StandardIODevice>(registry));
         registry.set<core::devices::ITerminalDevice>(libraryHandle, std::make_shared<core::devices::TerminalDevice>(registry));
         registry.set<core::devices::IWindowSystemDevice, core::resources::WindowSystem::glfw>(libraryHandle, std::make_shared<core::devices::GlfwWindowSystemDevice>(registry));
+        registry.set<core::devices::IFileWatcherDevice, core::resources::FileWatchSystem::entropia>(libraryHandle, std::make_shared<core::devices::FileWatcherDevice>(registry));
 
         registry.set<core::repositories::IViewRepository>(libraryHandle, std::make_shared<core::repositories::ViewRepository>());
         registry.set<core::repositories::IPipelineRepository>(libraryHandle, std::make_shared<core::repositories::PipelineRepository>());
         registerRepository<core::resources::entity::Camera>(libraryHandle, registry);
         registerRepository<core::resources::entity::Window>(libraryHandle, registry);
+        registry.set<core::repositories::IFileWatchRepository>(libraryHandle, std::make_shared<core::repositories::FileWatchRepository>());
 
         registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
         registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>());

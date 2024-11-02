@@ -2,7 +2,7 @@
 
 namespace dory::core::resources
 {
-    enum class ResourceType
+    enum class AssetType
     {
         ExtensionLibrary,
         OpenglShader

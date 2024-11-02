@@ -11,7 +11,8 @@
 #include "dataContext.h"
 #include "windowSystem.h"
 #include "graphicalSystem.h"
-#include "resourceType.h"
+#include "assetType.h"
+#include "fileWatchSystem.h"
 
 namespace dory::core::resources::entity
 {
@@ -132,7 +133,8 @@ namespace dory::core::resources::entity
     {
         std::string path;
         bool recursive;
-        ResourceType resourceType;
+        AssetType assetType;
+        FileWatchSystem fileWatchSystem;
         std::shared_ptr<FileWatchSpecificData> specificData;
     };
 }

@@ -11,6 +11,7 @@ endif()
 add_library(${DORY_MODULE_NAME} STATIC
         src/devices/terminalDevice.cpp
         src/devices/glfwWindowSystemDevice.cpp
+        src/devices/fileWatcherDevice.cpp
         src/extension/dynamicLibrary.cpp
         src/repositories/pipelineRepository.cpp
         src/repositories/viewRepository.cpp
