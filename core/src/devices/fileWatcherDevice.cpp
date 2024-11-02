@@ -1,5 +1,7 @@
 #include <dory/core/registry.h>
 #include <dory/core/devices/fileWatcherDevice.h>
+#include <dory/core/repositories/iFileWatchRepository.h>
+#include <dory/core/resources/fileWatch.h>
 #include <iostream>
 
 namespace dory::core::devices
@@ -38,18 +40,34 @@ namespace dory::core::devices
 
     void FileWatcherDevice::updateWatches()
     {
+        _registry.get<repositories::IFileWatchRepository>([this](repositories::IFileWatchRepository* fileWatchRepository) {
+            auto fileWatches = fileWatchRepository->getAll();
 
+            _fileWatcher = std::make_unique<efsw::FileWatcher>(true);
+
+            for(auto& fileWatch : fileWatches)
+            {
+                if(fileWatch.fileWatchSystem == resources::FileWatchSystem::entropia)
+                {
+                    auto id = _fileWatcher->addWatch(fileWatch.directory, _updateListener.get(), false);
+                    auto specificData = std::make_shared<resources::entity::EntropiaFileWatch>();
+                    if(fileWatch.specificData)
+                    {
+                        specificData->watchId = id;
+                        fileWatch.specificData = specificData;
+                    }
+                }
+            }
+
+            _fileWatcher->watch();
+        });
     }
 
     void FileWatcherDevice::connect(resources::DataContext& context)
     {
-        _fileWatcher->addWatch("modules/", _updateListener.get(), true);
-
-        _fileWatcher->watch();
+        updateWatches();
     }
 
     void FileWatcherDevice::disconnect(resources::DataContext& context)
-    {
-
-    }
+    {}
 }

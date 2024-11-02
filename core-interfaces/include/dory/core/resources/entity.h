@@ -131,8 +131,8 @@ namespace dory::core::resources::entity
 
     struct FileWatch: Entity<IdType>
     {
-        std::string path;
-        bool recursive;
+        std::string directory;
+        std::string file;
         AssetType assetType;
         FileWatchSystem fileWatchSystem;
         std::shared_ptr<FileWatchSpecificData> specificData;

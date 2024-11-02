@@ -25,7 +25,25 @@ namespace dory::game
                 viewRepository->insert(view);
             });
 
-            _registry.get<dory::core::services::IScriptService>([this, &libraryHandle](dory::core::services::IScriptService* scriptService){
+            _registry.get<
+                    generic::registry::Service<core::repositories::IFileWatchRepository>,
+                    generic::registry::Service<core::devices::IFileWatcherDevice, core::resources::FileWatchSystem::entropia>>(
+            [](core::repositories::IFileWatchRepository* fileWatchRepository,
+               core::devices::IFileWatcherDevice* fileWatcherDevice)
+            {
+                auto fileWatch = core::resources::entity::FileWatch {
+                        {},
+                        "modules/",
+                        "renderer-opengl.so",
+                        core::resources::AssetType::ExtensionLibrary,
+                        core::resources::FileWatchSystem::entropia
+                };
+                fileWatchRepository->insert(fileWatch);
+
+                fileWatcherDevice->updateWatches();
+            });
+
+            _registry.get<core::services::IScriptService>([this, &libraryHandle](core::services::IScriptService* scriptService){
                 scriptService->addScript("load-renderer", libraryHandle, [this](core::resources::DataContext& context, const std::map<std::string, std::any>& arguments){
                     auto libraryService = _registry.get<core::services::ILibraryService>();
                     if(libraryService)

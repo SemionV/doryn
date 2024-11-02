@@ -73,9 +73,9 @@ namespace dory::core::repositories
             }
         }
 
-        std::span<const TEntity> getAll() override
+        std::span<TEntity> getAll() override
         {
-            return std::span<const TEntity>{ container };
+            return std::span<TEntity>{ container };
         }
     };
 }
