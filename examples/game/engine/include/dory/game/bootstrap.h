@@ -17,6 +17,7 @@ namespace dory::game
         void connectDevices(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
         void buildPipeline(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
         void attachScrips(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
+        void loadExtensions(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
 
         void onApplicationExit(core::resources::DataContext& context, const core::events::application::Exit& eventData);
         void onWindowClose(core::resources::DataContext& context, const core::events::window::Close& eventData);

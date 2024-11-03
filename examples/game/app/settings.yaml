@@ -26,5 +26,6 @@ fileSystemWatches:
 extensions:
   - name: "OpenglRenderer"
     path: "modules/renderer-opengl"
+    reloadOnModification: true
     modules:
       - "renderer-opengl"

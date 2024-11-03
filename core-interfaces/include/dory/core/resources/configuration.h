@@ -62,6 +62,14 @@ namespace dory::core::resources::configuration
         bool recursive;
     };
 
+    struct Extension
+    {
+        std::string name;
+        std::string path;
+        bool reloadOnModification;
+        std::vector<std::string> modules;
+    };
+
     struct Configuration
     {
         RecursiveSection section;
@@ -72,5 +80,6 @@ namespace dory::core::resources::configuration
         ShaderLoader shaderLoader;
         Interface userInterface;
         std::vector<FilesSystemWatch> fileSystemWatches;
+        std::vector<Extension> extensions;
     };
 }

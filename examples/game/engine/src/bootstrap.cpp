@@ -13,6 +13,7 @@ namespace dory::game
         loadConfiguration(libraryHandle, context);
         connectDevices(libraryHandle, context);
         buildPipeline(libraryHandle, context);
+        loadExtensions(libraryHandle, context);
         attachEventHandlers(libraryHandle, context);
         attachScrips(libraryHandle, context);
 
@@ -197,6 +198,46 @@ namespace dory::game
                     dispatcher->fire(context, core::events::application::Exit{});
                 }
             }
+        });
+    }
+
+    void Bootstrap::loadExtensions(const generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
+    {
+        //TODO: use asset loader to load extensions
+
+        _registry.get<core::services::ILibraryService>([this, &context](core::services::ILibraryService* libraryService) {
+            bool isCommandMode {};
+            _registry.get<core::devices::ITerminalDevice>([&isCommandMode](core::devices::ITerminalDevice* terminal) {
+                isCommandMode = terminal->isCommandMode();
+                if(isCommandMode)
+                {
+                    terminal->exitCommandMode();
+                }
+            });
+
+            for(const auto& extension : context.configuration.extensions)
+            {
+                libraryService->unload(extension.name);
+                auto library = libraryService->load(extension.name, extension.path);
+                if(library)
+                {
+                    for(const auto& moduleName : extension.modules)
+                    {
+                        auto module = library->loadModule(moduleName, _registry);
+                        if(module)
+                        {
+                            module->attach(generic::extension::LibraryHandle{ library }, context);
+                        }
+                    }
+                }
+            }
+
+            _registry.get<core::devices::ITerminalDevice>([&isCommandMode](core::devices::ITerminalDevice* terminal) {
+                if(isCommandMode)
+                {
+                    terminal->enterCommandMode();
+                }
+            });
         });
     }
 }

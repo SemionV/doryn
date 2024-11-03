@@ -49,6 +49,14 @@ REFL_TYPE(dory::core::resources::configuration::FilesSystemWatch)
         REFL_FIELD(recursive)
 REFL_END
 
+REFL_TYPE(dory::core::resources::configuration::Extension)
+        REFL_FIELD(name)
+        REFL_FIELD(path)
+        REFL_FIELD(reloadOnModification)
+        REFL_FIELD(modules)
+REFL_END
+
+
 REFL_TYPE(dory::core::resources::configuration::Configuration)
     REFL_FIELD(section)
     REFL_FIELD(buildInfo)
@@ -57,4 +65,5 @@ REFL_TYPE(dory::core::resources::configuration::Configuration)
     REFL_FIELD(shaderLoader)
     REFL_FIELD(userInterface)
     REFL_FIELD(fileSystemWatches)
+    REFL_FIELD(extensions)
 REFL_END

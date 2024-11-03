@@ -25,6 +25,7 @@ namespace dory::game
                 viewRepository->insert(view);
             });
 
+            //TODO: replace this with fs watcher auto reload
             _registry.get<core::services::IScriptService>([this, &libraryHandle](core::services::IScriptService* scriptService){
                 scriptService->addScript("load-renderer", libraryHandle, [this](core::resources::DataContext& context, const std::map<std::string, std::any>& arguments){
                     auto libraryService = _registry.get<core::services::ILibraryService>();
