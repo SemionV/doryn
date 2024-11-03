@@ -14,5 +14,6 @@ namespace dory::core::services
     public:
         std::shared_ptr<extension::IDynamicLibrary> load(const std::string& libraryName, const std::filesystem::path& libraryPath) override;
         void unload(const std::string& libraryName) override;
+        bool isLoaded(const std::string& libraryName) override;
     };
 }

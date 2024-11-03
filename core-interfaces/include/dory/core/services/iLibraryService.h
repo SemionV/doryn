@@ -13,5 +13,6 @@ namespace dory::core::services
 
         virtual std::shared_ptr<extension::IDynamicLibrary> load(const std::string& libraryName, const std::filesystem::path& libraryPath) = 0;
         virtual void unload(const std::string& libraryName) = 0;
+        virtual bool isLoaded(const std::string& libraryName) = 0;
     };
 }

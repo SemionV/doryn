@@ -27,4 +27,9 @@ namespace dory::core::services
             _libraries.erase(libraryName);
         }
     }
+
+    bool LibraryService::isLoaded(const std::string& libraryName)
+    {
+        return _libraries.contains(libraryName);
+    }
 }

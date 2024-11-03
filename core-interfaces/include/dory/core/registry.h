@@ -31,6 +31,7 @@
 #include <dory/core/repositories/iViewRepository.h>
 #include <dory/core/devices/iFileWatcherDevice.h>
 #include <dory/core/services/iAssetTypeResolver.h>
+#include <dory/core/services/iAssetLoader.h>
 
 namespace dory::core
 {
@@ -80,7 +81,8 @@ namespace dory::core
             generic::registry::ServiceEntry<services::IWindowService>,//default window service
             generic::registry::ServiceEntry<services::IWindowService, resources::WindowSystem>,
             generic::registry::ServiceEntry<services::IRenderer, resources::GraphicalSystem>,
-            generic::registry::ServiceEntry<services::IAssetTypeResolver>>
+            generic::registry::ServiceEntry<services::IAssetTypeResolver>,
+            generic::registry::ServiceEntry<services::IAssetLoader, std::string>>
     {};
 
     template<typename T>

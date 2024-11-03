@@ -27,6 +27,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/glfwWindowService.cpp
         src/services/openglGraphicalSystem.cpp
         src/services/assetTypeResolver.cpp
+        src/services/loaders/extensionLoader.cpp
         src/controllers/windowSystemController.cpp
         src/controllers/viewController.cpp
         ${DORY_PLATFORM_MODULES})

@@ -27,6 +27,7 @@
 #include <dory/core/repositories/viewRepository.h>
 #include <dory/core/devices/fileWatcherDevice.h>
 #include <dory/core/services/assetTypeResolver.h>
+#include <dory/core/services/loaders/extensionLoader.h>
 
 
 namespace dory::game
