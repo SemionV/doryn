@@ -21,6 +21,7 @@ namespace dory::game
 
         void onApplicationExit(core::resources::DataContext& context, const core::events::application::Exit& eventData);
         void onWindowClose(core::resources::DataContext& context, const core::events::window::Close& eventData);
+        void onFilesystemEvent(core::resources::DataContext& context, const core::events::filesystem::FileModified& event);
 
     public:
         explicit Bootstrap(core::Registry& registry);

@@ -19,7 +19,7 @@ namespace dory::renderer::opengl
     {
         _registry.get<core::services::IGraphicalSystem, core::resources::GraphicalSystem::opengl>([&window, &view](core::services::IGraphicalSystem* graphicalSystem) {
             graphicalSystem->setCurrentWindow(window);
-            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+            glClearColor(0.08f, 0.08f, 0.08f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
             glFlush();
             graphicalSystem->swapBuffers(window);

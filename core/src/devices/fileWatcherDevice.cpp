@@ -12,6 +12,27 @@ namespace dory::core::devices
                                                              const std::string& filename, efsw::Action action,
                                                              std::string oldFilename)
     {
+        switch (action)
+        {
+            case efsw::Actions::Modified:
+            {
+                auto dirPath = std::filesystem::path{dir};
+                auto event = events::filesystem::FileModified{ { dirPath / filename } };
+
+                auto dispatcher = _registry.get<events::filesystem::Bundle::IDispatcher>();
+                if(dispatcher)
+                {
+                    dispatcher->charge(event);
+                }
+
+                break;
+            }
+            case efsw::Actions::Add:
+            case efsw::Actions::Delete:
+            case efsw::Actions::Moved:
+                break;
+        }
+
         /*std::error_code ecode;
         auto path3 = std::filesystem::path{dir}.append(filename);
         bool equal2 = std::filesystem::equivalent(path3, "modules/renderer-opengl.so", ecode);*/

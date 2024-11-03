@@ -64,6 +64,19 @@ namespace dory::core::events
             resources::WindowSystem windowSystem;
         };
 
-        using Bundle = EventBufferBundle<Close>;;
+        using Bundle = EventBufferBundle<Close>;
+    }
+
+    namespace filesystem
+    {
+        struct FileEvent
+        {
+            std::filesystem::path filePath {};
+        };
+
+        struct FileModified: public FileEvent
+        {};
+
+        using Bundle = EventBufferBundle<FileModified>;
     }
 }

@@ -18,6 +18,6 @@ namespace dory::renderer::opengl
 
     Extension::~Extension()
     {
-        std::cout << "dory::renderer::opengl::Extension: detach extension!\n";
+        std::cout << "dory::renderer::opengl::Extension: detach extension\n";
     }
 }
