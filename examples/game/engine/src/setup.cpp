@@ -26,6 +26,8 @@
 #include <dory/core/services/openglGraphicalSystem.h>
 #include <dory/core/repositories/viewRepository.h>
 #include <dory/core/devices/fileWatcherDevice.h>
+#include <dory/core/services/assetTypeResolver.h>
+
 
 namespace dory::game
 {
@@ -73,5 +75,7 @@ namespace dory::game
         registry.set<core::services::IWindowService, core::resources::WindowSystem::glfw>(libraryHandle, glfwWindowService);
         registry.set<core::services::IWindowService>(libraryHandle, glfwWindowService);
         registry.set<core::services::IGraphicalSystem, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::services::OpenglGraphicalSystem>());
+
+        registry.set<core::services::IAssetTypeResolver>(libraryHandle, std::make_shared<core::services::AssetTypeResolver>());
     }
 }

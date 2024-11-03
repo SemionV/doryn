@@ -11,7 +11,6 @@
 #include "dataContext.h"
 #include "windowSystem.h"
 #include "graphicalSystem.h"
-#include "assetType.h"
 
 namespace dory::core::resources::entity
 {

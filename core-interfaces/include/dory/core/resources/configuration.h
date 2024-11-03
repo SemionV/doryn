@@ -74,12 +74,12 @@ namespace dory::core::resources::configuration
     {
         RecursiveSection section;
         BuildInfo buildInfo;
-        std::map<std::string, std::string> modules;
         std::map<std::string, std::vector<std::string>> localizations;
         LoggingConfiguration loggingConfiguration;
         ShaderLoader shaderLoader;
         Interface userInterface;
         std::vector<FilesSystemWatch> fileSystemWatches;
         std::vector<Extension> extensions;
+        std::map<std::string, std::string> assetTypes;
     };
 }

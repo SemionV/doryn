@@ -66,4 +66,5 @@ REFL_TYPE(dory::core::resources::configuration::Configuration)
     REFL_FIELD(userInterface)
     REFL_FIELD(fileSystemWatches)
     REFL_FIELD(extensions)
+    REFL_FIELD(assetTypes)
 REFL_END

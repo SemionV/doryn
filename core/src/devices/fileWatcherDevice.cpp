@@ -32,29 +32,6 @@ namespace dory::core::devices
             case efsw::Actions::Moved:
                 break;
         }
-
-        /*std::error_code ecode;
-        auto path3 = std::filesystem::path{dir}.append(filename);
-        bool equal2 = std::filesystem::equivalent(path3, "modules/renderer-opengl.so", ecode);*/
-
-        /*_registry.get<repositories::IFileWatchRepository>([this, &watchid, &filename](repositories::IFileWatchRepository* fileWatchRepository){
-            auto fileWatches = fileWatchRepository->getAll();
-            for(auto& fileWatch : fileWatches)
-            {
-                if(fileWatch.fileWatchSystem == resources::FileWatchSystem::entropia && fileWatch.specificData)
-                {
-                    auto specificData = std::static_pointer_cast<resources::entity::EntropiaFileWatch>(fileWatch.specificData);
-                    if(specificData->watchId == watchid && fileWatch.file == filename && efsw::Actions::Modified)
-                    {
-                        auto logger = _registry.get<services::ILogService, resources::Logger::App>();
-                        if(logger)
-                        {
-                            logger->information("File is modified: " + fileWatch.file);
-                        }
-                    }
-                }
-            }
-        });*/
     }
 
     void FileWatcherDevice::updateWatches(resources::DataContext& context)

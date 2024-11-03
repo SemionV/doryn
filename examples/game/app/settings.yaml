@@ -23,12 +23,16 @@ userInterface:
 fileSystemWatches:
   - directory: "./"
     recursive: true
-  - directory: "/home/semion/dev/doryn/build/cmake-build-artifacts-clang-clion/examples/game/extensions/renderer-opengl/"
-    recursive: false
+  #- directory: "/home/semion/dev/doryn/build/cmake-build-artifacts-clang-clion/examples/game/extensions/renderer-opengl/"
+  #  recursive: false
 extensions:
   - name: "OpenglRenderer"
-    #path: "modules/renderer-opengl"
-    path: "/home/semion/dev/doryn/build/cmake-build-artifacts-clang-clion/examples/game/extensions/renderer-opengl/renderer-opengl"
+    path: "modules/renderer-opengl"
+    #path: "/home/semion/dev/doryn/build/cmake-build-artifacts-clang-clion/examples/game/extensions/renderer-opengl/renderer-opengl"
     reloadOnModification: true
     modules:
       - "renderer-opengl"
+assetTypes:
+  extension: ".(so|dll)$"
+  openglFragmentShader: ".frag$"
+  openglVertexShader: ".vert$"

@@ -266,8 +266,8 @@ namespace dory::game
 
     void Bootstrap::onFilesystemEvent(core::resources::DataContext& context, const core::events::filesystem::FileModified& event)
     {
-        auto regex = std::regex{ R"(\.(so|dll)$)", std::regex_constants::icase };
-        if(std::regex_search(event.filePath.c_str(), regex))
+        auto resolver = _registry.get<core::services::IAssetTypeResolver>();
+        if(resolver && resolver->resolve(context, event.filePath) == "extension")
         {
             _registry.get<core::services::ILibraryService>([this, &context, &event](core::services::ILibraryService* libraryService) {
                 bool isCommandMode {};
@@ -282,7 +282,8 @@ namespace dory::game
                 for(const auto& extension : context.configuration.extensions)
                 {
                     auto extensionPath = std::filesystem::path {extension.path}.replace_extension(generic::extension::ILibrary::systemSharedLibraryFileExtension);
-                    if(std::filesystem::equivalent(extensionPath, event.filePath) && extension.reloadOnModification)
+                    std::error_code errorCode;
+                    if(std::filesystem::equivalent(extensionPath, event.filePath, errorCode) && extension.reloadOnModification)
                     {
                         libraryService->unload(extension.name);
                         auto library = libraryService->load(extension.name, extension.path);
