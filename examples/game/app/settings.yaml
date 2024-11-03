@@ -20,3 +20,11 @@ userInterface:
     loadFrom: [ configuration/interface.user.yaml ]
     saveTo: configuration/interface.user.yaml
   activeLanguage: german
+fileSystemWatches:
+  - directory: "./"
+    recursive: true
+extensions:
+  - name: "OpenglRenderer"
+    path: "modules/renderer-opengl"
+    modules:
+      - "renderer-opengl"

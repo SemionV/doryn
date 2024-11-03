@@ -8,6 +8,6 @@ namespace dory::core::devices
     class IFileWatcherDevice: public IDevice
     {
     public:
-         virtual void updateWatches() = 0;
+         virtual void updateWatches(resources::DataContext& context) = 0;
     };
 }

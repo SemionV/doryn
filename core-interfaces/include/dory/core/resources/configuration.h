@@ -56,6 +56,12 @@ namespace dory::core::resources::configuration
         std::string version;
     };
 
+    struct FilesSystemWatch
+    {
+        std::string directory;
+        bool recursive;
+    };
+
     struct Configuration
     {
         RecursiveSection section;
@@ -65,5 +71,6 @@ namespace dory::core::resources::configuration
         LoggingConfiguration loggingConfiguration;
         ShaderLoader shaderLoader;
         Interface userInterface;
+        std::vector<FilesSystemWatch> fileSystemWatches;
     };
 }

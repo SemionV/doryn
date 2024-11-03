@@ -30,8 +30,6 @@
 #include <dory/core/services/iRenderer.h>
 #include <dory/core/repositories/iViewRepository.h>
 #include <dory/core/devices/iFileWatcherDevice.h>
-#include <dory/core/repositories/iFileWatchRepository.h>
-#include <dory/core/resources/fileWatchSystem.h>
 
 namespace dory::core
 {
@@ -57,13 +55,12 @@ namespace dory::core
             generic::registry::ServiceEntry<devices::IStandardIODevice>,
             generic::registry::ServiceEntry<devices::ITerminalDevice>,
             generic::registry::ServiceEntry<devices::IWindowSystemDevice, resources::WindowSystem>,
-            generic::registry::ServiceEntry<devices::IFileWatcherDevice, resources::FileWatchSystem>,
+            generic::registry::ServiceEntry<devices::IFileWatcherDevice>,
             /*Repositories*/
             generic::registry::ServiceEntry<repositories::ICameraRepository>,
             generic::registry::ServiceEntry<repositories::IViewRepository>,
             generic::registry::ServiceEntry<repositories::IWindowRepository>,
             generic::registry::ServiceEntry<repositories::IPipelineRepository>,
-            generic::registry::ServiceEntry<repositories::IFileWatchRepository>,
             /*Services*/
             generic::registry::ServiceEntry<services::ILibraryService>,
             generic::registry::ServiceEntry<services::IFileService>,

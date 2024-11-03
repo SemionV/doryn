@@ -78,13 +78,15 @@ namespace dory::game
     void Bootstrap::connectDevices(const generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
     {
         _registry.get<
-                dory::generic::registry::Service<dory::core::services::ILogService, dory::core::resources::Logger::App>,
-                dory::generic::registry::Service<dory::core::devices::IStandardIODevice>,
-                dory::generic::registry::Service<dory::core::devices::ITerminalDevice>>(
+                generic::registry::Service<core::services::ILogService, core::resources::Logger::App>,
+                generic::registry::Service<core::devices::IStandardIODevice>,
+                generic::registry::Service<core::devices::ITerminalDevice>,
+                generic::registry::Service<core::devices::IFileWatcherDevice>>(
         [&context](
-        dory::core::services::ILogService* logger,
-        dory::core::devices::IStandardIODevice* ioDevice,
-        dory::core::devices::ITerminalDevice* terminalDevice)
+            core::services::ILogService* logger,
+            core::devices::IStandardIODevice* ioDevice,
+            core::devices::ITerminalDevice* terminalDevice,
+            core::devices::IFileWatcherDevice* fileWatcherDevice)
         {
             logger->information(fmt::format("Dory Game, {0}.{1}, {2}",
                                             context.configuration.buildInfo.version,
@@ -94,17 +96,7 @@ namespace dory::game
             ioDevice->connect(context);
             terminalDevice->connect(context);
             terminalDevice->enterCommandMode();
-        });
-
-        _registry.getAll<core::devices::IFileWatcherDevice, core::resources::FileWatchSystem>([&context](const auto& devices) {
-            for(const auto& [key, value] : devices)
-            {
-                auto deviceRef = value.lock();
-                if(deviceRef)
-                {
-                    deviceRef->connect(context);
-                }
-            }
+            fileWatcherDevice->connect(context);
         });
 
         _registry.getAll<core::devices::IWindowSystemDevice, core::resources::WindowSystem>([&context](const auto& devices) {

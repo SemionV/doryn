@@ -12,7 +12,6 @@
 #include "windowSystem.h"
 #include "graphicalSystem.h"
 #include "assetType.h"
-#include "fileWatchSystem.h"
 
 namespace dory::core::resources::entity
 {
@@ -121,20 +120,5 @@ namespace dory::core::resources::entity
                 parentNodeId(parentNodeId),
                 name(std::move(name))
         {}
-    };
-
-    class FileWatchSpecificData
-    {
-    public:
-        virtual ~FileWatchSpecificData() = default;
-    };
-
-    struct FileWatch: Entity<IdType>
-    {
-        std::string directory;
-        std::string file;
-        AssetType assetType;
-        FileWatchSystem fileWatchSystem;
-        std::shared_ptr<FileWatchSpecificData> specificData;
     };
 }

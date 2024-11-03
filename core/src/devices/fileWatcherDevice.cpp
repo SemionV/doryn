@@ -1,8 +1,5 @@
 #include <dory/core/registry.h>
 #include <dory/core/devices/fileWatcherDevice.h>
-#include <dory/core/repositories/iFileWatchRepository.h>
-#include <dory/core/resources/fileWatch.h>
-#include <iostream>
 
 namespace dory::core::devices
 {
@@ -15,7 +12,11 @@ namespace dory::core::devices
                                                              const std::string& filename, efsw::Action action,
                                                              std::string oldFilename)
     {
-        _registry.get<repositories::IFileWatchRepository>([this, &watchid, &filename](repositories::IFileWatchRepository* fileWatchRepository){
+        /*std::error_code ecode;
+        auto path3 = std::filesystem::path{dir}.append(filename);
+        bool equal2 = std::filesystem::equivalent(path3, "modules/renderer-opengl.so", ecode);*/
+
+        /*_registry.get<repositories::IFileWatchRepository>([this, &watchid, &filename](repositories::IFileWatchRepository* fileWatchRepository){
             auto fileWatches = fileWatchRepository->getAll();
             for(auto& fileWatch : fileWatches)
             {
@@ -32,38 +33,24 @@ namespace dory::core::devices
                     }
                 }
             }
-        });
+        });*/
     }
 
-    void FileWatcherDevice::updateWatches()
+    void FileWatcherDevice::updateWatches(resources::DataContext& context)
     {
-        _registry.get<repositories::IFileWatchRepository>([this](repositories::IFileWatchRepository* fileWatchRepository) {
-            auto fileWatches = fileWatchRepository->getAll();
+        _fileWatcher = std::make_unique<efsw::FileWatcher>(true);
 
-            _fileWatcher = std::make_unique<efsw::FileWatcher>(true);
+        for(const auto& fsWatch : context.configuration.fileSystemWatches)
+        {
+            _fileWatcher->addWatch(fsWatch.directory, this, fsWatch.recursive);
+        }
 
-            for(auto& fileWatch : fileWatches)
-            {
-                if(fileWatch.fileWatchSystem == resources::FileWatchSystem::entropia)
-                {
-                    auto id = _fileWatcher->addWatch(fileWatch.directory, this, false);
-                    auto specificData = std::make_shared<resources::entity::EntropiaFileWatch>();
-                    if(specificData)
-                    {
-                        specificData->watchId = id;
-                        fileWatch.specificData = specificData;
-                        fileWatchRepository->store(fileWatch);
-                    }
-                }
-            }
-
-            _fileWatcher->watch();
-        });
+        _fileWatcher->watch();
     }
 
     void FileWatcherDevice::connect(resources::DataContext& context)
     {
-        updateWatches();
+        updateWatches(context);
     }
 
     void FileWatcherDevice::disconnect(resources::DataContext& context)
