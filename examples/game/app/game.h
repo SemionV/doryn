@@ -61,6 +61,10 @@ namespace dory::game
                 });
             });
 
+            _registry.get<core::devices::ITerminalDevice>([](core::devices::ITerminalDevice* terminal) {
+                terminal->enterCommandMode();
+            });
+
             return true;
         }
     };

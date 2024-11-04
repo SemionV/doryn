@@ -106,7 +106,6 @@ namespace dory::game
 
             ioDevice->connect(context);
             terminalDevice->connect(context);
-            terminalDevice->enterCommandMode();
             fileWatcherDevice->connect(context);
         });
 

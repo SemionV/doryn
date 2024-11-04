@@ -14,9 +14,11 @@ namespace dory::game::test_extension
 
     void dory::game::test_extension::Extension::attach(dory::generic::extension::LibraryHandle library, dory::core::resources::DataContext& dataContext)
     {
-        std::cout << "dory::game::test_extension::Extension: Attach extension\n";
+        _registry.get<core::services::ILogService, core::resources::Logger::App>([](core::services::ILogService* logger) {
+            logger->information(std::string_view ("dory::game::test_extension::Extension: attach extension"));
+        });
 
-        _registry.set<core::services::IFileService>(library, _fileService.get());
+        //_registry.set<core::services::IFileService>(library, _fileService.get());
 
         auto dispatcher = _registry.get<dory::core::events::script::Bundle::IDispatcher>();
         if(dispatcher)
@@ -32,6 +34,8 @@ namespace dory::game::test_extension
 
     Extension::~Extension()
     {
-        std::cout << "dory::game::test_extension::Extension: Detach extension\n";
+        _registry.get<core::services::ILogService, core::resources::Logger::App>([](core::services::ILogService* logger) {
+            logger->information(std::string_view ("dory::game::test_extension::Extension: detach extension"));
+        });
     }
 }
