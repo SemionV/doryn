@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/core/services/iAssetLoader.h>
+#include <dory/core/services/iAssetReloadHandler.h>
 
 namespace dory::core
 {
@@ -9,7 +9,7 @@ namespace dory::core
 
 namespace dory::core::services::loaders
 {
-    class ExtensionLoader: public IAssetLoader
+    class ExtensionLoader: public IAssetReloadHandler
     {
     private:
         Registry& _registry;
@@ -17,6 +17,6 @@ namespace dory::core::services::loaders
     public:
         explicit ExtensionLoader(Registry& registry);
 
-        bool load(resources::DataContext& context, const std::filesystem::path& filePath) override;
+        bool reload(resources::DataContext& context, const std::filesystem::path& filePath) override;
     };
 }

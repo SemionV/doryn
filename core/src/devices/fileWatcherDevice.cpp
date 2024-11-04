@@ -52,5 +52,10 @@ namespace dory::core::devices
     }
 
     void FileWatcherDevice::disconnect(resources::DataContext& context)
-    {}
+    {
+        if(_fileWatcher)
+        {
+            _fileWatcher.reset();
+        }
+    }
 }

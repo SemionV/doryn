@@ -3,7 +3,7 @@
 #include <extension.h>
 #include <dory/core/resources/dataContext.h>
 
-#ifdef __unix__
+/*#ifdef __unix__
 __attribute__((constructor))
 void on_load() {
     std::cout << "RendererOpengl Library loaded" << std::endl;
@@ -13,7 +13,7 @@ __attribute__((destructor))
 void on_unload() {
     std::cout << "RendererOpengl Library unloaded" << std::endl;
 }
-#endif
+#endif*/
 
 #define API extern "C" BOOST_SYMBOL_EXPORT
 

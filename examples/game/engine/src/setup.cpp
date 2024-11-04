@@ -27,8 +27,8 @@
 #include <dory/core/repositories/viewRepository.h>
 #include <dory/core/devices/fileWatcherDevice.h>
 #include <dory/core/services/assetTypeResolver.h>
-#include <dory/core/services/loaders/extensionLoader.h>
-
+#include <dory/core/services/hot-reload/extensionLoader.h>
+#include <dory/core/resources/assetType.h>
 
 namespace dory::game
 {
@@ -52,7 +52,7 @@ namespace dory::game
         registerRepository<core::resources::entity::Window>(libraryHandle, registry);
 
         registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
-        registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>());
+        registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>(registry));
 
         std::shared_ptr<core::services::IMultiSinkLogService> appLogger = std::make_shared<core::services::LogService>();
         registry.set<core::services::IMultiSinkLogService, core::resources::Logger::App>(libraryHandle, appLogger);
@@ -78,5 +78,6 @@ namespace dory::game
         registry.set<core::services::IGraphicalSystem, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::services::OpenglGraphicalSystem>());
 
         registry.set<core::services::IAssetTypeResolver>(libraryHandle, std::make_shared<core::services::AssetTypeResolver>());
+        registry.set<core::services::IAssetReloadHandler>(libraryHandle, std::make_shared<core::services::loaders::ExtensionLoader>(registry), std::string{core::resources::AssetType::extension});
     }
 }

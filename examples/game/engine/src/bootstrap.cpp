@@ -37,15 +37,22 @@ namespace dory::game
         _registry.get<
                 generic::registry::Service<dory::core::services::ILogService, core::resources::Logger::App>,
                 generic::registry::Service<core::devices::ITerminalDevice>,
-                generic::registry::Service<core::devices::IStandardIODevice>>
+                generic::registry::Service<core::devices::IStandardIODevice>,
+                generic::registry::Service<core::devices::IFileWatcherDevice>,
+                generic::registry::Service<core::services::ILibraryService>>
                 ([&context](dory::core::services::ILogService* logger,
                     core::devices::ITerminalDevice* terminalDevice,
-                    core::devices::IStandardIODevice* ioDevice)
+                    core::devices::IStandardIODevice* ioDevice,
+                    core::devices::IFileWatcherDevice* fileWatcherDevice,
+                    core::services::ILibraryService* libraryService)
                 {
                     terminalDevice->exitCommandMode();
                     logger->information(std::string_view {"Cleanup..."});
                     terminalDevice->disconnect(context);
                     ioDevice->disconnect(context);
+                    fileWatcherDevice->disconnect(context);
+
+                    libraryService->unloadAll();
                 });
 
         _registry.getAll<core::devices::IWindowSystemDevice, core::resources::WindowSystem>([&context](const auto& devices) {
@@ -161,41 +168,11 @@ namespace dory::game
 
     void Bootstrap::loadExtensions(const generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
     {
-        //TODO: use asset loader to load extensions
-
-        _registry.get<core::services::ILibraryService>([this, &context](core::services::ILibraryService* libraryService) {
-            bool isCommandMode {};
-            _registry.get<core::devices::ITerminalDevice>([&isCommandMode](core::devices::ITerminalDevice* terminal) {
-                isCommandMode = terminal->isCommandMode();
-                if(isCommandMode)
-                {
-                    terminal->exitCommandMode();
-                }
-            });
-
+        _registry.get<core::services::ILibraryService>([&context](core::services::ILibraryService* libraryService) {
             for(const auto& extension : context.configuration.extensions)
             {
-                libraryService->unload(extension.name);
-                auto library = libraryService->load(extension.name, extension.path);
-                if(library)
-                {
-                    for(const auto& moduleName : extension.modules)
-                    {
-                        auto module = library->loadModule(moduleName, _registry);
-                        if(module)
-                        {
-                            module->attach(generic::extension::LibraryHandle{ library }, context);
-                        }
-                    }
-                }
+                libraryService->load(context, extension);
             }
-
-            _registry.get<core::devices::ITerminalDevice>([&isCommandMode](core::devices::ITerminalDevice* terminal) {
-                if(isCommandMode)
-                {
-                    terminal->enterCommandMode();
-                }
-            });
         });
     }
 
@@ -267,54 +244,15 @@ namespace dory::game
     void Bootstrap::onFilesystemEvent(core::resources::DataContext& context, const core::events::filesystem::FileModified& event)
     {
         auto resolver = _registry.get<core::services::IAssetTypeResolver>();
-        if(resolver && resolver->resolve(context, event.filePath) == "extension")
+        if(resolver)
         {
-            _registry.get<core::services::ILibraryService>([this, &context, &event](core::services::ILibraryService* libraryService) {
-                bool isCommandMode {};
-                _registry.get<core::devices::ITerminalDevice>([&isCommandMode](core::devices::ITerminalDevice* terminal) {
-                    isCommandMode = terminal->isCommandMode();
-                    if(isCommandMode)
-                    {
-                        terminal->exitCommandMode();
-                    }
+            auto assetType = resolver->resolve(context, event.filePath);
+            if(assetType)
+            {
+                _registry.get<core::services::IAssetReloadHandler>(*assetType, [&context, &event](core::services::IAssetReloadHandler* assetLoader) {
+                    assetLoader->reload(context, event.filePath);
                 });
-
-                for(const auto& extension : context.configuration.extensions)
-                {
-                    auto extensionPath = std::filesystem::path {extension.path}.replace_extension(generic::extension::ILibrary::systemSharedLibraryFileExtension);
-                    std::error_code errorCode;
-                    if(std::filesystem::equivalent(extensionPath, event.filePath, errorCode) && extension.reloadOnModification)
-                    {
-                        libraryService->unload(extension.name);
-                        auto library = libraryService->load(extension.name, extension.path);
-                        if(library)
-                        {
-                            for(const auto& moduleName : extension.modules)
-                            {
-                                auto module = library->loadModule(moduleName, _registry);
-                                if(module)
-                                {
-                                    module->attach(generic::extension::LibraryHandle{ library }, context);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                _registry.get<core::devices::ITerminalDevice>([this, &isCommandMode](core::devices::ITerminalDevice* terminal) {
-                    if(isCommandMode)
-                    {
-                        terminal->enterCommandMode();
-                    }
-                    else
-                    {
-                        std::cout << "nocmd" << std::endl;
-                        _registry.get<core::services::ILogService, core::resources::Logger::App>([this](core::services::ILogService* logger){
-                            logger->information("onFilesystemEvent threadId: " + threadIdToString(std::this_thread::get_id()));
-                        });
-                    }
-                });
-            });
+            }
         }
 
     }

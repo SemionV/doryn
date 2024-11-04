@@ -6,7 +6,9 @@ namespace dory::renderer::opengl
 {
     void Extension::attach(dory::generic::extension::LibraryHandle library, dory::core::resources::DataContext& dataContext)
     {
-        std::cout << "dory::renderer::opengl::Extension: attach extension\n";
+        _registry.get<core::services::ILogService, core::resources::Logger::App>([](core::services::ILogService* logger) {
+            logger->information(std::string_view ("dory::renderer::opengl::Extension: attach extension"));
+        });
 
         _registry.set<core::services::IRenderer, core::resources::GraphicalSystem::opengl>(library, _renderer.get());
     }
@@ -18,6 +20,8 @@ namespace dory::renderer::opengl
 
     Extension::~Extension()
     {
-        std::cout << "dory::renderer::opengl::Extension: detach extension\n";
+        _registry.get<core::services::ILogService, core::resources::Logger::App>([](core::services::ILogService* logger) {
+            logger->information(std::string_view ("dory::renderer::opengl::Extension: detach extension"));
+        });
     }
 }

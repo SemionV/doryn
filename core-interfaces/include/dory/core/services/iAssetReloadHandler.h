@@ -6,9 +6,9 @@
 
 namespace dory::core::services
 {
-    class IAssetLoader: public generic::Interface
+    class IAssetReloadHandler: public generic::Interface
     {
     public:
-        virtual bool load(resources::DataContext& context, const std::filesystem::path& filePath) = 0;
+        virtual bool reload(resources::DataContext& context, const std::filesystem::path& filePath) = 0;
     };
 }

@@ -2,6 +2,10 @@
 
 namespace dory::core::services
 {
+    LibraryService::LibraryService(Registry& registry):
+            _registry(registry)
+    {}
+
     std::shared_ptr<extension::IDynamicLibrary> LibraryService::load(const std::string& libraryName, const std::filesystem::path &libraryPath)
     {
         if(_libraries.contains(libraryName))
@@ -31,5 +35,35 @@ namespace dory::core::services
     bool LibraryService::isLoaded(const std::string& libraryName)
     {
         return _libraries.contains(libraryName);
+    }
+
+    bool LibraryService::load(resources::DataContext& context, const resources::configuration::Extension& extensionConfig)
+    {
+        if(isLoaded(extensionConfig.name))
+        {
+            unload(extensionConfig.name);
+        }
+
+        auto library = load(extensionConfig.name, extensionConfig.path);
+        if(library)
+        {
+            for(const auto& moduleName : extensionConfig.modules)
+            {
+                auto module = library->loadModule(moduleName, _registry);
+                if(module)
+                {
+                    module->attach(generic::extension::LibraryHandle{ library }, context);
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    void LibraryService::unloadAll()
+    {
+        _libraries.clear();
     }
 }

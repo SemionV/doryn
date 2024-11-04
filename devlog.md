@@ -1,9 +1,6 @@
 # Development log
 
 Tasks:
-* Dynamic module loading(plugin system)
-  * Hot reload of plugins with file watchers(see library https://github.com/SpartanJ/efsw)
-  * Configure and load plugins
 * OpenGL Renderer
   * Static mapping of Vertex Attributes
   * Fill Buffers with mapped data
@@ -28,6 +25,10 @@ Tasks:
   * Setup pipeline for build and tests on windows
   * Setup pipeline for releases
   * Deploy assembled packages to some network storage
+
+**04.11.24**
+* Task done: Hot reload of plugins with file watchers(see library https://github.com/SpartanJ/efsw)
+* Task done: Configure and load plugins
 
 **02.11.24**
 * Task done: Move engine to a static shared library

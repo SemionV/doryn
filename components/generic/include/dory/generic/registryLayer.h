@@ -159,7 +159,7 @@ namespace dory::generic::registry
         template<typename TInterface, typename TIdentifier>
         void set(extension::LibraryHandle libraryHandle, std::shared_ptr<TInterface> service, TIdentifier identifier)
         {
-            this->RegistrationEntry<TInterface, TIdentifier>::_set(libraryHandle, service, identifier);
+            this->RegistrationEntry<TInterface, std::decay_t<TIdentifier>>::_set(libraryHandle, service, identifier);
         }
 
         template<typename TService>
