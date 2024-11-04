@@ -15,7 +15,8 @@ namespace dory::renderer::opengl
 
     Extension::Extension(core::Registry& registry):
             _registry(registry),
-            _renderer(registry, std::make_shared<OpenglRenderer>(registry), core::resources::GraphicalSystem::opengl)
+            _shaderProgramService(registry, _shaderRepository, _programRepository),
+            _renderer(registry, std::make_shared<OpenglRenderer>(registry, _shaderProgramService), core::resources::GraphicalSystem::opengl)
     {}
 
     Extension::~Extension()

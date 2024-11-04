@@ -4,7 +4,9 @@ add_library(${DORY_MODULE_NAME} MODULE
         src/openglRenderer.cpp
         src/extension.cpp
         src/factory.cpp
-        src/shaderRepository.cpp)
+        src/programRepository.cpp
+        src/shaderRepository.cpp
+        src/shaderProgramService.cpp)
 target_link_libraries(${DORY_MODULE_NAME} PRIVATE dory-core-generic Boost::dll opengl-glad)
 target_include_directories(${DORY_MODULE_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 

@@ -11,8 +11,8 @@ namespace dory::renderer::opengl::resources
         std::string key;
         Program() = default;
 
-        Program(std::string key):
-                key(key)
+        explicit Program(std::string  key):
+                key(std::move(key))
         {}
     };
 }
