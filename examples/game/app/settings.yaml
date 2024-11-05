@@ -38,3 +38,12 @@ assetTypes:
   extension: ".(so|dll)$"
   openglFragmentShader: ".frag$"
   openglVertexShader: ".vert$"
+materials:
+  opengl-default:
+    program:
+      key: "triangles"
+      shaders:
+        - filename: "configuration/shaders/triangles/triangles.vert"
+          type: openglVertexShader
+        - filename: "configuration/shaders/triangles/triangles.frag"
+          type: openglFragmentShader

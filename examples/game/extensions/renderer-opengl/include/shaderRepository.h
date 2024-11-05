@@ -8,6 +8,6 @@ namespace dory::renderer::opengl
     class ShaderRepository: public core::repositories::Repository<resources::Shader, GLuint>
     {
     public:
-        GLuint getFreeId() override;
+        void setId(resources::Shader& shader) override;
     };
 }

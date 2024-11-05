@@ -11,7 +11,7 @@ namespace dory::core::repositories
     {
     public:
         virtual std::size_t count() = 0;
-        virtual TId getFreeId() = 0;
+        virtual void setId(TEntity& entity) = 0;
         virtual std::optional<TEntity> get(TId id) = 0;
         virtual void store(TEntity& entity) = 0;
         virtual TId insert(const TEntity& entity) = 0;

@@ -2,9 +2,8 @@
 
 namespace dory::renderer::opengl
 {
-
-    GLuint ShaderRepository::getFreeId()
+    void ShaderRepository::setId(resources::Shader& shader)
     {
-        return glCreateShader();
+        shader.id = glCreateShader(shader.type);
     }
 }

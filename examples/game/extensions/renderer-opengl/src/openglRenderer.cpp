@@ -13,11 +13,20 @@ namespace dory::renderer::opengl
 
     bool OpenglRenderer::initialize(core::resources::DataContext& context)
     {
+        /*if(context.configuration.materials.contains("opengl-default"))
+        {
+            core::resources::configuration::RenderingMaterial material = context.configuration.materials["opengl-default"];
+
+            _shaderProgramService.loadProgram(material.program);
+        }*/
+
         return true;
     }
 
     void OpenglRenderer::draw(core::resources::DataContext& context, const core::resources::entity::Window& window, const core::resources::entity::View& view)
     {
+        //TODO: load materials
+
         _registry.get<core::services::IGraphicalSystem, core::resources::GraphicalSystem::opengl>([&window, &view](core::services::IGraphicalSystem* graphicalSystem) {
             graphicalSystem->setCurrentWindow(window);
             glClearColor(0.08f, 0.08f, 0.08f, 1.0f);

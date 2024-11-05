@@ -2,7 +2,7 @@
 
 #include "shaderRepository.h"
 #include "programRepository.h"
-#include "resources/configuration.h"
+#include <dory/core/resources/configuration.h>
 
 namespace dory::core
 {
@@ -21,6 +21,7 @@ namespace dory::renderer::opengl
     public:
         explicit ShaderProgramService(core::Registry& registry, ShaderRepository& shaderRepository, ProgramRepository& programRepository);
 
-        void loadProgram(const resources::configuration::Program& programConfig);
+        bool loadProgram(const core::resources::configuration::Program& programConfig);
+        bool loadShader(const core::resources::configuration::Shader& shaderConfig, const resources::Program& program);
     };
 }

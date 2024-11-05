@@ -2,9 +2,8 @@
 
 namespace dory::renderer::opengl
 {
-
-    GLuint ProgramRepository::getFreeId()
+    void ProgramRepository::setId(resources::Program& program)
     {
-        return glCreateProgram();
+        program.id = glCreateProgram();
     }
 }

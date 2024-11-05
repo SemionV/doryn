@@ -27,9 +27,9 @@ namespace dory::core::repositories
             return container.size();
         }
 
-        TId getFreeId() override
+        void setId(TEntity& entity) override
         {
-            return ++counter;
+            entity.id = ++counter;
         }
 
         std::optional<TEntity> get(TId id) override
@@ -46,7 +46,7 @@ namespace dory::core::repositories
         TId insert(const TEntity& entity) override
         {
             TEntity& newEntity = container.emplace_back(std::move(entity));
-            newEntity.id = getFreeId();
+            setId(newEntity);
 
             return newEntity.id;
         }

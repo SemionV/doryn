@@ -8,6 +8,6 @@ namespace dory::renderer::opengl
     class ProgramRepository: public core::repositories::Repository<resources::Program, GLuint>
     {
     public:
-        GLuint getFreeId() override;
+        void setId(resources::Program& program) override;
     };
 }
