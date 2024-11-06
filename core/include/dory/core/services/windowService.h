@@ -1,6 +1,7 @@
 #pragma once
 
 #include <dory/core/services/iWindowService.h>
+#include <dory/core/resources/entities/window.h>
 
 namespace dory::core
 {
@@ -14,7 +15,7 @@ namespace dory::core::services
     protected:
         Registry& _registry;
 
-        resources::IdType initializeWindow(const resources::entity::Window& window);
+        resources::IdType initializeWindow(const resources::entities::Window& window);
         void removeWindow(resources::IdType windowId);
     public:
         explicit WindowService(Registry& registry);

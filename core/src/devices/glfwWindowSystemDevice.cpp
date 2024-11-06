@@ -24,7 +24,7 @@ namespace dory::core::devices
     {
         glfwPollEvents();
 
-        _registry.get<repositories::IRepository<resources::entity::Window>>([this, &context](repositories::IRepository<resources::entity::Window>* repository) {
+        _registry.get<repositories::IRepository<resources::entities::Window>>([this, &context](repositories::IRepository<resources::entities::Window>* repository) {
             auto windows = repository->getAll();
             for(auto& window : windows)
             {

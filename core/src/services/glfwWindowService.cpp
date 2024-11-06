@@ -13,7 +13,7 @@ namespace dory::core::services
 
     resources::IdType GlfwWindowService::createWindow(const resources::WindowParameters& parameters)
     {
-        auto window = resources::entity::Window(resources::nullId, resources::WindowSystem::glfw, parameters.graphicalSystem);
+        auto window = resources::entities::Window(resources::nullId, resources::WindowSystem::glfw, parameters.graphicalSystem);
         auto glfwWindowHandler = glfwCreateWindow((int)parameters.width, (int)parameters.height, parameters.title.c_str(), nullptr, nullptr);
         window.windowSystemData = std::make_shared<resources::entity::GlfwWindow>(glfwWindowHandler);
         return initializeWindow(window);
@@ -21,7 +21,7 @@ namespace dory::core::services
 
     void GlfwWindowService::closeWindow(resources::IdType windowId)
     {
-        _registry.get<repositories::IRepository<resources::entity::Window>>([&windowId](repositories::IRepository<resources::entity::Window>* repository) {
+        _registry.get<repositories::IRepository<resources::entities::Window>>([&windowId](repositories::IRepository<resources::entities::Window>* repository) {
             auto window = repository->get(windowId);
             if(window && window->windowSystem == resources::WindowSystem::glfw)
             {

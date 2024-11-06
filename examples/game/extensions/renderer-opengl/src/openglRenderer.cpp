@@ -23,7 +23,7 @@ namespace dory::renderer::opengl
         return true;
     }
 
-    void OpenglRenderer::draw(core::resources::DataContext& context, const core::resources::entity::Window& window, const core::resources::entity::View& view)
+    void OpenglRenderer::draw(core::resources::DataContext& context, const core::resources::entities::Window& window, const core::resources::entities::View& view)
     {
         //TODO: load materials
 

@@ -3,6 +3,7 @@
 #include <dory/core/resources/entity.h>
 #include <dory/generic/baseTypes.h>
 #include <optional>
+#include <span>
 
 namespace dory::core::repositories
 {

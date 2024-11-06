@@ -5,7 +5,7 @@
 
 namespace dory::core::repositories
 {
-    class ViewRepository: public Repository<resources::entity::View, resources::IdType, IViewRepository>
+    class ViewRepository: public Repository<resources::entities::View, resources::IdType, IViewRepository>
     {
     public:
         std::vector<resources::IdType> getWindowViews(resources::IdType windowId) override;

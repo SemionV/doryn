@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glad/gl.h>
+#include <string>
 #include "id.h"
 
 namespace dory::renderer::opengl::resources

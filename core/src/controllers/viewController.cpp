@@ -1,6 +1,7 @@
 #include <dory/core/registry.h>
 #include <dory/core/controllers/viewController.h>
 #include <dory/core/repositories/iRepository.h>
+#include <dory/core/resources/entities/window.h>
 
 namespace dory::core::controllers
 {
@@ -21,9 +22,9 @@ namespace dory::core::controllers
     void ViewController::update(resources::IdType referenceId, const generic::model::TimeSpan& timeStep, resources::DataContext& context)
     {
         _registry.get<
-                generic::registry::Service<repositories::IRepository<resources::entity::Window>>,
+                generic::registry::Service<repositories::IRepository<resources::entities::Window>>,
                 generic::registry::Service<repositories::IViewRepository>>(
-        [this, &context](repositories::IRepository<resources::entity::Window>* windowRepository,
+        [this, &context](repositories::IRepository<resources::entities::Window>* windowRepository,
            repositories::IViewRepository* viewRepository)
         {
             auto views = viewRepository->getAll();

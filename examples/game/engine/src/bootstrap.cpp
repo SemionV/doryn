@@ -125,8 +125,8 @@ namespace dory::game
     {
         _registry.get<dory::core::repositories::IPipelineRepository>([this, &libraryHandle, &context](dory::core::repositories::IPipelineRepository* pipelineRepository){
 
-            auto inputGroup = core::resources::entity::PipelineNode{};
-            auto outputGroup = core::resources::entity::PipelineNode{};
+            auto inputGroup = core::resources::entities::PipelineNode{};
+            auto outputGroup = core::resources::entities::PipelineNode{};
 
             auto inputGroupId = context.inputGroupNodeId = pipelineRepository->addNode(inputGroup);
             auto outputGroupId = context.outputGroupNodeId = pipelineRepository->addNode(outputGroup);
@@ -142,8 +142,8 @@ namespace dory::game
                     fsDispatcher->fireAll(context);
                 });
             };
-            auto updateHandle = dory::generic::extension::ResourceHandle<dory::core::resources::entity::PipelineNode::UpdateFunctionType>{ libraryHandle, submitInputEvents };
-            auto node = dory::core::resources::entity::PipelineNode(updateHandle, inputGroupId);
+            auto updateHandle = dory::generic::extension::ResourceHandle<dory::core::resources::entities::PipelineNode::UpdateFunctionType>{ libraryHandle, submitInputEvents };
+            auto node = dory::core::resources::entities::PipelineNode(updateHandle, inputGroupId);
             pipelineRepository->addNode(node);
 
             auto flushOutput = [this](auto referenceId, const auto& timeStep, dory::core::resources::DataContext& context){
@@ -151,17 +151,17 @@ namespace dory::game
                     ioDevice->flush();
                 });
             };
-            updateHandle = dory::generic::extension::ResourceHandle<dory::core::resources::entity::PipelineNode::UpdateFunctionType>{ libraryHandle, flushOutput };
-            node = dory::core::resources::entity::PipelineNode(updateHandle, outputGroupId);
+            updateHandle = dory::generic::extension::ResourceHandle<dory::core::resources::entities::PipelineNode::UpdateFunctionType>{ libraryHandle, flushOutput };
+            node = dory::core::resources::entities::PipelineNode(updateHandle, outputGroupId);
             pipelineRepository->addNode(node);
 
             auto windowSystemController = std::make_shared<core::controllers::WindowSystemController>(_registry);
-            auto controllerHandle = generic::extension::ResourceHandle<core::resources::entity::PipelineNode::ControllerPointerType>{ libraryHandle, windowSystemController };
-            pipelineRepository->addNode(core::resources::entity::PipelineNode{controllerHandle, inputGroupId});
+            auto controllerHandle = generic::extension::ResourceHandle<core::resources::entities::PipelineNode::ControllerPointerType>{ libraryHandle, windowSystemController };
+            pipelineRepository->addNode(core::resources::entities::PipelineNode{controllerHandle, inputGroupId});
 
             auto viewController = std::make_shared<core::controllers::ViewController>(_registry);
-            controllerHandle = generic::extension::ResourceHandle<core::resources::entity::PipelineNode::ControllerPointerType>{ libraryHandle, viewController };
-            pipelineRepository->addNode(core::resources::entity::PipelineNode{controllerHandle, outputGroupId});
+            controllerHandle = generic::extension::ResourceHandle<core::resources::entities::PipelineNode::ControllerPointerType>{ libraryHandle, viewController };
+            pipelineRepository->addNode(core::resources::entities::PipelineNode{controllerHandle, outputGroupId});
         });
     }
 

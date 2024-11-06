@@ -7,7 +7,7 @@ TEST(PipelineRepository, addNode)
 {
     auto pipelineRepository = dory::core::repositories::PipelineRepository{};
 
-    auto node = dory::core::resources::entity::PipelineNode{};
+    auto node = dory::core::resources::entities::PipelineNode{};
 
     auto id = pipelineRepository.addNode(node);
     EXPECT_FALSE(id == dory::core::repositories::PipelineRepository::IdType{});
@@ -21,37 +21,37 @@ TEST(PipelineRepository, addNodes)
 {
     auto pipelineRepository = dory::core::repositories::PipelineRepository{
         {
-                dory::core::resources::entity::PipelineNode{ 1 },
-                dory::core::resources::entity::PipelineNode{ 2, 1 },
-                dory::core::resources::entity::PipelineNode{ 4, 2 },
-                dory::core::resources::entity::PipelineNode{ 5, 2 },
-                dory::core::resources::entity::PipelineNode{ 3, 1 },
-                dory::core::resources::entity::PipelineNode{ 6, 3 },
-                dory::core::resources::entity::PipelineNode{ 7 },
-                dory::core::resources::entity::PipelineNode{ 8, 7 },
-                dory::core::resources::entity::PipelineNode{ 10, 8 },
-                dory::core::resources::entity::PipelineNode{ 11, 8 },
-                dory::core::resources::entity::PipelineNode{ 9, 7 },
-                dory::core::resources::entity::PipelineNode{ 12, 9 },
-                dory::core::resources::entity::PipelineNode{ 13, 9 },
+                dory::core::resources::entities::PipelineNode{ 1 },
+                dory::core::resources::entities::PipelineNode{ 2, 1 },
+                dory::core::resources::entities::PipelineNode{ 4, 2 },
+                dory::core::resources::entities::PipelineNode{ 5, 2 },
+                dory::core::resources::entities::PipelineNode{ 3, 1 },
+                dory::core::resources::entities::PipelineNode{ 6, 3 },
+                dory::core::resources::entities::PipelineNode{ 7 },
+                dory::core::resources::entities::PipelineNode{ 8, 7 },
+                dory::core::resources::entities::PipelineNode{ 10, 8 },
+                dory::core::resources::entities::PipelineNode{ 11, 8 },
+                dory::core::resources::entities::PipelineNode{ 9, 7 },
+                dory::core::resources::entities::PipelineNode{ 12, 9 },
+                dory::core::resources::entities::PipelineNode{ 13, 9 },
         }
     };
 
-    auto node = dory::core::resources::entity::PipelineNode{{}, 1};
+    auto node = dory::core::resources::entities::PipelineNode{{}, 1};
     auto id = pipelineRepository.addNode(node);
     EXPECT_FALSE(id == dory::core::repositories::PipelineRepository::IdType{});
     auto nodes = pipelineRepository.getPipelineNodes();
     EXPECT_EQ(std::distance(nodes.begin(),nodes.end()), 14);
     EXPECT_EQ(nodes[6].id, id);
 
-    node = dory::core::resources::entity::PipelineNode{{}, 8};
+    node = dory::core::resources::entities::PipelineNode{{}, 8};
     id = pipelineRepository.addNode(node);
     EXPECT_FALSE(id == dory::core::repositories::PipelineRepository::IdType{});
     nodes = pipelineRepository.getPipelineNodes();
     EXPECT_EQ(std::distance(nodes.begin(),nodes.end()), 15);
     EXPECT_EQ(nodes[11].id, id);
 
-    node = dory::core::resources::entity::PipelineNode{{}, 9};
+    node = dory::core::resources::entities::PipelineNode{{}, 9};
     id = pipelineRepository.addNode(node);
     EXPECT_FALSE(id == dory::core::repositories::PipelineRepository::IdType{});
     nodes = pipelineRepository.getPipelineNodes();
@@ -63,7 +63,7 @@ TEST(PipelineRepository, removeNode)
 {
     auto pipelineRepository = dory::core::repositories::PipelineRepository{
             {
-                    dory::core::resources::entity::PipelineNode{ 1 }
+                    dory::core::resources::entities::PipelineNode{ 1 }
             }
     };
 
@@ -77,19 +77,19 @@ TEST(PipelineRepository, removeNodes)
 {
     auto pipelineRepository = dory::core::repositories::PipelineRepository{
             {
-                    dory::core::resources::entity::PipelineNode{ 1 },
-                    dory::core::resources::entity::PipelineNode{ 2, 1 },
-                    dory::core::resources::entity::PipelineNode{ 4, 2 },
-                    dory::core::resources::entity::PipelineNode{ 5, 2 },
-                    dory::core::resources::entity::PipelineNode{ 3, 1 },
-                    dory::core::resources::entity::PipelineNode{ 6, 3 },
-                    dory::core::resources::entity::PipelineNode{ 7 },
-                    dory::core::resources::entity::PipelineNode{ 8, 7 },
-                    dory::core::resources::entity::PipelineNode{ 10, 8 },
-                    dory::core::resources::entity::PipelineNode{ 11, 8 },
-                    dory::core::resources::entity::PipelineNode{ 9, 7 },
-                    dory::core::resources::entity::PipelineNode{ 12, 9 },
-                    dory::core::resources::entity::PipelineNode{ 13, 9 },
+                    dory::core::resources::entities::PipelineNode{ 1 },
+                    dory::core::resources::entities::PipelineNode{ 2, 1 },
+                    dory::core::resources::entities::PipelineNode{ 4, 2 },
+                    dory::core::resources::entities::PipelineNode{ 5, 2 },
+                    dory::core::resources::entities::PipelineNode{ 3, 1 },
+                    dory::core::resources::entities::PipelineNode{ 6, 3 },
+                    dory::core::resources::entities::PipelineNode{ 7 },
+                    dory::core::resources::entities::PipelineNode{ 8, 7 },
+                    dory::core::resources::entities::PipelineNode{ 10, 8 },
+                    dory::core::resources::entities::PipelineNode{ 11, 8 },
+                    dory::core::resources::entities::PipelineNode{ 9, 7 },
+                    dory::core::resources::entities::PipelineNode{ 12, 9 },
+                    dory::core::resources::entities::PipelineNode{ 13, 9 },
             }
     };
 

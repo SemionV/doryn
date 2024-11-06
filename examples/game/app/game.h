@@ -21,7 +21,7 @@ namespace dory::game
             });
 
             _registry.get<dory::core::repositories::IViewRepository>([&context](dory::core::repositories::IViewRepository* viewRepository) {
-                auto view = dory::core::resources::entity::View{dory::core::resources::nullId, context.mainWindowId};
+                auto view = dory::core::resources::entities::View{dory::core::resources::nullId, context.mainWindowId};
                 viewRepository->insert(view);
             });
 

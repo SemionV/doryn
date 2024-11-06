@@ -1,9 +1,9 @@
 #pragma once
 
 #include "iRepository.h"
-#include <dory/core/resources/object.h>
 #include <dory/core/resources/entity.h>
 #include <dory/core/resources/dataContext.h>
+#include <dory/core/resources/entities/pipelineNode.h>
 #include <dory/generic/baseTypes.h>
 #include "iRepository.h"
 
@@ -12,7 +12,7 @@ namespace dory::core::repositories
     class IPipelineRepository: public generic::Interface
     {
     public:
-        using EntityType = resources::entity::PipelineNode;
+        using EntityType = resources::entities::PipelineNode;
         using IdType = EntityType::IdType;
 
         virtual std::span<EntityType> getPipelineNodes() = 0;

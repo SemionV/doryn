@@ -5,7 +5,6 @@
 #include "services/iFileService.h"
 #include "services/iLibraryService.h"
 #include "events/eventTypes.h"
-#include <dory/core/resources/entity.h>
 #include <dory/core/resources/dataFormat.h>
 #include <dory/core/resources/logger.h>
 #include <dory/generic/extension/resourceHandle.h>
@@ -33,12 +32,15 @@
 #include <dory/core/services/iAssetTypeResolver.h>
 #include <dory/core/services/iAssetReloadHandler.h>
 
+#include <dory/core/resources/entities/camera.h>
+#include <dory/core/resources/entities/window.h>
+
 namespace dory::core
 {
     namespace repositories
     {
-        using ICameraRepository = repositories::IRepository<resources::entity::Camera>;
-        using IWindowRepository = repositories::IRepository<resources::entity::Window>;
+        using ICameraRepository = repositories::IRepository<resources::entities::Camera>;
+        using IWindowRepository = repositories::IRepository<resources::entities::Window>;
     }
 
     struct Registry: public generic::registry::RegistryLayer<

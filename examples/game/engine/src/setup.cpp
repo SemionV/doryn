@@ -48,8 +48,8 @@ namespace dory::game
 
         registry.set<core::repositories::IViewRepository>(libraryHandle, std::make_shared<core::repositories::ViewRepository>());
         registry.set<core::repositories::IPipelineRepository>(libraryHandle, std::make_shared<core::repositories::PipelineRepository>());
-        registerRepository<core::resources::entity::Camera>(libraryHandle, registry);
-        registerRepository<core::resources::entity::Window>(libraryHandle, registry);
+        registerRepository<core::resources::entities::Camera>(libraryHandle, registry);
+        registerRepository<core::resources::entities::Window>(libraryHandle, registry);
 
         registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
         registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>(registry));
@@ -75,7 +75,7 @@ namespace dory::game
         auto glfwWindowService = std::make_shared<core::services::GlfwWindowService>(registry);
         registry.set<core::services::IWindowService, core::resources::WindowSystem::glfw>(libraryHandle, glfwWindowService);
         registry.set<core::services::IWindowService>(libraryHandle, glfwWindowService);
-        registry.set<core::services::IGraphicalSystem, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::services::OpenglGraphicalSystem>());
+        registry.set<core::services::IGraphicalSystem, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::services::OpenglGraphicalSystem>(registry));
 
         registry.set<core::services::IAssetTypeResolver>(libraryHandle, std::make_shared<core::services::AssetTypeResolver>());
         registry.set<core::services::IAssetReloadHandler>(libraryHandle, std::make_shared<core::services::loaders::ExtensionLoader>(registry), std::string{core::resources::AssetType::extension});

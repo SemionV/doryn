@@ -1,6 +1,7 @@
 #pragma once
 
 #include <dory/core/services/iGraphicalSystem.h>
+#include <dory/core/resources/entities/window.h>
 
 namespace dory::core
 {
@@ -17,8 +18,8 @@ namespace dory::core::services
     public:
         explicit OpenglGraphicalSystem(Registry& registry);
 
-        bool initializeGraphics(const resources::entity::Window& window) override;
-        void setCurrentWindow(const resources::entity::Window& window) override;
-        void swapBuffers(const resources::entity::Window& window) override;
+        bool initializeGraphics(const resources::entities::Window& window) override;
+        void setCurrentWindow(const resources::entities::Window& window) override;
+        void swapBuffers(const resources::entities::Window& window) override;
     };
 }

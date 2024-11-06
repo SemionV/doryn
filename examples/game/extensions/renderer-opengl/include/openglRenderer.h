@@ -15,6 +15,6 @@ namespace dory::renderer::opengl
         explicit OpenglRenderer(core::Registry& registry, ShaderProgramService& shaderProgramService);
 
         bool initialize(core::resources::DataContext& context) override;
-        void draw(core::resources::DataContext& context, const core::resources::entity::Window& window, const core::resources::entity::View& view) override;
+        void draw(core::resources::DataContext& context, const core::resources::entities::Window& window, const core::resources::entities::View& view) override;
     };
 }

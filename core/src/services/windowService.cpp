@@ -8,11 +8,11 @@ namespace dory::core::services
         _registry(registry)
     {}
 
-    resources::IdType WindowService::initializeWindow(const resources::entity::Window& window)
+    resources::IdType WindowService::initializeWindow(const resources::entities::Window& window)
     {
         resources::IdType id;
 
-        _registry.get<repositories::IRepository<resources::entity::Window>>([&window, &id](repositories::IRepository<resources::entity::Window>* repository) {
+        _registry.get<repositories::IRepository<resources::entities::Window>>([&window, &id](repositories::IRepository<resources::entities::Window>* repository) {
             id = repository->insert(window);
         });
 
@@ -25,7 +25,7 @@ namespace dory::core::services
 
     void WindowService::removeWindow(resources::IdType windowId)
     {
-        _registry.get<repositories::IRepository<resources::entity::Window>>([&windowId](repositories::IRepository<resources::entity::Window>* repository) {
+        _registry.get<repositories::IRepository<resources::entities::Window>>([&windowId](repositories::IRepository<resources::entities::Window>* repository) {
             repository->remove(windowId);
         });
 

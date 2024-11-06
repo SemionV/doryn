@@ -12,7 +12,7 @@ namespace dory::core::services
         _registry(registry)
     {}
 
-    bool OpenglGraphicalSystem::initializeGraphics(const resources::entity::Window& window)
+    bool OpenglGraphicalSystem::initializeGraphics(const resources::entities::Window& window)
     {
         if(window.windowSystem == resources::WindowSystem::glfw)
         {
@@ -26,7 +26,7 @@ namespace dory::core::services
         return false;
     }
 
-    void OpenglGraphicalSystem::setCurrentWindow(const resources::entity::Window& window)
+    void OpenglGraphicalSystem::setCurrentWindow(const resources::entities::Window& window)
     {
         if(window.windowSystem == resources::WindowSystem::glfw)
         {
@@ -35,7 +35,7 @@ namespace dory::core::services
         }
     }
 
-    void OpenglGraphicalSystem::swapBuffers(const resources::entity::Window& window)
+    void OpenglGraphicalSystem::swapBuffers(const resources::entities::Window& window)
     {
         if(window.windowSystem == resources::WindowSystem::glfw)
         {
