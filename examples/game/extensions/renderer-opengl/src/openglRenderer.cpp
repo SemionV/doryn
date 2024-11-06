@@ -13,12 +13,12 @@ namespace dory::renderer::opengl
 
     bool OpenglRenderer::initialize(core::resources::DataContext& context)
     {
-        /*if(context.configuration.materials.contains("opengl-default"))
+        if(context.configuration.materials.contains("opengl-default"))
         {
             core::resources::configuration::RenderingMaterial material = context.configuration.materials["opengl-default"];
 
             _shaderProgramService.loadProgram(material.program);
-        }*/
+        }
 
         return true;
     }

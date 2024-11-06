@@ -1,11 +1,17 @@
+#include <dory/core/registry.h>
 #include <dory/core/services/openglGraphicalSystem.h>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <dory/core/resources/window.h>
 #include <dory/core/resources/graphicalSystem.h>
+#include <dory/core/services/iRenderer.h>
 
 namespace dory::core::services
 {
+    OpenglGraphicalSystem::OpenglGraphicalSystem(Registry& registry):
+        _registry(registry)
+    {}
+
     bool OpenglGraphicalSystem::initializeGraphics(const resources::entity::Window& window)
     {
         if(window.windowSystem == resources::WindowSystem::glfw)
