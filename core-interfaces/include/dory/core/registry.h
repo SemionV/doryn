@@ -66,6 +66,7 @@ namespace dory::core
             generic::registry::ServiceEntry<repositories::ICameraRepository>,
             generic::registry::ServiceEntry<repositories::IViewRepository>,
             generic::registry::ServiceEntry<repositories::IWindowRepository>,
+            generic::registry::ServiceEntry<repositories::IWindowRepository, resources::WindowSystem>,
             generic::registry::ServiceEntry<repositories::IPipelineRepository>,
             /*Services*/
             generic::registry::ServiceEntry<services::ILibraryService>,

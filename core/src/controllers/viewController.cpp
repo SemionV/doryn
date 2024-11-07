@@ -29,6 +29,7 @@ namespace dory::core::controllers
         {
             auto views = viewRepository->getAll();
             auto windows = windowRepository->getAll();
+
             for(const auto& window : windows)
             {
                 for(const auto& view : views)

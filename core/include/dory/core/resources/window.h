@@ -15,4 +15,15 @@ namespace dory::core::resources::entity
 
         GLFWwindow* handler{};
     };
+
+    class GlfwWindow2: public entities::Window
+    {
+        GlfwWindow2() = default;
+
+        explicit GlfwWindow2(IdType id, WindowSystem windowSystem, GraphicalSystem graphicalSystem):
+                Window(id, windowSystem, graphicalSystem)
+        {}
+
+        GLFWwindow* handler{};
+    };
 }

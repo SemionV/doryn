@@ -27,14 +27,14 @@ namespace dory::core::repositories
             return container.size();
         }
 
-        void setId(TEntity& entity) override
+        void setId(TInterface::EntityType& entity) override
         {
             entity.id = ++counter;
         }
 
-        std::optional<TEntity> get(TId id) override
+        generic::OptionalReference<typename TInterface::EntityType> get(TId id) override
         {
-            auto position = std::ranges::find(container, id, &TEntity::id);
+            auto position = std::ranges::find(container, id, &TInterface::EntityType::id);
             if(position != container.end())
             {
                 return *position;
@@ -43,39 +43,39 @@ namespace dory::core::repositories
             return {};
         }
 
-        TId insert(const TEntity& entity) override
+        TId insert(const TInterface::EntityType& entity) override
         {
-            TEntity& newEntity = container.emplace_back(std::move(entity));
+            typename TInterface::EntityType& newEntity = container.emplace_back((TEntity&)entity);
             setId(newEntity);
 
             return newEntity.id;
         }
 
-        void store(TEntity& entity) override
+        void store(TInterface::EntityType& entity) override
         {
-            auto position = std::ranges::find(container, entity.id, &std::remove_reference_t<TEntity>::id);
+            auto position = std::ranges::find(container, entity.id, &std::remove_reference_t<typename TInterface::EntityType>::id);
             if(position != container.end()) //update
             {
-                *position = entity;
+                *position = (TEntity&)entity;
             }
             else //create
             {
-                container.push_back(entity);
+                container.push_back((TEntity&)entity);
             }
         }
 
         void remove(TId id) override
         {
-            auto position = std::ranges::find(container, id, &TEntity::id);
+            auto position = std::ranges::find(container, id, &TInterface::EntityType::id);
             if(position != container.end())
             {
                 container.erase(position);
             }
         }
 
-        std::span<TEntity> getAll() override
+        generic::Span<typename TInterface::EntityType> getAll() override
         {
-            return std::span<TEntity>{ container };
+            return generic::Span<typename TInterface::EntityType>{ container.data(), container.size(), sizeof(TEntity) };
         }
     };
 }

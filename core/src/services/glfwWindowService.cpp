@@ -23,9 +23,9 @@ namespace dory::core::services
     {
         _registry.get<repositories::IRepository<resources::entities::Window>>([&windowId](repositories::IRepository<resources::entities::Window>* repository) {
             auto window = repository->get(windowId);
-            if(window && window->windowSystem == resources::WindowSystem::glfw)
+            if(window && window->get().windowSystem == resources::WindowSystem::glfw)
             {
-                auto specificData = std::static_pointer_cast<resources::entity::GlfwWindow>(window->windowSystemData);
+                auto specificData = std::static_pointer_cast<resources::entity::GlfwWindow>(window->get().windowSystemData);
                 glfwDestroyWindow(specificData->handler);
             }
         });

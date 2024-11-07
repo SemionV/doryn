@@ -1,4 +1,5 @@
 #include "dory/game/setup.h"
+#include "dory/core/resources/window.h"
 #include <dory/core/services/fileService.h>
 #include <dory/core/services/libraryService.h>
 
@@ -49,7 +50,11 @@ namespace dory::game
         registry.set<core::repositories::IViewRepository>(libraryHandle, std::make_shared<core::repositories::ViewRepository>());
         registry.set<core::repositories::IPipelineRepository>(libraryHandle, std::make_shared<core::repositories::PipelineRepository>());
         registerRepository<core::resources::entities::Camera>(libraryHandle, registry);
-        registerRepository<core::resources::entities::Window>(libraryHandle, registry);
+
+        auto windowRepository = std::make_shared<core::repositories::Repository<dory::core::resources::entity::GlfwWindow2, core::resources::IdType,
+                core::repositories::IRepository<core::resources::entities::Window>>>();
+        registry.set<core::repositories::IRepository<core::resources::entities::Window>>(libraryHandle, windowRepository);
+        registry.set<core::repositories::IRepository<core::resources::entities::Window>, core::resources::WindowSystem::glfw>(libraryHandle, windowRepository);
 
         registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
         registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>(registry));
