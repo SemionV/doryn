@@ -9,5 +9,6 @@ namespace dory::core::resources::entities
     {
         GraphicalSystem graphicalSystem;
         std::filesystem::path filePath;
+        IdType programId {};
     };
 }

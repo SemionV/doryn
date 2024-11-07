@@ -26,6 +26,7 @@
 #include <dory/core/repositories/viewRepository.h>
 #include <dory/core/repositories/windowRepository.h>
 #include <dory/core/repositories/shaderRepository.h>
+#include <dory/core/repositories/shaderProgramRepository.h>
 #include <dory/core/devices/fileWatcherDevice.h>
 #include <dory/core/services/assetTypeResolver.h>
 #include <dory/core/services/hot-reload/extensionLoader.h>
@@ -56,6 +57,7 @@ namespace dory::game
         registry.set<core::repositories::IWindowRepository, core::resources::WindowSystem::glfw>(libraryHandle, windowRepository);
 
         registry.set<core::repositories::IShaderRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::ShaderRepository>());
+        registry.set<core::repositories::IShaderProgramRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::ShaderProgramRepository>());
 
         registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
         registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>(registry));
