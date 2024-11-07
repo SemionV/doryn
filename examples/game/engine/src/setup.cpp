@@ -1,5 +1,4 @@
 #include "dory/game/setup.h"
-#include "dory/core/resources/window.h"
 #include <dory/core/services/fileService.h>
 #include <dory/core/services/libraryService.h>
 
@@ -26,10 +25,12 @@
 #include <dory/core/services/glfwWindowService.h>
 #include <dory/core/services/openglGraphicalSystem.h>
 #include <dory/core/repositories/viewRepository.h>
+#include <dory/core/repositories/windowRepository.h>
 #include <dory/core/devices/fileWatcherDevice.h>
 #include <dory/core/services/assetTypeResolver.h>
 #include <dory/core/services/hot-reload/extensionLoader.h>
 #include <dory/core/resources/assetType.h>
+#include <dory/core/resources/glfwWindow.h>
 
 namespace dory::game
 {
@@ -51,10 +52,9 @@ namespace dory::game
         registry.set<core::repositories::IPipelineRepository>(libraryHandle, std::make_shared<core::repositories::PipelineRepository>());
         registerRepository<core::resources::entities::Camera>(libraryHandle, registry);
 
-        auto windowRepository = std::make_shared<core::repositories::Repository<dory::core::resources::entity::GlfwWindow2, core::resources::IdType,
-                core::repositories::IRepository<core::resources::entities::Window>>>();
-        registry.set<core::repositories::IRepository<core::resources::entities::Window>>(libraryHandle, windowRepository);
-        registry.set<core::repositories::IRepository<core::resources::entities::Window>, core::resources::WindowSystem::glfw>(libraryHandle, windowRepository);
+        auto windowRepository = std::make_shared<core::repositories::WindowRepository>();
+        registry.set<core::repositories::IWindowRepository>(libraryHandle, windowRepository);
+        registry.set<core::repositories::IWindowRepository, core::resources::WindowSystem::glfw>(libraryHandle, windowRepository);
 
         registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
         registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>(registry));

@@ -2,7 +2,7 @@
 #include <dory/core/services/openglGraphicalSystem.h>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
-#include <dory/core/resources/window.h>
+#include <dory/core/resources/glfwWindow.h>
 #include <dory/core/resources/graphicalSystem.h>
 #include <dory/core/services/iRenderer.h>
 
@@ -16,9 +16,9 @@ namespace dory::core::services
     {
         if(window.windowSystem == resources::WindowSystem::glfw)
         {
-            auto specificData = std::static_pointer_cast<resources::entity::GlfwWindow>(window.windowSystemData);
+            auto& glfwWindow = (resources::entities::GlfwWindow&)window;
 
-            glfwMakeContextCurrent(specificData->handler);
+            glfwMakeContextCurrent(glfwWindow.handler);
             int version = gladLoadGL(glfwGetProcAddress);
             return version != 0;
         }
@@ -30,8 +30,8 @@ namespace dory::core::services
     {
         if(window.windowSystem == resources::WindowSystem::glfw)
         {
-            auto specificData = std::static_pointer_cast<resources::entity::GlfwWindow>(window.windowSystemData);
-            glfwMakeContextCurrent(specificData->handler);
+            auto& glfwWindow = (resources::entities::GlfwWindow&)window;
+            glfwMakeContextCurrent(glfwWindow.handler);
         }
     }
 
@@ -39,8 +39,8 @@ namespace dory::core::services
     {
         if(window.windowSystem == resources::WindowSystem::glfw)
         {
-            auto specificData = std::static_pointer_cast<resources::entity::GlfwWindow>(window.windowSystemData);
-            glfwSwapBuffers(specificData->handler);
+            auto& glfwWindow = (resources::entities::GlfwWindow&)window;
+            glfwSwapBuffers(glfwWindow.handler);
         }
     }
 }

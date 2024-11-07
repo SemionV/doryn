@@ -31,6 +31,7 @@
 #include <dory/core/devices/iFileWatcherDevice.h>
 #include <dory/core/services/iAssetTypeResolver.h>
 #include <dory/core/services/iAssetReloadHandler.h>
+#include <dory/core/repositories/iWindowRepository.h>
 
 #include <dory/core/resources/entities/camera.h>
 #include <dory/core/resources/entities/window.h>
@@ -40,7 +41,6 @@ namespace dory::core
     namespace repositories
     {
         using ICameraRepository = repositories::IRepository<resources::entities::Camera>;
-        using IWindowRepository = repositories::IRepository<resources::entities::Window>;
     }
 
     struct Registry: public generic::registry::RegistryLayer<

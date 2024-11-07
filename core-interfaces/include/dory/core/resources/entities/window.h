@@ -5,12 +5,6 @@
 
 namespace dory::core::resources::entities
 {
-    class IWindowSubsystemData
-    {
-    public:
-        virtual ~IWindowSubsystemData() = default;
-    };
-
     struct Window: public Entity<IdType>
     {
         Window() = default;
@@ -21,8 +15,7 @@ namespace dory::core::resources::entities
                 graphicalSystem(graphicalSystem)
         {}
 
-        WindowSystem windowSystem {};
         GraphicalSystem graphicalSystem {};
-        std::shared_ptr<IWindowSubsystemData> windowSystemData;
+        WindowSystem windowSystem {};
     };
 }

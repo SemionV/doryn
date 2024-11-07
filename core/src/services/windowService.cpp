@@ -1,6 +1,7 @@
 #include <dory/core/registry.h>
 #include <dory/core/services/windowService.h>
 #include <dory/core/repositories/iViewRepository.h>
+#include <dory/core/repositories/iWindowRepository.h>
 
 namespace dory::core::services
 {
@@ -12,7 +13,7 @@ namespace dory::core::services
     {
         resources::IdType id;
 
-        _registry.get<repositories::IRepository<resources::entities::Window>>([&window, &id](repositories::IRepository<resources::entities::Window>* repository) {
+        _registry.get<repositories::IWindowRepository>([&window, &id](repositories::IWindowRepository* repository) {
             id = repository->insert(window);
         });
 
@@ -25,7 +26,7 @@ namespace dory::core::services
 
     void WindowService::removeWindow(resources::IdType windowId)
     {
-        _registry.get<repositories::IRepository<resources::entities::Window>>([&windowId](repositories::IRepository<resources::entities::Window>* repository) {
+        _registry.get<repositories::IWindowRepository>([&windowId](repositories::IWindowRepository* repository) {
             repository->remove(windowId);
         });
 

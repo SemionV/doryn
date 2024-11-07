@@ -32,12 +32,12 @@ namespace dory::core::repositories
             entity.id = ++counter;
         }
 
-        generic::OptionalReference<typename TInterface::EntityType> get(TId id) override
+        TInterface::EntityType* get(TId id) override
         {
             auto position = std::ranges::find(container, id, &TInterface::EntityType::id);
             if(position != container.end())
             {
-                return *position;
+                return &(*position);
             }
 
             return {};

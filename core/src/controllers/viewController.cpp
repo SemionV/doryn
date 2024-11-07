@@ -1,6 +1,6 @@
 #include <dory/core/registry.h>
 #include <dory/core/controllers/viewController.h>
-#include <dory/core/repositories/iRepository.h>
+#include <dory/core/repositories/windowRepository.h>
 #include <dory/core/resources/entities/window.h>
 
 namespace dory::core::controllers
@@ -21,29 +21,34 @@ namespace dory::core::controllers
 
     void ViewController::update(resources::IdType referenceId, const generic::model::TimeSpan& timeStep, resources::DataContext& context)
     {
-        _registry.get<
-                generic::registry::Service<repositories::IRepository<resources::entities::Window>>,
-                generic::registry::Service<repositories::IViewRepository>>(
-        [this, &context](repositories::IRepository<resources::entities::Window>* windowRepository,
-           repositories::IViewRepository* viewRepository)
-        {
+        _registry.get<repositories::IViewRepository>([this, &context](repositories::IViewRepository* viewRepository) {
             auto views = viewRepository->getAll();
-            auto windows = windowRepository->getAll();
 
-            for(const auto& window : windows)
-            {
-                for(const auto& view : views)
+            _registry.getAll<repositories::IWindowRepository, resources::WindowSystem>([this, &views, &context](auto& windowRepositories) {
+                for(const auto& [windowSystem, resourceHandle] : windowRepositories)
                 {
-                    if(view.windowId == window.id)
+                    auto windowRepository = resourceHandle.lock();
+                    if(windowRepository)
                     {
-                        auto renderer = _registry.get<services::IRenderer>((std::decay_t<decltype(window.graphicalSystem)>)window.graphicalSystem);
-                        if(renderer)
+                        auto windows = windowRepository->getAll();
+
+                        for(const auto& window : windows)
                         {
-                            renderer->draw(context, window, view);
+                            for(const auto& view : views)
+                            {
+                                if(view.windowId == window.id)
+                                {
+                                    auto renderer = _registry.get<services::IRenderer>((std::decay_t<decltype(window.graphicalSystem)>)window.graphicalSystem);
+                                    if(renderer)
+                                    {
+                                        renderer->draw(context, window, view);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-            }
+            });
         });
     }
 }
