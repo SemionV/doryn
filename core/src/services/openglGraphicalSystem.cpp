@@ -3,8 +3,6 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <dory/core/resources/glfwWindow.h>
-#include <dory/core/resources/graphicalSystem.h>
-#include <dory/core/services/iRenderer.h>
 
 namespace dory::core::services
 {

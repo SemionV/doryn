@@ -11,7 +11,6 @@
 
 #include <dory/core/devices/terminalDevice.h>
 #include <dory/core/devices/glfwWindowSystemDevice.h>
-#include <dory/core/repositories/iRepository.h>
 #include <dory/core/repositories/pipelineRepository.h>
 #include <dory/core/services/logServiceNull.h>
 #include <dory/core/services/logService.h>
@@ -26,11 +25,11 @@
 #include <dory/core/services/openglGraphicalSystem.h>
 #include <dory/core/repositories/viewRepository.h>
 #include <dory/core/repositories/windowRepository.h>
+#include <dory/core/repositories/shaderRepository.h>
 #include <dory/core/devices/fileWatcherDevice.h>
 #include <dory/core/services/assetTypeResolver.h>
 #include <dory/core/services/hot-reload/extensionLoader.h>
 #include <dory/core/resources/assetType.h>
-#include <dory/core/resources/glfwWindow.h>
 
 namespace dory::game
 {
@@ -55,6 +54,8 @@ namespace dory::game
         auto windowRepository = std::make_shared<core::repositories::WindowRepository>();
         registry.set<core::repositories::IWindowRepository>(libraryHandle, windowRepository);
         registry.set<core::repositories::IWindowRepository, core::resources::WindowSystem::glfw>(libraryHandle, windowRepository);
+
+        registry.set<core::repositories::IShaderRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::ShaderRepository>());
 
         registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
         registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>(registry));

@@ -32,9 +32,9 @@
 #include <dory/core/services/iAssetTypeResolver.h>
 #include <dory/core/services/iAssetReloadHandler.h>
 #include <dory/core/repositories/iWindowRepository.h>
+#include <dory/core/repositories/iShaderRepository.h>
 
 #include <dory/core/resources/entities/camera.h>
-#include <dory/core/resources/entities/window.h>
 
 namespace dory::core
 {
@@ -68,6 +68,7 @@ namespace dory::core
             generic::registry::ServiceEntry<repositories::IWindowRepository>,
             generic::registry::ServiceEntry<repositories::IWindowRepository, resources::WindowSystem>,
             generic::registry::ServiceEntry<repositories::IPipelineRepository>,
+            generic::registry::ServiceEntry<repositories::IShaderRepository, resources::GraphicalSystem>,
             /*Services*/
             generic::registry::ServiceEntry<services::ILibraryService>,
             generic::registry::ServiceEntry<services::IFileService>,
