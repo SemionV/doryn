@@ -26,6 +26,9 @@ FetchContent_Declare(nlohmann-json
         GIT_TAG v3.11.3)
 FetchContent_MakeAvailable(nlohmann-json)
 
+if(POLICY CMP0177)
+    cmake_policy(SET CMP0177 NEW)
+endif()
 FetchContent_Declare(rapid-yaml
         GIT_REPOSITORY https://github.com/biojppm/rapidyaml)
 FetchContent_MakeAvailable(rapid-yaml)

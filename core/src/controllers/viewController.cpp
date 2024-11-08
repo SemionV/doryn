@@ -21,34 +21,24 @@ namespace dory::core::controllers
 
     void ViewController::update(resources::IdType referenceId, const generic::model::TimeSpan& timeStep, resources::DataContext& context)
     {
-        _registry.get<repositories::IViewRepository>([this, &context](repositories::IViewRepository* viewRepository) {
-            auto views = viewRepository->getAll();
-
-            _registry.getAll<repositories::IWindowRepository, resources::WindowSystem>([this, &views, &context](auto& windowRepositories) {
-                for(const auto& [windowSystem, resourceHandle] : windowRepositories)
+        _registry.getAll<repositories::IWindowRepository, resources::WindowSystem>([this, &context](auto& windowRepositories) {
+            for(const auto& [windowSystem, resourceHandle] : windowRepositories)
+            {
+                auto windowRepository = resourceHandle.lock();
+                if(windowRepository)
                 {
-                    auto windowRepository = resourceHandle.lock();
-                    if(windowRepository)
-                    {
-                        auto windows = windowRepository->getAll();
+                    auto windows = windowRepository->getAll();
 
-                        for(const auto& window : windows)
+                    for(const auto& window : windows)
+                    {
+                        auto gpuClient = _registry.get<services::IGraphicalSystem>((resources::GraphicalSystem&)window.graphicalSystem);
+                        if(gpuClient)
                         {
-                            for(const auto& view : views)
-                            {
-                                if(view.windowId == window.id)
-                                {
-                                    auto renderer = _registry.get<services::IRenderer>((std::decay_t<decltype(window.graphicalSystem)>)window.graphicalSystem);
-                                    if(renderer)
-                                    {
-                                        renderer->draw(context, window, view);
-                                    }
-                                }
-                            }
+                            gpuClient->render(context, window);
                         }
                     }
                 }
-            });
+            }
         });
     }
 }

@@ -12,31 +12,13 @@ namespace dory::renderer::opengl
         _shaderProgramService(shaderProgramService)
     {}
 
-    bool OpenglRenderer::initialize(core::resources::DataContext& context)
+    void OpenglRenderer::draw(core::resources::DataContext& context, const core::resources::entities::View& view)
     {
-        if(context.configuration.materials.contains("opengl-default"))
+        if(glClearColor)
         {
-            core::resources::configuration::RenderingMaterial material = context.configuration.materials["opengl-default"];
-
-            _shaderProgramService.loadProgram(material.program);
+            glClearColor(0.08f, 0.08f, 0.08f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+            glFlush();
         }
-
-        return true;
-    }
-
-    void OpenglRenderer::draw(core::resources::DataContext& context, const core::resources::entities::Window& window, const core::resources::entities::View& view)
-    {
-        //TODO: load materials
-
-        _registry.get<core::services::IWindowService>((core::resources::WindowSystem)window.windowSystem, [&window, &view](core::services::IWindowService* windowSystem) {
-            windowSystem->setCurrentWindow(window);
-            if(glClearColor)
-            {
-                glClearColor(0.08f, 0.08f, 0.08f, 1.0f);
-                glClear(GL_COLOR_BUFFER_BIT);
-                glFlush();
-            }
-            windowSystem->swapBuffers(window);
-        });
     }
 }

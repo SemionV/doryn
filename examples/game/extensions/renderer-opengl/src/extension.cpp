@@ -1,6 +1,7 @@
 #include <extension.h>
 #include <iostream>
 #include <openglRenderer.h>
+#include <graphicalSystem.h>
 
 namespace dory::renderer::opengl
 {
@@ -11,12 +12,14 @@ namespace dory::renderer::opengl
         });
 
         _registry.set<core::services::IRenderer, core::resources::GraphicalSystem::opengl>(library, _renderer.get());
+        _registry.set<core::services::IGraphicalSystem, core::resources::GraphicalSystem::opengl>(library, _graphicalSystem.get());
     }
 
     Extension::Extension(core::Registry& registry):
             _registry(registry),
             _shaderProgramService(registry, _shaderRepository, _programRepository),
-            _renderer(registry, std::make_shared<OpenglRenderer>(registry, _shaderProgramService), core::resources::GraphicalSystem::opengl)
+            _renderer(registry, std::make_shared<OpenglRenderer>(registry, _shaderProgramService), core::resources::GraphicalSystem::opengl),
+            _graphicalSystem(registry, std::make_shared<GraphicalSystem>(registry), core::resources::GraphicalSystem::opengl)
     {}
 
     Extension::~Extension()

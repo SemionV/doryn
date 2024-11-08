@@ -2,6 +2,8 @@
 
 #include "../entity.h"
 #include <memory>
+#include <dory/core/resources/windowSystem.h>
+#include <dory/core/resources/graphicalSystem.h>
 
 namespace dory::core::resources::entities
 {

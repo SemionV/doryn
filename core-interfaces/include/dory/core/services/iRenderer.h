@@ -10,7 +10,6 @@ namespace dory::core::services
     class IRenderer: public generic::Interface
     {
     public:
-        virtual bool initialize(resources::DataContext& context) = 0;
-        virtual void draw(resources::DataContext& context, const resources::entities::Window& window, const resources::entities::View& view) = 0;
+        virtual void draw(resources::DataContext& context, const resources::entities::View& view) = 0;
     };
 }

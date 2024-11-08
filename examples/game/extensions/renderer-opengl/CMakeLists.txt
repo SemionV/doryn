@@ -1,6 +1,7 @@
 set(DORY_MODULE_NAME ${PROJECT_NAME}-renderer-opengl)
 
 add_library(${DORY_MODULE_NAME} MODULE
+        src/graphicalSystem.cpp
         src/openglRenderer.cpp
         src/extension.cpp
         src/factory.cpp
