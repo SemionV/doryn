@@ -11,8 +11,7 @@ namespace dory::renderer::opengl
     {
     private:
         core::Registry& _registry;
-        core::RegistryResourceScopeWithId<core::services::IRenderer, core::resources::GraphicalSystem> _renderer;
-        core::RegistryResourceScopeWithId<core::services::IGraphicalSystem, core::resources::GraphicalSystem> _graphicalSystem;
+        core::RegistryResourceScopeWithId<core::services::graphics::IRenderer, core::resources::GraphicalSystem> _renderer;
         ShaderRepository _shaderRepository;
         ProgramRepository _programRepository;
         ShaderProgramService _shaderProgramService;

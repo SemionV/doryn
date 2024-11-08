@@ -26,12 +26,13 @@
 #include <dory/core/services/iWindowService.h>
 #include <dory/core/services/iGraphicalSystem.h>
 #include <dory/core/resources/graphicalSystem.h>
-#include <dory/core/services/iRenderer.h>
+#include <dory/core/services/graphics/iRenderer.h>
 #include <dory/core/repositories/iViewRepository.h>
 #include <dory/core/devices/iFileWatcherDevice.h>
 #include <dory/core/services/iAssetTypeResolver.h>
 #include <dory/core/services/iAssetReloadHandler.h>
 #include <dory/core/services/iAssetService.h>
+#include <dory/core/services/graphics/iShaderService.h>
 #include <dory/core/repositories/iWindowRepository.h>
 #include <dory/core/repositories/iShaderRepository.h>
 #include <dory/core/repositories/iShaderProgramRepository.h>
@@ -85,8 +86,9 @@ namespace dory::core
             generic::registry::ServiceEntry<services::ILocalizationService>,
             generic::registry::ServiceEntry<services::IPipelineService>,
             generic::registry::ServiceEntry<services::IFrameService>,
-            generic::registry::ServiceEntry<services::IGraphicalSystem, resources::GraphicalSystem>,
-            generic::registry::ServiceEntry<services::IRenderer, resources::GraphicalSystem>,
+            generic::registry::ServiceEntry<services::IGraphicalSystem>,
+            generic::registry::ServiceEntry<services::graphics::IRenderer, resources::GraphicalSystem>,
+            generic::registry::ServiceEntry<services::graphics::IShaderService, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<services::IWindowService>,//default window service
             generic::registry::ServiceEntry<services::IWindowService, resources::WindowSystem>,
             generic::registry::ServiceEntry<services::IAssetTypeResolver>,

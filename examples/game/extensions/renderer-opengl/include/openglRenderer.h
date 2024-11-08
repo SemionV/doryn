@@ -5,7 +5,7 @@
 
 namespace dory::renderer::opengl
 {
-    class OpenglRenderer: public core::services::IRenderer
+    class OpenglRenderer: public core::services::graphics::IRenderer
     {
     private:
         core::Registry& _registry;

@@ -31,7 +31,7 @@ namespace dory::core::controllers
 
                     for(const auto& window : windows)
                     {
-                        auto gpuClient = _registry.get<services::IGraphicalSystem>((resources::GraphicalSystem&)window.graphicalSystem);
+                        auto gpuClient = _registry.get<services::IGraphicalSystem>();
                         if(gpuClient)
                         {
                             gpuClient->render(context, window);

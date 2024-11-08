@@ -22,6 +22,7 @@
 #include <dory/core/services/pipelineService.h>
 #include <dory/core/services/frameService.h>
 #include <dory/core/services/glfwWindowService.h>
+#include <dory/core/services/graphicalSystem.h>
 #include <dory/core/repositories/viewRepository.h>
 #include <dory/core/repositories/windowRepository.h>
 #include <dory/core/repositories/shaderRepository.h>
@@ -83,6 +84,8 @@ namespace dory::game
         auto glfwWindowService = std::make_shared<core::services::GlfwWindowService>(registry);
         registry.set<core::services::IWindowService, core::resources::WindowSystem::glfw>(libraryHandle, glfwWindowService);
         registry.set<core::services::IWindowService>(libraryHandle, glfwWindowService);
+
+        registry.set<core::services::IGraphicalSystem>(libraryHandle, std::make_shared<core::services::GraphicalSystem>(registry));
 
         registry.set<core::services::IAssetTypeResolver>(libraryHandle, std::make_shared<core::services::AssetTypeResolver>());
         registry.set<core::services::IAssetReloadHandler>(libraryHandle, std::make_shared<core::services::loaders::ExtensionLoader>(registry), std::string{core::resources::AssetType::extension});

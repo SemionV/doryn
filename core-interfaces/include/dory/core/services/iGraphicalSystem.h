@@ -11,7 +11,7 @@ namespace dory::core::services
     class IGraphicalSystem: generic::Interface
     {
     public:
-        //virtual bool uploadProgram(const resources::entities::ShaderProgram& program, const resources::entities::Window& window) = 0;
+        virtual bool uploadProgram(const resources::entities::ShaderProgram& program, const resources::entities::Window& window) = 0;
         virtual void render(resources::DataContext& context, const resources::entities::Window& window) = 0;
     };
 }

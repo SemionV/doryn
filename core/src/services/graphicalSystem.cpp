@@ -1,9 +1,9 @@
 #include <dory/core/registry.h>
-#include <graphicalSystem.h>
+#include <dory/core/services/graphicalSystem.h>
 #include <dory/core/repositories/iViewRepository.h>
 #include <dory/core/services/iWindowService.h>
 
-namespace dory::renderer::opengl
+namespace dory::core::services
 {
     GraphicalSystem::GraphicalSystem(core::Registry& registry):
         _registry(registry)
@@ -14,7 +14,7 @@ namespace dory::renderer::opengl
         _registry.get<core::repositories::IViewRepository>([this, &context, &window](core::repositories::IViewRepository* viewRepository) {
             auto viewIds = viewRepository->getWindowViews(window.id);
             auto windowService = _registry.get<core::services::IWindowService>(window.windowSystem);
-            auto renderer = _registry.get<core::services::IRenderer>(window.graphicalSystem);
+            auto renderer = _registry.get<core::services::graphics::IRenderer>(window.graphicalSystem);
             for(const auto& viewId : viewIds)
             {
                 auto view = viewRepository->get(viewId);
@@ -27,5 +27,11 @@ namespace dory::renderer::opengl
                 }
             }
         });
+    }
+
+    bool GraphicalSystem::uploadProgram(const core::resources::entities::ShaderProgram& program,
+                                        const core::resources::entities::Window& window)
+    {
+        return false;
     }
 }

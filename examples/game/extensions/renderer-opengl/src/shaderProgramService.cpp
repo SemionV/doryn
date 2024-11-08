@@ -32,9 +32,8 @@ namespace dory::renderer::opengl
 
         _registry.get<
                 generic::registry::Service<core::services::IFileService>,
-                generic::registry::Service<core::services::ILogService, core::resources::Logger::App>>(
-            [this, &result, &program, &shaderConfig](core::services::IFileService* fileService,
-                                        core::services::ILogService* logger)
+                generic::registry::Service<core::services::ILogService>>(
+            [this, &result, &program, &shaderConfig](core::services::IFileService* fileService, core::services::ILogService* logger)
         {
             try
             {
