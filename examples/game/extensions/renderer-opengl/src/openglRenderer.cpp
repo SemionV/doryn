@@ -2,6 +2,7 @@
 #include <openglRenderer.h>
 #include <dory/core/services/iGraphicalSystem.h>
 #include <dory/core/resources/graphicalSystem.h>
+#include <dory/core/resources/windowSystem.h>
 #include <glad/gl.h>
 
 namespace dory::renderer::opengl
@@ -27,12 +28,15 @@ namespace dory::renderer::opengl
     {
         //TODO: load materials
 
-        _registry.get<core::services::IGraphicalSystem, core::resources::GraphicalSystem::opengl>([&window, &view](core::services::IGraphicalSystem* graphicalSystem) {
-            graphicalSystem->setCurrentWindow(window);
-            glClearColor(0.08f, 0.08f, 0.08f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
-            glFlush();
-            graphicalSystem->swapBuffers(window);
+        _registry.get<core::services::IWindowService>((core::resources::WindowSystem)window.windowSystem, [&window, &view](core::services::IWindowService* windowSystem) {
+            windowSystem->setCurrentWindow(window);
+            if(glClearColor)
+            {
+                glClearColor(0.08f, 0.08f, 0.08f, 1.0f);
+                glClear(GL_COLOR_BUFFER_BIT);
+                glFlush();
+            }
+            windowSystem->swapBuffers(window);
         });
     }
 }

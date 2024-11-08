@@ -65,6 +65,7 @@ namespace dory::game
         std::shared_ptr<core::services::IMultiSinkLogService> appLogger = std::make_shared<core::services::LogService>();
         registry.set<core::services::IMultiSinkLogService, core::resources::Logger::App>(libraryHandle, appLogger);
         registry.set<core::services::ILogService, core::resources::Logger::App>(libraryHandle, appLogger);
+        registry.set<core::services::ILogService>(libraryHandle, appLogger);
 
         std::shared_ptr<core::services::IMultiSinkLogService> configLogger = std::make_shared<core::services::LogService>();
         registry.set<core::services::IMultiSinkLogService, core::resources::Logger::Config>(libraryHandle, configLogger);

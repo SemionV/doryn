@@ -31,6 +31,7 @@
 #include <dory/core/devices/iFileWatcherDevice.h>
 #include <dory/core/services/iAssetTypeResolver.h>
 #include <dory/core/services/iAssetReloadHandler.h>
+#include <dory/core/services/iAssetService.h>
 #include <dory/core/repositories/iWindowRepository.h>
 #include <dory/core/repositories/iShaderRepository.h>
 #include <dory/core/repositories/iShaderProgramRepository.h>
@@ -75,7 +76,8 @@ namespace dory::core
             generic::registry::ServiceEntry<services::ILibraryService>,
             generic::registry::ServiceEntry<services::IFileService>,
             generic::registry::ServiceEntry<services::IMultiSinkLogService, resources::Logger>,
-            generic::registry::ServiceEntry<services::ILogService , resources::Logger>,
+            generic::registry::ServiceEntry<services::ILogService>,
+            generic::registry::ServiceEntry<services::ILogService, resources::Logger>,
             generic::registry::ServiceEntry<services::serialization::ISerializer, resources::DataFormat>,
             generic::registry::ServiceEntry<services::IDataFormatResolver>,
             generic::registry::ServiceEntry<services::IScriptService>,
@@ -84,11 +86,12 @@ namespace dory::core
             generic::registry::ServiceEntry<services::IPipelineService>,
             generic::registry::ServiceEntry<services::IFrameService>,
             generic::registry::ServiceEntry<services::IGraphicalSystem, resources::GraphicalSystem>,
+            generic::registry::ServiceEntry<services::IRenderer, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<services::IWindowService>,//default window service
             generic::registry::ServiceEntry<services::IWindowService, resources::WindowSystem>,
-            generic::registry::ServiceEntry<services::IRenderer, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<services::IAssetTypeResolver>,
-            generic::registry::ServiceEntry<services::IAssetReloadHandler, std::string>>
+            generic::registry::ServiceEntry<services::IAssetReloadHandler, std::string>,
+            generic::registry::ServiceEntry<services::IAssetService>>
     {};
 
     template<typename T>

@@ -17,9 +17,5 @@ namespace dory::core::services
 
     public:
         explicit OpenglGraphicalSystem(Registry& registry);
-
-        bool initializeGraphics(const resources::entities::Window& window) override;
-        void setCurrentWindow(const resources::entities::Window& window) override;
-        void swapBuffers(const resources::entities::Window& window) override;
     };
 }

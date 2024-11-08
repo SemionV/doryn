@@ -9,16 +9,12 @@ namespace dory::core::services
         _registry(registry)
     {}
 
-    resources::IdType WindowService::initializeWindow(const resources::entities::Window& window)
+    resources::IdType WindowService::addWindow(const resources::entities::Window& window)
     {
         resources::IdType id;
 
         _registry.get<repositories::IWindowRepository>([&window, &id](repositories::IWindowRepository* repository) {
             id = repository->insert(window);
-        });
-
-        _registry.get<IGraphicalSystem>(window.graphicalSystem, [&window](IGraphicalSystem* graphicalSystem) {
-            graphicalSystem->initializeGraphics(window);
         });
 
         return id;
