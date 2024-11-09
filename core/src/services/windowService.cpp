@@ -14,11 +14,7 @@ namespace dory::core::services
         resources::IdType id = resources::nullId;
 
         _registry.get<repositories::IWindowRepository>([&window, &id](repositories::IWindowRepository* repository) {
-            auto* windowEntity = repository->insert(window);
-            if(windowEntity)
-            {
-                id = windowEntity->id;
-            }
+            id = repository->insert(window);
         });
 
         return id;

@@ -4,9 +4,8 @@
 
 namespace dory::renderer::opengl
 {
-    OpenglRenderer::OpenglRenderer(core::Registry &registry, ShaderProgramService& shaderProgramService):
-        _registry(registry),
-        _shaderProgramService(shaderProgramService)
+    OpenglRenderer::OpenglRenderer(core::Registry &registry):
+        _registry(registry)
     {}
 
     void OpenglRenderer::draw(core::resources::DataContext& context, const core::resources::entities::View& view)

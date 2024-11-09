@@ -70,23 +70,6 @@ namespace dory::core::resources::configuration
         std::vector<std::string> modules;
     };
 
-    struct Shader
-    {
-        std::string filename;
-        std::string type;
-    };
-
-    struct Program
-    {
-        std::string key;
-        std::vector<Shader> shaders;
-    };
-
-    struct RenderingMaterial
-    {
-        Program program;
-    };
-
     struct Configuration
     {
         RecursiveSection section;
@@ -98,6 +81,5 @@ namespace dory::core::resources::configuration
         std::vector<FilesSystemWatch> fileSystemWatches;
         std::vector<Extension> extensions;
         std::map<std::string, std::string> assetTypes;
-        std::map<std::string, RenderingMaterial> materials;
     };
 }

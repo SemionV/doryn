@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/core/resources/entities/openglShaderProgram.h>
+#include "dory/core/resources/entities/openglShaderProgram.h"
 #include <dory/core/repositories/iShaderProgramRepository.h>
 #include <dory/core/repository.h>
 

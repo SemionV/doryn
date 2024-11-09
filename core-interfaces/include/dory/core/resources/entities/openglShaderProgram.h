@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/core/resources/entities/shaderProgram.h>
+#include "shaderProgram.h"
 
 namespace dory::core::resources::entities
 {

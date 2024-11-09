@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/core/resources/entities/shader.h>
+#include "shader.h"
 
 namespace dory::core::resources::entities
 {
@@ -8,6 +8,6 @@ namespace dory::core::resources::entities
     {
         GLuint index = GL_INVALID_INDEX;
         GLuint programIndex {};
-        GLenum type {};
+        GLenum glType {};
     };
 }

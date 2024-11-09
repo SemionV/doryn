@@ -3,7 +3,6 @@
 #include "dory/generic/extension/iModule.h"
 #include <dory/generic/extension/registryResourceScope.h>
 #include <dory/core/registry.h>
-#include "shaderProgramService.h"
 
 namespace dory::renderer::opengl
 {
@@ -12,9 +11,7 @@ namespace dory::renderer::opengl
     private:
         core::Registry& _registry;
         core::RegistryResourceScopeWithId<core::services::graphics::IRenderer, core::resources::GraphicalSystem> _renderer;
-        ShaderRepository _shaderRepository;
-        ProgramRepository _programRepository;
-        ShaderProgramService _shaderProgramService;
+        core::RegistryResourceScopeWithId<core::services::graphics::IShaderService, core::resources::GraphicalSystem> _shaderService;
 
     public:
         explicit Extension(core::Registry& registry);

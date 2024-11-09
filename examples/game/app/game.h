@@ -25,44 +25,22 @@ namespace dory::game
                 viewRepository->insert(view);
             });
 
-            //TODO: replace this with fs watcher auto reload
-            _registry.get<core::services::IScriptService>([this, &libraryHandle](core::services::IScriptService* scriptService){
-                scriptService->addScript("load-renderer", libraryHandle, [this](core::resources::DataContext& context, const std::map<std::string, std::any>& arguments){
-                    auto libraryService = _registry.get<core::services::ILibraryService>();
-                    if(libraryService)
-                    {
-                        bool isCommandMode {};
-                        _registry.get<core::devices::ITerminalDevice>([&isCommandMode](core::devices::ITerminalDevice* terminal) {
-                            isCommandMode = terminal->isCommandMode();
-                            if(isCommandMode)
-                            {
-                                terminal->exitCommandMode();
-                            }
-                        });
+            _registry.get<
+                    generic::registry::Service<core::services::IAssetService>,
+                    generic::registry::Service<core::repositories::IWindowRepository>>(
+                [&context](core::services::IAssetService* assetService,
+                   core::repositories::IWindowRepository* windowRepository)
+            {
+                auto shaderProgram = core::resources::objects::ShaderProgram{"triangles", {
+                        core::resources::objects::Shader{"openglVertexShader", "configuration/shaders/triangles.vert"},
+                        core::resources::objects::Shader{"openglFragmentShader", "configuration/shaders/triangles.frag"}
+                }};
 
-                        libraryService->unload("RendererOpengl");
-                        auto openglLibrary = libraryService->load("RendererOpengl", "modules/renderer-opengl");
-                        if(openglLibrary)
-                        {
-                            auto extension = openglLibrary->loadModule("renderer-opengl", _registry);
-                            if(extension)
-                            {
-                                extension->attach(generic::extension::LibraryHandle{ openglLibrary }, context);
-                            }
-                        }
-
-                        _registry.get<core::devices::ITerminalDevice>([&isCommandMode](core::devices::ITerminalDevice* terminal) {
-                            if(isCommandMode)
-                            {
-                                terminal->enterCommandMode();
-                            }
-                        });
-                    }
-                });
-            });
-
-            _registry.get<core::devices::ITerminalDevice>([](core::devices::ITerminalDevice* terminal) {
-                terminal->enterCommandMode();
+                auto* window = windowRepository->get(context.mainWindowId);
+                if(window)
+                {
+                    assetService->loadProgram(shaderProgram, *window);
+                }
             });
 
             return true;

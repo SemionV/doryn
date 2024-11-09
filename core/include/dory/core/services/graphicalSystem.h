@@ -17,7 +17,7 @@ namespace dory::core::services
     public:
         explicit GraphicalSystem(core::Registry& registry);
 
-        bool uploadProgram(const core::resources::entities::ShaderProgram& program, const core::resources::entities::Window& window) override;
+        bool uploadProgram(core::resources::entities::ShaderProgram& program, const core::resources::entities::Window& window) override;
         void render(core::resources::DataContext& context, const core::resources::entities::Window& window) override;
     };
 }

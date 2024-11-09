@@ -1,7 +1,5 @@
 #include <dory/core/registry.h>
 #include <dory/core/services/graphicalSystem.h>
-#include <dory/core/repositories/iViewRepository.h>
-#include <dory/core/services/iWindowService.h>
 
 namespace dory::core::services
 {
@@ -29,9 +27,44 @@ namespace dory::core::services
         });
     }
 
-    bool GraphicalSystem::uploadProgram(const core::resources::entities::ShaderProgram& program,
+    bool GraphicalSystem::uploadProgram(core::resources::entities::ShaderProgram& program,
                                         const core::resources::entities::Window& window)
     {
-        return false;
+        auto shaderService = _registry.get<graphics::IShaderService>(window.graphicalSystem);
+        auto windowService = _registry.get<core::services::IWindowService>(window.windowSystem);
+        auto logger = _registry.get<core::services::ILogService>();
+
+        if(shaderService && windowService)
+        {
+            windowService->setCurrentWindow(window);
+            if(shaderService->initializeProgram(program))
+            {
+                auto shaderRepository = _registry.get<repositories::IShaderRepository>(window.graphicalSystem);
+                auto fileService = _registry.get<services::IFileService>();
+                if(shaderRepository && fileService)
+                {
+                    auto shaders = shaderRepository->getAll();
+                    for(auto& shader : shaders)
+                    {
+                        auto sourceCode = fileService->read(shader.filePath);
+                        if(!shaderService->initializeShader(program, shader, sourceCode) && logger)
+                        {
+                            logger->error("Cannot initialize shader: " + program.key + ", " + shader.filePath.string());
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if(logger)
+                {
+                    logger->error("Cannot initialize shader program: " + program.key);
+                }
+
+                return false;
+            }
+        }
+
+        return true;
     }
 }

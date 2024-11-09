@@ -1,7 +1,6 @@
 #pragma once
 
 #include <dory/core/registry.h>
-#include "shaderProgramService.h"
 
 namespace dory::renderer::opengl
 {
@@ -9,10 +8,9 @@ namespace dory::renderer::opengl
     {
     private:
         core::Registry& _registry;
-        ShaderProgramService& _shaderProgramService;
 
     public:
-        explicit OpenglRenderer(core::Registry& registry, ShaderProgramService& shaderProgramService);
+        explicit OpenglRenderer(core::Registry& registry);
 
         void draw(core::resources::DataContext& context, const core::resources::entities::View& view) override;
     };

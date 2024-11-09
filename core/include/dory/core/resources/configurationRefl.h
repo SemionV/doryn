@@ -56,20 +56,6 @@ REFL_TYPE(dory::core::resources::configuration::Extension)
         REFL_FIELD(modules)
 REFL_END
 
-REFL_TYPE(dory::core::resources::configuration::Shader)
-        REFL_FIELD(filename)
-        REFL_FIELD(type)
-REFL_END
-
-REFL_TYPE(dory::core::resources::configuration::Program)
-        REFL_FIELD(key)
-        REFL_FIELD(shaders)
-REFL_END
-
-REFL_TYPE(dory::core::resources::configuration::RenderingMaterial)
-        REFL_FIELD(program)
-REFL_END
-
 REFL_TYPE(dory::core::resources::configuration::Configuration)
     REFL_FIELD(section)
     REFL_FIELD(buildInfo)
@@ -80,5 +66,4 @@ REFL_TYPE(dory::core::resources::configuration::Configuration)
     REFL_FIELD(fileSystemWatches)
     REFL_FIELD(extensions)
     REFL_FIELD(assetTypes)
-    REFL_FIELD(materials)
 REFL_END

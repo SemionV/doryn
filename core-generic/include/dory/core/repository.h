@@ -43,11 +43,17 @@ namespace dory::core::repositories
             return {};
         }
 
-        TInterface::EntityType* insert(const TInterface::EntityType& entity) override
+        TId insert(const TInterface::EntityType& entity) override
+        {
+            typename TInterface::EntityType& newEntity = container.emplace_back((TEntity&)entity);
+            setId(newEntity);
+            return newEntity.id;
+        }
+
+        TInterface::EntityType* insert(TInterface::EntityType&& entity) override
         {
             typename TInterface::EntityType& newEntity = container.emplace_back(TEntity{entity});
             setId(newEntity);
-
             return &newEntity;
         }
 

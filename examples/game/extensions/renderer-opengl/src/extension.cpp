@@ -1,6 +1,7 @@
 #include <extension.h>
 #include <iostream>
 #include <openglRenderer.h>
+#include <shaderService.h>
 
 namespace dory::renderer::opengl
 {
@@ -15,8 +16,8 @@ namespace dory::renderer::opengl
 
     Extension::Extension(core::Registry& registry):
             _registry(registry),
-            _shaderProgramService(registry, _shaderRepository, _programRepository),
-            _renderer(registry, std::make_shared<OpenglRenderer>(registry, _shaderProgramService), core::resources::GraphicalSystem::opengl)
+            _renderer(registry, std::make_shared<OpenglRenderer>(registry), core::resources::GraphicalSystem::opengl),
+            _shaderService(registry, std::make_shared<ShaderService>(registry), core::resources::GraphicalSystem::opengl)
     {}
 
     Extension::~Extension()
