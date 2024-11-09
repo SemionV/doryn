@@ -133,11 +133,14 @@ namespace dory::game
 
             auto submitInputEvents = [this](auto referenceId, const auto& timeStep, core::resources::DataContext& context){
                 _registry.get<
+                        generic::registry::Service<core::events::window::Bundle::IDispatcher>,
                         generic::registry::Service<core::events::io::Bundle::IDispatcher>,
                         generic::registry::Service<core::events::filesystem::Bundle::IDispatcher>>(
-                    [&context](core::events::io::Bundle::IDispatcher* ioDispatcher,
-                               core::events::filesystem::Bundle::IDispatcher* fsDispatcher)
+                    [&context](core::events::window::Bundle::IDispatcher* windowDispatcher,
+                                core::events::io::Bundle::IDispatcher* ioDispatcher,
+                                core::events::filesystem::Bundle::IDispatcher* fsDispatcher)
                 {
+                    windowDispatcher->fireAll(context);
                     ioDispatcher->fireAll(context);
                     fsDispatcher->fireAll(context);
                 });

@@ -40,10 +40,6 @@ namespace dory::core::devices
                     }
                 }
             });
-
-            _registry.get<events::window::Bundle::IDispatcher>([&context](auto* dispatcher) {
-                dispatcher->fireAll(context);
-            });
         });
     }
 }
