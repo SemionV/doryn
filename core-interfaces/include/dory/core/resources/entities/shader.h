@@ -7,7 +7,6 @@ namespace dory::core::resources::entities
 {
     struct Shader: Entity<>
     {
-        GraphicalSystem graphicalSystem;
         std::filesystem::path filePath;
         IdType programId {};
     };

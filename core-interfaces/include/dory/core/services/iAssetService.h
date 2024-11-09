@@ -9,6 +9,6 @@ namespace dory::core::services
     class IAssetService: public generic::Interface
     {
     public:
-        virtual bool loadProgram(const resources::objects::ShaderProgram& program, const resources::entities::Window& window) = 0;
+        virtual resources::IdType loadProgram(const resources::objects::ShaderProgram& program, const resources::entities::Window& window) = 0;
     };
 }

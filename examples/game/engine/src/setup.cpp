@@ -29,6 +29,7 @@
 #include <dory/core/repositories/shaderProgramRepository.h>
 #include <dory/core/devices/fileWatcherDevice.h>
 #include <dory/core/services/assetTypeResolver.h>
+#include <dory/core/services/assetService.h>
 #include <dory/core/services/hot-reload/extensionLoader.h>
 #include <dory/core/resources/assetType.h>
 

@@ -1,8 +1,5 @@
 #include <dory/core/registry.h>
 #include <openglRenderer.h>
-#include <dory/core/services/iGraphicalSystem.h>
-#include <dory/core/resources/graphicalSystem.h>
-#include <dory/core/resources/windowSystem.h>
 #include <glad/gl.h>
 
 namespace dory::renderer::opengl

@@ -7,5 +7,8 @@
 namespace dory::core::repositories
 {
     class ShaderProgramRepository: public Repository<resources::entities::OpenglShaderProgram, resources::IdType, IShaderProgramRepository>
-    {};
+    {
+    public:
+        resources::entities::ShaderProgram* get(std::string_view key, resources::IdType windowId) override;
+    };
 }

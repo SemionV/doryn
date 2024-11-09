@@ -15,6 +15,10 @@ namespace dory::core::resources::entities
                 Window(id, windowSystem, graphicalSystem)
         {}
 
+        explicit GlfwWindow(const entities::Window& window):
+                entities::Window(window)
+        {}
+
         GLFWwindow* handler{};
     };
 }

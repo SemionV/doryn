@@ -15,6 +15,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/extension/dynamicLibrary.cpp
         src/repositories/pipelineRepository.cpp
         src/repositories/viewRepository.cpp
+        src/repositories/shaderProgramRepository.cpp
         src/services/fileService.cpp
         src/services/libraryService.cpp
         src/services/logService.cpp
@@ -27,6 +28,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/glfwWindowService.cpp
         src/services/graphicalSystem.cpp
         src/services/assetTypeResolver.cpp
+        src/services/assetService.cpp
         src/services/hot-reload/extensionLoader.cpp
         src/controllers/windowSystemController.cpp
         src/controllers/viewController.cpp
