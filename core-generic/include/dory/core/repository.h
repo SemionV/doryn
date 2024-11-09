@@ -79,9 +79,25 @@ namespace dory::core::repositories
             }
         }
 
-        generic::Span<typename TInterface::EntityType> getAll() override
+        void each(std::function<void(typename TInterface::EntityType& entity)> predicate) override
         {
-            return generic::Span<typename TInterface::EntityType>{ container.data(), container.size(), sizeof(TEntity) };
+            for(auto& entity : container)
+            {
+                predicate(entity);
+            }
+        }
+
+        bool scan(std::function<bool(typename TInterface::EntityType& entity)> predicate) override
+        {
+            for(auto& entity : container)
+            {
+                if(predicate(entity))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     };
 }

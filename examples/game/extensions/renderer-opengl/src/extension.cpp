@@ -12,6 +12,7 @@ namespace dory::renderer::opengl
         });
 
         _registry.set<core::services::graphics::IRenderer, core::resources::GraphicalSystem::opengl>(library, _renderer.get());
+        _registry.set<core::services::graphics::IShaderService, core::resources::GraphicalSystem::opengl>(library, _shaderService.get());
     }
 
     Extension::Extension(core::Registry& registry):

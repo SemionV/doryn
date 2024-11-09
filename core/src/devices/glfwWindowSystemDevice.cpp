@@ -25,9 +25,7 @@ namespace dory::core::devices
         glfwPollEvents();
 
         _registry.get<repositories::IWindowRepository, resources::WindowSystem::glfw>([this, &context](repositories::IWindowRepository* repository) {
-            auto windows = repository->getAll();
-            for(auto& window : windows)
-            {
+            repository->each([this](auto& window) {
                 if(window.windowSystem == resources::WindowSystem::glfw)
                 {
                     auto& glfwWindow = (resources::entities::GlfwWindow&)window;
@@ -41,7 +39,7 @@ namespace dory::core::devices
                         glfwSetWindowShouldClose(glfwWindow.handler, 0);
                     }
                 }
-            }
+            });
 
             _registry.get<events::window::Bundle::IDispatcher>([&context](auto* dispatcher) {
                 dispatcher->fireAll(context);

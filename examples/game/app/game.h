@@ -32,8 +32,8 @@ namespace dory::game
                    core::repositories::IWindowRepository* windowRepository)
             {
                 auto shaderProgram = core::resources::objects::ShaderProgram{"triangles", {
-                        core::resources::objects::Shader{"openglVertexShader", "configuration/shaders/triangles.vert"},
-                        core::resources::objects::Shader{"openglFragmentShader", "configuration/shaders/triangles.frag"}
+                        core::resources::objects::Shader{"openglVertexShader", "configuration/shaders/triangles/triangles.vert"},
+                        core::resources::objects::Shader{"openglFragmentShader", "configuration/shaders/triangles/triangles.frag"}
                 }};
 
                 auto* window = windowRepository->get(context.mainWindowId);

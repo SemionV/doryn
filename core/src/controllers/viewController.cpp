@@ -27,16 +27,13 @@ namespace dory::core::controllers
                 auto windowRepository = resourceHandle.lock();
                 if(windowRepository)
                 {
-                    auto windows = windowRepository->getAll();
-
-                    for(const auto& window : windows)
-                    {
+                    windowRepository->each([this, &context](auto& window) {
                         auto gpuClient = _registry.get<services::IGraphicalSystem>();
                         if(gpuClient)
                         {
                             gpuClient->render(context, window);
                         }
-                    }
+                    });
                 }
             }
         });

@@ -90,5 +90,6 @@ namespace dory::game
 
         registry.set<core::services::IAssetTypeResolver>(libraryHandle, std::make_shared<core::services::AssetTypeResolver>());
         registry.set<core::services::IAssetReloadHandler>(libraryHandle, std::make_shared<core::services::loaders::ExtensionLoader>(registry), std::string{core::resources::AssetType::extension});
+        registry.set<core::services::IAssetService>(libraryHandle, std::make_shared<core::services::AssetService>(registry));
     }
 }

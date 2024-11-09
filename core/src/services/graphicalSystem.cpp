@@ -43,15 +43,13 @@ namespace dory::core::services
                 auto fileService = _registry.get<services::IFileService>();
                 if(shaderRepository && fileService)
                 {
-                    auto shaders = shaderRepository->getAll();
-                    for(auto& shader : shaders)
-                    {
+                    shaderRepository->each([&fileService, &program, &shaderService, &logger](auto& shader) {
                         auto sourceCode = fileService->read(shader.filePath);
                         if(!shaderService->initializeShader(program, shader, sourceCode) && logger)
                         {
                             logger->error("Cannot initialize shader: " + program.key + ", " + shader.filePath.string());
                         }
-                    }
+                    });
                 }
             }
             else
