@@ -33,6 +33,7 @@
 #include <dory/core/services/iAssetReloadHandler.h>
 #include <dory/core/services/iAssetService.h>
 #include <dory/core/services/graphics/iShaderService.h>
+#include <dory/core/services/iSceneService.h>
 #include <dory/core/repositories/iWindowRepository.h>
 #include <dory/core/repositories/iShaderRepository.h>
 #include <dory/core/repositories/iShaderProgramRepository.h>
@@ -95,7 +96,8 @@ namespace dory::core
             generic::registry::ServiceEntry<services::IWindowService, resources::WindowSystem>,
             generic::registry::ServiceEntry<services::IAssetTypeResolver>,
             generic::registry::ServiceEntry<services::IAssetReloadHandler, std::string>,
-            generic::registry::ServiceEntry<services::IAssetService>>
+            generic::registry::ServiceEntry<services::IAssetService>,
+            generic::registry::ServiceEntry<services::ISceneService>>
     {};
 
     template<typename T>
