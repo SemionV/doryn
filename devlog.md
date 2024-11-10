@@ -1,6 +1,7 @@
 # Development log
 
 Tasks:
+* Scene graph
 * OpenGL Renderer
   * Static mapping of Vertex Attributes
   * Fill Buffers with mapped data
@@ -12,7 +13,6 @@ Tasks:
 * Camera Control
 * Animation
 * Collision detection
-* Scene
 * Serialization of scene state
 * Networking/Mutliplayer
 * Spatial partition: https://youtube.com/watch?v=eED4bSkYCB8&si=uOxianrO-zNMLAG3, https://youtu.be/MzUxOe5x24w?si=3PLIEqPTq8w8RLet, https://youtu.be/4r_EvmPKOvY?si=iINNvyGsoYzdaftY, https://youtu.be/6BIfqfC1i7U?si=rJSwRj3xuANSJZ4o

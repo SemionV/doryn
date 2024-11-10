@@ -215,10 +215,7 @@ namespace dory::math
 
     template<typename T, std::size_t RowsCount, std::size_t ColumnsCount>
     class Matrix<T, std::integral_constant<std::size_t, RowsCount>, std::integral_constant<std::size_t, ColumnsCount>>
-    {
-        static constexpr std::size_t ColumnDimensions = RowsCount;
-        static constexpr std::size_t RowDimensions = ColumnsCount;
-    };
+    {};
 
     template<typename T>
     class Matrix<T, Dimensions4, Dimensions4> : public GeneralMatrix<T, Dimensions4::value, Dimensions4::value>

@@ -36,6 +36,8 @@
 #include <dory/core/repositories/iWindowRepository.h>
 #include <dory/core/repositories/iShaderRepository.h>
 #include <dory/core/repositories/iShaderProgramRepository.h>
+#include <dory/core/repositories/scene/iMeshRepository.h>
+#include <dory/core/repositories/scene/iSceneRepository.h>
 
 #include <dory/core/resources/entities/camera.h>
 
