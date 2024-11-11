@@ -10,6 +10,6 @@ namespace dory::core::services
     class ISceneService: public generic::Interface
     {
     public:
-        virtual void addObject(resources::scene::Scene& scene, const resources::objects::SceneObject& object) = 0;
+        virtual resources::IdType addObject(resources::scene::Scene& scene, const resources::objects::SceneObject& object) = 0;
     };
 }

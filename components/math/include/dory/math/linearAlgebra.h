@@ -49,6 +49,10 @@ namespace dory::math
         {
             return x * right.x;
         }
+
+        bool operator==(const Vector<T, Dimensions1>& other) const {
+            return (x == other.x);
+        }
     };
 
     template<typename T>
@@ -74,6 +78,11 @@ namespace dory::math
         decltype(auto) operator*(const TVector& right)
         {
             return x * right.x + y * right.y;
+        }
+
+        bool operator==(const Vector<T, Dimensions2>& other) const {
+            return (x == other.x) &&
+                   (y == other.y);
         }
     };
 
@@ -101,6 +110,12 @@ namespace dory::math
         decltype(auto) operator*(const TVector& right)
         {
             return x * right.x + y * right.y + z * right.z;
+        }
+
+        bool operator==(const Vector<T, Dimensions3>& other) const {
+            return (x == other.x) &&
+                   (y == other.y) &&
+                   (z == other.z);
         }
     };
 
@@ -130,8 +145,16 @@ namespace dory::math
         {
             return  Vector<T, Dimensions3>::x * right.x + Vector<T, Dimensions3>::y * right.y + Vector<T, Dimensions3>::z * right.z + w * right.w;
         }
+
+        bool operator==(const Vector<T, Dimensions4>& other) const {
+            return (x == other.x) &&
+                   (y == other.y) &&
+                   (z == other.z) &&
+                   (w == other.w);
+        }
     };
 
+    using Vector1f = Vector<float, Dimensions1>;
     using Vector2f = Vector<float, Dimensions2>;
     using Vector3f = Vector<float, Dimensions3>;
     using Vector4f = Vector<float, Dimensions4>;
