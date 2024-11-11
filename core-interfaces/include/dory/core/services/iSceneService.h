@@ -11,5 +11,6 @@ namespace dory::core::services
     {
     public:
         virtual resources::IdType addObject(resources::scene::Scene& scene, const resources::objects::SceneObject& object) = 0;
+        virtual void deleteObject(resources::scene::Scene& scene, resources::IdType objectId) = 0;
     };
 }

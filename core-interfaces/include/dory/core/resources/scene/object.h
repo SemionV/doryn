@@ -14,6 +14,7 @@ namespace dory::core::resources::scene
         std::vector<IdType> parent;
         std::vector<std::vector<IdType>> children;
         std::unordered_map<IdType, std::size_t> idToIndex;
+        std::vector<IdType> freeSlots;
         std::vector<math::Matrix4x4f> worldTransformation;
         std::vector<math::Vector3f> position;
         std::vector<math::Vector3f> scale;

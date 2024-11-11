@@ -23,41 +23,54 @@ void assertSceneObject(const scene::Object& objects, resources::IdType id, std::
     EXPECT_EQ(meshId, objects.mesh[index]);
 }
 
-TEST(SceneService, addObject)
+void buildTestScene(scene::Scene& scene, services::SceneService& sceneService, resources::IdType& cameraId,
+                    resources::IdType& rootId, resources::IdType& soldier1Id, resources::IdType& horse1Id,
+                    resources::IdType& soldier2Id)
 {
-    auto sceneService = services::SceneService{};
-    auto scene = scene::Scene{{}, "test", {}};
     auto soldierMesh = resources::IdType{1};
     auto horseMesh = resources::IdType{2};
 
     auto position = math::Vector3f{-1, -1, 1};
     auto scale = math::Vector3f{1, 1, 1};
     auto object = objects::SceneObject{"camera", resources::nullId, position, scale, resources::nullId};
-    auto cameraId = sceneService.addObject(scene, object);
+    cameraId = sceneService.addObject(scene, object);
     assertSceneObject(scene.objects, cameraId, 1, 0, resources::nullId, position, scale, "camera", resources::nullId);
 
     position = math::Vector3f{0, 0, 0};
     scale = math::Vector3f{1, 1, 1};
     object = objects::SceneObject{"root", resources::nullId, position, scale, resources::nullId};
-    auto rootId = sceneService.addObject(scene, object);
+    rootId = sceneService.addObject(scene, object);
     assertSceneObject(scene.objects, rootId, 2, 1, resources::nullId, position, scale, "root", resources::nullId);
 
     position = math::Vector3f{-1, -1, 0};
     scale = math::Vector3f{2, 2, 2};
     object = objects::SceneObject{"soldier1", rootId, position, scale, soldierMesh};
-    auto soldier1Id = sceneService.addObject(scene, object);
+    soldier1Id = sceneService.addObject(scene, object);
     assertSceneObject(scene.objects, soldier1Id, 3, 2, rootId, position, scale, "soldier1", soldierMesh);
 
     position = math::Vector3f{1, -1, 0};
     scale = math::Vector3f{1, 1, 1};
     object = objects::SceneObject{"horse1", rootId, position, scale, horseMesh};
-    auto horse1Id = sceneService.addObject(scene, object);
+    horse1Id = sceneService.addObject(scene, object);
     assertSceneObject(scene.objects, horse1Id, 4, 3, rootId, position, scale, "horse1", horseMesh);
 
     position = math::Vector3f{0, 0, 1};
     scale = math::Vector3f{1, 1, 1};
     object = objects::SceneObject{"soldier2", horse1Id, position, scale, soldierMesh};
-    auto soldier2Id = sceneService.addObject(scene, object);
+    soldier2Id = sceneService.addObject(scene, object);
     assertSceneObject(scene.objects, soldier2Id, 5, 4, horse1Id, position, scale, "soldier2", soldierMesh);
+}
+
+TEST(SceneService, addObject)
+{
+    auto sceneService = services::SceneService{};
+    auto scene = scene::Scene{{}, "test", {}};
+    resources::IdType cameraId {};
+    resources::IdType rootId {};
+    resources::IdType soldier1Id {};
+    resources::IdType horse1Id {};
+    resources::IdType soldier2Id {};
+
+    buildTestScene(scene, sceneService, cameraId, rootId, soldier1Id, horse1Id, soldier2Id);
 }
 
