@@ -2,6 +2,8 @@
 #include <dory/core/resources/scene/enttScene.h>
 #include <dory/core/resources/scene/components.h>
 #include <dory/core/resources/scene/enttComponents.h>
+#include <stack>
+#include <algorithm>
 
 namespace dory::core::services
 {
@@ -40,5 +42,67 @@ namespace dory::core::services
 
     void EnttSceneService::deleteObject(resources::scene::Scene& scene, resources::IdType objectId)
     {
+        auto& enttScene = (resources::scene::EnttScene&)scene;
+        auto& registry = enttScene.registry;
+
+        if(enttScene.idMap.contains(objectId))
+        {
+            auto entity = enttScene.idMap[objectId];
+            if(registry.valid(entity))
+            {
+                auto stack = std::stack<entt::entity>{};
+                stack.push(entity);
+
+                while(!stack.empty())
+                {
+                    auto currentEntity = stack.top();
+                    stack.pop();
+
+                    auto& children = registry.get<components::Children>(currentEntity);
+                    for(const auto childEntity : children.entities)
+                    {
+                        stack.push(childEntity);
+                    }
+
+                    destroyObjectEntity(scene, currentEntity);
+
+                    //cleanup id map
+                    for(auto it = enttScene.idMap.begin(); it != enttScene.idMap.end(); ++it)
+                    {
+                        if(it->second == currentEntity)
+                        {
+                            enttScene.idMap.erase(it);
+                            break;
+                        }
+                    }
+                }
+            }
+
+
+            enttScene.idMap.erase(objectId);
+        }
+    }
+
+    void EnttSceneService::destroyObjectEntity(resources::scene::Scene &scene, entt::entity entity)
+    {
+        auto& enttScene = (resources::scene::EnttScene&)scene;
+        auto& registry = enttScene.registry;
+
+        //delete from parent's children list
+        if(registry.any_of<components::Parent>(entity))
+        {
+            auto& parentComponent = registry.get<components::Parent>(entity);
+            if(registry.valid(parentComponent.entity) && registry.any_of<components::Children>(parentComponent.entity))
+            {
+                auto& children = registry.get<components::Children>(parentComponent.entity);
+                auto it = std::find(children.entities.begin(), children.entities.end(), entity);
+                if(it != children.entities.end())
+                {
+                    children.entities.erase(it);
+                }
+            }
+        }
+
+        registry.destroy(entity);
     }
 }

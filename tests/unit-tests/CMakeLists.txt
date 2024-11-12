@@ -4,6 +4,7 @@ project(unit-tests)
 add_executable(${PROJECT_NAME}
         entt.cpp
         sceneService.cpp
+        sceneServiceEntt.cpp
         pipelineRepository.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE

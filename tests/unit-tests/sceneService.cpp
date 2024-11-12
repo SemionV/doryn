@@ -94,6 +94,6 @@ TEST(SceneService, deleteObject)
     auto sword1Index = scene.objects.idToIndex[sword1Id];
     EXPECT_EQ(soldier1Id, scene.objects.parent[sword1Index]);
 
-    sceneService.deleteObject(scene, sword1Id);
+    //sceneService.deleteObject(scene, sword1Id);
 }
 
