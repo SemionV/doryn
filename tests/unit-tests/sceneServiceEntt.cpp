@@ -26,7 +26,8 @@ struct TestSceneContext
     resources::IdType swordMesh;
 };
 
-void assertEntity(const objects::SceneObject& object, scene::EnttScene& scene, resources::IdType id) {
+void assertEntity(const objects::SceneObject& object, scene::EnttScene& scene, resources::IdType id)
+{
     EXPECT_FALSE(id == resources::nullId);
     EXPECT_TRUE(scene.idMap.contains(id));
 
@@ -36,7 +37,8 @@ void assertEntity(const objects::SceneObject& object, scene::EnttScene& scene, r
 
     EXPECT_TRUE(registry.any_of<components::Children>(entity));
 
-    if(object.parentId != resources::nullId) {
+    if(object.parentId != resources::nullId)
+    {
         EXPECT_TRUE(registry.any_of<components::Parent>(entity));
         auto& parentComponent = registry.get<components::Parent>(entity);
         EXPECT_TRUE(registry.valid(parentComponent.entity));
@@ -45,7 +47,8 @@ void assertEntity(const objects::SceneObject& object, scene::EnttScene& scene, r
         auto it = std::find(children.entities.begin(), children.entities.end(), entity);
         EXPECT_FALSE(it == children.entities.end());
     }
-    else {
+    else
+    {
         EXPECT_FALSE(registry.any_of<components::Parent>(entity));
     }
 
@@ -53,7 +56,8 @@ void assertEntity(const objects::SceneObject& object, scene::EnttScene& scene, r
     EXPECT_EQ(object.name, registry.get<components::Name>(entity).name);
 }
 
-void buildTestScene(scene::EnttScene& scene, services::ISceneService& sceneService, TestSceneContext& sceneContext) {
+void buildTestScene(scene::EnttScene& scene, services::ISceneService& sceneService, TestSceneContext& sceneContext)
+{
     sceneContext.soldierMesh = resources::IdType{1};
     sceneContext.horseMesh = resources::IdType{2};
     sceneContext.swordMesh = resources::IdType{3};
@@ -101,7 +105,8 @@ void buildTestScene(scene::EnttScene& scene, services::ISceneService& sceneServi
     assertEntity(object, scene, sceneContext.soldier3Id);
 }
 
-TEST(EnttSceneService, addObject) {
+TEST(EnttSceneService, addObject)
+{
     auto sceneService = services::EnttSceneService{};
     auto scene = scene::EnttScene{{{}, resources::EcsType::entt, "test"}};
 
@@ -113,7 +118,8 @@ TEST(EnttSceneService, addObject) {
     assertEntity(object, scene, id);
 }
 
-TEST(EnttSceneService, testScene) {
+TEST(EnttSceneService, testScene)
+{
     auto sceneService = services::EnttSceneService{};
     auto scene = scene::EnttScene{{{}, resources::EcsType::entt, "test"}};
 
@@ -121,7 +127,8 @@ TEST(EnttSceneService, testScene) {
     buildTestScene(scene, sceneService, sceneContext);
 }
 
-TEST(EnttSceneService, deleteObject) {
+TEST(EnttSceneService, deleteObject)
+{
     auto sceneService = services::EnttSceneService{};
     auto scene = scene::EnttScene{{{}, resources::EcsType::entt, "test"}};
 
@@ -139,4 +146,44 @@ TEST(EnttSceneService, deleteObject) {
     sceneService.deleteObject(scene, id);
     EXPECT_EQ(0, std::distance(view.begin(), view.end()));
     EXPECT_FALSE(scene.idMap.contains(id));
+}
+
+TEST(EnttSceneService, destroyTestScene)
+{
+    auto sceneService = services::EnttSceneService{};
+    auto scene = scene::EnttScene{{{}, resources::EcsType::entt, "test"}};
+
+    TestSceneContext sceneContext {};
+    buildTestScene(scene, sceneService, sceneContext);
+
+    auto& registry = scene.registry;
+    auto view = registry.view<components::Name>();
+    auto initialObjectsCount = std::distance(view.begin(), view.end());
+    EXPECT_TRUE(initialObjectsCount > 0);
+
+    //Delete the horse together with the soldier on it
+    auto horseEntity = scene.idMap[sceneContext.horse1Id];
+    auto horseChildren = registry.get<components::Children>(horseEntity);
+    EXPECT_FALSE(horseChildren.entities.empty());
+    auto childEntity = horseChildren.entities[0];
+    sceneService.deleteObject(scene, sceneContext.horse1Id);
+    EXPECT_FALSE(registry.valid(childEntity));
+    EXPECT_FALSE(registry.valid(horseEntity));
+    EXPECT_FALSE(scene.idMap.contains(sceneContext.soldier2Id));
+    EXPECT_FALSE(scene.idMap.contains(sceneContext.horse1Id));
+
+    EXPECT_EQ(2, initialObjectsCount - std::distance(view.begin(), view.end()));
+
+    auto rootEntity = scene.idMap[sceneContext.rootId];
+    auto& rootChildrenComponent = registry.get<components::Children>(rootEntity);
+    EXPECT_EQ(rootChildrenComponent.entities.end(), std::find(rootChildrenComponent.entities.begin(), rootChildrenComponent.entities.end(), horseEntity));
+
+    //Delete the root object with all the rest of the children
+    sceneService.deleteObject(scene, sceneContext.rootId);
+    EXPECT_EQ(6, initialObjectsCount - std::distance(view.begin(), view.end()));
+    EXPECT_FALSE(scene.idMap.contains(sceneContext.sword1Id));
+    EXPECT_FALSE(scene.idMap.contains(sceneContext.soldier1Id));
+    EXPECT_FALSE(scene.idMap.contains(sceneContext.soldier3Id));
+    EXPECT_FALSE(scene.idMap.contains(sceneContext.rootId));
+    EXPECT_FALSE(registry.valid(rootEntity));
 }
