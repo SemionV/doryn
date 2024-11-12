@@ -54,3 +54,14 @@ FetchContent_MakeAvailable(glfw)
 FetchContent_Declare(efsw
         GIT_REPOSITORY https://github.com/SpartanJ/efsw.git)
 FetchContent_MakeAvailable(efsw)
+
+FetchContent_Declare(EnTT
+        GIT_REPOSITORY https://github.com/skypjack/entt.git
+        GIT_TAG v3.14.0)
+FetchContent_MakeAvailable(EnTT)
+
+FetchContent_Declare(glm
+        GIT_REPOSITORY	https://github.com/g-truc/glm.git
+        GIT_TAG	1.0.1
+)
+FetchContent_MakeAvailable(glm)

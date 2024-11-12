@@ -1,4 +1,5 @@
 #include <dory/core/services/sceneService.h>
+#include <dory/core/resources/scene/doryScene.h>
 #include <algorithm>
 #include <stack>
 
@@ -6,7 +7,9 @@ namespace dory::core::services
 {
     resources::IdType SceneService::addObject(resources::scene::Scene& scene, const resources::objects::SceneObject& object)
     {
-        auto& objects = scene.objects;
+        auto& doryScene = (resources::scene::DoryScene&)scene;
+
+        auto& objects = doryScene.objects;
         auto id = objects.id.size() + 1;
 
         objects.id.emplace_back(id);
@@ -29,7 +32,8 @@ namespace dory::core::services
 
     void SceneService::deleteObject(resources::scene::Scene& scene, resources::IdType objectId)
     {
-        auto& objects = scene.objects;
+        auto& doryScene = (resources::scene::DoryScene&)scene;
+        auto& objects = doryScene.objects;
 
         if(objects.idToIndex.contains(objectId))
         {
@@ -55,7 +59,8 @@ namespace dory::core::services
 
     void SceneService::cleanupSlot(resources::scene::Scene& scene, std::size_t slot)
     {
-        auto& objects = scene.objects;
+        auto& doryScene = (resources::scene::DoryScene&)scene;
+        auto& objects = doryScene.objects;
 
         auto objectId = objects.id[slot];
         objects.name[slot] = {};

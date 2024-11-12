@@ -1,13 +1,13 @@
 #pragma once
 
 #include "../entity.h"
-#include "object.h"
+#include "../ecsType.h"
 
 namespace dory::core::resources::scene
 {
     struct Scene: Entity<>
     {
+        EcsType ecsType;
         std::string name {};
-        Object objects;
     };
 }

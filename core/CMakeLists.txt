@@ -31,6 +31,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/assetService.cpp
         src/services/hot-reload/extensionLoader.cpp
         src/services/sceneService.cpp
+        src/services/enttSceneService.cpp
         src/controllers/windowSystemController.cpp
         src/controllers/viewController.cpp
         ${DORY_PLATFORM_MODULES})
@@ -44,7 +45,9 @@ target_link_libraries(${DORY_MODULE_NAME} PUBLIC
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
         opengl-glad
         glfw
-        efsw)
+        efsw
+        EnTT
+        glm::glm)
 
 set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""
         IMPORT_PREFIX ""

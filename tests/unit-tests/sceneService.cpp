@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <dory/core/services/sceneService.h>
-#include <dory/core/resources/scene/scene.h>
+#include <dory/core/resources/scene/doryScene.h>
 
 namespace resources = dory::core::resources;
 namespace objects = resources::objects;
@@ -23,7 +23,7 @@ void assertSceneObject(const scene::Object& objects, resources::IdType id, std::
     EXPECT_EQ(meshId, objects.mesh[index]);
 }
 
-void buildTestScene(scene::Scene& scene, services::SceneService& sceneService, resources::IdType& cameraId,
+void buildTestScene(scene::DoryScene& scene, services::SceneService& sceneService, resources::IdType& cameraId,
                     resources::IdType& rootId, resources::IdType& soldier1Id, resources::IdType& horse1Id,
                     resources::IdType& soldier2Id)
 {
@@ -64,7 +64,7 @@ void buildTestScene(scene::Scene& scene, services::SceneService& sceneService, r
 TEST(SceneService, addObject)
 {
     auto sceneService = services::SceneService{};
-    auto scene = scene::Scene{{}, "test", {}};
+    auto scene = scene::DoryScene{{{}, resources::EcsType::dory, "test"}};
     resources::IdType cameraId {};
     resources::IdType rootId {};
     resources::IdType soldier1Id {};
@@ -72,5 +72,28 @@ TEST(SceneService, addObject)
     resources::IdType soldier2Id {};
 
     buildTestScene(scene, sceneService, cameraId, rootId, soldier1Id, horse1Id, soldier2Id);
+}
+
+TEST(SceneService, deleteObject)
+{
+    auto sceneService = services::SceneService{};
+    auto scene = scene::DoryScene{{{}, resources::EcsType::dory, "test"}};
+    resources::IdType cameraId {};
+    resources::IdType rootId {};
+    resources::IdType soldier1Id {};
+    resources::IdType horse1Id {};
+    resources::IdType soldier2Id {};
+
+    buildTestScene(scene, sceneService, cameraId, rootId, soldier1Id, horse1Id, soldier2Id);
+
+    auto position = math::Vector3f{1, -1, 0};
+    auto scale = math::Vector3f{1, 1, 1};
+    auto object = objects::SceneObject{"sword1", soldier1Id, position, scale, resources::IdType{3}};
+    auto sword1Id = sceneService.addObject(scene, object);
+    EXPECT_TRUE(scene.objects.idToIndex.contains(sword1Id));
+    auto sword1Index = scene.objects.idToIndex[sword1Id];
+    EXPECT_EQ(soldier1Id, scene.objects.parent[sword1Index]);
+
+    sceneService.deleteObject(scene, sword1Id);
 }
 
