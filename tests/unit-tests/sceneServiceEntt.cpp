@@ -18,6 +18,7 @@ struct TestSceneContext
     resources::IdType rootId;
     resources::IdType soldier1Id;
     resources::IdType soldier2Id;
+    resources::IdType soldier3Id;
     resources::IdType horse1Id;
     resources::IdType sword1Id;
     resources::IdType soldierMesh;
@@ -92,6 +93,12 @@ void buildTestScene(scene::EnttScene& scene, services::ISceneService& sceneServi
     object = objects::SceneObject{"sword1", sceneContext.soldier1Id, position, scale, sceneContext.swordMesh};
     sceneContext.sword1Id = sceneService.addObject(scene, object);
     assertEntity(object, scene, sceneContext.sword1Id);
+
+    position = math::Vector3f{0, 0, 1};
+    scale = math::Vector3f{1, 1, 1};
+    object = objects::SceneObject{"soldier3", sceneContext.rootId, position, scale, sceneContext.soldierMesh};
+    sceneContext.soldier3Id = sceneService.addObject(scene, object);
+    assertEntity(object, scene, sceneContext.soldier3Id);
 }
 
 TEST(EnttSceneService, addObject) {
@@ -112,4 +119,24 @@ TEST(EnttSceneService, testScene) {
 
     TestSceneContext sceneContext {};
     buildTestScene(scene, sceneService, sceneContext);
+}
+
+TEST(EnttSceneService, deleteObject) {
+    auto sceneService = services::EnttSceneService{};
+    auto scene = scene::EnttScene{{{}, resources::EcsType::entt, "test"}};
+
+    auto position = math::Vector3f{-1, -1, 1};
+    auto scale = math::Vector3f{1, 1, 1};
+    auto object = objects::SceneObject{"camera", resources::nullId, position, scale, resources::nullId};
+
+    auto id = sceneService.addObject(scene, object);
+    assertEntity(object, scene, id);
+
+    auto& registry = scene.registry;
+    auto view = registry.view<components::Name>();
+
+    EXPECT_EQ(1, std::distance(view.begin(), view.end()));
+    sceneService.deleteObject(scene, id);
+    EXPECT_EQ(0, std::distance(view.begin(), view.end()));
+    EXPECT_FALSE(scene.idMap.contains(id));
 }
