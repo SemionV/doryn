@@ -4,7 +4,7 @@ add_library(${DORY_MODULE_NAME} INTERFACE
         include/dory/core/services/iFileService.h
         include/dory/core/registry.h)
 
-target_link_libraries(${DORY_MODULE_NAME} INTERFACE dory-generic dory-math)
+target_link_libraries(${DORY_MODULE_NAME} INTERFACE dory-generic dory-math glm::glm)
 
 target_sources(${DORY_MODULE_NAME} INTERFACE
     FILE_SET HEADERS
