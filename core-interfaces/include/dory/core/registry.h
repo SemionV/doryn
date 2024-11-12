@@ -97,7 +97,8 @@ namespace dory::core
             generic::registry::ServiceEntry<services::IAssetTypeResolver>,
             generic::registry::ServiceEntry<services::IAssetReloadHandler, std::string>,
             generic::registry::ServiceEntry<services::IAssetService>,
-            generic::registry::ServiceEntry<services::ISceneService>>
+            generic::registry::ServiceEntry<services::ISceneService>,
+            generic::registry::ServiceEntry<services::ISceneService, resources::EcsType>>
     {};
 
     template<typename T>

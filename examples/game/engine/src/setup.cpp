@@ -1,4 +1,5 @@
 #include "dory/game/setup.h"
+#include "dory/core/resources/ecsType.h"
 #include <dory/core/services/fileService.h>
 #include <dory/core/services/libraryService.h>
 
@@ -31,7 +32,7 @@
 #include <dory/core/services/assetTypeResolver.h>
 #include <dory/core/services/assetService.h>
 #include <dory/core/services/hot-reload/extensionLoader.h>
-#include <dory/core/services/sceneService.h>
+#include <dory/core/services/enttSceneService.h>
 #include <dory/core/resources/assetType.h>
 
 namespace dory::game
@@ -93,6 +94,8 @@ namespace dory::game
         registry.set<core::services::IAssetReloadHandler>(libraryHandle, std::make_shared<core::services::loaders::ExtensionLoader>(registry), std::string{core::resources::AssetType::extension});
         registry.set<core::services::IAssetService>(libraryHandle, std::make_shared<core::services::AssetService>(registry));
 
-        registry.set<core::services::ISceneService>(libraryHandle, std::make_shared<core::services::SceneService>());
+        auto sceneService = std::make_shared<core::services::EnttSceneService>();
+        registry.set<core::services::ISceneService>(libraryHandle, sceneService);
+        registry.set<core::services::ISceneService, core::resources::EcsType::entt>(libraryHandle, sceneService);
     }
 }

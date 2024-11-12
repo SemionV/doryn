@@ -30,7 +30,6 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/assetTypeResolver.cpp
         src/services/assetService.cpp
         src/services/hot-reload/extensionLoader.cpp
-        src/services/sceneService.cpp
         src/services/enttSceneService.cpp
         src/controllers/windowSystemController.cpp
         src/controllers/viewController.cpp

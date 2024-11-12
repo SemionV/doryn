@@ -43,6 +43,10 @@ namespace dory::game
                 }
             });
 
+            _registry.get<core::devices::ITerminalDevice>([](core::devices::ITerminalDevice* terminalDevice) {
+                terminalDevice->enterCommandMode();
+            });
+
             return true;
         }
     };
