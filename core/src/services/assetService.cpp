@@ -47,7 +47,7 @@ namespace dory::core::services
             {
                 if(!graphicalSystem->uploadProgram(*programEntity, window) && logger)
                 {
-                    logger->error("Failed to store initialize shader program: " + program.key);
+                    logger->error("Failed to initialize shader program: " + program.key);
                 }
             }
         }

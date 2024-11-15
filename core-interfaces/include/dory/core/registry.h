@@ -34,11 +34,13 @@
 #include <dory/core/services/iAssetService.h>
 #include <dory/core/services/graphics/iShaderService.h>
 #include <dory/core/services/iSceneService.h>
+#include <dory/core/services/iGraphicContextService.h>
 #include <dory/core/repositories/iWindowRepository.h>
 #include <dory/core/repositories/iShaderRepository.h>
 #include <dory/core/repositories/iShaderProgramRepository.h>
-#include <dory/core/repositories/scene/iMeshRepository.h>
-#include <dory/core/repositories/scene/iSceneRepository.h>
+#include <dory/core/repositories/assets/iMeshRepository.h>
+#include <dory/core/repositories/iSceneRepository.h>
+#include <dory/core/repositories/iAssetBindingsRepository.h>
 
 #include <dory/core/resources/entities/camera.h>
 
@@ -98,7 +100,8 @@ namespace dory::core
             generic::registry::ServiceEntry<services::IAssetReloadHandler, std::string>,
             generic::registry::ServiceEntry<services::IAssetService>,
             generic::registry::ServiceEntry<services::ISceneService>,
-            generic::registry::ServiceEntry<services::ISceneService, resources::EcsType>>
+            generic::registry::ServiceEntry<services::ISceneService, resources::EcsType>,
+            generic::registry::ServiceEntry<services::IGraphicContextService>>
     {};
 
     template<typename T>

@@ -4,6 +4,7 @@
 #include <dory/core/resources/entity.h>
 #include <dory/core/resources/entities/window.h>
 #include <dory/core/resources/entities/shaderProgram.h>
+#include <dory/core/resources/entities/assetBindings.h>
 #include <dory/core/resources/dataContext.h>
 
 namespace dory::core::services

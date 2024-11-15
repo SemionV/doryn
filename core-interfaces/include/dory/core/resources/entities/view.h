@@ -26,6 +26,7 @@ namespace dory::core::resources::entities
     {
         IdType windowId;
         IdType cameraId {};
+        IdType sceneId;
         std::optional<Viewport> viewport {};
 
         View(IdType id, IdType windowId, IdType cameraId = nullId):
