@@ -65,4 +65,17 @@ namespace dory::core::services
 
         return true;
     }
+
+    void GraphicalSystem::bindMesh(resources::IdType meshId)
+    {
+        auto meshRepository = _registry.get<repositories::assets::IMeshRepository>();
+        if(meshRepository)
+        {
+            auto mesh = meshRepository->get(meshId);
+            if(mesh)
+            {
+
+            }
+        }
+    }
 }

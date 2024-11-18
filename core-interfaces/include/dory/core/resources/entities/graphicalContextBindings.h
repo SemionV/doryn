@@ -5,7 +5,7 @@
 
 namespace dory::core::resources::entities
 {
-    struct GraphicalContext: public Entity<>
+    struct GraphicalContextBindings: public Entity<>
     {
         std::unordered_map<resources::IdType, resources::IdType> meshBindings;
     };

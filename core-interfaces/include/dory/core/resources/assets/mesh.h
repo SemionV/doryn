@@ -5,7 +5,7 @@
 #include <array>
 #include <dory/math/linearAlgebra.h>
 
-namespace dory::core::resources::scene
+namespace dory::core::resources::assets
 {
     struct Mesh: Entity<>
     {

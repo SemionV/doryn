@@ -19,5 +19,6 @@ namespace dory::core::services
 
         bool uploadProgram(core::resources::entities::ShaderProgram& program, const core::resources::entities::Window& window) override;
         void render(core::resources::DataContext& context, const core::resources::entities::Window& window) override;
+        void bindMesh(resources::IdType meshId) override;
     };
 }
