@@ -36,6 +36,7 @@
 #include <dory/core/services/iSceneService.h>
 #include <dory/core/services/iGraphicContextService.h>
 #include <dory/core/services/graphics/iGraphicalContextBindingsService.h>
+#include <dory/core/services/iViewService.h>
 #include <dory/core/repositories/iWindowRepository.h>
 #include <dory/core/repositories/iShaderRepository.h>
 #include <dory/core/repositories/iShaderProgramRepository.h>
@@ -43,6 +44,7 @@
 #include <dory/core/repositories/iSceneRepository.h>
 #include <dory/core/repositories/iGraphicalContextBindingsRepository.h>
 #include <dory/core/repositories/assets/iMeshRepository.h>
+#include <dory/core/repositories/bindings/iMeshBindingRepository.h>
 
 #include <dory/core/resources/entities/camera.h>
 
@@ -82,6 +84,7 @@ namespace dory::core
             generic::registry::ServiceEntry<repositories::IShaderRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::IShaderProgramRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::IGraphicalContextBindingsRepository, resources::GraphicalSystem>,
+            generic::registry::ServiceEntry<repositories::bindings::IMeshBindingRepository, resources::GraphicalSystem>,
             /*Services*/
             generic::registry::ServiceEntry<services::ILibraryService>,
             generic::registry::ServiceEntry<services::IFileService>,
@@ -98,6 +101,7 @@ namespace dory::core
             generic::registry::ServiceEntry<services::IGraphicalSystem>,
             generic::registry::ServiceEntry<services::graphics::IRenderer, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<services::graphics::IShaderService, resources::GraphicalSystem>,
+            generic::registry::ServiceEntry<services::IViewService>,
             generic::registry::ServiceEntry<services::IWindowService>,//default window service
             generic::registry::ServiceEntry<services::IWindowService, resources::WindowSystem>,
             generic::registry::ServiceEntry<services::IAssetTypeResolver>,

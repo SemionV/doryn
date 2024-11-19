@@ -30,6 +30,7 @@
 #include <dory/core/repositories/shaderProgramRepository.h>
 #include <dory/core/repositories/assets/meshRepository.h>
 #include <dory/core/repositories/graphicalContextBindingsRepository.h>
+#include <dory/core/repositories/bindings/meshBindingRepository.h>
 #include <dory/core/devices/fileWatcherDevice.h>
 #include <dory/core/services/assetTypeResolver.h>
 #include <dory/core/services/assetService.h>
@@ -64,6 +65,7 @@ namespace dory::game
 
         registry.set<core::repositories::IGraphicalContextBindingsRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::GraphicalContextBindingsRepository>());
         registry.set<core::repositories::assets::IMeshRepository>(libraryHandle, std::make_shared<core::repositories::assets::MeshRepository>());
+        registry.set<core::repositories::bindings::IMeshBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::MeshBindingRepository>());
 
         registry.set<core::repositories::IShaderRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::ShaderRepository>());
         registry.set<core::repositories::IShaderProgramRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::ShaderProgramRepository>());
