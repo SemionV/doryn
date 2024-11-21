@@ -2,7 +2,7 @@ set(DORY_MODULE_NAME ${PROJECT_NAME}-renderer-opengl)
 
 add_library(${DORY_MODULE_NAME} MODULE
         src/openglRenderer.cpp
-        src/graphicalContextBindingService.cpp
+        src/graphicalContextService.cpp
         src/shaderService.cpp
         src/extension.cpp
         src/factory.cpp)

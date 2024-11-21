@@ -35,14 +35,14 @@
 #include <dory/core/services/graphics/iShaderService.h>
 #include <dory/core/services/iSceneService.h>
 #include <dory/core/services/iGraphicContextService.h>
-#include <dory/core/services/graphics/iGraphicalContextBindingsService.h>
+#include <dory/core/services/graphics/iGraphicalContextService.h>
 #include <dory/core/services/iViewService.h>
 #include <dory/core/repositories/iWindowRepository.h>
 #include <dory/core/repositories/iShaderRepository.h>
 #include <dory/core/repositories/iShaderProgramRepository.h>
 #include <dory/core/repositories/assets/iMeshRepository.h>
 #include <dory/core/repositories/iSceneRepository.h>
-#include <dory/core/repositories/iGraphicalContextBindingsRepository.h>
+#include <dory/core/repositories/iGraphicalContextRepository.h>
 #include <dory/core/repositories/assets/iMeshRepository.h>
 #include <dory/core/repositories/bindings/iMeshBindingRepository.h>
 #include <dory/core/services/graphics/iGpuDriver.h>
@@ -84,7 +84,7 @@ namespace dory::core
             generic::registry::ServiceEntry<repositories::assets::IMeshRepository>,
             generic::registry::ServiceEntry<repositories::IShaderRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::IShaderProgramRepository, resources::GraphicalSystem>,
-            generic::registry::ServiceEntry<repositories::IGraphicalContextBindingsRepository, resources::GraphicalSystem>,
+            generic::registry::ServiceEntry<repositories::IGraphicalContextRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::bindings::IMeshBindingRepository, resources::GraphicalSystem>,
             /*Services*/
             generic::registry::ServiceEntry<services::ILibraryService>,

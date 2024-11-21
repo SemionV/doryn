@@ -19,6 +19,6 @@ namespace dory::core::resources::entities
 
         GraphicalSystem graphicalSystem {};
         WindowSystem windowSystem {};
-        resources::IdType graphicalContextBindingsId {};
+        resources::IdType graphicalContextId {};
     };
 }
