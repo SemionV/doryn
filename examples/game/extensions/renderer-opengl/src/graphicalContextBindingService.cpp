@@ -23,7 +23,7 @@ namespace dory::renderer::opengl
                     if(graphicalContextBindings)
                     {
                         windowService->setCurrentWindow(*window);
-                        bindMesh(graphicalContextBindings, mesh);
+                        bindMesh(window, graphicalContextBindings, mesh);
                     }
                 }
             }
@@ -38,25 +38,26 @@ namespace dory::renderer::opengl
     void GraphicalContextBindingsService::bindMesh(core::resources::entities::Window* window, core::resources::entities::GraphicalContextBindings* graphicalContextBindings, core::resources::assets::Mesh* mesh)
     {
         auto meshBindingRepository = _registry.get<core::repositories::bindings::IMeshBindingRepository>(window->graphicalSystem);
+        auto gpuDriver = _registry.get<core::services::graphics::IGpuDriver>(window->graphicalSystem);
 
-        if(meshBindingRepository)
+        if(meshBindingRepository && gpuDriver)
         {
+            core::resources::bindings::MeshBinding* meshBinding;
+
             if(graphicalContextBindings->meshBindings.contains(mesh->id))
             {
-                auto meshBinding = meshBindingRepository->get(graphicalContextBindings->meshBindings[mesh->id]);
-
-                //TODO: call GpuClient to release binding
-                //TODO: call GpuClient to bind mesh to the context
+                meshBinding = meshBindingRepository->get(graphicalContextBindings->meshBindings[mesh->id]);
+                gpuDriver->releaseMesh(meshBinding);
             }
             else
             {
-                auto meshBinding = meshBindingRepository->insert(core::resources::bindings::MeshBinding{});
-                if(meshBinding)
-                {
-                    graphicalContextBindings->meshBindings[mesh->id] = meshBinding->id;
+                meshBinding = meshBindingRepository->insert(core::resources::bindings::MeshBinding{});
+            }
 
-                    //TODO: call GpuClient to bind mesh to the context
-                }
+            if(meshBinding)
+            {
+                graphicalContextBindings->meshBindings[mesh->id] = meshBinding->id;
+                gpuDriver->uploadMesh(mesh, meshBinding);
             }
         }
     }

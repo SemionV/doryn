@@ -45,6 +45,7 @@
 #include <dory/core/repositories/iGraphicalContextBindingsRepository.h>
 #include <dory/core/repositories/assets/iMeshRepository.h>
 #include <dory/core/repositories/bindings/iMeshBindingRepository.h>
+#include <dory/core/services/graphics/iGpuDriver.h>
 
 #include <dory/core/resources/entities/camera.h>
 
@@ -109,7 +110,8 @@ namespace dory::core
             generic::registry::ServiceEntry<services::IAssetService>,
             generic::registry::ServiceEntry<services::ISceneService>,
             generic::registry::ServiceEntry<services::ISceneService, resources::EcsType>,
-            generic::registry::ServiceEntry<services::IGraphicContextService>>
+            generic::registry::ServiceEntry<services::IGraphicContextService>,
+            generic::registry::ServiceEntry<services::graphics::IGpuDriver, resources::GraphicalSystem>>
     {};
 
     template<typename T>
