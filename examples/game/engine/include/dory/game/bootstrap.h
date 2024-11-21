@@ -1,13 +1,19 @@
 #pragma once
 
-#include <dory/core/registry.h>
 #include <dory/core/iBootstrap.h>
-#include <dory/core/resources/localizationImpl.h>
+#include <dory/core/resources/dataContext.h>
+#include <dory/core/events/eventTypes.h>
 #include <dory/core/resources/configuration.h>
+#include <dory/generic/macros.h>
+
+namespace dory::core
+{
+    class Registry;
+}
 
 namespace dory::game
 {
-    class Bootstrap: public core::IBootstrap
+    class DORY_DLLEXPORT Bootstrap: public core::IBootstrap
     {
     private:
         core::Registry& _registry;

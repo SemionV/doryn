@@ -1,4 +1,5 @@
 #include <glad/gl.h>
+#include <GLFW/glfw3.h>
 #include <dory/core/repositories/shaderProgramRepository.h>
 
 namespace dory::core::repositories

@@ -13,6 +13,11 @@
 #include <dory/core/devices/iStandardIODevice.h>
 #include <dory/core/events/eventTypes.h>
 
+namespace dory::core
+{
+    class Registry;
+}
+
 namespace dory::core::devices
 {
     class StandardIODevice: public IStandardIODevice

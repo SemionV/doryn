@@ -9,7 +9,7 @@ namespace dory::core::services
         for(const auto& [key, value] : context.configuration.assetTypes)
         {
             auto regex = std::regex{ value, std::regex_constants::icase };
-            if(std::regex_search(filePath.c_str(), regex))
+            if(std::regex_search(filePath.string(), regex))
             {
                 return key;
             }

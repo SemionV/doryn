@@ -1,3 +1,4 @@
+#include <dory/core/registry.h>
 #include <dory/core/services/libraryService.h>
 
 namespace dory::core::services

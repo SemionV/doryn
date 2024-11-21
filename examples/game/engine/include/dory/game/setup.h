@@ -1,7 +1,7 @@
 #pragma once
 
 #include "dory/core/iSetup.h"
-#include "dory/core/macros.h"
+#include "dory/generic/macros.h"
 #include "dory/core/repository.h"
 #include "dory/core/events.h"
 

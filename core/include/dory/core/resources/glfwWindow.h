@@ -1,7 +1,6 @@
 #pragma once
 
 #include <dory/core/resources/entity.h>
-#include <GLFW/glfw3.h>
 #include <dory/core/resources/entities/window.h>
 
 namespace dory::core::resources::entities

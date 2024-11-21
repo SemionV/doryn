@@ -34,7 +34,7 @@ namespace dory::core::repositories
 
         TInterface::EntityType* get(TId id) override
         {
-            auto position = std::ranges::find(container, id, &TInterface::EntityType::id);
+            auto position = std::ranges::find(container, id, &TEntity::id);
             if(position != container.end())
             {
                 return &(*position);
@@ -72,7 +72,7 @@ namespace dory::core::repositories
 
         void remove(TId id) override
         {
-            auto position = std::ranges::find(container, id, &TInterface::EntityType::id);
+            auto position = std::ranges::find(container, id, &TEntity::id);
             if(position != container.end())
             {
                 container.erase(position);

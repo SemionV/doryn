@@ -1,7 +1,5 @@
 #pragma once
 
-#include <glad/gl.h>
-#include <GLFW/glfw3.h>
 #include <dory/engine/controllers/controller.h>
 #include "dory/engine/repositories/entityRepository.h"
 #include "dory/engine/resources/entity.h"

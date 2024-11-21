@@ -1,3 +1,4 @@
+#include <dory/core/registry.h>
 #include <dory/core/devices/standardIoDeviceWin32.h>
 
 namespace dory::core::devices
@@ -6,7 +7,7 @@ namespace dory::core::devices
             _registry(registry)
     {}
 
-    void bindStdHandlesToConsole()
+    void StandardIODevice::bindStdHandlesToConsole()
     {
         //TODO: Add Error checking.
 

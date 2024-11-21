@@ -1,9 +1,11 @@
+#include <dory/core/registry.h>
 #include "dory/game/bootstrap.h"
 #include <dory/core/controllers/windowSystemController.h>
 #include <dory/core/controllers/viewController.h>
 #include <regex>
 #include <iostream>
 #include <thread>
+#include <spdlog/fmt/fmt.h>
 
 namespace dory::game
 {

@@ -1,3 +1,6 @@
+#include <glad/gl.h>
+#include <GLFW/glfw3.h>
+
 #include "dory/game/setup.h"
 #include "dory/core/resources/ecsType.h"
 #include <dory/core/services/fileService.h>
