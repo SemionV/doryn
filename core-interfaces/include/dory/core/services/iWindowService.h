@@ -13,7 +13,7 @@ namespace dory::core::services
     public:
         virtual resources::IdType createWindow(const resources::WindowParameters& parameters) = 0;
         virtual void closeWindow(resources::IdType windowId) = 0;
-        virtual void setCurrentWindow(const resources::entities::Window& window) = 0;
+        virtual void setCurrentWindow(const resources::IdType windowId) = 0;
         virtual void swapBuffers(const resources::entities::Window& window) = 0;
     };
 }

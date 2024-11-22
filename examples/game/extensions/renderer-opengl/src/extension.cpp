@@ -1,5 +1,6 @@
+#include <glad/gl.h>
+#include <GLFW/glfw3.h>
 #include <extension.h>
-#include <iostream>
 #include <openglRenderer.h>
 #include <shaderService.h>
 
@@ -19,7 +20,22 @@ namespace dory::renderer::opengl
             _registry(registry),
             _renderer(registry, std::make_shared<OpenglRenderer>(registry), core::resources::GraphicalSystem::opengl),
             _shaderService(registry, std::make_shared<ShaderService>(registry), core::resources::GraphicalSystem::opengl)
-    {}
+    {
+        glfwInit();
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+        GLFWwindow* hidden_window = glfwCreateWindow(1, 1, "", NULL, NULL);
+        glfwMakeContextCurrent(hidden_window);
+        int version = gladLoadGL(glfwGetProcAddress);
+        if (version == 0)
+            {
+            auto logger = _registry.get<core::services::ILogService>();
+            if(logger)
+            {
+                logger->error(std::string_view("Failed to initialize OpenGL context for extension"));
+            }
+        }
+        glfwDestroyWindow(hidden_window);
+    }
 
     Extension::~Extension()
     {

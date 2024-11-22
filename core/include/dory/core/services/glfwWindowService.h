@@ -19,7 +19,7 @@ namespace dory::core::services
 
         resources::IdType createWindow(const resources::WindowParameters& parameters) override;
         void closeWindow(resources::IdType windowId) override;
-        void setCurrentWindow(const resources::entities::Window& window) override;
+        void setCurrentWindow(const resources::IdType windowId) override;
         void swapBuffers(const resources::entities::Window& window) override;
     };
 }
