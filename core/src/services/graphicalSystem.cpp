@@ -19,7 +19,7 @@ namespace dory::core::services
 
                 if(view && windowService && renderer)
                 {
-                    windowService->setCurrentWindow(window);
+                    windowService->setCurrentWindow(window.id);
                     renderer->draw(context, *view);
                     windowService->swapBuffers(window);
                 }
@@ -36,7 +36,7 @@ namespace dory::core::services
 
         if(shaderService && windowService)
         {
-            windowService->setCurrentWindow(window);
+            windowService->setCurrentWindow(window.id);
             if(shaderService->initializeProgram(program))
             {
                 auto shaderRepository = _registry.get<repositories::IShaderRepository>(window.graphicalSystem);

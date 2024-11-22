@@ -54,4 +54,15 @@ namespace dory::core::services
 
         return resources::nullId;
     }
+
+    resources::assets::Mesh* AssetService::getMesh(resources::IdType meshId)
+    {
+        auto meshRepository = _registry.get<repositories::assets::IMeshRepository>();
+        if(meshRepository)
+        {
+            return meshRepository->get(meshId);
+        }
+
+        return nullptr;
+    }
 }

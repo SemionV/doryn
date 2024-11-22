@@ -18,5 +18,6 @@ namespace dory::core::services
         explicit AssetService(Registry& registry);
 
         resources::IdType loadProgram(const resources::objects::ShaderProgram& program, const resources::entities::Window& window) override;
+        resources::assets::Mesh* getMesh(resources::IdType meshId) override;
     };
 }

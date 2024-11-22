@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dory/core/resources/bindings//meshBinding.h"
+#include "meshBinding.h"
 
 namespace dory::core::resources::bindings
 {

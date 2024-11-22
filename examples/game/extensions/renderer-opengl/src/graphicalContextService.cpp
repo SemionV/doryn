@@ -22,7 +22,7 @@ namespace dory::renderer::opengl
                     auto graphicalContext = graphicalContextRepository->get(window->graphicalContextId);
                     if(graphicalContext)
                     {
-                        windowService->setCurrentWindow(*window);
+                        windowService->setCurrentWindow(window->id);
                         bindMesh(graphicalContext, mesh);
                     }
                 }

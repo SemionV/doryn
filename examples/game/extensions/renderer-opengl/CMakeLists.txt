@@ -6,7 +6,7 @@ add_library(${DORY_MODULE_NAME} MODULE
         src/shaderService.cpp
         src/extension.cpp
         src/factory.cpp)
-target_link_libraries(${DORY_MODULE_NAME} PRIVATE dory-core-generic Boost::dll opengl-glad)
+target_link_libraries(${DORY_MODULE_NAME} PRIVATE dory-core-generic Boost::dll opengl-glad glfw)
 target_include_directories(${DORY_MODULE_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""

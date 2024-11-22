@@ -45,6 +45,7 @@
 #include <dory/core/repositories/iGraphicalContextRepository.h>
 #include <dory/core/repositories/assets/iMeshRepository.h>
 #include <dory/core/repositories/bindings/iMeshBindingRepository.h>
+#include <dory/core/repositories/bindings/iBufferBindingRepository.h>
 #include <dory/core/services/graphics/iGpuDriver.h>
 
 #include <dory/core/resources/entities/camera.h>
@@ -56,7 +57,7 @@ namespace dory::core
         using ICameraRepository = repositories::IRepository<resources::entities::Camera>;
     }
 
-    struct Registry: public generic::registry::RegistryLayer<
+    class Registry: public generic::registry::RegistryLayer<
             /*Events*/
             generic::registry::ServiceEntry<events::pipeline::Bundle::IDispatcher>,
             generic::registry::ServiceEntry<events::pipeline::Bundle::IListener>,
@@ -86,6 +87,7 @@ namespace dory::core
             generic::registry::ServiceEntry<repositories::IShaderProgramRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::IGraphicalContextRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::bindings::IMeshBindingRepository, resources::GraphicalSystem>,
+            generic::registry::ServiceEntry<repositories::bindings::IBufferBindingRepository, resources::GraphicalSystem>,
             /*Services*/
             generic::registry::ServiceEntry<services::ILibraryService>,
             generic::registry::ServiceEntry<services::IFileService>,
