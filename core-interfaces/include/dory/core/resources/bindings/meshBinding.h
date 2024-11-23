@@ -5,7 +5,7 @@
 
 namespace dory::core::resources::bindings
 {
-    enum class VertexAttributeComponentType
+    enum class ComponentType
     {
         floatType,
         doubleType
@@ -15,7 +15,8 @@ namespace dory::core::resources::bindings
     {
         std::size_t offset;
         std::size_t componentsCount;
-        VertexAttributeComponentType componentType;
+        std::size_t stride;
+        ComponentType componentType;
     };
 
     struct MeshBinding: Entity<>

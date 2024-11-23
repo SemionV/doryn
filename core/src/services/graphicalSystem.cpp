@@ -4,16 +4,26 @@
 
 namespace dory::core::services
 {
+    using namespace resources;
+    using namespace resources::bindings;
+    using namespace resources::entities;
+    using namespace resources::assets;
+    using namespace repositories;
+    using namespace repositories::bindings;
+    using namespace repositories::assets;
+    using namespace services;
+    using namespace services::graphics;
+
     GraphicalSystem::GraphicalSystem(core::Registry& registry):
         _registry(registry)
     {}
 
-    void GraphicalSystem::render(core::resources::DataContext& context, const core::resources::entities::Window& window)
+    void GraphicalSystem::render(DataContext& context, const Window& window)
     {
-        _registry.get<core::repositories::IViewRepository>([this, &context, &window](core::repositories::IViewRepository* viewRepository) {
+        _registry.get<IViewRepository>([this, &context, &window](IViewRepository* viewRepository) {
             auto viewIds = viewRepository->getWindowViews(window.id);
-            auto windowService = _registry.get<core::services::IWindowService>(window.windowSystem);
-            auto renderer = _registry.get<core::services::graphics::IRenderer>(window.graphicalSystem);
+            auto windowService = _registry.get<IWindowService>(window.windowSystem);
+            auto renderer = _registry.get<IRenderer>(window.graphicalSystem);
             for(const auto& viewId : viewIds)
             {
                 auto view = viewRepository->get(viewId);
@@ -67,14 +77,14 @@ namespace dory::core::services
         return true;
     }
 
-    void GraphicalSystem::bindMesh(const resources::IdType meshId, resources::entities::GraphicalContext& graphicalContext)
+    void GraphicalSystem::bindMesh(const IdType meshId, GraphicalContext& graphicalContext)
     {
-        auto meshBindingRepository = _registry.get<repositories::bindings::IMeshBindingRepository>(graphicalContext.graphicalSystem);
-        auto meshRepository = _registry.get<repositories::assets::IMeshRepository>();
+        auto meshBindingRepository = _registry.get<IMeshBindingRepository>(graphicalContext.graphicalSystem);
+        auto meshRepository = _registry.get<IMeshRepository>();
 
         if(meshBindingRepository && meshRepository)
         {
-            resources::bindings::MeshBinding* meshBinding;
+            MeshBinding* meshBinding;
             const auto mesh = meshRepository->get(meshId);
 
             if(graphicalContext.meshBindings.contains(meshId))
@@ -83,7 +93,7 @@ namespace dory::core::services
             }
             else
             {
-                meshBinding = meshBindingRepository->insert(resources::bindings::MeshBinding{ {}, meshId });
+                meshBinding = meshBindingRepository->insert(MeshBinding{ {}, meshId });
             }
 
             if(meshBinding && mesh)
@@ -94,99 +104,111 @@ namespace dory::core::services
     }
 
     template<typename TAttribute>
-    std::size_t getVertexAttributeBufferSize(std::size_t verticesCount, TAttribute& vertexAttribute)
+    std::size_t getAttributeDataSize(const std::size_t verticesCount, const TAttribute& vertexAttribute)
     {
-        return verticesCount * vertexAttribute.componentsCount * sizeof(TAttribute::ComponentsType);
+        return verticesCount * vertexAttribute.componentsCount * sizeof(typename TAttribute::ComponentsType);
+    }
+
+    template<typename... TAttributes>
+    std::size_t calculateVertexBufferSize(const std::size_t vertexCount, const TAttributes&... attributes)
+    {
+        return (getAttributeDataSize(vertexCount, attributes) + ...);
     }
 
     template<typename T>
-    struct VertexAttributeComponentType
-    {
+    struct VertexAttributeComponentType;
 
-    };
-
-    template<typename T>
+    template<>
     struct VertexAttributeComponentType<float>
     {
-        static constexpr auto value = resources::bindings::VertexAttributeComponentType::floatType;
+        static constexpr auto value = ComponentType::floatType;
     };
 
-    template<typename T>
+    template<>
     struct VertexAttributeComponentType<double>
     {
-        static constexpr auto value = resources::bindings::VertexAttributeComponentType::doubleType;
+        static constexpr auto value = ComponentType::doubleType;
     };
 
-
-    void GraphicalSystem::bindMeshData(resources::entities::GraphicalContext& graphicalContext, const resources::assets::Mesh* mesh, resources::bindings::MeshBinding* meshBinding)
+    template<typename TComponent>
+    void writeAttributeData(BufferBinding* buffer, std::size_t vertexCount, Vectors<TComponent> attribute, std::size_t& offset, MeshBinding* meshBinding, IGpuDriver* gpuDriver)
     {
-        auto bufferBindingRepository = _registry.get<repositories::bindings::IBufferBindingRepository>(graphicalContext.graphicalSystem);
-        auto gpuDriver = _registry.get<services::graphics::IGpuDriver>(graphicalContext.graphicalSystem);
+        auto dataSize = getAttributeDataSize(vertexCount, attribute);
+        if(dataSize)
+        {
+            gpuDriver->writeData(buffer, offset, dataSize, attribute.components.data());
+            offset += dataSize;
+
+            const auto& attributeBinding = VertexAttributeBinding {
+                    offset,
+                    attribute.componentsCount,
+                    0,
+                    VertexAttributeComponentType<TComponent>::value
+            };
+
+            meshBinding->vertexAttributes.emplace_back(attributeBinding);
+        }
+    }
+
+    BufferBinding* bindVertexBuffer(const Mesh* mesh, MeshBinding* meshBinding, IBufferBindingRepository* bufferBindingRepository, IGpuDriver* gpuDriver)
+    {
+        BufferBinding* vertexBufferBinding = nullptr;
+        if(meshBinding->vertexBufferId != nullId)
+        {
+            vertexBufferBinding = bufferBindingRepository->get(meshBinding->vertexBufferId);
+            if(vertexBufferBinding != nullptr)
+            {
+                gpuDriver->deallocateBuffer(vertexBufferBinding);
+            }
+        }
+
+        if(!vertexBufferBinding)
+        {
+            vertexBufferBinding = bufferBindingRepository->insert(BufferBinding{});
+        }
+
+        if(vertexBufferBinding)
+        {
+            const std::size_t bufferSize = calculateVertexBufferSize(mesh->vertexCount, mesh->positions, mesh->normals, mesh->textureCoordinates, mesh->colors);
+
+            if(!gpuDriver->allocateBuffer(vertexBufferBinding, bufferSize))
+            {
+                bufferBindingRepository->remove(vertexBufferBinding->id);
+                return nullptr;
+            }
+
+            meshBinding->vertexBufferId = vertexBufferBinding->id;
+            meshBinding->vertexBufferOffset = 0;
+            meshBinding->verticesCount = mesh->vertexCount;
+        }
+
+        return vertexBufferBinding;
+    }
+
+    void GraphicalSystem::bindMeshData(GraphicalContext& graphicalContext, const Mesh* mesh, MeshBinding* meshBinding)
+    {
+        auto bufferBindingRepository = _registry.get<IBufferBindingRepository>(graphicalContext.graphicalSystem);
+        auto gpuDriver = _registry.get<IGpuDriver>(graphicalContext.graphicalSystem);
 
         if(bufferBindingRepository && gpuDriver)
         {
-            resources::bindings::BufferBinding* vertexBufferBinding = nullptr;
-            if(meshBinding->vertexBufferId != resources::nullId)
-            {
-                vertexBufferBinding = bufferBindingRepository->get(meshBinding->vertexBufferId);
-                if(vertexBufferBinding != nullptr)
-                {
-                    gpuDriver->deallocateBuffer(vertexBufferBinding);
-                }
-            }
-
-            if(!vertexBufferBinding)
-            {
-                vertexBufferBinding = bufferBindingRepository->insert(resources::bindings::BufferBinding{});
-            }
-
+            BufferBinding* vertexBufferBinding = bindVertexBuffer(mesh, meshBinding, (*bufferBindingRepository).get(), (*gpuDriver).get());
             if(vertexBufferBinding)
             {
-                meshBinding->vertexBufferId = vertexBufferBinding->id;
-                meshBinding->vertexBufferOffset = 0;
-                meshBinding->verticesCount = mesh->vertexCount;
+                std::size_t offset = 0;
 
-                const auto positionsDataSize = getVertexAttributeBufferSize(mesh->vertexCount, mesh->positions);
-                const auto normalsDataSize = getVertexAttributeBufferSize(mesh->vertexCount, mesh->normals);
-                const auto colorsDataSize = getVertexAttributeBufferSize(mesh->vertexCount, mesh->colors);
-                const auto texCoordsDataSize = getVertexAttributeBufferSize(mesh->vertexCount, mesh->textureCoordinates);
-                const std::size_t bufferSize = positionsDataSize + normalsDataSize + texCoordsDataSize + colorsDataSize;
-
-                if(!gpuDriver->allocateBuffer(vertexBufferBinding, bufferSize))
+                auto gpuDriverPtr = (*gpuDriver).get();
+                writeAttributeData(vertexBufferBinding, mesh->vertexCount, mesh->positions, offset, meshBinding, gpuDriverPtr);
+                writeAttributeData(vertexBufferBinding, mesh->vertexCount, mesh->normals, offset, meshBinding, gpuDriverPtr);
+                writeAttributeData(vertexBufferBinding, mesh->vertexCount, mesh->textureCoordinates, offset, meshBinding, gpuDriverPtr);
+                writeAttributeData(vertexBufferBinding, mesh->vertexCount, mesh->colors, offset, meshBinding, gpuDriverPtr);
+            }
+            else
+            {
+                _registry.get<ILogService>([mesh](ILogService* logger)
                 {
-                    _registry.get<ILogService>([bufferSize, vertexBufferBinding](ILogService* logger)
-                    {
-                        logger->error(fmt::format("Cannot allocate buffer, size={0}, bindingId={1}", bufferSize, vertexBufferBinding->id));
-                    });
-                }
-                else
-                {
-                    std::size_t offset = 0;
-
-                    if(positionsDataSize)
-                    {
-                        gpuDriver->writeDataAsync(vertexBufferBinding, offset, positionsDataSize, mesh->positions.components.data());
-                        offset += positionsDataSize;
-                        meshBinding->vertexAttributes.emplace_back(resources::bindings::VertexAttributeBinding{offset, mesh->positions.componentsCount, VertexAttributeComponentType<decltype(mesh->positions)::ComponentsType>::});
-                    }
-
-                    if(normalsDataSize)
-                    {
-                        gpuDriver->writeDataAsync(vertexBufferBinding, offset, normalsDataSize, mesh->normals.components.data());
-                        offset += normalsDataSize;
-                    }
-
-                    if(colorsDataSize)
-                    {
-                        gpuDriver->writeDataAsync(vertexBufferBinding, offset, colorsDataSize, mesh->colors.components.data());
-                        offset += colorsDataSize;
-                    }
-
-                    if(texCoordsDataSize)
-                    {
-                        gpuDriver->writeDataAsync(vertexBufferBinding, offset, texCoordsDataSize, mesh->textureCoordinates.components.data());
-                    }
-                }
+                    logger->error(fmt::format("Cannot allocate buffer, meshId={0}", mesh->id));
+                });
             }
         }
     }
