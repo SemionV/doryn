@@ -23,12 +23,12 @@ namespace dory::core::resources::bindings
     {
         IdType meshId;
         IdType vertexBufferId;
-        std::size_t vertexBufferOffset;
-        std::size_t verticesCount;
+        std::size_t vertexBufferOffset {};
+        std::size_t vertexCount;
         std::vector<VertexAttributeBinding> vertexAttributes;
 
         IdType indexBufferId;
-        std::size_t indexBufferOffset;
-        std::size_t indicesCount;
+        std::size_t indexBufferOffset {};
+        std::size_t indexCount;
     };
 }

@@ -17,11 +17,13 @@ namespace dory::core::resources::assets
 
     struct Mesh: Entity<>
     {
+        using IndexType = unsigned int;
+
         std::size_t vertexCount;
         Vectors<float> positions;
         Vectors<float> normals;
         Vectors<float> textureCoordinates;
         Vectors<float> colors;
-        std::vector<unsigned int> indices;
+        std::vector<IndexType> indices;
     };
 }

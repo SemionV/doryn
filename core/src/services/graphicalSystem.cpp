@@ -131,9 +131,9 @@ namespace dory::core::services
     };
 
     template<typename TComponent>
-    void writeAttributeData(BufferBinding* buffer, std::size_t vertexCount, Vectors<TComponent> attribute, std::size_t& offset, MeshBinding* meshBinding, IGpuDriver* gpuDriver)
+    void writeAttributeData(BufferBinding* buffer, Vectors<TComponent> attribute, std::size_t& offset, MeshBinding* meshBinding, IGpuDriver* gpuDriver)
     {
-        auto dataSize = getAttributeDataSize(vertexCount, attribute);
+        auto dataSize = getAttributeDataSize(meshBinding->vertexCount, attribute);
         if(dataSize)
         {
             gpuDriver->writeData(buffer, offset, dataSize, attribute.components.data());
@@ -150,39 +150,42 @@ namespace dory::core::services
         }
     }
 
-    BufferBinding* bindVertexBuffer(const Mesh* mesh, MeshBinding* meshBinding, IBufferBindingRepository* bufferBindingRepository, IGpuDriver* gpuDriver)
+    template<typename... TAttributes>
+    void writeVertexAttributes(BufferBinding* buffer, MeshBinding* meshBinding, IGpuDriver* gpuDriver, const TAttributes&... attributes)
     {
-        BufferBinding* vertexBufferBinding = nullptr;
-        if(meshBinding->vertexBufferId != nullId)
+        std::size_t offset = 0;
+        (writeAttributeData(buffer, attributes, offset, meshBinding, gpuDriver), ...);
+    }
+
+    BufferBinding* bindBuffer(IdType& bufferId, std::size_t bufferSize, IBufferBindingRepository* bufferBindingRepository, IGpuDriver* gpuDriver)
+    {
+        BufferBinding* bufferBinding = nullptr;
+        if(bufferId != nullId)
         {
-            vertexBufferBinding = bufferBindingRepository->get(meshBinding->vertexBufferId);
-            if(vertexBufferBinding != nullptr)
+            bufferBinding = bufferBindingRepository->get(bufferId);
+            if(bufferBinding != nullptr)
             {
-                gpuDriver->deallocateBuffer(vertexBufferBinding);
+                gpuDriver->deallocateBuffer(bufferBinding);
             }
         }
 
-        if(!vertexBufferBinding)
+        if(!bufferBinding)
         {
-            vertexBufferBinding = bufferBindingRepository->insert(BufferBinding{});
+            bufferBinding = bufferBindingRepository->insert(BufferBinding{});
         }
 
-        if(vertexBufferBinding)
+        if(bufferBinding)
         {
-            const std::size_t bufferSize = calculateVertexBufferSize(mesh->vertexCount, mesh->positions, mesh->normals, mesh->textureCoordinates, mesh->colors);
-
-            if(!gpuDriver->allocateBuffer(vertexBufferBinding, bufferSize))
+            if(!gpuDriver->allocateBuffer(bufferBinding, bufferSize))
             {
-                bufferBindingRepository->remove(vertexBufferBinding->id);
+                bufferBindingRepository->remove(bufferBinding->id);
                 return nullptr;
             }
 
-            meshBinding->vertexBufferId = vertexBufferBinding->id;
-            meshBinding->vertexBufferOffset = 0;
-            meshBinding->verticesCount = mesh->vertexCount;
+            bufferId = bufferBinding->id;
         }
 
-        return vertexBufferBinding;
+        return bufferBinding;
     }
 
     void GraphicalSystem::bindMeshData(GraphicalContext& graphicalContext, const Mesh* mesh, MeshBinding* meshBinding)
@@ -192,16 +195,18 @@ namespace dory::core::services
 
         if(bufferBindingRepository && gpuDriver)
         {
-            BufferBinding* vertexBufferBinding = bindVertexBuffer(mesh, meshBinding, (*bufferBindingRepository).get(), (*gpuDriver).get());
+            auto bufferBindingRepositoryPtr = (*bufferBindingRepository).get();
+            auto gpuDriverPtr = (*gpuDriver).get();
+
+            meshBinding->vertexCount = mesh->vertexCount;
+            meshBinding->vertexBufferOffset = 0;
+            meshBinding->indexBufferOffset = 0;
+
+            const std::size_t vertexBufferSize = calculateVertexBufferSize(mesh->vertexCount, mesh->positions, mesh->normals, mesh->textureCoordinates, mesh->colors);
+            BufferBinding* vertexBufferBinding = bindBuffer(meshBinding->vertexBufferId, vertexBufferSize, bufferBindingRepositoryPtr, gpuDriverPtr);
             if(vertexBufferBinding)
             {
-                std::size_t offset = 0;
-
-                auto gpuDriverPtr = (*gpuDriver).get();
-                writeAttributeData(vertexBufferBinding, mesh->vertexCount, mesh->positions, offset, meshBinding, gpuDriverPtr);
-                writeAttributeData(vertexBufferBinding, mesh->vertexCount, mesh->normals, offset, meshBinding, gpuDriverPtr);
-                writeAttributeData(vertexBufferBinding, mesh->vertexCount, mesh->textureCoordinates, offset, meshBinding, gpuDriverPtr);
-                writeAttributeData(vertexBufferBinding, mesh->vertexCount, mesh->colors, offset, meshBinding, gpuDriverPtr);
+                writeVertexAttributes(vertexBufferBinding, meshBinding, gpuDriverPtr, mesh->positions, mesh->normals, mesh->textureCoordinates, mesh->colors);
             }
             else
             {
@@ -209,6 +214,16 @@ namespace dory::core::services
                 {
                     logger->error(fmt::format("Cannot allocate buffer, meshId={0}", mesh->id));
                 });
+            }
+
+            if(!mesh->indices.empty())
+            {
+                const std::size_t indexBufferSize = mesh->indices.size() * sizeof(Mesh::IndexType);
+                BufferBinding* indexBufferBinding = bindBuffer(meshBinding->indexBufferId, indexBufferSize, bufferBindingRepositoryPtr, gpuDriverPtr);
+                if(indexBufferBinding)
+                {
+                    gpuDriver->writeData(indexBufferBinding, 0, indexBufferSize, mesh->indices.data());
+                }
             }
         }
     }
