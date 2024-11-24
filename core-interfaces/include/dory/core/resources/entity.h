@@ -13,7 +13,7 @@ namespace dory::core::resources
 
         Entity() = default;
 
-        explicit Entity(T id):
+        Entity(T id):
                 id(id)
         {}
     };

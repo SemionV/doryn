@@ -16,8 +16,11 @@ namespace dory::core::services::graphics
     private:
         Registry& _registry;
 
-
-        void bindMeshData(resources::entities::GraphicalContext& graphicalContext, const resources::assets::Mesh* mesh, resources::bindings::MeshBinding* meshBinding);
+        template<typename... TComponents>
+        void bindMeshData(resources::entities::GraphicalContext& graphicalContext,
+                          const resources::assets::Mesh* mesh,
+                          resources::bindings::MeshBinding* meshBinding,
+                          const resources::assets::Vectors<TComponents>&... vertexAttributes);
 
     public:
         explicit AssetBinder(Registry& registry);

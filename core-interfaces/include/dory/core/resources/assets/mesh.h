@@ -11,8 +11,8 @@ namespace dory::core::resources::assets
     struct Vectors
     {
         using ComponentsType = T;
+        std::size_t componentsCount {};
         std::vector<T> components;
-        std::size_t componentsCount;
     };
 
     struct Mesh: Entity<>

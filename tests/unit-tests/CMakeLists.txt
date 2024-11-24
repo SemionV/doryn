@@ -3,7 +3,8 @@ project(unit-tests)
 
 add_executable(${PROJECT_NAME}
         enttSceneService.cpp
-        pipelineRepository.cpp)
+        pipelineRepository.cpp
+        graphics/assetBinderTests.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-core)

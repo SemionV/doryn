@@ -39,7 +39,10 @@ namespace dory::core::services::graphics
 
             if(meshBinding && mesh)
             {
-                bindMeshData(graphicalContext, mesh, meshBinding);
+                meshBinding->meshId = mesh->id;
+                bindMeshData(graphicalContext, mesh, meshBinding, mesh->positions, mesh->normals, mesh->textureCoordinates, mesh->colors);
+
+                graphicalContext.meshBindings[meshId] = meshBinding->id;
             }
         }
     }
@@ -72,13 +75,12 @@ namespace dory::core::services::graphics
     };
 
     template<typename TComponent>
-    void writeAttributeData(BufferBinding* buffer, Vectors<TComponent> attribute, std::size_t& offset, MeshBinding* meshBinding, IGpuDriver* gpuDriver)
+    void writeAttributeData(BufferBinding* buffer, const Vectors<TComponent>& attribute, std::size_t& offset, MeshBinding* meshBinding, IGpuDriver* gpuDriver)
     {
         auto dataSize = getAttributeDataSize(meshBinding->vertexCount, attribute);
         if(dataSize)
         {
             gpuDriver->writeData(buffer, offset, dataSize, attribute.components.data());
-            offset += dataSize;
 
             const auto& attributeBinding = VertexAttributeBinding {
                     offset,
@@ -88,6 +90,7 @@ namespace dory::core::services::graphics
             };
 
             meshBinding->vertexAttributes.emplace_back(attributeBinding);
+            offset += dataSize;
         }
     }
 
@@ -112,7 +115,7 @@ namespace dory::core::services::graphics
 
         if(!bufferBinding)
         {
-            bufferBinding = bufferBindingRepository->insert(BufferBinding{});
+            bufferBinding = bufferBindingRepository->insert(BufferBinding{ {}, bufferSize });
         }
 
         if(bufferBinding)
@@ -129,7 +132,8 @@ namespace dory::core::services::graphics
         return bufferBinding;
     }
 
-    void AssetBinder::bindMeshData(GraphicalContext& graphicalContext, const Mesh* mesh, MeshBinding* meshBinding)
+    template<typename... TComponents>
+    void AssetBinder::bindMeshData(GraphicalContext& graphicalContext, const Mesh* mesh, MeshBinding* meshBinding, const Vectors<TComponents>&... vertexAttributes)
     {
         auto bufferBindingRepository = _registry.get<IBufferBindingRepository>(graphicalContext.graphicalSystem);
         auto gpuDriver = _registry.get<IGpuDriver>(graphicalContext.graphicalSystem);
@@ -143,22 +147,23 @@ namespace dory::core::services::graphics
             meshBinding->vertexBufferOffset = 0;
             meshBinding->indexBufferOffset = 0;
 
-            const std::size_t vertexBufferSize = calculateVertexBufferSize(mesh->vertexCount, mesh->positions, mesh->normals, mesh->textureCoordinates, mesh->colors);
+            const std::size_t vertexBufferSize = calculateVertexBufferSize(mesh->vertexCount, vertexAttributes...);
             BufferBinding* vertexBufferBinding = bindBuffer(meshBinding->vertexBufferId, vertexBufferSize, bufferBindingRepositoryPtr, gpuDriverPtr);
             if(vertexBufferBinding)
             {
-                writeVertexAttributes(vertexBufferBinding, meshBinding, gpuDriverPtr, mesh->positions, mesh->normals, mesh->textureCoordinates, mesh->colors);
+                writeVertexAttributes(vertexBufferBinding, meshBinding, gpuDriverPtr, vertexAttributes...);
             }
             else
             {
-                _registry.get<ILogService>([mesh](ILogService* logger)
-                                           {
-                                               logger->error(fmt::format("Cannot allocate buffer, meshId={0}", mesh->id));
-                                           });
+                _registry.get<ILogService>([mesh](ILogService* logger) {
+                    logger->error(fmt::format("Cannot allocate buffer, meshId={0}", mesh->id));
+                });
             }
 
             if(!mesh->indices.empty())
             {
+                meshBinding->indexCount = mesh->indices.size();
+
                 const std::size_t indexBufferSize = mesh->indices.size() * sizeof(Mesh::IndexType);
                 BufferBinding* indexBufferBinding = bindBuffer(meshBinding->indexBufferId, indexBufferSize, bufferBindingRepositoryPtr, gpuDriverPtr);
                 if(indexBufferBinding)

@@ -13,11 +13,13 @@ namespace dory::core::repositories
     template<typename TEntity, typename TId = resources::IdType>
     class IRepository: public generic::Interface
     {
+    protected:
+        virtual void setId(TEntity& entity) = 0;
+
     public:
         using EntityType = TEntity;
 
         virtual std::size_t count() = 0;
-        virtual void setId(TEntity& entity) = 0;
         virtual TEntity* get(TId id) = 0;
         virtual void store(TEntity& entity) = 0;
         virtual TEntity* insert(TEntity&& entity) = 0;
