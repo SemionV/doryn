@@ -31,6 +31,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/assetService.cpp
         src/services/hot-reload/extensionLoader.cpp
         src/services/enttSceneService.cpp
+        src/services/graphics/assetBinder.cpp
         src/controllers/windowSystemController.cpp
         src/controllers/viewController.cpp
         ${DORY_PLATFORM_MODULES})

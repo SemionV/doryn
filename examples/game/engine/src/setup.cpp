@@ -40,6 +40,7 @@
 #include <dory/core/services/assetService.h>
 #include <dory/core/services/hot-reload/extensionLoader.h>
 #include <dory/core/services/enttSceneService.h>
+#include <dory/core/services/graphics/assetBinder.h>
 #include <dory/core/resources/assetType.h>
 
 namespace dory::game
@@ -102,6 +103,7 @@ namespace dory::game
         registry.set<core::services::IWindowService>(libraryHandle, glfwWindowService);
 
         registry.set<core::services::IGraphicalSystem>(libraryHandle, std::make_shared<core::services::GraphicalSystem>(registry));
+        registry.set<core::services::graphics::IAssetBinder>(libraryHandle, std::make_shared<core::services::graphics::AssetBinder>(registry));
 
         registry.set<core::services::IAssetTypeResolver>(libraryHandle, std::make_shared<core::services::AssetTypeResolver>());
         registry.set<core::services::IAssetReloadHandler>(libraryHandle, std::make_shared<core::services::loaders::ExtensionLoader>(registry), std::string{core::resources::AssetType::extension});
