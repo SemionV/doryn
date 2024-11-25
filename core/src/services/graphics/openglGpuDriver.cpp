@@ -37,13 +37,38 @@ namespace dory::core::services::graphics
         }
     }
 
+    GLenum getGlEnumType(ComponentType componentType)
+    {
+        switch (componentType)
+        {
+            case ComponentType::floatType: return GL_FLOAT;
+            case ComponentType::doubleType: return GL_DOUBLE;
+        }
+    }
+
     OpenglGpuDriver::OpenglGpuDriver(Registry& registry) : DependencyResolver(registry)
     {}
+
+    bool OpenglGpuDriver::checkForError()
+    {
+        GLenum errorCode = glGetError();
+        if (errorCode != GL_NO_ERROR)
+        {
+            _registry.get<ILogService>([&errorCode](ILogService* logger) {
+                logger->error(fmt::format("Error on allocating OpenGL buffer: {0}, {1}", errorCode, getErrorString(errorCode)));
+            });
+
+            return true;
+        }
+
+        return false;
+    }
 
     bool OpenglGpuDriver::allocateBuffer(BufferBinding* bufferBinding, std::size_t size)
     {
         auto glBuffer = (OpenglBufferBinding*)bufferBinding;
         assert(glBuffer->glId == 0);
+        assert(glIsBuffer(glBuffer->glId));
 
         glCreateBuffers(1, &glBuffer->glId);
 
@@ -56,6 +81,7 @@ namespace dory::core::services::graphics
     {
         auto glBuffer = (OpenglBufferBinding*)bufferBinding;
         assert(glBuffer->glId != 0);
+        assert(glIsBuffer(glBuffer->glId));
 
         glDeleteBuffers(1, &glBuffer->glId);
         glBuffer->glId = 0;
@@ -71,18 +97,36 @@ namespace dory::core::services::graphics
         checkForError();
     }
 
-    bool OpenglGpuDriver::checkForError()
+    void OpenglGpuDriver::setVertexAttributes(const MeshBinding* meshBinding, const BufferBinding* vertexBufferBinding, VertexAttributeBinding* attributes, const std::size_t count)
     {
-        GLenum errorCode = glGetError();
-        if (errorCode != GL_NO_ERROR)
-        {
-            _registry.get<ILogService>([&errorCode](ILogService* logger) {
-                logger->error(fmt::format("Error on allocating OpenGL buffer: {0}, {1}", errorCode, getErrorString(errorCode)));
-            });
+        auto glMesh = (OpenglMeshBinding*)meshBinding;
+        auto glVertexBuffer = (OpenglBufferBinding*)vertexBufferBinding;
+        assert(glMesh->glVertexArrayId != 0);
+        assert(glIsVertexArray(glMesh->glVertexArrayId));
+        assert(glVertexBuffer->glId != 0);
+        assert(glIsBuffer(glVertexBuffer->glId));
 
-            return true;
+        glBindVertexArray(glMesh->glVertexArrayId);
+        glBindBuffer(GL_ARRAY_BUFFER, glVertexBuffer->glId);
+        for(std::size_t i = 0; i < count; ++i)
+        {
+            auto& attribute = attributes[i];
+
+            glVertexAttribPointer(i, (GLint)attribute.componentsCount, getGlEnumType(attribute.componentType), attribute.normalized, (GLsizei)attribute.stride, (void*)attribute.offset);
+            glEnableVertexAttribArray(i);
         }
 
-        return false;
+        checkForError();
+    }
+
+    void OpenglGpuDriver::initializeMesh(MeshBinding* meshBinding)
+    {
+        auto glMesh = (OpenglMeshBinding*)meshBinding;
+
+        if(glMesh->glVertexArrayId == 0 && !glIsVertexArray(glMesh->glVertexArrayId))
+        {
+            glCreateVertexArrays(1, &glMesh->glVertexArrayId);
+            checkForError();
+        }
     }
 }

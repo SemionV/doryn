@@ -149,11 +149,14 @@ namespace dory::core::services::graphics
             meshBinding->vertexBufferOffset = 0;
             meshBinding->indexBufferOffset = 0;
 
+            gpuDriver->initializeMesh(meshBinding);
+
             const std::size_t vertexBufferSize = calculateVertexBufferSize(mesh->vertexCount, vertexAttributes...);
             BufferBinding* vertexBufferBinding = bindBuffer(meshBinding->vertexBufferId, vertexBufferSize, bufferBindingRepositoryPtr, gpuDriverPtr);
             if(vertexBufferBinding)
             {
                 writeVertexAttributes(vertexBufferBinding, meshBinding, gpuDriverPtr, vertexAttributes...);
+                gpuDriver->setVertexAttributes(meshBinding, vertexBufferBinding, meshBinding->vertexAttributes.data(), meshBinding->vertexAttributes.size());
             }
             else
             {

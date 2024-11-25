@@ -27,6 +27,8 @@ public:
     MOCK_METHOD(bool, allocateBuffer, (BufferBinding* bufferBinding, std::size_t size));
     MOCK_METHOD(void, deallocateBuffer, (BufferBinding* bufferBinding));
     MOCK_METHOD(void, writeData, (BufferBinding* bufferBinding, std::size_t offset, std::size_t size, const void* data));
+    MOCK_METHOD(void, setVertexAttributes, (const resources::bindings::MeshBinding* meshBinding, const BufferBinding* bufferBinding, VertexAttributeBinding* attributes, const std::size_t count));
+    MOCK_METHOD(void, initializeMesh, (resources::bindings::MeshBinding* meshBinding));
 };
 
 template<typename TInterface, typename TEntity = TInterface::EntityType>
@@ -165,13 +167,19 @@ void assertMeshBinding(Mesh& mesh, const Vectors<TComponents>&... vertexAttribut
                 return &indexBufferBinding;
             }));
 
+    auto meshMatcher = Pointee(Field(&Mesh::id, Eq(mesh.id)));
     auto vertexBufferMatcher = Pointee(Field(&BufferBinding::id, Eq(vertexBufferBinding.id)));
     auto indexBufferMatcher = Pointee(Field(&BufferBinding::id, Eq(indexBufferBinding.id)));
+
+    EXPECT_CALL(*gpuDriver, initializeMesh(meshMatcher)).WillOnce(Return());
 
     EXPECT_CALL(*gpuDriver, allocateBuffer(vertexBufferMatcher, Eq(vertexBufferSize))).WillOnce(Return(true));
     EXPECT_CALL(*gpuDriver, allocateBuffer(indexBufferMatcher, Eq(indexBufferSize))).WillOnce(Return(true));
 
     expectDataWrites(gpuDriver.get(), vertexBufferBinding, vertexAttributes...);
+    EXPECT_CALL(*gpuDriver, setVertexAttributes(meshMatcher, vertexBufferMatcher, _, Eq(sizeof...(vertexAttributes))))
+        .WillOnce(Return());
+
     EXPECT_CALL(*gpuDriver, writeData(indexBufferMatcher, Eq(0), Eq(indexBufferSize), Eq(mesh.indices.data()))).WillOnce(Return());
 
     assetBinder.bindMesh(mesh.id, graphicalContext);
@@ -207,7 +215,7 @@ TEST(AssetBinder, bindMesh)
     assertMeshBinding(mesh, mesh.positions, mesh.normals, mesh.textureCoordinates, mesh.colors);
 }
 
-TEST(AssetBinder, bindMesh2)
+TEST(AssetBinder, bindMeshWithFewerAttributes)
 {
     auto mesh = Mesh
     {

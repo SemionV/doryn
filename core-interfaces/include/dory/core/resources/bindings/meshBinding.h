@@ -17,6 +17,7 @@ namespace dory::core::resources::bindings
         std::size_t componentsCount;
         std::size_t stride;
         ComponentType componentType;
+        bool normalized {};
     };
 
     struct MeshBinding: Entity<>
