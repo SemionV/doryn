@@ -6,6 +6,7 @@ namespace dory::core::services::graphics
 {
     using namespace dory;
     using namespace dory::core;
+    using namespace dory::core::devices;
     using namespace dory::core::services;
     using namespace dory::core::services::graphics;
     using namespace dory::core::repositories;
@@ -77,7 +78,7 @@ namespace dory::core::services::graphics
     };
 
     template<typename TComponent>
-    void writeAttributeData(BufferBinding* buffer, const Vectors<TComponent>& attribute, std::size_t& offset, MeshBinding* meshBinding, IGpuDriver* gpuDriver)
+    void writeAttributeData(BufferBinding* buffer, const Vectors<TComponent>& attribute, std::size_t& offset, MeshBinding* meshBinding, IGpuDevice* gpuDriver)
     {
         auto dataSize = getAttributeDataSize(meshBinding->vertexCount, attribute);
         if(dataSize)
@@ -97,13 +98,13 @@ namespace dory::core::services::graphics
     }
 
     template<typename... TAttributes>
-    void writeVertexAttributes(BufferBinding* buffer, MeshBinding* meshBinding, IGpuDriver* gpuDriver, const TAttributes&... attributes)
+    void writeVertexAttributes(BufferBinding* buffer, MeshBinding* meshBinding, IGpuDevice* gpuDriver, const TAttributes&... attributes)
     {
         std::size_t offset = 0;
         (writeAttributeData(buffer, attributes, offset, meshBinding, gpuDriver), ...);
     }
 
-    BufferBinding* bindBuffer(IdType& bufferId, std::size_t bufferSize, IBufferBindingRepository* bufferBindingRepository, IGpuDriver* gpuDriver)
+    BufferBinding* bindBuffer(IdType& bufferId, std::size_t bufferSize, IBufferBindingRepository* bufferBindingRepository, IGpuDevice* gpuDriver)
     {
         BufferBinding* bufferBinding = nullptr;
         if(bufferId != nullId)
@@ -138,7 +139,7 @@ namespace dory::core::services::graphics
     void AssetBinder::bindMeshData(GraphicalContext& graphicalContext, const Mesh* mesh, MeshBinding* meshBinding, const Vectors<TComponents>&... vertexAttributes)
     {
         auto bufferBindingRepository = _registry.get<IBufferBindingRepository>(graphicalContext.graphicalSystem);
-        auto gpuDriver = _registry.get<IGpuDriver>(graphicalContext.graphicalSystem);
+        auto gpuDriver = _registry.get<IGpuDevice>(graphicalContext.graphicalSystem);
 
         if(bufferBindingRepository && gpuDriver)
         {

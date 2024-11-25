@@ -1,6 +1,5 @@
 #include <dory/core/registry.h>
 #include <dory/core/services/glfwWindowService.h>
-#include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <dory/core/resources/glfwWindow.h>
 #include <dory/core/repositories/iWindowRepository.h>
@@ -17,19 +16,6 @@ namespace dory::core::services
         glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
         auto glfwWindowHandler = glfwCreateWindow((int)parameters.width, (int)parameters.height, parameters.title.c_str(), nullptr, nullptr);
         window.handler = glfwWindowHandler;
-
-        if(window.graphicalSystem == resources::GraphicalSystem::opengl)
-        {
-            glfwMakeContextCurrent(glfwWindowHandler);
-            int version = gladLoadGL(glfwGetProcAddress);
-            if (version == 0) {
-                auto logger = _registry.get<services::ILogService>();
-                if(logger)
-                {
-                    logger->error(std::string_view("Failed to initialize OpenGL context for window"));
-                }
-            }
-        }
 
         return addWindow(window);
     }

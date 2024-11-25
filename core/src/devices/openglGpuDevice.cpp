@@ -1,11 +1,12 @@
-#include <dory/core/registry.h>
-#include <dory/core/services/graphics/openglGpuDriver.h>
+#include "dory/core/registry.h"
+#include "dory/core/devices/openglGpuDevice.h"
 #include <glad/gl.h>
-#include <spdlog/fmt/fmt.h>
-#include <dory/core/resources/bindings/openglBufferBinding.h>
-#include <dory/core/resources/bindings/openglMeshBinding.h>
+#include <GLFW/glfw3.h>
+#include "spdlog/fmt/fmt.h"
+#include "dory/core/resources/bindings/openglBufferBinding.h"
+#include "dory/core/resources/bindings/openglMeshBinding.h"
 
-namespace dory::core::services::graphics
+namespace dory::core::devices
 {
     using namespace resources;
     using namespace resources::bindings;
@@ -47,6 +48,27 @@ namespace dory::core::services::graphics
     }
 
     OpenglGpuDriver::OpenglGpuDriver(Registry& registry) : DependencyResolver(registry)
+    {}
+
+    void OpenglGpuDriver::connect(DataContext& context)
+    {
+        glfwInit();
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+        GLFWwindow* hidden_window = glfwCreateWindow(1, 1, "", NULL, NULL);
+        glfwMakeContextCurrent(hidden_window);
+        int version = gladLoadGL(glfwGetProcAddress);
+        if (version == 0)
+        {
+            auto logger = _registry.get<core::services::ILogService>();
+            if(logger)
+            {
+                logger->error(std::string_view("Failed to initialize OpenGL"));
+            }
+        }
+        glfwDestroyWindow(hidden_window);
+    }
+
+    void OpenglGpuDriver::disconnect(DataContext& context)
     {}
 
     bool OpenglGpuDriver::checkForError()

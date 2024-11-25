@@ -3,13 +3,14 @@
 
 #include <dory/core/registry.h>
 #include <dory/core/services/graphics/assetBinder.h>
-#include <dory/core/services/graphics/iGpuDriver.h>
+#include "dory/core/devices/iGpuDevice.h"
 #include <dory/core/repositories/assets/iMeshRepository.h>
 #include <dory/core/repositories/bindings/iMeshBindingRepository.h>
 #include <dory/core/repositories/bindings/iBufferBindingRepository.h>
 
 using namespace dory;
 using namespace dory::core;
+using namespace dory::core::devices;
 using namespace dory::core::services;
 using namespace dory::core::services::graphics;
 using namespace dory::core::repositories;
@@ -21,9 +22,11 @@ using namespace dory::core::resources::assets;
 using namespace dory::core::resources::entities;
 using namespace testing;
 
-class GpuDriver: public IGpuDriver
+class GpuDeviceMock: public IGpuDevice
 {
 public:
+    MOCK_METHOD(void, connect, (DataContext& context));
+    MOCK_METHOD(void, disconnect, (DataContext& context));
     MOCK_METHOD(bool, allocateBuffer, (BufferBinding* bufferBinding, std::size_t size));
     MOCK_METHOD(void, deallocateBuffer, (BufferBinding* bufferBinding));
     MOCK_METHOD(void, writeData, (BufferBinding* bufferBinding, std::size_t offset, std::size_t size, const void* data));
@@ -105,14 +108,14 @@ void assertVertexAttributes(std::vector<VertexAttributeBinding>& attributeBindin
 }
 
 template<typename... TComponents>
-void expectDataWrites(GpuDriver* gpuDriver, const BufferBinding& buffer, const Vectors<TComponents>&... attributes)
+void expectDataWrites(GpuDeviceMock* gpuDriver, const BufferBinding& buffer, const Vectors<TComponents>&... attributes)
 {
     std::size_t offset = 0;
     (expectDataWrite(gpuDriver, buffer, offset, attributes), ...);
 }
 
 template<typename TComponent>
-void expectDataWrite(GpuDriver* gpuDriver, const BufferBinding& buffer, std::size_t& offset, const Vectors<TComponent>& attribute)
+void expectDataWrite(GpuDeviceMock* gpuDriver, const BufferBinding& buffer, std::size_t& offset, const Vectors<TComponent>& attribute)
 {
     auto bufferMatcher = Pointee(Field(&BufferBinding::id, Eq(buffer.id)));
     std::size_t attributeDataSize = getVertexAttributeSize(attribute);
@@ -137,8 +140,8 @@ void assertMeshBinding(Mesh& mesh, const Vectors<TComponents>&... vertexAttribut
     const auto bufferBindingRepository = std::make_shared<BufferBindingRepository>();
     registry.set<IBufferBindingRepository, graphicalSystemType>(libraryHandle, bufferBindingRepository);
 
-    const auto gpuDriver = std::make_shared<GpuDriver>();
-    registry.set<IGpuDriver, graphicalSystemType>(libraryHandle, gpuDriver);
+    const auto gpuDriver = std::make_shared<GpuDeviceMock>();
+    registry.set<IGpuDevice, graphicalSystemType>(libraryHandle, gpuDriver);
 
     auto assetBinder = AssetBinder(registry);
 

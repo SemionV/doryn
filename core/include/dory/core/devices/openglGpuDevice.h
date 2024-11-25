@@ -1,17 +1,20 @@
 #pragma once
 
-#include <dory/core/dependencyResolver.h>
-#include <dory/core/services/graphics/iGpuDriver.h>
+#include "dory/core/dependencyResolver.h"
+#include "dory/core/devices/iGpuDevice.h"
 
-namespace dory::core::services::graphics
+namespace dory::core::devices
 {
-    class OpenglGpuDriver: public IGpuDriver, public DependencyResolver
+    class OpenglGpuDriver: public IGpuDevice, public DependencyResolver
     {
     private:
         bool checkForError();
 
     public:
         explicit OpenglGpuDriver(Registry& registry);
+
+        void connect(resources::DataContext& context) override;
+        void disconnect(resources::DataContext& context) override;
 
         bool allocateBuffer(resources::bindings::BufferBinding* bufferBinding, std::size_t size) override;
         void deallocateBuffer(resources::bindings::BufferBinding* bufferBinding) override;

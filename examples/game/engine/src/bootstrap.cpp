@@ -88,6 +88,18 @@ namespace dory::game
         });
     }
 
+    void connectDeviceGroup(core::resources::DataContext& context, const auto& devices)
+    {
+        for(const auto& [key, value] : devices)
+        {
+            auto deviceRef = value.lock();
+            if(deviceRef)
+            {
+                deviceRef->connect(context);
+            }
+        }
+    }
+
     void Bootstrap::connectDevices(const generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
     {
         _registry.get<
@@ -112,14 +124,11 @@ namespace dory::game
         });
 
         _registry.getAll<core::devices::IWindowSystemDevice, core::resources::WindowSystem>([&context](const auto& devices) {
-            for(const auto& [key, value] : devices)
-            {
-                auto deviceRef = value.lock();
-                if(deviceRef)
-                {
-                    deviceRef->connect(context);
-                }
-            }
+            connectDeviceGroup(context, devices);
+        });
+
+        _registry.getAll<core::devices::IGpuDevice, core::resources::GraphicalSystem>([&context](const auto& devices) {
+            connectDeviceGroup(context, devices);
         });
     }
 

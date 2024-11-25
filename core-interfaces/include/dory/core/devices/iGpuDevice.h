@@ -1,10 +1,12 @@
 #pragma once
 
-#include <dory/generic/baseTypes.h>
+#include "iDevice.h"
+#include <dory/core/resources/bindings/meshBinding.h>
+#include <dory/core/resources/bindings/bufferBinding.h>
 
-namespace dory::core::services::graphics
+namespace dory::core::devices
 {
-    class IGpuDriver: public generic::Interface
+    class IGpuDevice: public IDevice
     {
     public:
         virtual bool allocateBuffer(resources::bindings::BufferBinding* bufferBinding, std::size_t size) = 0;

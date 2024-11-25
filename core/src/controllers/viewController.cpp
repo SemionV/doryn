@@ -1,5 +1,3 @@
-#include <glad/gl.h>
-#include <GLFW/glfw3.h>
 #include <dory/core/registry.h>
 #include <dory/core/controllers/viewController.h>
 #include <dory/core/repositories/windowRepository.h>
