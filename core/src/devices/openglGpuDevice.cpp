@@ -38,7 +38,7 @@ namespace dory::core::devices
         }
     }
 
-    GLenum getGlEnumType(ComponentType componentType)
+    GLenum getGlEnumType(const ComponentType componentType)
     {
         switch (componentType)
         {
@@ -99,7 +99,7 @@ namespace dory::core::devices
         return !checkForError();
     }
 
-    void OpenglGpuDriver::deallocateBuffer(resources::bindings::BufferBinding* bufferBinding)
+    void OpenglGpuDriver::deallocateBuffer(BufferBinding* bufferBinding)
     {
         auto glBuffer = (OpenglBufferBinding*)bufferBinding;
         assert(glBuffer->glId != 0);
@@ -110,7 +110,7 @@ namespace dory::core::devices
         glBuffer->size = 0;
     }
 
-    void OpenglGpuDriver::writeData(resources::bindings::BufferBinding* bufferBinding, std::size_t offset, std::size_t size, const void* data)
+    void OpenglGpuDriver::writeData(BufferBinding* bufferBinding, std::size_t offset, std::size_t size, const void* data)
     {
         auto glBuffer = (OpenglBufferBinding*)bufferBinding;
         assert(glBuffer->glId != 0);
