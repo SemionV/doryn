@@ -12,7 +12,7 @@ namespace dory::core::services
 
     resources::IdType GlfwWindowService::createWindow(const resources::WindowParameters& parameters)
     {
-        auto window = resources::entities::GlfwWindow(resources::nullId, resources::WindowSystem::glfw, parameters.graphicalSystem);
+        auto window = resources::entities::GlfwWindow(resources::nullId, resources::WindowSystem::glfw, parameters.graphicalContextId);
         glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
         auto glfwWindowHandler = glfwCreateWindow((int)parameters.width, (int)parameters.height, parameters.title.c_str(), nullptr, nullptr);
         window.handler = glfwWindowHandler;

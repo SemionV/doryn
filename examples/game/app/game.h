@@ -16,8 +16,17 @@ namespace dory::game
 
         bool initialize(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
         {
-            _registry.get<dory::core::services::IWindowService>([&context](dory::core::services::IWindowService* windowService) {
-                context.mainWindowId = windowService->createWindow({800, 600, "dory game"});
+            core::resources::IdType graphicalContextId {};
+            _registry.get<core::repositories::IGraphicalContextRepository>([&graphicalContextId](auto* graphicalContextRepository) {
+                auto graphicalContext = graphicalContextRepository->insert(core::resources::entities::GraphicalContext{ {}, core::resources::GraphicalSystem::opengl });
+                if(graphicalContext)
+                {
+                    graphicalContextId = graphicalContext->id;
+                }
+            });
+
+            _registry.get<dory::core::services::IWindowService>([&context, graphicalContextId](dory::core::services::IWindowService* windowService) {
+                context.mainWindowId = windowService->createWindow(core::resources::WindowParameters{800, 600, "dory game", graphicalContextId});
             });
 
             _registry.get<dory::core::repositories::IViewRepository>([&context](dory::core::repositories::IViewRepository* viewRepository) {

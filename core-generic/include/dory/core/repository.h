@@ -87,17 +87,17 @@ namespace dory::core::repositories
             }
         }
 
-        bool scan(std::function<bool(typename TInterface::EntityType& entity)> predicate) override
+        TInterface::EntityType* scan(std::function<bool(typename TInterface::EntityType& entity)> predicate) override
         {
             for(auto& entity : container)
             {
                 if(predicate(entity))
                 {
-                    return true;
+                    return &entity;
                 }
             }
 
-            return false;
+            return nullptr;
         }
     };
 }

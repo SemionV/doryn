@@ -84,9 +84,9 @@ namespace dory::core
             generic::registry::ServiceEntry<repositories::IWindowRepository, resources::WindowSystem>,
             generic::registry::ServiceEntry<repositories::IPipelineRepository>,
             generic::registry::ServiceEntry<repositories::assets::IMeshRepository>,
+            generic::registry::ServiceEntry<repositories::IGraphicalContextRepository>,
             generic::registry::ServiceEntry<repositories::IShaderRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::IShaderProgramRepository, resources::GraphicalSystem>,
-            generic::registry::ServiceEntry<repositories::IGraphicalContextRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::bindings::IMeshBindingRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::bindings::IBufferBindingRepository, resources::GraphicalSystem>,
             /*Services*/

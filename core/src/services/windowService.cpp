@@ -2,6 +2,8 @@
 #include <dory/core/services/windowService.h>
 #include <dory/core/repositories/iViewRepository.h>
 #include <dory/core/repositories/iWindowRepository.h>
+#include <dory/core/repositories/iGraphicalContextRepository.h>
+#include <dory/core/resources/entities/graphicalContext.h>
 
 namespace dory::core::services
 {
@@ -9,7 +11,7 @@ namespace dory::core::services
         _registry(registry)
     {}
 
-    resources::IdType WindowService::addWindow(const resources::entities::Window& window)
+    resources::IdType WindowService::addWindow(resources::entities::Window& window)
     {
         resources::IdType id = resources::nullId;
 
@@ -22,8 +24,10 @@ namespace dory::core::services
 
     void WindowService::removeWindow(resources::IdType windowId)
     {
-        _registry.get<repositories::IWindowRepository>([&windowId](repositories::IWindowRepository* repository) {
-            repository->remove(windowId);
+        resources::entities::Window* window = nullptr;
+
+        _registry.get<repositories::IWindowRepository>([windowId, &window](repositories::IWindowRepository* repository) {
+            window = repository->get(windowId);
         });
 
         _registry.get<repositories::IViewRepository>([windowId](repositories::IViewRepository* viewRepository) {
@@ -33,5 +37,23 @@ namespace dory::core::services
                 viewRepository->remove(viewId);
             }
         });
+
+        if(window)
+        {
+            _registry.get<repositories::IGraphicalContextRepository>([window](repositories::IGraphicalContextRepository* graphicalContextRepository) {
+                auto graphicalContext = graphicalContextRepository->scan([window](auto& x) {
+                    return x.id == window->graphicalContextId;
+                });
+
+                if(graphicalContext)
+                {
+                    graphicalContextRepository->remove(graphicalContext->id);
+                }
+            });
+
+            _registry.get<repositories::IWindowRepository>([windowId](repositories::IWindowRepository* repository) {
+                repository->remove(windowId);
+            });
+        }
     }
 }

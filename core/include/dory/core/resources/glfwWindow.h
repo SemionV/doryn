@@ -10,8 +10,8 @@ namespace dory::core::resources::entities
     public:
         GlfwWindow() = default;
 
-        explicit GlfwWindow(IdType id, WindowSystem windowSystem, GraphicalSystem graphicalSystem):
-                Window(id, windowSystem, graphicalSystem)
+        explicit GlfwWindow(IdType id, WindowSystem windowSystem, IdType graphicalContextId):
+                Window(id, windowSystem, graphicalContextId)
         {}
 
         explicit GlfwWindow(const entities::Window& window):

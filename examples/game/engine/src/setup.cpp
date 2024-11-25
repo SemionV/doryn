@@ -70,7 +70,7 @@ namespace dory::game
         registry.set<core::repositories::IWindowRepository, core::resources::WindowSystem::glfw>(libraryHandle, windowRepository);
         registry.set<core::repositories::IWindowRepository, core::resources::WindowSystem::glfw>(libraryHandle, windowRepository);
 
-        registry.set<core::repositories::IGraphicalContextRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::GraphicalContextRepository>());
+        registry.set<core::repositories::IGraphicalContextRepository>(libraryHandle, std::make_shared<core::repositories::GraphicalContextRepository>());
         registry.set<core::repositories::assets::IMeshRepository>(libraryHandle, std::make_shared<core::repositories::assets::MeshRepository>());
         registry.set<core::repositories::bindings::IMeshBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::MeshBindingRepository>());
         registry.set<core::repositories::bindings::IBufferBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::BufferBindingRepository>());

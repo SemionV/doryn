@@ -19,57 +19,74 @@ namespace dory::core::services
 
     void GraphicalSystem::render(DataContext& context, const Window& window)
     {
-        _registry.get<IViewRepository>([this, &context, &window](IViewRepository* viewRepository) {
-            auto viewIds = viewRepository->getWindowViews(window.id);
-            auto windowService = _registry.get<IWindowService>(window.windowSystem);
-            auto renderer = _registry.get<IRenderer>(window.graphicalSystem);
-            for(const auto& viewId : viewIds)
+        auto graphicalContextRepo = _registry.get<repositories::IGraphicalContextRepository>();
+        if(graphicalContextRepo)
+        {
+            auto graphicalContext = graphicalContextRepo->get(window.graphicalContextId);
+            if(graphicalContext)
             {
-                auto view = viewRepository->get(viewId);
+                _registry.get<IViewRepository>([this, &context, &window, graphicalContext](IViewRepository* viewRepository) {
+                    auto viewIds = viewRepository->getWindowViews(window.id);
+                    auto windowService = _registry.get<IWindowService>(window.windowSystem);
 
-                if(view && windowService && renderer)
-                {
-                    windowService->setCurrentWindow(window.id);
-                    renderer->draw(context, *view);
-                    windowService->swapBuffers(window);
-                }
+                    auto renderer = _registry.get<IRenderer>(graphicalContext->graphicalSystem);
+                    for(const auto& viewId : viewIds)
+                    {
+                        auto view = viewRepository->get(viewId);
+
+                        if(view && windowService && renderer)
+                        {
+                            windowService->setCurrentWindow(window.id);
+                            renderer->draw(context, *view);
+                            windowService->swapBuffers(window);
+                        }
+                    }
+                });
             }
-        });
+        }
     }
 
     bool GraphicalSystem::uploadProgram(core::resources::entities::ShaderProgram& program,
                                         const core::resources::entities::Window& window)
     {
-        auto shaderService = _registry.get<graphics::IShaderService>(window.graphicalSystem);
-        auto windowService = _registry.get<core::services::IWindowService>(window.windowSystem);
-        auto logger = _registry.get<core::services::ILogService>();
-
-        if(shaderService && windowService)
+        auto graphicalContextRepo = _registry.get<repositories::IGraphicalContextRepository>();
+        if(graphicalContextRepo)
         {
-            windowService->setCurrentWindow(window.id);
-            if(shaderService->initializeProgram(program))
+            auto graphicalContext = graphicalContextRepo->get(window.graphicalContextId);
+            if (graphicalContext)
             {
-                auto shaderRepository = _registry.get<repositories::IShaderRepository>(window.graphicalSystem);
-                auto fileService = _registry.get<services::IFileService>();
-                if(shaderRepository && fileService)
-                {
-                    shaderRepository->each([&fileService, &program, &shaderService, &logger](auto& shader) {
-                        auto sourceCode = fileService->read(shader.filePath);
-                        if(!shaderService->initializeShader(program, shader, sourceCode) && logger)
-                        {
-                            logger->error("Cannot initialize shader: " + program.key + ", " + shader.filePath.string());
-                        }
-                    });
-                }
-            }
-            else
-            {
-                if(logger)
-                {
-                    logger->error("Cannot initialize shader program: " + program.key);
-                }
+                auto shaderService = _registry.get<graphics::IShaderService>(graphicalContext->graphicalSystem);
+                auto windowService = _registry.get<core::services::IWindowService>(window.windowSystem);
+                auto logger = _registry.get<core::services::ILogService>();
 
-                return false;
+                if(shaderService && windowService)
+                {
+                    windowService->setCurrentWindow(window.id);
+                    if(shaderService->initializeProgram(program))
+                    {
+                        auto shaderRepository = _registry.get<repositories::IShaderRepository>(graphicalContext->graphicalSystem);
+                        auto fileService = _registry.get<services::IFileService>();
+                        if(shaderRepository && fileService)
+                        {
+                            shaderRepository->each([&fileService, &program, &shaderService, &logger](auto& shader) {
+                                auto sourceCode = fileService->read(shader.filePath);
+                                if(!shaderService->initializeShader(program, shader, sourceCode) && logger)
+                                {
+                                    logger->error("Cannot initialize shader: " + program.key + ", " + shader.filePath.string());
+                                }
+                            });
+                        }
+                    }
+                    else
+                    {
+                        if(logger)
+                        {
+                            logger->error("Cannot initialize shader program: " + program.key);
+                        }
+
+                        return false;
+                    }
+                }
             }
         }
 

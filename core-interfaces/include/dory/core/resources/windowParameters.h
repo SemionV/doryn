@@ -10,6 +10,6 @@ namespace dory::core::resources
         unsigned int width;
         unsigned int height;
         std::string title;
-        GraphicalSystem graphicalSystem;
+        IdType graphicalContextId;
     };
 }

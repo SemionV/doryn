@@ -5,15 +5,8 @@ namespace dory::core::repositories
 {
     resources::entities::ShaderProgram* ShaderProgramRepository::get(std::string_view key, resources::IdType windowId)
     {
-        resources::entities::ShaderProgram* result = nullptr;
-        scan([&key, windowId, &result](auto& program) {
-            if(program.key == key && program.windowId == windowId)
-            {
-                result = &program;
-                return true;
-            }
-
-            return false;
+        resources::entities::ShaderProgram* result = scan([&key, windowId](auto& program) {
+            return program.key == key && program.windowId == windowId;
         });
 
         return result;

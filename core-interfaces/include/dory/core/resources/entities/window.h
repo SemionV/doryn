@@ -11,13 +11,12 @@ namespace dory::core::resources::entities
     {
         Window() = default;
 
-        explicit Window(IdType id, WindowSystem windowSystem, GraphicalSystem graphicalSystem):
+        explicit Window(IdType id, WindowSystem windowSystem, IdType graphicalContextId):
                 Entity(id),
                 windowSystem(windowSystem),
-                graphicalSystem(graphicalSystem)
+                graphicalContextId(graphicalContextId)
         {}
 
-        GraphicalSystem graphicalSystem {};
         WindowSystem windowSystem {};
         resources::IdType graphicalContextId {};
     };

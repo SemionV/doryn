@@ -12,13 +12,24 @@ namespace dory::core::services
     {
         auto logger = _registry.get<ILogService>();
 
-        auto shaderProgramRepository = _registry.get<repositories::IShaderProgramRepository>(window.graphicalSystem);
+        resources::GraphicalSystem graphicalSystem = resources::GraphicalSystem::opengl;
+        auto graphicalContextRepo = _registry.get<repositories::IGraphicalContextRepository>();
+        if(graphicalContextRepo)
+        {
+            auto graphicalContext = graphicalContextRepo->get(window.graphicalContextId);
+            if(graphicalContext)
+            {
+                graphicalSystem = graphicalContext->graphicalSystem;
+            }
+        }
+
+        auto shaderProgramRepository = _registry.get<repositories::IShaderProgramRepository>(graphicalSystem);
         if(shaderProgramRepository)
         {
             auto* programEntity = shaderProgramRepository->get(program.key, window.id);
             if(!programEntity)
             {
-                programEntity = shaderProgramRepository->insert(resources::entities::ShaderProgram{{}, window.graphicalSystem, program.key, window.id});
+                programEntity = shaderProgramRepository->insert(resources::entities::ShaderProgram{{}, graphicalSystem, program.key, window.id});
             }
 
             if(!programEntity)
@@ -30,7 +41,7 @@ namespace dory::core::services
                 return resources::nullId;
             }
 
-            auto shaderRepository = _registry.get<repositories::IShaderRepository>(window.graphicalSystem);
+            auto shaderRepository = _registry.get<repositories::IShaderRepository>(graphicalSystem);
             if(shaderRepository)
             {
                 for(const auto& shader : program.shaders)
@@ -42,10 +53,10 @@ namespace dory::core::services
                 }
             }
 
-            auto graphicalSystem = _registry.get<IGraphicalSystem>();
-            if(graphicalSystem)
+            auto graphicalSystemService = _registry.get<IGraphicalSystem>();
+            if(graphicalSystemService)
             {
-                if(!graphicalSystem->uploadProgram(*programEntity, window) && logger)
+                if(!graphicalSystemService->uploadProgram(*programEntity, window) && logger)
                 {
                     logger->error("Failed to initialize shader program: " + program.key);
                 }
