@@ -41,6 +41,7 @@
 #include <dory/core/services/hot-reload/extensionLoader.h>
 #include <dory/core/services/enttSceneService.h>
 #include <dory/core/services/graphics/assetBinder.h>
+#include <dory/core/services/graphics/openglGpuDriver.h>
 #include <dory/core/resources/assetType.h>
 
 namespace dory::game
@@ -72,6 +73,7 @@ namespace dory::game
         registry.set<core::repositories::assets::IMeshRepository>(libraryHandle, std::make_shared<core::repositories::assets::MeshRepository>());
         registry.set<core::repositories::bindings::IMeshBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::MeshBindingRepository>());
         registry.set<core::repositories::bindings::IBufferBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::BufferBindingRepository>());
+        registry.set<core::services::graphics::IGpuDriver, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::services::graphics::OpenglGpuDriver>(registry));
 
         registry.set<core::repositories::IShaderRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::ShaderRepository>());
         registry.set<core::repositories::IShaderProgramRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::ShaderProgramRepository>());

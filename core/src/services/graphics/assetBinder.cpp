@@ -4,15 +4,17 @@
 
 namespace dory::core::services::graphics
 {
-    using namespace resources;
-    using namespace resources::bindings;
-    using namespace resources::entities;
-    using namespace resources::assets;
-    using namespace repositories;
-    using namespace repositories::bindings;
-    using namespace repositories::assets;
-    using namespace services;
-    using namespace services::graphics;
+    using namespace dory;
+    using namespace dory::core;
+    using namespace dory::core::services;
+    using namespace dory::core::services::graphics;
+    using namespace dory::core::repositories;
+    using namespace dory::core::repositories::assets;
+    using namespace dory::core::repositories::bindings;
+    using namespace dory::core::resources;
+    using namespace dory::core::resources::bindings;
+    using namespace dory::core::resources::assets;
+    using namespace dory::core::resources::entities;
 
     AssetBinder::AssetBinder(Registry& registry):
             _registry(registry)
