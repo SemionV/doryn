@@ -1,12 +1,11 @@
 # Development log
 
 Tasks:
-* Scene graph
-* OpenGL Renderer
-  * Static mapping of Vertex Attributes
-  * Fill Buffers with mapped data
-  * Batch rendering
-  * Render Meshes
+* Scene
+  * Load mesh assets
+  * Load material assets
+  * Load scene graph
+* Render Meshes
 * Ray casting(for mouse picking and other features)
 * Mouse picking(redirect event to the corresponding event hub of a view)
 * Multithreaded rendering
@@ -25,6 +24,11 @@ Tasks:
   * Setup pipeline for build and tests on windows
   * Setup pipeline for releases
   * Deploy assembled packages to some network storage
+
+**25.11.24**
+* Task done: Scene graph
+* Task done: Static mapping of Vertex Attributes
+* Task done: Fill Buffers with mapped data
 
 **04.11.24**
 * Task done: Hot reload of plugins with file watchers(see library https://github.com/SpartanJ/efsw)

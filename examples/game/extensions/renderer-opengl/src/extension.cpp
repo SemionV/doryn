@@ -21,6 +21,7 @@ namespace dory::renderer::opengl
             _renderer(registry, std::make_shared<OpenglRenderer>(registry), core::resources::GraphicalSystem::opengl),
             _shaderService(registry, std::make_shared<ShaderService>(registry), core::resources::GraphicalSystem::opengl)
     {
+#ifdef DORY_PLATFORM_WIN32
         glfwInit();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         GLFWwindow* hidden_window = glfwCreateWindow(1, 1, "", NULL, NULL);
@@ -35,6 +36,7 @@ namespace dory::renderer::opengl
             }
         }
         glfwDestroyWindow(hidden_window);
+#endif
     }
 
     Extension::~Extension()
