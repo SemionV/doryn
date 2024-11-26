@@ -41,10 +41,12 @@
 #include <dory/core/repositories/iSceneRepository.h>
 #include <dory/core/repositories/iGraphicalContextRepository.h>
 #include <dory/core/repositories/assets/iMeshRepository.h>
+#include <dory/core/repositories/assets/iMaterialRepository.h>
+#include <dory/core/repositories/assets/iShaderRepository.h>
 #include <dory/core/repositories/bindings/iMeshBindingRepository.h>
 #include <dory/core/repositories/bindings/iBufferBindingRepository.h>
 #include "dory/core/devices/iGpuDevice.h"
-#include <dory/core/services/graphics/iAssetBinder.h>
+#include "dory/core/services/iAssetBinder.h"
 #include <dory/core/resources/assetType.h>
 
 #include <dory/core/resources/entities/camera.h>
@@ -83,6 +85,8 @@ namespace dory::core
             generic::registry::ServiceEntry<repositories::IWindowRepository, resources::WindowSystem>,
             generic::registry::ServiceEntry<repositories::IPipelineRepository>,
             generic::registry::ServiceEntry<repositories::assets::IMeshRepository>,
+            generic::registry::ServiceEntry<repositories::assets::IMaterialRepository>,
+            generic::registry::ServiceEntry<repositories::assets::IShaderRepository>,
             generic::registry::ServiceEntry<repositories::IGraphicalContextRepository>,
             generic::registry::ServiceEntry<repositories::IShaderRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::IShaderProgramRepository, resources::GraphicalSystem>,

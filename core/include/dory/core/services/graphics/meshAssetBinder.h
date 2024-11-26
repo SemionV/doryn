@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/core/services/graphics/iAssetBinder.h>
+#include "dory/core/services/iAssetBinder.h"
 #include <dory/core/resources/entities/graphicalContext.h>
 #include "dory/core/resources/assets/mesh.h"
 

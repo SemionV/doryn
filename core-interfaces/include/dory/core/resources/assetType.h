@@ -8,5 +8,7 @@ namespace dory::core::resources
     {
         const constexpr static std::string_view extension = "extension";
         const constexpr static std::string_view mesh = "mesh";
+        const constexpr static std::string_view material = "material";
+        const constexpr static std::string_view shader = "shader";
     };
 }

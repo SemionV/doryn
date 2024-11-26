@@ -32,6 +32,8 @@
 #include <dory/core/repositories/shaderRepository.h>
 #include <dory/core/repositories/shaderProgramRepository.h>
 #include <dory/core/repositories/assets/meshRepository.h>
+#include <dory/core/repositories/assets/materialRepository.h>
+#include <dory/core/repositories/assets/shaderRepository.h>
 #include <dory/core/repositories/graphicalContextRepository.h>
 #include <dory/core/repositories/bindings/meshBindingRepository.h>
 #include <dory/core/repositories/bindings/bufferBindingRepository.h>
@@ -41,6 +43,8 @@
 #include <dory/core/services/hot-reload/extensionLoader.h>
 #include <dory/core/services/enttSceneService.h>
 #include <dory/core/services/graphics/meshAssetBinder.h>
+#include <dory/core/services/graphics/materialAssetBinder.h>
+#include <dory/core/services/graphics/shaderAssetBinder.h>
 #include <dory/core/services/viewService.h>
 #include <dory/core/services/graphics/renderer.h>
 #include <dory/core/resources/assetType.h>
@@ -73,6 +77,8 @@ namespace dory::game
 
         registry.set<core::repositories::IGraphicalContextRepository>(libraryHandle, std::make_shared<core::repositories::GraphicalContextRepository>());
         registry.set<core::repositories::assets::IMeshRepository>(libraryHandle, std::make_shared<core::repositories::assets::MeshRepository>());
+        registry.set<core::repositories::assets::IMaterialRepository>(libraryHandle, std::make_shared<core::repositories::assets::MaterialRepository>());
+        registry.set<core::repositories::assets::IShaderRepository>(libraryHandle, std::make_shared<core::repositories::assets::ShaderRepository>());
         registry.set<core::repositories::bindings::IMeshBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::MeshBindingRepository>());
         registry.set<core::repositories::bindings::IBufferBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::BufferBindingRepository>());
 
@@ -108,6 +114,8 @@ namespace dory::game
 
         registry.set<core::services::graphics::IRenderer>(libraryHandle, std::make_shared<core::services::graphics::Renderer>(registry));
         registry.set<core::services::graphics::IAssetBinder>(libraryHandle, std::make_shared<core::services::graphics::MeshAssetBinder>(registry), core::resources::AssetTypeName::mesh);
+        registry.set<core::services::graphics::IAssetBinder>(libraryHandle, std::make_shared<core::services::graphics::MaterialAssetBinder>(registry), core::resources::AssetTypeName::material);
+        registry.set<core::services::graphics::IAssetBinder>(libraryHandle, std::make_shared<core::services::graphics::ShaderAssetBinder>(registry), core::resources::AssetTypeName::shader);
 
         registry.set<core::services::IAssetTypeResolver>(libraryHandle, std::make_shared<core::services::AssetTypeResolver>());
         registry.set<core::services::IAssetReloadHandler>(libraryHandle, std::make_shared<core::services::loaders::ExtensionLoader>(registry), std::string{core::resources::AssetTypeName::extension});

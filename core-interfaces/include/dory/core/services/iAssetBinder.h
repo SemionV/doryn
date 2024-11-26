@@ -1,7 +1,7 @@
 #pragma once
 
-#include <dory/generic/baseTypes.h>
-#include <dory/core/resources/entities/graphicalContext.h>
+#include "dory/generic/baseTypes.h"
+#include "dory/core/resources/entities/graphicalContext.h"
 
 namespace dory::core::services::graphics
 {
