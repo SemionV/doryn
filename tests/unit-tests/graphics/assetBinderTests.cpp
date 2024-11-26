@@ -20,6 +20,7 @@ using namespace dory::core::resources;
 using namespace dory::core::resources::bindings;
 using namespace dory::core::resources::assets;
 using namespace dory::core::resources::entities;
+using namespace dory::core::resources::objects;
 using namespace testing;
 
 class GpuDeviceMock: public IGpuDevice
@@ -30,8 +31,9 @@ public:
     MOCK_METHOD(bool, allocateBuffer, (BufferBinding* bufferBinding, std::size_t size));
     MOCK_METHOD(void, deallocateBuffer, (BufferBinding* bufferBinding));
     MOCK_METHOD(void, writeData, (BufferBinding* bufferBinding, std::size_t offset, std::size_t size, const void* data));
-    MOCK_METHOD(void, setVertexAttributes, (const resources::bindings::MeshBinding* meshBinding, const BufferBinding* bufferBinding, VertexAttributeBinding* attributes, const std::size_t count));
-    MOCK_METHOD(void, initializeMesh, (resources::bindings::MeshBinding* meshBinding));
+    MOCK_METHOD(void, setVertexAttributes, (const MeshBinding* meshBinding, const BufferBinding* bufferBinding, VertexAttributeBinding* attributes, const std::size_t count));
+    MOCK_METHOD(void, initializeMesh, (MeshBinding* meshBinding));
+    MOCK_METHOD(void, drawFrame, (const Frame& frame));
 };
 
 template<typename TInterface, typename TEntity = TInterface::EntityType>

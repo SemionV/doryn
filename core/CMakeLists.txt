@@ -34,6 +34,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/enttSceneService.cpp
         src/services/graphics/assetBinder.cpp
         src/services/viewService.cpp
+        src/services/graphics/renderer.cpp
         src/controllers/windowSystemController.cpp
         src/controllers/viewController.cpp
         ${DORY_PLATFORM_MODULES})

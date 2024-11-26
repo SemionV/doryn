@@ -3,6 +3,7 @@
 #include "iDevice.h"
 #include <dory/core/resources/bindings/meshBinding.h>
 #include <dory/core/resources/bindings/bufferBinding.h>
+#include <dory/core/resources/objects/frame.h>
 
 namespace dory::core::devices
 {
@@ -17,5 +18,6 @@ namespace dory::core::devices
                                          resources::bindings::VertexAttributeBinding* attributes,
                                          std::size_t count) = 0;
         virtual void initializeMesh(resources::bindings::MeshBinding* meshBinding) = 0;
+        virtual void drawFrame(const resources::objects::Frame& frame) = 0;
     };
 }

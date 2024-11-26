@@ -24,5 +24,6 @@ namespace dory::core::devices
                                  resources::bindings::VertexAttributeBinding* attributes,
                                  std::size_t count) override;
         void initializeMesh(resources::bindings::MeshBinding* meshBinding) override;
+        void drawFrame(const resources::objects::Frame& frame) override;
     };
 }

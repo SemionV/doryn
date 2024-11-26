@@ -10,12 +10,9 @@ namespace dory::renderer::opengl
 
     void OpenglRenderer::draw(core::resources::DataContext& context, const core::resources::entities::View& view)
     {
-        if(glClearColor)
-        {
-            glClearColor(0.08f, 0.08f, 0.08f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
-            glFlush();
-        }
+        glClearColor(0.08f, 0.08f, 0.08f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glFlush();
     }
 
     void OpenglRenderer::draw(core::resources::DataContext& context,

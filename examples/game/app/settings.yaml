@@ -24,11 +24,11 @@ fileSystemWatches:
   - directory: "./"
     recursive: true
 extensions:
-  - name: "OpenglRenderer"
-    path: "modules/renderer-opengl"
-    reloadOnModification: true
-    modules:
-      - "renderer-opengl"
+  #- name: "OpenglRenderer"
+  #  path: "modules/renderer-opengl"
+  #  reloadOnModification: true
+  #  modules:
+  #    - "renderer-opengl"
   - name: "TestExtension"
     path: "modules/test-extension"
     reloadOnModification: true

@@ -10,6 +10,7 @@ namespace dory::core::devices
 {
     using namespace resources;
     using namespace resources::bindings;
+    using namespace resources::objects;
     using namespace dory::core::services;
 
     const char* getErrorString(GLenum errorCode)
@@ -150,5 +151,12 @@ namespace dory::core::devices
             glCreateVertexArrays(1, &glMesh->glVertexArrayId);
             checkForError();
         }
+    }
+
+    void OpenglGpuDriver::drawFrame(const Frame& frame)
+    {
+        glClearColor(frame.clearColor.x, frame.clearColor.y, frame.clearColor.z, frame.clearColor.w);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glFlush();
     }
 }

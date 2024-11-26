@@ -15,14 +15,25 @@ namespace dory::core::services
 
         if(viewRepository && windowRepository && graphicalContextRepository && renderer)
         {
-            viewRepository->each([&context, &renderer, &windowRepository, &graphicalContextRepository](resources::entities::View& view) {
+            viewRepository->each([this, &context, &renderer, &windowRepository, &graphicalContextRepository](resources::entities::View& view) {
                 auto window = windowRepository->get(view.windowId);
                 if(window)
                 {
+                    auto windowService = _registry.get<services::IWindowService>(window->windowSystem);
+                    if(windowService)
+                    {
+                        windowService->setCurrentWindow(window->id);
+                    }
+
                     auto graphicalContext = graphicalContextRepository->get(window->graphicalContextId);
                     if(graphicalContext)
                     {
                         renderer->draw(context, *window, *graphicalContext, view);
+                    }
+
+                    if(windowService)
+                    {
+                        windowService->swapBuffers(*window);
                     }
                 }
             });
