@@ -5,13 +5,13 @@
 
 namespace dory::core::devices
 {
-    class OpenglGpuDriver: public IGpuDevice, public DependencyResolver
+    class OpenglGpuDevice: public IGpuDevice, public DependencyResolver
     {
     private:
         bool checkForError();
 
     public:
-        explicit OpenglGpuDriver(Registry& registry);
+        explicit OpenglGpuDevice(Registry& registry);
 
         void connect(resources::DataContext& context) override;
         void disconnect(resources::DataContext& context) override;
@@ -20,10 +20,12 @@ namespace dory::core::devices
         void deallocateBuffer(resources::bindings::BufferBinding* bufferBinding) override;
         void writeData(resources::bindings::BufferBinding* bufferBinding, std::size_t offset, std::size_t size, const void* data) override;
         void setVertexAttributes(const resources::bindings::MeshBinding* meshBinding,
-                                 const resources::bindings::BufferBinding* vertexBufferBinding,
+                                 const resources::bindings::BufferBinding* vertexBuffer,
                                  resources::bindings::VertexAttributeBinding* attributes,
                                  std::size_t count) override;
-        void initializeMesh(resources::bindings::MeshBinding* meshBinding) override;
+        void bindMesh(resources::bindings::MeshBinding* meshBinding,
+                      const resources::bindings::BufferBinding* vertexBuffer,
+                      const resources::bindings::BufferBinding* indexBuffer) override;
         void drawFrame(const resources::objects::Frame& frame) override;
     };
 }

@@ -5,6 +5,8 @@ Tasks:
   * Load mesh assets
   * Load material assets
   * Load scene graph
+  * Unload scene and assets
+  * Unbind assets from GPU
 * Render Meshes
 * Ray casting(for mouse picking and other features)
 * Mouse picking(redirect event to the corresponding event hub of a view)

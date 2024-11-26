@@ -45,13 +45,14 @@ namespace dory::core::devices
         {
             case ComponentType::floatType: return GL_FLOAT;
             case ComponentType::doubleType: return GL_DOUBLE;
+            case ComponentType::uintType: return GL_UNSIGNED_INT;
         }
     }
 
-    OpenglGpuDriver::OpenglGpuDriver(Registry& registry) : DependencyResolver(registry)
+    OpenglGpuDevice::OpenglGpuDevice(Registry& registry) : DependencyResolver(registry)
     {}
 
-    void OpenglGpuDriver::connect(DataContext& context)
+    void OpenglGpuDevice::connect(DataContext& context)
     {
         glfwInit();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
@@ -69,10 +70,10 @@ namespace dory::core::devices
         glfwDestroyWindow(hidden_window);
     }
 
-    void OpenglGpuDriver::disconnect(DataContext& context)
+    void OpenglGpuDevice::disconnect(DataContext& context)
     {}
 
-    bool OpenglGpuDriver::checkForError()
+    bool OpenglGpuDevice::checkForError()
     {
         GLenum errorCode = glGetError();
         if (errorCode != GL_NO_ERROR)
@@ -87,7 +88,7 @@ namespace dory::core::devices
         return false;
     }
 
-    bool OpenglGpuDriver::allocateBuffer(BufferBinding* bufferBinding, std::size_t size)
+    bool OpenglGpuDevice::allocateBuffer(BufferBinding* bufferBinding, std::size_t size)
     {
         auto glBuffer = (OpenglBufferBinding*)bufferBinding;
         assert(glBuffer->glId == 0);
@@ -100,7 +101,7 @@ namespace dory::core::devices
         return !checkForError();
     }
 
-    void OpenglGpuDriver::deallocateBuffer(BufferBinding* bufferBinding)
+    void OpenglGpuDevice::deallocateBuffer(BufferBinding* bufferBinding)
     {
         auto glBuffer = (OpenglBufferBinding*)bufferBinding;
         assert(glBuffer->glId != 0);
@@ -111,7 +112,7 @@ namespace dory::core::devices
         glBuffer->size = 0;
     }
 
-    void OpenglGpuDriver::writeData(BufferBinding* bufferBinding, std::size_t offset, std::size_t size, const void* data)
+    void OpenglGpuDevice::writeData(BufferBinding* bufferBinding, std::size_t offset, std::size_t size, const void* data)
     {
         auto glBuffer = (OpenglBufferBinding*)bufferBinding;
         assert(glBuffer->glId != 0);
@@ -120,10 +121,10 @@ namespace dory::core::devices
         checkForError();
     }
 
-    void OpenglGpuDriver::setVertexAttributes(const MeshBinding* meshBinding, const BufferBinding* vertexBufferBinding, VertexAttributeBinding* attributes, const std::size_t count)
+    void OpenglGpuDevice::setVertexAttributes(const MeshBinding* meshBinding, const BufferBinding* vertexBuffer, VertexAttributeBinding* attributes, const std::size_t count)
     {
         auto glMesh = (OpenglMeshBinding*)meshBinding;
-        auto glVertexBuffer = (OpenglBufferBinding*)vertexBufferBinding;
+        auto glVertexBuffer = (OpenglBufferBinding*)vertexBuffer;
         assert(glMesh->glVertexArrayId != 0);
         assert(glIsVertexArray(glMesh->glVertexArrayId));
         assert(glVertexBuffer->glId != 0);
@@ -142,7 +143,7 @@ namespace dory::core::devices
         checkForError();
     }
 
-    void OpenglGpuDriver::initializeMesh(MeshBinding* meshBinding)
+    void OpenglGpuDevice::bindMesh(MeshBinding* meshBinding, const BufferBinding* vertexBuffer, const BufferBinding* indexBuffer)
     {
         auto glMesh = (OpenglMeshBinding*)meshBinding;
 
@@ -150,13 +151,42 @@ namespace dory::core::devices
         {
             glCreateVertexArrays(1, &glMesh->glVertexArrayId);
             checkForError();
+
+            if(vertexBuffer)
+            {
+                auto glVertexBuffer = (OpenglBufferBinding*)vertexBuffer;
+                //TODO: bind VAB and EBO to VAO
+                //glVertexArrayVertexBuffer(glMesh->glVertexArrayId, 0, glVertexBuffer->glId, glMesh->vertexBufferOffset, );
+            }
         }
     }
 
-    void OpenglGpuDriver::drawFrame(const Frame& frame)
+    void drawMesh(const MeshBinding* meshBinding)
+    {
+        auto glMesh = (OpenglMeshBinding*)meshBinding;
+        assert(glIsVertexArray(glMesh->glVertexArrayId));
+
+        glBindVertexArray(glMesh->glVertexArrayId);
+        if(glMesh->indexBufferId != nullId)
+        {
+            glDrawElements(GL_TRIANGLES, (GLsizei)glMesh->indexCount, getGlEnumType(glMesh->indexType), (void*)glMesh->indexBufferOffset);
+        }
+        else if(glMesh->glVertexArrayId != nullId)
+        {
+            glDrawArrays(GL_TRIANGLES, 0, (GLsizei)glMesh->vertexCount);
+        }
+    }
+
+    void OpenglGpuDevice::drawFrame(const Frame& frame)
     {
         glClearColor(frame.clearColor.x, frame.clearColor.y, frame.clearColor.z, frame.clearColor.w);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        for(const auto* meshBinding : frame.meshes)
+        {
+            drawMesh(meshBinding);
+        }
+
         glFlush();
     }
 }

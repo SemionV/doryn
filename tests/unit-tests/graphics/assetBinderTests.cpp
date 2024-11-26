@@ -32,7 +32,9 @@ public:
     MOCK_METHOD(void, deallocateBuffer, (BufferBinding* bufferBinding));
     MOCK_METHOD(void, writeData, (BufferBinding* bufferBinding, std::size_t offset, std::size_t size, const void* data));
     MOCK_METHOD(void, setVertexAttributes, (const MeshBinding* meshBinding, const BufferBinding* bufferBinding, VertexAttributeBinding* attributes, const std::size_t count));
-    MOCK_METHOD(void, initializeMesh, (MeshBinding* meshBinding));
+    MOCK_METHOD(void, bindMesh, (MeshBinding* meshBinding, const resources::bindings::BufferBinding* vertexBuffer, const resources::bindings::BufferBinding* indexBuffer));
+
+    ;
     MOCK_METHOD(void, drawFrame, (const Frame& frame));
 };
 
@@ -176,8 +178,6 @@ void assertMeshBinding(Mesh& mesh, const Vectors<TComponents>&... vertexAttribut
     auto vertexBufferMatcher = Pointee(Field(&BufferBinding::id, Eq(vertexBufferBinding.id)));
     auto indexBufferMatcher = Pointee(Field(&BufferBinding::id, Eq(indexBufferBinding.id)));
 
-    EXPECT_CALL(*gpuDriver, initializeMesh(meshMatcher)).WillOnce(Return());
-
     EXPECT_CALL(*gpuDriver, allocateBuffer(vertexBufferMatcher, Eq(vertexBufferSize))).WillOnce(Return(true));
     EXPECT_CALL(*gpuDriver, allocateBuffer(indexBufferMatcher, Eq(indexBufferSize))).WillOnce(Return(true));
 
@@ -187,6 +187,8 @@ void assertMeshBinding(Mesh& mesh, const Vectors<TComponents>&... vertexAttribut
 
     EXPECT_CALL(*gpuDriver, writeData(indexBufferMatcher, Eq(0), Eq(indexBufferSize), Eq(mesh.indices.data()))).WillOnce(Return());
 
+    EXPECT_CALL(*gpuDriver, bindMesh(meshMatcher, vertexBufferMatcher, indexBufferMatcher)).WillOnce(Return());
+
     assetBinder.bindMesh(mesh.id, graphicalContext);
 
     EXPECT_EQ(mesh.id, meshBinding.meshId);
@@ -195,6 +197,7 @@ void assertMeshBinding(Mesh& mesh, const Vectors<TComponents>&... vertexAttribut
     EXPECT_EQ(vertexBufferBinding.id, meshBinding.vertexBufferId);
     EXPECT_EQ(mesh.indices.size(), meshBinding.indexCount);
     EXPECT_EQ(0, meshBinding.indexBufferOffset);
+    EXPECT_EQ(ComponentType::uintType, meshBinding.indexType);
     EXPECT_EQ(indexBufferBinding.id, meshBinding.indexBufferId);
     EXPECT_EQ(vertexBufferSize, vertexBufferBinding.size);
     EXPECT_EQ(indexBufferSize, indexBufferBinding.size);

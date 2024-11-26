@@ -77,6 +77,12 @@ namespace dory::core::services::graphics
         static constexpr auto value = ComponentType::doubleType;
     };
 
+    template<>
+    struct VertexAttributeComponentType<unsigned int>
+    {
+        static constexpr auto value = ComponentType::uintType;
+    };
+
     template<typename TComponent>
     void writeAttributeData(BufferBinding* buffer, const Vectors<TComponent>& attribute, std::size_t& offset, MeshBinding* meshBinding, IGpuDevice* gpuDriver)
     {
@@ -149,8 +155,7 @@ namespace dory::core::services::graphics
             meshBinding->vertexCount = mesh->vertexCount;
             meshBinding->vertexBufferOffset = 0;
             meshBinding->indexBufferOffset = 0;
-
-            gpuDriver->initializeMesh(meshBinding);
+            meshBinding->indexType = VertexAttributeComponentType<Mesh::IndexType>::value;
 
             const std::size_t vertexBufferSize = calculateVertexBufferSize(mesh->vertexCount, vertexAttributes...);
             BufferBinding* vertexBufferBinding = bindBuffer(meshBinding->vertexBufferId, vertexBufferSize, bufferBindingRepositoryPtr, gpuDriverPtr);
@@ -166,17 +171,20 @@ namespace dory::core::services::graphics
                 });
             }
 
+            BufferBinding* indexBufferBinding = nullptr;
             if(!mesh->indices.empty())
             {
                 meshBinding->indexCount = mesh->indices.size();
 
                 const std::size_t indexBufferSize = mesh->indices.size() * sizeof(Mesh::IndexType);
-                BufferBinding* indexBufferBinding = bindBuffer(meshBinding->indexBufferId, indexBufferSize, bufferBindingRepositoryPtr, gpuDriverPtr);
+                indexBufferBinding = bindBuffer(meshBinding->indexBufferId, indexBufferSize, bufferBindingRepositoryPtr, gpuDriverPtr);
                 if(indexBufferBinding)
                 {
                     gpuDriver->writeData(indexBufferBinding, 0, indexBufferSize, mesh->indices.data());
                 }
             }
+
+            gpuDriver->bindMesh(meshBinding, vertexBufferBinding, indexBufferBinding);
         }
     }
 }

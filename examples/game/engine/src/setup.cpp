@@ -60,7 +60,7 @@ namespace dory::game
         registry.set<core::devices::ITerminalDevice>(libraryHandle, std::make_shared<core::devices::TerminalDevice>(registry));
         registry.set<core::devices::IWindowSystemDevice, core::resources::WindowSystem::glfw>(libraryHandle, std::make_shared<core::devices::GlfwWindowSystemDevice>(registry));
         registry.set<core::devices::IFileWatcherDevice>(libraryHandle, std::make_shared<core::devices::FileWatcherDevice>(registry));
-        registry.set<core::devices::IGpuDevice, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::devices::OpenglGpuDriver>(registry));
+        registry.set<core::devices::IGpuDevice, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::devices::OpenglGpuDevice>(registry));
 
         registry.set<core::repositories::IViewRepository>(libraryHandle, std::make_shared<core::repositories::ViewRepository>());
         registry.set<core::repositories::IPipelineRepository>(libraryHandle, std::make_shared<core::repositories::PipelineRepository>());

@@ -8,7 +8,8 @@ namespace dory::core::resources::bindings
     enum class ComponentType
     {
         floatType,
-        doubleType
+        doubleType,
+        uintType
     };
 
     struct VertexAttributeBinding
@@ -31,5 +32,6 @@ namespace dory::core::resources::bindings
         IdType indexBufferId;
         std::size_t indexBufferOffset {};
         std::size_t indexCount;
+        ComponentType indexType {};
     };
 }
