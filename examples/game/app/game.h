@@ -16,17 +16,14 @@ namespace dory::game
 
         bool initialize(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
         {
-            core::resources::IdType graphicalContextId {};
-            _registry.get<core::repositories::IGraphicalContextRepository>([&graphicalContextId](auto* graphicalContextRepository) {
-                auto graphicalContext = graphicalContextRepository->insert(core::resources::entities::GraphicalContext{ {}, core::resources::GraphicalSystem::opengl });
-                if(graphicalContext)
-                {
-                    graphicalContextId = graphicalContext->id;
-                }
+            core::resources::entities::GraphicalContext* graphicalContext = nullptr;
+            _registry.get<core::repositories::IGraphicalContextRepository>([&graphicalContext](auto* graphicalContextRepository) {
+                graphicalContext = graphicalContextRepository->insert(core::resources::entities::GraphicalContext{ {}, core::resources::GraphicalSystem::opengl });
             });
 
-            _registry.get<dory::core::services::IWindowService>([&context, graphicalContextId](dory::core::services::IWindowService* windowService) {
-                context.mainWindowId = windowService->createWindow(core::resources::WindowParameters{800, 600, "dory game", graphicalContextId});
+            _registry.get<dory::core::services::IWindowService>([&context, &graphicalContext](dory::core::services::IWindowService* windowService) {
+                context.mainWindowId = windowService->createWindow(core::resources::WindowParameters{800, 600, "dory game", graphicalContext->id});
+                windowService->setCurrentWindow(context.mainWindowId);
             });
 
             _registry.get<dory::core::repositories::IViewRepository>([&context](dory::core::repositories::IViewRepository* viewRepository) {
@@ -55,6 +52,23 @@ namespace dory::game
             _registry.get<core::devices::ITerminalDevice>([](core::devices::ITerminalDevice* terminalDevice) {
                 terminalDevice->enterCommandMode();
             });
+
+            //Test scene
+            auto meshRepo = _registry.get<core::repositories::assets::IMeshRepository>();
+            if(meshRepo)
+            {
+                auto mesh = meshRepo->insert(core::resources::assets::Mesh{});
+                mesh->positions.componentsCount = 2;
+                mesh->positions.components = {-1.f, 1.f,  0.f, 0.f,  1.f, 1.f,  -1.f, -1.f,  1.f, -1.f};
+                mesh->vertexCount = mesh->positions.components.size() / mesh->positions.componentsCount;
+                mesh->indices = {0, 1, 2, 1, 3, 4};
+
+                auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>();
+                if(assetBinder)
+                {
+                    assetBinder->bindMesh(mesh->id, *graphicalContext);
+                }
+            }
 
             return true;
         }

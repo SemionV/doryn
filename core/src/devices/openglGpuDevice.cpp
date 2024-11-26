@@ -102,7 +102,6 @@ namespace dory::core::devices
     {
         auto glBuffer = (OpenglBufferBinding*)bufferBinding;
         assert(glBuffer->glId == 0);
-        assert(glIsBuffer(glBuffer->glId));
 
         glCreateBuffers(1, &glBuffer->glId);
 
