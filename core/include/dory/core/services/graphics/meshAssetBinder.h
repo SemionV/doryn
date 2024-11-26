@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/core/services/graphics/iMeshAssetBinder.h>
+#include <dory/core/services/graphics/iAssetBinder.h>
 #include <dory/core/resources/entities/graphicalContext.h>
 #include "dory/core/resources/assets/mesh.h"
 
@@ -11,7 +11,7 @@ namespace dory::core
 
 namespace dory::core::services::graphics
 {
-    class MeshAssetBinder: public IMeshAssetBinder
+    class MeshAssetBinder: public IAssetBinder
     {
     private:
         Registry& _registry;

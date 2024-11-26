@@ -4,8 +4,9 @@
 
 namespace dory::core::resources
 {
-    struct AssetType
+    struct AssetTypeName
     {
         const constexpr static std::string_view extension = "extension";
+        const constexpr static std::string_view mesh = "mesh";
     };
 }

@@ -1,6 +1,9 @@
 # Development log
 
 Tasks:
+* Rendering
+  * Bind Material
+  * Bind Uniforms
 * Scene
   * Load mesh assets
   * Load material assets
@@ -26,6 +29,9 @@ Tasks:
   * Setup pipeline for build and tests on windows
   * Setup pipeline for releases
   * Deploy assembled packages to some network storage
+
+**25.11.24**
+* Task done: render geometry
 
 **25.11.24**
 * Task done: Scene graph

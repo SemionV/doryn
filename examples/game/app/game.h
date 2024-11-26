@@ -62,7 +62,7 @@ namespace dory::game
                 mesh->vertexCount = mesh->positions.components.size() / mesh->positions.componentsCount;
                 mesh->indices = {0, 1, 2, 1, 3, 4};
 
-                auto assetBinder = _registry.get<core::services::graphics::IMeshAssetBinder>();
+                auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::mesh);
                 auto windowService = _registry.get<core::services::IWindowService>();
                 if(assetBinder && windowService)
                 {

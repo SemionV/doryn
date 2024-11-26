@@ -107,10 +107,10 @@ namespace dory::game
         registry.set<core::services::IViewService>(libraryHandle, std::make_shared<core::services::ViewService>(registry));
 
         registry.set<core::services::graphics::IRenderer>(libraryHandle, std::make_shared<core::services::graphics::Renderer>(registry));
-        registry.set<core::services::graphics::IMeshAssetBinder>(libraryHandle, std::make_shared<core::services::graphics::MeshAssetBinder>(registry));
+        registry.set<core::services::graphics::IAssetBinder>(libraryHandle, std::make_shared<core::services::graphics::MeshAssetBinder>(registry), core::resources::AssetTypeName::mesh);
 
         registry.set<core::services::IAssetTypeResolver>(libraryHandle, std::make_shared<core::services::AssetTypeResolver>());
-        registry.set<core::services::IAssetReloadHandler>(libraryHandle, std::make_shared<core::services::loaders::ExtensionLoader>(registry), std::string{core::resources::AssetType::extension});
+        registry.set<core::services::IAssetReloadHandler>(libraryHandle, std::make_shared<core::services::loaders::ExtensionLoader>(registry), std::string{core::resources::AssetTypeName::extension});
         registry.set<core::services::IAssetService>(libraryHandle, std::make_shared<core::services::AssetService>(registry));
 
         auto sceneService = std::make_shared<core::services::EnttSceneService>();
