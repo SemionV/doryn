@@ -24,10 +24,9 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/scriptService.cpp
         src/services/localizationService.cpp
         src/services/pipelineService.cpp
-        src/services/frameService.cpp
+        src/services/loopService.cpp
         src/services/windowService.cpp
         src/services/glfwWindowService.cpp
-        src/services/graphicalSystem.cpp
         src/services/assetTypeResolver.cpp
         src/services/assetService.cpp
         src/services/hot-reload/extensionLoader.cpp

@@ -10,7 +10,6 @@ namespace dory::renderer::opengl
     {
     private:
         core::Registry& _registry;
-        core::RegistryResourceScope<core::services::graphics::IRenderer> _renderer;
         core::RegistryResourceScopeWithId<core::services::graphics::IShaderService, core::resources::GraphicalSystem> _shaderService;
 
     public:

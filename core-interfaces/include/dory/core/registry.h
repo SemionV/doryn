@@ -19,12 +19,11 @@
 #include <dory/core/services/iScriptService.h>
 #include <dory/core/services/iConfigurationService.h>
 #include <dory/core/services/iLocalizationService.h>
-#include <dory/core/services/iFrameService.h>
+#include <dory/core/services/iLoopService.h>
 #include <dory/core/services/iPipelineService.h>
 #include <dory/core/devices/iWindowSystemDevice.h>
 #include <dory/core/resources/windowSystem.h>
 #include <dory/core/services/iWindowService.h>
-#include <dory/core/services/iGraphicalSystem.h>
 #include <dory/core/resources/graphicalSystem.h>
 #include <dory/core/services/graphics/iRenderer.h>
 #include <dory/core/repositories/iViewRepository.h>
@@ -101,8 +100,7 @@ namespace dory::core
             generic::registry::ServiceEntry<services::IConfigurationService>,
             generic::registry::ServiceEntry<services::ILocalizationService>,
             generic::registry::ServiceEntry<services::IPipelineService>,
-            generic::registry::ServiceEntry<services::IFrameService>,
-            generic::registry::ServiceEntry<services::IGraphicalSystem>,
+            generic::registry::ServiceEntry<services::ILoopService>,
             generic::registry::ServiceEntry<services::graphics::IRenderer>,
             generic::registry::ServiceEntry<services::graphics::IShaderService, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<services::IViewService>,

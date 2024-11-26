@@ -4,6 +4,7 @@
 #include "dory/core/resources/dataContext.h"
 #include "dory/core/resources/entities/window.h"
 #include "dory/core/resources/entities/view.h"
+#include "dory/core/resources/entities/graphicalContext.h"
 
 namespace dory::core::services::graphics
 {

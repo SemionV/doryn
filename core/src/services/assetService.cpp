@@ -53,14 +53,14 @@ namespace dory::core::services
                 }
             }
 
-            auto graphicalSystemService = _registry.get<IGraphicalSystem>();
+            /*auto graphicalSystemService = _registry.get<IGraphicalSystem>();
             if(graphicalSystemService)
             {
                 if(!graphicalSystemService->uploadProgram(*programEntity, window) && logger)
                 {
                     logger->error("Failed to initialize shader program: " + program.key);
                 }
-            }
+            }*/
         }
 
         return resources::nullId;

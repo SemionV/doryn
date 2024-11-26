@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/core/services/iFrameService.h>
+#include <dory/core/services/iLoopService.h>
 
 namespace dory::core
 {
@@ -9,14 +9,14 @@ namespace dory::core
 
 namespace dory::core::services
 {
-    class FrameService: public IFrameService
+    class LoopService: public ILoopService
     {
     private:
         bool isStop = false;
         Registry& _registry;
 
     public:
-        explicit FrameService(Registry& registry);
+        explicit LoopService(Registry& registry);
 
         void startLoop(resources::DataContext& context) override;
         void endLoop() override;

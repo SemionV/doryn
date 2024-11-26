@@ -6,7 +6,7 @@
 
 namespace dory::core::services
 {
-    class IFrameService: public generic::Interface
+    class ILoopService: public generic::Interface
     {
     public:
         virtual void startLoop(resources::DataContext& context) = 0;

@@ -27,7 +27,7 @@ namespace dory::game
 
     bool Bootstrap::run(core::resources::DataContext& context)
     {
-        _registry.get<dory::core::services::IFrameService>([&context](dory::core::services::IFrameService* frameService) {
+        _registry.get<dory::core::services::ILoopService>([&context](dory::core::services::ILoopService* frameService) {
             frameService->startLoop(context);
         });
 
@@ -233,7 +233,7 @@ namespace dory::game
 
     void Bootstrap::onApplicationExit(core::resources::DataContext& context, const core::events::application::Exit& eventData)
     {
-        _registry.get<dory::core::services::IFrameService>([](dory::core::services::IFrameService* frameService) {
+        _registry.get<dory::core::services::ILoopService>([](dory::core::services::ILoopService* frameService) {
             frameService->endLoop();
         });
     }

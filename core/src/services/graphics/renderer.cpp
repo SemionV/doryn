@@ -26,7 +26,7 @@ namespace dory::core::services::graphics
         if(gpuDevice)
         {
             auto frame = Frame{};
-            frame.clearColor = Vector4f{ 0.2f, 0.2f, 0.02f, 1.f };
+            frame.clearColor = Vector4f{ 0.01f, 0.08f, 0.01f, 1.f };
 
             gpuDevice->drawFrame(frame);
         }

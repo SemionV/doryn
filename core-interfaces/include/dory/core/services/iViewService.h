@@ -9,7 +9,6 @@ namespace dory::core::services
     class IViewService: public generic::Interface
     {
     public:
-        //virtual std::vector<resources::entities::Window*> getWindowsByScene(resources::IdType sceneId) = 0;
         virtual void updateViews(resources::DataContext& context) = 0;
     };
 }

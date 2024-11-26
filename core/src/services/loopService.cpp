@@ -1,16 +1,16 @@
 #include <dory/core/registry.h>
-#include <dory/core/services/frameService.h>
+#include <dory/core/services/loopService.h>
 #include <dory/core/services/iPipelineService.h>
 #include <dory/generic/model.h>
 #include <chrono>
 
 namespace dory::core::services
 {
-    FrameService::FrameService(Registry& registry):
+    LoopService::LoopService(Registry& registry):
         _registry(registry)
     {}
 
-    void FrameService::startLoop(resources::DataContext& context)
+    void LoopService::startLoop(resources::DataContext& context)
     {
         _registry.get<IPipelineService>([this, &context](IPipelineService* pipelineService){
             pipelineService->initialize(context);
@@ -38,7 +38,7 @@ namespace dory::core::services
         });
     }
 
-    void FrameService::endLoop()
+    void LoopService::endLoop()
     {
         isStop = true;
     }

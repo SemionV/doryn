@@ -170,7 +170,7 @@ Update for last  months
 
 **17.10.23**
 * Task done(some time ago): Do not include internal header files into dependencies.h(precompiled headers), because it increases compilation time a lot
-* Task done(some time ago): Stop mainController using Event and FrameService
+* Task done(some time ago): Stop mainController using Event and LoopService
 
 **25.09.23**
 * Task done: Compile with Visual C++ compiler
@@ -212,4 +212,4 @@ Update for last  months
 * Task done: Instal gl3w library with build/install-dependencies.sh
 
 **19.06.23**
-* I should swap roles of MainController and FrameService entities. FrameService should have a reference to MainController and should call update function of MainController. MainController should not know anything about FrameService, just recieve timeStep und manage update of game state via controllers.
+* I should swap roles of MainController and LoopService entities. LoopService should have a reference to MainController and should call update function of MainController. MainController should not know anything about LoopService, just recieve timeStep und manage update of game state via controllers.
