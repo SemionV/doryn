@@ -49,6 +49,16 @@ namespace dory::core::devices
         }
     }
 
+    std::size_t getComponentSite(const ComponentType componentType)
+    {
+        switch (componentType)
+        {
+            case ComponentType::floatType: return sizeof(float );
+            case ComponentType::doubleType: return sizeof(double );
+            case ComponentType::uintType: return sizeof(unsigned int);
+        }
+    }
+
     OpenglGpuDevice::OpenglGpuDevice(Registry& registry) : DependencyResolver(registry)
     {}
 
@@ -121,28 +131,6 @@ namespace dory::core::devices
         checkForError();
     }
 
-    void OpenglGpuDevice::setVertexAttributes(const MeshBinding* meshBinding, const BufferBinding* vertexBuffer, VertexAttributeBinding* attributes, const std::size_t count)
-    {
-        auto glMesh = (OpenglMeshBinding*)meshBinding;
-        auto glVertexBuffer = (OpenglBufferBinding*)vertexBuffer;
-        assert(glMesh->glVertexArrayId != 0);
-        assert(glIsVertexArray(glMesh->glVertexArrayId));
-        assert(glVertexBuffer->glId != 0);
-        assert(glIsBuffer(glVertexBuffer->glId));
-
-        glBindVertexArray(glMesh->glVertexArrayId);
-        glBindBuffer(GL_ARRAY_BUFFER, glVertexBuffer->glId);
-        for(std::size_t i = 0; i < count; ++i)
-        {
-            auto& attribute = attributes[i];
-
-            glVertexAttribPointer(i, (GLint)attribute.componentsCount, getGlEnumType(attribute.componentType), attribute.normalized, (GLsizei)attribute.stride, (void*)attribute.offset);
-            glEnableVertexAttribArray(i);
-        }
-
-        checkForError();
-    }
-
     void OpenglGpuDevice::bindMesh(MeshBinding* meshBinding, const BufferBinding* vertexBuffer, const BufferBinding* indexBuffer)
     {
         auto glMesh = (OpenglMeshBinding*)meshBinding;
@@ -151,14 +139,34 @@ namespace dory::core::devices
         {
             glCreateVertexArrays(1, &glMesh->glVertexArrayId);
             checkForError();
+        }
 
-            if(vertexBuffer)
+        assert(glIsVertexArray(glMesh->glVertexArrayId));
+
+        if(vertexBuffer)
+        {
+            auto glVertexBuffer = (OpenglBufferBinding*)vertexBuffer;
+
+            std::size_t i = 0;
+            std::size_t offset = glMesh->vertexBufferOffset;
+            for(const auto& attribute : glMesh->vertexAttributes)
             {
-                auto glVertexBuffer = (OpenglBufferBinding*)vertexBuffer;
-                //TODO: bind VAB and EBO to VAO
-                //glVertexArrayVertexBuffer(glMesh->glVertexArrayId, 0, glVertexBuffer->glId, glMesh->vertexBufferOffset, );
+                std::size_t stride = attribute.componentsCount * getComponentSite(attribute.componentType);
+                glVertexArrayVertexBuffer(glMesh->glVertexArrayId, i, glVertexBuffer->glId, (GLintptr)offset, (GLsizei)stride);
+                offset += stride * glMesh->vertexCount;
+                glVertexArrayAttribFormat(glMesh->glVertexArrayId, i, (GLint)attribute.componentsCount, getGlEnumType(attribute.componentType), attribute.normalized, (GLuint)attribute.offset);
+                glEnableVertexArrayAttrib(glMesh->glVertexArrayId, i);
+                ++i;
             }
         }
+
+        if(indexBuffer)
+        {
+            auto glElementBuffer = (OpenglBufferBinding*)indexBuffer;
+            glVertexArrayElementBuffer(glMesh->glVertexArrayId, glElementBuffer->glId);
+        }
+
+        checkForError();
     }
 
     void drawMesh(const MeshBinding* meshBinding)

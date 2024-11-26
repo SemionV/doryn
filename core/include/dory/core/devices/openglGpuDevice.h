@@ -19,10 +19,6 @@ namespace dory::core::devices
         bool allocateBuffer(resources::bindings::BufferBinding* bufferBinding, std::size_t size) override;
         void deallocateBuffer(resources::bindings::BufferBinding* bufferBinding) override;
         void writeData(resources::bindings::BufferBinding* bufferBinding, std::size_t offset, std::size_t size, const void* data) override;
-        void setVertexAttributes(const resources::bindings::MeshBinding* meshBinding,
-                                 const resources::bindings::BufferBinding* vertexBuffer,
-                                 resources::bindings::VertexAttributeBinding* attributes,
-                                 std::size_t count) override;
         void bindMesh(resources::bindings::MeshBinding* meshBinding,
                       const resources::bindings::BufferBinding* vertexBuffer,
                       const resources::bindings::BufferBinding* indexBuffer) override;

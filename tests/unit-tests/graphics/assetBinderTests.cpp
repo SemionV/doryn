@@ -31,7 +31,6 @@ public:
     MOCK_METHOD(bool, allocateBuffer, (BufferBinding* bufferBinding, std::size_t size));
     MOCK_METHOD(void, deallocateBuffer, (BufferBinding* bufferBinding));
     MOCK_METHOD(void, writeData, (BufferBinding* bufferBinding, std::size_t offset, std::size_t size, const void* data));
-    MOCK_METHOD(void, setVertexAttributes, (const MeshBinding* meshBinding, const BufferBinding* bufferBinding, VertexAttributeBinding* attributes, const std::size_t count));
     MOCK_METHOD(void, bindMesh, (MeshBinding* meshBinding, const resources::bindings::BufferBinding* vertexBuffer, const resources::bindings::BufferBinding* indexBuffer));
 
     ;
@@ -182,8 +181,6 @@ void assertMeshBinding(Mesh& mesh, const Vectors<TComponents>&... vertexAttribut
     EXPECT_CALL(*gpuDriver, allocateBuffer(indexBufferMatcher, Eq(indexBufferSize))).WillOnce(Return(true));
 
     expectDataWrites(gpuDriver.get(), vertexBufferBinding, vertexAttributes...);
-    EXPECT_CALL(*gpuDriver, setVertexAttributes(meshMatcher, vertexBufferMatcher, _, Eq(sizeof...(vertexAttributes))))
-        .WillOnce(Return());
 
     EXPECT_CALL(*gpuDriver, writeData(indexBufferMatcher, Eq(0), Eq(indexBufferSize), Eq(mesh.indices.data()))).WillOnce(Return());
 

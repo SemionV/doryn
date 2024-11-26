@@ -162,7 +162,6 @@ namespace dory::core::services::graphics
             if(vertexBufferBinding)
             {
                 writeVertexAttributes(vertexBufferBinding, meshBinding, gpuDriverPtr, vertexAttributes...);
-                gpuDriver->setVertexAttributes(meshBinding, vertexBufferBinding, meshBinding->vertexAttributes.data(), meshBinding->vertexAttributes.size());
             }
             else
             {
