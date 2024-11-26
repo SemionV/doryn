@@ -23,7 +23,6 @@ namespace dory::game
 
             _registry.get<dory::core::services::IWindowService>([&context, &graphicalContext](dory::core::services::IWindowService* windowService) {
                 context.mainWindowId = windowService->createWindow(core::resources::WindowParameters{800, 600, "dory game", graphicalContext->id});
-                windowService->setCurrentWindow(context.mainWindowId);
             });
 
             _registry.get<dory::core::repositories::IViewRepository>([&context](dory::core::repositories::IViewRepository* viewRepository) {
@@ -63,10 +62,12 @@ namespace dory::game
                 mesh->vertexCount = mesh->positions.components.size() / mesh->positions.componentsCount;
                 mesh->indices = {0, 1, 2, 1, 3, 4};
 
-                auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>();
-                if(assetBinder)
+                auto assetBinder = _registry.get<core::services::graphics::IMeshAssetBinder>();
+                auto windowService = _registry.get<core::services::IWindowService>();
+                if(assetBinder && windowService)
                 {
-                    assetBinder->bindMesh(mesh->id, *graphicalContext);
+                    windowService->setCurrentWindow(context.mainWindowId);
+                    assetBinder->bind(mesh->id, *graphicalContext);
                 }
             }
 

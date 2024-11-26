@@ -1,5 +1,5 @@
 #include <dory/core/registry.h>
-#include <dory/core/services/graphics/assetBinder.h>
+#include <dory/core/services/graphics/meshAssetBinder.h>
 #include <spdlog/fmt/fmt.h>
 
 namespace dory::core::services::graphics
@@ -17,11 +17,11 @@ namespace dory::core::services::graphics
     using namespace dory::core::resources::assets;
     using namespace dory::core::resources::entities;
 
-    AssetBinder::AssetBinder(Registry& registry):
+    MeshAssetBinder::MeshAssetBinder(Registry& registry):
             _registry(registry)
     {}
 
-    void AssetBinder::bindMesh(resources::IdType meshId, resources::entities::GraphicalContext& graphicalContext)
+    void MeshAssetBinder::bind(resources::IdType meshId, resources::entities::GraphicalContext& graphicalContext)
     {
         auto meshBindingRepository = _registry.get<IMeshBindingRepository>(graphicalContext.graphicalSystem);
         auto meshRepository = _registry.get<IMeshRepository>();
@@ -43,7 +43,8 @@ namespace dory::core::services::graphics
             if(meshBinding && mesh)
             {
                 meshBinding->meshId = mesh->id;
-                bindMeshData(graphicalContext, mesh, meshBinding, mesh->positions, mesh->normals, mesh->textureCoordinates, mesh->colors);
+                uploadMeshData(graphicalContext, mesh, meshBinding, mesh->positions, mesh->normals,
+                               mesh->textureCoordinates, mesh->colors);
 
                 graphicalContext.meshBindings[meshId] = meshBinding->id;
             }
@@ -142,7 +143,7 @@ namespace dory::core::services::graphics
     }
 
     template<typename... TComponents>
-    void AssetBinder::bindMeshData(GraphicalContext& graphicalContext, const Mesh* mesh, MeshBinding* meshBinding, const Vectors<TComponents>&... vertexAttributes)
+    void MeshAssetBinder::uploadMeshData(resources::entities::GraphicalContext& graphicalContext, const resources::assets::Mesh* mesh, resources::bindings::MeshBinding* meshBinding, const Vectors<TComponents>&... vertexAttributes)
     {
         auto bufferBindingRepository = _registry.get<IBufferBindingRepository>(graphicalContext.graphicalSystem);
         auto gpuDriver = _registry.get<IGpuDevice>(graphicalContext.graphicalSystem);

@@ -33,7 +33,6 @@
 #include <dory/core/services/iAssetService.h>
 #include <dory/core/services/graphics/iShaderService.h>
 #include <dory/core/services/iSceneService.h>
-#include <dory/core/services/graphics/iGraphicalContextService.h>
 #include <dory/core/services/iViewService.h>
 #include <dory/core/repositories/iWindowRepository.h>
 #include <dory/core/repositories/iShaderRepository.h>
@@ -45,7 +44,7 @@
 #include <dory/core/repositories/bindings/iMeshBindingRepository.h>
 #include <dory/core/repositories/bindings/iBufferBindingRepository.h>
 #include "dory/core/devices/iGpuDevice.h"
-#include <dory/core/services/graphics/iAssetBinder.h>
+#include <dory/core/services/graphics/iMeshAssetBinder.h>
 
 #include <dory/core/resources/entities/camera.h>
 
@@ -111,7 +110,7 @@ namespace dory::core
             generic::registry::ServiceEntry<services::IAssetService>,
             generic::registry::ServiceEntry<services::ISceneService>,
             generic::registry::ServiceEntry<services::ISceneService, resources::EcsType>,
-            generic::registry::ServiceEntry<services::graphics::IAssetBinder>>
+            generic::registry::ServiceEntry<services::graphics::IMeshAssetBinder>>
     {};
 
     template<typename T>

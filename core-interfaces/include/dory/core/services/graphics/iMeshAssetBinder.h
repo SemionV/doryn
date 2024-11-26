@@ -5,9 +5,9 @@
 
 namespace dory::core::services::graphics
 {
-    class IAssetBinder: public generic::Interface
+    class IMeshAssetBinder: public generic::Interface
     {
     public:
-        virtual void bindMesh(resources::IdType meshId, resources::entities::GraphicalContext& graphicalContext) = 0;
+        virtual void bind(resources::IdType meshId, resources::entities::GraphicalContext& graphicalContext) = 0;
     };
 }

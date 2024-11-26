@@ -2,7 +2,7 @@
 #include <gmock/gmock.h>
 
 #include <dory/core/registry.h>
-#include <dory/core/services/graphics/assetBinder.h>
+#include <dory/core/services/graphics/meshAssetBinder.h>
 #include "dory/core/devices/iGpuDevice.h"
 #include <dory/core/repositories/assets/iMeshRepository.h>
 #include <dory/core/repositories/bindings/iMeshBindingRepository.h>
@@ -146,7 +146,7 @@ void assertMeshBinding(Mesh& mesh, const Vectors<TComponents>&... vertexAttribut
     const auto gpuDriver = std::make_shared<GpuDeviceMock>();
     registry.set<IGpuDevice, graphicalSystemType>(libraryHandle, gpuDriver);
 
-    auto assetBinder = AssetBinder(registry);
+    auto assetBinder = MeshAssetBinder(registry);
 
     auto meshBinding = MeshBinding{ 1 };
     auto vertexBufferBinding = BufferBinding { 1 };
@@ -186,7 +186,7 @@ void assertMeshBinding(Mesh& mesh, const Vectors<TComponents>&... vertexAttribut
 
     EXPECT_CALL(*gpuDriver, bindMesh(meshMatcher, vertexBufferMatcher, indexBufferMatcher)).WillOnce(Return());
 
-    assetBinder.bindMesh(mesh.id, graphicalContext);
+    assetBinder.bind(mesh.id, graphicalContext);
 
     EXPECT_EQ(mesh.id, meshBinding.meshId);
     EXPECT_EQ(mesh.vertexCount, meshBinding.vertexCount);
@@ -204,7 +204,7 @@ void assertMeshBinding(Mesh& mesh, const Vectors<TComponents>&... vertexAttribut
     assertVertexAttributes(meshBinding.vertexAttributes, vertexAttributes...);
 }
 
-TEST(AssetBinder, bindMesh)
+TEST(AssetBinder, bind)
 {
     auto mesh = Mesh
     {

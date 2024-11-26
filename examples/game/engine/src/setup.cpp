@@ -40,7 +40,7 @@
 #include <dory/core/services/assetService.h>
 #include <dory/core/services/hot-reload/extensionLoader.h>
 #include <dory/core/services/enttSceneService.h>
-#include <dory/core/services/graphics/assetBinder.h>
+#include <dory/core/services/graphics/meshAssetBinder.h>
 #include <dory/core/services/viewService.h>
 #include <dory/core/services/graphics/renderer.h>
 #include <dory/core/resources/assetType.h>
@@ -107,7 +107,7 @@ namespace dory::game
         registry.set<core::services::IViewService>(libraryHandle, std::make_shared<core::services::ViewService>(registry));
 
         registry.set<core::services::graphics::IRenderer>(libraryHandle, std::make_shared<core::services::graphics::Renderer>(registry));
-        registry.set<core::services::graphics::IAssetBinder>(libraryHandle, std::make_shared<core::services::graphics::AssetBinder>(registry));
+        registry.set<core::services::graphics::IMeshAssetBinder>(libraryHandle, std::make_shared<core::services::graphics::MeshAssetBinder>(registry));
 
         registry.set<core::services::IAssetTypeResolver>(libraryHandle, std::make_shared<core::services::AssetTypeResolver>());
         registry.set<core::services::IAssetReloadHandler>(libraryHandle, std::make_shared<core::services::loaders::ExtensionLoader>(registry), std::string{core::resources::AssetType::extension});
