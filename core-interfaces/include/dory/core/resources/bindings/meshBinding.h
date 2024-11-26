@@ -1,7 +1,6 @@
 #pragma once
 
 #include <dory/core/resources/entity.h>
-#include "bufferBinding.h"
 
 namespace dory::core::resources::bindings
 {

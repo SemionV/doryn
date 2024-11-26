@@ -45,6 +45,8 @@
 #include <dory/core/repositories/assets/iShaderRepository.h>
 #include <dory/core/repositories/bindings/iMeshBindingRepository.h>
 #include <dory/core/repositories/bindings/iBufferBindingRepository.h>
+#include <dory/core/repositories/bindings/iShaderBindingRepository.h>
+#include <dory/core/repositories/bindings/iMaterialBindingRepository.h>
 #include "dory/core/devices/iGpuDevice.h"
 #include "dory/core/services/iAssetBinder.h"
 #include <dory/core/resources/assetType.h>
@@ -92,6 +94,8 @@ namespace dory::core
             generic::registry::ServiceEntry<repositories::IShaderProgramRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::bindings::IMeshBindingRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::bindings::IBufferBindingRepository, resources::GraphicalSystem>,
+            generic::registry::ServiceEntry<repositories::bindings::IShaderBindingRepository, resources::GraphicalSystem>,
+            generic::registry::ServiceEntry<repositories::bindings::IMaterialBindingRepository, resources::GraphicalSystem>,
             /*Services*/
             generic::registry::ServiceEntry<services::ILibraryService>,
             generic::registry::ServiceEntry<services::IFileService>,

@@ -37,6 +37,8 @@
 #include <dory/core/repositories/graphicalContextRepository.h>
 #include <dory/core/repositories/bindings/meshBindingRepository.h>
 #include <dory/core/repositories/bindings/bufferBindingRepository.h>
+#include <dory/core/repositories/bindings/shaderBindingRepository.h>
+#include <dory/core/repositories/bindings/materialBindingRepository.h>
 #include <dory/core/devices/fileWatcherDevice.h>
 #include <dory/core/services/assetTypeResolver.h>
 #include <dory/core/services/assetService.h>
@@ -81,6 +83,8 @@ namespace dory::game
         registry.set<core::repositories::assets::IShaderRepository>(libraryHandle, std::make_shared<core::repositories::assets::ShaderRepository>());
         registry.set<core::repositories::bindings::IMeshBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::MeshBindingRepository>());
         registry.set<core::repositories::bindings::IBufferBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::BufferBindingRepository>());
+        registry.set<core::repositories::bindings::IShaderBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::ShaderBindingRepository>());
+        registry.set<core::repositories::bindings::IMaterialBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::MaterialBindingRepository>());
 
         registry.set<core::repositories::IShaderRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::ShaderRepository>());
         registry.set<core::repositories::IShaderProgramRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::ShaderProgramRepository>());
