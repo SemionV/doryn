@@ -29,7 +29,7 @@ namespace dory::core::services
                     auto viewIds = viewRepository->getWindowViews(window.id);
                     auto windowService = _registry.get<IWindowService>(window.windowSystem);
 
-                    auto renderer = _registry.get<IRenderer>(graphicalContext->graphicalSystem);
+                    auto renderer = _registry.get<IRenderer>();
                     for(const auto& viewId : viewIds)
                     {
                         auto view = viewRepository->get(viewId);

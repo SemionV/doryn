@@ -103,7 +103,7 @@ namespace dory::core
             generic::registry::ServiceEntry<services::IPipelineService>,
             generic::registry::ServiceEntry<services::IFrameService>,
             generic::registry::ServiceEntry<services::IGraphicalSystem>,
-            generic::registry::ServiceEntry<services::graphics::IRenderer, resources::GraphicalSystem>,
+            generic::registry::ServiceEntry<services::graphics::IRenderer>,
             generic::registry::ServiceEntry<services::graphics::IShaderService, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<services::IViewService>,
             generic::registry::ServiceEntry<services::IWindowService>,//default window service

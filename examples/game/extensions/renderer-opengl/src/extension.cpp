@@ -12,13 +12,13 @@ namespace dory::renderer::opengl
             logger->information(std::string_view ("dory::renderer::opengl::Extension: attach extension"));
         });
 
-        _registry.set<core::services::graphics::IRenderer, core::resources::GraphicalSystem::opengl>(library, _renderer.get());
+        _registry.set<core::services::graphics::IRenderer>(library, _renderer.get());
         _registry.set<core::services::graphics::IShaderService, core::resources::GraphicalSystem::opengl>(library, _shaderService.get());
     }
 
     Extension::Extension(core::Registry& registry):
             _registry(registry),
-            _renderer(registry, std::make_shared<OpenglRenderer>(registry), core::resources::GraphicalSystem::opengl),
+            _renderer(registry, std::make_shared<OpenglRenderer>(registry)),
             _shaderService(registry, std::make_shared<ShaderService>(registry), core::resources::GraphicalSystem::opengl)
     {
 #ifdef DORY_PLATFORM_WIN32

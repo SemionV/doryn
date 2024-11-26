@@ -12,6 +12,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/devices/terminalDevice.cpp
         src/devices/glfwWindowSystemDevice.cpp
         src/devices/fileWatcherDevice.cpp
+        src/devices/openglGpuDevice.cpp
         src/extension/dynamicLibrary.cpp
         src/repositories/pipelineRepository.cpp
         src/repositories/viewRepository.cpp
@@ -32,7 +33,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/hot-reload/extensionLoader.cpp
         src/services/enttSceneService.cpp
         src/services/graphics/assetBinder.cpp
-        src/devices/openglGpuDevice.cpp
+        src/services/viewService.cpp
         src/controllers/windowSystemController.cpp
         src/controllers/viewController.cpp
         ${DORY_PLATFORM_MODULES})

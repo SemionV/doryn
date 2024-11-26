@@ -17,4 +17,10 @@ namespace dory::renderer::opengl
             glFlush();
         }
     }
+
+    void OpenglRenderer::draw(core::resources::DataContext& context,
+                              const core::resources::entities::Window& window,
+                              const core::resources::entities::GraphicalContext& graphicalContext,
+                              const core::resources::entities::View& view)
+    {}
 }
