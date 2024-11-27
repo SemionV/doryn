@@ -5,5 +5,7 @@
 namespace dory::core::resources::bindings
 {
     struct ShaderBinding: Entity<>
-    {};
+    {
+        std::string compilationError{};
+    };
 }

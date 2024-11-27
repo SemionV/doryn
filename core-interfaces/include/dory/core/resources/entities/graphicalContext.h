@@ -10,5 +10,7 @@ namespace dory::core::resources::entities
     {
         GraphicalSystem graphicalSystem;
         std::unordered_map<resources::IdType, resources::IdType> meshBindings;
+        std::unordered_map<resources::IdType, resources::IdType> shaderBindings;
+        std::unordered_map<resources::IdType, resources::IdType> materialBindings;
     };
 }

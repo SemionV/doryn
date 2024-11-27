@@ -23,6 +23,8 @@ namespace dory::core::services::graphics
 
     void MeshAssetBinder::bind(resources::IdType meshId, resources::entities::GraphicalContext& graphicalContext)
     {
+        assert(!graphicalContext.meshBindings.contains(meshId)); //binding the previously bound asset
+
         auto meshBindingRepository = _registry.get<IMeshBindingRepository>(graphicalContext.graphicalSystem);
         auto meshRepository = _registry.get<IMeshRepository>();
 

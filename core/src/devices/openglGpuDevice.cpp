@@ -5,6 +5,8 @@
 #include "spdlog/fmt/fmt.h"
 #include "dory/core/resources/bindings/openglBufferBinding.h"
 #include "dory/core/resources/bindings/openglMeshBinding.h"
+#include "dory/core/resources/bindings/openglShaderBinding.h"
+#include "dory/core/resources/bindings/openglMaterialBinding.h"
 
 namespace dory::core::devices
 {
@@ -39,7 +41,7 @@ namespace dory::core::devices
         }
     }
 
-    GLenum getGlEnumType(const ComponentType componentType)
+    GLenum getGlType(const ComponentType componentType)
     {
         switch (componentType)
         {
@@ -47,6 +49,8 @@ namespace dory::core::devices
             case ComponentType::doubleType: return GL_DOUBLE;
             case ComponentType::uintType: return GL_UNSIGNED_INT;
         }
+
+        assert(false);
     }
 
     std::size_t getComponentSite(const ComponentType componentType)
@@ -57,6 +61,19 @@ namespace dory::core::devices
             case ComponentType::doubleType: return sizeof(double );
             case ComponentType::uintType: return sizeof(unsigned int);
         }
+
+        assert(false);
+    }
+
+    GLenum getGlShaderType(const resources::assets::ShaderType type)
+    {
+        switch (type)
+        {
+            case resources::assets::ShaderType::vertex: return GL_VERTEX_SHADER;
+            case resources::assets::ShaderType::fragment: GL_FRAGMENT_SHADER;
+        }
+
+        assert(false);
     }
 
     OpenglGpuDevice::OpenglGpuDevice(Registry& registry) : DependencyResolver(registry)
@@ -153,7 +170,8 @@ namespace dory::core::devices
                 std::size_t stride = attribute.componentsCount * getComponentSite(attribute.componentType);
                 glVertexArrayVertexBuffer(glMesh->glVertexArrayId, i, glVertexBuffer->glId, (GLintptr)offset, (GLsizei)stride);
                 offset += stride * glMesh->vertexCount;
-                glVertexArrayAttribFormat(glMesh->glVertexArrayId, i, (GLint)attribute.componentsCount, getGlEnumType(attribute.componentType), attribute.normalized, (GLuint)attribute.offset);
+                glVertexArrayAttribFormat(glMesh->glVertexArrayId, i, (GLint)attribute.componentsCount,
+                                          getGlType(attribute.componentType), attribute.normalized, (GLuint)attribute.offset);
                 glEnableVertexArrayAttrib(glMesh->glVertexArrayId, i);
                 ++i;
             }
@@ -168,6 +186,56 @@ namespace dory::core::devices
         checkForError();
     }
 
+    void OpenglGpuDevice::bindShader(const std::string& sourceCode, resources::assets::ShaderType type, ShaderBinding* shaderBinding)
+    {
+        auto glShader = (OpenglShaderBinding*)shaderBinding;
+
+        glShader->type = getGlShaderType(type);
+        glShader->glId = glCreateShader(glShader->type);
+
+        const char* shaderSource = sourceCode.c_str();
+        const auto length = (GLint)sourceCode.length();
+        glShaderSource(glShader->glId, 1, &shaderSource, &length);
+        glCompileShader(glShader->glId);
+
+        GLint compiled;
+        glGetShaderiv(glShader->glId, GL_COMPILE_STATUS, &compiled);
+        if (!compiled)
+        {
+            GLsizei messageLength;
+            glGetShaderiv(glShader->glId, GL_INFO_LOG_LENGTH, &messageLength);
+
+            shaderBinding->compilationError = std::string(messageLength + 1, 0);
+            glGetShaderInfoLog(glShader->glId, messageLength, &messageLength, shaderBinding->compilationError.data());
+        }
+    }
+
+    void OpenglGpuDevice::bindMaterial(resources::bindings::MaterialBinding* materialBinding, const std::vector<resources::bindings::ShaderBinding*>& shaders)
+    {
+        auto glMaterial = (OpenglMaterialBinding*)materialBinding;
+
+        glMaterial->glProgramId = glCreateProgram();
+
+        for(const auto* shader : shaders)
+        {
+            const auto glShader = (OpenglShaderBinding*)shader;
+            glAttachShader(glShader->glId, glShader->type);
+        }
+
+        glLinkProgram(glMaterial->glProgramId);
+
+        GLint linked;
+        glGetProgramiv(glMaterial->glProgramId, GL_LINK_STATUS, &linked);
+        if (!linked)
+        {
+            GLsizei messageLength;
+            glGetProgramiv(glMaterial->glProgramId, GL_INFO_LOG_LENGTH, &messageLength);
+
+            glMaterial->linkingError = std::string(messageLength + 1, 0);
+            glGetProgramInfoLog(glMaterial->glProgramId, messageLength, &messageLength, glMaterial->linkingError.data());
+        }
+    }
+
     void drawMesh(const MeshBinding* meshBinding)
     {
         auto glMesh = (OpenglMeshBinding*)meshBinding;
@@ -176,7 +244,7 @@ namespace dory::core::devices
         glBindVertexArray(glMesh->glVertexArrayId);
         if(glMesh->indexBufferId != nullId)
         {
-            glDrawElements(GL_TRIANGLES, (GLsizei)glMesh->indexCount, getGlEnumType(glMesh->indexType), (void*)glMesh->indexBufferOffset);
+            glDrawElements(GL_TRIANGLES, (GLsizei)glMesh->indexCount, getGlType(glMesh->indexType), (void*)glMesh->indexBufferOffset);
         }
         else if(glMesh->glVertexArrayId != nullId)
         {

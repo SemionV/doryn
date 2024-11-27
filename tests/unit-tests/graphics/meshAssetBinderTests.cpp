@@ -31,9 +31,9 @@ public:
     MOCK_METHOD(bool, allocateBuffer, (BufferBinding* bufferBinding, std::size_t size));
     MOCK_METHOD(void, deallocateBuffer, (BufferBinding* bufferBinding));
     MOCK_METHOD(void, writeData, (BufferBinding* bufferBinding, std::size_t offset, std::size_t size, const void* data));
-    MOCK_METHOD(void, bindMesh, (MeshBinding* meshBinding, const resources::bindings::BufferBinding* vertexBuffer, const resources::bindings::BufferBinding* indexBuffer));
-
-    ;
+    MOCK_METHOD(void, bindMesh, (MeshBinding* meshBinding, const BufferBinding* vertexBuffer, const BufferBinding* indexBuffer));
+    MOCK_METHOD(void, bindShader, (const std::string& sourceCode, resources::assets::ShaderType type, ShaderBinding* shaderBinding));
+    MOCK_METHOD(void, bindMaterial, (MaterialBinding* materialBinding, const std::vector<ShaderBinding*>& shaders));
     MOCK_METHOD(void, drawFrame, (const Frame& frame));
 };
 

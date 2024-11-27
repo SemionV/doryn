@@ -22,6 +22,8 @@ namespace dory::core::devices
         void bindMesh(resources::bindings::MeshBinding* meshBinding,
                       const resources::bindings::BufferBinding* vertexBuffer,
                       const resources::bindings::BufferBinding* indexBuffer) override;
+        void bindShader(const std::string& sourceCode, resources::assets::ShaderType type, resources::bindings::ShaderBinding* shaderBinding) override;
+        void bindMaterial(resources::bindings::MaterialBinding* materialBinding, const std::vector<resources::bindings::ShaderBinding*>& shaders) override;
         void drawFrame(const resources::objects::Frame& frame) override;
     };
 }

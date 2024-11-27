@@ -6,6 +6,6 @@ namespace dory::core::resources::assets
 {
     struct Material: Entity<>
     {
-
+        std::vector<IdType> shaders {};
     };
 }
