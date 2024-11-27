@@ -15,8 +15,9 @@ namespace dory::core::devices
 {
     using namespace resources;
     using namespace resources::bindings;
+    using namespace resources::bindings::uniforms;
     using namespace resources::objects;
-    using namespace dory::core::services;
+    using namespace services;
 
     const char* getErrorString(GLenum errorCode)
     {
@@ -91,7 +92,7 @@ namespace dory::core::devices
         int version = gladLoadGL(glfwGetProcAddress);
         if (version == 0)
         {
-            auto logger = _registry.get<core::services::ILogService>();
+            auto logger = _registry.get<ILogService>();
             if(logger)
             {
                 logger->error(std::string_view("Failed to initialize OpenGL"));
@@ -213,7 +214,35 @@ namespace dory::core::devices
         }
     }
 
-    void OpenglGpuDevice::bindMaterial(resources::bindings::MaterialBinding* materialBinding, const std::vector<resources::bindings::ShaderBinding*>& shaders)
+    class UniformLocationBinder
+    {
+    public:
+        template<typename TUniform>
+        static void process(const std::string_view& memberName, const std::size_t uniformId, const TUniform& value, OpenglMaterialBinding& material)
+        {
+            GLint location = glGetUniformLocation(material.glProgramId, memberName.data());
+            if(location >= 0)
+            {
+                material.uniformLocations[uniformId] = location;
+            }
+        }
+
+        static void process(const std::string_view& memberName, const std::size_t uniformId, const Material& value, OpenglMaterialBinding& material)
+        {
+            GLuint blockIndex = glGetUniformBlockIndex(material.glProgramId, memberName.data());
+            if(blockIndex != 0)
+            {
+                //TODO: bind block
+            }
+        }
+    };
+
+    void bindUniformLocations(OpenglMaterialBinding* materialBinding)
+    {
+        services::graphics::UniformVisitor<UniformLocationBinder>::visit(Uniforms{}, *materialBinding);
+    }
+
+    void OpenglGpuDevice::bindMaterial(MaterialBinding* materialBinding, const std::vector<ShaderBinding*>& shaders)
     {
         auto glMaterial = (OpenglMaterialBinding*)materialBinding;
 
@@ -236,6 +265,18 @@ namespace dory::core::devices
 
             glMaterial->linkingError = std::string(messageLength + 1, 0);
             glGetProgramInfoLog(glMaterial->glProgramId, messageLength, &messageLength, glMaterial->linkingError.data());
+        }
+        else
+        {
+            bindUniformLocations(glMaterial);
+        }
+    }
+
+    void setActiveMaterial(const MaterialBinding* materialBinding)
+    {
+        if(materialBinding->linkingError.empty())
+        {
+            //TODO: set material uniforms and properties
         }
     }
 
@@ -260,9 +301,13 @@ namespace dory::core::devices
         glClearColor(frame.clearColor.x, frame.clearColor.y, frame.clearColor.z, frame.clearColor.w);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        for(const auto* meshBinding : frame.meshes)
+        for(const auto& [material, meshes] : frame.meshMap)
         {
-            drawMesh(meshBinding);
+            setActiveMaterial(material);
+            for(const auto meshBinding : meshes)
+            {
+                drawMesh(meshBinding);
+            }
         }
 
         glFlush();

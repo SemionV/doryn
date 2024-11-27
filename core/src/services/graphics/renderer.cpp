@@ -25,19 +25,33 @@ namespace dory::core::services::graphics
     {
         auto gpuDevice = _registry.get<IGpuDevice>(graphicalContext.graphicalSystem);
         auto meshBindingRepository = _registry.get<IMeshBindingRepository>(graphicalContext.graphicalSystem);
+        auto materialBindingRepository = _registry.get<IMaterialBindingRepository>(graphicalContext.graphicalSystem);
         auto windowService = _registry.get<services::IWindowService>(window.windowSystem);
 
-        if(gpuDevice && meshBindingRepository && windowService)
+        if(gpuDevice && meshBindingRepository && materialBindingRepository && windowService)
         {
             auto frame = Frame{};
             frame.clearColor = Vector4f{ 0.01f, 0.08f, 0.01f, 1.f };
+
+            MaterialBinding defaultMaterial {{}, "This is default material"};
 
             for(const auto& [meshId, meshBindingId] : graphicalContext.meshBindings)
             {
                 auto* meshBinding = meshBindingRepository->get(meshBindingId);
                 if(meshBinding)
                 {
-                    frame.meshes.emplace_back(meshBinding);
+                    auto* material = materialBindingRepository->get(meshBinding->materialBindingId);
+                    if(!material)
+                    {
+                        material = &defaultMaterial;
+                    }
+
+                    if(!frame.meshMap.contains(material))
+                    {
+                        frame.meshMap[material] = {};
+                    }
+
+                    frame.meshMap[material].emplace_back(meshBinding);
                 }
             }
 

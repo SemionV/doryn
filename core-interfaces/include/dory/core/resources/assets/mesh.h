@@ -19,6 +19,7 @@ namespace dory::core::resources::assets
     {
         using IndexType = unsigned int;
 
+        IdType materialId {};
         std::size_t vertexCount;
         Vectors<float> positions;
         Vectors<float> normals;

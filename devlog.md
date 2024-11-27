@@ -6,7 +6,7 @@ Tasks:
   * Bind Uniforms
 * Scene
   * Load mesh assets
-  * Load material assets
+  * Load materialId assets
   * Load scene graph
   * Unload scene and assets
   * Unbind assets from GPU

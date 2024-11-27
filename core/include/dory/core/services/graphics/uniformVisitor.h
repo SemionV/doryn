@@ -33,14 +33,16 @@ namespace dory::core::services::graphics
             TPolicies::Value::process(uniformName, uniformId, std::forward<T>(uniformValue), context);
         }
 
-        template<typename T, typename TContext>
-        requires(std::is_class_v<std::decay_t<T>>)
+    public:
+        template<typename TContext>
         static void visit(const resources::bindings::uniforms::Uniforms& uniforms, TContext& context)
         {
             reflection::visitClassFields(uniforms, [](auto& memberValue, const std::string_view& memberName,
                                                     const std::size_t i, const std::size_t memberCount, TContext& context)
             {
-                visit(memberName, i, memberValue, context);
+
+                TPolicies::process(memberName, i, memberValue, context);
+                //visit(memberName, i, memberValue, context);
             }, context);
         }
     };
