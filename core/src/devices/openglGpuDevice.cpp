@@ -7,6 +7,9 @@
 #include "dory/core/resources/bindings/openglMeshBinding.h"
 #include "dory/core/resources/bindings/openglShaderBinding.h"
 #include "dory/core/resources/bindings/openglMaterialBinding.h"
+#include "dory/core/resources/bindings/uniforms.h"
+#include "dory/core/resources/uniformsRefl.h"
+#include "dory/core/services/graphics/uniformVisitor.h"
 
 namespace dory::core::devices
 {
@@ -246,7 +249,7 @@ namespace dory::core::devices
         {
             glDrawElements(GL_TRIANGLES, (GLsizei)glMesh->indexCount, getGlType(glMesh->indexType), (void*)glMesh->indexBufferOffset);
         }
-        else if(glMesh->glVertexArrayId != nullId)
+        else
         {
             glDrawArrays(GL_TRIANGLES, 0, (GLsizei)glMesh->vertexCount);
         }
