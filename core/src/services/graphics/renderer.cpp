@@ -33,18 +33,12 @@ namespace dory::core::services::graphics
             auto frame = Frame{};
             frame.clearColor = Vector4f{ 0.01f, 0.08f, 0.01f, 1.f };
 
-            MaterialBinding defaultMaterial {{}, "This is default material"};
-
             for(const auto& [meshId, meshBindingId] : graphicalContext.meshBindings)
             {
                 auto* meshBinding = meshBindingRepository->get(meshBindingId);
                 if(meshBinding)
                 {
                     auto* material = materialBindingRepository->get(meshBinding->materialBindingId);
-                    if(!material)
-                    {
-                        material = &defaultMaterial;
-                    }
 
                     if(!frame.meshMap.contains(material))
                     {

@@ -12,6 +12,6 @@ uniform ColorsBlock
 
 void main()
 {
-    //fColor = vec4(0.5, 0.4, 0.8, 1.0);
-    fColor = colors.hippieColor;
+    fColor = vec4(0.2, 0.2, 0.9, 1.0);
+    //fColor = colors.hippieColor;
 }

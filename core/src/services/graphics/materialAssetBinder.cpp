@@ -30,7 +30,7 @@ namespace dory::core::services::graphics
 
             if(material && materialBinding)
             {
-                std::vector<ShaderBinding*> shaderBindings{ material->shaders.size() };
+                std::vector<ShaderBinding*> shaderBindings{};
 
                 for(const auto shaderId : material->shaders)
                 {

@@ -74,7 +74,7 @@ namespace dory::core::devices
         switch (type)
         {
             case resources::assets::ShaderType::vertex: return GL_VERTEX_SHADER;
-            case resources::assets::ShaderType::fragment: GL_FRAGMENT_SHADER;
+            case resources::assets::ShaderType::fragment: return GL_FRAGMENT_SHADER;
         }
 
         assert(false);
@@ -110,7 +110,7 @@ namespace dory::core::devices
         if (errorCode != GL_NO_ERROR)
         {
             _registry.get<ILogService>([&errorCode](ILogService* logger) {
-                logger->error(fmt::format("Error on allocating OpenGL buffer: {0}, {1}", errorCode, getErrorString(errorCode)));
+                logger->error(fmt::format("OpenGL error: {0}, {1}", errorCode, getErrorString(errorCode)));
             });
 
             return true;
@@ -247,11 +247,13 @@ namespace dory::core::devices
         auto glMaterial = (OpenglMaterialBinding*)materialBinding;
 
         glMaterial->glProgramId = glCreateProgram();
+        assert(glIsProgram(glMaterial->glProgramId));
 
         for(const auto* shader : shaders)
         {
             const auto glShader = (OpenglShaderBinding*)shader;
-            glAttachShader(glShader->glId, glShader->type);
+            assert(glIsShader(glShader->glId));
+            glAttachShader(glMaterial->glProgramId, glShader->glId);
         }
 
         glLinkProgram(glMaterial->glProgramId);
@@ -268,14 +270,20 @@ namespace dory::core::devices
         }
         else
         {
+            assert(glIsProgram(glMaterial->glProgramId));
+            glUseProgram(glMaterial->glProgramId);
             bindUniformLocations(glMaterial);
         }
     }
 
     void setActiveMaterial(const MaterialBinding* materialBinding)
     {
-        if(materialBinding->linkingError.empty())
+        auto glMaterial = (OpenglMaterialBinding*)materialBinding;
+
+        if(glMaterial && glMaterial->linkingError.empty())
         {
+            assert(glIsProgram(glMaterial->glProgramId));
+            glUseProgram(glMaterial->glProgramId);
             //TODO: set material uniforms and properties
         }
     }
