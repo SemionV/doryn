@@ -79,7 +79,11 @@ namespace dory::game
                 fragmentShader->sourceCode = fileService->read(fragmentShader->filename);
                 auto fragmentShaderId = fragmentShader->id;
 
-                auto material = materialRepo->insert(core::resources::assets::Material{ {}, { vertexShaderId, fragmentShaderId } });
+                auto material = materialRepo->insert(core::resources::assets::Material{
+                    {},
+                    {0.f, 0.f, 1.f, 0.f},
+                    { vertexShaderId, fragmentShaderId }
+                });
                 materialId = material->id;
 
                 auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::shader);

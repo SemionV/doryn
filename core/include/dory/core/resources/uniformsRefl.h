@@ -9,6 +9,7 @@ REFL_TYPE(dory::core::resources::bindings::uniforms::Material)
 REFL_END
 
 REFL_TYPE(dory::core::resources::bindings::uniforms::Uniforms)
+        REFL_FIELD(color)
         REFL_FIELD(modelTransform)
         REFL_FIELD(viewTransform)
         REFL_FIELD(projectionTransform)

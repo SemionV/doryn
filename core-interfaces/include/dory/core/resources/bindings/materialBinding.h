@@ -7,5 +7,6 @@ namespace dory::core::resources::bindings
     struct MaterialBinding: Entity<>
     {
         std::string linkingError{};
+        math::Vector4f color {};
     };
 }

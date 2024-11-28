@@ -276,7 +276,41 @@ namespace dory::core::devices
         }
     }
 
-    void setActiveMaterial(const MaterialBinding* materialBinding)
+    class UniformValueBinder
+    {
+    public:
+        template<typename TUniform>
+        static void process(const std::string_view& memberName, const std::size_t uniformId, const TUniform& value, OpenglMaterialBinding& material)
+        {}
+
+        static void process(const std::string_view& memberName, const std::size_t uniformId, const math::Vector4f value, OpenglMaterialBinding& material)
+        {
+            if(material.uniformLocations.contains(uniformId))
+            {
+                auto location = material.uniformLocations[uniformId];
+                glUniform4f(location, value.x, value.y, value.z, value.w);
+            }
+        }
+
+        static void process(const std::string_view& memberName, const std::size_t uniformId, const Material& value, OpenglMaterialBinding& material)
+        {
+        }
+    };
+
+    void bindUniformValues(const Uniforms& uniforms, OpenglMaterialBinding* materialBinding)
+    {
+        services::graphics::UniformVisitor<UniformValueBinder>::visit(uniforms, *materialBinding);
+    }
+
+    void fillUniforms(Uniforms& uniforms, const MaterialBinding* materialBinding)
+    {
+        if(materialBinding)
+        {
+            uniforms.color =  materialBinding->color;
+        }
+    }
+
+    void setActiveMaterial(const Uniforms& uniforms, const MaterialBinding* materialBinding)
     {
         auto glMaterial = (OpenglMaterialBinding*)materialBinding;
 
@@ -284,7 +318,7 @@ namespace dory::core::devices
         {
             assert(glIsProgram(glMaterial->glProgramId));
             glUseProgram(glMaterial->glProgramId);
-            //TODO: set material uniforms and properties
+            bindUniformValues(uniforms, glMaterial);
         }
     }
 
@@ -309,9 +343,12 @@ namespace dory::core::devices
         glClearColor(frame.clearColor.x, frame.clearColor.y, frame.clearColor.z, frame.clearColor.w);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        Uniforms uniforms;
+
         for(const auto& [material, meshes] : frame.meshMap)
         {
-            setActiveMaterial(material);
+            fillUniforms(uniforms, material);
+            setActiveMaterial(uniforms, material);
             for(const auto meshBinding : meshes)
             {
                 drawMesh(meshBinding);
