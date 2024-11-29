@@ -30,7 +30,7 @@ namespace dory::core::services::graphics
 
             if(material && materialBinding)
             {
-                materialBinding->color = material->color;
+                materialBinding->properties = material->properties;
 
                 std::vector<ShaderBinding*> shaderBindings{};
 

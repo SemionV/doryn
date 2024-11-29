@@ -81,8 +81,8 @@ namespace dory::game
 
                 auto material = materialRepo->insert(core::resources::assets::Material{
                     {},
-                    {0.f, 0.f, 1.f, 0.f},
-                    { vertexShaderId, fragmentShaderId }
+                    { vertexShaderId, fragmentShaderId },
+                    { {0.f, 0.f, 1.f, 0.f}, {1.f, 0.f, 0.f, 0.f}, {0.f, 1.f, 0.f, 0.f} }
                 });
                 materialId = material->id;
 

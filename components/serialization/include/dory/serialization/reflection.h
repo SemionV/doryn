@@ -47,16 +47,16 @@ namespace dory::reflection
     static constexpr const auto ClassFieldCountV = FieldCount<typename refl::descriptor::type_descriptor<std::remove_reference_t<T>>::member_types>::value;
 
     template<typename T>
-    struct FieldNames;
+    struct MemberNames;
 
     template<typename... Ts>
-    struct FieldNames<refl::util::type_list<Ts...>>
+    struct MemberNames<refl::util::type_list<Ts...>>
     {
         static constexpr const char* value[] = { (char*)Ts::name.data... };
     };
 
     template<typename T>
-    static constexpr const auto ClassFieldNamesV = FieldNames<typename refl::descriptor::type_descriptor<std::remove_reference_t<T>>::member_types>::value;
+    static constexpr const auto MemberNamesV = MemberNames<typename refl::descriptor::type_descriptor<std::remove_reference_t<T>>::member_types>::value;
 
     template<typename T, typename F, typename... Args>
     constexpr void visitClassFields(T&& object, F functor, Args&&... args)

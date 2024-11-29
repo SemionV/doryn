@@ -9,8 +9,8 @@ namespace dory::core::services::graphics
     class UniformVisitor
     {
     public:
-        template<typename TContext>
-        static void visit(const resources::bindings::uniforms::Uniforms& uniforms, TContext& context)
+        template<typename T,typename TContext>
+        static void visit(const T& uniforms, TContext& context)
         {
             reflection::visitClassFields(uniforms, [](auto& memberValue, const std::string_view& memberName,
                                                     const std::size_t i, const std::size_t memberCount, TContext& context)

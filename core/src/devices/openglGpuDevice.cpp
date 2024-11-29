@@ -3,6 +3,7 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include "spdlog/fmt/fmt.h"
+#include "dory/serialization/reflection.h"
 #include "dory/core/resources/bindings/openglBufferBinding.h"
 #include "dory/core/resources/bindings/openglMeshBinding.h"
 #include "dory/core/resources/bindings/openglShaderBinding.h"
@@ -43,6 +44,49 @@ namespace dory::core::devices
             default:
                 return "Unknown error";
         }
+    }
+
+    static std::size_t getGlTypeSize(GLenum type)
+    {
+        std::size_t size = 0;
+
+#define CASE(Enum, Count, Type) \
+                case Enum: size = (Count) * sizeof(Type); break
+
+        switch (type)
+        {
+            CASE(GL_FLOAT, 1, GLfloat);
+            CASE(GL_FLOAT_VEC2, 2, GLfloat);
+            CASE(GL_FLOAT_VEC3, 3, GLfloat);
+            CASE(GL_FLOAT_VEC4, 4, GLfloat);
+            CASE(GL_INT, 1, GLint);
+            CASE(GL_INT_VEC2, 2, GLint);
+            CASE(GL_INT_VEC3, 3, GLint);
+            CASE(GL_INT_VEC4, 4, GLint);
+            CASE(GL_UNSIGNED_INT, 1, GLuint);
+            CASE(GL_UNSIGNED_INT_VEC2, 2, GLuint);
+            CASE(GL_UNSIGNED_INT_VEC3, 3, GLuint);
+            CASE(GL_UNSIGNED_INT_VEC4, 4, GLuint);
+            CASE(GL_BOOL, 1, GLboolean);
+            CASE(GL_BOOL_VEC2, 2, GLboolean);
+            CASE(GL_BOOL_VEC3, 3, GLboolean);
+            CASE(GL_BOOL_VEC4, 4, GLboolean);
+            CASE(GL_FLOAT_MAT2, 4, GLfloat);
+            CASE(GL_FLOAT_MAT2x3, 6, GLfloat);
+            CASE(GL_FLOAT_MAT2x4, 8, GLfloat);
+            CASE(GL_FLOAT_MAT3, 9, GLfloat);
+            CASE(GL_FLOAT_MAT3x2, 6, GLfloat);
+            CASE(GL_FLOAT_MAT3x4, 12, GLfloat);
+            CASE(GL_FLOAT_MAT4, 16, GLfloat);
+            CASE(GL_FLOAT_MAT4x2, 8, GLfloat);
+            CASE(GL_FLOAT_MAT4x3, 12, GLfloat);
+#undef CASE
+            default:
+                fprintf(stderr, "Unknown type: 0x%x\n", type);
+                break;
+        }
+
+        return size;
     }
 
     GLenum getGlType(const ComponentType componentType)
@@ -217,8 +261,12 @@ namespace dory::core::devices
     class UniformLocationBinder
     {
     public:
+        //TODO: create a meta function which would enumerate or uniform types
         template<typename TUniform>
-        static void process(const std::string_view& memberName, const std::size_t uniformId, const TUniform& value, OpenglMaterialBinding& material)
+        requires(std::is_fundamental_v<std::remove_reference_t<TUniform>>
+            || std::is_same_v<std::remove_reference_t<TUniform>, math::Vector4f>
+            || std::is_same_v<std::remove_reference_t<TUniform>, math::Matrix4x4f>)
+        static void process(const std::string_view& memberName, const std::size_t uniformId, const TUniform value, OpenglMaterialBinding& material)
         {
             GLint location = glGetUniformLocation(material.glProgramId, memberName.data());
             if(location >= 0)
@@ -227,19 +275,60 @@ namespace dory::core::devices
             }
         }
 
-        static void process(const std::string_view& memberName, const std::size_t uniformId, const Material& value, OpenglMaterialBinding& material)
+        template<typename TUniform>
+        requires(std::is_class_v<std::decay_t<TUniform>>
+                 && !std::is_same_v<std::remove_reference_t<TUniform>, math::Vector4f>
+                 && !std::is_same_v<std::remove_reference_t<TUniform>, math::Matrix4x4f>)
+        static void process(const std::string_view& memberName, const std::size_t uniformId, const TUniform& value, OpenglMaterialBinding& material)
         {
-            GLuint blockIndex = glGetUniformBlockIndex(material.glProgramId, memberName.data());
-            if(blockIndex != 0)
+            //TODO: test and debug multiple blocks per program, as well as named blocks(currently it is crushing)
+
+            UniformBlockBinding blockBinding;
+            blockBinding.blockIndex = glGetUniformBlockIndex(material.glProgramId, memberName.data());
+            if(blockBinding.blockIndex != GL_INVALID_INDEX)
             {
-                //TODO: bind block
+                glGetActiveUniformBlockiv(material.glProgramId, blockBinding.blockIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &blockBinding.blockSize);
+                if(blockBinding.blockSize > 0)
+                {
+                    blockBinding.bufferOffset = material.uniformBlockBufferSize;
+                    material.uniformBlockBufferSize += blockBinding.blockSize;
+
+                    const constexpr auto N = reflection::MemberCountV<TUniform>;
+                    const constexpr auto Names = reflection::MemberNamesV<TUniform>;
+
+                    blockBinding.memberIndices = std::vector<GLuint>(N);
+                    blockBinding.memberCounts = std::vector<GLint>(N);
+                    blockBinding.memberOffsets = std::vector<GLint>(N);
+                    blockBinding.memberTypes = std::vector<GLint>(N);
+
+                    auto indices = blockBinding.memberIndices.data();
+
+                    glGetUniformIndices(material.glProgramId, N, Names, indices);
+                    glGetActiveUniformsiv(material.glProgramId, N, indices, GL_UNIFORM_OFFSET, blockBinding.memberOffsets.data());
+                    glGetActiveUniformsiv(material.glProgramId, N, indices, GL_UNIFORM_SIZE, blockBinding.memberCounts.data());
+                    glGetActiveUniformsiv(material.glProgramId, N, indices, GL_UNIFORM_TYPE, blockBinding.memberTypes.data());
+
+                    material.uniformBlocks.emplace(uniformId, blockBinding);
+                }
             }
         }
     };
 
     void bindUniformLocations(OpenglMaterialBinding* materialBinding)
     {
+        //TODO: think about how to bind MaterialProperties only once for a program, because they are never changing(static uniforms)
+        //instead of Uniforms{} use Uniforms with material properties and other const uniforms set
         services::graphics::UniformVisitor<UniformLocationBinder>::visit(Uniforms{}, *materialBinding);
+
+        if(materialBinding->uniformBlockBufferSize > 0)
+        {
+            glCreateBuffers(1, &materialBinding->uniformBlockBufferId);
+            glNamedBufferStorage(materialBinding->uniformBlockBufferId, (GLsizeiptr)materialBinding->uniformBlockBufferSize, nullptr, GL_MAP_WRITE_BIT);
+            for(const auto& [key, blockBinding] : materialBinding->uniformBlocks)
+            {
+                glBindBufferRange(GL_UNIFORM_BUFFER, blockBinding.blockIndex, materialBinding->uniformBlockBufferId, (GLintptr)blockBinding.bufferOffset, blockBinding.blockSize);
+            }
+        }
     }
 
     void OpenglGpuDevice::bindMaterial(MaterialBinding* materialBinding, const std::vector<ShaderBinding*>& shaders)
@@ -276,14 +365,37 @@ namespace dory::core::devices
         }
     }
 
+    struct UniformBlockValueContext
+    {
+        void* buffer;
+        const UniformBlockBinding& block;
+    };
+
+    template<typename T>
+    void writeToBuffer(void* buffer, std::size_t& offset, const T& value)
+    {
+        memcpy((char*)buffer + offset, &value, sizeof(value));
+        offset += sizeof(value);
+    }
+
+    class UniformBlockValueBinder
+    {
+    public:
+        static void process(const std::string_view& memberName, const std::size_t memberId, const math::Vector4f& value, UniformBlockValueContext& context)
+        {
+            std::size_t offset = context.block.memberOffsets[memberId];
+
+            writeToBuffer(context.buffer, offset, value.x);
+            writeToBuffer(context.buffer, offset, value.y);
+            writeToBuffer(context.buffer, offset, value.z);
+            writeToBuffer(context.buffer, offset, value.w);
+        }
+    };
+
     class UniformValueBinder
     {
     public:
-        template<typename TUniform>
-        static void process(const std::string_view& memberName, const std::size_t uniformId, const TUniform& value, OpenglMaterialBinding& material)
-        {}
-
-        static void process(const std::string_view& memberName, const std::size_t uniformId, const math::Vector4f value, OpenglMaterialBinding& material)
+        static void process(const std::string_view& memberName, const std::size_t uniformId, const math::Vector4f& value, OpenglMaterialBinding& material)
         {
             if(material.uniformLocations.contains(uniformId))
             {
@@ -292,8 +404,28 @@ namespace dory::core::devices
             }
         }
 
-        static void process(const std::string_view& memberName, const std::size_t uniformId, const Material& value, OpenglMaterialBinding& material)
+        static void process(const std::string_view& memberName, const std::size_t uniformId, const math::Matrix4x4f& value, OpenglMaterialBinding& material)
         {
+            if(material.uniformLocations.contains(uniformId))
+            {
+                auto location = material.uniformLocations[uniformId];
+                glUniformMatrix4fv(location, 1, false, value.entries.data());
+            }
+        }
+
+        template<typename TUniform>
+        static void process(const std::string_view& memberName, const std::size_t uniformId, const TUniform& value, OpenglMaterialBinding& material)
+        {
+            if(material.uniformBlocks.contains(uniformId))
+            {
+                auto block = material.uniformBlocks[uniformId];
+                void* buffer = glMapNamedBuffer(material.uniformBlockBufferId, GL_WRITE_ONLY);
+
+                auto context = UniformBlockValueContext{ (char*)buffer + block.bufferOffset, block };
+                services::graphics::UniformVisitor<UniformBlockValueBinder>::visit(value, context);
+
+                glUnmapNamedBuffer(material.uniformBlockBufferId);
+            }
         }
     };
 
@@ -306,7 +438,7 @@ namespace dory::core::devices
     {
         if(materialBinding)
         {
-            uniforms.color =  materialBinding->color;
+            uniforms.material =  materialBinding->properties;
         }
     }
 
