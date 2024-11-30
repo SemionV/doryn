@@ -15,7 +15,6 @@ namespace dory::core::services::graphics
             reflection::visitClassFields(uniforms, [](auto& memberValue, const std::string_view& memberName,
                                                     const std::size_t i, const std::size_t memberCount, TContext& context)
             {
-
                 TPolicies::process(memberName, i, memberValue, context);
             }, context);
         }

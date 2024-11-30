@@ -58,6 +58,34 @@ namespace dory::reflection
     template<typename T>
     static constexpr const auto MemberNamesV = MemberNames<typename refl::descriptor::type_descriptor<std::remove_reference_t<T>>::member_types>::value;
 
+    template<typename T, typename TMember>
+    struct PrefixedFieldName
+    {
+        static constexpr const refl::util::const_string value = refl::descriptor::get_simple_name(T{})
+                + refl::util::make_const_string('.') + TMember::name;
+    };
+
+    template<typename T, typename TMembers>
+    struct PrefixedFieldNames;
+
+    template<typename T, typename... Ts>
+    struct PrefixedFieldNames<T, refl::util::type_list<Ts...>>
+    {
+        static constexpr const char* value[] = { (char*)PrefixedFieldName<T, Ts>::value.data... };
+    };
+
+    template<typename T>
+    static constexpr const auto PrefixedMemberNamesV = PrefixedFieldNames<refl::descriptor::type_descriptor<std::remove_reference_t<T>>, typename refl::descriptor::type_descriptor<std::remove_reference_t<T>>::member_types>::value;
+
+    template<typename T>
+    constexpr std::string_view getTypeSimpleName()
+    {
+        refl::descriptor::type_descriptor<std::remove_reference_t<T>> typeDescriptor {};
+        static constexpr auto name = refl::descriptor::get_simple_name(typeDescriptor);
+
+        return std::string_view{name.data, name.size};
+    }
+
     template<typename T, typename F, typename... Args>
     constexpr void visitClassFields(T&& object, F functor, Args&&... args)
     {

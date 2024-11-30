@@ -2,8 +2,9 @@
 
 Tasks:
 * Rendering
-  * Bind Material
-  * Bind Uniforms
+  * Organize OpenglGpuDevice code better
+  * Get uniform-block names and find out if it is a named instance or not
+  * Bind static and dynamic uniforms separately
 * Scene
   * Load mesh assets
   * Load materialId assets

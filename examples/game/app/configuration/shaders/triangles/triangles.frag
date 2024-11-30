@@ -2,14 +2,14 @@
 
 out vec4 fColor;
 
-uniform material
+uniform MaterialProperties
 {
     vec4 color;
     vec4 color2;
     vec4 color3;
-};
+} material;
 
 void main()
 {
-    fColor = color;
+    fColor = material.color;
 }

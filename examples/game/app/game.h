@@ -82,7 +82,7 @@ namespace dory::game
                 auto material = materialRepo->insert(core::resources::assets::Material{
                     {},
                     { vertexShaderId, fragmentShaderId },
-                    { {0.f, 0.f, 1.f, 0.f}, {1.f, 0.f, 0.f, 0.f}, {0.f, 1.f, 0.f, 0.f} }
+                    { {1.f, 0.f, 1.f, 0.f}, {1.f, 0.f, 0.f, 0.f}, {0.f, 1.f, 0.f, 0.f} }
                 });
                 materialId = material->id;
 
@@ -106,9 +106,11 @@ namespace dory::game
                 auto mesh = meshRepo->insert(core::resources::assets::Mesh{});
                 mesh->materialId = materialId;
                 mesh->positions.componentsCount = 2;
-                mesh->positions.components = {-1.f, 1.f,  0.f, 0.f,  1.f, 1.f,  -1.f, -1.f,  1.f, -1.f};
+                mesh->positions.components = {/*-1.f, 1.f,  0.f, 0.f,  1.f, 1.f,
+                                              0.f, 0.f, -1.f, -1.f,  1.f, -1.f,*/
+                                              0.f, 1.f, 0.f, -1.f, 1.f, 0.f,};
                 mesh->vertexCount = mesh->positions.components.size() / mesh->positions.componentsCount;
-                mesh->indices = {0, 1, 2, 1, 3, 4};
+                //mesh->indices = {0, 1, 2, 1, 3, 4};
 
                 auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::mesh);
                 if(assetBinder)
