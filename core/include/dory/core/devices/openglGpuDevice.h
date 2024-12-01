@@ -1,14 +1,29 @@
 #pragma once
 
+#include <glad/gl.h>
 #include "dory/core/dependencyResolver.h"
 #include "dory/core/devices/iGpuDevice.h"
+#include "dory/core/resources/bindings/openglMaterialBinding.h"
+#include "dory/core/resources/bindings/uniforms.h"
 
 namespace dory::core::devices
 {
+    struct OpenglProperties
+    {
+        GLint bufferAlignment {};
+    };
+
     class OpenglGpuDevice: public IGpuDevice, public DependencyResolver
     {
     private:
+        OpenglProperties openglProperties;
+
         bool checkForError();
+        void bindUniformLocations(resources::bindings::OpenglMaterialBinding* materialBinding);
+        void bindUniformValues(const resources::bindings::uniforms::Uniforms& uniforms, resources::bindings::OpenglMaterialBinding* materialBinding);
+        void setActiveMaterial(const resources::bindings::uniforms::Uniforms& uniforms, const resources::bindings::MaterialBinding* materialBinding);
+        static void fillUniforms(resources::bindings::uniforms::Uniforms& uniforms, const resources::bindings::MaterialBinding* materialBinding);
+        static void drawMesh(const resources::bindings::MeshBinding* meshBinding);
 
     public:
         explicit OpenglGpuDevice(Registry& registry);
