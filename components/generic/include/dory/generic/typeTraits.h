@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <cctype>
 #include <memory>
+#include "typeList.h"
 
 namespace dory::generic
 {
@@ -154,6 +155,16 @@ namespace dory::generic
 
     template<class T>
     using GetCollectionValueType = CollectionValueType<T>::Type;
+
+    template <typename T, typename... Ts>
+    struct IsInTypeList : std::disjunction<std::is_same<T, Ts>...> {};
+
+    template <typename T, typename... Ts>
+    struct IsInTypeList<T, TypeList<Ts...>> : IsInTypeList<T, Ts...>
+    {};
+
+    template <typename T, typename... Ts>
+    inline constexpr bool IsInTypeListV = IsInTypeList<T, Ts...>::value;
 
     constexpr std::size_t getStringLength(const char* string)
     {

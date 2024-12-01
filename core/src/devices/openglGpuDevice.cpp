@@ -11,6 +11,7 @@
 #include "dory/core/resources/bindings/uniforms.h"
 #include "dory/core/resources/uniformsRefl.h"
 #include "dory/core/services/graphics/openglUniformBinder.h"
+#include <iostream>
 
 namespace dory::core::devices
 {
@@ -174,14 +175,16 @@ namespace dory::core::devices
         return false;
     }
 
+    using UniformTypes = generic::TypeList<math::Vector4f, math::Matrix4x4f>;
+
+    template<typename TUniform>
+    static constexpr const bool IsUniform = generic::IsInTypeListV<std::remove_reference_t<TUniform>, UniformTypes> || std::is_fundamental_v<std::decay_t<TUniform>>;
+
     class UniformLocationBinder
     {
     public:
-        //TODO: create a meta function which would enumerate or uniform types
         template<typename TUniform>
-        requires(std::is_fundamental_v<std::remove_reference_t<TUniform>>
-                 || std::is_same_v<std::remove_reference_t<TUniform>, math::Vector4f>
-                 || std::is_same_v<std::remove_reference_t<TUniform>, math::Matrix4x4f>)
+        requires(IsUniform<TUniform>)
         static void process(const std::string_view& memberName, const std::size_t uniformId, const TUniform value, OpenglMaterialBinding& material)
         {
             GLint location = glGetUniformLocation(material.glProgramId, memberName.data());
@@ -192,13 +195,9 @@ namespace dory::core::devices
         }
 
         template<typename TUniform>
-        requires(std::is_class_v<std::decay_t<TUniform>>
-                 && !std::is_same_v<std::remove_reference_t<TUniform>, math::Vector4f>
-                 && !std::is_same_v<std::remove_reference_t<TUniform>, math::Matrix4x4f>)
+        requires(!IsUniform<TUniform>)
         static void process(const std::string_view& memberName, const std::size_t uniformId, const TUniform& value, OpenglMaterialBinding& material)
         {
-            //TODO: test and debug multiple blocks per program, as well as named blocks
-
             static constexpr auto typeName = reflection::getTypeSimpleName<TUniform>();
 
             UniformBlockBinding blockBinding;
@@ -209,6 +208,14 @@ namespace dory::core::devices
                 if(blockBinding.blockSize > 0)
                 {
                     blockBinding.bufferOffset = material.uniformBlockBufferSize;
+
+                    GLint alignment = 0;
+                    //TODO: avoid getting it more than once, get this value once and store in the opengl context
+                    glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &alignment);
+                    if (blockBinding.blockSize % alignment != 0)
+                    {
+                        blockBinding.blockSize = ((blockBinding.blockSize / alignment) + 1) * alignment;
+                    }
                     material.uniformBlockBufferSize += blockBinding.blockSize;
 
                     const constexpr auto N = reflection::MemberCountV<TUniform>;
@@ -229,7 +236,7 @@ namespace dory::core::devices
                     glGetActiveUniformsiv(material.glProgramId, N, indices, GL_UNIFORM_SIZE, blockBinding.memberCounts.data());
                     glGetActiveUniformsiv(material.glProgramId, N, indices, GL_UNIFORM_TYPE, blockBinding.memberTypes.data());
 
-                    material.uniformBlocks.emplace(uniformId, blockBinding);
+                    material.uniformBlocks[uniformId] = blockBinding;
                 }
             }
         }
@@ -245,9 +252,15 @@ namespace dory::core::devices
         {
             glCreateBuffers(1, &materialBinding->uniformBlockBufferId);
             glNamedBufferStorage(materialBinding->uniformBlockBufferId, (GLsizeiptr)materialBinding->uniformBlockBufferSize, nullptr, GL_MAP_WRITE_BIT);
-            for(const auto& [key, blockBinding] : materialBinding->uniformBlocks)
+
+            for(auto& [key, blockBinding] : materialBinding->uniformBlocks)
             {
                 glBindBufferRange(GL_UNIFORM_BUFFER, blockBinding.blockIndex, materialBinding->uniformBlockBufferId, (GLintptr)blockBinding.bufferOffset, blockBinding.blockSize);
+                auto error = getCurrentGlError();
+                if(error)
+                {
+                    //TODO: handle error
+                }
             }
         }
     }

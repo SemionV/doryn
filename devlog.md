@@ -2,8 +2,8 @@
 
 Tasks:
 * Rendering
-  * Organize OpenglGpuDevice code better
-  * Get uniform-block names and find out if it is a named instance or not
+  * Test binding of multiple uniform blocks
+  * Improve opengl error detection(add information about location in the code to the error message)
   * Bind static and dynamic uniforms separately
 * Scene
   * Load mesh assets
@@ -30,6 +30,14 @@ Tasks:
   * Setup pipeline for build and tests on windows
   * Setup pipeline for releases
   * Deploy assembled packages to some network storage
+
+**01.12.24**
+* Task done: build a type trait to detect uniform types in a general way
+* Task done: Test and fix binding of multiple uniform blocks
+
+**30.11.24**
+* Task done: Organize OpenglGpuDevice code better
+* Task done: Get uniform-block names and find out if it is a named instance or not
 
 **25.11.24**
 * Task done: render geometry
