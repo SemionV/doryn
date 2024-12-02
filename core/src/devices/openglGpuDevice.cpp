@@ -114,7 +114,7 @@ namespace dory::core::devices
         assert(false);
     }
 
-    std::size_t getComponentSite(const ComponentType componentType)
+    std::size_t getComponentSize(const ComponentType componentType)
     {
         switch (componentType)
         {
@@ -401,14 +401,14 @@ namespace dory::core::devices
             auto glVertexBuffer = (OpenglBufferBinding*)vertexBuffer;
 
             std::size_t i = 0;
-            std::size_t offset = glMesh->vertexBufferOffset;
             for(const auto& attribute : glMesh->vertexAttributes)
             {
-                std::size_t stride = attribute.componentsCount * getComponentSite(attribute.componentType);
-                glVertexArrayVertexBuffer(glMesh->glVertexArrayId, i, glVertexBuffer->glId, (GLintptr)offset, (GLsizei)stride);
-                offset += stride * glMesh->vertexCount;
+                std::size_t stride = attribute.componentsCount * getComponentSize(attribute.componentType);
+                glVertexArrayVertexBuffer(glMesh->glVertexArrayId, i, glVertexBuffer->glId,
+                        (GLintptr)(attribute.offset + glMesh->vertexBufferOffset), (GLsizei)stride);
                 glVertexArrayAttribFormat(glMesh->glVertexArrayId, i, (GLint)attribute.componentsCount,
-                                          getGlType(attribute.componentType), attribute.normalized, (GLuint)attribute.offset);
+                        getGlType(attribute.componentType), attribute.normalized, 0);
+                glVertexArrayAttribBinding(glMesh->glVertexArrayId, i, i);
                 glEnableVertexArrayAttrib(glMesh->glVertexArrayId, i);
                 ++i;
             }
