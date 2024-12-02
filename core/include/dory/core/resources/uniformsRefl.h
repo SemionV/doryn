@@ -10,9 +10,12 @@ REFL_TYPE(dory::core::resources::objects::MaterialProperties)
         REFL_FIELD(color3)
 REFL_END
 
-REFL_TYPE(dory::core::resources::bindings::uniforms::Uniforms)
+REFL_TYPE(dory::core::resources::bindings::uniforms::StaticUniforms)
+        REFL_FIELD(material)
+REFL_END
+
+REFL_TYPE(dory::core::resources::bindings::uniforms::DynamicUniforms)
         REFL_FIELD(modelTransform)
         REFL_FIELD(viewTransform)
         REFL_FIELD(projectionTransform)
-        REFL_FIELD(material)
 REFL_END

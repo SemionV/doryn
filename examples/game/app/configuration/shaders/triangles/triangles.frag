@@ -2,7 +2,7 @@
 
 out vec4 fColor;
 
-layout(binding = 0) uniform MaterialProperties
+uniform MaterialProperties
 {
     vec4 color;
     vec4 color2;

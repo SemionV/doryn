@@ -2,9 +2,6 @@
 
 Tasks:
 * Rendering
-  * Test binding of multiple uniform blocks
-  * Improve opengl error detection(add information about location in the code to the error message)
-  * Bind static and dynamic uniforms separately
 * Scene
   * Load mesh assets
   * Load materialId assets
@@ -30,6 +27,11 @@ Tasks:
   * Setup pipeline for build and tests on windows
   * Setup pipeline for releases
   * Deploy assembled packages to some network storage
+
+**02.12.24**
+* Task done: Test binding of multiple uniform blocks
+* Task done: Improve opengl error detection(add information about location in the code to the error message)
+* Task done: Bind static and dynamic uniforms separately
 
 **01.12.24**
 * Task done: build a type trait to detect uniform types in a general way

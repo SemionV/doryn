@@ -18,11 +18,13 @@ namespace dory::core::devices
     private:
         OpenglProperties openglProperties;
 
-        bool checkForError();
-        void bindUniformLocations(resources::bindings::OpenglMaterialBinding* materialBinding);
-        void bindUniformValues(const resources::bindings::uniforms::Uniforms& uniforms, resources::bindings::OpenglMaterialBinding* materialBinding);
-        void setActiveMaterial(const resources::bindings::uniforms::Uniforms& uniforms, const resources::bindings::MaterialBinding* materialBinding);
-        static void fillUniforms(resources::bindings::uniforms::Uniforms& uniforms, const resources::bindings::MaterialBinding* materialBinding);
+        bool checkForError(const std::string& location);
+        template<typename TUniform>
+        void bindUniformLocations(resources::bindings::OpenglMaterialBinding* materialBinding, resources::bindings::UniformBinding& uniforms);
+        void bindUniforms(resources::bindings::OpenglMaterialBinding* materialBinding);
+        void setActiveMaterial(const resources::bindings::uniforms::DynamicUniforms& uniforms, const resources::bindings::MaterialBinding* materialBinding);
+        static void fillUniforms(resources::bindings::uniforms::DynamicUniforms& uniforms, const resources::bindings::MaterialBinding* materialBinding);
+        static void fillUniforms(resources::bindings::uniforms::StaticUniforms& uniforms, const resources::bindings::MaterialBinding* materialBinding);
         static void drawMesh(const resources::bindings::MeshBinding* meshBinding);
 
     public:

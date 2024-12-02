@@ -5,11 +5,15 @@
 
 namespace dory::core::resources::bindings::uniforms
 {
-    struct Uniforms
+    struct StaticUniforms
+    {
+        objects::MaterialProperties material;
+    };
+
+    struct DynamicUniforms
     {
         math::Matrix4x4f modelTransform {};
         math::Matrix4x4f viewTransform {};
         math::Matrix4x4f projectionTransform {};
-        objects::MaterialProperties material;
     };
 }
