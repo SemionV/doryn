@@ -16,6 +16,10 @@ if(LINUX)
     target_compile_options(${DORY_MODULE_NAME} PRIVATE -fPIC)
 endif()
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    target_compile_options(${DORY_MODULE_NAME} PRIVATE /bigobj)
+endif()
+
 install(TARGETS ${DORY_MODULE_NAME}
         DESTINATION ${DORY_INSTALL_PREFIX}
         ARCHIVE DESTINATION ${DORY_INSTALL_PREFIX}/dev

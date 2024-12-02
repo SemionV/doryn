@@ -12,6 +12,7 @@
 #include "dory/core/resources/uniformsRefl.h"
 #include "dory/core/services/graphics/openglUniformBinder.h"
 #include <iostream>
+#include <ranges>
 
 namespace dory::core::devices
 {
@@ -154,9 +155,6 @@ namespace dory::core::devices
         GLint maxNameLength = 0;
         glGetProgramiv(programId, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxNameLength);
 
-        bool hasInstanceName = false;
-        std::string instanceName;
-
         for (GLint i = 0; i < numUniforms; ++i)
         {
             std::vector<char> nameBuffer(maxNameLength);
@@ -165,7 +163,7 @@ namespace dory::core::devices
 
             std::string uniformName(nameBuffer.data(), length);
 
-            size_t dotPos = uniformName.find('.');
+            std::size_t dotPos = uniformName.find('.');
             if (dotPos != std::string::npos)
             {
                 return true;
@@ -178,7 +176,7 @@ namespace dory::core::devices
     using UniformTypes = generic::TypeList<math::Vector4f, math::Matrix4x4f>;
 
     template<typename TUniform>
-    static constexpr const bool IsUniform = generic::IsInTypeListV<std::remove_reference_t<TUniform>, UniformTypes> || std::is_fundamental_v<std::decay_t<TUniform>>;
+    static constexpr bool IsUniform = generic::IsInTypeListV<std::remove_reference_t<TUniform>, UniformTypes> || std::is_fundamental_v<std::decay_t<TUniform>>;
 
     struct UniformBindingContext
     {
@@ -209,11 +207,11 @@ namespace dory::core::devices
         requires(!IsUniform<TUniform>)
         static void process(const std::string_view& memberName, const std::size_t uniformId, const TUniform& value, UniformBindingContext& context)
         {
-            static constexpr auto typeName = reflection::getTypeSimpleName<TUniform>();
             const OpenglMaterialBinding& material = context.material;
 
             UniformBlockBinding blockBinding;
-            blockBinding.blockIndex = glGetUniformBlockIndex(material.glProgramId, typeName.data());
+            constexpr auto typeName = reflection::getTypeSimpleName<TUniform>();
+            blockBinding.blockIndex = glGetUniformBlockIndex(material.glProgramId, typeName.data);
             if(blockBinding.blockIndex != GL_INVALID_INDEX)
             {
                 glGetActiveUniformBlockiv(material.glProgramId, blockBinding.blockIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &blockBinding.blockSize);
@@ -230,9 +228,9 @@ namespace dory::core::devices
                     }
                     context.uniforms.blockBufferSize += blockBinding.blockSize;
 
-                    const constexpr auto N = reflection::MemberCountV<TUniform>;
-                    const constexpr auto Names = reflection::MemberNamesV<TUniform>;
-                    const constexpr auto PrefixedNames = reflection::PrefixedMemberNamesV<TUniform>;
+                    constexpr auto N = reflection::MemberCountV<TUniform>;
+                    constexpr auto Names = reflection::MemberNamesV<TUniform>;
+                    constexpr auto PrefixedNames = reflection::PrefixedMemberNamesV<TUniform>;
                     const char* const * uniformNames = isUniformBlockInstanceNamed(material.glProgramId, blockBinding.blockIndex) ? PrefixedNames : Names;
 
                     blockBinding.memberIndices = std::vector<GLuint>(N);
@@ -520,7 +518,7 @@ namespace dory::core::devices
             glCreateBuffers(1, &uniforms.blockBufferId);
             glNamedBufferStorage(uniforms.blockBufferId, (GLsizeiptr)uniforms.blockBufferSize, nullptr, GL_MAP_WRITE_BIT);
 
-            for(auto& [key, blockBinding] : uniforms.blocks)
+            for(const auto& blockBinding : uniforms.blocks | std::views::values)
             {
                 glBindBufferRange(GL_UNIFORM_BUFFER, blockBinding.blockIndex, uniforms.blockBufferId, (GLintptr)blockBinding.bufferOffset, blockBinding.blockSize);
                 checkForError("bind uniform block");
