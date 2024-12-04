@@ -4,7 +4,8 @@ project(unit-tests)
 add_executable(${PROJECT_NAME}
         enttSceneService.cpp
         pipelineRepository.cpp
-        graphics/meshAssetBinderTests.cpp)
+        graphics/meshAssetBinderTests.cpp
+        camera.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-core)

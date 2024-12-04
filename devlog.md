@@ -2,6 +2,8 @@
 
 Tasks:
 * Rendering
+  * Utility to quickly setup material and mesh 
+  * Highlight edges of a mesh(use polygon offset)
 * Scene
   * Load mesh assets
   * Load materialId assets
