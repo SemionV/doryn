@@ -34,6 +34,7 @@
 #include <dory/core/services/graphics/iShaderService.h>
 #include <dory/core/services/iSceneService.h>
 #include <dory/core/services/iViewService.h>
+#include <dory/core/services/generators/iMeshGenerator.h>
 #include <dory/core/repositories/iWindowRepository.h>
 #include <dory/core/repositories/iShaderRepository.h>
 #include <dory/core/repositories/iShaderProgramRepository.h>
@@ -119,7 +120,8 @@ namespace dory::core
             generic::registry::ServiceEntry<services::IAssetService>,
             generic::registry::ServiceEntry<services::ISceneService>,
             generic::registry::ServiceEntry<services::ISceneService, resources::EcsType>,
-            generic::registry::ServiceEntry<services::graphics::IAssetBinder, std::string_view>>
+            generic::registry::ServiceEntry<services::graphics::IAssetBinder, std::string_view>,
+            generic::registry::ServiceEntry<services::generators::IMeshGenerator>>
     {};
 
     template<typename T>

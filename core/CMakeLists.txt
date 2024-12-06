@@ -36,6 +36,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/graphics/shaderAssetBinder.cpp
         src/services/viewService.cpp
         src/services/graphics/renderer.cpp
+        src/services/generators/meshGenerator.cpp
         src/controllers/windowSystemController.cpp
         src/controllers/viewController.cpp
         ${DORY_PLATFORM_MODULES})
