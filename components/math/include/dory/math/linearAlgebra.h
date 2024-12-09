@@ -3,6 +3,9 @@
 #include <array>
 #include <type_traits>
 #include <cmath>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace dory::math
 {
@@ -27,130 +30,136 @@ namespace dory::math
     };
 
     template<typename T>
-    struct Vector<T, Dimensions1>: public AbstractVector<Dimensions1::value>
+    struct Vector<T, Dimensions1>: public AbstractVector<Dimensions1::value>, public glm::vec<Dimensions1 ::value, T>
     {
-        T x = {};
+        using ParentType = glm::vec<Dimensions1::value, T>;
 
         Vector() = default;
 
-        explicit Vector(T x): x(x)
+        explicit Vector(T x): ParentType(x)
+        {}
+
+        explicit Vector(const ParentType& other): ParentType(other)
         {}
 
         template<typename TVector>
         requires(TVector::Dimensions == Dimensions1::value)
         decltype(auto) operator+(const TVector& right)
         {
-            return Vector{x + right.x};
+            return Vector{this->x + right.x};
         }
 
         template<typename TVector>
         requires(TVector::Dimensions == Dimensions1::value)
         decltype(auto) operator*(const TVector& right)
         {
-            return x * right.x;
+            return this->x * right.x;
         }
 
         bool operator==(const Vector<T, Dimensions1>& other) const {
-            return (x == other.x);
+            return (this->x == other.x);
         }
     };
 
     template<typename T>
-    struct Vector<T, Dimensions2>: public AbstractVector<Dimensions2::value>
+    struct Vector<T, Dimensions2>: public AbstractVector<Dimensions2::value>, public glm::vec<Dimensions2 ::value, T>
     {
-        T x = {};
-        T y = {};
+        using ParentType = glm::vec<Dimensions2 ::value, T>;
 
         Vector() = default;
 
-        Vector(T x, T y): x(x), y(y)
+        Vector(T x, T y): ParentType(x, y)
+        {}
+
+        explicit Vector(const ParentType& other): ParentType(other)
         {}
 
         template<typename TVector>
         requires(TVector::Dimensions == Dimensions2::value)
         decltype(auto) operator+(const TVector& right)
         {
-            return Vector{ x + right.x, y + right.y };
+            return Vector{ this->x + right.x, this->y + right.y };
         }
 
         template<typename TVector>
         requires(TVector::Dimensions == Dimensions2::value)
         decltype(auto) operator*(const TVector& right)
         {
-            return x * right.x + y * right.y;
+            return this->x * right.x + this->y * right.y;
         }
 
         bool operator==(const Vector<T, Dimensions2>& other) const {
-            return (x == other.x) &&
-                   (y == other.y);
+            return (this->x == other.x) &&
+                   (this->y == other.y);
         }
     };
 
     template<typename T>
-    struct Vector<T, Dimensions3>: public AbstractVector<Dimensions3::value>
+    struct Vector<T, Dimensions3>: public AbstractVector<Dimensions3::value>, public glm::vec<Dimensions3 ::value, T>
     {
-        T x = {};
-        T y = {};
-        T z = {};
+        using ParentType = glm::vec<Dimensions3 ::value, T>;
 
         Vector() = default;
 
-        Vector(T x, T y, T z): x(x), y(y), z(z)
+        Vector(T x, T y, T z): ParentType(x, y, z)
+        {}
+
+        explicit Vector(const ParentType& other): ParentType(other)
         {}
 
         template<typename TVector>
         requires(TVector::Dimensions == Dimensions3::value)
         decltype(auto) operator+(const TVector& right)
         {
-            return Vector{ x + right.x, y + right.y, z + right.z };
+            return Vector{ this->x + right.x, this->y + right.y, this->z + right.z };
         }
 
         template<typename TVector>
         requires(TVector::Dimensions == Dimensions3::value)
         decltype(auto) operator*(const TVector& right)
         {
-            return x * right.x + y * right.y + z * right.z;
+            return this->x * right.x + this->y * right.y + this->z * right.z;
         }
 
         bool operator==(const Vector<T, Dimensions3>& other) const {
-            return (x == other.x) &&
-                   (y == other.y) &&
-                   (z == other.z);
+            return (this->x == other.x) &&
+                   (this->y == other.y) &&
+                   (this->z == other.z);
         }
     };
 
     template<typename T>
-    struct Vector<T, Dimensions4>: public AbstractVector<Dimensions4::value>
+    struct Vector<T, Dimensions4>: public AbstractVector<Dimensions4::value>, public glm::vec<Dimensions4 ::value, T>
     {
-        T x = {};
-        T y = {};
-        T z = {};
-        T w = {};
+        using ParentType = glm::vec<Dimensions4 ::value, T>;
 
         Vector() = default;
 
-        Vector(T x, T y, T z, T w): x(x), y(y), z(z), w(w)
+        Vector(T x, T y, T z, T w): ParentType(x, y, z, w)
+        {}
+
+        explicit Vector(const ParentType& other): ParentType(other)
         {}
 
         template<typename TVector>
         requires(TVector::Dimensions == Dimensions4::value)
         decltype(auto) operator+(const TVector& right)
         {
-            return Vector{ x + right.x, y + right.y, z + right.z, w + right.w };
+            return Vector{ this->x + right.x, this->y + right.y, this->z + right.z, this->w + right.w };
         }
 
         template<typename TVector>
         requires(TVector::Dimensions == Dimensions4::value)
         decltype(auto) operator*(const TVector& right)
         {
-            return  Vector<T, Dimensions3>::x * right.x + Vector<T, Dimensions3>::y * right.y + Vector<T, Dimensions3>::z * right.z + w * right.w;
+            return  Vector<T, Dimensions3>::x * right.x + Vector<T, Dimensions3>::y * right.y + Vector<T, Dimensions3>::z * right.z + this->w * right.w;
         }
 
         bool operator==(const Vector<T, Dimensions4>& other) const {
-            return (x == other.x) &&
-                   (y == other.y) &&
-                   (z == other.z) &&
-                   (w == other.w);
+            return (this->x == other.x) &&
+                   (this->y == other.y) &&
+                   (this->z == other.z) &&
+                   (this->w == other.w);
         }
     };
 
@@ -172,9 +181,11 @@ namespace dory::math
     };
 
     template<typename T, std::size_t RowsCount, std::size_t ColumnsCount>
-    class GeneralMatrix
+    class GeneralMatrix: glm::mat<ColumnsCount, RowsCount, T>
     {
     public:
+        using ParentType = glm::mat<ColumnsCount, RowsCount, T>;
+
         static constexpr std::size_t ColumnDimensions = RowsCount;
         static constexpr std::size_t RowDimensions = ColumnsCount;
         static constexpr std::size_t EntriesCount = RowsCount * ColumnsCount;
