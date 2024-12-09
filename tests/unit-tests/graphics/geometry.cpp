@@ -58,6 +58,24 @@ std::size_t addEdge(std::size_t pointA, std::size_t pointB, Shape3d<T>& shape)
 }
 
 template<typename T>
+std::size_t addFace(Shape3d<T>& shape)
+{
+    auto faceCount = shape.faces.size();
+
+    shape.faces.emplace_back(typename Shape3d<T>::FaceType{});
+
+    return faceCount;
+}
+
+template<typename T>
+Shape3d<T>::FaceType& getFace(std::size_t face, Shape3d<T>& shape)
+{
+    assert(shape.faces.size() > face);
+
+    return shape.faces[face];
+}
+
+template<typename T>
 glm::vec3 getPoint(std::size_t point, const Shape3d<T>& shape)
 {
     std::size_t vertexIndex = point * 3;
@@ -130,19 +148,23 @@ glm::vec3 getNormal(std::size_t edge1, std::size_t edge2, const Shape3d<T>& shap
 template<typename T>
 Shape3d<T> push(const std::size_t faceId, glm::vec3 direction, const Shape3d<T>& shape)
 {
-    assert(faceId < shape.faces.size());
-
     Shape3d<T> resultShape {shape};
 
-    auto& baseFace = shape.faces[faceId];
-    auto& oppositeFace = resultShape.faces.emplace_back(typename Shape3d<T>::FaceType{});
+    assert(faceId < resultShape.faces.size());
+
+    auto baseFace = resultShape.faces[faceId];
+    auto oppositeFaceId = addFace(resultShape);
+    std::size_t firstSideFace{};
+    std::size_t prevSideFace{};
     std::size_t i = 0;
     for(const auto& edge : baseFace)
     {
+        auto& oppositeFace = getFace(oppositeFaceId, resultShape);
+
         std::size_t pointAd {};
         if(i == 0)
         {
-            auto pointA = getPoint(edge, 0, shape);
+            auto pointA = getPoint(getEdgeBegin(edge, resultShape), resultShape);
             pointAd = addPoint(pointA + direction, resultShape);
         }
         else
@@ -159,13 +181,38 @@ Shape3d<T> push(const std::size_t faceId, glm::vec3 direction, const Shape3d<T>&
         }
         else
         {
-            auto pointB = getPoint(edge, 1, shape);
+            auto pointB = getPoint(getEdgeEnd(edge, resultShape), resultShape);
             pointBd = addPoint(pointB + direction, resultShape);
         }
 
         auto oppositeEdge = addEdge(pointAd, pointBd, resultShape);
         //insert opposite face edges are in reverse order, to point it's normal in opposite direction to base face
         oppositeFace.push_front(oppositeEdge);
+
+        auto sideFaceId = addFace(resultShape);
+        auto& sideFace = getFace(sideFaceId, resultShape);
+        sideFace.push_back(edge);
+        if(prevSideFace)
+        {
+            //reuse the edge from the previous side-face
+            sideFace.push_back(resultShape.faces[prevSideFace][3]);
+        }
+        else
+        {
+            sideFace.push_back(addEdge(getEdgeBegin(edge, resultShape), getEdgeBegin(oppositeEdge, resultShape), resultShape));
+            firstSideFace = sideFaceId;
+        }
+        sideFace.push_back(oppositeEdge);
+        if(i == baseFace.size() - 1)
+        {
+            //reuse the edge of the first side-face
+            sideFace.push_back(resultShape.faces[firstSideFace][1]);
+        }
+        else
+        {
+            sideFace.push_back(addEdge(getEdgeEnd(oppositeEdge, resultShape), getEdgeEnd(edge, resultShape), resultShape));
+        }
+        prevSideFace = sideFaceId;
 
         ++i;
     }
@@ -177,6 +224,12 @@ template<typename T>
 Mesh buildMesh(const Shape3d<T>& shape)
 {
 
+}
+
+template<typename T, auto N>
+void assertPrism(const Shape<T, N> prism)
+{
+    EXPECT_EQ(prism.points.size() / N, 6);
 }
 
 TEST(Geometry, triangularPrism)
@@ -199,11 +252,13 @@ TEST(Geometry, triangularPrism)
     EXPECT_EQ(normal, glm::vec3(0, 0, 1));
 
     auto triangularPrism = push(0, math::Vector3f{ 0, 0, -8 }, triangularPrismBase);
-    EXPECT_EQ(triangularPrism.faces.size(), 2);
+    EXPECT_EQ(triangularPrism.faces.size(), 5);
     auto& oppositeFace = triangularPrism.faces[1];
     EXPECT_EQ(oppositeFace.size(), 3);
     normal = glm::normalize(getNormal(oppositeFace[0], oppositeFace[1], triangularPrism));
     EXPECT_EQ(normal, glm::vec3(0, 0, -1));
+
+    assertPrism(triangularPrism);
 
     //auto mesh = buildMesh(triangularPrism);
 }
