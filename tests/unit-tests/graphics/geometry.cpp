@@ -13,15 +13,139 @@ using namespace dory::core;
 using namespace dory::core::resources;
 using namespace dory::core::resources::assets;
 
-template<typename TCoordinateType, std::size_t Dimensions>
-struct Shape
+template<typename T, std::size_t Dimensions>
+struct Point;
+
+template<typename T>
+struct Point<T, 1>
 {
-    using FaceType = std::deque<std::size_t>;
+    T x {};
+
+    Point() = default;
+
+    explicit Point(const T& _x): x(_x)
+    {}
+};
+
+template<typename T>
+struct Point<T, 2>: public Point<T, 1>
+{
+    T y {};
+
+    Point() = default;
+
+    explicit Point(const T& _x, const T& _y):
+            Point<T, 1>(_x),
+            y(_y)
+    {}
+};
+
+template<typename T>
+struct Point<T, 3>: public Point<T, 2>
+{
+    T z {};
+
+    Point() = default;
+
+    explicit Point(const T& _x, const T& _y, const T& _z):
+            Point<T, 1>(_x, _y),
+            z(_z)
+    {}
+};
+
+struct Edge
+{
+    std::size_t begin;
+    std::size_t end;
+};
+
+struct Face
+{
+private:
+    using EdgesType = std::deque<std::size_t>;
+
+    EdgesType edges;
+
+public:
+    Face() = default;
+
+    explicit Face(std::size_t edgesCount):
+            edges{edgesCount}
+    {}
+
+    EdgesType::const_iterator begin()
+    {
+        return edges.begin();
+    }
+
+    EdgesType::const_iterator end()
+    {
+        return edges.end();
+    }
+
+    std::size_t addEdge(std::size_t edge)
+    {
+        auto edgesCount = edges.size();
+        edges.push_back(edge);
+        return edgesCount;
+    }
+
+    std::size_t addEdgeInFront(std::size_t edge)
+    {
+        auto edgesCount = edges.size();
+        edges.push_front(edge);
+        return edgesCount;
+    }
+};
+
+template<typename T, std::size_t Dimensions>
+class Shape
+{
+private:
+    using PointType = Point<T, Dimensions>;
+
+    std::vector<PointType> points;
+    std::vector<Edge> edges;
+    std::vector<Face> faces;
+
+public:
     static constexpr std::size_t dimensions = Dimensions;
 
-    std::vector<TCoordinateType> points;
-    std::vector<std::size_t> edges;
-    std::vector<FaceType> faces;
+    std::size_t getPointCount()
+    {
+        return points.size();
+    }
+
+    std::size_t getEdgeCount()
+    {
+        return edges.size();
+    }
+
+    std::size_t getFaceCount()
+    {
+        return faces.size();
+    }
+
+    std::size_t addPoint(const Point<T, Dimensions>& point)
+    {
+        auto pointCount = getPointCount();
+        points.emplace_back(point);
+        return pointCount;
+    }
+
+    std::size_t addEdge(const Edge& edge)
+    {
+        auto edgeCount = getEdgeCount();
+        edges.emplace_back(edge);
+        return edgeCount;
+    }
+
+    std::size_t addFace(const Face& face)
+    {
+        auto faceCount = getFaceCount();
+        faces.emplace_back(face);
+        return faceCount;
+    }
 };
 
 template<typename T>
@@ -80,13 +204,6 @@ glm::vec3 getPoint(std::size_t point, const Shape3d<T>& shape)
 {
     std::size_t vertexIndex = point * 3;
     return glm::vec3{ shape.points[vertexIndex], shape.points[vertexIndex + 1], shape.points[vertexIndex + 2] };
-}
-
-template<typename T>
-glm::vec3 getPoint(std::size_t edge, bool vertex, const Shape3d<T>& shape)
-{
-    std::size_t edgeIndex = edge * 2;
-    return getPoint(shape.edges[edgeIndex + (unsigned char)vertex], shape);
 }
 
 template<typename T>
