@@ -26,7 +26,10 @@ struct Point<T, 1>
     explicit Point(const T& _x): x(_x)
     {}
 
-    glm::vec1 toVec1() const
+    explicit Point(const glm::vec1& v): x(v.x)
+    {}
+
+    [[nodiscard]] glm::vec1 toVec1() const
     {
         return glm::vec3{ x };
     }
@@ -46,7 +49,10 @@ struct Point<T, 2>: public Point<T, 1>
             y(_y)
     {}
 
-    glm::vec2 toVec2() const
+    explicit Point(const glm::vec2& v): Point<T, 1>(v), y(v.y)
+    {}
+
+    [[nodiscard]] glm::vec2 toVec2() const
     {
         return glm::vec2{ this->x, y };
     }
@@ -66,7 +72,10 @@ struct Point<T, 3>: public Point<T, 2>
             z(_z)
     {}
 
-    glm::vec3 toVec3() const
+    explicit Point(const glm::vec3& v): Point<T, 2>(v), z(v.z)
+    {}
+
+    [[nodiscard]] glm::vec3 toVec3() const
     {
         return glm::vec3{ this->x, this->y, z };
     }
@@ -126,6 +135,17 @@ public:
     {
         assert(edgeIndex >= 0 && edgeIndex < _edges.size());
         return _edges[edgeIndex];
+    }
+
+    [[nodiscard]] std::size_t getLast() const
+    {
+        assert(!_edges.empty());
+        return _edges[_edges.size() - 1];
+    }
+
+    [[nodiscard]] std::size_t edgeCount() const
+    {
+        return _edges.size();
     }
 };
 
@@ -204,6 +224,28 @@ public:
 
         return _faces[faceId];
     }
+
+    Face& getFace(std::size_t faceId)
+    {
+        assert(faceId < _faces.size() && faceId >= 0);
+
+        return _faces[faceId];
+    }
+
+    [[nodiscard]] std::vector<Face>::const_iterator facesBegin() const
+    {
+        return _faces.begin();
+    }
+
+    [[nodiscard]] std::vector<Face>::const_iterator facesEnd() const
+    {
+        return _faces.end();
+    }
+
+    [[nodiscard]] std::size_t facesCount() const
+    {
+        return _faces.size();
+    }
 };
 
 template<typename T>
@@ -259,76 +301,78 @@ glm::vec3 getNormal(const Face& face, const Shape3d<T>& shape)
 template<typename T>
 Shape3d<T> push(const std::size_t faceId, glm::vec3 direction, const Shape3d<T>& shape)
 {
-    /*Shape3d<T> resultShape {shape};
+    Shape3d<T> resultShape {shape};
 
-    assert(faceId < resultShape.faces.size());
-
-    auto baseFace = resultShape.faces[faceId];
-    auto oppositeFaceId = addFace(resultShape);
+    auto baseFace = shape.getFace(faceId);
+    auto oppositeFaceId = resultShape.addFace(Face{});
     std::size_t firstSideFace{};
-    std::size_t prevSideFace{};
+    std::optional<std::size_t> prevSideFace{};
     std::size_t i = 0;
-    for(const auto& edge : baseFace)
+    for(const auto& edgeId : baseFace)
     {
-        auto& oppositeFace = getFace(oppositeFaceId, resultShape);
+        Face& oppositeFace = resultShape.getFace(oppositeFaceId);
+        const Edge& edge = shape.getEdge(edgeId);
 
         std::size_t pointAd {};
         if(i == 0)
         {
-            auto pointA = getPoint(getEdgeBegin(edge, resultShape), resultShape);
-            pointAd = addPoint(pointA + direction, resultShape);
+            auto pointA = resultShape.getPoint(edge.begin).toVec3();
+            pointAd = resultShape.addPoint(Point3f{ pointA + direction });
         }
         else
         {
             //use end point of the previous edge, which is at index 0(reverse insertion order)
-            pointAd = getEdgeEnd(oppositeFace[0], resultShape);
+            pointAd = resultShape.getEdge(oppositeFace.get(0)).end;
         }
 
         std::size_t pointBd {};
-        if(i == baseFace.size() - 1)
+        if(i == baseFace.edgeCount() - 1)
         {
             //use begin point of the first edge, which is at the end of the collection
-            pointBd = getEdgeBegin(oppositeFace[oppositeFace.size() - 1], resultShape);
+            pointBd = resultShape.getEdge(oppositeFace.getLast()).begin;
         }
         else
         {
-            auto pointB = getPoint(getEdgeEnd(edge, resultShape), resultShape);
-            pointBd = addPoint(pointB + direction, resultShape);
+            auto pointB = resultShape.getPoint(edge.end).toVec3();
+            pointBd = resultShape.addPoint(Point3f{ pointB + direction });
         }
 
-        auto oppositeEdge = addEdge(pointAd, pointBd, resultShape);
         //insert opposite face edges are in reverse order, to point it's normal in opposite direction to base face
-        oppositeFace.push_front(oppositeEdge);
+        auto oppositeEdgeId = resultShape.addEdge({pointAd, pointBd});
+        const Edge& oppositeEdge = resultShape.getEdge(oppositeEdgeId);
+        oppositeFace.addEdgeInFront(oppositeEdgeId);
 
-        auto sideFaceId = addFace(resultShape);
-        auto& sideFace = getFace(sideFaceId, resultShape);
-        sideFace.push_back(edge);
+        auto sideFaceId = resultShape.addFace({});
+        Face& sideFace = resultShape.getFace(sideFaceId);
+        sideFace.addEdge(edgeId);
         if(prevSideFace)
         {
             //reuse the edge from the previous side-face
-            sideFace.push_back(resultShape.faces[prevSideFace][3]);
+            sideFace.addEdge(resultShape.getFace(*prevSideFace).getLast());
         }
         else
         {
-            sideFace.push_back(addEdge(getEdgeBegin(edge, resultShape), getEdgeBegin(oppositeEdge, resultShape), resultShape));
+            auto newEdgeId = resultShape.addEdge({ edge.begin, oppositeEdge.begin });
+            sideFace.addEdge(newEdgeId);
             firstSideFace = sideFaceId;
         }
-        sideFace.push_back(oppositeEdge);
-        if(i == baseFace.size() - 1)
+        sideFace.addEdge(oppositeEdgeId);
+        if(i == baseFace.edgeCount() - 1)
         {
             //reuse the edge of the first side-face
-            sideFace.push_back(resultShape.faces[firstSideFace][1]);
+            sideFace.addEdge(resultShape.getFace(firstSideFace).get(1));
         }
         else
         {
-            sideFace.push_back(addEdge(getEdgeEnd(oppositeEdge, resultShape), getEdgeEnd(edge, resultShape), resultShape));
+            auto newEdgeId = resultShape.addEdge({ oppositeEdge.end, edge.end });
+            sideFace.addEdge(newEdgeId);
         }
         prevSideFace = sideFaceId;
 
         ++i;
     }
 
-    return resultShape;*/
+    return resultShape;
 }
 
 template<typename T>
@@ -357,9 +401,9 @@ TEST(Geometry, triangularPrism)
     auto normal = glm::normalize(getNormal(face, triangularPrismBase));
     EXPECT_EQ(normal, glm::vec3(0, 0, 1));
 
-    /*auto triangularPrism = push(0, math::Vector3f{ 0, 0, -8 }, triangularPrismBase);
-    EXPECT_EQ(triangularPrism.faces.size(), 5);
-    auto& oppositeFace = triangularPrism.faces[1];
+    Shape3d<float> triangularPrism = push(0, math::Vector3f{ 0, 0, -8 }, triangularPrismBase);
+    EXPECT_EQ(triangularPrism.facesCount(), 5);
+    /*auto& oppositeFace = triangularPrism.faces[1];
     EXPECT_EQ(oppositeFace.size(), 3);
     normal = glm::normalize(getNormal(oppositeFace[0], oppositeFace[1], triangularPrism));
     EXPECT_EQ(normal, glm::vec3(0, 0, -1));
