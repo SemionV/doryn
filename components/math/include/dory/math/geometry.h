@@ -7,20 +7,35 @@
 
 namespace dory::math::geometry
 {
+    struct Primitive
+    {
+        const std::size_t id {};
+
+        Primitive() = default;
+
+        explicit Primitive(const std::size_t _id):
+            id(_id)
+        {}
+    };
+
     template<typename T, std::size_t Dimensions>
     struct Point;
 
     template<typename T>
-    struct Point<T, 1>
+    struct Point<T, 1>: public Primitive
     {
         T x {};
 
         Point() = default;
 
-        explicit Point(const T& _x): x(_x)
+        explicit Point(const std::size_t _id, const T& _x):
+            Primitive(_id),
+            x(_x)
         {}
 
-        explicit Point(const glm::vec1& v): x(v.x)
+        explicit Point(const std::size_t _id, const glm::vec1& v):
+            Primitive(_id),
+            x(v.x)
         {}
 
         [[nodiscard]] glm::vec1 toVec1() const
@@ -38,12 +53,13 @@ namespace dory::math::geometry
 
         Point() = default;
 
-        explicit Point(const T& _x, const T& _y):
-                Point<T, 1>(_x),
+        explicit Point(const std::size_t _id, const T& _x, const T& _y):
+                Point<T, 1>(_id, _x),
                 y(_y)
         {}
 
-        explicit Point(const glm::vec2& v): Point<T, 1>(v), y(v.y)
+        explicit Point(const std::size_t _id, const glm::vec2& v):
+            Point<T, 1>(_id, v), y(v.y)
         {}
 
         [[nodiscard]] glm::vec2 toVec2() const
@@ -61,12 +77,13 @@ namespace dory::math::geometry
 
         Point() = default;
 
-        explicit Point(const T& _x, const T& _y, const T& _z):
-                Point<T, 2>(_x, _y),
+        explicit Point(const std::size_t _id, const T& _x, const T& _y, const T& _z):
+                Point<T, 2>(_id, _x, _y),
                 z(_z)
         {}
 
-        explicit Point(const glm::vec3& v): Point<T, 2>(v), z(v.z)
+        explicit Point(const std::size_t _id, const glm::vec3& v):
+            Point<T, 2>(_id, v), z(v.z)
         {}
 
         [[nodiscard]] glm::vec3 toVec3() const
@@ -77,7 +94,7 @@ namespace dory::math::geometry
 
     using Point3f = Point<float, 3>;
 
-    struct Edge
+    struct Edge: public Primitive
     {
         constexpr static std::size_t maxValue {std::numeric_limits<std::size_t>::max()};
 
@@ -85,6 +102,18 @@ namespace dory::math::geometry
         std::size_t end { maxValue };
         std::size_t faceA { maxValue };
         std::size_t faceB { maxValue };
+
+        Edge() = default;
+
+        explicit Edge(const std::size_t id):
+            Primitive(id)
+        {}
+
+        explicit Edge(const std::size_t id, std::size_t begin, std::size_t end):
+            Primitive(id),
+            begin(begin),
+            end(end)
+        {}
 
         bool replaceFace(const std::size_t faceId, const std::size_t newFaceId)
         {
@@ -103,7 +132,7 @@ namespace dory::math::geometry
         }
     };
 
-    struct Face
+    struct Face: public Primitive
     {
     private:
         using EdgesType = std::deque<std::size_t>;
@@ -113,12 +142,18 @@ namespace dory::math::geometry
     public:
         Face() = default;
 
-        explicit Face(std::size_t edgesCount):
-                _edges{edgesCount}
+        explicit Face(const std::size_t id):
+            Primitive(id)
         {}
 
-        Face(std::initializer_list<std::size_t> edges):
-                _edges{edges}
+        explicit Face(std::size_t id, std::size_t edgesCount):
+            Primitive(id),
+            _edges{edgesCount}
+        {}
+
+        Face(std::size_t id, std::initializer_list<std::size_t> edges):
+            Primitive(id),
+            _edges{edges}
         {}
 
         [[nodiscard]] EdgesType::const_iterator begin() const
@@ -131,23 +166,23 @@ namespace dory::math::geometry
             return _edges.end();
         }
 
-        std::size_t addEdge(std::size_t edge)
+        std::size_t addEdge(const std::size_t edge)
         {
-            auto edgesCount = _edges.size();
+            const auto edgesCount = _edges.size();
             _edges.push_back(edge);
             return edgesCount;
         }
 
-        std::size_t addEdgeInFront(std::size_t edge)
+        std::size_t addEdgeInFront(const std::size_t edge)
         {
-            auto edgesCount = _edges.size();
+            const auto edgesCount = _edges.size();
             _edges.push_front(edge);
             return edgesCount;
         }
 
-        [[nodiscard]] std::size_t getEdge(std::size_t edgeIndex) const
+        [[nodiscard]] std::size_t getEdge(const std::size_t edgeIndex) const
         {
-            assert(edgeIndex >= 0 && edgeIndex < _edges.size());
+            assert(edgeIndex < _edges.size());
             return _edges[edgeIndex];
         }
 
@@ -192,34 +227,45 @@ namespace dory::math::geometry
             faceCounter = faces.size();
         }
 
-        std::size_t getPointCount()
+        [[nodiscard]] std::size_t getPointCount() const
         {
             return _points.size();
         }
 
-        std::size_t getEdgeCount()
+        [[nodiscard]] std::size_t getEdgeCount() const
         {
             return _edges.size();
         }
 
-        std::size_t getFaceCount()
+        [[nodiscard]] std::size_t getFaceCount() const
         {
             return _faces.size();
         }
 
-        auto addPoint(const Point<T, Dimensions>& point)
+        PointType& addPoint(const PointType& point)
         {
             return _points.emplace(pointCounter++, point).first;
         }
 
-        auto addEdge(const Edge& edge)
+        template<typename... Ts>
+        PointType& addPoint(Ts&&... parameters)
         {
-            return _edges.emplace(edgeCounter++, edge).first;
+            auto id = pointCounter++;
+            return _points.emplace(id, PointType{ id, std::forward<Ts>(parameters)... }).first->second;
         }
 
-        auto addFace(const Face& face)
+        template<typename... Ts>
+        Edge& addEdge(Ts&&... parameters)
         {
-            return _faces.emplace(faceCounter++, face).first;
+            auto id = edgeCounter++;
+            return _edges.emplace(id, Edge{ id, std::forward<Ts>(parameters)... }).first->second;
+        }
+
+        template<typename... Ts>
+        Face& addFace(Ts&&... parameters)
+        {
+            auto id = faceCounter++;
+            return _faces.emplace(id, Face{ id, std::forward<Ts>(parameters)... }).first->second;
         }
 
         [[nodiscard]] const PointType& getPoint(std::size_t pointId) const

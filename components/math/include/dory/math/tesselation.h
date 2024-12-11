@@ -27,24 +27,24 @@ namespace dory::core::mesh
                     math::geometry::Edge& thirdEdge = resultShape.getEdge(thirdEdgeId);
                     math::geometry::Edge& fourthEdge = resultShape.getEdge(fourthEdgeId);
 
-                    auto firstTriangleResult = resultShape.addFace({});
-                    auto secondTriangleResult = resultShape.addFace({});
+                    auto& firstTriangle = resultShape.addFace();
+                    auto& secondTriangle = resultShape.addFace();
 
-                    firstEdge.replaceFace(faceId, firstTriangleResult->first);
-                    secondEdge.replaceFace(faceId, firstTriangleResult->first);
-                    thirdEdge.replaceFace(faceId, secondTriangleResult->first);
-                    fourthEdge.replaceFace(faceId, secondTriangleResult->first);
+                    firstEdge.replaceFace(faceId, firstTriangle.id);
+                    secondEdge.replaceFace(faceId, firstTriangle.id);
+                    thirdEdge.replaceFace(faceId, secondTriangle.id);
+                    fourthEdge.replaceFace(faceId, secondTriangle.id);
 
                     math::geometry::Corner corner = math::geometry::getCorner(firstEdge, secondEdge);
-                    auto bisectEdgeResult = resultShape.addEdge(math::geometry::Edge{ corner.right, corner.left, firstTriangleResult->first, secondTriangleResult->first });
+                    auto& bisectEdge = resultShape.addEdge(math::geometry::Edge{ corner.right, corner.left, firstTriangle.id, secondTriangle.id });
 
-                    firstTriangleResult->second.addEdge(firstEdgeId);
-                    firstTriangleResult->second.addEdge(secondEdgeId);
-                    firstTriangleResult->second.addEdge(bisectEdgeResult->first);
+                    firstTriangle.addEdge(firstEdgeId);
+                    firstTriangle.addEdge(secondEdgeId);
+                    firstTriangle.addEdge(bisectEdge.id);
 
-                    secondTriangleResult->second.addEdge(thirdEdgeId);
-                    secondTriangleResult->second.addEdge(fourthEdgeId);
-                    secondTriangleResult->second.addEdge(bisectEdgeResult->first);
+                    secondTriangle.addEdge(thirdEdgeId);
+                    secondTriangle.addEdge(fourthEdgeId);
+                    secondTriangle.addEdge(bisectEdge.id);
 
                     resultShape.deleteFace(faceId);
                 }

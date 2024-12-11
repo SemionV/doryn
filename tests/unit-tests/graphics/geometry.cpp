@@ -25,9 +25,9 @@ TEST(Geometry, triangularPrism)
     auto width = 8.f;
 
     auto triangularPrismBase = Shape3d<float>{
-            { {0, Point3f{ width, -width, 0 }}, {1, Point3f{ width, 0, 0 }}, {2, Point3f{ 0, 0, 0 }} },
-            { {0, Edge{ 0, 1 }}, {1, Edge{ 1, 2 }}, {2, Edge{ 2, 0 }} },
-            { {0, Face{ 0, 1, 2 }} }
+            { {0, Point3f{ 0, width, -width, 0 }}, { 1, Point3f{ 1, width, 0, 0 }}, { 2, Point3f{2, 0, 0, 0 }} },
+            { {0, Edge{ 0, 0, 1 }}, {1, Edge{ 1, 1, 2 }}, {2, Edge{ 2, 2, 0 }} },
+            { {0, Face{ 0, { 0, 1, 2 } }} }
     };
 
     auto& face = triangularPrismBase.getFace(0);
