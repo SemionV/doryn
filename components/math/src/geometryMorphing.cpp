@@ -47,20 +47,20 @@ namespace dory::math::geometry
         Shape3df resultShape {shape};
 
         auto baseFace = shape.getFace(faceId);
-        auto oppositeFaceId = resultShape.addFace(Face{});
+        auto oppositeFaceResult = resultShape.addFace(Face{});
+        Face& oppositeFace = oppositeFaceResult->second;
         std::size_t firstSideFace{};
         std::optional<std::size_t> prevSideFace{};
         std::size_t i = 0;
         for(const auto& edgeId : baseFace)
         {
-            Face& oppositeFace = resultShape.getFace(oppositeFaceId);
             const Edge& edge = shape.getEdge(edgeId);
 
             std::size_t pointAd {};
             if(i == 0)
             {
                 auto pointA = resultShape.getPoint(edge.begin).toVec3();
-                pointAd = resultShape.addPoint(Point3f{ pointA + direction });
+                pointAd = resultShape.addPoint(Point3f{ pointA + direction })->first;
             }
             else
             {
@@ -77,16 +77,15 @@ namespace dory::math::geometry
             else
             {
                 auto pointB = resultShape.getPoint(edge.end).toVec3();
-                pointBd = resultShape.addPoint(Point3f{ pointB + direction });
+                pointBd = resultShape.addPoint(Point3f{ pointB + direction })->first;
             }
 
             //insert opposite face edges are in reverse order, to point it's normal in opposite direction to base face
-            auto oppositeEdgeId = resultShape.addEdge({pointAd, pointBd});
-            const Edge& oppositeEdge = resultShape.getEdge(oppositeEdgeId);
-            oppositeFace.addEdgeInFront(oppositeEdgeId);
+            auto oppositeEdgeResult = resultShape.addEdge({pointAd, pointBd});
+            oppositeFace.addEdgeInFront(oppositeEdgeResult->first);
 
-            auto sideFaceId = resultShape.addFace({});
-            Face& sideFace = resultShape.getFace(sideFaceId);
+            auto sideFaceResult = resultShape.addFace({});
+            Face& sideFace = sideFaceResult->second;
             sideFace.addEdge(edgeId);
             if(prevSideFace)
             {
@@ -95,11 +94,11 @@ namespace dory::math::geometry
             }
             else
             {
-                auto newEdgeId = resultShape.addEdge({ edge.begin, oppositeEdge.begin });
-                sideFace.addEdge(newEdgeId);
-                firstSideFace = sideFaceId;
+                auto newEdgeResult = resultShape.addEdge({ edge.begin, oppositeEdgeResult->second.begin });
+                sideFace.addEdge(newEdgeResult->first);
+                firstSideFace = sideFaceResult->first;
             }
-            sideFace.addEdge(oppositeEdgeId);
+            sideFace.addEdge(oppositeEdgeResult->first);
             if(i == baseFace.edgeCount() - 1)
             {
                 //reuse the edge of the first side-face
@@ -107,10 +106,10 @@ namespace dory::math::geometry
             }
             else
             {
-                auto newEdgeId = resultShape.addEdge({ oppositeEdge.end, edge.end });
-                sideFace.addEdge(newEdgeId);
+                auto newEdgeResult = resultShape.addEdge({ oppositeEdgeResult->second.end, edge.end });
+                sideFace.addEdge(newEdgeResult->first);
             }
-            prevSideFace = sideFaceId;
+            prevSideFace = sideFaceResult->first;
 
             ++i;
         }

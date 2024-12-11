@@ -167,18 +167,28 @@ namespace dory::math::geometry
     private:
         using PointType = Point<T, Dimensions>;
 
-        std::vector<PointType> _points;
-        std::vector<Edge> _edges;
-        std::vector<Face> _faces;
+        std::size_t pointCounter {};
+        std::size_t edgeCounter {};
+        std::size_t faceCounter {};
+
+        std::unordered_map<std::size_t, PointType> _points;
+        std::unordered_map<std::size_t, Edge> _edges;
+        std::unordered_map<std::size_t, Face> _faces;
 
     public:
         static constexpr std::size_t dimensions = Dimensions;
 
         Shape() = default;
 
-        Shape(std::initializer_list<PointType> points, std::initializer_list<Edge> edges, std::initializer_list<Face> faces):
+        Shape(const std::unordered_map<std::size_t, PointType>& points,
+              const std::unordered_map<std::size_t, Edge>& edges,
+              const std::unordered_map<std::size_t, Face>& faces):
                 _points{points}, _edges{edges}, _faces{faces}
-        {}
+        {
+            pointCounter = points.size();
+            edgeCounter = edges.size();
+            faceCounter = faces.size();
+        }
 
         std::size_t getPointCount()
         {
@@ -195,68 +205,54 @@ namespace dory::math::geometry
             return _faces.size();
         }
 
-        std::size_t addPoint(const Point<T, Dimensions>& point)
+        auto addPoint(const Point<T, Dimensions>& point)
         {
-            auto pointCount = getPointCount();
-            _points.emplace_back(point);
-            return pointCount;
+            return _points.emplace(pointCounter++, point).first;
         }
 
-        std::size_t addEdge(const Edge& edge)
+        auto addEdge(const Edge& edge)
         {
-            auto edgeCount = getEdgeCount();
-            _edges.emplace_back(edge);
-            return edgeCount;
+            return _edges.emplace(edgeCounter++, edge).first;
         }
 
-        std::size_t addFace(const Face& face)
+        auto addFace(const Face& face)
         {
-            auto faceCount = getFaceCount();
-            _faces.emplace_back(face);
-            return faceCount;
+            return _faces.emplace(faceCounter++, face).first;
         }
 
         [[nodiscard]] const PointType& getPoint(std::size_t pointId) const
         {
-            assert(pointId < _points.size() && pointId >= 0);
-
-            return _points[pointId];
+            assert(_points.contains(pointId));
+            return _points.at(pointId);
         }
 
         [[nodiscard]] const Edge& getEdge(std::size_t edgeId) const
         {
-            assert(edgeId < _edges.size()  && edgeId >= 0);
+            assert(_edges.contains(edgeId));
 
-            return _edges[edgeId];
+            return _edges.at(edgeId);
         }
 
         [[nodiscard]] const Face& getFace(std::size_t faceId) const
         {
-            assert(faceId < _faces.size() && faceId >= 0);
-
-            return _faces[faceId];
+            assert(_edges.contains(faceId));
+            return _faces.at(faceId);
         }
 
         Face& getFace(std::size_t faceId)
         {
-            assert(faceId < _faces.size() && faceId >= 0);
-
+            assert(_edges.contains(faceId));
             return _faces[faceId];
         }
 
-        [[nodiscard]] std::vector<Face>::const_iterator begin() const
+        [[nodiscard]] auto begin() const
         {
             return _faces.begin();
         }
 
-        [[nodiscard]] std::vector<Face>::const_iterator end() const
+        [[nodiscard]] auto end() const
         {
             return _faces.end();
-        }
-
-        [[nodiscard]] std::size_t facesCount() const
-        {
-            return _faces.size();
         }
     };
 
