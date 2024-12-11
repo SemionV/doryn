@@ -79,10 +79,12 @@ namespace dory::math::geometry
 
     struct Edge
     {
-        std::size_t begin;
-        std::size_t end;
-        std::size_t faceA;
-        std::size_t faceB;
+        constexpr static std::size_t maxValue {std::numeric_limits<std::size_t>::max()};
+
+        std::size_t begin { maxValue };
+        std::size_t end { maxValue };
+        std::size_t faceA { maxValue };
+        std::size_t faceB { maxValue };
 
         bool replaceFace(const std::size_t faceId, const std::size_t newFaceId)
         {
@@ -253,6 +255,11 @@ namespace dory::math::geometry
         [[nodiscard]] auto end() const
         {
             return _faces.end();
+        }
+
+        void deleteFace(const std::size_t faceId)
+        {
+            _faces.erase(faceId);
         }
     };
 
