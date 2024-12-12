@@ -1,5 +1,5 @@
 #include <dory/core/services/generators/meshGenerator.h>
-#include "dory/core/mesh/meshGeneration.h"
+#include "dory/core/meshGeneration.h"
 
 namespace dory::core::services::generators
 {

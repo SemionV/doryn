@@ -9,7 +9,7 @@ namespace dory::math::geometry
 {
     struct Primitive
     {
-        const std::size_t id {};
+        std::size_t id {};
 
         Primitive() = default;
 
@@ -96,12 +96,10 @@ namespace dory::math::geometry
 
     struct Edge: public Primitive
     {
-        constexpr static std::size_t maxValue {std::numeric_limits<std::size_t>::max()};
+        constexpr static std::size_t invalidValue {std::numeric_limits<std::size_t>::max()};
 
-        std::size_t begin { maxValue };
-        std::size_t end { maxValue };
-        std::size_t faceA { maxValue };
-        std::size_t faceB { maxValue };
+        std::size_t begin { invalidValue };
+        std::size_t end { invalidValue };
 
         Edge() = default;
 
@@ -114,22 +112,6 @@ namespace dory::math::geometry
             begin(begin),
             end(end)
         {}
-
-        bool replaceFace(const std::size_t faceId, const std::size_t newFaceId)
-        {
-            if(faceA == faceId)
-            {
-                faceA = newFaceId;
-                return true;
-            }
-            else if(faceB == faceId)
-            {
-                faceB = faceId;
-                return true;
-            }
-
-            return false;
-        }
     };
 
     struct Face: public Primitive
@@ -242,16 +224,20 @@ namespace dory::math::geometry
             return _faces.size();
         }
 
-        PointType& addPoint(const PointType& point)
-        {
-            return _points.emplace(pointCounter++, point).first;
-        }
-
         template<typename... Ts>
         PointType& addPoint(Ts&&... parameters)
         {
             auto id = pointCounter++;
             return _points.emplace(id, PointType{ id, std::forward<Ts>(parameters)... }).first->second;
+        }
+
+        PointType& addPoint(const PointType& point)
+        {
+            auto id = pointCounter++;
+            auto& newPoint =  _points.emplace(id, PointType{ point }).first->second;
+            newPoint.id = id;
+
+            return newPoint;
         }
 
         template<typename... Ts>
@@ -261,11 +247,29 @@ namespace dory::math::geometry
             return _edges.emplace(id, Edge{ id, std::forward<Ts>(parameters)... }).first->second;
         }
 
+        Edge& addEdge(const Edge& edge)
+        {
+            auto id = edgeCounter++;
+            auto& newEdge =  _edges.emplace(id, Edge{edge }).first->second;
+            newEdge.id = id;
+
+            return newEdge;
+        }
+
         template<typename... Ts>
         Face& addFace(Ts&&... parameters)
         {
             auto id = faceCounter++;
             return _faces.emplace(id, Face{ id, std::forward<Ts>(parameters)... }).first->second;
+        }
+
+        Face& addFace(const Face& face)
+        {
+            auto id = faceCounter++;
+            auto& newFace =  _faces.emplace(id, Face{ face }).first->second;
+            newFace.id = id;
+
+            return newFace;
         }
 
         [[nodiscard]] const PointType& getPoint(std::size_t pointId) const
@@ -306,6 +310,16 @@ namespace dory::math::geometry
         void deleteFace(const std::size_t faceId)
         {
             _faces.erase(faceId);
+        }
+
+        const auto& getPoints() const
+        {
+            return _points;
+        }
+
+        const auto& getEdges() const
+        {
+            return _edges;
         }
     };
 
