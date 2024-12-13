@@ -12,8 +12,11 @@ namespace dory::core::resources::bindings::uniforms
 
     struct DynamicUniforms
     {
-        math::Matrix4x4f modelTransform {};
-        math::Matrix4x4f viewTransform {};
-        math::Matrix4x4f projectionTransform {};
+        glm::mat4x4 viewProjectionTransform {};
+    };
+
+    struct ModelUniforms
+    {
+        glm::mat4x4 modelTransform {};
     };
 }

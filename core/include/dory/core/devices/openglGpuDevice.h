@@ -23,6 +23,7 @@ namespace dory::core::devices
         void bindUniformLocations(resources::bindings::OpenglMaterialBinding* materialBinding, resources::bindings::UniformBinding& uniforms);
         void bindUniforms(resources::bindings::OpenglMaterialBinding* materialBinding);
         void setActiveMaterial(const resources::bindings::uniforms::DynamicUniforms& uniforms, const resources::bindings::MaterialBinding* materialBinding);
+        void setModelUniforms(const resources::bindings::uniforms::ModelUniforms& uniforms, const resources::bindings::MaterialBinding* materialBinding);
         static void fillUniforms(resources::bindings::uniforms::DynamicUniforms& uniforms, const resources::bindings::MaterialBinding* materialBinding);
         static void fillUniforms(resources::bindings::uniforms::StaticUniforms& uniforms, const resources::bindings::MaterialBinding* materialBinding);
         static void drawMesh(const resources::bindings::MeshBinding* meshBinding);

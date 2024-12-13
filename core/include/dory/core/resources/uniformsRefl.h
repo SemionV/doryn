@@ -15,7 +15,9 @@ REFL_TYPE(dory::core::resources::bindings::uniforms::StaticUniforms)
 REFL_END
 
 REFL_TYPE(dory::core::resources::bindings::uniforms::DynamicUniforms)
+        REFL_FIELD(viewProjectionTransform)
+REFL_END
+
+REFL_TYPE(dory::core::resources::bindings::uniforms::ModelUniforms)
         REFL_FIELD(modelTransform)
-        REFL_FIELD(viewTransform)
-        REFL_FIELD(projectionTransform)
 REFL_END

@@ -173,7 +173,7 @@ namespace dory::core::devices
         return false;
     }
 
-    using UniformTypes = generic::TypeList<math::Vector4f, math::Matrix4x4f>;
+    using UniformTypes = generic::TypeList<math::Vector4f, math::Matrix4x4f, glm::mat4x4, glm::vec3>;
 
     template<typename TUniform>
     static constexpr bool IsUniform = generic::IsInTypeListV<std::remove_reference_t<TUniform>, UniformTypes> || std::is_fundamental_v<std::decay_t<TUniform>>;
@@ -291,6 +291,15 @@ namespace dory::core::devices
             {
                 auto location = context.uniforms.locations[uniformId];
                 glUniformMatrix4fv(location, 1, false, value.entries.data());
+            }
+        }
+
+        static void process(const std::string_view& memberName, const std::size_t uniformId, const glm::mat4x4 value, UniformBindingContext& context)
+        {
+            if(context.uniforms.locations.contains(uniformId))
+            {
+                auto location = context.uniforms.locations[uniformId];
+                glUniformMatrix4fv(location, 1, false, glm::value_ptr(value));
             }
         }
 
@@ -485,16 +494,23 @@ namespace dory::core::devices
     {
         glClearColor(frame.clearColor.x, frame.clearColor.y, frame.clearColor.z, frame.clearColor.w);
         glClear(GL_COLOR_BUFFER_BIT);
+        //glEnable(GL_CULL_FACE);
+        //glCullFace(GL_BACK);
 
         DynamicUniforms uniforms;
+        ModelUniforms modelUniforms;
+
+        uniforms.viewProjectionTransform = frame.viewProjectionTransform;
 
         for(const auto& [material, meshes] : frame.meshMap)
         {
             fillUniforms(uniforms, material);
             setActiveMaterial(uniforms, material);
-            for(const auto meshBinding : meshes)
+            for(const auto& meshItem : meshes)
             {
-                drawMesh(meshBinding);
+                modelUniforms.modelTransform = meshItem.modelTransform;
+                setModelUniforms(modelUniforms, material);
+                drawMesh(meshItem.meshBinding);
             }
         }
 
@@ -531,6 +547,7 @@ namespace dory::core::devices
     {
         bindUniformLocations<DynamicUniforms>(materialBinding, materialBinding->dynamicUniforms);
         bindUniformLocations<StaticUniforms>(materialBinding, materialBinding->staticUniforms);
+        bindUniformLocations<ModelUniforms>(materialBinding, materialBinding->modelUniforms);
 
         StaticUniforms uniforms;
         fillUniforms(uniforms, materialBinding);
@@ -541,6 +558,21 @@ namespace dory::core::devices
                         openglProperties,
                         _registry,
                         materialBinding->staticUniforms,
+                };
+
+        services::graphics::UniformVisitor<UniformValueBinder>::visit(uniforms, bindingContext);
+    }
+
+    void OpenglGpuDevice::setModelUniforms(const ModelUniforms& uniforms, const MaterialBinding* materialBinding)
+    {
+        auto glMaterial = (OpenglMaterialBinding*)materialBinding;
+
+        auto bindingContext = UniformBindingContext
+                {
+                        *glMaterial,
+                        openglProperties,
+                        _registry,
+                        glMaterial->modelUniforms,
                 };
 
         services::graphics::UniformVisitor<UniformValueBinder>::visit(uniforms, bindingContext);

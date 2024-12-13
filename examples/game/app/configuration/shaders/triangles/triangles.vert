@@ -2,10 +2,10 @@
 #version 400 core
 
 layout( location = 0 ) in vec4 vPosition;
+uniform mat4x4 viewProjectionTransform;
+uniform mat4x4 modelTransform;
 
 void main()
 {
-    const vec4 position = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-
-    gl_Position = vPosition;
+    gl_Position = viewProjectionTransform * modelTransform * vPosition;
 }

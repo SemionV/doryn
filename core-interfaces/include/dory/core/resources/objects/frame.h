@@ -6,9 +6,16 @@
 
 namespace dory::core::resources::objects
 {
+    struct MeshItem
+    {
+        bindings::MeshBinding* meshBinding {};
+        glm::mat4x4 modelTransform {};
+    };
+
     struct Frame
     {
         math::Vector4f clearColor {};
-        std::unordered_map<bindings::MaterialBinding*, std::vector<bindings::MeshBinding*>> meshMap {};
+        glm::mat4x4 viewProjectionTransform {};
+        std::unordered_map<bindings::MaterialBinding*, std::vector<MeshItem>> meshMap {};
     };
 }

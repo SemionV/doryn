@@ -22,7 +22,7 @@ namespace dory::game
             });
 
             _registry.get<dory::core::services::IWindowService>([&context, &graphicalContext](dory::core::services::IWindowService* windowService) {
-                context.mainWindowId = windowService->createWindow(core::resources::WindowParameters{800, 600, "dory game", graphicalContext->id});
+                context.mainWindowId = windowService->createWindow(core::resources::WindowParameters{800, 800, "dory game", graphicalContext->id});
             });
 
             _registry.get<dory::core::repositories::IViewRepository>([&context](dory::core::repositories::IViewRepository* viewRepository) {
@@ -83,7 +83,7 @@ namespace dory::game
                 auto material = materialRepo->insert(core::resources::assets::Material{
                     {},
                     { vertexShaderId, fragmentShaderId },
-                    { {1.f, 0.f, 1.f, 0.f}, {1.f, 0.f, 0.f, 0.f}, {0.f, 1.f, 0.f, 0.f} },
+                    { {1.f, 1.f, 1.f, 0.f}, {1.f, 0.f, 0.f, 0.f}, {0.f, 1.f, 0.f, 0.f} },
                     core::resources::assets::PolygonMode::Wireframe
                 });
                 materialId = material->id;
@@ -136,17 +136,14 @@ namespace dory::game
                 }
             }
 
-            auto meshRepo = _registry.get<core::repositories::assets::IMeshRepository>();
+            /*auto meshRepo = _registry.get<core::repositories::assets::IMeshRepository>();
             if(meshRepo)
             {
                 auto mesh = meshRepo->insert(core::resources::assets::Mesh{});
                 mesh->materialId = materialId;
                 mesh->positions.componentsCount = 2;
-                mesh->positions.components = {/*-1.f, 1.f,  0.f, 0.f,  1.f, 1.f,
-                                              0.f, 0.f, -1.f, -1.f,  1.f, -1.f,*/
-                                              0.f, 1.f, 0.f, -1.f, 1.f, 0.f,};
+                mesh->positions.components = {0.f, 1.f, 0.f, -1.f, 1.f, 0.f};
                 mesh->vertexCount = mesh->positions.components.size() / mesh->positions.componentsCount;
-                //mesh->indices = {0, 1, 2, 1, 3, 4};
 
                 auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::mesh);
                 if(assetBinder)
@@ -154,9 +151,9 @@ namespace dory::game
                     windowService->setCurrentWindow(context.mainWindowId);
                     assetBinder->bind(mesh->id, *graphicalContext);
                 }
-            }
+            }*/
 
-            meshRepo = _registry.get<core::repositories::assets::IMeshRepository>();
+            auto meshRepo = _registry.get<core::repositories::assets::IMeshRepository>();
             if(meshRepo)
             {
                 auto mesh = meshRepo->insert(core::resources::assets::Mesh{});

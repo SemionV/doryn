@@ -32,6 +32,13 @@ namespace dory::core::services::graphics
         {
             auto frame = Frame{};
             frame.clearColor = Vector4f{ 0.01f, 0.08f, 0.01f, 1.f };
+            float aspectRatio = 1;
+            frame.viewProjectionTransform = glm::ortho(-1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f);
+
+            glm::mat4x4 rotateZ = glm::rotate(glm::identity<glm::mat4x4>(), glm::radians(20.f), glm::vec3(0.0f, 0.0f, 1.0f));
+            glm::mat4x4 rotateX = glm::rotate(glm::identity<glm::mat4x4>(), glm::radians(30.f), glm::vec3(1.0f, 0.0f, 0.0f));
+            glm::mat4x4 translate = glm::translate(glm::identity<glm::mat4x4>(), glm::vec3(0.f, 0.5f, 0.f));
+            glm::mat4x4 modelTransform = rotateX * rotateZ * translate;
 
             for(const auto& [meshId, meshBindingId] : graphicalContext.meshBindings)
             {
@@ -45,7 +52,7 @@ namespace dory::core::services::graphics
                         frame.meshMap[material] = {};
                     }
 
-                    frame.meshMap[material].emplace_back(meshBinding);
+                    frame.meshMap[material].emplace_back(MeshItem{ meshBinding, modelTransform });
                 }
             }
 

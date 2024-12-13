@@ -30,5 +30,6 @@ namespace dory::core::resources::bindings
         GLuint glProgramId {};
         UniformBinding dynamicUniforms;
         UniformBinding staticUniforms;
+        UniformBinding modelUniforms;
     };
 }
