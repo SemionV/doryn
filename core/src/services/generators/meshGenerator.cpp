@@ -1,31 +1,28 @@
 #include <dory/core/services/generators/meshGenerator.h>
-#include "dory/core/meshGeneration.h"
+#include <dory/math/geometryMorphing.h>
+#include "dory/math/tesselation.h"
+#include <dory/core/meshGeneration.h>
 
 namespace dory::core::services::generators
 {
-    template<typename T>
-    struct Polygon
-    {
-        std::vector<T> points;
-        std::vector<std::size_t> edges;
-    };
+    using namespace math;
+    using namespace math::geometry;
+    using namespace dory::core::mesh;
+    using namespace dory::core::resources::assets;
 
-    void MeshGenerator::cube(float width, resources::assets::Mesh& mesh)
+    void MeshGenerator::cube(float width, Mesh& mesh)
     {
-        mesh.vertexCount = 24;
-
         auto hw = width / 2;
 
-        auto x = hw;
-        auto y = hw;
-        auto z = hw;
+        auto prismBase = Shape3d<float>{
+                { {0, Point3f{ 0, -hw, hw, hw } }, { 1, Point3f{ 1, -hw, -hw, hw } }, { 2, Point3f{ 2, hw, -hw, hw} }, { 3, Point3f{ 3, hw, hw, hw} } },
+                { { 0, Edge{ 0, 0, 1 } }, { 1, Edge{ 1, 1, 2 } }, { 2, Edge{ 2, 2, 3 } }, { 3, Edge{ 3, 3, 0 } } },
+                { {0, Face{ 0, { 0, 1, 2, 3 } }} }
+        };
 
-        mesh.positions.componentsCount = 3;
-        mesh.positions.components = { -hw, hw, hw,  -hw, -hw, hw,  hw, -hw, hw,  hw, hw, hw,
-                                      -hw, hw, hw,  -hw, -hw, hw,  hw, -hw, hw,  hw, hw, hw,
-                                      -hw, hw, -hw,  -hw, -hw, -hw,  hw, -hw, -hw,  hw, hw, -hw};
+        Shape3d<float> prism = ShapeMorphing::push(0, glm::vec3{0, 0, width }, prismBase);
+        math::geometry::Shape3df tessellatedPrism = Triangulator::tessellateFaceted(prism);
 
-        mesh.normals.componentsCount = 3;
-        mesh.normals.components = { 0, 0, 1,  0, 0, 1,  0, 0, 1,  0, 0, 1 };
+        ShapeToMesh::generate(tessellatedPrism, mesh);
     }
 }

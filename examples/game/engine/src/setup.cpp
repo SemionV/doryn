@@ -49,6 +49,7 @@
 #include <dory/core/services/graphics/shaderAssetBinder.h>
 #include <dory/core/services/viewService.h>
 #include <dory/core/services/graphics/renderer.h>
+#include <dory/core/services/generators/meshGenerator.h>
 #include <dory/core/resources/assetType.h>
 
 namespace dory::game
@@ -124,6 +125,7 @@ namespace dory::game
         registry.set<core::services::IAssetTypeResolver>(libraryHandle, std::make_shared<core::services::AssetTypeResolver>());
         registry.set<core::services::IAssetReloadHandler>(libraryHandle, std::make_shared<core::services::loaders::ExtensionLoader>(registry), std::string{core::resources::AssetTypeName::extension});
         registry.set<core::services::IAssetService>(libraryHandle, std::make_shared<core::services::AssetService>(registry));
+        registry.set<core::services::generators::IMeshGenerator>(libraryHandle, std::make_shared<core::services::generators::MeshGenerator>());
 
         auto sceneService = std::make_shared<core::services::EnttSceneService>();
         registry.set<core::services::ISceneService>(libraryHandle, sceneService);

@@ -6,7 +6,7 @@
 
 namespace dory::core::mesh
 {
-    class MeshGenerator
+    class ShapeToMesh
     {
     private:
         static void updateVertexNormal(resources::assets::Mesh& mesh, std::size_t vertexId, const glm::vec3& faceNormal)

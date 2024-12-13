@@ -37,13 +37,13 @@ TEST(Geometry, triangularPrism)
     auto normal = glm::normalize(getNormal(face, prismBase));
     EXPECT_EQ(normal, glm::vec3(0, 0, 1));
 
-    Shape3d<float> prism = ShapeMorphing::push(0, math::Vector3f{0, 0, -8 }, prismBase);
+    Shape3d<float> prism = ShapeMorphing::push(0, glm::vec3{0, 0, -8 }, prismBase);
     EXPECT_EQ(prism.getFaceCount(), 5);
 
     math::geometry::Shape3df tessellatedPrism = Triangulator::tessellateFaceted(prism);
 
     Mesh mesh {};
-    MeshGenerator::generate(tessellatedPrism, mesh);
+    ShapeToMesh::generate(tessellatedPrism, mesh);
 
     EXPECT_EQ(18, mesh.vertexCount);
 }

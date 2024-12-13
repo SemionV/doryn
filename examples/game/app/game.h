@@ -175,7 +175,21 @@ namespace dory::game
                 }
             }
 
-            
+            meshRepo = _registry.get<core::repositories::assets::IMeshRepository>();
+            auto meshGenerator = _registry.get<core::services::generators::IMeshGenerator>();
+            if(meshRepo && meshGenerator)
+            {
+                auto mesh = meshRepo->insert(core::resources::assets::Mesh{});
+                meshGenerator->cube(0.5f, *mesh);
+                mesh->materialId = materialId;
+
+                auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::mesh);
+                if(assetBinder)
+                {
+                    windowService->setCurrentWindow(context.mainWindowId);
+                    assetBinder->bind(mesh->id, *graphicalContext);
+                }
+            }
 
             return true;
         }
