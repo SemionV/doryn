@@ -83,7 +83,8 @@ namespace dory::game
                 auto material = materialRepo->insert(core::resources::assets::Material{
                     {},
                     { vertexShaderId, fragmentShaderId },
-                    { {1.f, 0.f, 1.f, 0.f}, {1.f, 0.f, 0.f, 0.f}, {0.f, 1.f, 0.f, 0.f} }
+                    { {1.f, 0.f, 1.f, 0.f}, {1.f, 0.f, 0.f, 0.f}, {0.f, 1.f, 0.f, 0.f} },
+                    core::resources::assets::PolygonMode::Wireframe
                 });
                 materialId = material->id;
 
@@ -173,6 +174,8 @@ namespace dory::game
                     assetBinder->bind(mesh->id, *graphicalContext);
                 }
             }
+
+            
 
             return true;
         }

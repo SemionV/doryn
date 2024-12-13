@@ -8,6 +8,6 @@ namespace dory::core::resources::bindings
     struct MaterialBinding: Entity<>
     {
         std::string linkingError{};
-        objects::MaterialProperties properties;
+        assets::Material material {};
     };
 }

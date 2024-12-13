@@ -550,20 +550,31 @@ namespace dory::core::devices
     {
         auto glMaterial = (OpenglMaterialBinding*)materialBinding;
 
-        if(glMaterial && glMaterial->linkingError.empty())
+        if(glMaterial)
         {
-            assert(glIsProgram(glMaterial->glProgramId));
-            glUseProgram(glMaterial->glProgramId);
+            if(glMaterial->linkingError.empty())
+            {
+                assert(glIsProgram(glMaterial->glProgramId));
+                glUseProgram(glMaterial->glProgramId);
 
-            auto bindingContext = UniformBindingContext
-                    {
-                            *glMaterial,
-                            openglProperties,
-                            _registry,
-                            glMaterial->dynamicUniforms,
-                    };
+                auto bindingContext = UniformBindingContext
+                        {
+                                *glMaterial,
+                                openglProperties,
+                                _registry,
+                                glMaterial->dynamicUniforms,
+                        };
 
-            services::graphics::UniformVisitor<UniformValueBinder>::visit(uniforms, bindingContext);
+                services::graphics::UniformVisitor<UniformValueBinder>::visit(uniforms, bindingContext);
+            }
+
+            GLenum faceMode = GL_FILL;
+            if(glMaterial->material.polygonMode == resources::assets::PolygonMode::Wireframe)
+            {
+                faceMode = GL_LINE;
+            }
+
+            glPolygonMode(GL_FRONT_AND_BACK, faceMode);
         }
     }
 
@@ -578,7 +589,7 @@ namespace dory::core::devices
     {
         if(materialBinding)
         {
-            uniforms.material =  materialBinding->properties;
+            uniforms.material =  materialBinding->material.properties;
         }
     }
 

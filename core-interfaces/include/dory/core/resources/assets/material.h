@@ -5,9 +5,16 @@
 
 namespace dory::core::resources::assets
 {
+    enum class PolygonMode
+    {
+        Solid,
+        Wireframe
+    };
+
     struct Material: Entity<>
     {
         std::vector<IdType> shaders {};
         objects::MaterialProperties properties;
+        PolygonMode polygonMode { PolygonMode::Solid };
     };
 }
