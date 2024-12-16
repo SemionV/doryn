@@ -41,7 +41,7 @@ template<typename TInterface, typename TEntity = TInterface::EntityType>
 class EntityRepositoryMock: public TInterface
 {
 protected:
-    MOCK_METHOD(void, setId, (TEntity& entity));
+    MOCK_METHOD(IdType , getNewId, ());
 
 public:
     MOCK_METHOD(std::size_t, count, ());

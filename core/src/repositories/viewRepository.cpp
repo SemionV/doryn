@@ -4,18 +4,16 @@
 
 namespace dory::core::repositories
 {
-
     std::vector<resources::IdType> ViewRepository::getWindowViews(resources::IdType windowId)
     {
         std::vector<resources::IdType> views {};
 
-        for(const auto& view : this->container)
-        {
+        each([&](auto& view) {
             if(view.windowId == windowId)
             {
                 views.emplace_back(view.id);
             }
-        }
+        });
 
         return views;
     }

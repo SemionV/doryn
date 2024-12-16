@@ -1,23 +1,23 @@
 #pragma once
 
 #include <dory/core/repositories/iRepository.h>
-#include <vector>
+#include <map>
 
 namespace dory::core::repositories
 {
     template<typename TEntity,
             typename TId = resources::IdType,
-            typename TInterface = repositories::IRepository<TEntity, TId>,
-            template<class, class> class TContainer = std::vector>
+            typename TInterface = repositories::IRepository<TEntity, TId>>
     class Repository: public TInterface
     {
     protected:
-        TContainer<TEntity, std::allocator<TEntity>> container;
+        std::map<TId, TEntity> container;
         TId counter {};
 
     public:
-        Repository(std::initializer_list<TEntity>&& entities):
-            container(std::move(entities))
+        template<typename T>
+        explicit Repository(T&& entities):
+            container(std::forward<T>(entities))
         {}
 
         Repository() = default;
@@ -27,17 +27,16 @@ namespace dory::core::repositories
             return container.size();
         }
 
-        void setId(TInterface::EntityType& entity) override
+        TId getNewId() override
         {
-            entity.id = ++counter;
+            return ++counter;
         }
 
         TInterface::EntityType* get(TId id) override
         {
-            auto position = std::ranges::find(container, id, &TEntity::id);
-            if(position != container.end())
+            if(container.contains(id))
             {
-                return &(*position);
+                return &(container[id]);
             }
 
             return {};
@@ -45,43 +44,36 @@ namespace dory::core::repositories
 
         TId insert(const TInterface::EntityType& entity) override
         {
-            typename TInterface::EntityType& newEntity = container.emplace_back((TEntity&)entity);
-            setId(newEntity);
-            return newEntity.id;
+            auto id = getNewId();
+            typename TInterface::EntityType& newEntity = container[id] = (TEntity&)entity;
+            newEntity.id = id;
+            return id;
         }
 
         TInterface::EntityType* insert(TInterface::EntityType&& entity) override
         {
-            typename TInterface::EntityType& newEntity = container.emplace_back(TEntity{entity});
-            setId(newEntity);
+            auto id = getNewId();
+            typename TInterface::EntityType& newEntity = container[id] = (TEntity)entity;
+            newEntity.id = id;
             return &newEntity;
         }
 
         void store(TInterface::EntityType& entity) override
         {
-            auto position = std::ranges::find(container, entity.id, &std::remove_reference_t<typename TInterface::EntityType>::id);
-            if(position != container.end()) //update
-            {
-                *position = (TEntity&)entity;
-            }
-            else //create
-            {
-                container.push_back((TEntity&)entity);
-            }
+            container[entity.id] = (TEntity&)entity;
         }
 
         void remove(TId id) override
         {
-            auto position = std::ranges::find(container, id, &TEntity::id);
-            if(position != container.end())
+            if(container.contains(id))
             {
-                container.erase(position);
+                container.erase(id);
             }
         }
 
         void each(std::function<void(typename TInterface::EntityType& entity)> predicate) override
         {
-            for(auto& entity : container)
+            for(auto& [id, entity] : container)
             {
                 predicate(entity);
             }
@@ -89,7 +81,7 @@ namespace dory::core::repositories
 
         TInterface::EntityType* scan(std::function<bool(typename TInterface::EntityType& entity)> predicate) override
         {
-            for(auto& entity : container)
+            for(auto& [id, entity] : container)
             {
                 if(predicate(entity))
                 {

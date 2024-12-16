@@ -14,7 +14,7 @@ namespace dory::core::repositories
     class IRepository: public generic::Interface
     {
     protected:
-        virtual void setId(TEntity& entity) = 0;
+        virtual TId getNewId() = 0;
 
     public:
         using EntityType = TEntity;

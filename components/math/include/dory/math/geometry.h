@@ -3,7 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <deque>
 #include <vector>
-#include <unordered_map>
+#include <map>
 
 namespace dory::math::geometry
 {
@@ -190,18 +190,18 @@ namespace dory::math::geometry
         std::size_t edgeCounter {};
         std::size_t faceCounter {};
 
-        std::unordered_map<std::size_t, PointType> _points;
-        std::unordered_map<std::size_t, Edge> _edges;
-        std::unordered_map<std::size_t, Face> _faces;
+        std::map<std::size_t, PointType> _points;
+        std::map<std::size_t, Edge> _edges;
+        std::map<std::size_t, Face> _faces;
 
     public:
         static constexpr std::size_t dimensions = Dimensions;
 
         Shape() = default;
 
-        Shape(const std::unordered_map<std::size_t, PointType>& points,
-              const std::unordered_map<std::size_t, Edge>& edges,
-              const std::unordered_map<std::size_t, Face>& faces):
+        Shape(const std::map<std::size_t, PointType>& points,
+              const std::map<std::size_t, Edge>& edges,
+              const std::map<std::size_t, Face>& faces):
                 _points{points}, _edges{edges}, _faces{faces}
         {
             pointCounter = points.size();

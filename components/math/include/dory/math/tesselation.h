@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include <unordered_map>
 #include "dory/math/geometry.h"
 
 namespace dory::core::mesh

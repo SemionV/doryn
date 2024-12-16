@@ -24,10 +24,12 @@ namespace dory::core::resources::entities
 
     struct View: public Entity<IdType>
     {
-        IdType windowId;
+        IdType windowId {};
         IdType cameraId {};
         IdType sceneId {};
         std::optional<Viewport> viewport {};
+
+        View() = default;
 
         View(IdType id, IdType windowId, IdType cameraId = nullId):
                 Entity(id),
