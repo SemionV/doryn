@@ -167,11 +167,9 @@ namespace dory::core::services::graphics
             meshBinding->indexType = VertexAttributeComponentType<Mesh::IndexType>::value;
 
             const std::size_t vertexBufferSize = calculateVertexBufferSize(mesh->vertexCount, vertexAttributes...);
-            IdType vertexBufferId {};
             BufferBinding* vertexBufferBinding = bindBuffer(meshBinding->vertexBufferId, vertexBufferSize, bufferBindingRepositoryPtr, gpuDriverPtr);
             if(vertexBufferBinding)
             {
-                vertexBufferId = vertexBufferBinding->id;
                 writeVertexAttributes(vertexBufferBinding, meshBinding, gpuDriverPtr, vertexAttributes...);
             }
             else
@@ -193,8 +191,6 @@ namespace dory::core::services::graphics
                     gpuDriver->writeData(indexBufferBinding, 0, indexBufferSize, mesh->indices.data());
                 }
             }
-
-            vertexBufferBinding = bufferBindingRepository->get(vertexBufferId);
 
             gpuDriver->bindMesh(meshBinding, vertexBufferBinding, indexBufferBinding);
         }
