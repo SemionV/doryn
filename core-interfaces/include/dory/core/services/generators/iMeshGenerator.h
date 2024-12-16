@@ -9,5 +9,7 @@ namespace dory::core::services::generators
     {
     public:
         virtual void cube(float width, resources::assets::Mesh& mesh) = 0;
+        virtual void rectangle(float width, float height, resources::assets::Mesh& mesh) = 0;
+        virtual void triangle(float width, float height, resources::assets::Mesh& mesh) = 0;
     };
 }

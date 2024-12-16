@@ -44,7 +44,14 @@ namespace dory::core::mesh
             {
                 mesh.positions.components.emplace_back(point.x);
                 mesh.positions.components.emplace_back(point.y);
-                mesh.positions.components.emplace_back(point.z);
+                if constexpr (N > 2)
+                {
+                    mesh.positions.components.emplace_back(point.z);
+                }
+                if constexpr (N > 3)
+                {
+                    mesh.positions.components.emplace_back(1);
+                }
 
                 mesh.normals.components.emplace_back(0.f);
                 mesh.normals.components.emplace_back(0.f);
