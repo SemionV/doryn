@@ -20,7 +20,7 @@ namespace dory::core::services::generators
                 { {0, Face{ 0, { 0, 1, 2, 3 } }} }
         };
 
-        Shape3d<float> shape = ShapeMorphing::push(0, glm::vec3{0, 0, width }, shapeBase);
+        Shape3d<float> shape = ShapeMorphing::push(0, glm::vec3{0, 0, -width }, shapeBase);
         math::geometry::Shape3df tessellatedShape = Triangulator::tessellateFaceted(shape);
 
         ShapeToMesh::generate(tessellatedShape, mesh);

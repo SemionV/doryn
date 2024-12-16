@@ -35,8 +35,8 @@ namespace dory::core::services::graphics
             float aspectRatio = 1;
             frame.viewProjectionTransform = glm::ortho(-1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f);
 
-            glm::mat4x4 rotateZ = glm::rotate(glm::identity<glm::mat4x4>(), glm::radians(0.f), glm::vec3(0.0f, 0.0f, 1.0f));
-            glm::mat4x4 rotateX = glm::rotate(glm::identity<glm::mat4x4>(), glm::radians(0.f), glm::vec3(1.0f, 0.0f, 0.0f));
+            glm::mat4x4 rotateZ = glm::rotate(glm::identity<glm::mat4x4>(), glm::radians(45.f), glm::vec3(0.0f, 0.0f, 1.0f));
+            glm::mat4x4 rotateX = glm::rotate(glm::identity<glm::mat4x4>(), glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
             glm::mat4x4 translate = glm::translate(glm::identity<glm::mat4x4>(), glm::vec3(0.f, 0.f, 0.f));
             glm::mat4x4 modelTransform = rotateX * rotateZ * translate;
 

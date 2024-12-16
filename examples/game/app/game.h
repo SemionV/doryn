@@ -154,7 +154,7 @@ namespace dory::game
                 }
             }*/
 
-            /*if(meshRepo)
+            if(meshRepo)
             {
                 auto mesh = meshRepo->insert(core::resources::assets::Mesh{});
                 mesh->materialId = materialGouraudId;
@@ -170,13 +170,15 @@ namespace dory::game
                     windowService->setCurrentWindow(context.mainWindowId);
                     assetBinder->bind(mesh->id, *graphicalContext);
                 }
-            }*/
+            }
 
             auto meshGenerator = _registry.get<core::services::generators::IMeshGenerator>();
             if(meshRepo && meshGenerator)
             {
                 auto mesh = meshRepo->insert(core::resources::assets::Mesh{});
-                meshGenerator->rectangle(1.f, 1.f, *mesh);
+                //meshGenerator->triangle(1.f, 0.3f, *mesh);
+                //meshGenerator->rectangle(1.f, 1.f, *mesh);
+                meshGenerator->cube(0.5f, *mesh);
                 mesh->materialId = materialId;
 
                 auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::mesh);

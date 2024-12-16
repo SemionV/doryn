@@ -494,8 +494,6 @@ namespace dory::core::devices
     {
         glClearColor(frame.clearColor.x, frame.clearColor.y, frame.clearColor.z, frame.clearColor.w);
         glClear(GL_COLOR_BUFFER_BIT);
-        //glEnable(GL_CULL_FACE);
-        //glCullFace(GL_BACK);
 
         DynamicUniforms uniforms;
         ModelUniforms modelUniforms;
@@ -604,6 +602,12 @@ namespace dory::core::devices
             if(glMaterial->material.polygonMode == resources::assets::PolygonMode::Wireframe)
             {
                 faceMode = GL_LINE;
+                glDisable(GL_CULL_FACE);
+            }
+            else if(glMaterial->material.polygonMode == resources::assets::PolygonMode::Solid)
+            {
+                glEnable(GL_CULL_FACE);
+                glCullFace(GL_BACK);
             }
 
             glPolygonMode(GL_FRONT_AND_BACK, faceMode);
