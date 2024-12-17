@@ -401,8 +401,10 @@ namespace dory::core::events
     };
 
     template<typename TIListener, typename TIDispatcher, typename TEventList>
-    using DispatcherCannon = implementation::Implementation<generic::TypeList<TIListener, TIDispatcher>, TEventList, DispatcherImplPolicy<TEventList, EventCannonHub, ListenerImpl, DispatcherImpl>>;
+    using DispatcherCannon = implementation::Implementation<generic::TypeList<TIListener, TIDispatcher>, TEventList,
+                                DispatcherImplPolicy<TEventList, EventCannonHub, ListenerImpl, DispatcherImpl>>;
 
     template<typename TIListener, typename TIDispatcher, typename TEventList>
-    using DispatcherCannonBuffer = implementation::Implementation<generic::TypeList<TIListener, TIDispatcher>, TEventList, DispatcherImplPolicy<TEventList, EventCannonBufferHub, ListenerImpl, DispatcherBufferImpl>>;
+    using DispatcherCannonBuffer = implementation::Implementation<generic::TypeList<TIListener, TIDispatcher>, TEventList,
+                                DispatcherImplPolicy<TEventList, EventCannonBufferHub, ListenerImpl, DispatcherBufferImpl>>;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <dory/core/devices/iWindowSystemDevice.h>
+#include <GLFW/glfw3.h>
 
 namespace dory::core
 {
@@ -13,6 +14,7 @@ namespace dory::core::devices
     {
     private:
         Registry& _registry;
+        static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
     public:
         explicit GlfwWindowSystemDevice(Registry& registry);
@@ -20,5 +22,7 @@ namespace dory::core::devices
         void connect(resources::DataContext& context) override;
         void disconnect(resources::DataContext& context) override;
         void pollEvents(resources::DataContext& context) override;
+        void setupWindow(resources::entities::Window& window) override;
+        void onWindowResize(GLFWwindow* window, int width, int height);
     };
 }

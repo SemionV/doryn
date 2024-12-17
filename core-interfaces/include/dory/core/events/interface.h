@@ -60,9 +60,9 @@ namespace dory::core::events
     {
     public:
         virtual ~IEventsBufferDispatcher() = default;
+        virtual void fireAll(resources::DataContext& context) = 0;
 
         using IEventBufferDispatcher<TEvents>::charge...;
-        using IEventBufferDispatcher<TEvents>::fireAll...;
     };
 
     template<typename... TEvents>

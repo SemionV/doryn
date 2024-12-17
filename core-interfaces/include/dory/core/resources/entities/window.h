@@ -19,5 +19,7 @@ namespace dory::core::resources::entities
 
         WindowSystem windowSystem {};
         resources::IdType graphicalContextId {};
+        unsigned int width {};
+        unsigned int height {};
     };
 }

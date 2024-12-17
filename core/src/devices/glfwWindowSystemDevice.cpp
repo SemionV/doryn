@@ -42,4 +42,42 @@ namespace dory::core::devices
             });
         });
     }
+
+    void GlfwWindowSystemDevice::setupWindow(resources::entities::Window& window)
+    {
+        assert(window.windowSystem == resources::WindowSystem::glfw);
+
+        auto& glfwWindow = (resources::entities::GlfwWindow&)window;
+        glfwSetWindowUserPointer(glfwWindow.handler, this);
+        glfwSetFramebufferSizeCallback(glfwWindow.handler, GlfwWindowSystemDevice::framebufferSizeCallback);
+    }
+
+    void GlfwWindowSystemDevice::framebufferSizeCallback(GLFWwindow* window, int width, int height)
+    {
+        auto* device = static_cast<GlfwWindowSystemDevice*>(glfwGetWindowUserPointer(window));
+        device->onWindowResize(window, width, height);
+    }
+
+    void GlfwWindowSystemDevice::onWindowResize(GLFWwindow* windowHandler, int width, int height)
+    {
+        _registry.get<repositories::IWindowRepository, resources::WindowSystem::glfw>([&](repositories::IWindowRepository* repository) {
+            repository->scan([&](auto& window) {
+                if(window.windowSystem == resources::WindowSystem::glfw)
+                {
+                    auto& glfwWindow = (resources::entities::GlfwWindow&)window;
+
+                    if(glfwWindow.handler == windowHandler)
+                    {
+                        _registry.get<events::window::Bundle::IDispatcher>([&](auto* dispatcher) {
+                            dispatcher->charge(events::window::Resize{ window.id, (unsigned int)width, (unsigned int)height, window.windowSystem });
+                        });
+
+                        return true;
+                    }
+                }
+
+                return false;
+            });
+        });
+    }
 }

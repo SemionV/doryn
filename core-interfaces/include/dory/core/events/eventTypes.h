@@ -64,7 +64,15 @@ namespace dory::core::events
             resources::WindowSystem windowSystem;
         };
 
-        using Bundle = EventBufferBundle<Close>;
+        struct Resize
+        {
+            resources::IdType windowId;
+            unsigned int width;
+            unsigned int height;
+            resources::WindowSystem windowSystem;
+        };
+
+        using Bundle = EventBufferBundle<Close, Resize>;
     }
 
     namespace filesystem

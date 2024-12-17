@@ -32,8 +32,10 @@ namespace dory::core::services::graphics
         {
             auto frame = Frame{};
             frame.clearColor = Vector4f{ 0.01f, 0.08f, 0.01f, 1.f };
-            float aspectRatio = 1;
-            frame.viewProjectionTransform = glm::ortho(-1.0f * aspectRatio, 1.0f * aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f);
+            float aspectRatio = 800.f / 600.f;
+            float halfWidth = 1.0f * aspectRatio;
+            float halfHeight = 1.0f;
+            frame.viewProjectionTransform = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, -1.0f, 1.0f);
 
             glm::mat4x4 rotateZ = glm::rotate(glm::identity<glm::mat4x4>(), glm::radians(45.f), glm::vec3(0.0f, 0.0f, 1.0f));
             glm::mat4x4 rotateX = glm::rotate(glm::identity<glm::mat4x4>(), glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));

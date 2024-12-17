@@ -10,12 +10,20 @@ namespace dory::core::services
         WindowService(registry)
     {}
 
-    resources::IdType GlfwWindowService::createWindow(const resources::WindowParameters& parameters)
+    resources::entities::Window& GlfwWindowService::createWindow(const resources::WindowParameters& parameters)
     {
         auto window = resources::entities::GlfwWindow(resources::nullId, resources::WindowSystem::glfw, parameters.graphicalContextId);
         glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
         auto glfwWindowHandler = glfwCreateWindow((int)parameters.width, (int)parameters.height, parameters.title.c_str(), nullptr, nullptr);
         window.handler = glfwWindowHandler;
+        window.width = parameters.width;
+        window.height = parameters.height;
+
+        auto windowSystemDevice = _registry.get<devices::IWindowSystemDevice, resources::WindowSystem::glfw>();
+        if(windowSystemDevice)
+        {
+            windowSystemDevice->setupWindow(window);
+        }
 
         return addWindow(window);
     }

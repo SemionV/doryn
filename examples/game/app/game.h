@@ -22,12 +22,23 @@ namespace dory::game
             });
 
             _registry.get<dory::core::services::IWindowService>([&context, &graphicalContext](dory::core::services::IWindowService* windowService) {
-                context.mainWindowId = windowService->createWindow(core::resources::WindowParameters{800, 800, "dory game", graphicalContext->id});
+                auto window = windowService->createWindow(core::resources::WindowParameters{800, 600, "dory game", graphicalContext->id});
+                context.mainWindowId = window.id;
             });
 
             _registry.get<dory::core::repositories::IViewRepository>([&context](dory::core::repositories::IViewRepository* viewRepository) {
                 auto view = dory::core::resources::entities::View{dory::core::resources::nullId, context.mainWindowId};
                 viewRepository->insert(view);
+            });
+
+            _registry.get<core::events::window::Bundle::IListener>([this](core::events::window::Bundle::IListener* listener){
+                listener->attach([this](auto& context, const core::events::window::Resize& event){
+                    auto logger = _registry.get<core::services::ILogService>();
+                    if(logger)
+                    {
+                        logger->information(fmt::format("Window resize to: {0}x{1}", event.width, event.height));
+                    }
+                });
             });
 
             _registry.get<

@@ -11,15 +11,15 @@ namespace dory::core::services
         _registry(registry)
     {}
 
-    resources::IdType WindowService::addWindow(resources::entities::Window& window)
+    resources::entities::Window& WindowService::addWindow(resources::entities::Window& window)
     {
-        resources::IdType id = resources::nullId;
+        resources::entities::Window* newWindow = nullptr;
 
-        _registry.get<repositories::IWindowRepository>([&window, &id](repositories::IWindowRepository* repository) {
-            id = repository->insert(window);
+        _registry.get<repositories::IWindowRepository>([&window, &newWindow](repositories::IWindowRepository* repository) {
+            newWindow = repository->insert(window);
         });
 
-        return id;
+        return *newWindow;
     }
 
     void WindowService::removeWindow(resources::IdType windowId)

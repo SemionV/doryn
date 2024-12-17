@@ -202,7 +202,7 @@ namespace dory::game
         });
 
         _registry.get<core::events::window::Bundle::IListener>([this](core::events::window::Bundle::IListener* listener){
-            listener->attach([this](auto& context, const auto& event){ this->onWindowClose(context, event); });
+            listener->attach([this](auto& context, const core::events::window::Close& event){ this->onWindowClose(context, event); });
         });
 
         _registry.get<core::events::filesystem::Bundle::IListener>([this](core::events::filesystem::Bundle::IListener* listener){
