@@ -28,4 +28,44 @@ namespace dory::core::services
             });
         }
     }
+
+    resources::entities::View* ViewService::createView(resources::entities::Window& window)
+    {
+        resources::entities::View* view;
+
+        _registry.get<dory::core::repositories::IViewRepository>([&](dory::core::repositories::IViewRepository* viewRepository) {
+            view = viewRepository->insert(resources::entities::View{{}, window.id});
+            if(view != nullptr)
+            {
+                window.views.push_back(view->id);
+            }
+        });
+
+        return view;
+    }
+
+    void ViewService::destroyView(resources::IdType viewId)
+    {
+        _registry.get<dory::core::repositories::IViewRepository>([&](dory::core::repositories::IViewRepository* viewRepository) {
+            auto view = viewRepository->get(viewId);
+            if(view)
+            {
+                auto windowRepository = _registry.get<repositories::IWindowRepository>();
+                if(windowRepository)
+                {
+                    auto window = windowRepository->get(view->windowId);
+                    if(window)
+                    {
+                        auto item = std::find(window->views.begin(), window->views.end(), view->windowId);
+                        if(item != window->views.end())
+                        {
+                            window->views.erase(item);
+                        }
+                    }
+                }
+            }
+
+            viewRepository->remove(viewId);
+        });
+    }
 }

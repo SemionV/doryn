@@ -21,22 +21,47 @@ namespace dory::game
                 graphicalContext = graphicalContextRepository->insert(core::resources::entities::GraphicalContext{ {}, core::resources::GraphicalSystem::opengl });
             });
 
-            _registry.get<dory::core::services::IWindowService>([&context, &graphicalContext](dory::core::services::IWindowService* windowService) {
-                auto window = windowService->createWindow(core::resources::WindowParameters{800, 600, "dory game", graphicalContext->id});
-                context.mainWindowId = window.id;
-            });
+            core::resources::entities::Window* mainWindow {};
 
-            _registry.get<dory::core::repositories::IViewRepository>([&context](dory::core::repositories::IViewRepository* viewRepository) {
-                auto view = dory::core::resources::entities::View{dory::core::resources::nullId, context.mainWindowId};
-                viewRepository->insert(view);
+            _registry.get<dory::core::services::IWindowService>([this, &context, &graphicalContext, &mainWindow](dory::core::services::IWindowService* windowService) {
+                auto windowParameters = core::resources::WindowParameters{ 800, 600, "dory game", graphicalContext->id };
+                auto& window = windowService->createWindow(windowParameters);
+                context.mainWindowId = window.id;
+                mainWindow = &window;
+
+                auto viewService = _registry.get<core::services::IViewService>();
+                if(viewService)
+                {
+                    auto view = viewService->createView(window);
+                    if(view)
+                    {
+                        view->viewport = { 0, 0, windowParameters.width, windowParameters.height };
+                    }
+                }
             });
 
             _registry.get<core::events::window::Bundle::IListener>([this](core::events::window::Bundle::IListener* listener){
                 listener->attach([this](auto& context, const core::events::window::Resize& event){
-                    auto logger = _registry.get<core::services::ILogService>();
-                    if(logger)
+                    auto windowRepository = _registry.get<core::repositories::IWindowRepository>();
+                    auto viewRepository = _registry.get<core::repositories::IViewRepository>();
+                    if(windowRepository && viewRepository)
                     {
-                        logger->information(fmt::format("Window resize to: {0}x{1}", event.width, event.height));
+                        auto window = windowRepository->get(event.windowId);
+                        if(window)
+                        {
+                            window->width = event.width;
+                            window->height = event.height;
+
+                            if(window->views.size() == 1)
+                            {
+                                auto view = viewRepository->get(window->views[0]);
+                                if(view)
+                                {
+                                    view->viewport.width = event.width;
+                                    view->viewport.height = event.height;
+                                }
+                            }
+                        }
                     }
                 });
             });

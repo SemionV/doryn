@@ -1,20 +1,19 @@
 #pragma once
 
 #include "../entity.h"
-#include <optional>
 
 namespace dory::core::resources::entities
 {
     struct Viewport
     {
-        int x {};
-        int y {};
-        int width {};
-        int height {};
+        unsigned int x {};
+        unsigned int y {};
+        unsigned int width {};
+        unsigned int height {};
 
         Viewport() = default;
 
-        Viewport(int x, int y, int width, int height):
+        Viewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height):
                 x(x),
                 y(y),
                 width(width),
@@ -27,7 +26,7 @@ namespace dory::core::resources::entities
         IdType windowId {};
         IdType cameraId {};
         IdType sceneId {};
-        std::optional<Viewport> viewport {};
+        Viewport viewport {};
 
         View() = default;
 

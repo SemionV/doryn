@@ -21,5 +21,6 @@ namespace dory::core::resources::entities
         resources::IdType graphicalContextId {};
         unsigned int width {};
         unsigned int height {};
+        std::vector<IdType> views;
     };
 }

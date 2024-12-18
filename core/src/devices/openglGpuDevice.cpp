@@ -495,6 +495,8 @@ namespace dory::core::devices
         glClearColor(frame.clearColor.x, frame.clearColor.y, frame.clearColor.z, frame.clearColor.w);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        glViewport((GLint)frame.viewport.x, (GLint)frame.viewport.y, (GLint)frame.viewport.width, (GLint)frame.viewport.height);
+
         DynamicUniforms uniforms;
         ModelUniforms modelUniforms;
 

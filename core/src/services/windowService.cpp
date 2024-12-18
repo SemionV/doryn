@@ -24,22 +24,21 @@ namespace dory::core::services
 
     void WindowService::removeWindow(resources::IdType windowId)
     {
-        resources::entities::Window* window = nullptr;
+        _registry.get<repositories::IWindowRepository>([&](repositories::IWindowRepository* repository) {
+            auto window = repository->get(windowId);
 
-        _registry.get<repositories::IWindowRepository>([windowId, &window](repositories::IWindowRepository* repository) {
-            window = repository->get(windowId);
-        });
-
-        _registry.get<repositories::IViewRepository>([windowId](repositories::IViewRepository* viewRepository) {
-            auto viewIds = viewRepository->getWindowViews(windowId);
-            for(const auto viewId : viewIds)
+            if(window)
             {
-                viewRepository->remove(viewId);
+                auto viewRepository = _registry.get<repositories::IViewRepository>();
+                if(viewRepository)
+                {
+                    for(const auto viewId : window->views)
+                    {
+                        viewRepository->remove(viewId);
+                    }
+                }
             }
-        });
 
-        if(window)
-        {
             _registry.get<repositories::IGraphicalContextRepository>([window](repositories::IGraphicalContextRepository* graphicalContextRepository) {
                 auto graphicalContext = graphicalContextRepository->scan([window](auto& x) {
                     return x.id == window->graphicalContextId;
@@ -54,6 +53,6 @@ namespace dory::core::services
             _registry.get<repositories::IWindowRepository>([windowId](repositories::IWindowRepository* repository) {
                 repository->remove(windowId);
             });
-        }
+        });
     }
 }

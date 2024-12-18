@@ -10,5 +10,7 @@ namespace dory::core::services
     {
     public:
         virtual void updateViews(resources::DataContext& context) = 0;
+        virtual resources::entities::View* createView(resources::entities::Window& window) = 0;
+        virtual void destroyView(resources::IdType viewId) = 0;
     };
 }
