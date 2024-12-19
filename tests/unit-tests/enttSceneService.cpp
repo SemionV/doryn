@@ -62,45 +62,39 @@ void buildTestScene(scene::EnttScene& scene, services::ISceneService& sceneServi
     sceneContext.horseMesh = resources::IdType{2};
     sceneContext.swordMesh = resources::IdType{3};
 
-    auto position = math::Vector3f{-1, -1, 1};
-    auto scale = math::Vector3f{1, 1, 1};
-    auto object = objects::SceneObject{"camera", resources::nullId, position, scale, resources::nullId};
+    auto localTransform = objects::Transform{ {0, 0, 0}, {}, {1, 1, 1} };
+    auto worldTransform = objects::Transform{ {-1, -1, 1}, {}, {1, 1, 1} };
+    auto object = objects::SceneObject{"camera", resources::nullId, resources::nullId, localTransform, worldTransform};
     sceneContext.cameraId = sceneService.addObject(scene, object);
     assertEntity(object, scene, sceneContext.cameraId);
 
-    position = math::Vector3f{0, 0, 0};
-    scale = math::Vector3f{1, 1, 1};
-    object = objects::SceneObject{"root", resources::nullId, position, scale, resources::nullId};
+    worldTransform = objects::Transform{ {0, 0, 0}, {}, {1, 1, 1} };
+    object = objects::SceneObject{"root", resources::nullId, resources::nullId, localTransform, worldTransform};
     sceneContext.rootId = sceneService.addObject(scene, object);
     assertEntity(object, scene, sceneContext.rootId);
 
-    position = math::Vector3f{-1, -1, 0};
-    scale = math::Vector3f{2, 2, 2};
-    object = objects::SceneObject{"soldier1", sceneContext.rootId, position, scale, sceneContext.soldierMesh};
+    worldTransform = objects::Transform{ {-1, -1, 0}, {}, {2, 2, 2} };
+    object = objects::SceneObject{"soldier1", sceneContext.rootId, resources::nullId, localTransform, worldTransform};
     sceneContext.soldier1Id = sceneService.addObject(scene, object);
     assertEntity(object, scene, sceneContext.soldier1Id);
 
-    position = math::Vector3f{1, -1, 0};
-    scale = math::Vector3f{1, 1, 1};
-    object = objects::SceneObject{"horse1", sceneContext.rootId, position, scale, sceneContext.horseMesh};
+    worldTransform = objects::Transform{ {1, -1, 0}, {}, {1, 1, 1} };
+    object = objects::SceneObject{"horse1", sceneContext.rootId, resources::nullId, localTransform, worldTransform};
     sceneContext.horse1Id = sceneService.addObject(scene, object);
     assertEntity(object, scene, sceneContext.horse1Id);
 
-    position = math::Vector3f{0, 0, 1};
-    scale = math::Vector3f{1, 1, 1};
-    object = objects::SceneObject{"soldier2", sceneContext.horse1Id, position, scale, sceneContext.soldierMesh};
+    worldTransform = objects::Transform{ {0, 0, 1}, {}, {1, 1, 1} };
+    object = objects::SceneObject{"soldier2", sceneContext.horse1Id, resources::nullId, localTransform, worldTransform};
     sceneContext.soldier2Id = sceneService.addObject(scene, object);
     assertEntity(object, scene, sceneContext.soldier2Id);
 
-    position = math::Vector3f{1, -1, 0};
-    scale = math::Vector3f{1, 1, 1};
-    object = objects::SceneObject{"sword1", sceneContext.soldier1Id, position, scale, sceneContext.swordMesh};
+    worldTransform = objects::Transform{ {1, -1, 0}, {}, {1, 1, 1} };
+    object = objects::SceneObject{"sword1", sceneContext.soldier1Id, resources::nullId, localTransform, worldTransform};
     sceneContext.sword1Id = sceneService.addObject(scene, object);
     assertEntity(object, scene, sceneContext.sword1Id);
 
-    position = math::Vector3f{0, 0, 1};
-    scale = math::Vector3f{1, 1, 1};
-    object = objects::SceneObject{"soldier3", sceneContext.rootId, position, scale, sceneContext.soldierMesh};
+    worldTransform = objects::Transform{ {0, 0, 1}, {}, {1, 1, 1} };
+    object = objects::SceneObject{"soldier3", sceneContext.rootId, resources::nullId, localTransform, worldTransform};
     sceneContext.soldier3Id = sceneService.addObject(scene, object);
     assertEntity(object, scene, sceneContext.soldier3Id);
 }
@@ -110,9 +104,9 @@ TEST(EnttSceneService, addObject)
     auto sceneService = services::EnttSceneService{};
     auto scene = scene::EnttScene{{{}, resources::EcsType::entt, "test"}};
 
-    auto position = math::Vector3f{-1, -1, 1};
-    auto scale = math::Vector3f{1, 1, 1};
-    auto object = objects::SceneObject{"camera", resources::nullId, position, scale, resources::nullId};
+    auto localTransform = objects::Transform{ {0, 0, 0}, {}, {1, 1, 1} };
+    auto worldTransform = objects::Transform{ {-1, -1, 1}, {}, {1, 1, 1} };
+    auto object = objects::SceneObject{"camera", resources::nullId, resources::nullId, localTransform, worldTransform};
 
     auto id = sceneService.addObject(scene, object);
     assertEntity(object, scene, id);
@@ -132,9 +126,9 @@ TEST(EnttSceneService, deleteObject)
     auto sceneService = services::EnttSceneService{};
     auto scene = scene::EnttScene{{{}, resources::EcsType::entt, "test"}};
 
-    auto position = math::Vector3f{-1, -1, 1};
-    auto scale = math::Vector3f{1, 1, 1};
-    auto object = objects::SceneObject{"camera", resources::nullId, position, scale, resources::nullId};
+    auto localTransform = objects::Transform{ {0, 0, 0}, {}, {1, 1, 1} };
+    auto worldTransform = objects::Transform{ {-1, -1, 1}, {}, {1, 1, 1} };
+    auto object = objects::SceneObject{"camera", resources::nullId, resources::nullId, localTransform, worldTransform};
 
     auto id = sceneService.addObject(scene, object);
     assertEntity(object, scene, id);

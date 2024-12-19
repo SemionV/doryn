@@ -2,6 +2,7 @@
 
 #include <dory/math/linearAlgebra.h>
 #include "../id.h"
+#include "transform.h"
 #include <string>
 
 namespace dory::core::resources::objects
@@ -10,8 +11,9 @@ namespace dory::core::resources::objects
     {
         std::string name;
         resources::IdType parentId;
-        math::Vector3f position;
-        math::Vector3f scale;
         IdType meshId;
+
+        Transform localTransform;
+        Transform worldTransform;
     };
 }

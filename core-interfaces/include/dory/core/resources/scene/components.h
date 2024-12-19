@@ -10,18 +10,40 @@ namespace dory::core::resources::scene::components
         std::string name{};
     };
 
-    struct Position
-    {
-        glm::vec3 value;
-    };
-
-    struct Scale
-    {
-        glm::vec3 value;
-    };
-
     struct Mesh
     {
         IdType id{};
     };
+
+    struct Transform
+    {
+        glm::vec3 position {};
+        glm::quat rotation {};
+        glm::vec3 scale {};
+
+        Transform() = default;
+
+        explicit Transform(const objects::Transform& transform):
+                position(transform.position),
+                rotation(transform.rotation),
+                scale(transform.scale)
+        {}
+    };
+
+    struct LocalTransform: public Transform
+    {
+        LocalTransform() = default;
+
+        explicit LocalTransform(const objects::Transform& transform): Transform(transform)
+        {}
+    };
+
+    struct WorldTransform: public Transform
+    {
+        WorldTransform() = default;
+
+        explicit WorldTransform(const objects::Transform& transform): Transform(transform)
+        {}
+    };
+
 }

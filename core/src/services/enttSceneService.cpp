@@ -33,8 +33,8 @@ namespace dory::core::services
         }
 
         registry.emplace<components::Name>(entity, object.name);
-        registry.emplace<components::Position>(entity, glm::vec3{object.position.x, object.position.y, object.position.z});
-        registry.emplace<components::Scale>(entity, glm::vec3{object.scale.x, object.scale.y, object.scale.z});
+        registry.emplace<components::LocalTransform>(entity, object.localTransform);
+        registry.emplace<components::WorldTransform>(entity, object.worldTransform);
         registry.emplace<components::Mesh>(entity, object.meshId);
 
         return id;
