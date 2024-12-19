@@ -28,7 +28,6 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/windowService.cpp
         src/services/windowService.cpp
         src/services/assetTypeResolver.cpp
-        src/services/assetService.cpp
         src/services/hot-reload/extensionLoader.cpp
         src/services/enttSceneService.cpp
         src/services/enttSceneQueryService.cpp

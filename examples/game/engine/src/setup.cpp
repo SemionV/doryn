@@ -41,7 +41,6 @@
 #include <dory/core/repositories/bindings/materialBindingRepository.h>
 #include <dory/core/devices/fileWatcherDevice.h>
 #include <dory/core/services/assetTypeResolver.h>
-#include <dory/core/services/assetService.h>
 #include <dory/core/services/hot-reload/extensionLoader.h>
 #include <dory/core/services/enttSceneService.h>
 #include <dory/core/services/enttSceneQueryService.h>
@@ -123,7 +122,6 @@ namespace dory::game
 
         registry.set<core::services::IAssetTypeResolver>(libraryHandle, std::make_shared<core::services::AssetTypeResolver>());
         registry.set<core::services::IAssetReloadHandler>(libraryHandle, std::make_shared<core::services::loaders::ExtensionLoader>(registry), std::string{core::resources::AssetTypeName::extension});
-        registry.set<core::services::IAssetService>(libraryHandle, std::make_shared<core::services::AssetService>(registry));
         registry.set<core::services::generators::IMeshGenerator>(libraryHandle, std::make_shared<core::services::generators::MeshGenerator>());
 
         auto sceneService = std::make_shared<core::services::EnttSceneService>();

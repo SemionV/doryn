@@ -30,7 +30,6 @@
 #include <dory/core/devices/iFileWatcherDevice.h>
 #include <dory/core/services/iAssetTypeResolver.h>
 #include <dory/core/services/iAssetReloadHandler.h>
-#include <dory/core/services/iAssetService.h>
 #include <dory/core/services/graphics/iShaderService.h>
 #include <dory/core/services/iSceneService.h>
 #include <dory/core/services/iSceneQueryService.h>
@@ -117,7 +116,6 @@ namespace dory::core
             generic::registry::ServiceEntry<services::IWindowService>,
             generic::registry::ServiceEntry<services::IAssetTypeResolver>,
             generic::registry::ServiceEntry<services::IAssetReloadHandler, std::string>,
-            generic::registry::ServiceEntry<services::IAssetService>,
             generic::registry::ServiceEntry<services::ISceneService>,
             generic::registry::ServiceEntry<services::ISceneService, resources::EcsType>,
             generic::registry::ServiceEntry<services::ISceneQueryService, resources::EcsType>,

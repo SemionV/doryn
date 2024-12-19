@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../entity.h"
+#include "../ecsType.h"
 
 namespace dory::core::resources::entities
 {
@@ -26,6 +27,7 @@ namespace dory::core::resources::entities
         IdType windowId {};
         IdType cameraId {};
         IdType sceneId {};
+        EcsType sceneEcsType {};
         Viewport viewport {};
 
         View() = default;
