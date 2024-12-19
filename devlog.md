@@ -1,7 +1,12 @@
 # Development log
 
 Tasks:
-* Rendering
+* Scene entities with model and world transformation components
+* Camera
+* Window view layout(automatic calculation of the views inside a window), update view with layout service on window-resize event
+* Edge-rendering(render edges of a geometric shape before tesselation), polygon offset
+* Stencil buffer and others
+* Rendering 
   * Utility to quickly setup material and mesh 
   * Highlight edges of a mesh(use polygon offset)
 * Scene
@@ -29,6 +34,9 @@ Tasks:
   * Setup pipeline for build and tests on windows
   * Setup pipeline for releases
   * Deploy assembled packages to some network storage
+
+**02.12.24**
+* Task done: Move all glfw specific code to GlfwWindowSystemDevice
 
 **02.12.24**
 * Task done: Test binding of multiple uniform blocks

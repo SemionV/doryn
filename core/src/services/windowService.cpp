@@ -1,58 +1,70 @@
 #include <dory/core/registry.h>
 #include <dory/core/services/windowService.h>
-#include <dory/core/repositories/iViewRepository.h>
 #include <dory/core/repositories/iWindowRepository.h>
-#include <dory/core/repositories/iGraphicalContextRepository.h>
-#include <dory/core/resources/entities/graphicalContext.h>
 
 namespace dory::core::services
 {
-    WindowService::WindowService(Registry& registry):
-        _registry(registry)
+    WindowService::WindowService(Registry &registry) : DependencyResolver(registry)
     {}
 
-    resources::entities::Window& WindowService::addWindow(resources::entities::Window& window)
+    resources::entities::Window* WindowService::createWindow(const resources::WindowParameters& parameters,
+                                                             const resources::WindowSystem windowSystem)
     {
-        resources::entities::Window* newWindow = nullptr;
+        resources::entities::Window* window = nullptr;
 
-        _registry.get<repositories::IWindowRepository>([&window, &newWindow](repositories::IWindowRepository* repository) {
-            newWindow = repository->insert(window);
-        });
-
-        return *newWindow;
-    }
-
-    void WindowService::removeWindow(resources::IdType windowId)
-    {
-        _registry.get<repositories::IWindowRepository>([&](repositories::IWindowRepository* repository) {
-            auto window = repository->get(windowId);
-
+        auto windowRepo = _registry.get<repositories::IWindowRepository>(windowSystem);
+        auto windowSystemDevice = _registry.get<devices::IWindowSystemDevice>(windowSystem);
+        if(windowRepo && windowSystemDevice)
+        {
+            window = windowRepo->insert(resources::entities::Window{ {}, windowSystem, parameters.graphicalContextId });
             if(window)
             {
-                auto viewRepository = _registry.get<repositories::IViewRepository>();
-                if(viewRepository)
-                {
-                    for(const auto viewId : window->views)
-                    {
-                        viewRepository->remove(viewId);
-                    }
-                }
+                windowSystemDevice->setupWindow(*window, parameters);
+                window->width = parameters.width;
+                window->height = parameters.height;
             }
+        }
 
-            _registry.get<repositories::IGraphicalContextRepository>([window](repositories::IGraphicalContextRepository* graphicalContextRepository) {
-                auto graphicalContext = graphicalContextRepository->scan([window](auto& x) {
-                    return x.id == window->graphicalContextId;
-                });
+        return window;
+    }
 
-                if(graphicalContext)
+    void WindowService::closeWindow(resources::IdType windowId, const resources::WindowSystem windowSystem)
+    {
+        auto windowRepo = _registry.get<repositories::IWindowRepository>(windowSystem);
+        auto viewRepo = _registry.get<repositories::IViewRepository>();
+        auto windowSystemDevice = _registry.get<devices::IWindowSystemDevice>(windowSystem);
+        if(windowRepo && viewRepo && windowSystemDevice)
+        {
+            auto window = windowRepo->get(windowId);
+            if(window)
+            {
+                windowSystemDevice->closeWindow(*window);
+
+                for(const auto viewId : window->views)
                 {
-                    graphicalContextRepository->remove(graphicalContext->id);
+                    viewRepo->remove(viewId);
                 }
-            });
 
-            _registry.get<repositories::IWindowRepository>([windowId](repositories::IWindowRepository* repository) {
-                repository->remove(windowId);
-            });
-        });
+                windowRepo->remove(windowId);
+            }
+        }
+    }
+
+    void WindowService::setCurrentWindow(const resources::entities::Window& window)
+    {
+        auto windowSystemDevice = _registry.get<devices::IWindowSystemDevice>(window.windowSystem);
+        if(windowSystemDevice)
+        {
+            windowSystemDevice->setCurrentWindow(window);
+        }
+    }
+
+    void WindowService::swapBuffers(const resources::entities::Window& window)
+    {
+        auto windowSystemDevice = _registry.get<devices::IWindowSystemDevice>(window.windowSystem);
+        if(windowSystemDevice)
+        {
+            windowSystemDevice->swapWindowBuffers(window);
+        }
     }
 }

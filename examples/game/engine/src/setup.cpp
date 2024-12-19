@@ -26,7 +26,7 @@
 #include <dory/core/services/localizationService.h>
 #include <dory/core/services/pipelineService.h>
 #include <dory/core/services/loopService.h>
-#include <dory/core/services/glfwWindowService.h>
+#include <dory/core/services/windowService.h>
 #include <dory/core/repositories/viewRepository.h>
 #include <dory/core/repositories/windowRepository.h>
 #include <dory/core/repositories/shaderRepository.h>
@@ -112,9 +112,7 @@ namespace dory::game
         registry.set<core::services::IPipelineService>(libraryHandle, std::make_shared<core::services::PipelineService>(registry));
         registry.set<core::services::ILoopService>(libraryHandle, std::make_shared<core::services::LoopService>(registry));
 
-        auto glfwWindowService = std::make_shared<core::services::GlfwWindowService>(registry);
-        registry.set<core::services::IWindowService, core::resources::WindowSystem::glfw>(libraryHandle, glfwWindowService);
-        registry.set<core::services::IWindowService>(libraryHandle, glfwWindowService);
+        registry.set<core::services::IWindowService>(libraryHandle, std::make_shared<core::services::WindowService>(registry));
         registry.set<core::services::IViewService>(libraryHandle, std::make_shared<core::services::ViewService>(registry));
 
         registry.set<core::services::graphics::IRenderer>(libraryHandle, std::make_shared<core::services::graphics::Renderer>(registry));

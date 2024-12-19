@@ -26,7 +26,7 @@ namespace dory::core::services::graphics
         auto gpuDevice = _registry.get<IGpuDevice>(graphicalContext.graphicalSystem);
         auto meshBindingRepository = _registry.get<IMeshBindingRepository>(graphicalContext.graphicalSystem);
         auto materialBindingRepository = _registry.get<IMaterialBindingRepository>(graphicalContext.graphicalSystem);
-        auto windowService = _registry.get<services::IWindowService>(window.windowSystem);
+        auto windowService = _registry.get<services::IWindowService>();
 
         if(gpuDevice && meshBindingRepository && materialBindingRepository && windowService)
         {
@@ -39,8 +39,8 @@ namespace dory::core::services::graphics
             float halfHeight = 1.0f;
             frame.viewProjectionTransform = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, -1.0f, 1.0f);
 
-            glm::mat4x4 rotateZ = glm::rotate(glm::identity<glm::mat4x4>(), glm::radians(10.f), glm::vec3(0.0f, 0.0f, 1.0f));
-            glm::mat4x4 rotateX = glm::rotate(glm::identity<glm::mat4x4>(), glm::radians(10.f), glm::vec3(1.0f, 0.0f, 0.0f));
+            glm::mat4x4 rotateZ = glm::rotate(glm::identity<glm::mat4x4>(), glm::radians(45.f), glm::vec3(0.0f, 0.0f, 1.0f));
+            glm::mat4x4 rotateX = glm::rotate(glm::identity<glm::mat4x4>(), glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
             glm::mat4x4 translate = glm::translate(glm::identity<glm::mat4x4>(), glm::vec3(0.f, 0.f, 0.f));
             glm::mat4x4 modelTransform = rotateX * rotateZ * translate;
 
@@ -60,7 +60,7 @@ namespace dory::core::services::graphics
                 }
             }
 
-            windowService->setCurrentWindow(window.id);
+            windowService->setCurrentWindow(window);
             gpuDevice->drawFrame(frame);
             windowService->swapBuffers(window);
         }

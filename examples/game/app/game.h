@@ -25,17 +25,20 @@ namespace dory::game
 
             _registry.get<dory::core::services::IWindowService>([this, &context, &graphicalContext, &mainWindow](dory::core::services::IWindowService* windowService) {
                 auto windowParameters = core::resources::WindowParameters{ 800, 600, "dory game", graphicalContext->id };
-                auto& window = windowService->createWindow(windowParameters);
-                context.mainWindowId = window.id;
-                mainWindow = &window;
-
-                auto viewService = _registry.get<core::services::IViewService>();
-                if(viewService)
+                auto window = windowService->createWindow(windowParameters, core::resources::WindowSystem::glfw);
+                if(window)
                 {
-                    auto view = viewService->createView(window);
-                    if(view)
+                    context.mainWindowId = window->id;
+                    mainWindow = window;
+
+                    auto viewService = _registry.get<core::services::IViewService>();
+                    if(viewService)
                     {
-                        view->viewport = { 0, 0, windowParameters.width, windowParameters.height };
+                        auto view = viewService->createView(*window);
+                        if(view)
+                        {
+                            view->viewport = { 0, 0, windowParameters.width, windowParameters.height };
+                        }
                     }
                 }
             });
@@ -99,7 +102,7 @@ namespace dory::game
             auto windowService = _registry.get<core::services::IWindowService>();
             if(windowService)
             {
-                windowService->setCurrentWindow(context.mainWindowId);
+                windowService->setCurrentWindow(*mainWindow);
             }
 
             if(shaderRepo && materialRepo)
@@ -173,23 +176,6 @@ namespace dory::game
             }
 
             auto meshRepo = _registry.get<core::repositories::assets::IMeshRepository>();
-
-            /*if(meshRepo)
-            {
-                auto mesh = meshRepo->insert(core::resources::assets::Mesh{});
-                mesh->materialId = materialId;
-                mesh->positions.componentsCount = 2;
-                mesh->positions.components = {0.f, 1.f, 0.f, -1.f, 1.f, 0.f};
-                mesh->vertexCount = mesh->positions.components.size() / mesh->positions.componentsCount;
-
-                auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::mesh);
-                if(assetBinder)
-                {
-                    windowService->setCurrentWindow(context.mainWindowId);
-                    assetBinder->bind(mesh->id, *graphicalContext);
-                }
-            }*/
-
             if(meshRepo)
             {
                 auto mesh = meshRepo->insert(core::resources::assets::Mesh{});
@@ -203,7 +189,7 @@ namespace dory::game
                 auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::mesh);
                 if(assetBinder)
                 {
-                    windowService->setCurrentWindow(context.mainWindowId);
+                    windowService->setCurrentWindow(*mainWindow);
                     assetBinder->bind(mesh->id, *graphicalContext);
                 }
             }
@@ -220,7 +206,7 @@ namespace dory::game
                 auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::mesh);
                 if(assetBinder)
                 {
-                    windowService->setCurrentWindow(context.mainWindowId);
+                    windowService->setCurrentWindow(*mainWindow);
                     assetBinder->bind(mesh->id, *graphicalContext);
                 }
             }

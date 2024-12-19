@@ -240,8 +240,8 @@ namespace dory::game
 
     void Bootstrap::onWindowClose(core::resources::DataContext& context, const core::events::window::Close& eventData)
     {
-        _registry.get<core::services::IWindowService>(eventData.windowSystem, [this, &eventData, &context](core::services::IWindowService* windowService) {
-            windowService->closeWindow(eventData.windowId);
+        _registry.get<core::services::IWindowService>([this, &eventData, &context](core::services::IWindowService* windowService) {
+            windowService->closeWindow(eventData.windowId, eventData.windowSystem);
 
             if(eventData.windowId == context.mainWindowId)
             {

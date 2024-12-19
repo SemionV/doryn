@@ -113,8 +113,7 @@ namespace dory::core
             generic::registry::ServiceEntry<services::graphics::IRenderer>,
             generic::registry::ServiceEntry<services::graphics::IShaderService, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<services::IViewService>,
-            generic::registry::ServiceEntry<services::IWindowService>,//default window service
-            generic::registry::ServiceEntry<services::IWindowService, resources::WindowSystem>,
+            generic::registry::ServiceEntry<services::IWindowService>,
             generic::registry::ServiceEntry<services::IAssetTypeResolver>,
             generic::registry::ServiceEntry<services::IAssetReloadHandler, std::string>,
             generic::registry::ServiceEntry<services::IAssetService>,

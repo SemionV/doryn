@@ -43,15 +43,6 @@ namespace dory::core::devices
         });
     }
 
-    void GlfwWindowSystemDevice::setupWindow(resources::entities::Window& window)
-    {
-        assert(window.windowSystem == resources::WindowSystem::glfw);
-
-        auto& glfwWindow = (resources::entities::GlfwWindow&)window;
-        glfwSetWindowUserPointer(glfwWindow.handler, this);
-        glfwSetFramebufferSizeCallback(glfwWindow.handler, GlfwWindowSystemDevice::framebufferSizeCallback);
-    }
-
     void GlfwWindowSystemDevice::framebufferSizeCallback(GLFWwindow* window, int width, int height)
     {
         auto* device = static_cast<GlfwWindowSystemDevice*>(glfwGetWindowUserPointer(window));
@@ -79,5 +70,41 @@ namespace dory::core::devices
                 return false;
             });
         });
+    }
+
+    void GlfwWindowSystemDevice::setupWindow(resources::entities::Window& window, const resources::WindowParameters& parameters)
+    {
+        assert(window.windowSystem == resources::WindowSystem::glfw);
+        auto& glfwWindow = (resources::entities::GlfwWindow&)window;
+
+        glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
+        auto glfwWindowHandler = glfwCreateWindow((int)parameters.width, (int)parameters.height, parameters.title.c_str(), nullptr, nullptr);
+        glfwWindow.handler = glfwWindowHandler;
+
+        glfwSetWindowUserPointer(glfwWindow.handler, this);
+        glfwSetFramebufferSizeCallback(glfwWindow.handler, GlfwWindowSystemDevice::framebufferSizeCallback);
+    }
+
+    void GlfwWindowSystemDevice::closeWindow(const resources::entities::Window& window)
+    {
+        assert(window.windowSystem == resources::WindowSystem::glfw);
+        auto& glfwWindow = (resources::entities::GlfwWindow&)window;
+        glfwDestroyWindow(glfwWindow.handler);
+    }
+
+    void GlfwWindowSystemDevice::setCurrentWindow(const resources::entities::Window& window)
+    {
+        assert(window.windowSystem == resources::WindowSystem::glfw);
+        auto& glfwWindow = (resources::entities::GlfwWindow&)window;
+
+        glfwMakeContextCurrent(glfwWindow.handler);
+    }
+
+    void GlfwWindowSystemDevice::swapWindowBuffers(const resources::entities::Window& window)
+    {
+        assert(window.windowSystem == resources::WindowSystem::glfw);
+        auto& glfwWindow = (resources::entities::GlfwWindow&)window;
+
+        glfwSwapBuffers(glfwWindow.handler);
     }
 }
