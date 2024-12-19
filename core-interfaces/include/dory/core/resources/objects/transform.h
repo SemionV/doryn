@@ -7,8 +7,8 @@ namespace dory::core::resources::objects
 {
     struct Transform
     {
-        glm::vec3 position {};
-        glm::quat rotation {};
-        glm::vec3 scale {};
+        glm::vec3 position;
+        glm::quat rotation;
+        glm::vec3 scale;
     };
 }

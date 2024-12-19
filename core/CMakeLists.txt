@@ -31,6 +31,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/assetService.cpp
         src/services/hot-reload/extensionLoader.cpp
         src/services/enttSceneService.cpp
+        src/services/enttSceneQueryService.cpp
         src/services/graphics/meshAssetBinder.cpp
         src/services/graphics/materialAssetBinder.cpp
         src/services/graphics/shaderAssetBinder.cpp

@@ -44,6 +44,7 @@
 #include <dory/core/services/assetService.h>
 #include <dory/core/services/hot-reload/extensionLoader.h>
 #include <dory/core/services/enttSceneService.h>
+#include <dory/core/services/enttSceneQueryService.h>
 #include <dory/core/services/graphics/meshAssetBinder.h>
 #include <dory/core/services/graphics/materialAssetBinder.h>
 #include <dory/core/services/graphics/shaderAssetBinder.h>
@@ -128,5 +129,8 @@ namespace dory::game
         auto sceneService = std::make_shared<core::services::EnttSceneService>();
         registry.set<core::services::ISceneService>(libraryHandle, sceneService);
         registry.set<core::services::ISceneService, core::resources::EcsType::entt>(libraryHandle, sceneService);
+
+        auto sceneQueryService = std::make_shared<core::services::EnttSceneQueryService>();
+        registry.set<core::services::ISceneQueryService, core::resources::EcsType::entt>(libraryHandle, sceneQueryService);
     }
 }
