@@ -3,6 +3,13 @@
 #include <dory/core/resources/objects/frame.h>
 #include <dory/math/linearAlgebra.h>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 namespace dory::core::services::graphics
 {
     using namespace resources;
@@ -20,6 +27,16 @@ namespace dory::core::services::graphics
 
     void Renderer::draw(DataContext& context, const View& view)
     {}
+
+    glm::mat4x4 getTransformMatrix(const scene::components::Transform& transform)
+    {
+        auto matrix = glm::mat4x4{ 1 };
+        matrix = glm::scale(matrix, transform.scale);
+        matrix *= glm::toMat4(transform.rotation);
+        matrix = glm::translate(matrix, transform.position);
+
+        return matrix;
+    }
 
     void Renderer::draw(DataContext& context, const Window& window, const GraphicalContext& graphicalContext, const View& view)
     {
@@ -42,14 +59,13 @@ namespace dory::core::services::graphics
                 float halfHeight = 1.0f;
                 frame.viewProjectionTransform = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, -1.0f, 1.0f);
 
-                glm::mat4x4 rotateZ = glm::rotate(glm::identity<glm::mat4x4>(), glm::radians(45.f), glm::vec3(0.0f, 0.0f, 1.0f));
-                glm::mat4x4 rotateX = glm::rotate(glm::identity<glm::mat4x4>(), glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
-                glm::mat4x4 translate = glm::translate(glm::identity<glm::mat4x4>(), glm::vec3(0.f, 0.f, 0.f));
-                glm::mat4x4 modelTransform = rotateX * rotateZ * translate;
-
                 auto visibleObjects = sceneQueryService->getVisibleObjects(*scene);
                 for(auto& object : visibleObjects)
                 {
+                    auto localTransform = getTransformMatrix(object.localTransform);
+                    auto worldTransform = getTransformMatrix(object.worldTransform);
+                    glm::mat4x4 modelTransform = worldTransform * localTransform;
+
                     if(graphicalContext.meshBindings.contains(object.meshId))
                     {
                         IdType bindingId = graphicalContext.meshBindings.at(object.meshId);

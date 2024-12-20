@@ -214,7 +214,10 @@ namespace dory::game
                 auto scene = sceneRepo->insert(core::resources::scene::Scene{ {}, "main scene" });
 
                 auto cubeMeshId = meshRepo->getId("cube");
-                auto cubeObject = core::resources::objects::SceneObject { "the cube", core::resources::nullId, cubeMeshId, {}, {} };
+                glm::mat4 rotationMatrix = glm::mat4x4{ 1 };
+                rotationMatrix = glm::rotate(rotationMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+                rotationMatrix = glm::rotate(rotationMatrix, glm::radians(45.f), glm::vec3(0.0f, 0.0f, 1.0f));
+                auto cubeObject = core::resources::objects::SceneObject { "the cube", core::resources::nullId, cubeMeshId, { {}, glm::quat_cast(rotationMatrix) }, {} };
 
                 sceneService->addObject(*scene, cubeObject);
 
