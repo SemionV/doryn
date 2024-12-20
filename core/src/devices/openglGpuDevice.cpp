@@ -112,6 +112,7 @@ namespace dory::core::devices
         }
 
         assert(false);
+        return 0;
     }
 
     std::size_t getComponentSize(const ComponentType componentType)
@@ -124,6 +125,7 @@ namespace dory::core::devices
         }
 
         assert(false);
+        return 0;
     }
 
     GLenum getGlShaderType(const resources::assets::ShaderType type)
@@ -135,6 +137,7 @@ namespace dory::core::devices
         }
 
         assert(false);
+        return 0;
     }
 
     template<typename T>
