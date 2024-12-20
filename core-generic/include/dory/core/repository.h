@@ -50,12 +50,12 @@ namespace dory::core::repositories
             }
         }
 
-        void setEntityName(TId id, std::string name) override
+        void setName(TId id, std::string name) override
         {
             _names[name] = id;
         }
 
-        TId getEntityId(std::string name) override
+        TId getId(std::string name) override
         {
             if(_names.contains(name))
             {

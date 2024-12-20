@@ -3,20 +3,21 @@
 #include "../entity.h"
 #include "../ecsType.h"
 #include "../objects/transform.h"
+#include "components.h"
 #include <string>
 
 namespace dory::core::resources::scene
 {
     struct Scene: Entity<>
     {
-        EcsType ecsType {};
         std::string name {};
+        EcsType ecsType {};
     };
 
     struct VisibleObject
     {
-        objects::Transform localTransform;
-        objects::Transform worldTransform;
+        components::Transform localTransform {};
+        components::Transform worldTransform {};
         IdType meshId {};
     };
 }

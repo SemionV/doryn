@@ -51,8 +51,8 @@ public:
     MOCK_METHOD(void, remove, (typename TEntity::IdType id));
     MOCK_METHOD(TEntity*, scan, (std::function<bool(TEntity& entity)> predicate));
     MOCK_METHOD(void, each, (std::function<void(TEntity& entity)> predicate));
-    MOCK_METHOD(void, setEntityName, (typename TEntity::IdType id, std::string name));
-    MOCK_METHOD(typename TEntity::IdType, getEntityId, (std::string name));
+    MOCK_METHOD(void, setName, (typename TEntity::IdType id, std::string name));
+    MOCK_METHOD(typename TEntity::IdType, getId, (std::string name));
 };
 
 class MeshRepository: public EntityRepositoryMock<IMeshRepository>

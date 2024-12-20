@@ -2,6 +2,7 @@
 
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
+#include <string>
 
 namespace dory::core::resources::scene::components
 {

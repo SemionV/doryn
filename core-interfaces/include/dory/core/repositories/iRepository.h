@@ -27,7 +27,7 @@ namespace dory::core::repositories
         virtual void remove(TId id) = 0;
         virtual TEntity* scan(std::function<bool(TEntity& entity)> predicate) = 0;
         virtual void each(std::function<void(TEntity& entity)> predicate) = 0;
-        virtual void setEntityName(TId id, std::string name) = 0;
-        virtual TId getEntityId(std::string name) = 0;
+        virtual void setName(TId id, std::string name) = 0;
+        virtual TId getId(std::string name) = 0;
     };
 }

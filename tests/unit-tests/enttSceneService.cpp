@@ -102,7 +102,7 @@ void buildTestScene(scene::EnttScene& scene, services::ISceneService& sceneServi
 TEST(EnttSceneService, addObject)
 {
     auto sceneService = services::EnttSceneService{};
-    auto scene = scene::EnttScene{{{}, resources::EcsType::entt, "test"}};
+    auto scene = scene::EnttScene{{{}, "test", resources::EcsType::entt}};
 
     auto localTransform = objects::Transform{ {0, 0, 0}, {}, {1, 1, 1} };
     auto worldTransform = objects::Transform{ {-1, -1, 1}, {}, {1, 1, 1} };
@@ -115,7 +115,7 @@ TEST(EnttSceneService, addObject)
 TEST(EnttSceneService, testScene)
 {
     auto sceneService = services::EnttSceneService{};
-    auto scene = scene::EnttScene{{{}, resources::EcsType::entt, "test"}};
+    auto scene = scene::EnttScene{{{}, "test", resources::EcsType::entt}};
 
     TestSceneContext sceneContext {};
     buildTestScene(scene, sceneService, sceneContext);
@@ -124,7 +124,7 @@ TEST(EnttSceneService, testScene)
 TEST(EnttSceneService, deleteObject)
 {
     auto sceneService = services::EnttSceneService{};
-    auto scene = scene::EnttScene{{{}, resources::EcsType::entt, "test"}};
+    auto scene = scene::EnttScene{{{}, "test", resources::EcsType::entt}};
 
     auto localTransform = objects::Transform{ {0, 0, 0}, {}, {1, 1, 1} };
     auto worldTransform = objects::Transform{ {-1, -1, 1}, {}, {1, 1, 1} };
@@ -145,7 +145,7 @@ TEST(EnttSceneService, deleteObject)
 TEST(EnttSceneService, destroyTestScene)
 {
     auto sceneService = services::EnttSceneService{};
-    auto scene = scene::EnttScene{{{}, resources::EcsType::entt, "test"}};
+    auto scene = scene::EnttScene{{{}, "test", resources::EcsType::entt}};
 
     TestSceneContext sceneContext {};
     buildTestScene(scene, sceneService, sceneContext);

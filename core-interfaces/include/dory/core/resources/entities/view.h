@@ -2,6 +2,7 @@
 
 #include "../entity.h"
 #include "../ecsType.h"
+#include "dory/core/resources/scene/scene.h"
 
 namespace dory::core::resources::entities
 {
@@ -26,8 +27,7 @@ namespace dory::core::resources::entities
     {
         IdType windowId {};
         IdType cameraId {};
-        IdType sceneId {};
-        EcsType sceneEcsType {};
+        scene::Scene* scene {};
         Viewport viewport {};
 
         View() = default;

@@ -22,8 +22,9 @@ namespace dory::game
             });
 
             core::resources::entities::Window* mainWindow {};
+            core::resources::entities::View* mainView {};
 
-            _registry.get<dory::core::services::IWindowService>([this, &context, &graphicalContext, &mainWindow](dory::core::services::IWindowService* windowService) {
+            _registry.get<dory::core::services::IWindowService>([&](dory::core::services::IWindowService* windowService) {
                 auto windowParameters = core::resources::WindowParameters{ 800, 600, "dory game", graphicalContext->id };
                 auto window = windowService->createWindow(windowParameters, core::resources::WindowSystem::glfw);
                 if(window)
@@ -34,7 +35,7 @@ namespace dory::game
                     auto viewService = _registry.get<core::services::IViewService>();
                     if(viewService)
                     {
-                        auto view = viewService->createView(*window);
+                        auto view = mainView = viewService->createView(*window);
                         if(view)
                         {
                             view->viewport = { 0, 0, windowParameters.width, windowParameters.height };
@@ -75,7 +76,7 @@ namespace dory::game
 
             //Test scene
             loadAssets(context, mainWindow, graphicalContext);
-            buildScene(context);
+            mainView->scene = buildScene(context);
 
             return true;
         }
@@ -187,7 +188,7 @@ namespace dory::game
             if(meshRepo && meshGenerator)
             {
                 auto mesh = meshRepo->insert(core::resources::assets::Mesh{});
-                meshRepo->setEntityName(mesh->id, "cube");
+                meshRepo->setName(mesh->id, "cube");
                 //meshGenerator->triangle(1.f, 0.3f, *mesh);
                 //meshGenerator->rectangle(1.f, 1.f, *mesh);
                 meshGenerator->cube(0.5f, *mesh);
@@ -207,6 +208,18 @@ namespace dory::game
             auto meshRepo = _registry.get<core::repositories::assets::IMeshRepository>();
             auto sceneRepo = _registry.get<core::repositories::ISceneRepository>();
             auto sceneService = _registry.get<core::services::ISceneService>();
+
+            if(meshRepo && sceneRepo && sceneService)
+            {
+                auto scene = sceneRepo->insert(core::resources::scene::Scene{ {}, "main scene" });
+
+                auto cubeMeshId = meshRepo->getId("cube");
+                auto cubeObject = core::resources::objects::SceneObject { "the cube", core::resources::nullId, cubeMeshId, {}, {} };
+
+                sceneService->addObject(*scene, cubeObject);
+
+                return scene;
+            }
 
             return nullptr;
         }
