@@ -39,6 +39,7 @@
 #include <dory/core/repositories/bindings/bufferBindingRepository.h>
 #include <dory/core/repositories/bindings/shaderBindingRepository.h>
 #include <dory/core/repositories/bindings/materialBindingRepository.h>
+#include <dory/core/repositories/enttSceneRepository.h>
 #include <dory/core/devices/fileWatcherDevice.h>
 #include <dory/core/services/assetTypeResolver.h>
 #include <dory/core/services/hot-reload/extensionLoader.h>
@@ -72,6 +73,9 @@ namespace dory::game
         registry.set<core::repositories::IViewRepository>(libraryHandle, std::make_shared<core::repositories::ViewRepository>());
         registry.set<core::repositories::IPipelineRepository>(libraryHandle, std::make_shared<core::repositories::PipelineRepository>());
         registerRepository<core::resources::entities::Camera>(libraryHandle, registry);
+        auto sceneRepository = std::make_shared<core::repositories::EnttSceneRepository>();
+        registry.set<core::repositories::ISceneRepository, core::resources::EcsType::entt>(libraryHandle, sceneRepository);
+        registry.set<core::repositories::ISceneRepository>(libraryHandle, sceneRepository);
 
         auto windowRepository = std::make_shared<core::repositories::WindowRepository>();
         registry.set<core::repositories::IWindowRepository>(libraryHandle, windowRepository);

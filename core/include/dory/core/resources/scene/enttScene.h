@@ -11,6 +11,12 @@ namespace dory::core::resources::scene
         entt::registry registry;
         std::unordered_map<resources::IdType, entt::entity> idMap;
         IdType idCounter {};
+
+        EnttScene() = default;
+
+        explicit EnttScene(const Scene& scene):
+            Scene(scene)
+        {}
     };
 }
 

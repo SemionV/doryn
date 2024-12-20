@@ -8,19 +8,20 @@ namespace dory::core::repositories
     template<typename TEntity,
             typename TId = resources::IdType,
             typename TInterface = repositories::IRepository<TEntity, TId>>
-    class Repository: public TInterface
+    class EntityRepository: public TInterface
     {
     protected:
         std::map<TId, TEntity> container;
+        std::unordered_map<std::string, TId> _names;
         TId counter {};
 
     public:
+        EntityRepository() = default;
+
         template<typename T>
-        explicit Repository(T&& entities):
+        explicit EntityRepository(T&& entities):
             container(std::forward<T>(entities))
         {}
-
-        Repository() = default;
 
         std::size_t count() override
         {
@@ -32,11 +33,57 @@ namespace dory::core::repositories
             return ++counter;
         }
 
-        TInterface::EntityType* get(TId id) override
+        void remove(TId id) override
         {
             if(container.contains(id))
             {
-                return &(container[id]);
+                container.erase(id);
+            }
+
+            for(const auto& pair : _names)
+            {
+                if(pair.second == id)
+                {
+                    _names.erase(pair.first);
+                    break;
+                }
+            }
+        }
+
+        void setEntityName(TId id, std::string name) override
+        {
+            _names[name] = id;
+        }
+
+        TId getEntityId(std::string name) override
+        {
+            if(_names.contains(name))
+            {
+                return _names[name];
+            }
+
+            return resources::nullId;
+        }
+    };
+
+    template<typename TEntity,
+            typename TId = resources::IdType,
+            typename TInterface = repositories::IRepository<TEntity, TId>>
+    class Repository: public EntityRepository<TEntity, TId, TInterface>
+    {
+    public:
+        Repository() = default;
+
+        template<typename T>
+        explicit Repository(T&& entities):
+            EntityRepository<TEntity, TId, TInterface>(std::forward<T>(entities))
+        {}
+
+        TInterface::EntityType* get(TId id) override
+        {
+            if(this->container.contains(id))
+            {
+                return &(this->container[id]);
             }
 
             return {};
@@ -44,36 +91,35 @@ namespace dory::core::repositories
 
         TInterface::EntityType* insert(const TInterface::EntityType& entity) override
         {
-            auto id = getNewId();
-            typename TInterface::EntityType& newEntity = container[id] = (TEntity&)entity;
-            newEntity.id = id;
-            return &newEntity;
+            auto id = this->getNewId();
+            auto result = this->container.emplace(id, (TEntity&)entity);
+            if(result.second)
+            {
+                typename TInterface::EntityType& newEntity = (*result.first).second;
+                newEntity.id = id;
+                return &newEntity;
+            }
+
+            return nullptr;
         }
 
         TInterface::EntityType* insert(TInterface::EntityType&& entity) override
         {
-            auto id = getNewId();
-            typename TInterface::EntityType& newEntity = container[id] = (TEntity)entity;
-            newEntity.id = id;
-            return &newEntity;
-        }
-
-        void store(TInterface::EntityType& entity) override
-        {
-            container[entity.id] = (TEntity&)entity;
-        }
-
-        void remove(TId id) override
-        {
-            if(container.contains(id))
+            auto id = this->getNewId();
+            auto result = this->container.emplace(id, (TEntity)entity);
+            if(result.second)
             {
-                container.erase(id);
+                typename TInterface::EntityType& newEntity = (*result.first).second;
+                newEntity.id = id;
+                return &newEntity;
             }
+
+            return nullptr;
         }
 
         void each(std::function<void(typename TInterface::EntityType& entity)> predicate) override
         {
-            for(auto& [id, entity] : container)
+            for(auto& [id, entity] : this->container)
             {
                 predicate(entity);
             }
@@ -81,7 +127,7 @@ namespace dory::core::repositories
 
         TInterface::EntityType* scan(std::function<bool(typename TInterface::EntityType& entity)> predicate) override
         {
-            for(auto& [id, entity] : container)
+            for(auto& [id, entity] : this->container)
             {
                 if(predicate(entity))
                 {
@@ -91,5 +137,6 @@ namespace dory::core::repositories
 
             return nullptr;
         }
+
     };
 }

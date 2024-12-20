@@ -87,6 +87,8 @@ namespace dory::core
             generic::registry::ServiceEntry<repositories::IWindowRepository>,
             generic::registry::ServiceEntry<repositories::IWindowRepository, resources::WindowSystem>,
             generic::registry::ServiceEntry<repositories::IPipelineRepository>,
+            generic::registry::ServiceEntry<repositories::ISceneRepository>,
+            generic::registry::ServiceEntry<repositories::ISceneRepository, resources::EcsType>,
             generic::registry::ServiceEntry<repositories::assets::IMeshRepository>,
             generic::registry::ServiceEntry<repositories::assets::IMaterialRepository>,
             generic::registry::ServiceEntry<repositories::assets::IShaderRepository>,

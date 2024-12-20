@@ -187,6 +187,7 @@ namespace dory::game
             if(meshRepo && meshGenerator)
             {
                 auto mesh = meshRepo->insert(core::resources::assets::Mesh{});
+                meshRepo->setEntityName(mesh->id, "cube");
                 //meshGenerator->triangle(1.f, 0.3f, *mesh);
                 //meshGenerator->rectangle(1.f, 1.f, *mesh);
                 meshGenerator->cube(0.5f, *mesh);
@@ -203,7 +204,9 @@ namespace dory::game
 
         core::resources::scene::Scene* buildScene(core::resources::DataContext& context)
         {
-
+            auto meshRepo = _registry.get<core::repositories::assets::IMeshRepository>();
+            auto sceneRepo = _registry.get<core::repositories::ISceneRepository>();
+            auto sceneService = _registry.get<core::services::ISceneService>();
 
             return nullptr;
         }
