@@ -28,16 +28,6 @@ namespace dory::core::services::graphics
     void Renderer::draw(DataContext& context, const View& view)
     {}
 
-    glm::mat4x4 getTransformMatrix(const scene::components::Transform& transform)
-    {
-        auto matrix = glm::mat4x4{ 1 };
-        matrix = glm::scale(matrix, transform.scale);
-        matrix *= glm::toMat4(transform.rotation);
-        matrix = glm::translate(matrix, transform.position);
-
-        return matrix;
-    }
-
     void Renderer::draw(DataContext& context, const Window& window, const GraphicalContext& graphicalContext, const View& view)
     {
         auto scene = view.scene;
@@ -62,10 +52,6 @@ namespace dory::core::services::graphics
                 auto visibleObjects = sceneQueryService->getVisibleObjects(*scene);
                 for(auto& object : visibleObjects)
                 {
-                    auto localTransform = getTransformMatrix(object.localTransform);
-                    auto worldTransform = getTransformMatrix(object.worldTransform);
-                    glm::mat4x4 modelTransform = worldTransform * localTransform;
-
                     if(graphicalContext.meshBindings.contains(object.meshId))
                     {
                         IdType bindingId = graphicalContext.meshBindings.at(object.meshId);
@@ -79,7 +65,7 @@ namespace dory::core::services::graphics
                                 frame.meshMap[material] = {};
                             }
 
-                            frame.meshMap[material].emplace_back(MeshItem{ meshBinding, modelTransform });
+                            frame.meshMap[material].emplace_back(MeshItem{ meshBinding, object.transform });
                         }
                     }
                 }

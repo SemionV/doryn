@@ -11,15 +11,14 @@ namespace dory::core::services
     {
         auto objects = std::vector<VisibleObject>();
         const auto& enttScene = (const EnttScene&)scene;
-        auto view = enttScene.registry.view<Mesh, LocalTransform, WorldTransform>();
+        auto view = enttScene.registry.view<Mesh, CombinedTransform>();
 
         for (auto entity : view)
         {
-            auto &mesh = view.get<Mesh>(entity);
-            auto &localTransform = view.get<LocalTransform>(entity);
-            auto &worldTransform = view.get<WorldTransform>(entity);
+            auto& mesh = view.get<Mesh>(entity);
+            auto& transform = view.get<CombinedTransform>(entity);
 
-            objects.emplace_back(VisibleObject { localTransform, worldTransform, mesh.id });
+            objects.emplace_back(VisibleObject { mesh.id, transform.matrix });
         }
 
         return objects;

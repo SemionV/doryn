@@ -31,6 +31,11 @@ namespace dory::core::resources::scene::components
         {}
     };
 
+    struct CombinedTransform
+    {
+        glm::mat4x4 matrix;
+    };
+
     struct LocalTransform: public Transform
     {
         LocalTransform() = default;
@@ -47,4 +52,10 @@ namespace dory::core::resources::scene::components
         {}
     };
 
+    struct Rotation
+    {
+        float angleSpeed{};
+        glm::vec3 axis{};
+        float currentAngle{};
+    };
 }

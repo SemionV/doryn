@@ -33,6 +33,7 @@ namespace dory::core::services
         }
 
         registry.emplace<components::Name>(entity, object.name);
+        registry.emplace<components::CombinedTransform>(entity, glm::mat4x4 { 1 });
         registry.emplace<components::LocalTransform>(entity, object.localTransform);
         registry.emplace<components::WorldTransform>(entity, object.worldTransform);
         registry.emplace<components::Mesh>(entity, object.meshId);
@@ -104,5 +105,17 @@ namespace dory::core::services
         }
 
         registry.destroy(entity);
+    }
+
+    void EnttSceneService::addComponent(resources::IdType objectId, resources::scene::Scene& scene)
+    {
+        auto& enttScene = (resources::scene::EnttScene&)scene;
+        auto& registry = enttScene.registry;
+
+        if(enttScene.idMap.contains(objectId))
+        {
+            auto entity = enttScene.idMap[objectId];
+            registry.emplace<core::resources::scene::components::Rotation>(entity, glm::radians(45.f), glm::normalize(glm::vec3{0.f, 1.f, 0.f}));
+        }
     }
 }

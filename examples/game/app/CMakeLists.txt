@@ -1,6 +1,9 @@
 set(DORY_MODULE_NAME ${PROJECT_NAME}-app)
 
-add_executable(${DORY_MODULE_NAME} main.cpp)
+add_executable(${DORY_MODULE_NAME}
+        main.cpp
+        controllers/animationController.cpp
+        controllers/transformController.cpp)
 set_target_properties(${DORY_MODULE_NAME} PROPERTIES
         OUTPUT_NAME ${DORY_MODULE_NAME})
 

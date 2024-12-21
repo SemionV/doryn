@@ -13,5 +13,6 @@ namespace dory::core::services
     public:
         resources::IdType addObject(resources::scene::Scene& scene, const resources::objects::SceneObject& object) override;
         void deleteObject(resources::scene::Scene& scene, resources::IdType objectId) override;
+        void addComponent(resources::IdType objectId, resources::scene::Scene& scene) override;
     };
 }

@@ -16,6 +16,9 @@ namespace dory::core::services
             pipelineService->initialize(context);
 
             isStop = false;
+
+            const auto fixedDeltaNanos = std::chrono::nanoseconds{16666667};
+            auto accumulator = std::chrono::nanoseconds{0};
             generic::model::TimeSpan timeStep(generic::model::UnitScale::Nano);
 
             std::chrono::steady_clock::time_point lastTimestamp = std::chrono::steady_clock::now();
@@ -25,13 +28,20 @@ namespace dory::core::services
             while(!isStop)
             {
                 currentTimestamp = std::chrono::steady_clock::now();
-                duration = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTimestamp - lastTimestamp);
-
-                timeStep.duration = duration.count();
-
-                pipelineService->update(context, timeStep);
-
+                auto frameTime = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTimestamp - lastTimestamp);
                 lastTimestamp = currentTimestamp;
+
+                if (frameTime > std::chrono::milliseconds(250)) {
+                    frameTime = std::chrono::milliseconds(250);
+                }
+
+                accumulator += frameTime;
+
+                while (accumulator >= fixedDeltaNanos) {
+                    timeStep.duration = fixedDeltaNanos.count();
+                    pipelineService->update(context, timeStep);
+                    accumulator -= fixedDeltaNanos;
+                }
             }
 
             pipelineService->stop(context);

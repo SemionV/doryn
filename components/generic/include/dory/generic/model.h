@@ -27,9 +27,14 @@ namespace dory::generic::model
         {
         };
 
-        [[nodiscard]] double ToMilliseconds() const
+        [[nodiscard]] float ToMilliseconds() const
         {
-            return (duration / (double)unitsPerSecond) * (double)UnitScale::Milli;
+            return (duration / (float)unitsPerSecond) * (float)UnitScale::Milli;
+        }
+
+        [[nodiscard]] float ToSeconds() const
+        {
+            return (duration / (float)unitsPerSecond);
         }
     };
 

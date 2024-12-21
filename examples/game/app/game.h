@@ -1,6 +1,9 @@
 #pragma once
 
 #include <dory/core/registry.h>
+#include <dory/core/resources/scene/components.h>
+#include "controllers/animationController.h"
+#include "controllers/transformController.h"
 
 namespace dory::game
 {
@@ -68,6 +71,16 @@ namespace dory::game
                         }
                     }
                 });
+            });
+
+            _registry.get<dory::core::repositories::IPipelineRepository>([this, &libraryHandle, &context](dory::core::repositories::IPipelineRepository* pipelineRepository){
+                auto animationController = std::make_shared<AnimationController>(_registry);
+                auto controllerHandle = generic::extension::ResourceHandle<core::resources::entities::PipelineNode::ControllerPointerType>{ libraryHandle, animationController };
+                pipelineRepository->addNode(core::resources::entities::PipelineNode{controllerHandle, context.inputGroupNodeId});
+
+                auto transformController = std::make_shared<TransformController>(_registry);
+                controllerHandle = generic::extension::ResourceHandle<core::resources::entities::PipelineNode::ControllerPointerType>{ libraryHandle, transformController };
+                pipelineRepository->addNode(core::resources::entities::PipelineNode{controllerHandle, context.inputGroupNodeId});
             });
 
             _registry.get<core::devices::ITerminalDevice>([](core::devices::ITerminalDevice* terminalDevice) {
@@ -211,15 +224,20 @@ namespace dory::game
 
             if(meshRepo && sceneRepo && sceneService)
             {
-                auto scene = sceneRepo->insert(core::resources::scene::Scene{ {}, "main scene" });
+                auto scene = (core::resources::scene::EnttScene*)sceneRepo->insert(core::resources::scene::Scene{ {}, "main scene" });
 
                 auto cubeMeshId = meshRepo->getId("cube");
                 glm::mat4 rotationMatrix = glm::mat4x4{ 1 };
                 rotationMatrix = glm::rotate(rotationMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
                 rotationMatrix = glm::rotate(rotationMatrix, glm::radians(45.f), glm::vec3(0.0f, 0.0f, 1.0f));
-                auto cubeObject = core::resources::objects::SceneObject { "the cube", core::resources::nullId, cubeMeshId, { {}, glm::quat_cast(rotationMatrix) }, {} };
+                auto cubeObject = core::resources::objects::SceneObject { "the cube", core::resources::nullId, cubeMeshId, { {0.5f, 0.f, 0.f}, glm::quat_cast(rotationMatrix) }, {} };
 
-                sceneService->addObject(*scene, cubeObject);
+                auto cubeObjectId = sceneService->addObject(*scene, cubeObject);
+                if(scene->idMap.contains(cubeObjectId))
+                {
+                    auto entity = scene->idMap[cubeObjectId];
+                    scene->registry.emplace<core::resources::scene::components::Rotation>(entity, glm::radians(45.f), glm::normalize(glm::vec3{0.f, 1.f, 0.f}));
+                }
 
                 return scene;
             }

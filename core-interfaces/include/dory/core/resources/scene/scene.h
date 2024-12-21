@@ -16,8 +16,7 @@ namespace dory::core::resources::scene
 
     struct VisibleObject
     {
-        components::Transform localTransform {};
-        components::Transform worldTransform {};
         IdType meshId {};
+        glm::mat4x4 transform;
     };
 }
