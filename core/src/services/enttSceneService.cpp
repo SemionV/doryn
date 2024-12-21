@@ -1,5 +1,4 @@
 #include <dory/core/services/enttSceneService.h>
-#include <dory/core/resources/scene/enttScene.h>
 #include <dory/core/resources/scene/components.h>
 #include <dory/core/resources/scene/enttComponents.h>
 #include <stack>
@@ -105,17 +104,5 @@ namespace dory::core::services
         }
 
         registry.destroy(entity);
-    }
-
-    void EnttSceneService::addComponent(resources::IdType objectId, resources::scene::Scene& scene)
-    {
-        auto& enttScene = (resources::scene::EnttScene&)scene;
-        auto& registry = enttScene.registry;
-
-        if(enttScene.idMap.contains(objectId))
-        {
-            auto entity = enttScene.idMap[objectId];
-            registry.emplace<core::resources::scene::components::Rotation>(entity, glm::radians(45.f), glm::normalize(glm::vec3{0.f, 1.f, 0.f}));
-        }
     }
 }

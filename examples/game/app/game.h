@@ -224,7 +224,7 @@ namespace dory::game
 
             if(meshRepo && sceneRepo && sceneService)
             {
-                auto scene = (core::resources::scene::EnttScene*)sceneRepo->insert(core::resources::scene::Scene{ {}, "main scene" });
+                auto scene = sceneRepo->insert(core::resources::scene::Scene{ {}, "main scene" });
 
                 auto cubeMeshId = meshRepo->getId("cube");
                 glm::mat4 rotationMatrix = glm::mat4x4{ 1 };
@@ -233,11 +233,8 @@ namespace dory::game
                 auto cubeObject = core::resources::objects::SceneObject { "the cube", core::resources::nullId, cubeMeshId, { {0.5f, 0.f, 0.f}, glm::quat_cast(rotationMatrix) }, {} };
 
                 auto cubeObjectId = sceneService->addObject(*scene, cubeObject);
-                if(scene->idMap.contains(cubeObjectId))
-                {
-                    auto entity = scene->idMap[cubeObjectId];
-                    scene->registry.emplace<core::resources::scene::components::Rotation>(entity, glm::radians(45.f), glm::normalize(glm::vec3{0.f, 1.f, 0.f}));
-                }
+                sceneService->addComponent(cubeObjectId, *scene,
+                                           core::resources::scene::components::Rotation{ glm::radians(45.f), glm::normalize(glm::vec3{0.f, 1.f, 0.f}) });
 
                 return scene;
             }
