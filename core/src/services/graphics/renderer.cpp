@@ -16,6 +16,7 @@ namespace dory::core::services::graphics
     using namespace resources::bindings;
     using namespace resources::objects;
     using namespace resources::entities;
+    using namespace resources::scene;
     using namespace services;
     using namespace devices;
     using namespace math;
@@ -30,7 +31,14 @@ namespace dory::core::services::graphics
 
     void Renderer::draw(DataContext& context, const Window& window, const GraphicalContext& graphicalContext, const View& view)
     {
-        auto scene = view.scene;
+        auto sceneRepo = _registry.get<repositories::ISceneRepository>(view.sceneEcsType);
+        Scene* scene {};
+
+        if(sceneRepo)
+        {
+            scene = sceneRepo->get(view.sceneId);
+        }
+
         if(scene)
         {
             auto gpuDevice = _registry.get<IGpuDevice>(graphicalContext.graphicalSystem);

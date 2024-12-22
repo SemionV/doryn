@@ -89,7 +89,12 @@ namespace dory::game
 
             //Test scene
             loadAssets(context, mainWindow, graphicalContext);
-            mainView->scene = buildScene(context);
+            auto scene = buildScene(context);
+            if(scene)
+            {
+                mainView->sceneId = scene->id;
+                mainView->sceneEcsType = scene->ecsType;
+            }
 
             return true;
         }

@@ -27,7 +27,8 @@ namespace dory::core::resources::entities
     {
         IdType windowId {};
         IdType cameraId {};
-        scene::Scene* scene {};
+        resources::IdType sceneId {};
+        resources::EcsType sceneEcsType {};
         Viewport viewport {};
 
         View() = default;
