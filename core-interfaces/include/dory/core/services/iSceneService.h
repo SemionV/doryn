@@ -14,6 +14,7 @@ namespace dory::core::services
     {
     public:
         virtual void addComponent(resources::IdType objectId, resources::scene::Scene& scene, const T& component) = 0;
+        virtual void removeComponent(resources::IdType objectId, resources::scene::Scene& scene, const T& component) = 0;
     };
 
     template<typename... TComponents>

@@ -22,6 +22,18 @@ namespace dory::core::services
                 registry.emplace<T>(entity, component);
             }
         }
+
+        void removeComponent(resources::IdType objectId, resources::scene::Scene& scene, const T& component) final
+        {
+            auto& enttScene = (resources::scene::EnttScene&)scene;
+            auto& registry = enttScene.registry;
+
+            if(enttScene.idMap.contains(objectId))
+            {
+                auto entity = enttScene.idMap[objectId];
+                registry.remove<T>(entity);
+            }
+        }
     };
 
     struct EntityComponentServicePolicy: implementation::ImplementationPolicy<implementation::ImplementationList<EntityComponentServiceGeneric>>
