@@ -6,6 +6,7 @@ build/cmake-artifacts-ninja/
 build/cmake-artifacts-ninja-clion/
 build/cmake-artifacts-clang-clion/
 build/cmake-build-artifacts-clang-clion/
+build/cmake-build-artifacts-clang-clion-release/
 build/cmake-artifacts-gcc-clion/
 build/cmake-artifacts-ninja-clion-release/
 build/cmake-artifacts-make/

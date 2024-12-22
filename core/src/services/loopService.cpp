@@ -17,7 +17,7 @@ namespace dory::core::services
 
             isStop = false;
 
-            const auto fixedDeltaNanos = std::chrono::nanoseconds{16666667};
+            const auto fixedDeltaNanos = std::chrono::nanoseconds{16666667}; //60 updates per second
             auto accumulator = std::chrono::nanoseconds{0};
             generic::model::TimeSpan timeStep(generic::model::UnitScale::Nano);
 
