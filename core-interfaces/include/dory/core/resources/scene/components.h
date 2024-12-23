@@ -11,7 +11,17 @@ namespace dory::core::resources::scene::components
         std::string name{};
     };
 
+    struct Object
+    {
+        IdType id;
+    };
+
     struct Mesh
+    {
+        IdType id{};
+    };
+
+    struct Material
     {
         IdType id{};
     };
@@ -31,24 +41,11 @@ namespace dory::core::resources::scene::components
         {}
     };
 
-    struct CombinedTransform
+    struct CombinedTransform: public Transform
     {
-        glm::mat4x4 matrix;
-    };
+        CombinedTransform() = default;
 
-    struct LocalTransform: public Transform
-    {
-        LocalTransform() = default;
-
-        explicit LocalTransform(const objects::Transform& transform): Transform(transform)
-        {}
-    };
-
-    struct WorldTransform: public Transform
-    {
-        WorldTransform() = default;
-
-        explicit WorldTransform(const objects::Transform& transform): Transform(transform)
+        explicit CombinedTransform(const objects::Transform& transform): Transform(transform)
         {}
     };
 

@@ -12,9 +12,13 @@ namespace dory::core::services
 
     void LoopService::startLoop(resources::DataContext& context)
     {
-        _registry.get<IPipelineService>([this, &context](IPipelineService* pipelineService){
+        auto pipelineService = _registry.get<IPipelineService>();
+        if(pipelineService)
+        {
             pipelineService->initialize(context);
+        }
 
+        {
             isStop = false;
 
             const auto fixedDeltaNanos = std::chrono::nanoseconds{16666667};
@@ -37,15 +41,43 @@ namespace dory::core::services
 
                 accumulator += frameTime;
 
-                while (accumulator >= fixedDeltaNanos) {
-                    timeStep.duration = fixedDeltaNanos.count();
-                    pipelineService->update(context, timeStep);
-                    accumulator -= fixedDeltaNanos;
+                pipelineService = _registry.get<IPipelineService>();
+                if(pipelineService) //it can be hot-swapped, this is why reload it each frame
+                {
+                    while (accumulator >= fixedDeltaNanos) {
+                        timeStep.duration = fixedDeltaNanos.count();
+                        pipelineService->update(context, timeStep);
+                        accumulator -= fixedDeltaNanos;
+
+                        //TODO: collect current write state for each view
+                    }
+                }
+
+                float alpha = (float)accumulator.count() / (float)fixedDeltaNanos.count();
+                auto viewRepo = _registry.get<repositories::IViewRepository>();
+                if(viewRepo)
+                {
+                    viewRepo->each([alpha](const resources::entities::View& view) {
+                        view.sceneStateWrite.load();
+                    });
+                }
+
+                //TODO: swap read and write states for each view
+
+                auto viewService = _registry.get<services::IViewService>();
+                if(viewService)
+                {
+                    //TODO: draw current interpolated read state
+                    viewService->updateViews(context);
                 }
             }
+        }
 
+        pipelineService = _registry.get<IPipelineService>();
+        if(pipelineService)
+        {
             pipelineService->stop(context);
-        });
+        }
     }
 
     void LoopService::endLoop()

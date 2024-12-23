@@ -3,13 +3,14 @@
 #include <vector>
 #include <dory/generic/baseTypes.h>
 #include <dory/core/resources/scene/scene.h>
+#include <dory/core/resources/entities/view.h>
 
 namespace dory::core::services
 {
     class ISceneQueryService: public generic::Interface
     {
     public:
-        virtual std::vector<resources::scene::VisibleObject> getVisibleObjects(const resources::scene::Scene& scene) = 0;
+        virtual resources::scene::SceneState getSceneState(const resources::entities::View& scene) = 0;
     };
 }
 

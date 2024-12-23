@@ -1,13 +1,15 @@
 #pragma once
 
 #include <dory/core/services/iSceneQueryService.h>
-#include <entt/entt.hpp>
+#include <dory/core/dependencyResolver.h>
 
 namespace dory::core::services
 {
-    class EnttSceneQueryService: public ISceneQueryService
+    class EnttSceneQueryService: public DependencyResolver, public ISceneQueryService
     {
     public:
-        std::vector<resources::scene::VisibleObject> getVisibleObjects(const resources::scene::Scene& scene) override;
+        explicit EnttSceneQueryService(Registry& registry);
+
+        resources::scene::SceneState getSceneState(const resources::entities::View& scene) override;
     };
 }

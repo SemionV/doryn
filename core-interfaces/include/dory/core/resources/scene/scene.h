@@ -16,7 +16,26 @@ namespace dory::core::resources::scene
 
     struct VisibleObject
     {
+        IdType id {};
         IdType meshId {};
-        glm::mat4x4 transform;
+        IdType materialId {};
+        objects::Transform transform {};
+    };
+
+    struct SceneState
+    {
+        objects::Transform viewTransform {};
+        std::unordered_map<IdType, VisibleObject> objects {};
+    };
+
+    struct SceneViewState
+    {
+        IdType sceneId {};
+        EcsType ecsType {};
+        IdType windowId {};
+        glm::mat4x4 projection {};
+        SceneState previous;
+        SceneState current;
+        float alpha { 1 }; //Distance between previous and current state, 0 = previous state, 1 = current state, 0.5 = halfway between the states, etc
     };
 }

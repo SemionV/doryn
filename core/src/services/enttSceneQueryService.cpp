@@ -1,26 +1,70 @@
+#include <dory/core/registry.h>
 #include <dory/core/services/enttSceneQueryService.h>
 #include <dory/core/resources/scene/enttScene.h>
 #include <dory/core/resources/scene/components.h>
+#include <dory/core/resources/objects/transform.h>
 
 namespace dory::core::services
 {
+    using namespace resources;
     using namespace resources::scene;
     using namespace resources::scene::components;
+    using namespace repositories;
 
-    std::vector<resources::scene::VisibleObject> EnttSceneQueryService::getVisibleObjects(const resources::scene::Scene& scene)
+    EnttSceneQueryService::EnttSceneQueryService(Registry& registry) : DependencyResolver(registry)
+    {}
+
+    SceneState EnttSceneQueryService::getSceneState(const resources::entities::View& view)
     {
-        auto objects = std::vector<VisibleObject>();
-        const auto& enttScene = (const EnttScene&)scene;
-        auto view = enttScene.registry.view<Mesh, CombinedTransform>();
+        SceneState sceneState {};
 
-        for (auto entity : view)
+        EnttScene* enttScene {};
+        auto sceneRepo = _registry.get<ISceneRepository>(view.sceneEcsType);
+        if(sceneRepo)
         {
-            auto& mesh = view.get<Mesh>(entity);
-            auto& transform = view.get<CombinedTransform>(entity);
-
-            objects.emplace_back(VisibleObject { mesh.id, transform.matrix });
+            auto scene = sceneRepo->get(view.sceneId);
+            if(scene)
+            {
+                enttScene = (EnttScene*)scene;
+            }
         }
 
-        return objects;
+        if(enttScene)
+        {
+            auto enttView = enttScene->registry.view<Object, Mesh, Material, CombinedTransform>();
+
+            for (auto entity : enttView)
+            {
+                auto& object = enttView.get<Object>(entity);
+                auto& mesh = enttView.get<Mesh>(entity);
+                auto& material = enttView.get<Material>(entity);
+                auto& transform = enttView.get<CombinedTransform>(entity);
+
+                auto visibleObject = VisibleObject {
+                    object.id,
+                    mesh.id,
+                    material.id,
+                    objects::Transform {
+                        transform.position,
+                        transform.rotation,
+                        transform.scale
+                    }
+                };
+                sceneState.objects[object.id] = visibleObject;
+            }
+
+            auto it = enttScene->idMap.find(view.cameraId);
+            if(it != enttScene->idMap.end())
+            {
+                auto& viewTransform = enttScene->registry.get<CombinedTransform>(it->second);
+                sceneState.viewTransform = objects::Transform{
+                    viewTransform.position,
+                    viewTransform.rotation,
+                    viewTransform.scale
+                };
+            }
+        }
+
+        return sceneState;
     }
 }
