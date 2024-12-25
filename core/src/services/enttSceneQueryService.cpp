@@ -14,55 +14,32 @@ namespace dory::core::services
     EnttSceneQueryService::EnttSceneQueryService(Registry& registry) : DependencyResolver(registry)
     {}
 
-    SceneState EnttSceneQueryService::getSceneState(const resources::entities::View& view)
+    SceneState EnttSceneQueryService::getSceneState(const Scene& scene)
     {
         SceneState sceneState {};
+        auto& enttScene = (EnttScene&)scene;
 
-        EnttScene* enttScene {};
-        auto sceneRepo = _registry.get<ISceneRepository>(view.sceneEcsType);
-        if(sceneRepo)
+        auto enttView = enttScene.registry.view<Object, Mesh, Material, CombinedTransform>();
+
+        for (auto entity : enttView)
         {
-            auto scene = sceneRepo->get(view.sceneId);
-            if(scene)
-            {
-                enttScene = (EnttScene*)scene;
-            }
-        }
+            auto& object = enttView.get<Object>(entity);
+            auto& mesh = enttView.get<Mesh>(entity);
+            auto& material = enttView.get<Material>(entity);
+            auto& transform = enttView.get<CombinedTransform>(entity);
 
-        if(enttScene)
-        {
-            auto enttView = enttScene->registry.view<Object, Mesh, Material, CombinedTransform>();
-
-            for (auto entity : enttView)
-            {
-                auto& object = enttView.get<Object>(entity);
-                auto& mesh = enttView.get<Mesh>(entity);
-                auto& material = enttView.get<Material>(entity);
-                auto& transform = enttView.get<CombinedTransform>(entity);
-
-                auto visibleObject = VisibleObject {
+            auto visibleObject = VisibleObject {
                     object.id,
                     mesh.id,
                     material.id,
                     objects::Transform {
-                        transform.position,
-                        transform.rotation,
-                        transform.scale
+                            transform.position,
+                            transform.rotation,
+                            transform.scale
                     }
-                };
-                sceneState.objects[object.id] = visibleObject;
-            }
+            };
 
-            auto it = enttScene->idMap.find(view.cameraId);
-            if(it != enttScene->idMap.end())
-            {
-                auto& viewTransform = enttScene->registry.get<CombinedTransform>(it->second);
-                sceneState.viewTransform = objects::Transform{
-                    viewTransform.position,
-                    viewTransform.rotation,
-                    viewTransform.scale
-                };
-            }
+            sceneState.objects[object.id] = visibleObject;
         }
 
         return sceneState;

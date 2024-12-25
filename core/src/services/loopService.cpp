@@ -6,6 +6,14 @@
 
 namespace dory::core::services
 {
+    using namespace core;
+    using namespace resources;
+    using namespace entities;
+    using namespace scene;
+    using namespace repositories;
+    using namespace services;
+    using namespace std::chrono;
+
     LoopService::LoopService(Registry& registry):
         _registry(registry)
     {}
@@ -21,53 +29,55 @@ namespace dory::core::services
         {
             isStop = false;
 
-            const auto fixedDeltaNanos = std::chrono::nanoseconds{16666667};
-            auto accumulator = std::chrono::nanoseconds{0};
+            const auto fixedDeltaNanos = nanoseconds{16666667};
+            auto accumulator = nanoseconds{0};
             generic::model::TimeSpan timeStep(generic::model::UnitScale::Nano);
 
-            std::chrono::steady_clock::time_point lastTimestamp = std::chrono::steady_clock::now();
-            std::chrono::steady_clock::time_point currentTimestamp;
-            std::chrono::nanoseconds duration;
+            steady_clock::time_point lastTimestamp = steady_clock::now();
+            steady_clock::time_point currentTimestamp;
+            nanoseconds duration;
+
+            SceneViewStateSet sceneStatesA;
+            SceneViewStateSet sceneStatesB;
+
+            std::atomic<SceneViewStateSet*> viewStateWrite { &sceneStatesA };
+            std::atomic<SceneViewStateSet*> viewStateRead { &sceneStatesB };
 
             while(!isStop)
             {
-                currentTimestamp = std::chrono::steady_clock::now();
-                auto frameTime = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTimestamp - lastTimestamp);
+                currentTimestamp = steady_clock::now();
+                auto frameTime = duration_cast<nanoseconds>(currentTimestamp - lastTimestamp);
                 lastTimestamp = currentTimestamp;
 
-                if (frameTime > std::chrono::milliseconds(250)) {
-                    frameTime = std::chrono::milliseconds(250);
+                if (frameTime > milliseconds(250)) {
+                    frameTime = milliseconds(250);
                 }
 
                 accumulator += frameTime;
 
                 pipelineService = _registry.get<IPipelineService>();
-                if(pipelineService) //it can be hot-swapped, this is why reload it each frame
+                auto viewService = _registry.get<IViewService>();
+                if(pipelineService && viewService) //it can be hot-swapped, this is why reload it each frame
                 {
                     while (accumulator >= fixedDeltaNanos) {
                         timeStep.duration = fixedDeltaNanos.count();
                         pipelineService->update(context, timeStep);
-                        accumulator -= fixedDeltaNanos;
 
-                        //TODO: collect current write state for each view
+                        float alpha = (float)accumulator.count() / (float)fixedDeltaNanos.count();
+                        auto viewStates = viewStateWrite.load();
+                        viewService->updateViewsState(*viewStates, alpha);
+
+                        accumulator -= fixedDeltaNanos;
                     }
                 }
 
-                float alpha = (float)accumulator.count() / (float)fixedDeltaNanos.count();
-                auto viewRepo = _registry.get<repositories::IViewRepository>();
-                if(viewRepo)
-                {
-                    viewRepo->each([alpha](const resources::entities::View& view) {
-                        view.sceneStateWrite.load();
-                    });
-                }
+                auto viewStates = viewStateRead.exchange(viewStateWrite.load());
+                viewStateWrite.store(viewStates);
 
-                //TODO: swap read and write states for each view
-
-                auto viewService = _registry.get<services::IViewService>();
+                viewService = _registry.get<IViewService>();
                 if(viewService)
                 {
-                    //TODO: draw current interpolated read state
+                    auto viewState = viewStateRead.load();
                     viewService->updateViews(context);
                 }
             }

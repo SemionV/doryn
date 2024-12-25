@@ -10,7 +10,6 @@ namespace dory::core::services
     class ISceneQueryService: public generic::Interface
     {
     public:
-        virtual resources::scene::SceneState getSceneState(const resources::entities::View& scene) = 0;
+        virtual resources::scene::SceneState getSceneState(const resources::scene::Scene& scene) = 0;
     };
 }
-

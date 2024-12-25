@@ -3,6 +3,7 @@
 #include "../entity.h"
 #include "../ecsType.h"
 #include "../objects/transform.h"
+#include "../entities/view.h"
 #include "components.h"
 #include <string>
 
@@ -24,18 +25,19 @@ namespace dory::core::resources::scene
 
     struct SceneState
     {
-        objects::Transform viewTransform {};
         std::unordered_map<IdType, VisibleObject> objects {};
     };
 
     struct SceneViewState
     {
-        IdType sceneId {};
-        EcsType ecsType {};
-        IdType windowId {};
-        glm::mat4x4 projection {};
+        entities::View view;
         SceneState previous;
         SceneState current;
+    };
+
+    struct SceneViewStateSet
+    {
+        std::unordered_map<resources::IdType, resources::scene::SceneViewState> map {};
         float alpha { 1 }; //Distance between previous and current state, 0 = previous state, 1 = current state, 0.5 = halfway between the states, etc
     };
 }

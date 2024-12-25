@@ -2,8 +2,8 @@
 
 #include "../entity.h"
 #include "../ecsType.h"
-#include "dory/core/resources/scene/scene.h"
 #include <atomic>
+#include <glm/glm.hpp>
 
 namespace dory::core::resources::entities
 {

@@ -12,8 +12,9 @@ namespace dory::core::services
     public:
         explicit ViewService(Registry& registry);
 
-        void updateViews(resources::DataContext& context) override;
+        void updateViews(resources::scene::SceneViewStateSet& viewStates) override;
         resources::entities::View* createView(resources::entities::Window& window) override;
         void destroyView(resources::IdType viewId) override;
+        void updateViewsState(resources::scene::SceneViewStateSet& states, float alpha) override;
     };
 }

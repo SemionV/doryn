@@ -10,6 +10,6 @@ namespace dory::core::services
     public:
         explicit EnttSceneQueryService(Registry& registry);
 
-        resources::scene::SceneState getSceneState(const resources::entities::View& scene) override;
+        resources::scene::SceneState getSceneState(const resources::scene::Scene& scene) override;
     };
 }
