@@ -244,6 +244,9 @@ namespace dory::game
                 auto cubeObjectId = sceneService->addObject(*scene, cubeObject);
                 sceneService->addComponent(cubeObjectId, *scene,
                                            core::resources::scene::components::Rotation{ glm::radians(10.f), glm::normalize(glm::vec3{0.f, 1.f, 0.f}) });
+                sceneService->addComponent(cubeObjectId, *scene,
+                                           core::resources::scene::components::Translation{ 0.03f, glm::normalize(glm::vec3{1.f, 0.f, 0.f}) });
+
 
                 return scene;
             }

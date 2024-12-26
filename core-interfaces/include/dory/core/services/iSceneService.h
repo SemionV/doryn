@@ -35,6 +35,7 @@ namespace dory::core::services
             resources::scene::components::Transform,
             resources::scene::components::CombinedTransform,
             resources::scene::components::Rotation,
+            resources::scene::components::Translation,
             resources::scene::components::Mesh>;
 
     using IEntityComponentService = IEntityComponentServiceBundle<EntityComponentTypes>;
