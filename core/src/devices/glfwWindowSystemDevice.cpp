@@ -78,8 +78,13 @@ namespace dory::core::devices
         auto& glfwWindow = (resources::entities::GlfwWindow&)window;
 
         glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
+        glfwWindowHint(GLFW_SAMPLES, 8); //TODO: pass this parameter from outside!
         auto glfwWindowHandler = glfwCreateWindow((int)parameters.width, (int)parameters.height, parameters.title.c_str(), nullptr, nullptr);
         glfwWindow.handler = glfwWindowHandler;
+
+        glfwMakeContextCurrent(glfwWindowHandler);
+
+        glfwSwapInterval(0); //No VSync. TODO: pass this as a parameter
 
         glfwSetWindowUserPointer(glfwWindow.handler, this);
         glfwSetFramebufferSizeCallback(glfwWindow.handler, GlfwWindowSystemDevice::framebufferSizeCallback);

@@ -32,9 +32,8 @@ namespace dory::core::services
 
     using EntityComponentTypes = generic::TypeList<
             resources::scene::components::Name,
+            resources::scene::components::Transform,
             resources::scene::components::CombinedTransform,
-            resources::scene::components::LocalTransform,
-            resources::scene::components::WorldTransform,
             resources::scene::components::Rotation,
             resources::scene::components::Mesh>;
 

@@ -6,7 +6,7 @@ namespace dory::core::services
     ViewService::ViewService(Registry& registry) : DependencyResolver(registry)
     {}
 
-    void ViewService::updateViews(resources::scene::SceneViewStateSet& viewStates)
+    void ViewService::updateViews(resources::scene::SceneViewStateSet& viewStates, float alpha)
     {
         auto windowRepository = _registry.get<repositories::IWindowRepository>();
         auto graphicalContextRepository = _registry.get<repositories::IGraphicalContextRepository>();
@@ -14,7 +14,7 @@ namespace dory::core::services
 
         if(windowRepository && graphicalContextRepository && renderer)
         {
-            for(const auto& [viewId, viewState] : viewStates.map)
+            for(const auto& [viewId, viewState] : viewStates)
             {
                 auto window = windowRepository->get(viewState.view.windowId);
                 if(window)
@@ -22,7 +22,7 @@ namespace dory::core::services
                     auto graphicalContext = graphicalContextRepository->get(window->graphicalContextId);
                     if(graphicalContext)
                     {
-                        renderer->draw(viewState, viewStates.alpha, *window, *graphicalContext);
+                        renderer->draw(viewState, alpha, *window, *graphicalContext);
                     }
                 }
             }
@@ -69,17 +69,15 @@ namespace dory::core::services
         });
     }
 
-    void ViewService::updateViewsState(resources::scene::SceneViewStateSet& states, float alpha)
+    void ViewService::updateViewsState(resources::scene::SceneViewStateSet& states)
     {
         auto viewRepository = _registry.get<repositories::IViewRepository>();
-
-        states.alpha = alpha;
 
         if(viewRepository)
         {
             std::vector<resources::IdType> deleteList;
 
-            for(const auto& [viewId, state] : states.map)
+            for(const auto& [viewId, state] : states)
             {
                 if(!viewRepository->get(viewId))
                 {
@@ -89,7 +87,7 @@ namespace dory::core::services
 
             for(auto viewId : deleteList)
             {
-                states.map.erase(viewId);
+                states.erase(viewId);
             }
 
             viewRepository->each([&](resources::entities::View& view) {
@@ -97,14 +95,14 @@ namespace dory::core::services
                 auto sceneRepo = _registry.get<repositories::ISceneRepository>(view.sceneEcsType);
                 resources::scene::SceneViewState* viewState {};
 
-                auto it = states.map.find(view.id);
-                if(it != states.map.end())
+                auto it = states.find(view.id);
+                if(it != states.end())
                 {
                     viewState = &(it->second);
                 }
                 else
                 {
-                    viewState = &(states.map.emplace(view.id, resources::scene::SceneViewState{}).first->second);
+                    viewState = &(states.emplace(view.id, resources::scene::SceneViewState{}).first->second);
                 }
 
                 if(viewState)
@@ -117,7 +115,7 @@ namespace dory::core::services
                         {
                             viewState->previous = viewState->current;
                         }
-                        else //In this case the view's scene was changed, and we have to start over from the scratch and set the previous state to default value
+                        else //In this case the view's scene was changed, and we have to start over and set the previous state to default value
                         {
                             viewState->previous = {};
                         }

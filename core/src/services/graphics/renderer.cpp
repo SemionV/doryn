@@ -27,7 +27,7 @@ namespace dory::core::services::graphics
         auto matrix = glm::mat4x4{ 1 };
         matrix = glm::scale(matrix, transform.scale);
         matrix = glm::toMat4(transform.rotation) * matrix;
-        matrix = glm::translate(matrix, transform.position);
+        matrix = matrix * glm::translate(glm::mat4x4{ 1 }, transform.position);
 
         return matrix;
     }
@@ -72,7 +72,25 @@ namespace dory::core::services::graphics
                             frame.meshMap[material] = {};
                         }
 
-                        frame.meshMap[material].emplace_back(MeshItem{ meshBinding, getTransformMatrix(object.transform) });
+                        objects::Transform transform {};
+
+                        auto prevObjectIt = viewState.previous.objects.find(objectId);
+                        if(prevObjectIt != viewState.previous.objects.end())
+                        {
+                            auto& prevTransform = prevObjectIt->second.transform;
+
+                            transform.scale = glm::mix(prevTransform.scale, object.transform.scale, alpha);
+                            transform.rotation = glm::slerp(prevTransform.rotation, object.transform.rotation, alpha);
+                            transform.position = glm::mix(prevTransform.position, object.transform.position, alpha);
+                        }
+                        else
+                        {
+                            transform.scale = object.transform.scale;
+                            transform.rotation = object.transform.rotation;
+                            transform.position = object.transform.position;
+                        }
+
+                        frame.meshMap[material].emplace_back(MeshItem{ meshBinding, getTransformMatrix(transform) });
                     }
                 }
             }

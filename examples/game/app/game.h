@@ -235,7 +235,8 @@ namespace dory::game
                 glm::mat4 rotationMatrix = glm::mat4x4{ 1 };
                 rotationMatrix = glm::rotate(rotationMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
                 rotationMatrix = glm::rotate(rotationMatrix, glm::radians(45.f), glm::vec3(0.0f, 0.0f, 1.0f));
-                auto cubeObject = core::resources::objects::SceneObject { "the cube", core::resources::nullId, cubeMeshId, { {0.5f, 0.f, 0.f}, glm::quat_cast(rotationMatrix) }, {} };
+                //TODO: use proper material id(get by material name)
+                auto cubeObject = core::resources::objects::SceneObject { "the cube", core::resources::nullId, cubeMeshId, 1, { {0.5f, 0.f, 0.f}, glm::quat_cast(rotationMatrix) }};
 
                 auto cubeObjectId = sceneService->addObject(*scene, cubeObject);
                 sceneService->addComponent(cubeObjectId, *scene,

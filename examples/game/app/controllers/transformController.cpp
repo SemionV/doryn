@@ -15,16 +15,6 @@ namespace dory::game
     using namespace scene;
     using namespace components;
 
-    glm::mat4x4 getTransformMatrix(const scene::components::Transform& transform)
-    {
-        auto matrix = glm::mat4x4{ 1 };
-        matrix = glm::scale(matrix, transform.scale);
-        matrix = glm::toMat4(transform.rotation) * matrix;
-        matrix = glm::translate(matrix, transform.position);
-
-        return matrix;
-    }
-
     TransformController::TransformController(core::Registry& registry):
         core::DependencyResolver{ registry }
     {}
@@ -50,20 +40,17 @@ namespace dory::game
                         if(scene.ecsType == core::resources::EcsType::entt)
                         {
                             auto& enttScene = (EnttScene&)scene;
-                            auto view = enttScene.registry.view<CombinedTransform, LocalTransform, WorldTransform, Rotation>();
+                            auto view = enttScene.registry.view<CombinedTransform, Transform, Rotation>();
 
                             for (auto entity : view)
                             {
                                 auto& combinedTransform = view.get<CombinedTransform>(entity);
-                                auto& localTransform = view.get<LocalTransform>(entity);
-                                auto& worldTransform = view.get<WorldTransform>(entity);
+                                auto& transform = view.get<Transform>(entity);
                                 auto& rotation = view.get<Rotation>(entity);
 
-                                glm::mat4x4 matrix = getTransformMatrix(localTransform);
-                                matrix = glm::toMat4(glm::angleAxis(rotation.currentAngle, glm::normalize(rotation.axis))) * matrix;
-                                matrix = getTransformMatrix(worldTransform) * matrix;
-
-                                combinedTransform.matrix = matrix;
+                                combinedTransform.position = transform.position;
+                                combinedTransform.rotation = glm::angleAxis(rotation.currentAngle, glm::normalize(rotation.axis)) * transform.rotation;
+                                combinedTransform.scale = transform.scale;
                             }
                         }
                     });

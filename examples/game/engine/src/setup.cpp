@@ -132,7 +132,7 @@ namespace dory::game
         registry.set<core::services::ISceneService>(libraryHandle, sceneService);
         registry.set<core::services::ISceneService, core::resources::EcsType::entt>(libraryHandle, sceneService);
 
-        auto sceneQueryService = std::make_shared<core::services::EnttSceneQueryService>();
+        auto sceneQueryService = std::make_shared<core::services::EnttSceneQueryService>(registry);
         registry.set<core::services::ISceneQueryService, core::resources::EcsType::entt>(libraryHandle, sceneQueryService);
     }
 }

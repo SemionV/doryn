@@ -19,10 +19,10 @@ namespace dory::core::controllers
 
     void ViewController::update(resources::IdType referenceId, const generic::model::TimeSpan& timeStep, resources::DataContext& context)
     {
-        auto viewService = _registry.get<services::IViewService>();
+        /*auto viewService = _registry.get<services::IViewService>();
         if(viewService)
         {
             viewService->updateViews(context);
-        }
+        }*/
     }
 }

@@ -3,6 +3,7 @@
 #include <dory/core/services/iPipelineService.h>
 #include <dory/generic/model.h>
 #include <chrono>
+#include <spdlog/fmt/fmt.h>
 
 namespace dory::core::services
 {
@@ -29,19 +30,24 @@ namespace dory::core::services
         {
             isStop = false;
 
+            std::size_t fps = 0;
+
             const auto fixedDeltaNanos = nanoseconds{16666667};
             auto accumulator = nanoseconds{0};
+            auto fpsAccumulator = nanoseconds{0};
+            auto fpsInterval = seconds{1};
             generic::model::TimeSpan timeStep(generic::model::UnitScale::Nano);
 
             steady_clock::time_point lastTimestamp = steady_clock::now();
             steady_clock::time_point currentTimestamp;
-            nanoseconds duration;
 
             SceneViewStateSet sceneStatesA;
             SceneViewStateSet sceneStatesB;
 
             std::atomic<SceneViewStateSet*> viewStateWrite { &sceneStatesA };
-            std::atomic<SceneViewStateSet*> viewStateRead { &sceneStatesB };
+            //std::atomic<SceneViewStateSet*> viewStateRead { &sceneStatesB };
+
+            auto logger = _registry.get<ILogService>();
 
             while(!isStop)
             {
@@ -54,6 +60,7 @@ namespace dory::core::services
                 }
 
                 accumulator += frameTime;
+                fpsAccumulator += frameTime;
 
                 pipelineService = _registry.get<IPipelineService>();
                 auto viewService = _registry.get<IViewService>();
@@ -63,22 +70,33 @@ namespace dory::core::services
                         timeStep.duration = fixedDeltaNanos.count();
                         pipelineService->update(context, timeStep);
 
-                        float alpha = (float)accumulator.count() / (float)fixedDeltaNanos.count();
                         auto viewStates = viewStateWrite.load();
-                        viewService->updateViewsState(*viewStates, alpha);
+                        viewService->updateViewsState(*viewStates);
 
                         accumulator -= fixedDeltaNanos;
                     }
                 }
 
-                auto viewStates = viewStateRead.exchange(viewStateWrite.load());
-                viewStateWrite.store(viewStates);
+                /*auto viewStates = viewStateRead.exchange(viewStateWrite.load());
+                viewStateWrite.store(viewStates);*/
 
                 viewService = _registry.get<IViewService>();
                 if(viewService)
                 {
-                    auto viewState = viewStateRead.load();
-                    viewService->updateViews(context);
+                    float alpha = (float)accumulator.count() / (float)fixedDeltaNanos.count();
+                    alpha = glm::clamp(alpha, 0.0f, 1.0f);
+
+                    auto viewStates = viewStateWrite.load();
+                    viewService->updateViews(*viewStates, alpha);
+                }
+
+                ++fps;
+
+                if(fpsAccumulator >= fpsInterval)
+                {
+                    logger->information(fmt::format("FPS: {0}", fps));
+                    fps = 0;
+                    fpsAccumulator = nanoseconds{0};
                 }
             }
         }

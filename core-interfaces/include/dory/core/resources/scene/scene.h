@@ -6,6 +6,7 @@
 #include "../entities/view.h"
 #include "components.h"
 #include <string>
+#include <unordered_map>
 
 namespace dory::core::resources::scene
 {
@@ -35,9 +36,5 @@ namespace dory::core::resources::scene
         SceneState current;
     };
 
-    struct SceneViewStateSet
-    {
-        std::unordered_map<resources::IdType, resources::scene::SceneViewState> map {};
-        float alpha { 1 }; //Distance between previous and current state, 0 = previous state, 1 = current state, 0.5 = halfway between the states, etc
-    };
+    using SceneViewStateSet = std::unordered_map<resources::IdType, resources::scene::SceneViewState>;
 }
