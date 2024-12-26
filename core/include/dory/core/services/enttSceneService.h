@@ -45,6 +45,7 @@ namespace dory::core::services
     {
     private:
         static void destroyObjectEntity(resources::scene::Scene& scene, entt::entity entity);
+        static decltype(auto) createNewEntity(resources::scene::EnttScene& scene, resources::IdType& id);
 
     public:
         resources::IdType addObject(resources::scene::Scene& scene, const resources::objects::SceneObject& object) override;

@@ -51,11 +51,7 @@ namespace dory::core::services::graphics
         {
             auto frame = Frame{ Viewport{ view.viewport } };
             frame.clearColor = Vector4f{ 0.01f, 0.08f, 0.01f, 1.f };
-
-            float aspectRatio = (float)window.width / (float)window.height;
-            float halfWidth = 1.0f * aspectRatio;
-            float halfHeight = 1.0f;
-            frame.viewProjectionTransform = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, -1.0f, 1.0f);
+            frame.viewProjectionTransform = view.projection;
 
             for(const auto& [objectId, object] : viewState.current.objects)
             {

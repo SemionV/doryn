@@ -7,6 +7,29 @@
 
 namespace dory::game
 {
+    void setOrthoProjectionMatrix(const core::resources::entities::Window& window, core::resources::entities::View& view)
+    {
+        float aspectRatio = (float)window.width / (float)window.height;
+        float halfWidth = 1.0f * aspectRatio;
+        float halfHeight = 1.0f;
+        view.projection = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, -100.f, 100.f);
+    }
+
+    void setPerspectiveProjectionMatrix(const core::resources::entities::Window& window, core::resources::entities::View& view)
+    {
+        float aspectRatio = (float)window.width / (float)window.height;
+        float nearPlane = 0.1f;
+        float farPlane  = 100.0f;
+        float fovY = glm::radians(60.0f);
+
+        view.projection = glm::perspective(fovY, aspectRatio, nearPlane, farPlane);
+    }
+
+    void setProjectionMatrix(const core::resources::entities::Window& window, core::resources::entities::View& view)
+    {
+        setPerspectiveProjectionMatrix(window, view);
+    }
+
     class Game
     {
     private:
@@ -41,7 +64,8 @@ namespace dory::game
                         auto view = mainView = viewService->createView(*window);
                         if(view)
                         {
-                            view->viewport = { 0, 0, windowParameters.width, windowParameters.height };
+                            view->viewport = { 0, 0, window->width, window->height };
+                            setProjectionMatrix(*window, *view);
                         }
                     }
                 }
@@ -64,6 +88,7 @@ namespace dory::game
                                 auto view = viewRepository->get(window->views[0]);
                                 if(view)
                                 {
+                                    setProjectionMatrix(*window, *view);
                                     view->viewport.width = event.width;
                                     view->viewport.height = event.height;
                                 }
@@ -89,12 +114,7 @@ namespace dory::game
 
             //Test scene
             loadAssets(context, mainWindow, graphicalContext);
-            auto scene = buildScene(context);
-            if(scene)
-            {
-                mainView->sceneId = scene->id;
-                mainView->sceneEcsType = scene->ecsType;
-            }
+            buildScene(context, *mainView);
 
             return true;
         }
@@ -224,7 +244,7 @@ namespace dory::game
             }
         }
 
-        core::resources::scene::Scene* buildScene(core::resources::DataContext& context)
+        core::resources::scene::Scene* buildScene(core::resources::DataContext& context, core::resources::entities::View& view)
         {
             auto meshRepo = _registry.get<core::repositories::assets::IMeshRepository>();
             auto sceneRepo = _registry.get<core::repositories::ISceneRepository>();
@@ -233,19 +253,30 @@ namespace dory::game
             if(meshRepo && sceneRepo && sceneService)
             {
                 auto scene = sceneRepo->insert(core::resources::scene::Scene{ {}, "main scene" });
+                view.sceneId = scene->id;
+                view.sceneEcsType = scene->ecsType;
+
+                view.cameraId = sceneService->addObject(*scene, core::resources::objects::SceneObject {
+                        "camera",
+                        core::resources::nullId,
+                        { { 0.f, 0.f, 0.f }, glm::quat{} }
+                });
 
                 auto cubeMeshId = meshRepo->getId("cube");
                 glm::mat4 rotationMatrix = glm::mat4x4{ 1 };
                 rotationMatrix = glm::rotate(rotationMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
                 rotationMatrix = glm::rotate(rotationMatrix, glm::radians(45.f), glm::vec3(0.0f, 0.0f, 1.0f));
-                //TODO: use proper material id(get by material name)
-                auto cubeObject = core::resources::objects::SceneObject { "the cube", core::resources::nullId, cubeMeshId, 1, { {0.f, 0.f, 0.f}, glm::quat_cast(rotationMatrix) }};
+                auto cubeObject = core::resources::objects::SceneObject {
+                    "the cube",
+                    core::resources::nullId,
+                    { { 0.f, 0.f, -1.3f }, glm::quat_cast(rotationMatrix) }
+                };
 
                 auto cubeObjectId = sceneService->addObject(*scene, cubeObject);
-                sceneService->addComponent(cubeObjectId, *scene,
-                                           core::resources::scene::components::Rotation{ glm::radians(10.f), glm::normalize(glm::vec3{0.f, 1.f, 0.f}) });
-                sceneService->addComponent(cubeObjectId, *scene,
-                                           core::resources::scene::components::Translation{ 0.03f, glm::normalize(glm::vec3{1.f, 0.f, 0.f}) });
+                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Mesh{ cubeMeshId });
+                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Material{ 1 }); //TODO: use proper material id(get by material name)
+                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Rotation{ glm::radians(10.f), glm::normalize(glm::vec3{0.f, 1.f, 0.f}) });
+                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Translation{ 0.f, glm::normalize(glm::vec3{1.f, 0.f, 0.f}) });
 
 
                 return scene;

@@ -36,14 +36,15 @@ namespace dory::core::services
             resources::scene::components::CombinedTransform,
             resources::scene::components::Rotation,
             resources::scene::components::Translation,
-            resources::scene::components::Mesh>;
+            resources::scene::components::Mesh,
+            resources::scene::components::Material>;
 
     using IEntityComponentService = IEntityComponentServiceBundle<EntityComponentTypes>;
 
     class ISceneService: public IEntityComponentService
     {
     public:
-        virtual resources::IdType addObject(resources::scene::Scene& scene, const resources::objects::SceneObject& object) = 0;
+        virtual resources::IdType addObject(resources::scene::Scene& scene, const resources::objects::SceneObject& entity) = 0;
         virtual void deleteObject(resources::scene::Scene& scene, resources::IdType objectId) = 0;
     };
 }

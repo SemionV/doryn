@@ -20,8 +20,6 @@ namespace dory::core::services
             if(window)
             {
                 windowSystemDevice->setupWindow(*window, parameters);
-                window->width = parameters.width;
-                window->height = parameters.height;
             }
         }
 

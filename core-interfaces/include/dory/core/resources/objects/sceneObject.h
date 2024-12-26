@@ -9,10 +9,8 @@ namespace dory::core::resources::objects
 {
     struct SceneObject
     {
-        std::string name;
-        resources::IdType parentId;
-        IdType meshId;
-        IdType materialId;
-        Transform transform;
+        std::string name {};
+        resources::IdType parentId {};
+        Transform transform {};
     };
 }

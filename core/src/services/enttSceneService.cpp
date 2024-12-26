@@ -8,14 +8,22 @@ namespace dory::core::services
 {
     namespace components = dory::core::resources::scene::components;
 
+    decltype(auto) EnttSceneService::createNewEntity(resources::scene::EnttScene& scene, resources::IdType& id)
+    {
+        auto entity = scene.registry.create();
+        id = ++scene.idCounter;
+        scene.idMap[id] = entity;
+
+        return entity;
+    }
+
     resources::IdType EnttSceneService::addObject(resources::scene::Scene& scene, const resources::objects::SceneObject& object)
     {
         auto& enttScene = (resources::scene::EnttScene&)scene;
         auto& registry = enttScene.registry;
+        resources::IdType id;
 
-        auto entity = registry.create();
-        auto id = ++enttScene.idCounter;
-        enttScene.idMap[id] = entity;
+        auto entity = createNewEntity(enttScene, id);
 
         registry.emplace<components::Children>(entity);
 
@@ -35,8 +43,6 @@ namespace dory::core::services
         registry.emplace<components::Object>(entity, id);
         registry.emplace<components::Transform>(entity, object.transform);
         registry.emplace<components::CombinedTransform>(entity, object.transform);
-        registry.emplace<components::Mesh>(entity, object.meshId);
-        registry.emplace<components::Material>(entity, object.materialId);
 
         return id;
     }

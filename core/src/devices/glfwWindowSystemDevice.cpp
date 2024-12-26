@@ -130,11 +130,15 @@ namespace dory::core::devices
         if(parameters.fullScreen)
         {
             glfwWindowHandler = glfwCreateWindow(mode->width, mode->height, parameters.title.c_str(), monitor, nullptr);
+            window.width = mode->width;
+            window.height = mode->height;
         }
         else
         {
             glfwWindowHandler = glfwCreateWindow((int)parameters.width, (int)parameters.height, parameters.title.c_str(),
                                                  nullptr, nullptr);
+            window.width = parameters.width;
+            window.height = parameters.height;
         }
         glfwWindow.handler = glfwWindowHandler;
 
