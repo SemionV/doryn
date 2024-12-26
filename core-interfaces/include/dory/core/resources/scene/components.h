@@ -55,4 +55,11 @@ namespace dory::core::resources::scene::components
         glm::vec3 axis{};
         float currentAngle{};
     };
+
+    struct Translation
+    {
+        float speed;
+        glm::vec3 direction{};
+        glm::vec3 currentPosition{};
+    };
 }

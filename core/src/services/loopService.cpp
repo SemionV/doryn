@@ -45,9 +45,7 @@ namespace dory::core::services
             SceneViewStateSet sceneStatesB;
 
             std::atomic<SceneViewStateSet*> viewStateWrite { &sceneStatesA };
-            //std::atomic<SceneViewStateSet*> viewStateRead { &sceneStatesB };
-
-            auto logger = _registry.get<ILogService>();
+            /*std::atomic<SceneViewStateSet*> viewStateRead { &sceneStatesB };*/
 
             while(!isStop)
             {
@@ -94,7 +92,8 @@ namespace dory::core::services
 
                 if(fpsAccumulator >= fpsInterval)
                 {
-                    logger->information(fmt::format("FPS: {0}", fps));
+                    //TODO: output FPS
+                    //logger->information(fmt::format("FPS: {0}", fps));
                     fps = 0;
                     fpsAccumulator = nanoseconds{0};
                 }

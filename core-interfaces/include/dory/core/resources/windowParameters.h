@@ -11,5 +11,8 @@ namespace dory::core::resources
         unsigned int height;
         std::string title;
         IdType graphicalContextId;
+        unsigned short sampling { 0 };
+        bool vSync {};
+        bool fullScreen {};
     };
 }

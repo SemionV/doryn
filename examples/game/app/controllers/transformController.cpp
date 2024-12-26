@@ -49,7 +49,7 @@ namespace dory::game
                                 auto& rotation = view.get<Rotation>(entity);
 
                                 combinedTransform.position = transform.position;
-                                combinedTransform.rotation = glm::angleAxis(rotation.currentAngle, glm::normalize(rotation.axis)) * transform.rotation;
+                                combinedTransform.rotation = glm::angleAxis(rotation.currentAngle, rotation.axis) * transform.rotation;
                                 combinedTransform.scale = transform.scale;
                             }
                         }

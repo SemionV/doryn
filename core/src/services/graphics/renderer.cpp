@@ -27,7 +27,7 @@ namespace dory::core::services::graphics
         auto matrix = glm::mat4x4{ 1 };
         matrix = glm::scale(matrix, transform.scale);
         matrix = glm::toMat4(transform.rotation) * matrix;
-        matrix = matrix * glm::translate(glm::mat4x4{ 1 }, transform.position);
+        matrix = glm::translate(glm::mat4x4{ 1 }, transform.position) * matrix;
 
         return matrix;
     }
