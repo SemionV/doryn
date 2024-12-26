@@ -10,11 +10,9 @@ namespace dory::core::services::graphics
     public:
         explicit Renderer(Registry& registry);
 
-        void draw(resources::DataContext& context, const resources::entities::View& view) override;
-
-        virtual void draw(resources::DataContext& context,
+        virtual void draw(const resources::scene::SceneViewState& viewState,
+                          float alpha,
                           const resources::entities::Window& window,
-                          const resources::entities::GraphicalContext& graphicalContext,
-                          const resources::entities::View& view) override;
+                          const resources::entities::GraphicalContext& graphicalContext) override;
     };
 }

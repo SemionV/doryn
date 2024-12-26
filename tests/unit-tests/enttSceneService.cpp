@@ -64,37 +64,37 @@ void buildTestScene(scene::EnttScene& scene, services::ISceneService& sceneServi
 
     auto localTransform = objects::Transform{ {0, 0, 0}, {}, {1, 1, 1} };
     auto worldTransform = objects::Transform{ {-1, -1, 1}, {}, {1, 1, 1} };
-    auto object = objects::SceneObject{"camera", resources::nullId, resources::nullId, localTransform, worldTransform};
+    auto object = objects::SceneObject{"camera", resources::nullId, resources::nullId, resources::nullId, localTransform};
     sceneContext.cameraId = sceneService.addObject(scene, object);
     assertEntity(object, scene, sceneContext.cameraId);
 
     worldTransform = objects::Transform{ {0, 0, 0}, {}, {1, 1, 1} };
-    object = objects::SceneObject{"root", resources::nullId, resources::nullId, localTransform, worldTransform};
+    object = objects::SceneObject{"root", resources::nullId, resources::nullId, resources::nullId, localTransform};
     sceneContext.rootId = sceneService.addObject(scene, object);
     assertEntity(object, scene, sceneContext.rootId);
 
     worldTransform = objects::Transform{ {-1, -1, 0}, {}, {2, 2, 2} };
-    object = objects::SceneObject{"soldier1", sceneContext.rootId, resources::nullId, localTransform, worldTransform};
+    object = objects::SceneObject{"soldier1", sceneContext.rootId, resources::nullId, resources::nullId, localTransform};
     sceneContext.soldier1Id = sceneService.addObject(scene, object);
     assertEntity(object, scene, sceneContext.soldier1Id);
 
     worldTransform = objects::Transform{ {1, -1, 0}, {}, {1, 1, 1} };
-    object = objects::SceneObject{"horse1", sceneContext.rootId, resources::nullId, localTransform, worldTransform};
+    object = objects::SceneObject{"horse1", sceneContext.rootId, resources::nullId, resources::nullId, localTransform};
     sceneContext.horse1Id = sceneService.addObject(scene, object);
     assertEntity(object, scene, sceneContext.horse1Id);
 
     worldTransform = objects::Transform{ {0, 0, 1}, {}, {1, 1, 1} };
-    object = objects::SceneObject{"soldier2", sceneContext.horse1Id, resources::nullId, localTransform, worldTransform};
+    object = objects::SceneObject{"soldier2", sceneContext.horse1Id, resources::nullId, resources::nullId, localTransform};
     sceneContext.soldier2Id = sceneService.addObject(scene, object);
     assertEntity(object, scene, sceneContext.soldier2Id);
 
     worldTransform = objects::Transform{ {1, -1, 0}, {}, {1, 1, 1} };
-    object = objects::SceneObject{"sword1", sceneContext.soldier1Id, resources::nullId, localTransform, worldTransform};
+    object = objects::SceneObject{"sword1", sceneContext.soldier1Id, resources::nullId, resources::nullId, localTransform};
     sceneContext.sword1Id = sceneService.addObject(scene, object);
     assertEntity(object, scene, sceneContext.sword1Id);
 
     worldTransform = objects::Transform{ {0, 0, 1}, {}, {1, 1, 1} };
-    object = objects::SceneObject{"soldier3", sceneContext.rootId, resources::nullId, localTransform, worldTransform};
+    object = objects::SceneObject{"soldier3", sceneContext.rootId, resources::nullId, resources::nullId, localTransform};
     sceneContext.soldier3Id = sceneService.addObject(scene, object);
     assertEntity(object, scene, sceneContext.soldier3Id);
 }
@@ -106,7 +106,7 @@ TEST(EnttSceneService, addObject)
 
     auto localTransform = objects::Transform{ {0, 0, 0}, {}, {1, 1, 1} };
     auto worldTransform = objects::Transform{ {-1, -1, 1}, {}, {1, 1, 1} };
-    auto object = objects::SceneObject{"camera", resources::nullId, resources::nullId, localTransform, worldTransform};
+    auto object = objects::SceneObject{"camera", resources::nullId, resources::nullId, resources::nullId, localTransform};
 
     auto id = sceneService.addObject(scene, object);
     assertEntity(object, scene, id);
@@ -128,7 +128,7 @@ TEST(EnttSceneService, deleteObject)
 
     auto localTransform = objects::Transform{ {0, 0, 0}, {}, {1, 1, 1} };
     auto worldTransform = objects::Transform{ {-1, -1, 1}, {}, {1, 1, 1} };
-    auto object = objects::SceneObject{"camera", resources::nullId, resources::nullId, localTransform, worldTransform};
+    auto object = objects::SceneObject{"camera", resources::nullId, resources::nullId, resources::nullId, localTransform};
 
     auto id = sceneService.addObject(scene, object);
     assertEntity(object, scene, id);

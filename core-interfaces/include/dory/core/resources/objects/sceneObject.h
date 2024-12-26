@@ -12,8 +12,7 @@ namespace dory::core::resources::objects
         std::string name;
         resources::IdType parentId;
         IdType meshId;
-
-        Transform localTransform;
-        Transform worldTransform;
+        IdType materialId;
+        Transform transform;
     };
 }

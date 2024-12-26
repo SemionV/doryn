@@ -28,7 +28,7 @@ namespace dory::game
             core::resources::entities::View* mainView {};
 
             _registry.get<dory::core::services::IWindowService>([&](dory::core::services::IWindowService* windowService) {
-                auto windowParameters = core::resources::WindowParameters{ 800, 600, "dory game", graphicalContext->id };
+                auto windowParameters = core::resources::WindowParameters{ 800, 600, "dory game", graphicalContext->id, 16, true, false };
                 auto window = windowService->createWindow(windowParameters, core::resources::WindowSystem::glfw);
                 if(window)
                 {
@@ -207,10 +207,13 @@ namespace dory::game
             {
                 auto mesh = meshRepo->insert(core::resources::assets::Mesh{});
                 meshRepo->setName(mesh->id, "cube");
-                //meshGenerator->triangle(1.f, 0.3f, *mesh);
-                //meshGenerator->rectangle(1.f, 1.f, *mesh);
+                //meshGenerator->triangle(1.f, 1.f, *mesh);
+                //meshGenerator->rectangle(0.5f, 0.5f, *mesh);
                 meshGenerator->cube(0.5f, *mesh);
                 mesh->materialId = materialId;
+
+                /*mesh->colors.componentsCount = 4;
+                mesh->colors.components = {1.f,0.f,0.f,1.f, 0.f,1.f,0.f,1.f, 0.f,0.f,1.f,1.f};*/
 
                 auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::mesh);
                 if(assetBinder)
@@ -235,11 +238,15 @@ namespace dory::game
                 glm::mat4 rotationMatrix = glm::mat4x4{ 1 };
                 rotationMatrix = glm::rotate(rotationMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
                 rotationMatrix = glm::rotate(rotationMatrix, glm::radians(45.f), glm::vec3(0.0f, 0.0f, 1.0f));
-                auto cubeObject = core::resources::objects::SceneObject { "the cube", core::resources::nullId, cubeMeshId, { {0.5f, 0.f, 0.f}, glm::quat_cast(rotationMatrix) }, {} };
+                //TODO: use proper material id(get by material name)
+                auto cubeObject = core::resources::objects::SceneObject { "the cube", core::resources::nullId, cubeMeshId, 1, { {0.f, 0.f, 0.f}, glm::quat_cast(rotationMatrix) }};
 
                 auto cubeObjectId = sceneService->addObject(*scene, cubeObject);
                 sceneService->addComponent(cubeObjectId, *scene,
-                                           core::resources::scene::components::Rotation{ glm::radians(45.f), glm::normalize(glm::vec3{0.f, 1.f, 0.f}) });
+                                           core::resources::scene::components::Rotation{ glm::radians(10.f), glm::normalize(glm::vec3{0.f, 1.f, 0.f}) });
+                sceneService->addComponent(cubeObjectId, *scene,
+                                           core::resources::scene::components::Translation{ 0.03f, glm::normalize(glm::vec3{1.f, 0.f, 0.f}) });
+
 
                 return scene;
             }

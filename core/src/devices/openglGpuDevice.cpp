@@ -608,6 +608,9 @@ namespace dory::core::devices
             {
                 faceMode = GL_LINE;
                 glDisable(GL_CULL_FACE);
+
+                glEnable(GL_MULTISAMPLE);
+                glEnable(GL_LINE_SMOOTH);
             }
             else if(glMaterial->material.polygonMode == resources::assets::PolygonMode::Solid)
             {

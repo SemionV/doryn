@@ -2,7 +2,8 @@
 
 #include "../entity.h"
 #include "../ecsType.h"
-#include "dory/core/resources/scene/scene.h"
+#include <atomic>
+#include <glm/glm.hpp>
 
 namespace dory::core::resources::entities
 {
@@ -25,11 +26,13 @@ namespace dory::core::resources::entities
 
     struct View: public Entity<IdType>
     {
+    public:
         IdType windowId {};
         IdType cameraId {};
         resources::IdType sceneId {};
         resources::EcsType sceneEcsType {};
         Viewport viewport {};
+        glm::mat4x4 projection {};
 
         View() = default;
 

@@ -33,11 +33,13 @@ namespace dory::game
                         if(scene.ecsType == core::resources::EcsType::entt)
                         {
                             auto& enttScene = (EnttScene&)scene;
-                            auto view = enttScene.registry.view<Rotation>();
+
+                            auto view = enttScene.registry.view<Rotation, Translation>();
 
                             for (auto entity : view)
                             {
                                 auto& rotation = view.get<Rotation>(entity);
+                                auto& translation = view.get<Translation>(entity);
 
                                 float deltaAngle = rotation.angleSpeed * timeStep.ToSeconds();
                                 rotation.currentAngle += deltaAngle;
@@ -46,6 +48,9 @@ namespace dory::game
                                 if(rotation.currentAngle < 0.0f) {
                                     rotation.currentAngle += glm::two_pi<float>();
                                 }
+
+                                float movement = translation.speed * timeStep.ToSeconds();
+                                translation.currentPosition += translation.direction * movement;
                             }
                         }
                     });

@@ -32,10 +32,11 @@ namespace dory::core::services
         }
 
         registry.emplace<components::Name>(entity, object.name);
-        registry.emplace<components::CombinedTransform>(entity, glm::mat4x4 { 1 });
-        registry.emplace<components::LocalTransform>(entity, object.localTransform);
-        registry.emplace<components::WorldTransform>(entity, object.worldTransform);
+        registry.emplace<components::Object>(entity, id);
+        registry.emplace<components::Transform>(entity, object.transform);
+        registry.emplace<components::CombinedTransform>(entity, object.transform);
         registry.emplace<components::Mesh>(entity, object.meshId);
+        registry.emplace<components::Material>(entity, object.materialId);
 
         return id;
     }
