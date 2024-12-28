@@ -26,40 +26,43 @@ namespace dory::core::resources::scene::components
         IdType id{};
     };
 
-    struct Transform
+    struct Scale
     {
-        glm::vec3 position {};
-        glm::quat rotation {};
+        glm::vec3 value{};
+    };
+
+    struct Orientation
+    {
+        glm::quat value{};
+    };
+
+    struct Position
+    {
+        glm::vec3 value{};
+    };
+
+    struct WorldTransform
+    {
         glm::vec3 scale {};
+        glm::quat rotation {};
+        glm::vec3 position {};
 
-        Transform() = default;
+        WorldTransform() = default;
 
-        explicit Transform(const objects::Transform& transform):
+        explicit WorldTransform(const objects::Transform& transform):
                 position(transform.position),
                 rotation(transform.rotation),
                 scale(transform.scale)
         {}
     };
 
-    struct CombinedTransform: public Transform
+    struct AngularVelocity
     {
-        CombinedTransform() = default;
-
-        explicit CombinedTransform(const objects::Transform& transform): Transform(transform)
-        {}
+        glm::vec3 value{};
     };
 
-    struct Rotation
+    struct LinearVelocity
     {
-        float angleSpeed{};
-        glm::vec3 axis{};
-        float currentAngle{};
-    };
-
-    struct Translation
-    {
-        float speed;
-        glm::vec3 direction{};
-        glm::vec3 currentPosition{};
+        glm::vec3 value{};
     };
 }

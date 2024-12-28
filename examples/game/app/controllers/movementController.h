@@ -6,10 +6,10 @@
 
 namespace dory::game
 {
-    class AnimationController: public core::IController, public core::DependencyResolver
+    class MovementController: public core::IController, public core::DependencyResolver
     {
     public:
-        explicit AnimationController(core::Registry& registry);
+        explicit MovementController(core::Registry& registry);
 
         bool initialize(core::resources::IdType referenceId, core::resources::DataContext& context) override;
         void stop(core::resources::IdType referenceId, core::resources::DataContext& context) override;

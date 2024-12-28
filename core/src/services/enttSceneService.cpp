@@ -41,8 +41,10 @@ namespace dory::core::services
 
         registry.emplace<components::Name>(entity, object.name);
         registry.emplace<components::Object>(entity, id);
-        registry.emplace<components::Transform>(entity, object.transform);
-        registry.emplace<components::CombinedTransform>(entity, object.transform);
+        registry.emplace<components::WorldTransform>(entity, object.transform);
+        registry.emplace<components::Scale>(entity, object.transform.scale);
+        registry.emplace<components::Orientation>(entity, object.transform.rotation);
+        registry.emplace<components::Position>(entity, object.transform.position);
 
         return id;
     }

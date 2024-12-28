@@ -40,14 +40,14 @@ namespace dory::game
                         if(scene.ecsType == core::resources::EcsType::entt)
                         {
                             auto& enttScene = (EnttScene&)scene;
-                            auto view = enttScene.registry.view<CombinedTransform, Transform, Rotation, Translation>();
+                            auto view = enttScene.registry.view<WorldTransform, Scale, Orientation, Position>();
 
                             for (auto entity : view)
                             {
                                 auto& combinedTransform = view.get<CombinedTransform>(entity);
                                 auto& transform = view.get<Transform>(entity);
-                                auto& rotation = view.get<Rotation>(entity);
-                                auto& translation = view.get<Translation>(entity);
+                                auto& rotation = view.get<RotationMovement>(entity);
+                                auto& translation = view.get<TranslationMovement>(entity);
 
                                 combinedTransform.position = transform.position + translation.currentPosition;
                                 combinedTransform.rotation = glm::angleAxis(rotation.currentAngle, rotation.axis) * transform.rotation;

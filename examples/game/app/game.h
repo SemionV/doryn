@@ -2,7 +2,7 @@
 
 #include <dory/core/registry.h>
 #include <dory/core/resources/scene/components.h>
-#include "controllers/animationController.h"
+#include "controllers/movementController.h"
 #include "controllers/transformController.h"
 
 namespace dory::game
@@ -99,8 +99,8 @@ namespace dory::game
             });
 
             _registry.get<dory::core::repositories::IPipelineRepository>([this, &libraryHandle, &context](dory::core::repositories::IPipelineRepository* pipelineRepository){
-                auto animationController = std::make_shared<AnimationController>(_registry);
-                auto controllerHandle = generic::extension::ResourceHandle<core::resources::entities::PipelineNode::ControllerPointerType>{ libraryHandle, animationController };
+                auto movementController = std::make_shared<MovementController>(_registry);
+                auto controllerHandle = generic::extension::ResourceHandle<core::resources::entities::PipelineNode::ControllerPointerType>{ libraryHandle, movementController };
                 pipelineRepository->addNode(core::resources::entities::PipelineNode{controllerHandle, context.inputGroupNodeId});
 
                 auto transformController = std::make_shared<TransformController>(_registry);
@@ -275,8 +275,8 @@ namespace dory::game
                 auto cubeObjectId = sceneService->addObject(*scene, cubeObject);
                 sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Mesh{ cubeMeshId });
                 sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Material{ 1 }); //TODO: use proper material id(get by material name)
-                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Rotation{ glm::radians(10.f), glm::normalize(glm::vec3{0.f, 1.f, 0.f}) });
-                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Translation{ 0.f, glm::normalize(glm::vec3{1.f, 0.f, 0.f}) });
+                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::AngularVelocity{glm::radians(10.f), glm::normalize(glm::vec3{0.f, 1.f, 0.f}) });
+                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::LinearVelocity{0.f, glm::normalize(glm::vec3{1.f, 0.f, 0.f}) });
 
 
                 return scene;
