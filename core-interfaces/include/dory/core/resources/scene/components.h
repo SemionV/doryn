@@ -44,14 +44,14 @@ namespace dory::core::resources::scene::components
     struct WorldTransform
     {
         glm::vec3 scale {};
-        glm::quat rotation {};
+        glm::quat orientation {};
         glm::vec3 position {};
 
         WorldTransform() = default;
 
         explicit WorldTransform(const objects::Transform& transform):
                 position(transform.position),
-                rotation(transform.rotation),
+                orientation(transform.rotation),
                 scale(transform.scale)
         {}
     };

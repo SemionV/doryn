@@ -54,9 +54,12 @@ namespace dory::game
                                 auto& position = movementView.get<Position>(entity);
 
                                 float speed = glm::length(velocity.value);
-                                glm::vec3 direction = glm::normalize(velocity.value);
+                                if(speed > 0.f)
+                                {
+                                    glm::vec3 direction = glm::normalize(velocity.value);
 
-                                position.value = position.value + direction * speed * timeStep.ToSeconds();
+                                    position.value = position.value + direction * speed * timeStep.ToSeconds();
+                                }
                             }
                         }
                     });

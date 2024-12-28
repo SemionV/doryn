@@ -19,14 +19,14 @@ namespace dory::core::services
         SceneState sceneState {};
         auto& enttScene = (EnttScene&)scene;
 
-        auto enttView = enttScene.registry.view<Object, Mesh, Material, CombinedTransform>();
+        auto enttView = enttScene.registry.view<Object, Mesh, Material, WorldTransform>();
 
         for (auto entity : enttView)
         {
             auto& object = enttView.get<Object>(entity);
             auto& mesh = enttView.get<Mesh>(entity);
             auto& material = enttView.get<Material>(entity);
-            auto& transform = enttView.get<CombinedTransform>(entity);
+            auto& transform = enttView.get<WorldTransform>(entity);
 
             auto visibleObject = VisibleObject {
                     object.id,
@@ -34,7 +34,7 @@ namespace dory::core::services
                     material.id,
                     objects::Transform {
                             transform.position,
-                            transform.rotation,
+                            transform.orientation,
                             transform.scale
                     }
             };

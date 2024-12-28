@@ -263,20 +263,22 @@ namespace dory::game
                 });
 
                 auto cubeMeshId = meshRepo->getId("cube");
-                glm::mat4 rotationMatrix = glm::mat4x4{ 1 };
-                rotationMatrix = glm::rotate(rotationMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
-                rotationMatrix = glm::rotate(rotationMatrix, glm::radians(45.f), glm::vec3(0.0f, 0.0f, 1.0f));
+                glm::mat4 orientationMatrix = glm::mat4x4{1 };
+                orientationMatrix = glm::rotate(orientationMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+                orientationMatrix = glm::rotate(orientationMatrix, glm::radians(45.f), glm::vec3(0.0f, 0.0f, 1.0f));
                 auto cubeObject = core::resources::objects::SceneObject {
                     "the cube",
                     core::resources::nullId,
-                    { { 0.f, 0.f, -1.3f }, glm::quat_cast(rotationMatrix) }
+                    { { 0.f, 0.f, -1.3f }, glm::quat_cast(orientationMatrix) }
                 };
+
+                auto axis = glm::normalize(glm::inverse(orientationMatrix) * glm::vec4{0.f, 1.f, 0.f, 1.f});
 
                 auto cubeObjectId = sceneService->addObject(*scene, cubeObject);
                 sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Mesh{ cubeMeshId });
                 sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Material{ 1 }); //TODO: use proper material id(get by material name)
-                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::AngularVelocity{glm::radians(10.f), glm::normalize(glm::vec3{0.f, 1.f, 0.f}) });
-                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::LinearVelocity{0.f, glm::normalize(glm::vec3{1.f, 0.f, 0.f}) });
+                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::AngularVelocity{glm::radians(10.f) * axis});
+                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::LinearVelocity{0.0f * glm::normalize(glm::vec3{1.f, 0.f, 0.f}) });
 
 
                 return scene;

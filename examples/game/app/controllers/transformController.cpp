@@ -44,14 +44,14 @@ namespace dory::game
 
                             for (auto entity : view)
                             {
-                                auto& combinedTransform = view.get<CombinedTransform>(entity);
-                                auto& transform = view.get<Transform>(entity);
-                                auto& rotation = view.get<RotationMovement>(entity);
-                                auto& translation = view.get<TranslationMovement>(entity);
+                                auto& worldTransform = view.get<WorldTransform>(entity);
+                                auto& scale = view.get<Scale>(entity);
+                                auto& orientation = view.get<Orientation>(entity);
+                                auto& position = view.get<Position>(entity);
 
-                                combinedTransform.position = transform.position + translation.currentPosition;
-                                combinedTransform.rotation = glm::angleAxis(rotation.currentAngle, rotation.axis) * transform.rotation;
-                                combinedTransform.scale = transform.scale;
+                                worldTransform.scale = scale.value;
+                                worldTransform.orientation = orientation.value;
+                                worldTransform.position = position.value;
                             }
                         }
                     });
