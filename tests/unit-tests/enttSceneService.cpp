@@ -181,3 +181,28 @@ TEST(EnttSceneService, destroyTestScene)
     EXPECT_FALSE(scene.idMap.contains(sceneContext.rootId));
     EXPECT_FALSE(registry.valid(rootEntity));
 }
+
+TEST(EnttSceneService, excludeEntities)
+{
+    auto scene = scene::EnttScene{{{}, "test", resources::EcsType::entt}};
+    auto& registry = scene.registry;
+
+    struct Tag { };
+    struct Tag2 { };
+
+    auto e1 = registry.create();
+    auto e2 = registry.create();
+
+// Add a trivial tag component
+    registry.emplace<Tag>(e1);
+    registry.emplace<Tag>(e2);
+
+// Now build a view excluding Parent
+    auto view = registry.view<Tag>(entt::exclude<Tag2>);
+//            ^^^ require Tag, exclude Parent
+
+    for (auto entity : view) {
+        std::cout << int(entity) << "\n";
+        // You should now see e1 and e2.
+    }
+}

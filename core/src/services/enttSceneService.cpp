@@ -29,13 +29,17 @@ namespace dory::core::services
 
         if(enttScene.idMap.contains(object.parentId))
         {
-            auto parentEntity = enttScene.idMap[object.parentId];
-            registry.emplace<components::Parent>(entity, parentEntity);
-
-            if(registry.any_of<components::Children>(parentEntity))
+            auto parentIt = enttScene.idMap.find(object.parentId);
+            if(parentIt != enttScene.idMap.end())
             {
-                auto& children = registry.get<components::Children>(parentEntity);
-                children.entities.emplace_back(entity);
+                auto parentEntity = parentIt->second;
+                registry.emplace<components::Parent>(entity, parentEntity);
+
+                if(registry.any_of<components::Children>(parentEntity))
+                {
+                    auto& children = registry.get<components::Children>(parentEntity);
+                    children.entities.emplace_back(entity);
+                }
             }
         }
 

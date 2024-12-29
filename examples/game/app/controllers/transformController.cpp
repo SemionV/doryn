@@ -1,5 +1,7 @@
 #include <dory/core/registry.h>
 #include "transformController.h"
+#include <dory/core/resources/scene/enttComponents.h>
+#include <stack>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
@@ -40,18 +42,54 @@ namespace dory::game
                         if(scene.ecsType == core::resources::EcsType::entt)
                         {
                             auto& enttScene = (EnttScene&)scene;
-                            auto view = enttScene.registry.view<WorldTransform, Scale, Orientation, Position>();
+                            auto& registry = enttScene.registry;
+                            auto stack = std::stack<entt::entity>{};
 
-                            for (auto entity : view)
+                            auto topLevelEntitiesView = registry.view<Object>(entt::exclude<Parent>);
+                            for(auto entity : topLevelEntitiesView)
                             {
-                                auto& worldTransform = view.get<WorldTransform>(entity);
-                                auto& scale = view.get<Scale>(entity);
-                                auto& orientation = view.get<Orientation>(entity);
-                                auto& position = view.get<Position>(entity);
+                                stack.push(entity);
+
+                                auto& worldTransform = registry.get<WorldTransform>(entity);
+                                auto& scale = registry.get<Scale>(entity);
+                                auto& orientation = registry.get<Orientation>(entity);
+                                auto& position = registry.get<Position>(entity);
 
                                 worldTransform.scale = scale.value;
                                 worldTransform.orientation = orientation.value;
                                 worldTransform.position = position.value;
+                            }
+
+                            while(!stack.empty())
+                            {
+                                auto entity = stack.top();
+                                stack.pop();
+
+                                auto& children = registry.get<components::Children>(entity);
+                                for(const auto childEntity : children.entities)
+                                {
+                                    stack.push(childEntity);
+
+                                    auto& parentWorldTransform = registry.get<WorldTransform>(entity);
+                                    auto& worldTransform = registry.get<WorldTransform>(childEntity);
+                                    auto& scale = registry.get<Scale>(childEntity);
+                                    auto& orientation = registry.get<Orientation>(childEntity);
+                                    auto& position = registry.get<Position>(childEntity);
+
+                                    worldTransform.scale = parentWorldTransform.scale * scale.value;
+                                    glm::vec3 localPosition = position.value * parentWorldTransform.scale;
+                                    if(glm::length(parentWorldTransform.orientation) > 0)
+                                    {
+                                        worldTransform.orientation = parentWorldTransform.orientation * orientation.value;
+                                        localPosition = parentWorldTransform.orientation * localPosition;
+                                    }
+                                    else
+                                    {
+                                        worldTransform.orientation = orientation.value;
+                                    }
+
+                                    worldTransform.position = parentWorldTransform.position + localPosition;
+                                }
                             }
                         }
                     });
