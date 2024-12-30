@@ -33,8 +33,9 @@ namespace dory::core::controllers
                         if(scene.ecsType == core::resources::EcsType::entt)
                         {
                             auto& enttScene = (EnttScene&)scene;
+                            auto& registry = enttScene.registry;
 
-                            auto rotationView = enttScene.registry.view<AngularVelocity, Orientation>();
+                            auto rotationView = registry.view<AngularVelocity, Orientation>();
                             for (auto entity : rotationView)
                             {
                                 auto& angularVelocity = rotationView.get<AngularVelocity>(entity);
@@ -47,18 +48,34 @@ namespace dory::core::controllers
                                 orientation.value = glm::normalize(orientation.value);
                             }
 
-                            auto movementView = enttScene.registry.view<LinearVelocity, Position>();
+                            auto movementView = registry.view<LinearVelocity, Position>();
                             for (auto entity : movementView)
                             {
                                 auto& velocity = movementView.get<LinearVelocity>(entity);
                                 auto& position = movementView.get<Position>(entity);
+                                auto* distance = registry.try_get<Distance>(entity);
 
                                 float speed = glm::length(velocity.value);
                                 if(speed > 0.f)
                                 {
                                     glm::vec3 direction = glm::normalize(velocity.value);
 
-                                    position.value = position.value + direction * speed * timeStep.ToSeconds();
+                                    auto step = speed * timeStep.ToSeconds();
+                                    if(distance) //adjust step according to travel distance
+                                    {
+                                        distance->value -= step;
+
+                                        if(distance->value <= 0) //step over too far, reduce step to meet travel distance
+                                        {
+                                            step = step + distance->value; //step = step + distance - step = distance
+
+                                            //Translation is complete, remove the components
+                                            registry.remove<LinearVelocity>(entity);
+                                            registry.remove<Distance>(entity);
+                                        }
+                                    }
+
+                                    position.value = position.value + direction * step;
                                 }
                             }
                         }

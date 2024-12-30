@@ -273,8 +273,9 @@ namespace dory::game
                 auto cubeObjectId = sceneService->addObject(*scene, cubeObject);
                 sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Mesh{ cubeMeshId });
                 sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Material{ 1 }); //TODO: use proper material id(get by material name)
-                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::AngularVelocity{glm::radians(45.f) * axis});
-                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::LinearVelocity{0.0f * glm::normalize(glm::vec3{1.f, 0.f, 0.f}) });
+                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::AngularVelocity{ glm::radians(45.f) * axis });
+                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::LinearVelocity{ 0.1f * glm::normalize(glm::vec3{1.f, 0.f, 0.f}) });
+                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Distance{ 1.f });
 
 
                 return scene;

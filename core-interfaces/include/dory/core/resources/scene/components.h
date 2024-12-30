@@ -65,4 +65,9 @@ namespace dory::core::resources::scene::components
     {
         glm::vec3 value{};
     };
+
+    struct Distance
+    {
+        float value;
+    };
 }
