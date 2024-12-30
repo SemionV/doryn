@@ -49,7 +49,7 @@ namespace dory::game
             core::resources::entities::View* mainView {};
 
             _registry.get<dory::core::services::IWindowService>([&](dory::core::services::IWindowService* windowService) {
-                auto windowParameters = core::resources::WindowParameters{ 800, 600, "dory game", graphicalContext->id, 16, false, false };
+                auto windowParameters = core::resources::WindowParameters{ 1024, 1024, "dory game", graphicalContext->id, 16, false, true };
                 auto window = windowService->createWindow(windowParameters, core::resources::WindowSystem::glfw);
                 if(window)
                 {
@@ -225,7 +225,8 @@ namespace dory::game
 
                 auto meshPoint = meshRepo->insert(core::resources::assets::Mesh{});
                 meshRepo->setName(meshPoint->id, "point");
-                meshGenerator->rectangle(0.05f, 0.05f, *meshPoint);
+                meshGenerator->rectangle(0.01f, 0.01f, *meshPoint);
+                meshPoint->materialId = materialId;
 
                 auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::mesh);
                 if(assetBinder)
@@ -275,22 +276,25 @@ namespace dory::game
 
                 auto axis = glm::normalize(/*glm::inverse(orientationMatrix) * */glm::vec4{0.f, 1.f, 0.f, 1.f});
 
-                auto cubeObjectId = sceneService->addObject(*scene, cubeObject);
+                /*auto cubeObjectId = sceneService->addObject(*scene, cubeObject);
                 sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Mesh{ cubeMeshId });
                 sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Material{ 1 }); //TODO: use proper material id(get by material name)
                 sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::AngularVelocity{ glm::radians(45.f) * axis });
                 sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::LinearVelocity{ 0.1f * glm::normalize(glm::vec3{1.f, 0.f, 0.f}) });
-                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Distance{ 1.f });
+                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Distance{ 1.f });*/
 
                 auto pointMeshId = meshRepo->getId("point");
                 auto pointObject = core::resources::objects::SceneObject {
                     "point",
                     core::resources::nullId,
-                    { { 0.f, 0.f, -1.f }, {} }
+                    { { -0.5f, 0.f, -1.f }, {} }
                 };
                 auto pointObjectId = sceneService->addObject(*scene, pointObject);
                 sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Mesh{ pointMeshId });
                 sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Material{ 1 }); //TODO: use proper material id(get by material name)
+                sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::LinearVelocity{ 1.5f * glm::normalize(glm::vec3{1.f, 0.f, 0.f}) });
+                sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Distance{ 1.f });
+                //sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Deceleration{ 1.f, 0.2f });
 
                 return scene;
             }

@@ -1,6 +1,8 @@
 #include <dory/core/registry.h>
 #include <dory/core/controllers/movementController.h>
 
+#include <spdlog/fmt/fmt.h>
+
 namespace dory::core::controllers
 {
     using namespace core;
@@ -54,13 +56,31 @@ namespace dory::core::controllers
                                 auto& velocity = movementView.get<LinearVelocity>(entity);
                                 auto& position = movementView.get<Position>(entity);
                                 auto* distance = registry.try_get<Distance>(entity);
+                                auto* deceleration = registry.try_get<Deceleration>(entity);
 
+                                float timeStepSeconds = timeStep.ToSeconds();
                                 float speed = glm::length(velocity.value);
+                                glm::vec3 direction = glm::normalize(velocity.value);
+
+                                if(deceleration && deceleration->velocity > 0.f)
+                                {
+                                    float currentVelocity = deceleration->velocity;
+                                    float a = -(currentVelocity * currentVelocity) / (2.0f * deceleration->distance);
+                                    deceleration->velocity += a * timeStepSeconds;
+                                    speed = deceleration->velocity;
+
+                                    if(speed <= 0.0f)
+                                    {
+                                        speed = currentVelocity;
+                                        velocity.value = speed * direction;
+                                        registry.remove<Deceleration>(entity);
+                                    }
+                                }
+
                                 if(speed > 0.f)
                                 {
-                                    glm::vec3 direction = glm::normalize(velocity.value);
+                                    auto step = speed * timeStepSeconds;
 
-                                    auto step = speed * timeStep.ToSeconds();
                                     if(distance) //adjust step according to travel distance
                                     {
                                         distance->left -= step;
@@ -76,6 +96,13 @@ namespace dory::core::controllers
                                         }
 
                                         distance->done += step;
+
+                                        float totalDistance = distance->left + distance->done;
+                                        float d = distance->left / totalDistance;
+                                        if(d <= 0.5f && !deceleration)
+                                        {
+                                            registry.emplace<Deceleration>(entity, Deceleration{ speed, speed, distance->left});
+                                        }
                                     }
 
                                     position.value = position.value + direction * step;

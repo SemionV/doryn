@@ -39,6 +39,7 @@ namespace dory::core::services
             resources::scene::components::AngularVelocity,
             resources::scene::components::LinearVelocity,
             resources::scene::components::Distance,
+            resources::scene::components::Deceleration,
             resources::scene::components::Mesh,
             resources::scene::components::Material>;
 

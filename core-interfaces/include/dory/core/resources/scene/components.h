@@ -71,4 +71,11 @@ namespace dory::core::resources::scene::components
         float left {};
         float done {};
     };
+
+    struct Deceleration
+    {
+        float startVelocity {};
+        float velocity {};
+        float distance {};
+    };
 }
