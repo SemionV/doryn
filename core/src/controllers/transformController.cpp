@@ -1,16 +1,12 @@
 #include <dory/core/registry.h>
-#include "transformController.h"
+#include <dory/core/controllers/transformController.h>
 #include <dory/core/resources/scene/enttComponents.h>
 #include <stack>
 
-#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/quaternion.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
-namespace dory::game
+namespace dory::core::controllers
 {
     using namespace core;
     using namespace resources;

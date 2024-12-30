@@ -2,8 +2,6 @@
 
 #include <dory/core/registry.h>
 #include <dory/core/resources/scene/components.h>
-#include "controllers/movementController.h"
-#include "controllers/transformController.h"
 
 namespace dory::game
 {
@@ -96,16 +94,6 @@ namespace dory::game
                         }
                     }
                 });
-            });
-
-            _registry.get<dory::core::repositories::IPipelineRepository>([this, &libraryHandle, &context](dory::core::repositories::IPipelineRepository* pipelineRepository){
-                auto movementController = std::make_shared<MovementController>(_registry);
-                auto controllerHandle = generic::extension::ResourceHandle<core::resources::entities::PipelineNode::ControllerPointerType>{ libraryHandle, movementController };
-                pipelineRepository->addNode(core::resources::entities::PipelineNode{controllerHandle, context.inputGroupNodeId});
-
-                auto transformController = std::make_shared<TransformController>(_registry);
-                controllerHandle = generic::extension::ResourceHandle<core::resources::entities::PipelineNode::ControllerPointerType>{ libraryHandle, transformController };
-                pipelineRepository->addNode(core::resources::entities::PipelineNode{controllerHandle, context.inputGroupNodeId});
             });
 
             _registry.get<core::devices::ITerminalDevice>([](core::devices::ITerminalDevice* terminalDevice) {

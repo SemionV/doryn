@@ -4,7 +4,7 @@
 #include <dory/core/dependencyResolver.h>
 #include <dory/core/resources/scene/enttScene.h>
 
-namespace dory::game
+namespace dory::core::controllers
 {
     class TransformController: public core::IController, public core::DependencyResolver
     {

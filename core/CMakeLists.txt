@@ -40,6 +40,8 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/generators/meshGenerator.cpp
         src/controllers/windowSystemController.cpp
         src/controllers/viewController.cpp
+        src/controllers/movementController.cpp
+        src/controllers/transformController.cpp
         ${DORY_PLATFORM_MODULES})
 
 target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
