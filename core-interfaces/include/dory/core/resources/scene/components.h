@@ -68,6 +68,7 @@ namespace dory::core::resources::scene::components
 
     struct Distance
     {
-        float value;
+        float left {};
+        float done {};
     };
 }

@@ -63,16 +63,19 @@ namespace dory::core::controllers
                                     auto step = speed * timeStep.ToSeconds();
                                     if(distance) //adjust step according to travel distance
                                     {
-                                        distance->value -= step;
+                                        distance->left -= step;
 
-                                        if(distance->value <= 0) //step over too far, reduce step to meet travel distance
+                                        if(distance->left <= 0) //step over too far, reduce step to meet travel distance
                                         {
-                                            step = step + distance->value; //step = step + distance - step = distance
+                                            step = step + distance->left; //step = step + distance - step = distance
+                                            distance->left = 0.f;
 
                                             //Translation is complete, remove the components
                                             registry.remove<LinearVelocity>(entity);
                                             registry.remove<Distance>(entity);
                                         }
+
+                                        distance->done += step;
                                     }
 
                                     position.value = position.value + direction * step;
