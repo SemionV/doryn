@@ -63,7 +63,13 @@ namespace dory::core::resources::scene::components
 
     struct LinearVelocity
     {
+        glm::vec3 initialValue{};
         glm::vec3 value{};
+
+        LinearVelocity() = default;
+
+        explicit LinearVelocity(glm::vec3 value): initialValue(value), value(value)
+        {}
     };
 
     struct Distance
@@ -74,8 +80,7 @@ namespace dory::core::resources::scene::components
 
     struct Deceleration
     {
-        float startVelocity {};
-        float velocity {};
-        float distance {};
+        float speed {};
+        float threshold {};
     };
 }

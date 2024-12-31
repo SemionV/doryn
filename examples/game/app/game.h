@@ -49,7 +49,7 @@ namespace dory::game
             core::resources::entities::View* mainView {};
 
             _registry.get<dory::core::services::IWindowService>([&](dory::core::services::IWindowService* windowService) {
-                auto windowParameters = core::resources::WindowParameters{ 1024, 1024, "dory game", graphicalContext->id, 16, false, true };
+                auto windowParameters = core::resources::WindowParameters{ 1024, 1024, "dory game", graphicalContext->id, 16, false, false };
                 auto window = windowService->createWindow(windowParameters, core::resources::WindowSystem::glfw);
                 if(window)
                 {
