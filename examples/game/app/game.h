@@ -262,7 +262,7 @@ namespace dory::game
                         { { 0.f, 0.f, -2.3f }, {} }
                 };
                 auto cubeParentObjectId = sceneService->addObject(*scene, cubeParentObject);
-                sceneService->addComponent(cubeParentObjectId, *scene, core::resources::scene::components::AngularVelocity{glm::radians(20.f) * glm::normalize(glm::vec3{0.f, 1.f, 0.f})});
+                sceneService->addComponent(cubeParentObjectId, *scene, core::resources::scene::components::MovementAngularVelocity{glm::radians(20.f) * glm::normalize(glm::vec3{0.f, 1.f, 0.f})});
 
                 auto cubeMeshId = meshRepo->getId("cube");
                 glm::mat4 orientationMatrix = glm::mat4x4{ 1 };
@@ -292,9 +292,15 @@ namespace dory::game
                 auto pointObjectId = sceneService->addObject(*scene, pointObject);
                 sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Mesh{ pointMeshId });
                 sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Material{ 1 }); //TODO: use proper material id(get by material name)
-                sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::LinearVelocity{ 1.5f * glm::normalize(glm::vec3{1.f, 0.f, 0.f}) });
-                sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Distance{ 1.f });
-                //sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Deceleration{ 1.f, 0.2f });
+
+                float speed = 0.f;
+                float distance = 1.f;
+                sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::MovementLinearVelocity{speed, glm::normalize(glm::vec3{1.f, 0.f, 0.f}) });
+                sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::MovementDistance{ distance });
+
+                float targetVelocity = 0.2f;
+                float a = ((targetVelocity * targetVelocity) - (speed * speed)) / (2 * 0.3f * distance);
+                sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::MovementAcceleration{ a, targetVelocity });
 
                 return scene;
             }

@@ -1,8 +1,6 @@
 #include <dory/core/registry.h>
 #include <dory/core/controllers/movementController.h>
 
-#include <spdlog/fmt/fmt.h>
-
 namespace dory::core::controllers
 {
     using namespace core;
@@ -25,8 +23,6 @@ namespace dory::core::controllers
 
     void MovementController::update(core::resources::IdType referenceId, const generic::model::TimeSpan& timeStep, core::resources::DataContext& context)
     {
-        auto logger = _registry.get<services::ILogService>();
-
         _registry.getAll<repositories::ISceneRepository, EcsType>([&](const auto& repos) {
             for(const auto& [key, value] : repos)
             {
@@ -39,10 +35,10 @@ namespace dory::core::controllers
                             auto& enttScene = (EnttScene&)scene;
                             auto& registry = enttScene.registry;
 
-                            auto rotationView = registry.view<AngularVelocity, Orientation>();
+                            auto rotationView = registry.view<MovementAngularVelocity, Orientation>();
                             for (auto entity : rotationView)
                             {
-                                auto& angularVelocity = rotationView.get<AngularVelocity>(entity);
+                                auto& angularVelocity = rotationView.get<MovementAngularVelocity>(entity);
                                 auto& orientation = rotationView.get<Orientation>(entity);
 
                                 float angleSpeed = glm::length(angularVelocity.value);
@@ -52,29 +48,34 @@ namespace dory::core::controllers
                                 orientation.value = glm::normalize(orientation.value);
                             }
 
-                            auto movementView = registry.view<LinearVelocity, Position>();
+                            auto movementView = registry.view<MovementLinearVelocity, Position>();
                             for (auto entity : movementView)
                             {
-                                auto& velocity = movementView.get<LinearVelocity>(entity);
                                 auto& position = movementView.get<Position>(entity);
-                                auto* distance = registry.try_get<Distance>(entity);
-                                auto* deceleration = registry.try_get<Deceleration>(entity);
+                                auto& velocity = movementView.get<MovementLinearVelocity>(entity);
+                                auto* distance = registry.try_get<MovementDistance>(entity);
+                                auto* acceleration = registry.try_get<MovementAcceleration>(entity);
 
                                 float timeStepSeconds = timeStep.ToSeconds();
-                                float speed = glm::length(velocity.value);
-                                float initialSpeed = glm::length(velocity.initialValue);
-                                glm::vec3 direction = glm::normalize(velocity.value);
+                                float speed = velocity.value;
+                                glm::vec3 direction = velocity.direction;
 
-                                if(deceleration && speed > initialSpeed * deceleration->threshold)
+                                if(acceleration && acceleration->speed != 0.f)
                                 {
-                                    speed += deceleration->speed * timeStepSeconds;
+                                    char accelerationSign = acceleration->speed / glm::abs(acceleration->speed);
+                                    bool isThresholdReached = (float)accelerationSign * speed >= (float)accelerationSign * acceleration->targetSpeed;
 
-                                    if(speed < initialSpeed * deceleration->threshold)
+                                    if(!isThresholdReached)
                                     {
-                                        speed = initialSpeed * deceleration->threshold;
-                                    }
+                                        speed += acceleration->speed * timeStepSeconds;
 
-                                    velocity.value = speed * direction;
+                                        if((float)accelerationSign * speed > (float)accelerationSign * acceleration->targetSpeed)
+                                        {
+                                            speed = acceleration->targetSpeed;
+                                        }
+
+                                        velocity.value = speed;
+                                    }
                                 }
 
                                 if(speed > 0.f)
@@ -89,43 +90,25 @@ namespace dory::core::controllers
                                         {
                                             step = step + distance->left; //step = step + distance - step = distance
                                             distance->left = 0.f;
-                                            distance->done += step;
 
                                             //Translation is complete, remove the components
-                                            //registry.remove<LinearVelocity>(entity);
-                                            //registry.remove<Distance>(entity);
-                                            if(deceleration)
+                                            registry.remove<MovementLinearVelocity>(entity);
+                                            registry.remove<MovementDistance>(entity);
+                                            if(acceleration)
                                             {
-                                                registry.remove<Deceleration>(entity);
+                                                registry.remove<MovementAcceleration>(entity);
                                             }
-
-                                            auto tempPosition = position.value + direction * step;
-                                            if(logger)
-                                            {
-                                                logger->information(fmt::format("pos: [{0}, {1}, {2}]", tempPosition.x, tempPosition.y, tempPosition.z));
-                                            }
-
-                                            velocity.initialValue = -1.f * velocity.initialValue;
-                                            velocity.value = velocity.initialValue;
-                                            speed = glm::length(velocity.initialValue);
-
-                                            distance->left = distance->done;
-                                            distance->done = 0.f;
                                         }
-                                        else
-                                        {
-                                            distance->done += step;
-                                        }
+
+                                        distance->done += step;
 
                                         float totalDistance = distance->left + distance->done;
                                         float d = distance->left / totalDistance;
-                                        if(d <= 1.f && !deceleration)
+                                        if(d <= 0.3f && acceleration && acceleration->speed > 0.f)
                                         {
-                                            registry.emplace<Deceleration>(entity,
-                                                Deceleration {
-                                                    -(speed * speed) / (2.0f * distance->left),
-                                                    0.1f
-                                                });
+                                            float a = -(speed * speed) / (2.0f * distance->left);
+                                            acceleration->speed = a;
+                                            acceleration->targetSpeed = 0.01f;
                                         }
                                     }
 
