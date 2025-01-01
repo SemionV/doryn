@@ -6,10 +6,10 @@
 
 namespace dory::core::controllers
 {
-    class LinearMovementController: public core::IController, public core::DependencyResolver
+    class AccelerationMovementController: public core::IController, public core::DependencyResolver
     {
     public:
-        explicit LinearMovementController(core::Registry& registry);
+        explicit AccelerationMovementController(core::Registry& registry);
 
         bool initialize(core::resources::IdType referenceId, core::resources::DataContext& context) override;
         void stop(core::resources::IdType referenceId, core::resources::DataContext& context) override;

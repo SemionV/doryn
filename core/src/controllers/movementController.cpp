@@ -1,5 +1,6 @@
 #include <dory/core/registry.h>
 #include <dory/core/controllers/movementController.h>
+#include <iostream>
 
 namespace dory::core::controllers
 {
@@ -46,6 +47,51 @@ namespace dory::core::controllers
 
                                 orientation.value = orientation.value * glm::angleAxis(angleSpeed * timeStep.ToSeconds(), axis);
                                 orientation.value = glm::normalize(orientation.value);
+                            }
+
+                            auto linearMovementView = registry.view<LinearMovement, Position>();
+                            for (auto entity : linearMovementView)
+                            {
+                                auto& movement = linearMovementView.get<LinearMovement>(entity);
+                                auto& position = linearMovementView.get<Position>(entity);
+
+                                if(movement.step > 0.f)
+                                {
+                                    position.value += glm::normalize(movement.value) * movement.step;
+
+                                    //Motion is complete
+                                    if(movement.distanceDone >= glm::length(movement.value))
+                                    {
+                                        movement.currentVelocity = 0.f;
+                                        movement.distanceDone = 0.f;
+                                        movement.value *= -1;
+
+                                        //TODO: fire an event about object's arrival to the destination of the linear movement
+                                    }
+                                }
+                            }
+
+                            auto rotationMovementView = registry.view<RotationMovement, Orientation, Position>();
+                            for (auto entity : rotationMovementView)
+                            {
+                                auto& movement = rotationMovementView.get<RotationMovement>(entity);
+                                auto& orientation = rotationMovementView.get<Orientation>(entity);
+                                auto& position = rotationMovementView.get<Position>(entity);
+
+                                if(movement.step > 0.f)
+                                {
+                                    orientation.value = orientation.value * glm::angleAxis(movement.step, glm::normalize(movement.value));
+                                    orientation.value = glm::normalize(orientation.value);
+
+                                    if(movement.distanceDone >= glm::length(movement.value))
+                                    {
+                                        /*movement.currentVelocity = 0.f;
+                                        movement.distanceDone = 0.f;
+                                        movement.value *= -1;*/
+
+                                        //TODO: fire an event about object's arrival to the destination of the linear movement
+                                    }
+                                }
                             }
                         }
                     });
