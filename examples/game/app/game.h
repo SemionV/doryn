@@ -49,7 +49,7 @@ namespace dory::game
             core::resources::entities::View* mainView {};
 
             _registry.get<dory::core::services::IWindowService>([&](dory::core::services::IWindowService* windowService) {
-                auto windowParameters = core::resources::WindowParameters{ 1024, 1024, "dory game", graphicalContext->id, 16, false, false };
+                auto windowParameters = core::resources::WindowParameters{ 1024, 1024, "dory game", graphicalContext->id, 16, false, true };
                 auto window = windowService->createWindow(windowParameters, core::resources::WindowSystem::glfw);
                 if(window)
                 {
@@ -293,14 +293,20 @@ namespace dory::game
                 sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Mesh{ pointMeshId });
                 sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Material{ 1 }); //TODO: use proper material id(get by material name)
 
-                float speed = 0.f;
-                float distance = 1.f;
-                sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::MovementLinearVelocity{speed, glm::normalize(glm::vec3{1.f, 0.f, 0.f}) });
-                sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::MovementDistance{ distance });
-
-                float targetVelocity = 0.2f;
-                float a = ((targetVelocity * targetVelocity) - (speed * speed)) / (2 * 0.3f * distance);
-                sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::MovementAcceleration{ a, targetVelocity });
+                float accelerationDistance = 0.3f;
+                float startVelocity = 0.0f;
+                float highVelocity = 0.7f;
+                float lowVelocity = 0.01f;
+                sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::LinearMovement{
+                    glm::vec3 { 1.f, 0.f, 0.f },
+                    startVelocity,
+                    highVelocity,
+                    lowVelocity,
+                    0.f,
+                    accelerationDistance,
+                    ((highVelocity * highVelocity) - (startVelocity * startVelocity)) / (2 * accelerationDistance),
+                    -((highVelocity * highVelocity) - (lowVelocity * lowVelocity)) / (2 * accelerationDistance)
+                });
 
                 return scene;
             }

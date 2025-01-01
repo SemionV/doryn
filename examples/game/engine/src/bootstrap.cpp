@@ -1,8 +1,7 @@
 #include <dory/core/registry.h>
 #include "dory/game/bootstrap.h"
 #include <dory/core/controllers/windowSystemController.h>
-#include <dory/core/controllers/viewController.h>
-#include <dory/core/controllers/movementController.h>
+#include <dory/core/controllers/linearMovementController.h>
 #include <dory/core/controllers/transformController.h>
 #include <regex>
 #include <iostream>
@@ -175,8 +174,8 @@ namespace dory::game
             auto controllerHandle = generic::extension::ResourceHandle<core::resources::entities::PipelineNode::ControllerPointerType>{ libraryHandle, windowSystemController };
             pipelineRepository->addNode(core::resources::entities::PipelineNode{controllerHandle, inputGroupId});
 
-            auto movementController = std::make_shared<core::controllers::MovementController>(_registry);
-            controllerHandle = generic::extension::ResourceHandle<core::resources::entities::PipelineNode::ControllerPointerType>{ libraryHandle, movementController };
+            auto linearMovementController = std::make_shared<core::controllers::LinearMovementController>(_registry);
+            controllerHandle = generic::extension::ResourceHandle<core::resources::entities::PipelineNode::ControllerPointerType>{ libraryHandle, linearMovementController };
             pipelineRepository->addNode(core::resources::entities::PipelineNode{controllerHandle, context.inputGroupNodeId});
 
             auto transformController = std::make_shared<core::controllers::TransformController>(_registry);

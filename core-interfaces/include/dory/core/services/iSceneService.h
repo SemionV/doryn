@@ -36,10 +36,8 @@ namespace dory::core::services
             resources::scene::components::Orientation,
             resources::scene::components::Position,
             resources::scene::components::WorldTransform,
+            resources::scene::components::LinearMovement,
             resources::scene::components::MovementAngularVelocity,
-            resources::scene::components::MovementLinearVelocity,
-            resources::scene::components::MovementDistance,
-            resources::scene::components::MovementAcceleration,
             resources::scene::components::Mesh,
             resources::scene::components::Material>;
 

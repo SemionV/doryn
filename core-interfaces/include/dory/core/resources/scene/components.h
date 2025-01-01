@@ -61,23 +61,15 @@ namespace dory::core::resources::scene::components
         glm::vec3 value{};
     };
 
-    struct MovementLinearVelocity
+    struct LinearMovement
     {
-        float value{};
-        glm::vec3 direction{};
-    };
-
-    struct MovementDistance
-    {
-        float left {};
-        float done {};
-        float accelerateUntil {};
-        float decelerateFrom {};
-    };
-
-    struct MovementAcceleration
-    {
-        float speed {};
-        float targetSpeed {};
+        glm::vec3 translation;
+        float distanceDone;
+        float highVelocity {};
+        float lowVelocity {};
+        float currentVelocity {};
+        float decelerationDistance {};
+        float acceleration {};
+        float deceleration {};
     };
 }
