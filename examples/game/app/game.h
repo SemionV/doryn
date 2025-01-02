@@ -49,7 +49,7 @@ namespace dory::game
             core::resources::entities::View* mainView {};
 
             _registry.get<dory::core::services::IWindowService>([&](dory::core::services::IWindowService* windowService) {
-                auto windowParameters = core::resources::WindowParameters{ 1024, 1024, "dory game", graphicalContext->id, 16, false, true };
+                auto windowParameters = core::resources::WindowParameters{ 1024, 1024, "dory game", graphicalContext->id, 16, false, false };
                 auto window = windowService->createWindow(windowParameters, core::resources::WindowSystem::glfw);
                 if(window)
                 {
@@ -225,7 +225,7 @@ namespace dory::game
 
                 auto meshPoint = meshRepo->insert(core::resources::assets::Mesh{});
                 meshRepo->setName(meshPoint->id, "point");
-                meshGenerator->rectangle(0.01f, 0.01f, *meshPoint);
+                meshGenerator->rectangle(0.1f, 0.1f, *meshPoint);
                 meshPoint->materialId = materialId;
 
                 auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::mesh);
@@ -256,70 +256,104 @@ namespace dory::game
                         { { 0.f, 0.f, 0.f }, glm::quat{} }
                 });
 
-                auto cubeParentObject = core::resources::objects::SceneObject {
-                        "the cube parent",
-                        core::resources::nullId,
-                        { { 0.f, 0.f, 0.f }, {} }
-                };
-                auto cubeParentObjectId = sceneService->addObject(*scene, cubeParentObject);
-                //sceneService->addComponent(cubeParentObjectId, *scene, core::resources::scene::components::MovementAngularVelocity{glm::radians(20.f) * glm::normalize(glm::vec3{0.f, 1.f, 0.f})});
+                core::resources::IdType cubeParentObjectId {};
+                {
+                    auto cubeParentObject = core::resources::objects::SceneObject {
+                            "the cube parent",
+                            core::resources::nullId,
+                            { { 0.f, 0.f, -1.f }, {} }
+                    };
+                    cubeParentObjectId = sceneService->addObject(*scene, cubeParentObject);
+                    //sceneService->addComponent(cubeParentObjectId, *scene, core::resources::scene::components::MovementAngularVelocity{glm::radians(20.f) * glm::normalize(glm::vec3{0.f, 1.f, 0.f})});
 
-                float rAccelerationDistance = glm::radians(30.f);
-                float rStartVelocity = 0.0f;
-                float rHighVelocity = glm::radians(45.f);
-                float rLowVelocity = glm::radians(0.1f);
-                sceneService->addComponent(cubeParentObjectId, *scene, core::resources::scene::components::RotationMovement{
-                        glm::vec3 { 0.f, 0.f, 1.f } * glm::radians(180.f),
-                        rStartVelocity,
-                        rHighVelocity,
-                        rLowVelocity,
+                    float rAccelerationDistance = glm::radians(30.f);
+                    float rStartVelocity = 0.0f;
+                    float rHighVelocity = glm::radians(45.f);
+                    float rLowVelocity = glm::radians(0.1f);
+                    /*sceneService->addComponent(cubeParentObjectId, *scene, core::resources::scene::components::RotationMovement{
+                            glm::vec3 { 0.f, 0.f, 1.f } * glm::radians(180.f),
+                            rStartVelocity,
+                            rHighVelocity,
+                            rLowVelocity,
+                            0.f,
+                            rAccelerationDistance,
+                            ((rHighVelocity * rHighVelocity) - (rStartVelocity * rStartVelocity)) / (2 * rAccelerationDistance),
+                            -((rHighVelocity * rHighVelocity) - (rLowVelocity * rLowVelocity)) / (2 * rAccelerationDistance)
+                    });*/
+                }
+
+                {
+                    auto cubeMeshId = meshRepo->getId("cube");
+                    glm::mat4 orientationMatrix = glm::mat4x4{ 1 };
+                    //orientationMatrix = glm::rotate(orientationMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+                    //orientationMatrix = glm::rotate(orientationMatrix, glm::radians(45.f), glm::vec3(0.0f, 0.0f, 1.0f));
+                    auto cubeObject = core::resources::objects::SceneObject {
+                            "the cube",
+                            //cubeParentObjectId,
+                            core::resources::nullId,
+                            { { 0.f, 0.f, 0.f }, glm::quat_cast(orientationMatrix) }
+                    };
+
+                    auto cubeObjectId = sceneService->addObject(*scene, cubeObject);
+                    sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Mesh{ cubeMeshId });
+                    sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Material{ 1 }); //TODO: use proper material id(get by material name)
+                    float rAccelerationDistance = glm::radians(30.f);
+                    float rStartVelocity = 0.0f;
+                    float rHighVelocity = glm::radians(45.f);
+                    float rLowVelocity = glm::radians(0.1f);
+                    sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::RotationMovement{
+                            glm::vec3 { 0.f, 0.f, 1.f } * glm::radians(180.f),
+                            rStartVelocity,
+                            rHighVelocity,
+                            rLowVelocity,
+                            0.f,
+                            rAccelerationDistance,
+                            ((rHighVelocity * rHighVelocity) - (rStartVelocity * rStartVelocity)) / (2 * rAccelerationDistance),
+                            -((rHighVelocity * rHighVelocity) - (rLowVelocity * rLowVelocity)) / (2 * rAccelerationDistance)
+                    });
+                }
+
+                {
+                    auto pointMeshId = meshRepo->getId("point");
+                    auto pointObject = core::resources::objects::SceneObject {
+                            "point",
+                            cubeParentObjectId,
+                            { { -0.5f, 0.f, -1.f }, {} }
+                    };
+                    auto pointObjectId = sceneService->addObject(*scene, pointObject);
+                    sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Mesh{ pointMeshId });
+                    sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Material{ 1 }); //TODO: use proper material id(get by material name)
+
+                    float accelerationDistance = 0.3f;
+                    float startVelocity = 0.0f;
+                    float highVelocity = 0.7f;
+                    float lowVelocity = 0.01f;
+                    sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::LinearMovement{
+                        glm::vec3 { 1.f, 0.f, 0.f },
+                        startVelocity,
+                        highVelocity,
+                        lowVelocity,
                         0.f,
-                        rAccelerationDistance,
-                        ((rHighVelocity * rHighVelocity) - (rStartVelocity * rStartVelocity)) / (2 * rAccelerationDistance),
-                        -((rHighVelocity * rHighVelocity) - (rLowVelocity * rLowVelocity)) / (2 * rAccelerationDistance)
-                });
+                        accelerationDistance,
+                        ((highVelocity * highVelocity) - (startVelocity * startVelocity)) / (2 * accelerationDistance),
+                        -((highVelocity * highVelocity) - (lowVelocity * lowVelocity)) / (2 * accelerationDistance)
+                    });
 
-                auto cubeMeshId = meshRepo->getId("cube");
-                glm::mat4 orientationMatrix = glm::mat4x4{ 1 };
-                //orientationMatrix = glm::rotate(orientationMatrix, glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
-                //orientationMatrix = glm::rotate(orientationMatrix, glm::radians(45.f), glm::vec3(0.0f, 0.0f, 1.0f));
-                auto cubeObject = core::resources::objects::SceneObject {
-                    "the cube",
-                    //cubeParentObjectId,
-                    core::resources::nullId,
-                    { { 0.f, 0.f, 0.f }, glm::quat_cast(orientationMatrix) }
-                };
-
-                auto axis = glm::normalize(/*glm::inverse(orientationMatrix) * */glm::vec4{0.f, 1.f, 0.f, 1.f});
-
-                auto cubeObjectId = sceneService->addObject(*scene, cubeObject);
-                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Mesh{ cubeMeshId });
-                sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Material{ 1 }); //TODO: use proper material id(get by material name)
-
-                auto pointMeshId = meshRepo->getId("point");
-                auto pointObject = core::resources::objects::SceneObject {
-                    "point",
-                    cubeParentObjectId,
-                    { { -0.5f, 0.f, -1.f }, {} }
-                };
-                auto pointObjectId = sceneService->addObject(*scene, pointObject);
-                sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Mesh{ pointMeshId });
-                sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Material{ 1 }); //TODO: use proper material id(get by material name)
-
-                float accelerationDistance = 0.3f;
-                float startVelocity = 0.0f;
-                float highVelocity = 0.7f;
-                float lowVelocity = 0.01f;
-                /*sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::LinearMovement{
-                    glm::vec3 { 1.f, 0.f, 0.f },
-                    startVelocity,
-                    highVelocity,
-                    lowVelocity,
-                    0.f,
-                    accelerationDistance,
-                    ((highVelocity * highVelocity) - (startVelocity * startVelocity)) / (2 * accelerationDistance),
-                    -((highVelocity * highVelocity) - (lowVelocity * lowVelocity)) / (2 * accelerationDistance)
-                });*/
+                    float rAccelerationDistance = glm::radians(30.f);
+                    float rStartVelocity = 0.0f;
+                    float rHighVelocity = glm::radians(180.f);
+                    float rLowVelocity = glm::radians(0.1f);
+                    sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::RotationMovement{
+                            glm::vec3 { 0.f, 0.f, 1.f } * glm::radians(180.f),
+                            rStartVelocity,
+                            rHighVelocity,
+                            rLowVelocity,
+                            0.f,
+                            rAccelerationDistance,
+                            ((rHighVelocity * rHighVelocity) - (rStartVelocity * rStartVelocity)) / (2 * rAccelerationDistance),
+                            -((rHighVelocity * rHighVelocity) - (rLowVelocity * rLowVelocity)) / (2 * rAccelerationDistance)
+                    });
+                }
 
                 return scene;
             }

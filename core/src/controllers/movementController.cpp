@@ -1,6 +1,6 @@
 #include <dory/core/registry.h>
 #include <dory/core/controllers/movementController.h>
-#include <iostream>
+#include <spdlog/fmt/fmt.h>
 
 namespace dory::core::controllers
 {
@@ -85,9 +85,9 @@ namespace dory::core::controllers
 
                                     if(movement.distanceDone >= glm::length(movement.value))
                                     {
-                                        /*movement.currentVelocity = 0.f;
+                                        movement.currentVelocity = 0.f;
                                         movement.distanceDone = 0.f;
-                                        movement.value *= -1;*/
+                                        movement.value *= -1;
 
                                         //TODO: fire an event about object's arrival to the destination of the linear movement
                                     }
