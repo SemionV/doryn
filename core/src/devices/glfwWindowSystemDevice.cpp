@@ -44,33 +44,76 @@ namespace dory::core::devices
         });
     }
 
-    void GlfwWindowSystemDevice::framebufferSizeCallback(GLFWwindow* window, int width, int height)
+    resources::entities::GlfwWindow* GlfwWindowSystemDevice::getWindow(Registry& registry, GLFWwindow* windowHandler)
     {
-        auto* device = static_cast<GlfwWindowSystemDevice*>(glfwGetWindowUserPointer(window));
-        device->onWindowResize(window, width, height);
-    }
+        resources::entities::GlfwWindow* result = nullptr;
 
-    void GlfwWindowSystemDevice::onWindowResize(GLFWwindow* windowHandler, int width, int height)
-    {
-        _registry.get<repositories::IWindowRepository, resources::WindowSystem::glfw>([&](repositories::IWindowRepository* repository) {
-            repository->scan([&](auto& window) {
+        if(auto windowRepo = registry.get<repositories::IWindowRepository, resources::WindowSystem::glfw>())
+        {
+            windowRepo->scan([&](auto& window) {
                 if(window.windowSystem == resources::WindowSystem::glfw)
                 {
                     auto& glfwWindow = (resources::entities::GlfwWindow&)window;
 
                     if(glfwWindow.handler == windowHandler)
                     {
-                        _registry.get<events::window::Bundle::IDispatcher>([&](auto* dispatcher) {
-                            dispatcher->charge(events::window::Resize{ window.id, (unsigned int)width, (unsigned int)height, window.windowSystem });
-                        });
-
+                        result = (resources::entities::GlfwWindow*)&window;
                         return true;
                     }
                 }
 
                 return false;
             });
+        }
+
+        return result;
+    }
+
+    events::KeyCode getKeyCode(int glfwKey)
+    {
+        switch(glfwKey)
+        {
+        case GLFW_KEY_ESCAPE: return events::KeyCode::Escape;
+        case GLFW_KEY_UP: return events::KeyCode::Up;
+        case GLFW_KEY_DOWN: return events::KeyCode::Down;
+        case GLFW_KEY_LEFT: return events::KeyCode::Left;
+        case GLFW_KEY_RIGHT: return events::KeyCode::Right;
+        case GLFW_KEY_W: return events::KeyCode::W;
+        case GLFW_KEY_A: return events::KeyCode::A;
+        case GLFW_KEY_S: return events::KeyCode::S;
+        case GLFW_KEY_D: return events::KeyCode::D;
+        default: return events::KeyCode::Unknown;
+        }
+    }
+
+    void GlfwWindowSystemDevice::framebufferSizeCallback(GLFWwindow* windowHandler, const int width, const int height)
+    {
+        auto* registry = static_cast<Registry*>(glfwGetWindowUserPointer(windowHandler));
+        const auto* window = getWindow(*registry, windowHandler);
+
+        registry->get<events::window::Bundle::IDispatcher>([&](auto* dispatcher) {
+            dispatcher->charge(events::window::Resize{ window->id, window->windowSystem, (unsigned int)width, (unsigned int)height });
         });
+    }
+
+    void GlfwWindowSystemDevice::keyCallback(GLFWwindow* windowHandler, const int key, int scancode, int action, int mods)
+    {
+        auto* registry = static_cast<Registry*>(glfwGetWindowUserPointer(windowHandler));
+        const auto* window = getWindow(*registry, windowHandler);
+
+        registry->get<events::window::Bundle::IDispatcher>([&](auto* dispatcher) {
+            dispatcher->charge(events::window::KeyPressEvent{ window->id, window->windowSystem, getKeyCode(key) });
+        });
+    }
+
+    void GlfwWindowSystemDevice::cursorPosCallback(GLFWwindow* windowHandler, double x, double y)
+    {
+
+    }
+
+    void GlfwWindowSystemDevice::mouseButtonCallback(GLFWwindow* windowHandler, int button, int action, int mods)
+    {
+
     }
 
     void GlfwWindowSystemDevice::setupWindow(resources::entities::Window& window, const resources::WindowParameters& parameters)
@@ -146,8 +189,11 @@ namespace dory::core::devices
 
         glfwSwapInterval(parameters.vSync ? 1 : 0); //No VSync. TODO: pass this as a parameter
 
-        glfwSetWindowUserPointer(glfwWindow.handler, this);
-        glfwSetFramebufferSizeCallback(glfwWindow.handler, GlfwWindowSystemDevice::framebufferSizeCallback);
+        glfwSetWindowUserPointer(glfwWindow.handler, &_registry);
+        glfwSetFramebufferSizeCallback(glfwWindow.handler, framebufferSizeCallback);
+        glfwSetKeyCallback(glfwWindow.handler, keyCallback);
+        glfwSetCursorPosCallback(glfwWindow.handler, cursorPosCallback);
+        glfwSetMouseButtonCallback(glfwWindow.handler, mouseButtonCallback);
     }
 
     void GlfwWindowSystemDevice::closeWindow(const resources::entities::Window& window)

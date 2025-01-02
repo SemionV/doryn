@@ -44,27 +44,27 @@ namespace dory::core::devices
         {
             if(inputRecord.Event.KeyEvent.uChar.AsciiChar == 3)//CTRL+C
             {
-                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Terminate });
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::KeyCode::Terminate });
             }
             else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 27)//ESC
             {
-                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Escape });
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::KeyCode::Escape });
             }
             else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 8)//BACKSPACE
             {
-                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Backspace });
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::KeyCode::Backspace });
             }
             else if(inputRecord.Event.KeyEvent.wVirtualKeyCode == 13)//RETURN
             {
-                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Return });
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::KeyCode::Return });
             }
             else if(inputRecord.Event.KeyEvent.uChar.AsciiChar != 0)// Character
             {
-                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Character, inputRecord.Event.KeyEvent.uChar.AsciiChar });
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::KeyCode::Character, inputRecord.Event.KeyEvent.uChar.AsciiChar });
             }
             else
             {
-                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Unknown });
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::KeyCode::Unknown });
             }
         }
     }

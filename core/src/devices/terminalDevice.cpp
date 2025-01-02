@@ -80,32 +80,32 @@ namespace dory::core::devices
     {
         switch(eventData.keyCode)
         {
-            case events::io::KeyCode::Return:
+            case events::KeyCode::Return:
             {
                 onPressReturn(context, eventData);
                 break;
             }
-            case events::io::KeyCode::Backspace:
+            case events::KeyCode::Backspace:
             {
                 onPressBackspace(context, eventData);
                 break;
             }
-            case events::io::KeyCode::Escape:
+            case events::KeyCode::Escape:
             {
                 onPressEscape(context, eventData);
                 break;
             }
-            case events::io::KeyCode::Terminate:
+            case events::KeyCode::Terminate:
             {
                 onPressTerminate(context, eventData);
                 break;
             }
-            case events::io::KeyCode::Character:
+            case events::KeyCode::Character:
             {
                 onEnterSymbol(context, eventData);
                 break;
             }
-            case events::io::KeyCode::Unknown:
+            case events::KeyCode::Unknown:
             default:
                 break;
         }

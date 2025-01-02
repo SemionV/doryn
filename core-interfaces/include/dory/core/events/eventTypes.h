@@ -11,6 +11,30 @@
 
 namespace dory::core::events
 {
+    enum class KeyCode
+    {
+        Unknown,
+        Escape,
+        Return,
+        Backspace,
+        Terminate,
+        Character,
+        Up,
+        Down,
+        Left,
+        Right,
+        W,
+        A,
+        S,
+        D
+    };
+
+    struct KeyPressEvent
+    {
+        KeyCode keyCode = KeyCode::Unknown;
+        int character = 0;
+    };
+
     struct pipeline
     {
         struct Initialize {};
@@ -28,21 +52,8 @@ namespace dory::core::events
 
     namespace io
     {
-        enum class KeyCode
-        {
-            Unknown,
-            Escape,
-            Return,
-            Backspace,
-            Terminate,
-            Character
-        };
-
-        struct KeyPressEvent
-        {
-            KeyCode keyCode = KeyCode::Unknown;
-            int character = 0;
-        };
+        struct KeyPressEvent: public events::KeyPressEvent
+        {};
 
         using Bundle = EventBufferBundle<KeyPressEvent>;
     }
@@ -60,21 +71,25 @@ namespace dory::core::events
 
     namespace window
     {
-        struct Close
+        struct WindowEvent
         {
-            resources::IdType windowId;
-            resources::WindowSystem windowSystem;
+            resources::IdType windowId {};
+            resources::WindowSystem windowSystem {};
         };
 
-        struct Resize
+        struct Close: public WindowEvent
+        {};
+
+        struct Resize: public WindowEvent
         {
-            resources::IdType windowId;
-            unsigned int width;
-            unsigned int height;
-            resources::WindowSystem windowSystem;
+            unsigned int width {};
+            unsigned int height {};
         };
 
-        using Bundle = EventBufferBundle<Close, Resize>;
+        struct KeyPressEvent: public WindowEvent, public events::KeyPressEvent
+        {};
+
+        using Bundle = EventBufferBundle<Close, Resize, KeyPressEvent>;
     }
 
     namespace filesystem
