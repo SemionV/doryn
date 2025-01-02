@@ -63,6 +63,7 @@ namespace dory::game
         registerEventBundle<core::events::script::Bundle>(libraryHandle, registry);
         registerEventBufferBundle<core::events::window::Bundle>(libraryHandle, registry);
         registerEventBufferBundle<core::events::filesystem::Bundle>(libraryHandle, registry);
+        registerEventBufferBundle<core::events::scene::Bundle>(libraryHandle, registry);
 
         registry.set<core::devices::IStandardIODevice>(libraryHandle, std::make_shared<core::devices::StandardIODevice>(registry));
         registry.set<core::devices::ITerminalDevice>(libraryHandle, std::make_shared<core::devices::TerminalDevice>(registry));

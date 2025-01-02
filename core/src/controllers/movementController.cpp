@@ -1,6 +1,5 @@
 #include <dory/core/registry.h>
 #include <dory/core/controllers/movementController.h>
-#include <spdlog/fmt/fmt.h>
 
 namespace dory::core::controllers
 {
@@ -36,47 +35,34 @@ namespace dory::core::controllers
                             auto& enttScene = (EnttScene&)scene;
                             auto& registry = enttScene.registry;
 
-                            auto rotationView = registry.view<MovementAngularVelocity, Orientation>();
-                            for (auto entity : rotationView)
-                            {
-                                auto& angularVelocity = rotationView.get<MovementAngularVelocity>(entity);
-                                auto& orientation = rotationView.get<Orientation>(entity);
-
-                                float angleSpeed = glm::length(angularVelocity.value);
-                                glm::vec3 axis = glm::normalize(angularVelocity.value);
-
-                                orientation.value = orientation.value * glm::angleAxis(angleSpeed * timeStep.ToSeconds(), axis);
-                                orientation.value = glm::normalize(orientation.value);
-                            }
-
-                            auto linearMovementView = registry.view<LinearMovement, Position>();
+                            auto linearMovementView = registry.view<LinearMovement, Position, Object>();
                             for (auto entity : linearMovementView)
                             {
                                 auto& movement = linearMovementView.get<LinearMovement>(entity);
                                 auto& position = linearMovementView.get<Position>(entity);
+                                auto& object = linearMovementView.get<Object>(entity);
 
                                 if(movement.step > 0.f)
                                 {
                                     position.value += glm::normalize(movement.value) * movement.step;
 
-                                    //Motion is complete
                                     if(movement.distanceDone >= glm::length(movement.value))
                                     {
-                                        movement.currentVelocity = 0.f;
-                                        movement.distanceDone = 0.f;
-                                        movement.value *= -1;
-
-                                        //TODO: fire an event about object's arrival to the destination of the linear movement
+                                        auto eventDispatcher = _registry.get<events::scene::Bundle::IDispatcher>();
+                                        if(eventDispatcher)
+                                        {
+                                            eventDispatcher->charge(events::scene::LinearMovementComplete{ scene.id, scene.ecsType, object.id });
+                                        }
                                     }
                                 }
                             }
 
-                            auto rotationMovementView = registry.view<RotationMovement, Orientation, Position>();
+                            auto rotationMovementView = registry.view<RotationMovement, Orientation, Object>();
                             for (auto entity : rotationMovementView)
                             {
                                 auto& movement = rotationMovementView.get<RotationMovement>(entity);
                                 auto& orientation = rotationMovementView.get<Orientation>(entity);
-                                auto& position = rotationMovementView.get<Position>(entity);
+                                auto& object = linearMovementView.get<Object>(entity);
 
                                 if(movement.step > 0.f)
                                 {
@@ -85,11 +71,11 @@ namespace dory::core::controllers
 
                                     if(movement.distanceDone >= glm::length(movement.value))
                                     {
-                                        movement.currentVelocity = 0.f;
-                                        movement.distanceDone = 0.f;
-                                        movement.value *= -1;
-
-                                        //TODO: fire an event about object's arrival to the destination of the linear movement
+                                        auto eventDispatcher = _registry.get<events::scene::Bundle::IDispatcher>();
+                                        if(eventDispatcher)
+                                        {
+                                            eventDispatcher->charge(events::scene::RotationMovementComplete{ scene.id, scene.ecsType, object.id });
+                                        }
                                     }
                                 }
                             }

@@ -2,6 +2,7 @@
 
 #include <dory/core/registry.h>
 #include <dory/core/resources/scene/components.h>
+#include <dory/core/resources/scene/enttScene.h>
 
 namespace dory::game
 {
@@ -28,6 +29,33 @@ namespace dory::game
         setOrthoProjectionMatrix(window, view);
     }
 
+    template<typename TComponent>
+    void invertMovement(auto& context, const core::events::scene::SceneObjectEvent& event, auto& dependencyRegistry)
+    {
+        auto sceneRepo = dependencyRegistry.template get<core::repositories::ISceneRepository>(event.ecsType);
+        if(sceneRepo)
+        {
+            auto scene = sceneRepo->get(event.sceneId);
+            if(scene && scene->ecsType == core::resources::EcsType::entt)
+            {
+                auto enttScene = (core::resources::scene::EnttScene*)scene;
+                auto& registry = enttScene->registry;
+
+                auto it = enttScene->idMap.find(event.objectId);
+                if(it != enttScene->idMap.end())
+                {
+                    core::resources::scene::components::AccelerationMovement* movement = registry.try_get<TComponent>(it->second);
+                    if(movement)
+                    {
+                        movement->currentVelocity = 0.f;
+                        movement->distanceDone = 0.f;
+                        movement->value *= -1;
+                    }
+                }
+            }
+        }
+    }
+
     class Game
     {
     private:
@@ -49,7 +77,7 @@ namespace dory::game
             core::resources::entities::View* mainView {};
 
             _registry.get<dory::core::services::IWindowService>([&](dory::core::services::IWindowService* windowService) {
-                auto windowParameters = core::resources::WindowParameters{ 1024, 1024, "dory game", graphicalContext->id, 16, false, false };
+                auto windowParameters = core::resources::WindowParameters{ 1024, 1024, "dory game", graphicalContext->id, 16, false, true };
                 auto window = windowService->createWindow(windowParameters, core::resources::WindowSystem::glfw);
                 if(window)
                 {
@@ -93,6 +121,16 @@ namespace dory::game
                             }
                         }
                     }
+                });
+            });
+
+            _registry.get<core::events::scene::Bundle::IListener>([this](core::events::scene::Bundle::IListener* listener){
+                listener->attach([this](auto& context, const core::events::scene::LinearMovementComplete& event){
+                    invertMovement<core::resources::scene::components::LinearMovement>(context, event, _registry);
+                });
+
+                listener->attach([this](auto& context, const core::events::scene::RotationMovementComplete& event){
+                    invertMovement<core::resources::scene::components::RotationMovement>(context, event, _registry);
                 });
             });
 
@@ -264,14 +302,13 @@ namespace dory::game
                             { { 0.f, 0.f, -1.f }, {} }
                     };
                     cubeParentObjectId = sceneService->addObject(*scene, cubeParentObject);
-                    //sceneService->addComponent(cubeParentObjectId, *scene, core::resources::scene::components::MovementAngularVelocity{glm::radians(20.f) * glm::normalize(glm::vec3{0.f, 1.f, 0.f})});
 
                     float rAccelerationDistance = glm::radians(30.f);
                     float rStartVelocity = 0.0f;
-                    float rHighVelocity = glm::radians(45.f);
+                    float rHighVelocity = glm::radians(90.f);
                     float rLowVelocity = glm::radians(0.1f);
-                    /*sceneService->addComponent(cubeParentObjectId, *scene, core::resources::scene::components::RotationMovement{
-                            glm::vec3 { 0.f, 0.f, 1.f } * glm::radians(180.f),
+                    sceneService->addComponent(cubeParentObjectId, *scene, core::resources::scene::components::RotationMovement{
+                            glm::vec3 { 0.f, 0.f, 1.f } * glm::radians(360.f),
                             rStartVelocity,
                             rHighVelocity,
                             rLowVelocity,
@@ -279,7 +316,7 @@ namespace dory::game
                             rAccelerationDistance,
                             ((rHighVelocity * rHighVelocity) - (rStartVelocity * rStartVelocity)) / (2 * rAccelerationDistance),
                             -((rHighVelocity * rHighVelocity) - (rLowVelocity * rLowVelocity)) / (2 * rAccelerationDistance)
-                    });*/
+                    });
                 }
 
                 {
@@ -317,7 +354,7 @@ namespace dory::game
                     auto pointMeshId = meshRepo->getId("point");
                     auto pointObject = core::resources::objects::SceneObject {
                             "point",
-                            cubeParentObjectId,
+                            core::resources::nullId,
                             { { -0.5f, 0.f, -1.f }, {} }
                     };
                     auto pointObjectId = sceneService->addObject(*scene, pointObject);
@@ -353,6 +390,18 @@ namespace dory::game
                             ((rHighVelocity * rHighVelocity) - (rStartVelocity * rStartVelocity)) / (2 * rAccelerationDistance),
                             -((rHighVelocity * rHighVelocity) - (rLowVelocity * rLowVelocity)) / (2 * rAccelerationDistance)
                     });
+                }
+
+                {
+                    auto pointMeshId = meshRepo->getId("point");
+                    auto pointObject = core::resources::objects::SceneObject {
+                            "point",
+                            cubeParentObjectId,
+                            { { -0.3f, 0.f, -1.f }, {} }
+                    };
+                    auto pointObjectId = sceneService->addObject(*scene, pointObject);
+                    sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Mesh{ pointMeshId });
+                    sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Material{ 1 }); //TODO: use proper material id(get by material name)
                 }
 
                 return scene;

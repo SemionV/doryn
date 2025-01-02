@@ -75,6 +75,8 @@ namespace dory::core
             generic::registry::ServiceEntry<events::window::Bundle::IListener>,
             generic::registry::ServiceEntry<events::filesystem::Bundle::IDispatcher>,
             generic::registry::ServiceEntry<events::filesystem::Bundle::IListener>,
+            generic::registry::ServiceEntry<events::scene::Bundle::IDispatcher>,
+            generic::registry::ServiceEntry<events::scene::Bundle::IListener>,
             /*Devices*/
             generic::registry::ServiceEntry<devices::IStandardIODevice>,
             generic::registry::ServiceEntry<devices::ITerminalDevice>,

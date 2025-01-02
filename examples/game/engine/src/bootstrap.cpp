@@ -148,14 +148,17 @@ namespace dory::game
                 _registry.get<
                         generic::registry::Service<core::events::window::Bundle::IDispatcher>,
                         generic::registry::Service<core::events::io::Bundle::IDispatcher>,
-                        generic::registry::Service<core::events::filesystem::Bundle::IDispatcher>>(
+                        generic::registry::Service<core::events::filesystem::Bundle::IDispatcher>,
+                        generic::registry::Service<core::events::scene::Bundle::IDispatcher>>(
                     [&context](core::events::window::Bundle::IDispatcher* windowDispatcher,
                                 core::events::io::Bundle::IDispatcher* ioDispatcher,
-                                core::events::filesystem::Bundle::IDispatcher* fsDispatcher)
+                                core::events::filesystem::Bundle::IDispatcher* fsDispatcher,
+                               core::events::scene::Bundle::IDispatcher* sceneDispatcher)
                 {
                     windowDispatcher->fireAll(context);
                     ioDispatcher->fireAll(context);
                     fsDispatcher->fireAll(context);
+                    sceneDispatcher->fireAll(context);
                 });
             };
             auto updateHandle = dory::generic::extension::ResourceHandle<dory::core::resources::entities::PipelineNode::UpdateFunctionType>{ libraryHandle, submitInputEvents };

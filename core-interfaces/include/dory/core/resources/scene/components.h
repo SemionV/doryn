@@ -1,5 +1,8 @@
 #pragma once
 
+#include <dory/core/resources/objects/transform.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
 #include <string>
@@ -54,11 +57,6 @@ namespace dory::core::resources::scene::components
                 orientation(transform.rotation),
                 scale(transform.scale)
         {}
-    };
-
-    struct MovementAngularVelocity
-    {
-        glm::vec3 value{};
     };
 
     struct AccelerationMovement

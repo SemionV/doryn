@@ -6,6 +6,8 @@
 #include "interface.h"
 #include <dory/core/resources/id.h>
 #include <dory/core/resources/windowSystem.h>
+#include <dory/core/resources/scene/components.h>
+#include <dory/core/resources/ecsType.h>
 
 namespace dory::core::events
 {
@@ -86,5 +88,23 @@ namespace dory::core::events
         {};
 
         using Bundle = EventBufferBundle<FileModified>;
+    }
+
+    namespace scene
+    {
+        struct SceneObjectEvent
+        {
+            resources::IdType sceneId {};
+            resources::EcsType ecsType {};
+            resources::IdType objectId {};
+        };
+
+        struct LinearMovementComplete: public SceneObjectEvent
+        {};
+
+        struct RotationMovementComplete: public SceneObjectEvent
+        {};
+
+        using Bundle = EventBufferBundle<LinearMovementComplete, RotationMovementComplete>;
     }
 }
