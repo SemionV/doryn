@@ -1,8 +1,10 @@
 # Development log
 
 Tasks:
-* Scene entities with model and world transformation components
 * Camera
+  * Handle user input to a window
+  * Free camera
+  * Followup camera 
 * Window view layout(automatic calculation of the views inside a window), update view with layout service on window-resize event
 * Edge-rendering(render edges of a geometric shape before tesselation), polygon offset
 * Stencil buffer and others
@@ -19,7 +21,6 @@ Tasks:
 * Ray casting(for mouse picking and other features)
 * Mouse picking(redirect event to the corresponding event hub of a view)
 * Multithreaded rendering
-* Camera Control
 * Animation
 * Collision detection
 * Serialization of scene state
@@ -34,6 +35,9 @@ Tasks:
   * Setup pipeline for build and tests on windows
   * Setup pipeline for releases
   * Deploy assembled packages to some network storage
+
+**04.01.25**
+* Task done: Scene entities with model and world transformation components
 
 **02.12.24**
 * Task done: Move all glfw specific code to GlfwWindowSystemDevice

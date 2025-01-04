@@ -3,6 +3,7 @@
 #include <dory/core/registry.h>
 #include <dory/core/resources/scene/components.h>
 #include <dory/core/resources/scene/enttScene.h>
+#include "logic/mainSceneKeyboardHandler.h"
 
 namespace dory::game
 {
@@ -60,10 +61,12 @@ namespace dory::game
     {
     private:
         core::Registry& _registry;
+        logic::MainSceneKeyboardHandler _keyboardHandler;
 
     public:
         explicit Game(core::Registry& registry):
-            _registry(registry)
+            _registry(registry),
+            _keyboardHandler(registry)
         {}
 
         bool initialize(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
@@ -141,6 +144,8 @@ namespace dory::game
             //Test scene
             loadAssets(context, mainWindow, graphicalContext);
             buildScene(context, *mainView);
+
+            _keyboardHandler.initialize(libraryHandle, context);
 
             return true;
         }

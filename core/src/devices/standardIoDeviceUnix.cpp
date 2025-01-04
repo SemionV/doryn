@@ -13,27 +13,27 @@ namespace dory::core::devices
         {
             if(key == 3)//CTRL+C
             {
-                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Terminate });
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::KeyCode::Terminate });
             }
             else if(key == 27)//ESC
             {
-                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Escape });
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::KeyCode::Escape });
             }
             else if(key == 127)//BACKSPACE
             {
-                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Backspace });
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::KeyCode::Backspace });
             }
             else if(key == 10)//END OF LINE
             {
-                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Return });
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::KeyCode::Return });
             }
             else if(key != 0)// Character
             {
-                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Character, key });
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::KeyCode::Character, key });
             }
             else
             {
-                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::io::KeyCode::Unknown });
+                inputEventDispatcher->charge(events::io::KeyPressEvent{ events::KeyCode::Unknown });
             }
         }
     }

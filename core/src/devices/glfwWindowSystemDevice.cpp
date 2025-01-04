@@ -69,7 +69,7 @@ namespace dory::core::devices
         return result;
     }
 
-    events::KeyCode getKeyCode(int glfwKey)
+    events::KeyCode GlfwWindowSystemDevice::getKeyCode(int glfwKey)
     {
         switch(glfwKey)
         {
@@ -84,6 +84,29 @@ namespace dory::core::devices
         case GLFW_KEY_D: return events::KeyCode::D;
         default: return events::KeyCode::Unknown;
         }
+    }
+
+    events::KeyAction GlfwWindowSystemDevice::getKeyAction(int action)
+    {
+        switch(action)
+        {
+            case GLFW_PRESS: return events::KeyAction::Press;
+            case GLFW_RELEASE: return events::KeyAction::Release;
+            case GLFW_REPEAT: return events::KeyAction::Repeat;
+            default: return events::KeyAction::Unknown;
+        }
+    }
+
+    events::ModificationKeysState GlfwWindowSystemDevice::getModKeysState(int mods)
+    {
+        events::ModificationKeysState modKeysState;
+
+        modKeysState.altKey = (mods & GLFW_MOD_ALT) != 0;
+        modKeysState.ctrlKey = (mods & GLFW_MOD_CONTROL) != 0;
+        modKeysState.shiftKey = (mods & GLFW_MOD_SHIFT) != 0;
+        modKeysState.superKey = (mods & GLFW_MOD_SUPER) != 0;
+
+        return modKeysState;
     }
 
     void GlfwWindowSystemDevice::framebufferSizeCallback(GLFWwindow* windowHandler, const int width, const int height)
@@ -102,7 +125,13 @@ namespace dory::core::devices
         const auto* window = getWindow(*registry, windowHandler);
 
         registry->get<events::window::Bundle::IDispatcher>([&](auto* dispatcher) {
-            dispatcher->charge(events::window::KeyPressEvent{ window->id, window->windowSystem, getKeyCode(key) });
+            dispatcher->charge(events::window::KeyboardEvent{
+                window->id,
+                window->windowSystem,
+                getKeyCode(key),
+                getKeyAction(action),
+                getModKeysState(mods)
+            });
         });
     }
 

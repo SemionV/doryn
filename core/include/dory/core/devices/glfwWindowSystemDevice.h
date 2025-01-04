@@ -18,6 +18,8 @@ namespace dory::core::devices
 
         static resources::entities::GlfwWindow* getWindow(Registry& registry, GLFWwindow* windowHandler);
         static events::KeyCode getKeyCode(int glfwKey);
+        static events::KeyAction getKeyAction(int action);
+        static events::ModificationKeysState getModKeysState(int mods);
 
         static void framebufferSizeCallback(GLFWwindow* windowHandler, int width, int height);
         static void keyCallback(GLFWwindow* windowHandler, int key, int scancode, int action, int mods);

@@ -29,10 +29,20 @@ namespace dory::core::events
         D
     };
 
-    struct KeyPressEvent
+    enum class KeyAction
     {
-        KeyCode keyCode = KeyCode::Unknown;
-        int character = 0;
+        Unknown,
+        Press,
+        Release,
+        Repeat
+    };
+
+    struct ModificationKeysState
+    {
+        bool shiftKey {};
+        bool ctrlKey {};
+        bool altKey {};
+        bool superKey {};
     };
 
     struct pipeline
@@ -52,8 +62,11 @@ namespace dory::core::events
 
     namespace io
     {
-        struct KeyPressEvent: public events::KeyPressEvent
-        {};
+        struct KeyPressEvent
+        {
+            KeyCode keyCode = KeyCode::Unknown;
+            int character = 0;
+        };
 
         using Bundle = EventBufferBundle<KeyPressEvent>;
     }
@@ -86,10 +99,14 @@ namespace dory::core::events
             unsigned int height {};
         };
 
-        struct KeyPressEvent: public WindowEvent, public events::KeyPressEvent
-        {};
+        struct KeyboardEvent: public WindowEvent
+        {
+            KeyCode keyCode { KeyCode::Unknown };
+            KeyAction action { KeyAction::Unknown };
+            ModificationKeysState modKeysState {};
+        };
 
-        using Bundle = EventBufferBundle<Close, Resize, KeyPressEvent>;
+        using Bundle = EventBufferBundle<Close, Resize, KeyboardEvent>;
     }
 
     namespace filesystem
