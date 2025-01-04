@@ -45,13 +45,15 @@ namespace dory::game
                 auto it = enttScene->idMap.find(event.objectId);
                 if(it != enttScene->idMap.end())
                 {
-                    core::resources::scene::components::AccelerationMovement* movement = registry.try_get<TComponent>(it->second);
+                    registry.remove<TComponent>(it->second);
+
+                    /*core::resources::scene::components::AccelerationMovement* movement = registry.try_get<TComponent>(it->second);
                     if(movement)
                     {
                         movement->currentVelocity = 0.f;
                         movement->distanceDone = 0.f;
                         movement->value *= -1;
-                    }
+                    }*/
                 }
             }
         }
@@ -62,11 +64,13 @@ namespace dory::game
     private:
         core::Registry& _registry;
         logic::MainSceneKeyboardHandler _keyboardHandler;
+        logic::CameraService _cameraService;
 
     public:
         explicit Game(core::Registry& registry):
             _registry(registry),
-            _keyboardHandler(registry)
+            _cameraService(registry),
+            _keyboardHandler(registry, _cameraService)
         {}
 
         bool initialize(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
@@ -143,7 +147,7 @@ namespace dory::game
 
             //Test scene
             loadAssets(context, mainWindow, graphicalContext);
-            buildScene(context, *mainView);
+            buildScene2(context, *mainView);
 
             _keyboardHandler.initialize(libraryHandle, context);
 
@@ -407,6 +411,35 @@ namespace dory::game
                     auto pointObjectId = sceneService->addObject(*scene, pointObject);
                     sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Mesh{ pointMeshId });
                     sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Material{ 1 }); //TODO: use proper material id(get by material name)
+                }
+
+                return scene;
+            }
+
+            return nullptr;
+        }
+
+        core::resources::scene::Scene* buildScene2(core::resources::DataContext& context, core::resources::entities::View& view)
+        {
+            auto meshRepo = _registry.get<core::repositories::assets::IMeshRepository>();
+            auto sceneRepo = _registry.get<core::repositories::ISceneRepository>();
+            auto sceneService = _registry.get<core::services::ISceneService>();
+
+            if(meshRepo && sceneRepo && sceneService)
+            {
+                auto scene = sceneRepo->insert(core::resources::scene::Scene{ {}, "main scene" });
+                view.sceneId = scene->id;
+                view.sceneEcsType = scene->ecsType;
+
+                {
+                    auto pointMeshId = meshRepo->getId("point");
+                    view.cameraId = sceneService->addObject(*scene, core::resources::objects::SceneObject {
+                            "camera",
+                            core::resources::nullId,
+                            { { 0.f, 0.f, 0.f }, glm::quat{} }
+                    });
+                    sceneService->addComponent(view.cameraId, *scene, core::resources::scene::components::Mesh{ pointMeshId });
+                    sceneService->addComponent(view.cameraId, *scene, core::resources::scene::components::Material{ 1 });
                 }
 
                 return scene;

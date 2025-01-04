@@ -8,7 +8,9 @@ namespace dory::game::logic
     using namespace generic::extension;
     using namespace resources;
 
-    MainSceneKeyboardHandler::MainSceneKeyboardHandler(Registry& registry) : DependencyResolver(registry)
+    MainSceneKeyboardHandler::MainSceneKeyboardHandler(Registry& registry, CameraService& cameraService):
+        DependencyResolver(registry),
+        _cameraService(cameraService)
     {}
 
     bool MainSceneKeyboardHandler::initialize(const LibraryHandle& libraryHandle, DataContext& context)
@@ -16,17 +18,28 @@ namespace dory::game::logic
         auto windowListener = _registry.get<events::window::Bundle::IListener>();
         if(windowListener)
         {
-            windowListener->attach([this](auto& context, const core::events::window::KeyboardEvent& event){
-                auto logger = _registry.get<services::ILogService>();
-
+            windowListener->attach([this](auto& context, const core::events::window::KeyboardEvent& event) {
                 if(context.mainWindowId == event.windowId)
                 {
-                    if((event.keyCode == core::events::KeyCode::A || event.keyCode == core::events::KeyCode::Left)
-                       && (event.action == core::events::KeyAction::Press || event.action == core::events::KeyAction::Repeat))
+                    auto* view = getWindowView(event.windowId, event.windowSystem);
+
+                    if(view && (event.action == core::events::KeyAction::Press || event.action == core::events::KeyAction::Repeat))
                     {
-                        if(logger)
+                        if(event.keyCode == core::events::KeyCode::A || event.keyCode == core::events::KeyCode::Left)
                         {
-                            logger->information(std::string_view{ "Key A is pressed" });
+                            _cameraService.moveCamera(MoveDirection::left, *view);
+                        }
+                        else if(event.keyCode == core::events::KeyCode::D || event.keyCode == core::events::KeyCode::Right)
+                        {
+                            _cameraService.moveCamera(MoveDirection::right, *view);
+                        }
+                        else if(event.keyCode == core::events::KeyCode::W || event.keyCode == core::events::KeyCode::Up)
+                        {
+                            _cameraService.moveCamera(MoveDirection::up, *view);
+                        }
+                        else if(event.keyCode == core::events::KeyCode::S || event.keyCode == core::events::KeyCode::Down)
+                        {
+                            _cameraService.moveCamera(MoveDirection::down, *view);
                         }
                     }
                 }
@@ -34,5 +47,28 @@ namespace dory::game::logic
         }
 
         return true;
+    }
+
+    core::resources::entities::View* MainSceneKeyboardHandler::getWindowView(core::resources::IdType windowId, core::resources::WindowSystem windowSystem)
+    {
+        auto windowRepository = _registry.get<core::repositories::IWindowRepository>();
+        auto viewRepository = _registry.get<core::repositories::IViewRepository>();
+        if(windowRepository && viewRepository)
+        {
+            auto window = windowRepository->get(windowId);
+            if(window)
+            {
+                if(window->views.size() == 1)
+                {
+                    auto view = viewRepository->get(window->views[0]);
+                    if(view)
+                    {
+                        return view;
+                    }
+                }
+            }
+        }
+
+        return nullptr;
     }
 }

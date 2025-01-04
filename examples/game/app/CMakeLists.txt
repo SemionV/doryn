@@ -2,7 +2,8 @@ set(DORY_MODULE_NAME ${PROJECT_NAME}-app)
 
 add_executable(${DORY_MODULE_NAME}
         main.cpp
-        logic/mainSceneKeyboardHandler.cpp)
+        logic/mainSceneKeyboardHandler.cpp
+        logic/cameraService.cpp)
 set_target_properties(${DORY_MODULE_NAME} PROPERTIES
         OUTPUT_NAME ${DORY_MODULE_NAME})
 
