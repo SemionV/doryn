@@ -61,6 +61,7 @@ namespace dory::core::resources::scene::components
 
     struct AccelerationMovement
     {
+        bool endless {};
         glm::vec3 value;
         float distanceDone;
         float highVelocity {};
@@ -77,5 +78,6 @@ namespace dory::core::resources::scene::components
 
     struct LinearMovement: public AccelerationMovement
     {};
+
 
 }

@@ -23,23 +23,30 @@ namespace dory::game::logic
                 {
                     auto* view = getWindowView(event.windowId, event.windowSystem);
 
-                    if(view && (event.action == core::events::KeyAction::Press || event.action == core::events::KeyAction::Repeat))
+                    if(view)
                     {
-                        if(event.keyCode == core::events::KeyCode::A || event.keyCode == core::events::KeyCode::Left)
+                        if(event.action == core::events::KeyAction::Press || event.action == core::events::KeyAction::Repeat)
                         {
-                            _cameraService.moveCamera(MoveDirection::left, *view);
+                            if(event.keyCode == core::events::KeyCode::A || event.keyCode == core::events::KeyCode::Left)
+                            {
+                                _cameraService.moveCamera(MoveDirection::left, *view);
+                            }
+                            else if(event.keyCode == core::events::KeyCode::D || event.keyCode == core::events::KeyCode::Right)
+                            {
+                                _cameraService.moveCamera(MoveDirection::right, *view);
+                            }
+                            else if(event.keyCode == core::events::KeyCode::W || event.keyCode == core::events::KeyCode::Up)
+                            {
+                                _cameraService.moveCamera(MoveDirection::up, *view);
+                            }
+                            else if(event.keyCode == core::events::KeyCode::S || event.keyCode == core::events::KeyCode::Down)
+                            {
+                                _cameraService.moveCamera(MoveDirection::down, *view);
+                            }
                         }
-                        else if(event.keyCode == core::events::KeyCode::D || event.keyCode == core::events::KeyCode::Right)
+                        else if(event.action == core::events::KeyAction::Release)
                         {
-                            _cameraService.moveCamera(MoveDirection::right, *view);
-                        }
-                        else if(event.keyCode == core::events::KeyCode::W || event.keyCode == core::events::KeyCode::Up)
-                        {
-                            _cameraService.moveCamera(MoveDirection::up, *view);
-                        }
-                        else if(event.keyCode == core::events::KeyCode::S || event.keyCode == core::events::KeyCode::Down)
-                        {
-                            _cameraService.moveCamera(MoveDirection::down, *view);
+                            _cameraService.stopCamera(*view);
                         }
                     }
                 }

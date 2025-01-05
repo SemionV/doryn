@@ -45,6 +45,7 @@ namespace dory::game
                 auto it = enttScene->idMap.find(event.objectId);
                 if(it != enttScene->idMap.end())
                 {
+                    //use scene service instead to remove component
                     registry.remove<TComponent>(it->second);
 
                     /*core::resources::scene::components::AccelerationMovement* movement = registry.try_get<TComponent>(it->second);
@@ -317,6 +318,7 @@ namespace dory::game
                     float rHighVelocity = glm::radians(90.f);
                     float rLowVelocity = glm::radians(0.1f);
                     sceneService->addComponent(cubeParentObjectId, *scene, core::resources::scene::components::RotationMovement{
+                            false,
                             glm::vec3 { 0.f, 0.f, 1.f } * glm::radians(360.f),
                             rStartVelocity,
                             rHighVelocity,
@@ -348,6 +350,7 @@ namespace dory::game
                     float rHighVelocity = glm::radians(45.f);
                     float rLowVelocity = glm::radians(0.1f);
                     sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::RotationMovement{
+                            false,
                             glm::vec3 { 0.f, 0.f, 1.f } * glm::radians(180.f),
                             rStartVelocity,
                             rHighVelocity,
@@ -375,6 +378,7 @@ namespace dory::game
                     float highVelocity = 0.7f;
                     float lowVelocity = 0.01f;
                     sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::LinearMovement{
+                        false,
                         glm::vec3 { 1.f, 0.f, 0.f },
                         startVelocity,
                         highVelocity,
@@ -390,6 +394,7 @@ namespace dory::game
                     float rHighVelocity = glm::radians(180.f);
                     float rLowVelocity = glm::radians(0.1f);
                     sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::RotationMovement{
+                            false,
                             glm::vec3 { 0.f, 0.f, 1.f } * glm::radians(180.f),
                             rStartVelocity,
                             rHighVelocity,

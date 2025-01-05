@@ -33,7 +33,7 @@ namespace dory::core::controllers
             float distanceTotal = glm::length(movement.value);
             float distanceLeft = distanceTotal - movement.distanceDone;
 
-            if(distanceLeft > 0.f)
+            if(distanceLeft > 0.f || movement.endless)
             {
                 if(movement.acceleration > 0.f
                    && movement.currentVelocity < movement.highVelocity
@@ -59,7 +59,7 @@ namespace dory::core::controllers
                 if(movement.currentVelocity > 0.f)
                 {
                     auto step = movement.currentVelocity * timeStepSeconds;
-                    if(distanceLeft - step < 0.f)
+                    if(distanceLeft - step < 0.f && !movement.endless)
                     {
                         step = distanceLeft;
                     }

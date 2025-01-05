@@ -15,6 +15,7 @@ namespace dory::core::services
     public:
         virtual void addComponent(resources::IdType objectId, resources::scene::Scene& scene, const T& component) = 0;
         virtual void removeComponent(resources::IdType objectId, resources::scene::Scene& scene, const T& component) = 0;
+        virtual void getComponent(resources::IdType objectId, resources::scene::Scene& scene, T** component) = 0;
     };
 
     template<typename... TComponents>
@@ -24,6 +25,8 @@ namespace dory::core::services
         using ComponentTypes =  generic::TypeList<TComponents...>;
 
         using IEntityComponentServiceGeneric<TComponents>::addComponent...;
+        using IEntityComponentServiceGeneric<TComponents>::removeComponent...;
+        using IEntityComponentServiceGeneric<TComponents>::getComponent...;
     };
 
     template<typename... TComponents>

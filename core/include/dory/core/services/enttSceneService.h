@@ -34,6 +34,22 @@ namespace dory::core::services
                 registry.remove<T>(entity);
             }
         }
+
+        void getComponent(resources::IdType objectId, resources::scene::Scene& scene, T** component) final
+        {
+            T* result = nullptr;
+
+            auto& enttScene = (resources::scene::EnttScene&)scene;
+            auto& registry = enttScene.registry;
+
+            auto it = enttScene.idMap.find(objectId);
+            if(it != enttScene.idMap.end())
+            {
+                result = registry.try_get<T>(it->second);
+            }
+
+            *component = result;
+        }
     };
 
     struct EntityComponentServicePolicy: implementation::ImplementationPolicy<implementation::ImplementationList<EntityComponentServiceGeneric>>

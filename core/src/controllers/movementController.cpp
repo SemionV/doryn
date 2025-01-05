@@ -46,7 +46,7 @@ namespace dory::core::controllers
                                 {
                                     position.value += glm::normalize(movement.value) * movement.step;
 
-                                    if(movement.distanceDone >= glm::length(movement.value))
+                                    if(movement.distanceDone >= glm::length(movement.value) && !movement.endless)
                                     {
                                         auto eventDispatcher = _registry.get<events::scene::Bundle::IDispatcher>();
                                         if(eventDispatcher)
@@ -69,7 +69,7 @@ namespace dory::core::controllers
                                     orientation.value = orientation.value * glm::angleAxis(movement.step, glm::normalize(movement.value));
                                     orientation.value = glm::normalize(orientation.value);
 
-                                    if(movement.distanceDone >= glm::length(movement.value))
+                                    if(movement.distanceDone >= glm::length(movement.value) && !movement.endless)
                                     {
                                         auto eventDispatcher = _registry.get<events::scene::Bundle::IDispatcher>();
                                         if(eventDispatcher)

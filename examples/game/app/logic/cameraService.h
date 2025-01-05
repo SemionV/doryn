@@ -23,5 +23,6 @@ namespace dory::game::logic
         explicit CameraService(core::Registry& registry);
 
         void moveCamera(MoveDirection direction, const core::resources::entities::View& view);
+        void stopCamera(const core::resources::entities::View& view);
     };
 }
