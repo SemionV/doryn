@@ -73,15 +73,25 @@ namespace dory::core::services
 
                 if(fpsAccumulator >= fpsInterval)
                 {
+                    profiling::Frame frame {};
+                    if(previousFrame)
+                    {
+                        frame = *previousFrame;
+                        currentFrameSet->frames.pop_front();
+                    }
                     printProfilingInfo(*currentFrameSet);
                     if(frameSets.size() == maxFrameSets)
                     {
                         frameSets.pop_back();
                     }
                     currentFrameSet = &frameSets.emplace_front();
-                    fpsAccumulator = nanoseconds{0};
+                    if(previousFrame)
+                    {
+                        currentFrameSet->frames.emplace_front(frame);
+                    }
+                    fpsAccumulator = fpsAccumulator - fpsInterval;
                 }
-                previousFrame = &currentFrameSet->frames.emplace_back();
+                previousFrame = &currentFrameSet->frames.emplace_front();
 
                 pipelineService = _registry.get<IPipelineService>();
                 auto viewService = _registry.get<IViewService>();
@@ -93,8 +103,6 @@ namespace dory::core::services
 
                         const auto viewStates = viewStateWrite.load();
                         viewService->updateViewsState(*viewStates);
-
-                        previousFrame->viewStates.push_back(*viewStates);
 
                         accumulator -= fixedDeltaNanos;
                     }
@@ -110,6 +118,7 @@ namespace dory::core::services
                     alpha = glm::clamp(alpha, 0.0f, 1.0f);
 
                     const auto viewStates = viewStateWrite.load();
+                    previousFrame->viewStates.push_back(*viewStates);
                     viewService->updateViews(*viewStates, /*alpha*/1.f);
                 }
             }

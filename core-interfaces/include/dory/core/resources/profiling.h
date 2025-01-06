@@ -14,6 +14,6 @@ namespace dory::core::resources::profiling
 
     struct FrameSet
     {
-        std::vector<Frame> frames;
+        std::deque<Frame> frames;
     };
 }
