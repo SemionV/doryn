@@ -1,6 +1,7 @@
 #pragma once
 
 #include <dory/core/services/iLoopService.h>
+#include <dory/core/resources/profiling.h>
 
 namespace dory::core
 {
@@ -14,6 +15,8 @@ namespace dory::core::services
     private:
         bool isStop = false;
         Registry& _registry;
+
+        void printProfilingInfo(const resources::profiling::FrameSet& frameSet) const;
 
     public:
         explicit LoopService(Registry& registry);

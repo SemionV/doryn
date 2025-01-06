@@ -30,28 +30,39 @@ namespace dory::core::services
         {
             isStop = false;
 
-            std::size_t fps = 0;
-
-            const auto fixedDeltaNanos = nanoseconds{16666667};
+            const auto fixedDeltaNanos = nanoseconds{16666667 * 2};
             auto accumulator = nanoseconds{0};
             auto fpsAccumulator = nanoseconds{0};
-            auto fpsInterval = seconds{1};
+            const auto fpsInterval = seconds{1};
+            constexpr unsigned maxFrameSets = 5;
             generic::model::TimeSpan timeStep(generic::model::UnitScale::Nano);
 
             steady_clock::time_point lastTimestamp = steady_clock::now();
-            steady_clock::time_point currentTimestamp;
 
             SceneViewStateSet sceneStatesA;
             SceneViewStateSet sceneStatesB;
 
-            std::atomic<SceneViewStateSet*> viewStateWrite { &sceneStatesA };
+            const std::atomic viewStateWrite { &sceneStatesA };
             /*std::atomic<SceneViewStateSet*> viewStateRead { &sceneStatesB };*/
+
+            std::deque<profiling::FrameSet> frameSets;
+            auto* currentFrameSet = &frameSets.emplace_back();
+            profiling::Frame* previousFrame = nullptr;
 
             while(!isStop)
             {
-                currentTimestamp = steady_clock::now();
+                steady_clock::time_point currentTimestamp = steady_clock::now();
                 auto frameTime = duration_cast<nanoseconds>(currentTimestamp - lastTimestamp);
                 lastTimestamp = currentTimestamp;
+
+                if(previousFrame)
+                {
+                    previousFrame->duration = frameTime;
+                }
+                else
+                {
+                    frameTime = nanoseconds{ 0 };
+                }
 
                 if (frameTime > milliseconds(250)) {
                     frameTime = milliseconds(250);
@@ -59,6 +70,18 @@ namespace dory::core::services
 
                 accumulator += frameTime;
                 fpsAccumulator += frameTime;
+
+                if(fpsAccumulator >= fpsInterval)
+                {
+                    printProfilingInfo(*currentFrameSet);
+                    if(frameSets.size() == maxFrameSets)
+                    {
+                        frameSets.pop_back();
+                    }
+                    currentFrameSet = &frameSets.emplace_front();
+                    fpsAccumulator = nanoseconds{0};
+                }
+                previousFrame = &currentFrameSet->frames.emplace_back();
 
                 pipelineService = _registry.get<IPipelineService>();
                 auto viewService = _registry.get<IViewService>();
@@ -68,8 +91,10 @@ namespace dory::core::services
                         timeStep.duration = fixedDeltaNanos.count();
                         pipelineService->update(context, timeStep);
 
-                        auto viewStates = viewStateWrite.load();
+                        const auto viewStates = viewStateWrite.load();
                         viewService->updateViewsState(*viewStates);
+
+                        previousFrame->viewStates.push_back(*viewStates);
 
                         accumulator -= fixedDeltaNanos;
                     }
@@ -81,21 +106,11 @@ namespace dory::core::services
                 viewService = _registry.get<IViewService>();
                 if(viewService)
                 {
-                    float alpha = (float)accumulator.count() / (float)fixedDeltaNanos.count();
+                    float alpha = static_cast<float>(accumulator.count()) / static_cast<float>(fixedDeltaNanos.count());
                     alpha = glm::clamp(alpha, 0.0f, 1.0f);
 
-                    auto viewStates = viewStateWrite.load();
-                    viewService->updateViews(*viewStates, alpha);
-                }
-
-                ++fps;
-
-                if(fpsAccumulator >= fpsInterval)
-                {
-                    //TODO: output FPS
-                    //logger->information(fmt::format("FPS: {0}", fps));
-                    fps = 0;
-                    fpsAccumulator = nanoseconds{0};
+                    const auto viewStates = viewStateWrite.load();
+                    viewService->updateViews(*viewStates, /*alpha*/1.f);
                 }
             }
         }
@@ -111,4 +126,14 @@ namespace dory::core::services
     {
         isStop = true;
     }
+
+    void LoopService::printProfilingInfo(const profiling::FrameSet& frameSet) const
+    {
+        auto logger = _registry.get<ILogService>();
+        if(logger)
+        {
+            logger->information(fmt::format("FPS: {0}", frameSet.frames.size()));
+        }
+    }
+
 }
