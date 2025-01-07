@@ -30,7 +30,7 @@ namespace dory::core::services
         {
             isStop = false;
 
-            const auto fixedDeltaNanos = nanoseconds{16666667 * 2};
+            const auto fixedDeltaTime = nanoseconds{16666667 * 2};
             auto accumulator = nanoseconds{0};
             auto fpsAccumulator = nanoseconds{0};
             const auto fpsInterval = seconds{1};
@@ -66,45 +66,41 @@ namespace dory::core::services
 
                 if (frameTime > milliseconds(250)) {
                     frameTime = milliseconds(250);
+                    accumulator = nanoseconds{0};
                 }
 
                 accumulator += frameTime;
                 fpsAccumulator += frameTime;
 
-                if(fpsAccumulator >= fpsInterval)
+                while (fpsAccumulator >= fpsInterval)
                 {
-                    profiling::Frame frame {};
-                    if(previousFrame)
-                    {
-                        frame = *previousFrame;
-                        currentFrameSet->frames.pop_front();
-                    }
                     printProfilingInfo(*currentFrameSet);
                     if(frameSets.size() == maxFrameSets)
                     {
                         frameSets.pop_back();
                     }
                     currentFrameSet = &frameSets.emplace_front();
-                    if(previousFrame)
-                    {
-                        currentFrameSet->frames.emplace_front(frame);
-                    }
                     fpsAccumulator = fpsAccumulator - fpsInterval;
                 }
                 previousFrame = &currentFrameSet->frames.emplace_front();
+                context.currentFrame = previousFrame;
 
                 pipelineService = _registry.get<IPipelineService>();
                 auto viewService = _registry.get<IViewService>();
                 if(pipelineService && viewService) //it can be hot-swapped, this is why reload it each frame
                 {
-                    while (accumulator >= fixedDeltaNanos) {
-                        timeStep.duration = fixedDeltaNanos.count();
+                    constexpr int maxUpdatesPerFrame = 5;
+                    int updates = 0;
+                    while (accumulator >= fixedDeltaTime && updates < maxUpdatesPerFrame) {
+                        timeStep.duration = fixedDeltaTime.count();
                         pipelineService->update(context, timeStep);
 
                         const auto viewStates = viewStateWrite.load();
                         viewService->updateViewsState(*viewStates);
 
-                        accumulator -= fixedDeltaNanos;
+                        accumulator -= fixedDeltaTime;
+                        updates++;
+                        previousFrame->updatesCount = updates;
                     }
                 }
 
@@ -114,12 +110,12 @@ namespace dory::core::services
                 viewService = _registry.get<IViewService>();
                 if(viewService)
                 {
-                    float alpha = static_cast<float>(accumulator.count()) / static_cast<float>(fixedDeltaNanos.count());
+                    float alpha = static_cast<float>(accumulator.count()) / static_cast<float>(fixedDeltaTime.count());
                     alpha = glm::clamp(alpha, 0.0f, 1.0f);
 
                     const auto viewStates = viewStateWrite.load();
                     previousFrame->viewStates.push_back(*viewStates);
-                    viewService->updateViews(*viewStates, /*alpha*/1.f);
+                    viewService->updateViews(*viewStates, alpha, context);
                 }
             }
         }
@@ -138,11 +134,52 @@ namespace dory::core::services
 
     void LoopService::printProfilingInfo(const profiling::FrameSet& frameSet) const
     {
-        auto logger = _registry.get<ILogService>();
-        if(logger)
+        if(auto logger = _registry.get<ILogService>())
         {
-            logger->information(fmt::format("FPS: {0}", frameSet.frames.size()));
+            std::size_t framesWithUpdatesCount {};
+            for(const auto& frame : frameSet.frames)
+            {
+                if(frame.updatesCount != 0)
+                {
+                    framesWithUpdatesCount++;
+                }
+            }
+
+            logger->information(fmt::format("FPS: {0}, u: {1}",
+                frameSet.frames.size(),
+                framesWithUpdatesCount));
+        }
+
+        if(frameSet.frames.size() < 300)
+        {
+            printProfilingDetailedInfo(frameSet);
         }
     }
 
+    void LoopService::printProfilingDetailedInfo(const resources::profiling::FrameSet& frameSet) const
+    {
+        std::chrono::nanoseconds duration {};
+        for(const auto& frame : frameSet.frames)
+        {
+            printFrameInfo(frame);
+            duration += frame.duration;
+        }
+
+        if(auto logger = _registry.get<ILogService>())
+        {
+            logger->information(fmt::format("total duration: {0}ms",
+                std::chrono::duration_cast<milliseconds>(duration).count()));
+        }
+    }
+
+    void LoopService::printFrameInfo(const resources::profiling::Frame& frame) const
+    {
+        if(auto logger = _registry.get<ILogService>())
+        {
+            logger->information(fmt::format("frame: {0}ms, updates: {1}, alpha: {2}",
+                std::chrono::duration_cast<milliseconds>(frame.duration).count(),
+                frame.updatesCount,
+                frame.alpha));
+        }
+    }
 }

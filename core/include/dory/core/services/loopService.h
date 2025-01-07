@@ -17,6 +17,8 @@ namespace dory::core::services
         Registry& _registry;
 
         void printProfilingInfo(const resources::profiling::FrameSet& frameSet) const;
+        void printProfilingDetailedInfo(const resources::profiling::FrameSet& frameSet) const;
+        void printFrameInfo(const resources::profiling::Frame& frame) const;
 
     public:
         explicit LoopService(Registry& registry);

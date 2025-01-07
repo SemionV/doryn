@@ -15,6 +15,7 @@ namespace dory::core::services::graphics
         virtual void draw(const resources::scene::SceneViewState& viewState,
                           float alpha,
                           const resources::entities::Window& window,
-                          const resources::entities::GraphicalContext& graphicalContext) = 0;
+                          const resources::entities::GraphicalContext& graphicalContext,
+                          resources::DataContext& dataContext) = 0;
     };
 }

@@ -38,7 +38,8 @@ namespace dory::core::services::graphics
     void Renderer::draw(const resources::scene::SceneViewState& viewState,
                         float alpha,
                         const resources::entities::Window& window,
-                        const resources::entities::GraphicalContext& graphicalContext)
+                        const resources::entities::GraphicalContext& graphicalContext,
+                        resources::DataContext& dataContext)
     {
         auto& view = viewState.view;
 
@@ -78,6 +79,8 @@ namespace dory::core::services::graphics
                             transform.scale = glm::mix(prevTransform.scale, object.transform.scale, alpha);
                             transform.rotation = glm::slerp(prevTransform.rotation, object.transform.rotation, alpha);
                             transform.position = glm::mix(prevTransform.position, object.transform.position, alpha);
+
+                            dataContext.currentFrame->alpha = alpha;
                         }
                         else
                         {

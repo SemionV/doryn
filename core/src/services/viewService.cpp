@@ -6,7 +6,7 @@ namespace dory::core::services
     ViewService::ViewService(Registry& registry) : DependencyResolver(registry)
     {}
 
-    void ViewService::updateViews(resources::scene::SceneViewStateSet& viewStates, float alpha)
+    void ViewService::updateViews(resources::scene::SceneViewStateSet& viewStates, float alpha, resources::DataContext& dataContext)
     {
         auto windowRepository = _registry.get<repositories::IWindowRepository>();
         auto graphicalContextRepository = _registry.get<repositories::IGraphicalContextRepository>();
@@ -16,13 +16,11 @@ namespace dory::core::services
         {
             for(const auto& [viewId, viewState] : viewStates)
             {
-                auto window = windowRepository->get(viewState.view.windowId);
-                if(window)
+                if(const auto window = windowRepository->get(viewState.view.windowId))
                 {
-                    auto graphicalContext = graphicalContextRepository->get(window->graphicalContextId);
-                    if(graphicalContext)
+                    if(const auto graphicalContext = graphicalContextRepository->get(window->graphicalContextId))
                     {
-                        renderer->draw(viewState, alpha, *window, *graphicalContext);
+                        renderer->draw(viewState, alpha, *window, *graphicalContext, dataContext);
                     }
                 }
             }
