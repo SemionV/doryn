@@ -176,10 +176,13 @@ namespace dory::core::services
     {
         if(auto logger = _registry.get<ILogService>())
         {
-            logger->information(fmt::format("frame: {0}ms, updates: {1}, alpha: {2}",
+            logger->information(fmt::format("frame: {0}ms, updates: {1}, alpha: {2}, fbb: {3}, rb: {4}, db: {5}",
                 std::chrono::duration_cast<milliseconds>(frame.duration).count(),
                 frame.updatesCount,
-                frame.alpha));
+                frame.alpha,
+                frame.frameBufferBinding,
+                frame.readFrameBufferIndex ? "back" : "front",
+                frame.drawFrameBufferIndex ? "back" : "front"));
         }
     }
 }

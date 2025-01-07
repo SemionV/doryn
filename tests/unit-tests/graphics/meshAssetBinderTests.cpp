@@ -34,7 +34,7 @@ public:
     MOCK_METHOD(void, bindMesh, (MeshBinding* meshBinding, const BufferBinding* vertexBuffer, const BufferBinding* indexBuffer));
     MOCK_METHOD(void, bindShader, (const std::string& sourceCode, resources::assets::ShaderType type, ShaderBinding* shaderBinding));
     MOCK_METHOD(void, bindMaterial, (MaterialBinding* materialBinding, const std::vector<ShaderBinding*>& shaders));
-    MOCK_METHOD(void, drawFrame, (const Frame& frame));
+    MOCK_METHOD(void, drawFrame, (const Frame& frame, DataContext& context));
 };
 
 template<typename TInterface, typename TEntity = TInterface::EntityType>

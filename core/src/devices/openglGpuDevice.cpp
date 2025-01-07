@@ -14,6 +14,9 @@
 #include <iostream>
 #include <ranges>
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
+
 namespace dory::core::devices
 {
     using namespace resources;
@@ -21,6 +24,29 @@ namespace dory::core::devices
     using namespace resources::bindings::uniforms;
     using namespace resources::objects;
     using namespace services;
+
+    void saveBufferToPNG(const char* filename, GLenum buffer, int width, int height) {
+        glFinish();
+
+        // Bind the specified buffer
+        glReadBuffer(buffer);
+
+        // Allocate memory to store the pixels (RGBA format)
+        std::vector<unsigned char> pixels(width * height * 4);
+
+        // Read the pixels from the buffer
+        glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+
+        // Flip the image vertically (OpenGL stores it upside down)
+        for (int y = 0; y < height / 2; ++y) {
+            for (int x = 0; x < width * 4; ++x) {
+                std::swap(pixels[y * width * 4 + x], pixels[(height - y - 1) * width * 4 + x]);
+            }
+        }
+
+        //stbi_write_png(filename, width, height, 4, pixels.data(), width * 4);
+        stbi_write_bmp(filename, width, height, 4, pixels.data());
+    }
 
     const char* getErrorString(GLenum errorCode)
     {
@@ -493,10 +519,24 @@ namespace dory::core::devices
         }
     }
 
-    void OpenglGpuDevice::drawFrame(const Frame& frame)
+    void OpenglGpuDevice::drawFrame(const Frame& frame, resources::DataContext& dataContext)
     {
+        GLint framebufferID;
+        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &framebufferID);
+        dataContext.currentFrame->frameBufferBinding = framebufferID;
+
+        GLint readBuffer;
+        glGetIntegerv(GL_READ_BUFFER, &readBuffer);
+        dataContext.currentFrame->readFrameBufferIndex = readBuffer == GL_BACK;
+        GLint drawBuffer;
+        glGetIntegerv(GL_DRAW_BUFFER, &drawBuffer);
+        dataContext.currentFrame->drawFrameBufferIndex = drawBuffer == GL_BACK;
+
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL);
+
         glClearColor(frame.clearColor.x, frame.clearColor.y, frame.clearColor.z, frame.clearColor.w);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         glViewport((GLint)frame.viewport.x, (GLint)frame.viewport.y, (GLint)frame.viewport.width, (GLint)frame.viewport.height);
 
@@ -518,6 +558,9 @@ namespace dory::core::devices
         }
 
         glFlush();
+
+        /*saveBufferToPNG("front.bmp", GL_FRONT, frame.viewport.width, frame.viewport.height);
+        saveBufferToPNG("back.bmp", GL_BACK, frame.viewport.width, frame.viewport.height);*/
     }
 
     template<typename TUniform>

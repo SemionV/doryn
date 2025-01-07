@@ -20,6 +20,9 @@ namespace dory::core::resources::profiling
         std::vector<TimeSlice> timeSlices;
         std::size_t updatesCount {};
         float alpha = -1;
+        std::size_t frameBufferBinding {};
+        bool readFrameBufferIndex {};
+        bool drawFrameBufferIndex {};
     };
 
     struct FrameSet

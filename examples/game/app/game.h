@@ -186,7 +186,7 @@ namespace dory::game
                 auto material = materialRepo->insert(core::resources::assets::Material{
                         {},
                         { vertexShaderId, fragmentShaderId },
-                        { {1.f, 1.f, 1.f, 0.f}, {1.f, 0.f, 0.f, 0.f}, {0.f, 1.f, 0.f, 0.f} },
+                        { {1.f, 1.f, 1.f, 1.f}, {1.f, 0.f, 0.f, 1.f}, {0.f, 1.f, 0.f, 1.f} },
                         core::resources::assets::PolygonMode::Wireframe
                 });
                 materialId = material->id;
@@ -445,6 +445,24 @@ namespace dory::game
                     });
                     sceneService->addComponent(view.cameraId, *scene, core::resources::scene::components::Mesh{ pointMeshId });
                     sceneService->addComponent(view.cameraId, *scene, core::resources::scene::components::Material{ 1 });
+                    float distance = 1.f;
+                    glm::vec3 stepVector = glm::vec3{1.f, 0.f, 0.f};
+
+                    /*float accelerationDistance = distance;
+                    float highVelocity = 0.3f;
+                    float startVelocity = highVelocity;
+                    float lowVelocity = 0.01f;
+                    sceneService->addComponent(view.cameraId, *scene, core::resources::scene::components::LinearMovement {
+                        true,
+                        stepVector,
+                        startVelocity,
+                        highVelocity,
+                        lowVelocity,
+                        startVelocity,
+                        accelerationDistance,
+                        0.f,
+                        0.f
+                    });*/
                 }
 
                 return scene;

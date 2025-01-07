@@ -95,7 +95,7 @@ namespace dory::core::services::graphics
             }
 
             windowService->setCurrentWindow(window);
-            gpuDevice->drawFrame(frame);
+            gpuDevice->drawFrame(frame, dataContext);
             windowService->swapBuffers(window);
         }
     }

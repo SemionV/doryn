@@ -20,6 +20,6 @@ namespace dory::core::devices
         virtual void bindShader(const std::string& sourceCode, resources::assets::ShaderType type, resources::bindings::ShaderBinding* shaderBinding) = 0;
         virtual void bindMaterial(resources::bindings::MaterialBinding* materialBinding, const std::vector<resources::bindings::ShaderBinding*>& shaders) = 0;
 
-        virtual void drawFrame(const resources::objects::Frame& frame) = 0;
+        virtual void drawFrame(const resources::objects::Frame& frame, resources::DataContext& dataContext) = 0;
     };
 }

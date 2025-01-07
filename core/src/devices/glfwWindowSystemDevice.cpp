@@ -194,7 +194,9 @@ namespace dory::core::devices
             return;
         }
 
+        glfwSwapInterval(parameters.vSync ? 1 : 0);
 
+        glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE); //TODO: pass this as a parameter
         glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
         glfwWindowHint(GLFW_SAMPLES, parameters.sampling);
 
@@ -215,8 +217,6 @@ namespace dory::core::devices
         glfwWindow.handler = glfwWindowHandler;
 
         glfwMakeContextCurrent(glfwWindowHandler);
-
-        glfwSwapInterval(parameters.vSync ? 1 : 0); //No VSync. TODO: pass this as a parameter
 
         glfwSetWindowUserPointer(glfwWindow.handler, &_registry);
         glfwSetFramebufferSizeCallback(glfwWindow.handler, framebufferSizeCallback);

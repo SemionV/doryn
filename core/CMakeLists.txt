@@ -46,6 +46,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         ${DORY_PLATFORM_MODULES})
 
 target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/external/stb)
 
 target_link_libraries(${DORY_MODULE_NAME} PUBLIC
         dory-core-generic
