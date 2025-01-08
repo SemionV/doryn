@@ -16,6 +16,7 @@
 #include "dory/core/devices/iGpuDevice.h"
 #include <dory/core/devices/iFileWatcherDevice.h>
 #include <dory/core/devices/iWindowSystemDevice.h>
+#include <dory/core/devices/iBlockQueueStreamDevice.h>
 
 #include <dory/core/repositories/iViewRepository.h>
 #include <dory/core/repositories/iWindowRepository.h>
@@ -86,6 +87,7 @@ namespace dory::core
             generic::registry::ServiceEntry<devices::IWindowSystemDevice, resources::WindowSystem>,
             generic::registry::ServiceEntry<devices::IFileWatcherDevice>,
             generic::registry::ServiceEntry<devices::IGpuDevice, resources::GraphicalSystem>,
+            generic::registry::ServiceEntry<devices::IBlockQueueStreamDevice>,
             /*Repositories*/
             generic::registry::ServiceEntry<repositories::ICameraRepository>,
             generic::registry::ServiceEntry<repositories::IViewRepository>,

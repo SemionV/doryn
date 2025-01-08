@@ -39,6 +39,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/viewService.cpp
         src/services/graphics/renderer.cpp
         src/services/generators/meshGenerator.cpp
+        src/services/blockQueueService.cpp
         src/controllers/windowSystemController.cpp
         src/controllers/viewController.cpp
         src/controllers/movementController.cpp

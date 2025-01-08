@@ -3,8 +3,7 @@
 
 #include "dory/game/setup.h"
 #include "dory/core/resources/ecsType.h"
-#include <dory/core/services/fileService.h>
-#include <dory/core/services/libraryService.h>
+#include <dory/core/resources/assetType.h>
 
 #ifdef DORY_PLATFORM_LINUX
 #include <dory/core/devices/standardIoDeviceUnix.h>
@@ -12,21 +11,12 @@
 #ifdef DORY_PLATFORM_WIN32
 #include <dory/core/devices/standardIoDeviceWin32.h>
 #endif
-
 #include <dory/core/devices/terminalDevice.h>
 #include <dory/core/devices/glfwWindowSystemDevice.h>
 #include <dory/core/devices/openglGpuDevice.h>
+#include <dory/core/devices/fileWatcherDevice.h>
+
 #include <dory/core/repositories/pipelineRepository.h>
-#include <dory/core/services/logServiceNull.h>
-#include <dory/core/services/logService.h>
-#include <dory/core/services/serializer.h>
-#include <dory/core/services/dataFormatResolver.h>
-#include <dory/core/services/scriptService.h>
-#include <dory/core/services/configurationService.h>
-#include <dory/core/services/localizationService.h>
-#include <dory/core/services/pipelineService.h>
-#include <dory/core/services/loopService.h>
-#include <dory/core/services/windowService.h>
 #include <dory/core/repositories/blockStreamRepository.h>
 #include <dory/core/repositories/viewRepository.h>
 #include <dory/core/repositories/windowRepository.h>
@@ -41,7 +31,19 @@
 #include <dory/core/repositories/bindings/shaderBindingRepository.h>
 #include <dory/core/repositories/bindings/materialBindingRepository.h>
 #include <dory/core/repositories/enttSceneRepository.h>
-#include <dory/core/devices/fileWatcherDevice.h>
+
+#include <dory/core/services/fileService.h>
+#include <dory/core/services/libraryService.h>
+#include <dory/core/services/logServiceNull.h>
+#include <dory/core/services/logService.h>
+#include <dory/core/services/serializer.h>
+#include <dory/core/services/dataFormatResolver.h>
+#include <dory/core/services/scriptService.h>
+#include <dory/core/services/configurationService.h>
+#include <dory/core/services/localizationService.h>
+#include <dory/core/services/pipelineService.h>
+#include <dory/core/services/loopService.h>
+#include <dory/core/services/windowService.h>
 #include <dory/core/services/assetTypeResolver.h>
 #include <dory/core/services/hot-reload/extensionLoader.h>
 #include <dory/core/services/enttSceneService.h>
@@ -52,7 +54,7 @@
 #include <dory/core/services/viewService.h>
 #include <dory/core/services/graphics/renderer.h>
 #include <dory/core/services/generators/meshGenerator.h>
-#include <dory/core/resources/assetType.h>
+#include <dory/core/services/blockQueueService.h>
 
 namespace dory::game
 {
@@ -137,5 +139,7 @@ namespace dory::game
 
         auto sceneQueryService = std::make_shared<core::services::EnttSceneQueryService>(registry);
         registry.set<core::services::ISceneQueryService, core::resources::EcsType::entt>(libraryHandle, sceneQueryService);
+
+        registry.set<core::services::IBlockQueueService>(libraryHandle, std::make_shared<core::services::BlockQueueService>(registry));
     }
 }
