@@ -1,6 +1,7 @@
 #pragma once
 
 #include <dory/core/resources/scene/scene.h>
+#include <dory/core/resources/id.h>
 #include <entt/entt.hpp>
 #include <unordered_map>
 

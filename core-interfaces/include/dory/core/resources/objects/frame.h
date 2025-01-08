@@ -2,6 +2,7 @@
 
 #include <dory/math/linearAlgebra.h>
 #include <dory/core/resources/bindings/meshBinding.h>
+#include <dory/core/resources/bindings/materialBinding.h>
 #include <unordered_map>
 
 namespace dory::core::resources::objects

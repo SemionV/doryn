@@ -4,6 +4,8 @@
 #include <dory/core/resources/bindings/meshBinding.h>
 #include <dory/core/resources/bindings/bufferBinding.h>
 #include <dory/core/resources/objects/frame.h>
+#include <dory/core/resources/assets/shader.h>
+#include <dory/core/resources/bindings/shaderBinding.h>
 
 namespace dory::core::devices
 {

@@ -7,6 +7,6 @@ namespace dory::core::resources::entities
 {
     struct BlockStreamQueue: public BlockStream
     {
-        moodycamel::ReaderWriterQueue<Block> queue;
+        moodycamel::ReaderWriterQueue<Block> queue {};
     };
 }

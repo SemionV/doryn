@@ -18,6 +18,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/repositories/viewRepository.cpp
         src/repositories/shaderProgramRepository.cpp
         src/repositories/enttSceneRepository.cpp
+        src/repositories/blockStreamRepository.cpp
         src/services/fileService.cpp
         src/services/libraryService.cpp
         src/services/logService.cpp
