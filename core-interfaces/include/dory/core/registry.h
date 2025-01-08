@@ -2,39 +2,22 @@
 
 #include <map>
 #include <dory/generic/registryLayer.h>
-#include "services/iFileService.h"
-#include "services/iLibraryService.h"
 #include "events/eventTypes.h"
 #include <dory/core/resources/dataFormat.h>
 #include <dory/core/resources/logger.h>
+#include <dory/core/resources/entities/camera.h>
 #include <dory/generic/extension/resourceHandle.h>
+#include <dory/core/resources/graphicalSystem.h>
+#include <dory/generic/extension/registryResourceScope.h>
+#include <dory/core/resources/windowSystem.h>
+
 #include <dory/core/devices/iStandardIODevice.h>
 #include <dory/core/devices/iTerminalDevice.h>
-#include <dory/core/repositories/iRepository.h>
-#include <dory/core/repositories/iPipelineRepository.h>
-#include "services/iLogService.h"
-#include <dory/core/services/iSerializer.h>
-#include <dory/generic/extension/registryResourceScope.h>
-#include <dory/core/services/iDataFormatResolver.h>
-#include <dory/core/services/iScriptService.h>
-#include <dory/core/services/iConfigurationService.h>
-#include <dory/core/services/iLocalizationService.h>
-#include <dory/core/services/iLoopService.h>
-#include <dory/core/services/iPipelineService.h>
-#include <dory/core/devices/iWindowSystemDevice.h>
-#include <dory/core/resources/windowSystem.h>
-#include <dory/core/services/iWindowService.h>
-#include <dory/core/resources/graphicalSystem.h>
-#include <dory/core/services/graphics/iRenderer.h>
-#include <dory/core/repositories/iViewRepository.h>
+#include "dory/core/devices/iGpuDevice.h"
 #include <dory/core/devices/iFileWatcherDevice.h>
-#include <dory/core/services/iAssetTypeResolver.h>
-#include <dory/core/services/iAssetReloadHandler.h>
-#include <dory/core/services/graphics/iShaderService.h>
-#include <dory/core/services/iSceneService.h>
-#include <dory/core/services/iSceneQueryService.h>
-#include <dory/core/services/iViewService.h>
-#include <dory/core/services/generators/iMeshGenerator.h>
+#include <dory/core/devices/iWindowSystemDevice.h>
+
+#include <dory/core/repositories/iViewRepository.h>
 #include <dory/core/repositories/iWindowRepository.h>
 #include <dory/core/repositories/iShaderRepository.h>
 #include <dory/core/repositories/iShaderProgramRepository.h>
@@ -49,11 +32,30 @@
 #include <dory/core/repositories/bindings/iShaderBindingRepository.h>
 #include <dory/core/repositories/bindings/iMaterialBindingRepository.h>
 #include <dory/core/repositories/iBlockStreamRepository.h>
-#include "dory/core/devices/iGpuDevice.h"
-#include "dory/core/services/iAssetBinder.h"
-#include <dory/core/resources/assetType.h>
+#include <dory/core/repositories/iRepository.h>
+#include <dory/core/repositories/iPipelineRepository.h>
 
-#include <dory/core/resources/entities/camera.h>
+#include <dory/core/services/iSerializer.h>
+#include <dory/core/services/iDataFormatResolver.h>
+#include <dory/core/services/iScriptService.h>
+#include <dory/core/services/iConfigurationService.h>
+#include <dory/core/services/iLocalizationService.h>
+#include <dory/core/services/iLoopService.h>
+#include <dory/core/services/iPipelineService.h>
+#include <dory/core/services/iWindowService.h>
+#include <dory/core/services/graphics/iRenderer.h>
+#include <dory/core/services/iAssetTypeResolver.h>
+#include <dory/core/services/iAssetReloadHandler.h>
+#include <dory/core/services/graphics/iShaderService.h>
+#include <dory/core/services/iSceneService.h>
+#include <dory/core/services/iSceneQueryService.h>
+#include <dory/core/services/iViewService.h>
+#include <dory/core/services/generators/iMeshGenerator.h>
+#include <dory/core/services/iBlockQueueService.h>
+#include <dory/core/services/iLogService.h>
+#include <dory/core/services/iAssetBinder.h>
+#include <dory/core/services/iFileService.h>
+#include <dory/core/services/iLibraryService.h>
 
 namespace dory::core
 {
@@ -126,7 +128,8 @@ namespace dory::core
             generic::registry::ServiceEntry<services::ISceneService, resources::EcsType>,
             generic::registry::ServiceEntry<services::ISceneQueryService, resources::EcsType>,
             generic::registry::ServiceEntry<services::graphics::IAssetBinder, std::string_view>,
-            generic::registry::ServiceEntry<services::generators::IMeshGenerator>>
+            generic::registry::ServiceEntry<services::generators::IMeshGenerator>,
+            generic::registry::ServiceEntry<services::IBlockQueueService>>
     {};
 
     template<typename T>

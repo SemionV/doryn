@@ -7,7 +7,7 @@
 
 namespace dory::core::resources::entities
 {
-    struct PixelBlock
+    struct Block
     {
         std::string name;
         std::vector<unsigned char> data;
