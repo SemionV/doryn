@@ -445,10 +445,11 @@ namespace dory::game
                     });
                     sceneService->addComponent(view.cameraId, *scene, core::resources::scene::components::Mesh{ pointMeshId });
                     sceneService->addComponent(view.cameraId, *scene, core::resources::scene::components::Material{ 1 });
-                    float distance = 1.f;
+
+                    /*float distance = 1.f;
                     glm::vec3 stepVector = glm::vec3{1.f, 0.f, 0.f};
 
-                    /*float accelerationDistance = distance;
+                    float accelerationDistance = distance;
                     float highVelocity = 0.3f;
                     float startVelocity = highVelocity;
                     float lowVelocity = 0.01f;

@@ -56,7 +56,8 @@ target_link_libraries(${DORY_MODULE_NAME} PUBLIC
         opengl-glad
         glfw
         efsw
-        EnTT)
+        EnTT
+        readerwriterqueue)
 
 set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""
         IMPORT_PREFIX ""

@@ -48,6 +48,7 @@
 #include <dory/core/repositories/bindings/iBufferBindingRepository.h>
 #include <dory/core/repositories/bindings/iShaderBindingRepository.h>
 #include <dory/core/repositories/bindings/iMaterialBindingRepository.h>
+#include <dory/core/repositories/iBlockStreamRepository.h>
 #include "dory/core/devices/iGpuDevice.h"
 #include "dory/core/services/iAssetBinder.h"
 #include <dory/core/resources/assetType.h>
@@ -89,6 +90,7 @@ namespace dory::core
             generic::registry::ServiceEntry<repositories::IWindowRepository>,
             generic::registry::ServiceEntry<repositories::IWindowRepository, resources::WindowSystem>,
             generic::registry::ServiceEntry<repositories::IPipelineRepository>,
+            generic::registry::ServiceEntry<repositories::IBlockStreamRepository>,
             generic::registry::ServiceEntry<repositories::ISceneRepository>,
             generic::registry::ServiceEntry<repositories::ISceneRepository, resources::EcsType>,
             generic::registry::ServiceEntry<repositories::assets::IMeshRepository>,

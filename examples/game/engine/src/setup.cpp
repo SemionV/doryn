@@ -27,6 +27,7 @@
 #include <dory/core/services/pipelineService.h>
 #include <dory/core/services/loopService.h>
 #include <dory/core/services/windowService.h>
+#include <dory/core/repositories/blockStreamRepository.h>
 #include <dory/core/repositories/viewRepository.h>
 #include <dory/core/repositories/windowRepository.h>
 #include <dory/core/repositories/shaderRepository.h>
@@ -71,6 +72,7 @@ namespace dory::game
         registry.set<core::devices::IFileWatcherDevice>(libraryHandle, std::make_shared<core::devices::FileWatcherDevice>(registry));
         registry.set<core::devices::IGpuDevice, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::devices::OpenglGpuDevice>(registry));
 
+        registry.set<core::repositories::IBlockStreamRepository>(libraryHandle, std::make_shared<core::repositories::BlockStreamRepository>());
         registry.set<core::repositories::IViewRepository>(libraryHandle, std::make_shared<core::repositories::ViewRepository>());
         registry.set<core::repositories::IPipelineRepository>(libraryHandle, std::make_shared<core::repositories::PipelineRepository>());
         registerRepository<core::resources::entities::Camera>(libraryHandle, registry);
