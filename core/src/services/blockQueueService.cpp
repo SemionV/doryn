@@ -17,7 +17,7 @@ namespace dory::core::services
         {
             if(auto* stream = blockStreamRepo->get(queueId))
             {
-                auto* queue = (resources::entities::BlockStreamQueue*)stream;
+                auto* queue = static_cast<resources::entities::BlockStreamQueue*>(stream);
                 queue->queue.enqueue(block);
 
                 streamingDevice->updateStream();

@@ -9,11 +9,12 @@ if(WIN32)
 endif()
 
 add_library(${DORY_MODULE_NAME} STATIC
+        src/extension/dynamicLibrary.cpp
         src/devices/terminalDevice.cpp
         src/devices/glfwWindowSystemDevice.cpp
         src/devices/fileWatcherDevice.cpp
         src/devices/openglGpuDevice.cpp
-        src/extension/dynamicLibrary.cpp
+        src/devices/blockQueueStreamDevice.cpp
         src/repositories/pipelineRepository.cpp
         src/repositories/viewRepository.cpp
         src/repositories/shaderProgramRepository.cpp

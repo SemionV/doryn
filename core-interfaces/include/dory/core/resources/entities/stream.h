@@ -1,6 +1,5 @@
 #pragma once
 
-#include <filesystem>
 #include <vector>
 #include <string>
 #include "../entity.h"
@@ -15,6 +14,6 @@ namespace dory::core::resources::entities
 
     struct BlockStream: public Entity<>
     {
-        std::filesystem::path baseDirectory;
+        std::string name;
     };
 }

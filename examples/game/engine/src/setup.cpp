@@ -15,6 +15,7 @@
 #include <dory/core/devices/glfwWindowSystemDevice.h>
 #include <dory/core/devices/openglGpuDevice.h>
 #include <dory/core/devices/fileWatcherDevice.h>
+#include <dory/core/devices/blockQueueStreamDevice.h>
 
 #include <dory/core/repositories/pipelineRepository.h>
 #include <dory/core/repositories/blockStreamRepository.h>
@@ -73,6 +74,7 @@ namespace dory::game
         registry.set<core::devices::IWindowSystemDevice, core::resources::WindowSystem::glfw>(libraryHandle, std::make_shared<core::devices::GlfwWindowSystemDevice>(registry));
         registry.set<core::devices::IFileWatcherDevice>(libraryHandle, std::make_shared<core::devices::FileWatcherDevice>(registry));
         registry.set<core::devices::IGpuDevice, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::devices::OpenglGpuDevice>(registry));
+        registry.set<core::devices::IBlockQueueStreamDevice>(libraryHandle, std::make_shared<core::devices::BlockQueueStreamDevice>(registry));
 
         registry.set<core::repositories::IBlockStreamRepository>(libraryHandle, std::make_shared<core::repositories::BlockStreamRepository>());
         registry.set<core::repositories::IViewRepository>(libraryHandle, std::make_shared<core::repositories::ViewRepository>());
