@@ -56,6 +56,7 @@
 #include <dory/core/services/graphics/renderer.h>
 #include <dory/core/services/generators/meshGenerator.h>
 #include <dory/core/services/blockQueueService.h>
+#include <dory/core/services/files/imageFileService.h>
 
 namespace dory::game
 {
@@ -143,5 +144,7 @@ namespace dory::game
         registry.set<core::services::ISceneQueryService, core::resources::EcsType::entt>(libraryHandle, sceneQueryService);
 
         registry.set<core::services::IBlockQueueService>(libraryHandle, std::make_shared<core::services::BlockQueueService>(registry));
+        registry.set<core::services::files::IImageFileService, core::resources::AssetFileFormat::bmp>(libraryHandle, std::make_shared<core::services::files::BmpImageFileService>());
+        registry.set<core::services::files::IImageFileService, core::resources::AssetFileFormat::png>(libraryHandle, std::make_shared<core::services::files::PngImageFileService>());
     }
 }

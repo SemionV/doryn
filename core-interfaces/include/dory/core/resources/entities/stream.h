@@ -6,14 +6,20 @@
 
 namespace dory::core::resources::entities
 {
+    enum class BlockType
+    {
+        image
+    };
+
     struct Block
     {
         std::string name;
-        std::vector<unsigned char> data;
+        BlockType blockType;
     };
 
     struct BlockStream: public Entity<>
     {
         std::string name;
+        BlockType blockType;
     };
 }

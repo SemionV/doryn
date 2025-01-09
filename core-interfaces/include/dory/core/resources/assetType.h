@@ -11,4 +11,10 @@ namespace dory::core::resources
         const constexpr static std::string_view material = "material";
         const constexpr static std::string_view shader = "shader";
     };
+
+    enum class AssetFileFormat
+    {
+        bmp,
+        png
+    };
 }

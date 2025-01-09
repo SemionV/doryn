@@ -39,7 +39,7 @@ namespace dory::core::devices
                     const resources::entities::Block* block = blockStreamQueue.queue.peek();
                     while(block != nullptr)
                     {
-                        //TODO: store block in the block repository
+                        //TODO: store block in the block stream repository
 
                         block = blockStreamQueue.queue.peek();
                     }

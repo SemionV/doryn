@@ -6,10 +6,10 @@
 #include <dory/core/resources/dataFormat.h>
 #include <dory/core/resources/logger.h>
 #include <dory/core/resources/entities/camera.h>
-#include <dory/generic/extension/resourceHandle.h>
 #include <dory/core/resources/graphicalSystem.h>
 #include <dory/generic/extension/registryResourceScope.h>
 #include <dory/core/resources/windowSystem.h>
+#include <dory/core/resources/assetType.h>
 
 #include <dory/core/devices/iStandardIODevice.h>
 #include <dory/core/devices/iTerminalDevice.h>
@@ -33,6 +33,7 @@
 #include <dory/core/repositories/bindings/iShaderBindingRepository.h>
 #include <dory/core/repositories/bindings/iMaterialBindingRepository.h>
 #include <dory/core/repositories/iBlockStreamRepository.h>
+#include <dory/core/repositories/iBlockRepository.h>
 #include <dory/core/repositories/iRepository.h>
 #include <dory/core/repositories/iPipelineRepository.h>
 
@@ -57,6 +58,7 @@
 #include <dory/core/services/iAssetBinder.h>
 #include <dory/core/services/iFileService.h>
 #include <dory/core/services/iLibraryService.h>
+#include <dory/core/services/files/iImageFileService.h>
 
 namespace dory::core
 {
@@ -107,6 +109,7 @@ namespace dory::core
             generic::registry::ServiceEntry<repositories::bindings::IBufferBindingRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::bindings::IShaderBindingRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::bindings::IMaterialBindingRepository, resources::GraphicalSystem>,
+            generic::registry::ServiceEntry<repositories::IBlockRepository, resources::entities::BlockType>,
             /*Services*/
             generic::registry::ServiceEntry<services::ILibraryService>,
             generic::registry::ServiceEntry<services::IFileService>,
@@ -131,7 +134,8 @@ namespace dory::core
             generic::registry::ServiceEntry<services::ISceneQueryService, resources::EcsType>,
             generic::registry::ServiceEntry<services::graphics::IAssetBinder, std::string_view>,
             generic::registry::ServiceEntry<services::generators::IMeshGenerator>,
-            generic::registry::ServiceEntry<services::IBlockQueueService>>
+            generic::registry::ServiceEntry<services::IBlockQueueService>,
+            generic::registry::ServiceEntry<services::files::IImageFileService, resources::AssetFileFormat>>
     {};
 
     template<typename T>
