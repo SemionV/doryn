@@ -19,6 +19,7 @@
 
 #include <dory/core/repositories/pipelineRepository.h>
 #include <dory/core/repositories/blockStreamRepository.h>
+#include <dory/core/repositories/imageBlockRepository.h>
 #include <dory/core/repositories/viewRepository.h>
 #include <dory/core/repositories/windowRepository.h>
 #include <dory/core/repositories/shaderRepository.h>
@@ -60,7 +61,8 @@
 
 namespace dory::game
 {
-    void Setup::setupRegistry(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
+    void Setup::setupRegistry(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry,
+                                const core::resources::configuration::Configuration& configuration)
     {
         registerEventBundle<core::events::pipeline::Bundle>(libraryHandle, registry);
         registerEventBundle<core::events::application::Bundle>(libraryHandle, registry);
@@ -84,6 +86,7 @@ namespace dory::game
         auto sceneRepository = std::make_shared<core::repositories::EnttSceneRepository>();
         registry.set<core::repositories::ISceneRepository, core::resources::EcsType::entt>(libraryHandle, sceneRepository);
         registry.set<core::repositories::ISceneRepository>(libraryHandle, sceneRepository);
+        registry.set<core::repositories::IBlockRepository, core::resources::entities::BlockType::image>(libraryHandle, std::make_shared<core::repositories::ImageBlockRepository>(registry, configuration));
 
         auto windowRepository = std::make_shared<core::repositories::WindowRepository>();
         registry.set<core::repositories::IWindowRepository>(libraryHandle, windowRepository);

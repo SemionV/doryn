@@ -1,19 +1,19 @@
 #include <dory/core/registry.h>
 #include "mainSceneKeyboardHandler.h"
+#include <dory/core/resources/dataContext.h>
 
 namespace dory::game::logic
 {
     using namespace core;
     using namespace generic;
     using namespace generic::extension;
-    using namespace resources;
 
     MainSceneKeyboardHandler::MainSceneKeyboardHandler(Registry& registry, CameraService& cameraService):
         DependencyResolver(registry),
         _cameraService(cameraService)
     {}
 
-    bool MainSceneKeyboardHandler::initialize(const LibraryHandle& libraryHandle, DataContext& context)
+    bool MainSceneKeyboardHandler::initialize(const LibraryHandle& libraryHandle, core::resources::DataContext& context)
     {
         auto windowListener = _registry.get<events::window::Bundle::IListener>();
         if(windowListener)

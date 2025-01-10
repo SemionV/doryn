@@ -38,6 +38,8 @@ namespace dory::core::services::files
             imageBlock.height = height;
             imageBlock.data = std::vector<unsigned char> { imageData, imageData + totalSize };
         }
+
+        return imageBlock;
     }
 
     void ImageFileService::saveBmp(const std::filesystem::path& filename, const resources::entities::Block& block)

@@ -70,6 +70,16 @@ namespace dory::core::resources::configuration
         std::vector<std::string> modules;
     };
 
+    /*struct ImageStream
+    {
+        std::string directory;
+    };
+
+    struct Profiling
+    {
+        ImageStream
+    };*/
+
     struct Configuration
     {
         RecursiveSection section;

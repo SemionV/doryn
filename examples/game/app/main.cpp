@@ -1,5 +1,4 @@
 #include "dory/game/setup.h"
-#include <iostream>
 #include <dory/core/services/logService.h>
 #include <dory/core/resources/localizationImpl.h>
 #include <dory/game/bootstrap.h>
@@ -19,7 +18,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     auto localization = dory::core::resources::LocalizationImpl{};
     auto context = dory::core::resources::DataContext{ configuration, localization };
 
-    setup.setupRegistry(staticLibraryHandle, registry);
+    setup.setupRegistry(staticLibraryHandle, registry, configuration);
 
     //initial config
     configuration.section.loadFrom.emplace_back("settings.yaml");

@@ -10,6 +10,7 @@ endif()
 
 add_library(${DORY_MODULE_NAME} STATIC
         src/extension/dynamicLibrary.cpp
+        src/resources/imageStreamQueue.cpp
         src/devices/terminalDevice.cpp
         src/devices/glfwWindowSystemDevice.cpp
         src/devices/fileWatcherDevice.cpp
@@ -29,7 +30,6 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/localizationService.cpp
         src/services/pipelineService.cpp
         src/services/loopService.cpp
-        src/services/windowService.cpp
         src/services/windowService.cpp
         src/services/assetTypeResolver.cpp
         src/services/hot-reload/extensionLoader.cpp

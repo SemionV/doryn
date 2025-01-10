@@ -9,6 +9,7 @@ namespace dory::core
     public:
         virtual ~ISetup() = default;
 
-        virtual void setupRegistry(const dory::generic::extension::LibraryHandle& libraryHandle, Registry& registry) = 0;
+        virtual void setupRegistry(const generic::extension::LibraryHandle& libraryHandle, Registry& registry,
+                                        const resources::configuration::Configuration& configuration) = 0;
     };
 }

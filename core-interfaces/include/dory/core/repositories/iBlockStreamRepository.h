@@ -7,4 +7,7 @@ namespace dory::core::repositories
 {
     class IBlockStreamRepository: public IRepository<resources::entities::BlockStream>
     {};
+
+    class IImageStreamRepository: public IRepository<resources::entities::ImageStream>
+    {};
 }

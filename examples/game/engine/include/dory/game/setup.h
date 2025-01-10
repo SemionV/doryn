@@ -40,6 +40,7 @@ namespace dory::game
         }
 
     public:
-        void setupRegistry(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry) override;
+        void setupRegistry(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry,
+                            const core::resources::configuration::Configuration& configuration) override;
     };
 }

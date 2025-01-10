@@ -46,7 +46,7 @@ namespace dory::core::devices
                 });
             }
 
-            std::unique_lock lock {queueMutex};
+            std::unique_lock lock { queueMutex };
             queueUpdate.wait(lock, [this] {
                 return stop || isWorkAvailable();
             });
