@@ -15,11 +15,10 @@
 #include <dory/core/devices/glfwWindowSystemDevice.h>
 #include <dory/core/devices/openglGpuDevice.h>
 #include <dory/core/devices/fileWatcherDevice.h>
-#include <dory/core/devices/blockQueueStreamDevice.h>
+#include <dory/core/devices/imageStreamDevice.h>
 
 #include <dory/core/repositories/pipelineRepository.h>
-#include <dory/core/repositories/blockStreamRepository.h>
-#include <dory/core/repositories/imageBlockRepository.h>
+#include <dory/core/repositories/imageStreamRepository.h>
 #include <dory/core/repositories/viewRepository.h>
 #include <dory/core/repositories/windowRepository.h>
 #include <dory/core/repositories/shaderRepository.h>
@@ -56,7 +55,7 @@
 #include <dory/core/services/viewService.h>
 #include <dory/core/services/graphics/renderer.h>
 #include <dory/core/services/generators/meshGenerator.h>
-#include <dory/core/services/blockQueueService.h>
+#include <dory/core/services/imageStreamService.h>
 #include <dory/core/services/files/imageFileService.h>
 
 namespace dory::game
@@ -77,16 +76,15 @@ namespace dory::game
         registry.set<core::devices::IWindowSystemDevice, core::resources::WindowSystem::glfw>(libraryHandle, std::make_shared<core::devices::GlfwWindowSystemDevice>(registry));
         registry.set<core::devices::IFileWatcherDevice>(libraryHandle, std::make_shared<core::devices::FileWatcherDevice>(registry));
         registry.set<core::devices::IGpuDevice, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::devices::OpenglGpuDevice>(registry));
-        registry.set<core::devices::IBlockQueueStreamDevice>(libraryHandle, std::make_shared<core::devices::BlockQueueStreamDevice>(registry));
+        registry.set<core::devices::IImageStreamDevice>(libraryHandle, std::make_shared<core::devices::ImageStreamDevice>(registry));
 
-        registry.set<core::repositories::IBlockStreamRepository>(libraryHandle, std::make_shared<core::repositories::BlockStreamRepository>());
+        registry.set<core::repositories::IImageStreamRepository>(libraryHandle, std::make_shared<core::repositories::ImageStreamRepository>());
         registry.set<core::repositories::IViewRepository>(libraryHandle, std::make_shared<core::repositories::ViewRepository>());
         registry.set<core::repositories::IPipelineRepository>(libraryHandle, std::make_shared<core::repositories::PipelineRepository>());
         registerRepository<core::resources::entities::Camera>(libraryHandle, registry);
         auto sceneRepository = std::make_shared<core::repositories::EnttSceneRepository>();
         registry.set<core::repositories::ISceneRepository, core::resources::EcsType::entt>(libraryHandle, sceneRepository);
         registry.set<core::repositories::ISceneRepository>(libraryHandle, sceneRepository);
-        registry.set<core::repositories::IBlockRepository, core::resources::entities::BlockType::image>(libraryHandle, std::make_shared<core::repositories::ImageBlockRepository>(registry, configuration));
 
         auto windowRepository = std::make_shared<core::repositories::WindowRepository>();
         registry.set<core::repositories::IWindowRepository>(libraryHandle, windowRepository);
@@ -146,7 +144,7 @@ namespace dory::game
         auto sceneQueryService = std::make_shared<core::services::EnttSceneQueryService>(registry);
         registry.set<core::services::ISceneQueryService, core::resources::EcsType::entt>(libraryHandle, sceneQueryService);
 
-        registry.set<core::services::IBlockQueueService>(libraryHandle, std::make_shared<core::services::BlockQueueService>(registry));
+        registry.set<core::services::IImageStreamService>(libraryHandle, std::make_shared<core::services::ImageStreamService>(registry));
         registry.set<core::services::files::IImageFileService, core::resources::AssetFileFormat::bmp>(libraryHandle, std::make_shared<core::services::files::BmpImageFileService>());
         registry.set<core::services::files::IImageFileService, core::resources::AssetFileFormat::png>(libraryHandle, std::make_shared<core::services::files::PngImageFileService>());
     }

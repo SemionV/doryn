@@ -9,5 +9,6 @@ namespace dory::generic
         virtual ~IStream() = default;
         virtual void send(T&& item) = 0;
         virtual bool receive(T& item) = 0;
+        virtual bool empty() = 0;
     };
 }

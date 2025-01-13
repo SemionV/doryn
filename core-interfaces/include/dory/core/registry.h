@@ -32,8 +32,7 @@
 #include <dory/core/repositories/bindings/iBufferBindingRepository.h>
 #include <dory/core/repositories/bindings/iShaderBindingRepository.h>
 #include <dory/core/repositories/bindings/iMaterialBindingRepository.h>
-#include <dory/core/repositories/iBlockStreamRepository.h>
-#include <dory/core/repositories/iBlockRepository.h>
+#include <dory/core/repositories/iImageStreamRepository.h>
 #include <dory/core/repositories/iRepository.h>
 #include <dory/core/repositories/iPipelineRepository.h>
 
@@ -53,7 +52,7 @@
 #include <dory/core/services/iSceneQueryService.h>
 #include <dory/core/services/iViewService.h>
 #include <dory/core/services/generators/iMeshGenerator.h>
-#include <dory/core/services/iBlockQueueService.h>
+#include <dory/core/services/iImageStreamService.h>
 #include <dory/core/services/iLogService.h>
 #include <dory/core/services/iAssetBinder.h>
 #include <dory/core/services/iFileService.h>
@@ -89,14 +88,14 @@ namespace dory::core
             generic::registry::ServiceEntry<devices::IWindowSystemDevice, resources::WindowSystem>,
             generic::registry::ServiceEntry<devices::IFileWatcherDevice>,
             generic::registry::ServiceEntry<devices::IGpuDevice, resources::GraphicalSystem>,
-            generic::registry::ServiceEntry<devices::IBlockQueueStreamDevice>,
+            generic::registry::ServiceEntry<devices::IImageStreamDevice>,
             /*Repositories*/
             generic::registry::ServiceEntry<repositories::ICameraRepository>,
             generic::registry::ServiceEntry<repositories::IViewRepository>,
             generic::registry::ServiceEntry<repositories::IWindowRepository>,
             generic::registry::ServiceEntry<repositories::IWindowRepository, resources::WindowSystem>,
             generic::registry::ServiceEntry<repositories::IPipelineRepository>,
-            generic::registry::ServiceEntry<repositories::IBlockStreamRepository>,
+            generic::registry::ServiceEntry<repositories::IImageStreamRepository>,
             generic::registry::ServiceEntry<repositories::ISceneRepository>,
             generic::registry::ServiceEntry<repositories::ISceneRepository, resources::EcsType>,
             generic::registry::ServiceEntry<repositories::assets::IMeshRepository>,
@@ -109,7 +108,6 @@ namespace dory::core
             generic::registry::ServiceEntry<repositories::bindings::IBufferBindingRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::bindings::IShaderBindingRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::bindings::IMaterialBindingRepository, resources::GraphicalSystem>,
-            generic::registry::ServiceEntry<repositories::IBlockRepository, resources::entities::BlockType>,
             /*Services*/
             generic::registry::ServiceEntry<services::ILibraryService>,
             generic::registry::ServiceEntry<services::IFileService>,
@@ -134,7 +132,7 @@ namespace dory::core
             generic::registry::ServiceEntry<services::ISceneQueryService, resources::EcsType>,
             generic::registry::ServiceEntry<services::graphics::IAssetBinder, std::string_view>,
             generic::registry::ServiceEntry<services::generators::IMeshGenerator>,
-            generic::registry::ServiceEntry<services::IBlockQueueService>,
+            generic::registry::ServiceEntry<services::IImageStreamService>,
             generic::registry::ServiceEntry<services::files::IImageFileService, resources::AssetFileFormat>>
     {};
 

@@ -15,13 +15,12 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/devices/glfwWindowSystemDevice.cpp
         src/devices/fileWatcherDevice.cpp
         src/devices/openglGpuDevice.cpp
-        src/devices/blockQueueStreamDevice.cpp
+        src/devices/imageStreamDevice.cpp
         src/repositories/pipelineRepository.cpp
         src/repositories/viewRepository.cpp
         src/repositories/shaderProgramRepository.cpp
         src/repositories/enttSceneRepository.cpp
-        src/repositories/blockStreamRepository.cpp
-        src/repositories/imageBlockRepository.cpp
+        src/repositories/imageStreamRepository.cpp
         src/services/fileService.cpp
         src/services/libraryService.cpp
         src/services/logService.cpp
@@ -41,7 +40,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/viewService.cpp
         src/services/graphics/renderer.cpp
         src/services/generators/meshGenerator.cpp
-        src/services/blockQueueService.cpp
+        src/services/imageStreamService.cpp
         src/services/files/imageFileService.cpp
         src/controllers/windowSystemController.cpp
         src/controllers/viewController.cpp

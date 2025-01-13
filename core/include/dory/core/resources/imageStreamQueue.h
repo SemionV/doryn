@@ -13,5 +13,6 @@ namespace dory::core::resources::entities
     public:
         void send(assets::Image&& image) final;
         bool receive(assets::Image& image) final;
+        bool empty() final;
     };
 }

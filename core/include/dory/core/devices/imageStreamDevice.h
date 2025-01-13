@@ -7,7 +7,7 @@
 
 namespace dory::core::devices
 {
-    class BlockQueueStreamDevice : public DependencyResolver, public IBlockQueueStreamDevice
+    class ImageStreamDevice : public DependencyResolver, public IImageStreamDevice
     {
     private:
         std::condition_variable queueUpdate {};
@@ -18,7 +18,7 @@ namespace dory::core::devices
         bool isWorkAvailable() const;
 
     public:
-        explicit BlockQueueStreamDevice(Registry& registry);
+        explicit ImageStreamDevice(Registry& registry);
 
         void connect(resources::DataContext& context) final;
         void disconnect(resources::DataContext& context) final;

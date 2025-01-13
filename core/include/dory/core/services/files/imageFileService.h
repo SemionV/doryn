@@ -7,24 +7,24 @@ namespace dory::core::services::files
 {
     class ImageFileService
     {
-    protected:
-        void savePng(const std::filesystem::path& filename, const resources::entities::Block& block);
-        void saveBmp(const std::filesystem::path& filename, const resources::entities::Block& block);
+    public:
+        static void savePng(const std::filesystem::path& filename, const resources::assets::Image& image);
+        static void saveBmp(const std::filesystem::path& filename, const resources::assets::Image& image);
 
-        resources::entities::Block load(const std::filesystem::path& filename);
+        static resources::assets::Image load(const std::filesystem::path& filename);
     };
 
-    class PngImageFileService: public ImageFileService, public IImageFileService
+    class PngImageFileService: public IImageFileService
     {
     public:
-        void save(const std::filesystem::path& filename, const resources::entities::Block& block) final;
-        resources::entities::Block load(const std::filesystem::path& filename) final;
+        void save(const std::filesystem::path& filename, const resources::assets::Image& image) final;
+        resources::assets::Image load(const std::filesystem::path& filename) final;
     };
 
-    class BmpImageFileService: public ImageFileService, public IImageFileService
+    class BmpImageFileService: public IImageFileService
     {
     public:
-        void save(const std::filesystem::path& filename, const resources::entities::Block& block) final;
-        resources::entities::Block load(const std::filesystem::path& filename) final;
+        void save(const std::filesystem::path& filename, const resources::assets::Image& image) final;
+        resources::assets::Image load(const std::filesystem::path& filename) final;
     };
 }

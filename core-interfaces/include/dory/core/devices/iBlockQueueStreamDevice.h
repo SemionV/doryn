@@ -4,7 +4,7 @@
 
 namespace dory::core::devices
 {
-    class IBlockQueueStreamDevice: public IDevice
+    class IImageStreamDevice: public IDevice
     {
     public:
         virtual void updateStream() = 0;
