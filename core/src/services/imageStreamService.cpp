@@ -9,13 +9,13 @@ namespace dory::core::services
     ImageStreamService::ImageStreamService(Registry& registry): DependencyResolver(registry)
     {}
 
-    void ImageStreamService::sendImageToStream(resources::IdType queueId, resources::assets::Image&& image)
+    void ImageStreamService::sendImageToStream(resources::IdType streamId, resources::assets::Image&& image)
     {
         auto imageStreamRepo = _registry.get<repositories::IImageStreamRepository>();
         auto streamingDevice = _registry.get<devices::IImageStreamDevice>();
         if(imageStreamRepo && streamingDevice)
         {
-            if(auto* stream = imageStreamRepo->get(queueId))
+            if(auto* stream = imageStreamRepo->get(streamId))
             {
                 auto* queueStream = static_cast<resources::entities::ImageStreamQueue*>(stream);
                 queueStream->send(std::move(image));

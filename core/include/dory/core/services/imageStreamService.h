@@ -10,6 +10,6 @@ namespace dory::core::services
     public:
         explicit ImageStreamService(Registry& registry);
 
-        void sendImageToStream(resources::IdType queueId, resources::assets::Image&& image) final;
+        void sendImageToStream(resources::IdType streamId, resources::assets::Image&& image) final;
     };
 }

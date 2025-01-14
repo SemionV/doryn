@@ -4,6 +4,9 @@
 #include <deque>
 #include <vector>
 #include <dory/core/resources/scene/scene.h>
+#include <thread>
+#include <readerwriterqueue.h>
+#include <concurrentqueue.h>
 
 namespace dory::core::resources::profiling
 {
@@ -17,7 +20,8 @@ namespace dory::core::resources::profiling
     {
         std::chrono::nanoseconds duration;
         std::vector<scene::SceneViewStateSet> viewStates;
-        std::vector<TimeSlice> timeSlices;
+        moodycamel::ConcurrentHashMap<int, std::string> map;
+        std::unordered_map<std::thread::id, TimeSlice> timeSlices; //TODO: use concurrent hash map data structure
         std::size_t updatesCount {};
         float alpha = -1;
         std::size_t frameBufferBinding {};
@@ -28,5 +32,10 @@ namespace dory::core::resources::profiling
     struct FrameSet
     {
         std::deque<Frame> frames {};
+    };
+
+    struct Profiling
+    {
+        std::deque<FrameSet> frameSets;
     };
 }

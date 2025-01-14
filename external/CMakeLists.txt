@@ -72,3 +72,16 @@ FetchContent_Declare(
         GIT_TAG           master
 )
 FetchContent_MakeAvailable(readerwriterqueue)
+
+FetchContent_Declare(
+        readerwriterqueue
+        GIT_REPOSITORY    https://github.com/cameron314/readerwriterqueue
+        GIT_TAG           master
+)
+FetchContent_MakeAvailable(readerwriterqueue)
+
+FetchContent_Declare(
+        concurrentqueue
+        GIT_REPOSITORY    https://github.com/cameron314/concurrentqueue
+)
+FetchContent_MakeAvailable(concurrentqueue)

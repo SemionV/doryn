@@ -14,7 +14,7 @@ namespace dory::core::resources
         IdType inputGroupNodeId = nullId;
         IdType outputGroupNodeId = nullId;
         IdType mainWindowId = nullId;
-        profiling::Frame* currentFrame {};
+        profiling::Profiling profiling {};
 
         explicit DataContext(configuration::Configuration& configuration, Localization& localization):
             configuration(configuration),

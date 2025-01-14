@@ -46,7 +46,7 @@ namespace dory::core::services
             /*std::atomic<SceneViewStateSet*> viewStateRead { &sceneStatesB };*/
 
             std::deque<profiling::FrameSet> frameSets;
-            auto* currentFrameSet = &frameSets.emplace_back();
+            auto* currentFrameSet = &frameSets.emplace_front();
             profiling::Frame* previousFrame = nullptr;
 
             while(!isStop)

@@ -8,6 +8,6 @@ namespace dory::core::services
     class IImageStreamService: public generic::Interface
     {
     public:
-          virtual void sendImageToStream(resources::IdType queueId, resources::assets::Image&& image) = 0;
+        virtual void sendImageToStream(resources::IdType streamId, resources::assets::Image&& image) = 0;
     };
 }
