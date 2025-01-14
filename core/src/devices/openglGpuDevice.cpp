@@ -11,10 +11,7 @@
 #include "dory/core/resources/bindings/uniforms.h"
 #include "dory/core/resources/uniformsRefl.h"
 #include "dory/core/services/graphics/openglUniformBinder.h"
-#include <iostream>
 #include <ranges>
-
-#include <stb_image_write.h>
 
 namespace dory::core::devices
 {
@@ -24,27 +21,31 @@ namespace dory::core::devices
     using namespace resources::objects;
     using namespace services;
 
-    void saveBufferToPNG(const char* filename, GLenum buffer, int width, int height) {
+    bool getFrameBufferPixels(const GLenum buffer, const entities::View& view, assets::Image& image)
+    {
         glFinish();
 
         // Bind the specified buffer
         glReadBuffer(buffer);
 
+        image.width = view.viewport.width;
+        image.height = view.viewport.height;
+        image.components = 4;
+
         // Allocate memory to store the pixels (RGBA format)
-        std::vector<unsigned char> pixels(width * height * 4);
+        image.data = std::vector<unsigned char>(image.width  * image.height * 4);
 
         // Read the pixels from the buffer
-        glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+        glReadPixels(0, 0, image.width, image.height, GL_RGBA, GL_UNSIGNED_BYTE, image.data.data());
 
         // Flip the image vertically (OpenGL stores it upside down)
-        for (int y = 0; y < height / 2; ++y) {
-            for (int x = 0; x < width * 4; ++x) {
-                std::swap(pixels[y * width * 4 + x], pixels[(height - y - 1) * width * 4 + x]);
+        for (int y = 0; y < image.height / 2; ++y) {
+            for (int x = 0; x < image.width * 4; ++x) {
+                std::swap(image.data[y * image.width * 4 + x], image.data[(image.height - y - 1) * image.width * 4 + x]);
             }
         }
 
-        //stbi_write_png(filename, width, height, 4, pixels.data(), width * 4);
-        stbi_write_bmp(filename, width, height, 4, pixels.data());
+        return true;
     }
 
     const char* getErrorString(GLenum errorCode)
@@ -518,18 +519,23 @@ namespace dory::core::devices
         }
     }
 
-    void OpenglGpuDevice::drawFrame(const Frame& frame, resources::DataContext& dataContext)
+    void OpenglGpuDevice::drawFrame(const Frame& frame, profiling::Profiling& profiling)
     {
-        GLint framebufferID;
-        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &framebufferID);
-        dataContext.currentFrame->frameBufferBinding = framebufferID;
+        profiling::Frame* currentFrame = profiling.frames.size() ? &profiling.frames.front() : nullptr;
 
-        GLint readBuffer;
-        glGetIntegerv(GL_READ_BUFFER, &readBuffer);
-        dataContext.currentFrame->readFrameBufferIndex = readBuffer == GL_BACK;
-        GLint drawBuffer;
-        glGetIntegerv(GL_DRAW_BUFFER, &drawBuffer);
-        dataContext.currentFrame->drawFrameBufferIndex = drawBuffer == GL_BACK;
+        if(currentFrame)
+        {
+            GLint framebufferID;
+            glGetIntegerv(GL_FRAMEBUFFER_BINDING, &framebufferID);
+            currentFrame->frameBufferBinding = framebufferID;
+
+            GLint readBuffer;
+            glGetIntegerv(GL_READ_BUFFER, &readBuffer);
+            currentFrame->readFrameBufferIndex = readBuffer == GL_BACK;
+            GLint drawBuffer;
+            glGetIntegerv(GL_DRAW_BUFFER, &drawBuffer);
+            currentFrame->drawFrameBufferIndex = drawBuffer == GL_BACK;
+        }
 
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL);
@@ -557,9 +563,16 @@ namespace dory::core::devices
         }
 
         glFlush();
+    }
 
-        /*saveBufferToPNG("front.bmp", GL_FRONT, frame.viewport.width, frame.viewport.height);
-        saveBufferToPNG("back.bmp", GL_BACK, frame.viewport.width, frame.viewport.height);*/
+    bool OpenglGpuDevice::getFrontBufferImage(const entities::View& view, assets::Image& image)
+    {
+        return getFrameBufferPixels(GL_FRONT, view, image);
+    }
+
+    bool OpenglGpuDevice::getBackBufferImage(const entities::View& view, assets::Image& image)
+    {
+        return getFrameBufferPixels(GL_BACK, view, image);
     }
 
     template<typename TUniform>
@@ -608,7 +621,7 @@ namespace dory::core::devices
         services::graphics::UniformVisitor<UniformValueBinder>::visit(uniforms, bindingContext);
     }
 
-    void OpenglGpuDevice::setModelUniforms(const ModelUniforms& uniforms, const MaterialBinding* materialBinding)
+    void OpenglGpuDevice::setModelUniforms(const ModelUniforms& uniforms, const MaterialBinding* materialBinding) const
     {
         auto glMaterial = (OpenglMaterialBinding*)materialBinding;
 
@@ -623,7 +636,7 @@ namespace dory::core::devices
         services::graphics::UniformVisitor<UniformValueBinder>::visit(uniforms, bindingContext);
     }
 
-    void OpenglGpuDevice::setActiveMaterial(const DynamicUniforms& uniforms, const MaterialBinding* materialBinding)
+    void OpenglGpuDevice::setActiveMaterial(const DynamicUniforms& uniforms, const MaterialBinding* materialBinding) const
     {
         auto glMaterial = (OpenglMaterialBinding*)materialBinding;
 

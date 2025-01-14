@@ -1,7 +1,9 @@
 #include <dory/core/registry.h>
 #include <dory/core/services/graphics/renderer.h>
 #include <dory/core/resources/objects/frame.h>
+#include <dory/core/resources/assets/image.h>
 #include <dory/math/linearAlgebra.h>
+#include <spdlog/fmt/fmt.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
@@ -35,11 +37,11 @@ namespace dory::core::services::graphics
     Renderer::Renderer(Registry& registry) : DependencyResolver(registry)
     {}
 
-    void Renderer::draw(const resources::scene::SceneViewState& viewState,
+    void Renderer::draw(const SceneViewState& viewState,
                         float alpha,
-                        const resources::entities::Window& window,
-                        const resources::entities::GraphicalContext& graphicalContext,
-                        resources::DataContext& dataContext)
+                        const Window& window,
+                        const GraphicalContext& graphicalContext,
+                        profiling::Profiling& profiling)
     {
         auto& view = viewState.view;
 
@@ -79,8 +81,6 @@ namespace dory::core::services::graphics
                             transform.scale = glm::mix(prevTransform.scale, object.transform.scale, alpha);
                             transform.rotation = glm::slerp(prevTransform.rotation, object.transform.rotation, alpha);
                             transform.position = glm::mix(prevTransform.position, object.transform.position, alpha);
-
-                            dataContext.currentFrame->alpha = alpha;
                         }
                         else
                         {
@@ -95,7 +95,30 @@ namespace dory::core::services::graphics
             }
 
             windowService->setCurrentWindow(window);
-            gpuDevice->drawFrame(frame, dataContext);
+            gpuDevice->drawFrame(frame, profiling);
+
+            if(auto imageStreamService = _registry.get<services::IImageStreamService>())
+            {
+                if(profiling.frontBufferStreamId != nullId)
+                {
+                    resources::assets::Image image;
+                    if(gpuDevice->getFrontBufferImage(view, image))
+                    {
+                        image.name = fmt::format("frame_{0}.bmp", profiling.frames.size());
+                        imageStreamService->sendImageToStream(profiling.frontBufferStreamId, std::move(image));
+                    }
+                }
+
+                if(profiling.backBufferStreamId != nullId)
+                {
+                    resources::assets::Image image;
+                    if(gpuDevice->getBackBufferImage(view, image))
+                    {
+                        image.name = fmt::format("frame_{0}.bmp", profiling.frames.size());
+                        imageStreamService->sendImageToStream(profiling.backBufferStreamId, std::move(image));
+                    }
+                }
+            }
             windowService->swapBuffers(window);
         }
     }

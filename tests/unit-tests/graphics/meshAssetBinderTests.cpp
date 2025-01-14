@@ -34,7 +34,9 @@ public:
     MOCK_METHOD(void, bindMesh, (MeshBinding* meshBinding, const BufferBinding* vertexBuffer, const BufferBinding* indexBuffer));
     MOCK_METHOD(void, bindShader, (const std::string& sourceCode, resources::assets::ShaderType type, ShaderBinding* shaderBinding));
     MOCK_METHOD(void, bindMaterial, (MaterialBinding* materialBinding, const std::vector<ShaderBinding*>& shaders));
-    MOCK_METHOD(void, drawFrame, (const Frame& frame, DataContext& context));
+    MOCK_METHOD(void, drawFrame, (const Frame& frame, profiling::Profiling& profiling));
+    MOCK_METHOD(bool, getFrontBufferImage, (const resources::entities::View& view, resources::assets::Image& image));
+    MOCK_METHOD(bool, getBackBufferImage, (const resources::entities::View& view, resources::assets::Image& image));
 };
 
 template<typename TInterface, typename TEntity = TInterface::EntityType>
@@ -46,6 +48,7 @@ protected:
 public:
     MOCK_METHOD(std::size_t, count, ());
     MOCK_METHOD(TEntity*, get, (typename TEntity::IdType id));
+    MOCK_METHOD(TEntity*, create, ());
     MOCK_METHOD(TEntity*, insert, (TEntity&& entity));
     MOCK_METHOD(TEntity*, insert, (const TEntity& entity));
     MOCK_METHOD(void, remove, (typename TEntity::IdType id));

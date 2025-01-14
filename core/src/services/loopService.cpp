@@ -45,8 +45,6 @@ namespace dory::core::services
             const std::atomic viewStateWrite { &sceneStatesA };
             /*std::atomic<SceneViewStateSet*> viewStateRead { &sceneStatesB };*/
 
-            std::deque<profiling::FrameSet> frameSets;
-            auto* currentFrameSet = &frameSets.emplace_front();
             profiling::Frame* previousFrame = nullptr;
 
             while(!isStop)
@@ -74,16 +72,10 @@ namespace dory::core::services
 
                 while (fpsAccumulator >= fpsInterval)
                 {
-                    printProfilingInfo(*currentFrameSet);
-                    if(frameSets.size() == maxFrameSets)
-                    {
-                        frameSets.pop_back();
-                    }
-                    currentFrameSet = &frameSets.emplace_front();
                     fpsAccumulator = fpsAccumulator - fpsInterval;
                 }
-                previousFrame = &currentFrameSet->frames.emplace_front();
-                context.currentFrame = previousFrame;
+
+                previousFrame = &context.profiling.frames.emplace_front();
 
                 pipelineService = _registry.get<IPipelineService>();
                 auto viewService = _registry.get<IViewService>();
@@ -115,7 +107,8 @@ namespace dory::core::services
 
                     const auto viewStates = viewStateWrite.load();
                     previousFrame->viewStates.push_back(*viewStates);
-                    viewService->updateViews(*viewStates, alpha, context);
+                    previousFrame->alpha = alpha;
+                    viewService->updateViews(*viewStates, alpha, context.profiling);
                 }
             }
         }
@@ -132,12 +125,12 @@ namespace dory::core::services
         isStop = true;
     }
 
-    void LoopService::printProfilingInfo(const profiling::FrameSet& frameSet) const
+    void LoopService::printProfilingInfo(const profiling::Profiling& profiling) const
     {
         if(auto logger = _registry.get<ILogService>())
         {
             std::size_t framesWithUpdatesCount {};
-            for(const auto& frame : frameSet.frames)
+            for(const auto& frame : profiling.frames)
             {
                 if(frame.updatesCount != 0)
                 {
@@ -146,20 +139,20 @@ namespace dory::core::services
             }
 
             logger->information(fmt::format("FPS: {0}, u: {1}",
-                frameSet.frames.size(),
+                profiling.frames.size(),
                 framesWithUpdatesCount));
         }
 
-        if(frameSet.frames.size() < 300)
+        if(profiling.frames.size() < 300)
         {
-            printProfilingDetailedInfo(frameSet);
+            printProfilingDetailedInfo(profiling);
         }
     }
 
-    void LoopService::printProfilingDetailedInfo(const resources::profiling::FrameSet& frameSet) const
+    void LoopService::printProfilingDetailedInfo(const resources::profiling::Profiling& profiling) const
     {
         std::chrono::nanoseconds duration {};
-        for(const auto& frame : frameSet.frames)
+        for(const auto& frame : profiling.frames)
         {
             printFrameInfo(frame);
             duration += frame.duration;

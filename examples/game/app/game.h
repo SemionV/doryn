@@ -143,6 +143,22 @@ namespace dory::game
                 });
             });
 
+            if(auto imageStreamRepo = _registry.get<core::repositories::IImageStreamRepository>())
+            {
+                if(auto* imageStream = imageStreamRepo->create())
+                {
+                    imageStream->fileFormat = core::resources::AssetFileFormat::bmp;
+                    imageStream->destinationDirectory = "screenCaptures/front";
+
+                    context.profiling.frontBufferStreamId = imageStream->id;
+                }
+            }
+
+            if(auto imageStreamingDevice = _registry.get<core::devices::IImageStreamDevice>())
+            {
+                imageStreamingDevice->connect(context);
+            }
+
             /*_registry.get<core::devices::ITerminalDevice>([](core::devices::ITerminalDevice* terminalDevice) {
                 terminalDevice->enterCommandMode();
             });*/

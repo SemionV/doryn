@@ -12,6 +12,11 @@ namespace dory::core::repositories
         return {};
     }
 
+    ISceneRepository::EntityType* EnttSceneRepository::create()
+    {
+        return insert(resources::scene::Scene {});
+    }
+
     ISceneRepository::EntityType* EnttSceneRepository::insert(const resources::scene::Scene& scene)
     {
         return insert((resources::scene::Scene&&)scene);

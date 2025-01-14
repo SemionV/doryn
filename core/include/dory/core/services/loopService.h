@@ -16,8 +16,8 @@ namespace dory::core::services
         bool isStop = false;
         Registry& _registry;
 
-        void printProfilingInfo(const resources::profiling::FrameSet& frameSet) const;
-        void printProfilingDetailedInfo(const resources::profiling::FrameSet& frameSet) const;
+        void printProfilingInfo(const resources::profiling::Profiling& profiling) const;
+        void printProfilingDetailedInfo(const resources::profiling::Profiling& profiling) const;
         void printFrameInfo(const resources::profiling::Frame& frame) const;
 
     public:

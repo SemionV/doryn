@@ -9,10 +9,11 @@ namespace dory::core::repositories
     class ImageStreamRepository final : public EntityRepository<std::shared_ptr<resources::entities::ImageStreamQueue>, resources::IdType, IImageStreamRepository>
     {
     public:
-        EntityType* get(IdType id) override;
-        EntityType* insert(const EntityType& scene) override;
-        EntityType* insert(EntityType&& scene) override;
-        void each(std::function<void(EntityType& entity)> predicate) override;
-        EntityType* scan(std::function<bool(EntityType& entity)> predicate) override;
+        EntityType* get(IdType id) final;
+        EntityType* create() final;
+        EntityType* insert(const EntityType& scene) final;
+        EntityType* insert(EntityType&& scene) final;
+        void each(std::function<void(EntityType& entity)> predicate) final;
+        EntityType* scan(std::function<bool(EntityType& entity)> predicate) final;
     };
 }

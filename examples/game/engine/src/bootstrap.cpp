@@ -43,11 +43,13 @@ namespace dory::game
                 generic::registry::Service<core::devices::ITerminalDevice>,
                 generic::registry::Service<core::devices::IStandardIODevice>,
                 generic::registry::Service<core::devices::IFileWatcherDevice>,
+                generic::registry::Service<core::devices::IImageStreamDevice>,
                 generic::registry::Service<core::services::ILibraryService>>
                 ([&context](dory::core::services::ILogService* logger,
                     core::devices::ITerminalDevice* terminalDevice,
                     core::devices::IStandardIODevice* ioDevice,
                     core::devices::IFileWatcherDevice* fileWatcherDevice,
+                    core::devices::IImageStreamDevice* imageStreamDevice,
                     core::services::ILibraryService* libraryService)
                 {
                     terminalDevice->exitCommandMode();
@@ -55,6 +57,7 @@ namespace dory::game
                     terminalDevice->disconnect(context);
                     ioDevice->disconnect(context);
                     fileWatcherDevice->disconnect(context);
+                    imageStreamDevice->disconnect(context);
 
                     libraryService->unloadAll();
                 });
@@ -108,11 +111,13 @@ namespace dory::game
                 generic::registry::Service<core::services::ILogService, core::resources::Logger::App>,
                 generic::registry::Service<core::devices::IStandardIODevice>,
                 generic::registry::Service<core::devices::ITerminalDevice>,
+                generic::registry::Service<core::devices::IImageStreamDevice>,
                 generic::registry::Service<core::devices::IFileWatcherDevice>>(
         [&context](
             core::services::ILogService* logger,
             core::devices::IStandardIODevice* ioDevice,
             core::devices::ITerminalDevice* terminalDevice,
+            core::devices::IImageStreamDevice* imageStreamDevice,
             core::devices::IFileWatcherDevice* fileWatcherDevice)
         {
             logger->information(fmt::format("Dory Game, {0}.{1}, {2}",
@@ -123,6 +128,7 @@ namespace dory::game
             ioDevice->connect(context);
             terminalDevice->connect(context);
             fileWatcherDevice->connect(context);
+            imageStreamDevice->connect(context);
         });
 
         _registry.getAll<core::devices::IWindowSystemDevice, core::resources::WindowSystem>([&context](const auto& devices) {

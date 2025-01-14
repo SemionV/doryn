@@ -12,6 +12,11 @@ namespace dory::core::repositories
         return {};
     }
 
+    ImageStreamRepository::EntityType* ImageStreamRepository::create()
+    {
+        return insert(resources::entities::ImageStreamQueue {});
+    }
+
     ImageStreamRepository::EntityType* ImageStreamRepository::insert(const resources::entities::ImageStream& stream)
     {
         return insert((resources::entities::ImageStreamQueue&&)stream);

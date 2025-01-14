@@ -43,7 +43,7 @@ namespace dory::core::devices
                         if(streamQueue.receive(image))
                         {
                             //TODO: use asynchronous method
-                            imageFileService->save(stream.destinationDirectory.append(image.name), image);
+                            imageFileService->save(stream.destinationDirectory / image.name, image);
                         }
                     }
                 });

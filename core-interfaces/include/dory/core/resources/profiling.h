@@ -5,37 +5,37 @@
 #include <vector>
 #include <dory/core/resources/scene/scene.h>
 #include <thread>
+#include <chrono>
 #include <readerwriterqueue.h>
-#include <concurrentqueue.h>
 
 namespace dory::core::resources::profiling
 {
     struct TimeSlice
     {
+        std::thread::id threadId;
         std::string name {};
-        std::chrono::nanoseconds duration {};
+        std::chrono::steady_clock::time_point begin;
+        std::chrono::steady_clock::time_point end;
     };
 
     struct Frame
     {
         std::chrono::nanoseconds duration;
         std::vector<scene::SceneViewStateSet> viewStates;
-        moodycamel::ConcurrentHashMap<int, std::string> map;
-        std::unordered_map<std::thread::id, TimeSlice> timeSlices; //TODO: use concurrent hash map data structure
+        moodycamel::ReaderWriterQueue<TimeSlice> _queue {};
         std::size_t updatesCount {};
         float alpha = -1;
         std::size_t frameBufferBinding {};
         bool readFrameBufferIndex {};
         bool drawFrameBufferIndex {};
-    };
-
-    struct FrameSet
-    {
-        std::deque<Frame> frames {};
+        std::string frontBufferImage {};
+        std::string backBufferImage {};
     };
 
     struct Profiling
     {
-        std::deque<FrameSet> frameSets;
+        std::deque<Frame> frames {};
+        IdType frontBufferStreamId = nullId;
+        IdType backBufferStreamId = nullId;
     };
 }

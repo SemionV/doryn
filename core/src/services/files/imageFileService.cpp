@@ -40,7 +40,7 @@ namespace dory::core::services::files
 
     void ImageFileService::saveBmp(const std::filesystem::path& filename, const resources::assets::Image& image)
     {
-        stbi_write_bmp(filename.c_str(),
+        auto result = stbi_write_bmp(filename.c_str(),
             image.width,
             image.height,
             image.components,

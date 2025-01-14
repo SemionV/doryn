@@ -22,6 +22,7 @@ namespace dory::core::repositories
 
         virtual std::size_t count() = 0;
         virtual TEntity* get(TId id) = 0;
+        virtual TEntity* create() = 0;
         virtual TEntity* insert(TEntity&& entity) = 0;
         virtual TEntity* insert(const TEntity& entity) = 0;
         virtual void remove(TId id) = 0;

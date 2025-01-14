@@ -89,6 +89,20 @@ namespace dory::core::repositories
             return {};
         }
 
+        TInterface::EntityType* create() final
+        {
+            auto id = this->getNewId();
+            auto result = this->container.emplace(id, TEntity{ });
+            if(result.second)
+            {
+                typename TInterface::EntityType& newEntity = (*result.first).second;
+                newEntity.id = id;
+                return &newEntity;
+            }
+
+            return nullptr;
+        }
+
         TInterface::EntityType* insert(const TInterface::EntityType& entity) override
         {
             auto id = this->getNewId();

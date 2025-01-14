@@ -14,6 +14,6 @@ namespace dory::core::services::graphics
                           float alpha,
                           const resources::entities::Window& window,
                           const resources::entities::GraphicalContext& graphicalContext,
-                          resources::DataContext& dataContext) override;
+                          resources::profiling::Profiling& profiling) override;
     };
 }

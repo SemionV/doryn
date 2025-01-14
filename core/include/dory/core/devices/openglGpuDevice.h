@@ -22,8 +22,8 @@ namespace dory::core::devices
         template<typename TUniform>
         void bindUniformLocations(resources::bindings::OpenglMaterialBinding* materialBinding, resources::bindings::UniformBinding& uniforms);
         void bindUniforms(resources::bindings::OpenglMaterialBinding* materialBinding);
-        void setActiveMaterial(const resources::bindings::uniforms::DynamicUniforms& uniforms, const resources::bindings::MaterialBinding* materialBinding);
-        void setModelUniforms(const resources::bindings::uniforms::ModelUniforms& uniforms, const resources::bindings::MaterialBinding* materialBinding);
+        void setActiveMaterial(const resources::bindings::uniforms::DynamicUniforms& uniforms, const resources::bindings::MaterialBinding* materialBinding) const;
+        void setModelUniforms(const resources::bindings::uniforms::ModelUniforms& uniforms, const resources::bindings::MaterialBinding* materialBinding) const;
         static void fillUniforms(resources::bindings::uniforms::DynamicUniforms& uniforms, const resources::bindings::MaterialBinding* materialBinding);
         static void fillUniforms(resources::bindings::uniforms::StaticUniforms& uniforms, const resources::bindings::MaterialBinding* materialBinding);
         static void drawMesh(const resources::bindings::MeshBinding* meshBinding);
@@ -42,6 +42,8 @@ namespace dory::core::devices
                       const resources::bindings::BufferBinding* indexBuffer) override;
         void bindShader(const std::string& sourceCode, resources::assets::ShaderType type, resources::bindings::ShaderBinding* shaderBinding) override;
         void bindMaterial(resources::bindings::MaterialBinding* materialBinding, const std::vector<resources::bindings::ShaderBinding*>& shaders) override;
-        void drawFrame(const resources::objects::Frame& frame, resources::DataContext& dataContext) override;
+        void drawFrame(const resources::objects::Frame& frame, resources::profiling::Profiling& profiling) override;
+        bool getFrontBufferImage(const resources::entities::View& view, resources::assets::Image& image) override;
+        bool getBackBufferImage(const resources::entities::View& view, resources::assets::Image& image) override;
     };
 }

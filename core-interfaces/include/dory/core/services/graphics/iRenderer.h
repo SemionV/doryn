@@ -16,6 +16,6 @@ namespace dory::core::services::graphics
                           float alpha,
                           const resources::entities::Window& window,
                           const resources::entities::GraphicalContext& graphicalContext,
-                          resources::DataContext& dataContext) = 0;
+                          resources::profiling::Profiling& profiling) = 0;
     };
 }
