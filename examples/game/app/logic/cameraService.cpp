@@ -50,33 +50,37 @@ namespace dory::game::logic
             {
                 core::resources::scene::components::LinearMovement* linearMovement {};
                 sceneService->getComponent(view.cameraId, *scene, &linearMovement);
-                float distance = 1.f;
-                glm::vec3 stepVector = getMoveDirectionVector(directionValue, distance);
 
-                float accelerationDistance = distance;
-                float highVelocity = 0.3f;
-                float startVelocity = highVelocity;
-                float lowVelocity = 0.01f;
-
-                if(linearMovement)
+                if(!linearMovement)
                 {
-                    sceneService->removeComponent(view.cameraId, *scene, *linearMovement);
+                    float distance = 1.f;
+                    glm::vec3 stepVector = getMoveDirectionVector(directionValue, distance);
+
+                    float accelerationDistance = distance;
+                    float highVelocity = 0.3f;
+                    float startVelocity = highVelocity;
+                    float lowVelocity = 0.01f;
+
+                    if(linearMovement)
+                    {
+                        sceneService->removeComponent(view.cameraId, *scene, *linearMovement);
+                    }
+
+                    sceneService->addComponent(view.cameraId, *scene, core::resources::scene::components::LinearMovement {
+                            true,
+                            stepVector,
+                            startVelocity,
+                            highVelocity,
+                            lowVelocity,
+                            startVelocity,
+                            accelerationDistance,
+                            calculateAcceleration(highVelocity, startVelocity, accelerationDistance),
+                            -1.f * calculateAcceleration(highVelocity, startVelocity, accelerationDistance)
+                    });
+
+                    /*dataContext.profiling.captureFrameStatistics = true;
+                    dataContext.profiling.captureFrameBuffers = true;*/
                 }
-
-                sceneService->addComponent(view.cameraId, *scene, core::resources::scene::components::LinearMovement {
-                        true,
-                        stepVector,
-                        startVelocity,
-                        highVelocity,
-                        lowVelocity,
-                        startVelocity,
-                        accelerationDistance,
-                        calculateAcceleration(highVelocity, startVelocity, accelerationDistance),
-                        -1.f * calculateAcceleration(highVelocity, startVelocity, accelerationDistance)
-                });
-
-                dataContext.profiling.captureFrameStatistics = true;
-                dataContext.profiling.captureFrameBuffers = true;
             }
         }
     }
@@ -96,8 +100,8 @@ namespace dory::game::logic
                 if(linearMovement)
                 {
                     sceneService->removeComponent(view.cameraId, *scene, *linearMovement);
-                    dataContext.profiling.captureFrameStatistics = false;
-                    dataContext.profiling.captureFrameBuffers = false;
+                    /*dataContext.profiling.captureFrameStatistics = false;
+                    dataContext.profiling.captureFrameBuffers = false;*/
                 }
             }
         }

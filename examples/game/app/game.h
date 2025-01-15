@@ -47,15 +47,15 @@ namespace dory::game
                 if(it != enttScene->idMap.end())
                 {
                     //use scene service instead to remove component
-                    registry.remove<TComponent>(it->second);
+                    //registry.remove<TComponent>(it->second);
 
-                    /*core::resources::scene::components::AccelerationMovement* movement = registry.try_get<TComponent>(it->second);
+                    core::resources::scene::components::AccelerationMovement* movement = registry.try_get<TComponent>(it->second);
                     if(movement)
                     {
                         movement->currentVelocity = 0.f;
                         movement->distanceDone = 0.f;
                         movement->value *= -1;
-                    }*/
+                    }
                 }
             }
         }
