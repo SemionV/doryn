@@ -10,7 +10,7 @@ namespace dory::core::services::files
 {
     void ImageFileService::savePng(const std::filesystem::path& filename, const resources::assets::Image& image)
     {
-        stbi_write_png(filename.c_str(),
+        stbi_write_png(filename.string().c_str(),
             image.width,
             image.height,
             image.components,
@@ -24,7 +24,7 @@ namespace dory::core::services::files
 
         int width, height, channels;
 
-        unsigned char* imageData = stbi_load(filename.c_str(), &width, &height, &channels, 0);
+        unsigned char* imageData = stbi_load(filename.string().c_str(), &width, &height, &channels, 0);
         if (imageData)
         {
             const size_t totalSize = width * height * channels;
@@ -40,7 +40,7 @@ namespace dory::core::services::files
 
     void ImageFileService::saveBmp(const std::filesystem::path& filename, const resources::assets::Image& image)
     {
-        auto result = stbi_write_bmp(filename.c_str(),
+        auto result = stbi_write_bmp(filename.string().c_str(),
             image.width,
             image.height,
             image.components,
