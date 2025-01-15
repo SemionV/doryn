@@ -97,24 +97,27 @@ namespace dory::core::services::graphics
             windowService->setCurrentWindow(window);
             gpuDevice->drawFrame(frame, profiling);
 
-            if(auto imageStreamService = _registry.get<services::IImageStreamService>())
+            auto imageStreamService = _registry.get<services::IImageStreamService>();
+            if(imageStreamService && profiling.captureFrameBuffers && !profiling.frames.empty())
             {
-                if(profiling.frontBufferStreamId != nullId)
+                auto& currentFrame = profiling.frames.front();
+                resources::assets::Image image;
+                auto imageName = fmt::format("frame_{0}.bmp", currentFrame.id);
+
+                if(profiling.frontBufferStreamId != nullId )
                 {
-                    resources::assets::Image image;
                     if(gpuDevice->getFrontBufferImage(view, image))
                     {
-                        image.name = fmt::format("frame_{0}.bmp", profiling.frames.size());
+                        image.name = imageName;
                         imageStreamService->sendImageToStream(profiling.frontBufferStreamId, std::move(image));
                     }
                 }
 
                 if(profiling.backBufferStreamId != nullId)
                 {
-                    resources::assets::Image image;
                     if(gpuDevice->getBackBufferImage(view, image))
                     {
-                        image.name = fmt::format("frame_{0}.bmp", profiling.frames.size());
+                        image.name = imageName;
                         imageStreamService->sendImageToStream(profiling.backBufferStreamId, std::move(image));
                     }
                 }

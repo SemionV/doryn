@@ -29,24 +29,24 @@ namespace dory::game::logic
                         {
                             if(event.keyCode == core::events::KeyCode::A || event.keyCode == core::events::KeyCode::Left)
                             {
-                                _cameraService.moveCamera(MoveDirection::left, *view);
+                                _cameraService.moveCamera(context, MoveDirection::left, *view);
                             }
                             else if(event.keyCode == core::events::KeyCode::D || event.keyCode == core::events::KeyCode::Right)
                             {
-                                _cameraService.moveCamera(MoveDirection::right, *view);
+                                _cameraService.moveCamera(context, MoveDirection::right, *view);
                             }
                             else if(event.keyCode == core::events::KeyCode::W || event.keyCode == core::events::KeyCode::Up)
                             {
-                                _cameraService.moveCamera(MoveDirection::up, *view);
+                                _cameraService.moveCamera(context, MoveDirection::up, *view);
                             }
                             else if(event.keyCode == core::events::KeyCode::S || event.keyCode == core::events::KeyCode::Down)
                             {
-                                _cameraService.moveCamera(MoveDirection::down, *view);
+                                _cameraService.moveCamera(context, MoveDirection::down, *view);
                             }
                         }
                         else if(event.action == core::events::KeyAction::Release)
                         {
-                            _cameraService.stopCamera(*view);
+                            _cameraService.stopCamera(context, *view);
                         }
                     }
                 }

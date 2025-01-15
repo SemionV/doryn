@@ -521,7 +521,7 @@ namespace dory::core::devices
 
     void OpenglGpuDevice::drawFrame(const Frame& frame, profiling::Profiling& profiling)
     {
-        profiling::Frame* currentFrame = profiling.frames.size() ? &profiling.frames.front() : nullptr;
+        profiling::Frame* currentFrame = profiling.frames.empty() ? nullptr : &profiling.frames.front();
 
         if(currentFrame)
         {

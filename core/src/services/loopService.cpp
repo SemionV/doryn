@@ -34,8 +34,8 @@ namespace dory::core::services
             auto accumulator = nanoseconds{0};
             auto fpsAccumulator = nanoseconds{0};
             const auto fpsInterval = seconds{1};
-            constexpr unsigned maxFrameSets = 5;
             generic::model::TimeSpan timeStep(generic::model::UnitScale::Nano);
+            std::size_t frameCounter = 1;
 
             steady_clock::time_point lastTimestamp = steady_clock::now();
 
@@ -57,10 +57,6 @@ namespace dory::core::services
                 {
                     previousFrame->duration = frameTime;
                 }
-                else
-                {
-                    frameTime = nanoseconds{ 0 };
-                }
 
                 if (frameTime > milliseconds(250)) {
                     frameTime = milliseconds(250);
@@ -75,7 +71,15 @@ namespace dory::core::services
                     fpsAccumulator = fpsAccumulator - fpsInterval;
                 }
 
-                previousFrame = &context.profiling.frames.emplace_front();
+                if(context.profiling.captureFrameStatistics)
+                {
+                    previousFrame = &context.profiling.frames.emplace_front();
+                    previousFrame->id = frameCounter;
+                    if(context.profiling.frames.size() > profiling::Profiling::maxFramesCapture)
+                    {
+                        context.profiling.frames.pop_back();
+                    }
+                }
 
                 pipelineService = _registry.get<IPipelineService>();
                 auto viewService = _registry.get<IViewService>();
@@ -92,7 +96,10 @@ namespace dory::core::services
 
                         accumulator -= fixedDeltaTime;
                         updates++;
-                        previousFrame->updatesCount = updates;
+                        if(previousFrame)
+                        {
+                            previousFrame->updatesCount = updates;
+                        }
                     }
                 }
 
@@ -106,10 +113,15 @@ namespace dory::core::services
                     alpha = glm::clamp(alpha, 0.0f, 1.0f);
 
                     const auto viewStates = viewStateWrite.load();
-                    previousFrame->viewStates.push_back(*viewStates);
-                    previousFrame->alpha = alpha;
+                    if(previousFrame)
+                    {
+                        previousFrame->viewStates.push_back(*viewStates);
+                        previousFrame->alpha = alpha;
+                    }
                     viewService->updateViews(*viewStates, alpha, context.profiling);
                 }
+
+                frameCounter++;
             }
         }
 

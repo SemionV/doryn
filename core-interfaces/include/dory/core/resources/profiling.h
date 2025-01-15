@@ -20,6 +20,7 @@ namespace dory::core::resources::profiling
 
     struct Frame
     {
+        std::size_t id {};
         std::chrono::nanoseconds duration;
         std::vector<scene::SceneViewStateSet> viewStates;
         moodycamel::ReaderWriterQueue<TimeSlice> _queue {};
@@ -34,7 +35,10 @@ namespace dory::core::resources::profiling
 
     struct Profiling
     {
+        bool captureFrameStatistics {};
+        bool captureFrameBuffers {};
         std::deque<Frame> frames {};
+        static constexpr std::size_t maxFramesCapture = 100;
         IdType frontBufferStreamId = nullId;
         IdType backBufferStreamId = nullId;
     };

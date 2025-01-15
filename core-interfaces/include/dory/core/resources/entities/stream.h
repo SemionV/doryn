@@ -11,7 +11,8 @@ namespace dory::core::resources::entities
     class ImageStream: public generic::IStream<assets::Image>, public Entity<>
     {
     public:
-        std::filesystem::path destinationDirectory;
-        resources::AssetFileFormat fileFormat;
+        std::filesystem::path destinationDirectory {};
+        AssetFileFormat fileFormat = AssetFileFormat::bmp;
+        std::size_t maxImagesCount {};
     };
 }

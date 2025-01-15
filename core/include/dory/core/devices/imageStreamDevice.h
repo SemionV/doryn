@@ -11,7 +11,7 @@ namespace dory::core::devices
     {
     private:
         std::condition_variable queueUpdate {};
-        std::atomic<bool> stop { false };
+        std::atomic<bool> stop { true };
         std::mutex queueMutex;
 
         void workingThread();

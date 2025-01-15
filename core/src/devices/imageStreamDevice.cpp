@@ -5,14 +5,43 @@
 
 namespace dory::core::devices
 {
+    void deleteOldImages(const std::filesystem::path& directory, const std::size_t maxImagesCount)
+    {
+        std::vector<std::filesystem::directory_entry> files;
+        for (const auto& entry : std::filesystem::directory_iterator(directory))
+        {
+            if (entry.is_regular_file())
+            {
+                files.emplace_back(entry);
+            }
+        }
+
+        if (files.size() > maxImagesCount)
+        {
+            // Sort the files by creation time (oldest first)
+            std::ranges::sort(files, [](const std::filesystem::directory_entry& a, const std::filesystem::directory_entry& b) {
+                return std::filesystem::last_write_time(a) < std::filesystem::last_write_time(b);
+            });
+
+            // Remove the oldest files
+            for (size_t i = 0; i < files.size() - maxImagesCount; ++i)
+            {
+                std::filesystem::remove(files[i].path());
+            }
+        }
+    }
+
     ImageStreamDevice::ImageStreamDevice(Registry& registry): DependencyResolver(registry)
     {}
 
     void ImageStreamDevice::connect(resources::DataContext& context)
     {
-        stop = false;
-        auto thread = std::jthread{ [this] { workingThread(); } };
-        thread.detach();
+        if(stop)
+        {
+            stop = false;
+            auto thread = std::jthread{ [this] { workingThread(); } };
+            thread.detach();
+        }
     }
 
     void ImageStreamDevice::disconnect(resources::DataContext& context)
@@ -36,14 +65,18 @@ namespace dory::core::devices
             {
                 imageStreamRepo->each([this](resources::entities::ImageStream& stream)
                 {
-                    auto& streamQueue = static_cast<resources::entities::ImageStreamQueue&>(stream);
-                    if(auto imageFileService = _registry.get<services::files::IImageFileService>(streamQueue.fileFormat))
+                    if (std::filesystem::exists(stream.destinationDirectory) && std::filesystem::is_directory(stream.destinationDirectory))
                     {
-                        resources::assets::Image image;
-                        if(streamQueue.receive(image))
+                        auto& streamQueue = static_cast<resources::entities::ImageStreamQueue&>(stream);
+                        if(auto imageFileService = _registry.get<services::files::IImageFileService>(streamQueue.fileFormat))
                         {
-                            //TODO: use asynchronous method
-                            imageFileService->save(stream.destinationDirectory / image.name, image);
+                            resources::assets::Image image;
+                            if(streamQueue.receive(image))
+                            {
+                                //TODO: use asynchronous method
+                                imageFileService->save(stream.destinationDirectory / image.name, image);
+                                deleteOldImages(stream.destinationDirectory, streamQueue.maxImagesCount);
+                            }
                         }
                     }
                 });

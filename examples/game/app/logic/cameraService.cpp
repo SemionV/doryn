@@ -39,7 +39,7 @@ namespace dory::game::logic
     CameraService::CameraService(core::Registry& registry) : DependencyResolver(registry)
     {}
 
-    void CameraService::moveCamera(MoveDirection directionValue, const core::resources::entities::View& view)
+    void CameraService::moveCamera(core::resources::DataContext& dataContext, MoveDirection directionValue, const core::resources::entities::View& view)
     {
         auto sceneRepo = _registry.get<core::repositories::ISceneRepository>(view.sceneEcsType);
         auto sceneService = _registry.get<core::services::ISceneService>();
@@ -74,11 +74,14 @@ namespace dory::game::logic
                         calculateAcceleration(highVelocity, startVelocity, accelerationDistance),
                         -1.f * calculateAcceleration(highVelocity, startVelocity, accelerationDistance)
                 });
+
+                dataContext.profiling.captureFrameStatistics = true;
+                dataContext.profiling.captureFrameBuffers = true;
             }
         }
     }
 
-    void CameraService::stopCamera(const core::resources::entities::View& view)
+    void CameraService::stopCamera(core::resources::DataContext& dataContext, const core::resources::entities::View& view)
     {
         auto sceneRepo = _registry.get<core::repositories::ISceneRepository>(view.sceneEcsType);
         auto sceneService = _registry.get<core::services::ISceneService>();
@@ -93,6 +96,8 @@ namespace dory::game::logic
                 if(linearMovement)
                 {
                     sceneService->removeComponent(view.cameraId, *scene, *linearMovement);
+                    dataContext.profiling.captureFrameStatistics = false;
+                    dataContext.profiling.captureFrameBuffers = false;
                 }
             }
         }

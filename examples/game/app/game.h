@@ -149,19 +149,24 @@ namespace dory::game
                 {
                     imageStream->fileFormat = core::resources::AssetFileFormat::bmp;
                     imageStream->destinationDirectory = "screenCaptures/front";
+                    imageStream->maxImagesCount = core::resources::profiling::Profiling::maxFramesCapture;
 
                     context.profiling.frontBufferStreamId = imageStream->id;
                 }
+
+                if(auto* imageStream = imageStreamRepo->create())
+                {
+                    imageStream->fileFormat = core::resources::AssetFileFormat::bmp;
+                    imageStream->destinationDirectory = "screenCaptures/back";
+                    imageStream->maxImagesCount = core::resources::profiling::Profiling::maxFramesCapture;
+
+                    context.profiling.backBufferStreamId = imageStream->id;
+                }
             }
 
-            if(auto imageStreamingDevice = _registry.get<core::devices::IImageStreamDevice>())
-            {
-                imageStreamingDevice->connect(context);
-            }
-
-            /*_registry.get<core::devices::ITerminalDevice>([](core::devices::ITerminalDevice* terminalDevice) {
+            _registry.get<core::devices::ITerminalDevice>([](core::devices::ITerminalDevice* terminalDevice) {
                 terminalDevice->enterCommandMode();
-            });*/
+            });
 
             //Test scene
             loadAssets(context, mainWindow, graphicalContext);
