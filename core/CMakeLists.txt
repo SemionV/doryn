@@ -42,6 +42,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/generators/meshGenerator.cpp
         src/services/imageStreamService.cpp
         src/services/files/imageFileService.cpp
+        src/services/profilingService.cpp
         src/controllers/windowSystemController.cpp
         src/controllers/viewController.cpp
         src/controllers/movementController.cpp

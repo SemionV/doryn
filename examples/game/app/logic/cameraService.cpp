@@ -78,8 +78,8 @@ namespace dory::game::logic
                             -1.f * calculateAcceleration(highVelocity, startVelocity, accelerationDistance)
                     });
 
-                    /*dataContext.profiling.captureFrameStatistics = true;
-                    dataContext.profiling.captureFrameBuffers = true;*/
+                    dataContext.profiling.captureFrameStatistics = true;
+                    /*dataContext.profiling.captureFrameBuffers = true;*/
                 }
             }
         }
@@ -100,8 +100,14 @@ namespace dory::game::logic
                 if(linearMovement)
                 {
                     sceneService->removeComponent(view.cameraId, *scene, *linearMovement);
-                    /*dataContext.profiling.captureFrameStatistics = false;
-                    dataContext.profiling.captureFrameBuffers = false;*/
+                    dataContext.profiling.captureFrameStatistics = false;
+
+                    if(auto profilingService = _registry.get<core::services::IProfilingService>())
+                    {
+                        profilingService->analyze(dataContext.profiling);
+                    }
+
+                    /*dataContext.profiling.captureFrameBuffers = false;*/
                 }
             }
         }

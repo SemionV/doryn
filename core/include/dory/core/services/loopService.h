@@ -16,9 +16,9 @@ namespace dory::core::services
         bool isStop = false;
         Registry& _registry;
 
-        void printProfilingInfo(const resources::profiling::Profiling& profiling) const;
+        /*void printProfilingInfo(const resources::profiling::Profiling& profiling) const;
         void printProfilingDetailedInfo(const resources::profiling::Profiling& profiling) const;
-        void printFrameInfo(const resources::profiling::Frame& frame) const;
+        void printFrameInfo(const resources::profiling::Frame& frame) const;*/
 
     public:
         explicit LoopService(Registry& registry);

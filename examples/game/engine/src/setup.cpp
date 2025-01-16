@@ -57,6 +57,7 @@
 #include <dory/core/services/generators/meshGenerator.h>
 #include <dory/core/services/imageStreamService.h>
 #include <dory/core/services/files/imageFileService.h>
+#include <dory/core/services/profilingService.h>
 
 namespace dory::game
 {
@@ -147,5 +148,7 @@ namespace dory::game
         registry.set<core::services::IImageStreamService>(libraryHandle, std::make_shared<core::services::ImageStreamService>(registry));
         registry.set<core::services::files::IImageFileService, core::resources::AssetFileFormat::bmp>(libraryHandle, std::make_shared<core::services::files::BmpImageFileService>());
         registry.set<core::services::files::IImageFileService, core::resources::AssetFileFormat::png>(libraryHandle, std::make_shared<core::services::files::PngImageFileService>());
+
+        registry.set<core::services::IProfilingService>(libraryHandle, std::make_shared<core::services::ProfilingService>(registry));
     }
 }

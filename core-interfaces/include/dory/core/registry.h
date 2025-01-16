@@ -58,6 +58,7 @@
 #include <dory/core/services/iFileService.h>
 #include <dory/core/services/iLibraryService.h>
 #include <dory/core/services/files/iImageFileService.h>
+#include <dory/core/services/iProfilingService.h>
 
 namespace dory::core
 {
@@ -133,7 +134,8 @@ namespace dory::core
             generic::registry::ServiceEntry<services::graphics::IAssetBinder, std::string_view>,
             generic::registry::ServiceEntry<services::generators::IMeshGenerator>,
             generic::registry::ServiceEntry<services::IImageStreamService>,
-            generic::registry::ServiceEntry<services::files::IImageFileService, resources::AssetFileFormat>>
+            generic::registry::ServiceEntry<services::files::IImageFileService, resources::AssetFileFormat>,
+            generic::registry::ServiceEntry<services::IProfilingService>>
     {};
 
     template<typename T>

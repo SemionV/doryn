@@ -45,7 +45,7 @@ namespace dory::core::services
             const std::atomic viewStateWrite { &sceneStatesA };
             /*std::atomic<SceneViewStateSet*> viewStateRead { &sceneStatesB };*/
 
-            profiling::Frame* previousFrame = nullptr;
+            profiling::Frame* frame = nullptr;
 
             while(!isStop)
             {
@@ -53,9 +53,10 @@ namespace dory::core::services
                 auto frameTime = duration_cast<nanoseconds>(currentTimestamp - lastTimestamp);
                 lastTimestamp = currentTimestamp;
 
-                if(previousFrame)
+                if(frame)
                 {
-                    previousFrame->duration = frameTime;
+                    frame->end = currentTimestamp;
+                    frame = nullptr;
                 }
 
                 if (frameTime > milliseconds(250)) {
@@ -73,8 +74,9 @@ namespace dory::core::services
 
                 if(context.profiling.captureFrameStatistics)
                 {
-                    previousFrame = &context.profiling.frames.emplace_front();
-                    previousFrame->id = frameCounter;
+                    frame = &context.profiling.frames.emplace_back();
+                    frame->id = frameCounter;
+                    frame->begin = currentTimestamp;
                     if(context.profiling.frames.size() > profiling::Profiling::maxFramesCapture)
                     {
                         context.profiling.frames.pop_back();
@@ -96,9 +98,9 @@ namespace dory::core::services
 
                         accumulator -= fixedDeltaTime;
                         updates++;
-                        if(previousFrame)
+                        if(frame)
                         {
-                            previousFrame->updatesCount = updates;
+                            frame->updatesCount = updates;
                         }
                     }
                 }
@@ -113,10 +115,10 @@ namespace dory::core::services
                     alpha = glm::clamp(alpha, 0.0f, 1.0f);
 
                     const auto viewStates = viewStateWrite.load();
-                    if(previousFrame)
+                    if(frame)
                     {
-                        previousFrame->viewStates.push_back(*viewStates);
-                        previousFrame->alpha = alpha;
+                        frame->viewStates.push_back(*viewStates);
+                        frame->alpha = alpha;
                     }
                     viewService->updateViews(*viewStates, alpha, context.profiling);
                 }
@@ -137,7 +139,7 @@ namespace dory::core::services
         isStop = true;
     }
 
-    void LoopService::printProfilingInfo(const profiling::Profiling& profiling) const
+    /*void LoopService::printProfilingInfo(const profiling::Profiling& profiling) const
     {
         if(auto logger = _registry.get<ILogService>())
         {
@@ -189,5 +191,5 @@ namespace dory::core::services
                 frame.readFrameBufferIndex ? "back" : "front",
                 frame.drawFrameBufferIndex ? "back" : "front"));
         }
-    }
+    }*/
 }
