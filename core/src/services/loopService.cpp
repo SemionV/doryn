@@ -45,18 +45,26 @@ namespace dory::core::services
             const std::atomic viewStateWrite { &sceneStatesA };
             /*std::atomic<SceneViewStateSet*> viewStateRead { &sceneStatesB };*/
 
-            profiling::Frame* frame = nullptr;
-
             while(!isStop)
             {
                 steady_clock::time_point currentTimestamp = steady_clock::now();
                 auto frameTime = duration_cast<nanoseconds>(currentTimestamp - lastTimestamp);
                 lastTimestamp = currentTimestamp;
 
-                if(frame)
+                profiling::popTimeSlice(context.profiling, currentTimestamp);
+
+                //Analyze and drop completed Capture
+                if(auto* capture = profiling::getCurrentCapture(context.profiling))
                 {
-                    frame->end = currentTimestamp;
-                    frame = nullptr;
+                    if(capture->done)
+                    {
+                        if(auto profilingService = _registry.get<IProfilingService>())
+                        {
+                            profilingService->analyze(*capture);
+                        }
+
+                        profiling::removeCurrentCapture(context.profiling);
+                    }
                 }
 
                 if (frameTime > milliseconds(250)) {
@@ -72,14 +80,12 @@ namespace dory::core::services
                     fpsAccumulator = fpsAccumulator - fpsInterval;
                 }
 
-                if(context.profiling.captureFrameStatistics)
+                auto* capture = profiling::getCurrentCapture(context.profiling);
+                if(capture && !capture->done)
                 {
-                    frame = &context.profiling.frames.emplace_back();
-                    frame->id = frameCounter;
-                    frame->begin = currentTimestamp;
-                    if(context.profiling.frames.size() > profiling::Profiling::maxFramesCapture)
+                    if(auto* frame = profiling::addNewFrame(*capture, frameCounter))
                     {
-                        context.profiling.frames.pop_back();
+                        profiling::pushTimeSlice(*frame, std::string{ profiling::Profiling::frameRootTimeSlice }, currentTimestamp);
                     }
                 }
 
@@ -87,6 +93,8 @@ namespace dory::core::services
                 auto viewService = _registry.get<IViewService>();
                 if(pipelineService && viewService) //it can be hot-swapped, this is why reload it each frame
                 {
+                    profiling::pushTimeSlice(context.profiling, "update", steady_clock::now());
+
                     constexpr int maxUpdatesPerFrame = 5;
                     int updates = 0;
                     while (accumulator >= fixedDeltaTime && updates < maxUpdatesPerFrame) {
@@ -98,11 +106,13 @@ namespace dory::core::services
 
                         accumulator -= fixedDeltaTime;
                         updates++;
-                        if(frame)
+                        if(auto* frame = profiling::getCurrentFrame(context.profiling))
                         {
                             frame->updatesCount = updates;
                         }
                     }
+
+                    profiling::popTimeSlice(context.profiling, steady_clock::now());
                 }
 
                 /*auto viewStates = viewStateRead.exchange(viewStateWrite.load());
@@ -111,16 +121,22 @@ namespace dory::core::services
                 viewService = _registry.get<IViewService>();
                 if(viewService)
                 {
+                    profiling::pushTimeSlice(context.profiling, "rendering", steady_clock::now());
+
                     float alpha = static_cast<float>(accumulator.count()) / static_cast<float>(fixedDeltaTime.count());
                     alpha = glm::clamp(alpha, 0.0f, 1.0f);
 
                     const auto viewStates = viewStateWrite.load();
-                    if(frame)
+
+                    if(auto* frame = profiling::getCurrentFrame(context.profiling))
                     {
                         frame->viewStates.push_back(*viewStates);
                         frame->alpha = alpha;
                     }
+
                     viewService->updateViews(*viewStates, alpha, context.profiling);
+
+                    profiling::popTimeSlice(context.profiling, steady_clock::now());
                 }
 
                 frameCounter++;

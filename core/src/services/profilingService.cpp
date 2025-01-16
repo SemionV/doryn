@@ -11,42 +11,42 @@ namespace dory::core::services
 
     template <typename Duration>
     Duration absoluteDuration(const Duration& d)
-{
+    {
         return Duration(std::abs(d.count()));
     }
 
     ProfilingService::ProfilingService(Registry& registry): DependencyResolver(registry)
     {}
 
-    void ProfilingService::analyze(const Profiling& profiling)
+    void ProfilingService::analyze(const Capture& capture)
     {
-        if(!profiling.frames.empty())
+        if(!capture.frames.empty())
         {
             nanoseconds totalDuration = {};
-            auto defaultTimePoint = steady_clock::time_point();
-            for(const auto& frame : profiling.frames)
+
+            for(const auto& frame : capture.frames)
             {
-                if(frame.end != defaultTimePoint)
+                if(const auto* rootTimeSlice = profiling::getRootTimeSlice(frame))
                 {
-                    const auto duration = duration_cast<nanoseconds>(frame.end - frame.begin);
+                    const auto duration = duration_cast<nanoseconds>(rootTimeSlice->end - rootTimeSlice->begin);
                     totalDuration += duration;
                 }
             }
 
-            const auto averageFrameDuration = totalDuration / profiling.frames.size();
+            const auto averageFrameDuration = totalDuration / capture.frames.size();
             const auto maxDeviationTime = std::chrono::duration_cast<nanoseconds>(averageFrameDuration * 0.3f);
             auto nonAverageFrames = std::vector<std::size_t>{};
 
-            for(std::size_t i = 0; i < profiling.frames.size(); ++i)
+            for(std::size_t i = 0; i < capture.frames.size(); ++i)
             {
-                const auto& frame = profiling.frames[i];
+                const auto& frame = capture.frames[i];
 
-                if(frame.end != defaultTimePoint)
+                if(const auto* rootTimeSlice = profiling::getRootTimeSlice(frame))
                 {
-                    const auto duration = duration_cast<nanoseconds>(frame.end - frame.begin);
+                    const auto duration = duration_cast<nanoseconds>(rootTimeSlice->end - rootTimeSlice->begin);
                     const auto frameDeviationTime = absoluteDuration(duration_cast<nanoseconds>(averageFrameDuration - duration));
 
-                    if(frameDeviationTime > maxDeviationTime)
+                    if(frameDeviationTime >= maxDeviationTime)
                     {
                         nonAverageFrames.push_back(i);
                     }
@@ -63,10 +63,44 @@ namespace dory::core::services
 
                 for(const auto i : nonAverageFrames)
                 {
-                    const auto& frame = profiling.frames[i];
-                    const auto duration = duration_cast<nanoseconds>(frame.end - frame.begin);
-                    auto durationMs = std::chrono::duration<double, std::milli>(duration).count();
-                    message += fmt::format("{0}: {1}\n", i, durationMs);
+                    const auto& frame = capture.frames[i];
+                    if(const auto* rootTimeSlice = profiling::getRootTimeSlice(frame))
+                    {
+                        message += fmt::format("{0}: ", i);
+
+                        std::stack<std::pair<const TimeSlice*, std::size_t>> tree;
+                        tree.emplace(rootTimeSlice, 0);
+
+                        while(!tree.empty())
+                        {
+                            const auto [parentTimeSlice, level] = tree.top();
+                            tree.pop();
+
+                            for(std::size_t j = 0; j < level; ++j)
+                            {
+                                message += "\t";
+                            }
+
+                            auto duration = duration_cast<nanoseconds>(parentTimeSlice->end - parentTimeSlice->begin);
+                            auto timeSliceDurationMs = std::chrono::duration<double, std::milli>(duration).count();
+                            const auto frameDeviationTime = absoluteDuration(duration_cast<nanoseconds>(averageFrameDuration - duration));
+                            if(level == 0 && frameDeviationTime >= maxDeviationTime)
+                            {
+                                const std::string red = "\033[31m";
+                                const std::string reset = "\033[0m";
+                                message += fmt::format("{}: {}{}{} ms\n", parentTimeSlice->name, red, timeSliceDurationMs, reset);
+                            }
+                            else
+                            {
+                                message += fmt::format("{}: {} ms\n", parentTimeSlice->name, timeSliceDurationMs);
+                            }
+
+                            for (auto it = parentTimeSlice->subTimeSlices.rbegin(); it != parentTimeSlice->subTimeSlices.rend(); ++it)
+                            {
+                                tree.emplace(&*it, level + 1);
+                            }
+                        }
+                    }
                 }
 
                 logger->information(message);

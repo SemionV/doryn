@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <dory/core/repositories/iWindowRepository.h>
 #include <dory/core/resources/glfwWindow.h>
+#include <dory/core/resources/profiling.h>
 #include <spdlog/fmt/fmt.h>
 
 namespace dory::core::devices
@@ -23,6 +24,8 @@ namespace dory::core::devices
 
     void GlfwWindowSystemDevice::pollEvents(resources::DataContext& context)
     {
+        resources::profiling::pushTimeSlice(context.profiling, "GlfwWindowSystemDevice::pollEvents", std::chrono::steady_clock::now());
+
         glfwPollEvents();
 
         _registry.get<repositories::IWindowRepository, resources::WindowSystem::glfw>([this, &context](repositories::IWindowRepository* repository) {
@@ -42,6 +45,8 @@ namespace dory::core::devices
                 }
             });
         });
+
+        resources::profiling::popTimeSlice(context.profiling,  std::chrono::steady_clock::now());
     }
 
     resources::entities::GlfwWindow* GlfwWindowSystemDevice::getWindow(Registry& registry, GLFWwindow* windowHandler)
@@ -198,7 +203,10 @@ namespace dory::core::devices
 
         glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE); //TODO: pass this as a parameter
         glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
-        glfwWindowHint(GLFW_SAMPLES, parameters.sampling);
+        if(parameters.sampling)
+        {
+            glfwWindowHint(GLFW_SAMPLES, parameters.sampling);
+        }
 
         GLFWwindow* glfwWindowHandler {};
         if(parameters.fullScreen)

@@ -521,9 +521,7 @@ namespace dory::core::devices
 
     void OpenglGpuDevice::drawFrame(const Frame& frame, profiling::Profiling& profiling)
     {
-        profiling::Frame* currentFrame = profiling.frames.empty() ? nullptr : &profiling.frames.front();
-
-        if(currentFrame)
+        if(auto* currentFrame = profiling::getCurrentFrame(profiling))
         {
             GLint framebufferID;
             glGetIntegerv(GL_FRAMEBUFFER_BINDING, &framebufferID);
@@ -541,7 +539,10 @@ namespace dory::core::devices
         glDepthFunc(GL_LEQUAL);
 
         glClearColor(frame.clearColor.x, frame.clearColor.y, frame.clearColor.z, frame.clearColor.w);
+
+        resources::profiling::pushTimeSlice(profiling, "OpenglGpuDevice::drawFrame - clear buffers", std::chrono::steady_clock::now());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //clear buffers
 
         glViewport((GLint)frame.viewport.x, (GLint)frame.viewport.y, (GLint)frame.viewport.width, (GLint)frame.viewport.height);
 
@@ -549,6 +550,8 @@ namespace dory::core::devices
         ModelUniforms modelUniforms;
 
         uniforms.viewProjectionTransform = frame.viewProjectionTransform;
+
+        resources::profiling::pushTimeSlice(profiling, "OpenglGpuDevice::drawFrame - draw meshes", std::chrono::steady_clock::now());
 
         for(const auto& [material, meshes] : frame.meshMap)
         {
@@ -563,6 +566,12 @@ namespace dory::core::devices
         }
 
         glFlush();
+
+        resources::profiling::pushTimeSlice(profiling, "OpenglGpuDevice::drawFrame - glFinish", std::chrono::steady_clock::now());
+        glFinish();
+        resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //glFinish
+
+        resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //"OpenglGpuDevice::drawFrame - draw meshes"
     }
 
     bool OpenglGpuDevice::getFrontBufferImage(const entities::View& view, assets::Image& image)

@@ -10,6 +10,6 @@ namespace dory::core::services
     public:
         explicit ProfilingService(Registry& registry);
 
-        void analyze(const resources::profiling::Profiling& profiling) final;
+        void analyze(const resources::profiling::Capture& capture) final;
     };
 }

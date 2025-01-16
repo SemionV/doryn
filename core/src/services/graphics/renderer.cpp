@@ -43,6 +43,8 @@ namespace dory::core::services::graphics
                         const GraphicalContext& graphicalContext,
                         profiling::Profiling& profiling)
     {
+        resources::profiling::pushTimeSlice(profiling, "Renderer::draw", std::chrono::steady_clock::now());
+
         auto& view = viewState.view;
 
         auto gpuDevice = _registry.get<IGpuDevice>(graphicalContext.graphicalSystem);
@@ -94,15 +96,20 @@ namespace dory::core::services::graphics
                 }
             }
 
+            resources::profiling::pushTimeSlice(profiling, "Renderer::draw - set window context", std::chrono::steady_clock::now());
             windowService->setCurrentWindow(window);
-            gpuDevice->drawFrame(frame, profiling);
+            resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //Renderer::draw - set window context
 
-            auto imageStreamService = _registry.get<services::IImageStreamService>();
-            if(imageStreamService && profiling.captureFrameBuffers && !profiling.frames.empty())
+            resources::profiling::pushTimeSlice(profiling, "Renderer::draw - draw", std::chrono::steady_clock::now());
+            gpuDevice->drawFrame(frame, profiling);
+            resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //"Renderer::draw - draw"
+
+            /*auto imageStreamService = _registry.get<services::IImageStreamService>();
+            auto* currentFrame = profiling::getCurrentFrame(profiling);
+            if(imageStreamService && profiling.captureFrameBuffers && currentFrame)
             {
-                auto& currentFrame = profiling.frames.front();
                 resources::assets::Image image;
-                auto imageName = fmt::format("frame_{0}.bmp", currentFrame.id);
+                auto imageName = fmt::format("frame_{0}.bmp", currentFrame->id);
 
                 if(profiling.frontBufferStreamId != nullId )
                 {
@@ -121,8 +128,13 @@ namespace dory::core::services::graphics
                         imageStreamService->sendImageToStream(profiling.backBufferStreamId, std::move(image));
                     }
                 }
-            }
+            }*/
+
+            resources::profiling::pushTimeSlice(profiling, "Renderer::draw - swap buffers", std::chrono::steady_clock::now());
             windowService->swapBuffers(window);
+            resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //"Renderer::draw - swap buffers"
+
+            resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //"Renderer::draw"
         }
     }
 }
