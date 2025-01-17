@@ -73,7 +73,7 @@ namespace dory::core::controllers
 
     void AccelerationMovementController::update(core::resources::IdType referenceId, const generic::model::TimeSpan& timeStep, core::resources::DataContext& context)
     {
-        float timeStepSeconds = timeStep.ToSeconds();
+        float timeStepSeconds = timeStep.count();
 
         _registry.getAll<repositories::ISceneRepository, EcsType>([&](const auto& repos) {
             for(const auto& [key, value] : repos)

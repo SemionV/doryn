@@ -34,7 +34,7 @@ namespace dory::core::services
             auto accumulator = nanoseconds{0};
             auto fpsAccumulator = nanoseconds{0};
             const auto fpsInterval = seconds{1};
-            generic::model::TimeSpan timeStep(generic::model::UnitScale::Nano);
+            generic::model::TimeSpan timeStep{};
             std::size_t frameCounter = 1;
 
             steady_clock::time_point lastTimestamp = steady_clock::now();
@@ -94,8 +94,9 @@ namespace dory::core::services
 
                     constexpr int maxUpdatesPerFrame = 5;
                     int updates = 0;
-                    while (accumulator >= fixedDeltaTime && updates < maxUpdatesPerFrame) {
-                        timeStep.duration = fixedDeltaTime.count();
+                    while (accumulator >= fixedDeltaTime && updates < maxUpdatesPerFrame)
+                    {
+                        timeStep = std::chrono::duration_cast<generic::model::TimeSpan>(fixedDeltaTime);
                         pipelineService->update(context, timeStep);
 
                         const auto viewStates = viewStateWrite.load();
