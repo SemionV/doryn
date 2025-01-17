@@ -62,8 +62,14 @@ namespace dory::core::services
                         {
                             profilingService->analyze(*capture);
                         }
-
                         profiling::removeCurrentCapture(context.profiling);
+                    }
+                    else
+                    {
+                        if(auto* frame = profiling::addNewFrame(*capture, frameCounter))
+                        {
+                            profiling::pushTimeSlice(*frame, std::string{ profiling::Profiling::frameRootTimeSlice }, currentTimestamp);
+                        }
                     }
                 }
 
@@ -78,15 +84,6 @@ namespace dory::core::services
                 while (fpsAccumulator >= fpsInterval)
                 {
                     fpsAccumulator = fpsAccumulator - fpsInterval;
-                }
-
-                auto* capture = profiling::getCurrentCapture(context.profiling);
-                if(capture && !capture->done)
-                {
-                    if(auto* frame = profiling::addNewFrame(*capture, frameCounter))
-                    {
-                        profiling::pushTimeSlice(*frame, std::string{ profiling::Profiling::frameRootTimeSlice }, currentTimestamp);
-                    }
                 }
 
                 pipelineService = _registry.get<IPipelineService>();
@@ -154,58 +151,4 @@ namespace dory::core::services
     {
         isStop = true;
     }
-
-    /*void LoopService::printProfilingInfo(const profiling::Profiling& profiling) const
-    {
-        if(auto logger = _registry.get<ILogService>())
-        {
-            std::size_t framesWithUpdatesCount {};
-            for(const auto& frame : profiling.frames)
-            {
-                if(frame.updatesCount != 0)
-                {
-                    framesWithUpdatesCount++;
-                }
-            }
-
-            logger->information(fmt::format("FPS: {0}, u: {1}",
-                profiling.frames.size(),
-                framesWithUpdatesCount));
-        }
-
-        if(profiling.frames.size() < 300)
-        {
-            printProfilingDetailedInfo(profiling);
-        }
-    }
-
-    void LoopService::printProfilingDetailedInfo(const resources::profiling::Profiling& profiling) const
-    {
-        std::chrono::nanoseconds duration {};
-        for(const auto& frame : profiling.frames)
-        {
-            printFrameInfo(frame);
-            duration += frame.duration;
-        }
-
-        if(auto logger = _registry.get<ILogService>())
-        {
-            logger->information(fmt::format("total duration: {0}ms",
-                std::chrono::duration_cast<milliseconds>(duration).count()));
-        }
-    }
-
-    void LoopService::printFrameInfo(const resources::profiling::Frame& frame) const
-    {
-        if(auto logger = _registry.get<ILogService>())
-        {
-            logger->information(fmt::format("frame: {0}ms, updates: {1}, alpha: {2}, fbb: {3}, rb: {4}, db: {5}",
-                std::chrono::duration_cast<milliseconds>(frame.duration).count(),
-                frame.updatesCount,
-                frame.alpha,
-                frame.frameBufferBinding,
-                frame.readFrameBufferIndex ? "back" : "front",
-                frame.drawFrameBufferIndex ? "back" : "front"));
-        }
-    }*/
 }
