@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chrono>
+
 namespace dory::generic::model
 {
     using TimeSpan = std::chrono::duration<float>;

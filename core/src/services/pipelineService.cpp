@@ -4,6 +4,8 @@
 #include <dory/core/repositories/iPipelineRepository.h>
 #include "dory/core/iController.h"
 #include <vector>
+#include <set>
+#include <spdlog/fmt/fmt.h>
 
 namespace dory::core::services
 {
@@ -14,80 +16,126 @@ namespace dory::core::services
             _registry(registry)
     {}
 
+    struct QueueItem
+    {
+        IdType id { nullId };
+        std::size_t pipelineIndex {};
+    };
+
     void PipelineService::update(resources::DataContext& context, const generic::model::TimeSpan& timeStep)
     {
-        _registry.get<repositories::IPipelineRepository>([&context, &timeStep](repositories::IPipelineRepository* repository){
+        _registry.get<repositories::IPipelineRepository>([this, &context, &timeStep](repositories::IPipelineRepository* repository){
             auto nodes = repository->getPipelineNodes();
-            auto stack = std::vector<IdType> {};
+            auto stack = std::vector<QueueItem> { { nullId } }; //put nullId item on top of the tree
+            auto nodeUpdates = std::unordered_map<IdType, std::size_t>{};
 
-            for(auto& node : nodes)
+            for(std::size_t i = 0; i < nodes.size();)
             {
-                //Remove sibling branches from the stack
-                if(!stack.empty())
-                {
-                    if(node.parentNodeId == nullId)
-                    {
-                        stack.clear();
-                    }
-                    else
-                    {
-                        for(std::size_t i = stack.size(); i > 0; --i)
-                        {
-                            if(stack[i - 1] == node.parentNodeId)
-                            {
-                                for(std::size_t j = stack.size() - 1; j > i - 1; --j)
-                                {
-                                    stack.pop_back();
-                                }
+                auto& node = nodes[i];
 
-                                break;
-                            }
-                        }
-                    }
-                }
-                else
+                //Find how many levels of hierarchy the parent node is higher the current node
+                std::size_t levels = 0;
+                for(std::size_t j = stack.size(); j > 0; --j)
                 {
-                    //Should not happen: empty stack, but a node which has a parent(the parent must be on the stack)
-                    assert(node.parentNodeId == nullId);
+                    if(stack[j - 1].id == node.parentNodeId)
+                    {
+                        break;
+                    }
+
+                    levels++;
                 }
 
-                //if this is not a top level node, and it's parent node was rejected from update,
-                //its children will be rejected as well
-                if(!stack.empty() && stack.back() != node.parentNodeId)
+                //if the parent node is not on the stack, skip to the next node
+                if(levels == stack.size())
                 {
                     continue;
                 }
 
-                if(node.updateTrigger)
+                //Pop previous nodes from the stack until the parent node is on the top
+                bool repeatBranchUpdate = false;
+                for(std::size_t j = 0; j < levels; j++)
                 {
-                    auto updateTrigger = node.updateTrigger->lock();
-                    //If dll with the trigger impl is unloaded or the trigger is false,
-                    //continue to the next node in the pipeline
-                    if(!updateTrigger || !(*updateTrigger)(node.id, timeStep, context))
+                    const auto& [id, pipelineIndex] = stack.back();
+                    stack.pop_back();
+
+                    std::size_t updatesLeft { 0 };
+                    if(auto it = nodeUpdates.find(node.id); it != nodeUpdates.end())
                     {
-                        continue;
+                        updatesLeft = it->second;
+                    }
+
+                    //rollback the iterator back to the node(branch), which required more than one update
+                    if(updatesLeft > 0)
+                    {
+                        i = pipelineIndex;
+                        repeatBranchUpdate = true;
+                        break;
                     }
                 }
 
-                stack.push_back(node.id);
-
-                if(node.attachedController)
+                if(repeatBranchUpdate)
                 {
-                    if(auto controllerRef = node.attachedController->lock())
+                    continue;
+                }
+
+                std::size_t updatesLeft {};
+                if(auto it = nodeUpdates.find(node.id); it != nodeUpdates.end())
+                {
+                    updatesLeft = it->second;
+                }
+
+                if(!updatesLeft)
+                {
+                    if(node.updateTrigger)
                     {
-                        if(const auto controller = std::static_pointer_cast<IController>(*controllerRef))
+                        //If dll with the trigger impl is unloaded or the trigger is false,
+                        //continue to the next node in the pipeline
+                        if(auto updateTrigger = node.updateTrigger->lock())
                         {
-                            controller->update(node.id, timeStep, context);
+                            updatesLeft = (*updateTrigger)(node.id, timeStep, context);
+                        }
+                    }
+                    else
+                    {
+                        updatesLeft = 1;
+                    }
+                }
+
+                if(updatesLeft)
+                {
+                    stack.emplace_back( node.id, i );
+                    nodeUpdates[node.id] = --updatesLeft;
+
+                    try
+                    {
+                        if(node.attachedController)
+                        {
+                            if(auto controllerRef = node.attachedController->lock())
+                            {
+                                if(const auto controller = std::static_pointer_cast<IController>(*controllerRef))
+                                {
+                                    controller->update(node.id, timeStep, context);
+                                }
+                            }
+                        }
+                        else if(node.updateFunction)
+                        {
+                            if(auto updateFunctionRef = node.updateFunction->lock())
+                            {
+                                (*updateFunctionRef)(node.id, timeStep, context);
+                            }
+                        }
+                    }
+                    catch(const std::exception& e)
+                    {
+                        if(auto logger = _registry.get<ILogService>())
+                        {
+                            logger->error(fmt::format("Updating node {}({}): {}", node.name, node.id, e.what()));
                         }
                     }
                 }
-                else if(node.updateFunction)
-                {
-                    if(auto updateFunctionRef = node.updateFunction->lock())
-                    {
-                        (*updateFunctionRef)(node.id, timeStep, context);
-                    }
-                }
+
+                ++i;
             }
         });
     }

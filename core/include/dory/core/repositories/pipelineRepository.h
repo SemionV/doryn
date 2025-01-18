@@ -27,6 +27,11 @@ namespace dory::core::repositories
 
         std::span<EntityType> getPipelineNodes() override;
         IdType addNode(const EntityType& pipelineNode) override;
+        IdType addTriggerNode(IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, const EntityType::UpdateTriggerType& updateTrigger) override;
+        IdType addNode(IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, EntityType::ControllerPointerType controller) override;
+        IdType addNode(IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, EntityType::ControllerPointerType controller, const EntityType::UpdateTriggerType& updateTrigger) override;
+        IdType addNode(IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, const EntityType::UpdateFunctionType& updateFunction) override;
+        IdType addNode(IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, const EntityType::UpdateFunctionType& updateFunction, const EntityType::UpdateTriggerType& updateTrigger) override;
         void removeNode(IdType id) override;
     };
 }

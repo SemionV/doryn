@@ -8,7 +8,7 @@ namespace dory::core::repositories
         return std::span<PipelineRepository::EntityType>{ _nodes };
     }
 
-    PipelineRepository::IdType PipelineRepository::addNode(const PipelineRepository::EntityType& pipelineNode)
+    PipelineRepository::IdType PipelineRepository::addNode(const EntityType& pipelineNode)
     {
         auto nodeId = IdType {};
 
@@ -64,7 +64,39 @@ namespace dory::core::repositories
         return nodeId;
     }
 
-    PipelineRepository::IdType PipelineRepository::insertNode(const PipelineRepository::EntityType& node, const NodeListType::iterator& position)
+    IPipelineRepository::IdType PipelineRepository::addTriggerNode(IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, const EntityType::UpdateTriggerType& updateTrigger)
+    {
+        const auto triggerHandle = generic::extension::ResourceHandle{ libraryHandle, updateTrigger };
+        return addNode(EntityType{ {}, triggerHandle, parentNode });
+    }
+
+    IPipelineRepository::IdType PipelineRepository::addNode(const IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, const EntityType::ControllerPointerType controller)
+    {
+        const auto controllerHandle = generic::extension::ResourceHandle{ libraryHandle, controller };
+        return addNode(EntityType{ controllerHandle, parentNode });
+    }
+
+    IPipelineRepository::IdType PipelineRepository::addNode(const IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, const EntityType::ControllerPointerType controller, const EntityType::UpdateTriggerType& updateTrigger)
+    {
+        const auto controllerHandle = generic::extension::ResourceHandle{ libraryHandle, controller };
+        const auto triggerHandle = generic::extension::ResourceHandle{ libraryHandle, updateTrigger };
+        return addNode(EntityType{ controllerHandle, triggerHandle, parentNode });
+    }
+
+    IPipelineRepository::IdType PipelineRepository::addNode(const IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, const EntityType::UpdateFunctionType& updateFunction)
+    {
+        const auto updateHandle = generic::extension::ResourceHandle{ libraryHandle, updateFunction };
+        return addNode(EntityType{ updateHandle, parentNode });
+    }
+
+    IPipelineRepository::IdType PipelineRepository::addNode(const IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, const EntityType::UpdateFunctionType& updateFunction, const EntityType::UpdateTriggerType& updateTrigger)
+    {
+        const auto updateHandle = generic::extension::ResourceHandle{ libraryHandle, updateFunction };
+        const auto triggerHandle = generic::extension::ResourceHandle{ libraryHandle, updateTrigger };
+        return addNode(EntityType{ updateHandle, triggerHandle, parentNode });
+    }
+
+    PipelineRepository::IdType PipelineRepository::insertNode(const EntityType& node, const NodeListType::iterator& position)
     {
         auto newNode = _nodes.emplace(position, node);
         if(newNode != _nodes.end())
@@ -75,7 +107,7 @@ namespace dory::core::repositories
         return {};
     }
 
-    PipelineRepository::IdType PipelineRepository::insertNode(const PipelineRepository::EntityType& node)
+    PipelineRepository::IdType PipelineRepository::insertNode(const EntityType& node)
     {
         auto& newNode = _nodes.emplace_back(node);
         return newNode.id = _counter++;

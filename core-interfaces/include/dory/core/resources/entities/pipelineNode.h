@@ -13,7 +13,7 @@ namespace dory::core::resources::entities
     struct PipelineNode: public Entity<>
     {
         using UpdateFunctionType = std::function<void(IdType nodeId, const generic::model::TimeSpan& timeStep, DataContext& context)>;
-        using UpdateTriggerType = std::function<bool(IdType nodeId, const generic::model::TimeSpan& timeStep, DataContext& context)>;
+        using UpdateTriggerType = std::function<std::size_t(IdType nodeId, const generic::model::TimeSpan& timeStep, DataContext& context)>;
         using ControllerPointerType = std::shared_ptr<void>;
 
         std::optional<generic::extension::ResourceHandle<ControllerPointerType>> attachedController {};
