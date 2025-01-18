@@ -144,63 +144,61 @@ namespace dory::game
 
     void Bootstrap::buildPipeline(const LibraryHandle& libraryHandle, DataContext& context)
     {
-        _registry.get<IPipelineRepository>([this, &libraryHandle, &context](IPipelineRepository* pipelineRepository){
-
-            const auto inputGroup = PipelineNode{};
-            const auto outputGroup = PipelineNode{};
-
-            const auto inputGroupId = context.inputGroupNodeId = pipelineRepository->addNode(inputGroup);
-            const auto outputGroupId = context.outputGroupNodeId = pipelineRepository->addNode(outputGroup);
-
-            pipelineRepository->addNode(inputGroupId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context){
-                _registry.get<
-                        Service<events::window::Bundle::IDispatcher>,
-                        Service<events::io::Bundle::IDispatcher>,
-                        Service<events::filesystem::Bundle::IDispatcher>,
-                        Service<events::scene::Bundle::IDispatcher>>(
-                    [&context](events::window::Bundle::IDispatcher* windowDispatcher,
-                                events::io::Bundle::IDispatcher* ioDispatcher,
-                                events::filesystem::Bundle::IDispatcher* fsDispatcher,
-                               events::scene::Bundle::IDispatcher* sceneDispatcher)
-                {
-                    windowDispatcher->fireAll(context);
-                    ioDispatcher->fireAll(context);
-                    fsDispatcher->fireAll(context);
-                    sceneDispatcher->fireAll(context);
-                });
-            });
-
-            pipelineRepository->addNode(inputGroupId, libraryHandle, std::make_shared<WindowSystemController>(_registry));
-            pipelineRepository->addNode(inputGroupId, libraryHandle, std::make_shared<AccelerationMovementController>(_registry));
-            pipelineRepository->addNode(inputGroupId, libraryHandle, std::make_shared<MovementController>(_registry));
-            pipelineRepository->addNode(inputGroupId, libraryHandle, std::make_shared<TransformController>(_registry));
-
-            pipelineRepository->addNode(outputGroupId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context) {
-                _registry.get<IStandardIODevice>([](IStandardIODevice* ioDevice){
-                    ioDevice->flush();
-                });
-            });
-        });
-    }
-
-    void Bootstrap::buildPipeline2(const LibraryHandle& libraryHandle, DataContext& context)
-    {
         auto pipelineRepo = _registry.get<IPipelineRepository>();
 
+        pipelineRepo->addNode(nullId, libraryHandle, std::make_shared<WindowSystemController>(_registry));
+
+        pipelineRepo->addNode(nullId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context){
+            _registry.get<
+                    Service<events::window::Bundle::IDispatcher>,
+                    Service<events::io::Bundle::IDispatcher>,
+                    Service<events::filesystem::Bundle::IDispatcher>,
+                    Service<events::scene::Bundle::IDispatcher>>(
+                [&context](events::window::Bundle::IDispatcher* windowDispatcher,
+                            events::io::Bundle::IDispatcher* ioDispatcher,
+                            events::filesystem::Bundle::IDispatcher* fsDispatcher,
+                           events::scene::Bundle::IDispatcher* sceneDispatcher)
+            {
+                windowDispatcher->fireAll(context);
+                ioDispatcher->fireAll(context);
+                fsDispatcher->fireAll(context);
+                sceneDispatcher->fireAll(context);
+            });
+        });
+
         generic::model::TimeSpan animationStepTimeAccumulator {};
-        pipelineRepo->addTriggerNode(nullId, libraryHandle, [&animationStepTimeAccumulator](auto nodeId, const auto& timeStep, DataContext& context)
+        constexpr auto fixedDeltaTime = generic::model::TimeSpan{1.f / 30.f};
+        const auto animationNodeId = pipelineRepo->addTriggerNode(nullId, libraryHandle, [&animationStepTimeAccumulator, fixedDeltaTime](auto nodeId, const auto& timeStep, DataContext& context)
         {
-            constexpr auto fixedDeltaTime = generic::model::TimeSpan{1.f / 60.f};
             constexpr int maxUpdatesPerFrame = 5;
             std::size_t updates { 0 };
             animationStepTimeAccumulator += timeStep;
+            context.viewStatesUpdateTimeDelta = {};
             while(animationStepTimeAccumulator >= fixedDeltaTime && updates < maxUpdatesPerFrame)
             {
                 updates++;
                 animationStepTimeAccumulator -= fixedDeltaTime;
+                context.viewStatesUpdateTimeDelta += fixedDeltaTime;
             }
 
             return updates;
+        });
+
+        pipelineRepo->addNode(animationNodeId, libraryHandle, std::make_shared<AccelerationMovementController>(_registry));
+        pipelineRepo->addNode(animationNodeId, libraryHandle, std::make_shared<MovementController>(_registry));
+        pipelineRepo->addNode(animationNodeId, libraryHandle, std::make_shared<TransformController>(_registry));
+        pipelineRepo->addNode(animationNodeId, libraryHandle, [this, fixedDeltaTime](auto nodeId, const auto& timeStep, DataContext& context) {
+            if(auto viewService = _registry.get<IViewService>())
+            {
+                viewService->updateViewsState(context.viewStates);
+                context.viewStatesUpdateTime = std::chrono::steady_clock::now();
+            }
+        });
+
+        pipelineRepo->addNode(nullId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context) {
+            _registry.get<IStandardIODevice>([](IStandardIODevice* ioDevice){
+                ioDevice->flush();
+            });
         });
     }
 

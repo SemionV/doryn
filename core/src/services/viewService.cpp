@@ -100,7 +100,7 @@ namespace dory::core::services
                 }
                 else
                 {
-                    viewState = &(states.emplace(view.id, resources::scene::SceneViewState{}).first->second);
+                    viewState = &states.emplace(view.id, resources::scene::SceneViewState{}).first->second;
                 }
 
                 if(viewState)

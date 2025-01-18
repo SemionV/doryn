@@ -30,20 +30,11 @@ namespace dory::core::services
         {
             isStop = false;
 
-            const auto fixedDeltaTime = nanoseconds{16666667 * 2};
-            auto accumulator = nanoseconds{0};
             auto fpsAccumulator = nanoseconds{0};
             const auto fpsInterval = seconds{1};
-            generic::model::TimeSpan timeStep{};
             std::size_t frameCounter = 1;
 
             steady_clock::time_point lastTimestamp = steady_clock::now();
-
-            SceneViewStateSet sceneStatesA;
-            SceneViewStateSet sceneStatesB;
-
-            const std::atomic viewStateWrite { &sceneStatesA };
-            /*std::atomic<SceneViewStateSet*> viewStateRead { &sceneStatesB };*/
 
             while(!isStop)
             {
@@ -54,6 +45,7 @@ namespace dory::core::services
                 profiling::popTimeSlice(context.profiling, currentTimestamp);
 
                 //Analyze and drop completed Capture
+                //TODO: move capture analysis to a pipeline node
                 if(auto* capture = profiling::getCurrentCapture(context.profiling))
                 {
                     if(capture->done)
@@ -75,64 +67,37 @@ namespace dory::core::services
 
                 if (frameTime > milliseconds(250)) {
                     frameTime = milliseconds(250);
-                    accumulator = nanoseconds{0};
                 }
 
-                accumulator += frameTime;
                 fpsAccumulator += frameTime;
-
                 while (fpsAccumulator >= fpsInterval)
                 {
                     fpsAccumulator = fpsAccumulator - fpsInterval;
                 }
 
-                pipelineService = _registry.get<IPipelineService>();
-                auto viewService = _registry.get<IViewService>();
-                if(pipelineService && viewService) //it can be hot-swapped, this is why reload it each frame
+                if(auto pipeline = _registry.get<IPipelineService>()) //it can be hot-swapped, this is why reload it each frame
                 {
                     profiling::pushTimeSlice(context.profiling, "update", steady_clock::now());
-
-                    constexpr int maxUpdatesPerFrame = 5;
-                    int updates = 0;
-                    while (accumulator >= fixedDeltaTime && updates < maxUpdatesPerFrame)
-                    {
-                        timeStep = std::chrono::duration_cast<generic::model::TimeSpan>(fixedDeltaTime);
-                        pipelineService->update(context, timeStep);
-
-                        const auto viewStates = viewStateWrite.load();
-                        viewService->updateViewsState(*viewStates);
-
-                        accumulator -= fixedDeltaTime;
-                        updates++;
-                        if(auto* frame = profiling::getCurrentFrame(context.profiling))
-                        {
-                            frame->updatesCount = updates;
-                        }
-                    }
-
+                    pipeline->update(context, std::chrono::duration_cast<generic::model::TimeSpan>(frameTime));
                     profiling::popTimeSlice(context.profiling, steady_clock::now());
                 }
 
-                /*auto viewStates = viewStateRead.exchange(viewStateWrite.load());
-                viewStateWrite.store(viewStates);*/
-
-                viewService = _registry.get<IViewService>();
-                if(viewService)
+                if(auto viewService = _registry.get<IViewService>())
                 {
                     profiling::pushTimeSlice(context.profiling, "rendering", steady_clock::now());
 
-                    float alpha = static_cast<float>(accumulator.count()) / static_cast<float>(fixedDeltaTime.count());
-                    alpha = glm::clamp(alpha, 0.0f, 1.0f);
+                    steady_clock::time_point now = steady_clock::now();
 
-                    const auto viewStates = viewStateWrite.load();
+                    float alpha = duration_cast<generic::model::TimeSpan>(now - lastTimestamp).count() / context.viewStatesUpdateTimeDelta.count();
+                    alpha = glm::clamp(alpha, 0.0f, 1.0f);
 
                     if(auto* frame = profiling::getCurrentFrame(context.profiling))
                     {
-                        frame->viewStates.push_back(*viewStates);
+                        frame->viewStates.push_back(context.viewStates);
                         frame->alpha = alpha;
                     }
 
-                    viewService->updateViews(*viewStates, alpha, context.profiling);
+                    viewService->updateViews(context.viewStates, alpha, context.profiling);
 
                     profiling::popTimeSlice(context.profiling, steady_clock::now());
                 }

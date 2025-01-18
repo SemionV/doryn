@@ -29,7 +29,7 @@ namespace dory::core::services
             auto stack = std::vector<QueueItem> { { nullId } }; //put nullId item on top of the tree
             auto nodeUpdates = std::unordered_map<IdType, std::size_t>{};
 
-            for(std::size_t i = 0; i < nodes.size();)
+            for(std::size_t i = 0; i < nodes.size(); ++i)
             {
                 auto& node = nodes[i];
 
@@ -59,7 +59,7 @@ namespace dory::core::services
                     stack.pop_back();
 
                     std::size_t updatesLeft { 0 };
-                    if(auto it = nodeUpdates.find(node.id); it != nodeUpdates.end())
+                    if(auto it = nodeUpdates.find(id); it != nodeUpdates.end())
                     {
                         updatesLeft = it->second;
                     }
@@ -67,7 +67,7 @@ namespace dory::core::services
                     //rollback the iterator back to the node(branch), which required more than one update
                     if(updatesLeft > 0)
                     {
-                        i = pipelineIndex;
+                        i = pipelineIndex - 1;
                         repeatBranchUpdate = true;
                         break;
                     }
@@ -78,13 +78,13 @@ namespace dory::core::services
                     continue;
                 }
 
-                std::size_t updatesLeft {};
+                std::size_t updatesLeft { 0 };
                 if(auto it = nodeUpdates.find(node.id); it != nodeUpdates.end())
                 {
                     updatesLeft = it->second;
                 }
 
-                if(!updatesLeft)
+                if(updatesLeft == 0)
                 {
                     if(node.updateTrigger)
                     {
@@ -101,7 +101,7 @@ namespace dory::core::services
                     }
                 }
 
-                if(updatesLeft)
+                if(updatesLeft > 0)
                 {
                     stack.emplace_back( node.id, i );
                     nodeUpdates[node.id] = --updatesLeft;
@@ -114,7 +114,8 @@ namespace dory::core::services
                             {
                                 if(const auto controller = std::static_pointer_cast<IController>(*controllerRef))
                                 {
-                                    controller->update(node.id, timeStep, context);
+                                    //TODO: pass deltaTime with an update
+                                    controller->update(node.id, generic::model::TimeSpan{1.f / 30.f}, context);
                                 }
                             }
                         }
@@ -134,8 +135,6 @@ namespace dory::core::services
                         }
                     }
                 }
-
-                ++i;
             }
         });
     }
