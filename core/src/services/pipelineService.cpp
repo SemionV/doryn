@@ -27,7 +27,7 @@ namespace dory::core::services
         _registry.get<repositories::IPipelineRepository>([this, &context, &timeStep](repositories::IPipelineRepository* repository){
             auto nodes = repository->getPipelineNodes();
             auto stack = std::vector<QueueItem> { { nullId } }; //put nullId item on top of the tree
-            auto nodeUpdates = std::unordered_map<IdType, std::size_t>{};
+            auto nodeUpdates = std::unordered_map<IdType, entities::NodeUpdateCounter>{};
 
             for(std::size_t i = 0; i < nodes.size(); ++i)
             {
@@ -61,7 +61,7 @@ namespace dory::core::services
                     std::size_t updatesLeft { 0 };
                     if(auto it = nodeUpdates.find(id); it != nodeUpdates.end())
                     {
-                        updatesLeft = it->second;
+                        updatesLeft = it->second.count;
                     }
 
                     //rollback the iterator back to the node(branch), which required more than one update
@@ -78,13 +78,18 @@ namespace dory::core::services
                     continue;
                 }
 
-                std::size_t updatesLeft { 0 };
-                if(auto it = nodeUpdates.find(node.id); it != nodeUpdates.end())
+                entities::NodeUpdateCounter updateCounter { 0, timeStep };
+                if(auto it = nodeUpdates.find(node.parentNodeId); it != nodeUpdates.end())
                 {
-                    updatesLeft = it->second;
+                    updateCounter.deltaTime = it->second.deltaTime;
                 }
 
-                if(updatesLeft == 0)
+                if(auto it = nodeUpdates.find(node.id); it != nodeUpdates.end())
+                {
+                    updateCounter = it->second;
+                }
+
+                if(updateCounter.count == 0)
                 {
                     if(node.updateTrigger)
                     {
@@ -92,19 +97,20 @@ namespace dory::core::services
                         //continue to the next node in the pipeline
                         if(auto updateTrigger = node.updateTrigger->lock())
                         {
-                            updatesLeft = (*updateTrigger)(node.id, timeStep, context);
+                            updateCounter = (*updateTrigger)(node.id, updateCounter.deltaTime, context);
                         }
                     }
                     else
                     {
-                        updatesLeft = 1;
+                        updateCounter.count = 1;
                     }
                 }
 
-                if(updatesLeft > 0)
+                if(updateCounter.count > 0)
                 {
                     stack.emplace_back( node.id, i );
-                    nodeUpdates[node.id] = --updatesLeft;
+                    --updateCounter.count;
+                    nodeUpdates[node.id] = updateCounter;
 
                     try
                     {
@@ -114,8 +120,7 @@ namespace dory::core::services
                             {
                                 if(const auto controller = std::static_pointer_cast<IController>(*controllerRef))
                                 {
-                                    //TODO: pass deltaTime with an update
-                                    controller->update(node.id, generic::model::TimeSpan{1.f / 30.f}, context);
+                                    controller->update(node.id, updateCounter.deltaTime, context);
                                 }
                             }
                         }
@@ -123,7 +128,7 @@ namespace dory::core::services
                         {
                             if(auto updateFunctionRef = node.updateFunction->lock())
                             {
-                                (*updateFunctionRef)(node.id, timeStep, context);
+                                (*updateFunctionRef)(node.id, updateCounter.deltaTime, context);
                             }
                         }
                     }

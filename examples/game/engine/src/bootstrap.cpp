@@ -167,31 +167,31 @@ namespace dory::game
         });
 
         generic::model::TimeSpan animationStepTimeAccumulator {};
-        constexpr auto fixedDeltaTime = generic::model::TimeSpan{1.f / 30.f};
-        const auto animationNodeId = pipelineRepo->addTriggerNode(nullId, libraryHandle, [&animationStepTimeAccumulator, fixedDeltaTime](auto nodeId, const auto& timeStep, DataContext& context)
+        const auto animationNodeId = pipelineRepo->addTriggerNode(nullId, libraryHandle, [&animationStepTimeAccumulator](auto nodeId, const auto& timeStep, DataContext& context)
         {
             constexpr int maxUpdatesPerFrame = 5;
-            std::size_t updates { 0 };
+            constexpr auto fixedDeltaTime = generic::model::TimeSpan{1.f / 30.f};
+            entities::NodeUpdateCounter updateCounter { 0, fixedDeltaTime };
             animationStepTimeAccumulator += timeStep;
-            context.viewStatesUpdateTimeDelta = {};
-            while(animationStepTimeAccumulator >= fixedDeltaTime && updates < maxUpdatesPerFrame)
+
+            while(animationStepTimeAccumulator >= fixedDeltaTime && updateCounter.count < maxUpdatesPerFrame)
             {
-                updates++;
+                updateCounter.count++;
                 animationStepTimeAccumulator -= fixedDeltaTime;
-                context.viewStatesUpdateTimeDelta += fixedDeltaTime;
             }
 
-            return updates;
+            return updateCounter;
         });
 
         pipelineRepo->addNode(animationNodeId, libraryHandle, std::make_shared<AccelerationMovementController>(_registry));
         pipelineRepo->addNode(animationNodeId, libraryHandle, std::make_shared<MovementController>(_registry));
         pipelineRepo->addNode(animationNodeId, libraryHandle, std::make_shared<TransformController>(_registry));
-        pipelineRepo->addNode(animationNodeId, libraryHandle, [this, fixedDeltaTime](auto nodeId, const auto& timeStep, DataContext& context) {
+        pipelineRepo->addNode(animationNodeId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context) {
             if(auto viewService = _registry.get<IViewService>())
             {
                 viewService->updateViewsState(context.viewStates);
-                context.viewStatesUpdateTime = std::chrono::steady_clock::now();
+                context.viewStatesUpdateTime = {};
+                context.viewStatesUpdateTimeDelta = timeStep;
             }
         });
 

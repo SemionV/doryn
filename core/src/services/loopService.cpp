@@ -44,7 +44,7 @@ namespace dory::core::services
 
                 profiling::popTimeSlice(context.profiling, currentTimestamp);
 
-                //Analyze and drop completed Capture
+                //11Analyze and drop completed Capture
                 //TODO: move capture analysis to a pipeline node
                 if(auto* capture = profiling::getCurrentCapture(context.profiling))
                 {
@@ -69,6 +69,8 @@ namespace dory::core::services
                     frameTime = milliseconds(250);
                 }
 
+                frameTime = duration_cast<nanoseconds>(generic::model::TimeSpan(1.f / 60.f));
+
                 fpsAccumulator += frameTime;
                 while (fpsAccumulator >= fpsInterval)
                 {
@@ -88,8 +90,10 @@ namespace dory::core::services
 
                     steady_clock::time_point now = steady_clock::now();
 
-                    float alpha = duration_cast<generic::model::TimeSpan>(now - lastTimestamp).count() / context.viewStatesUpdateTimeDelta.count();
+                    float deltaTime = context.viewStatesUpdateTimeDelta.count() > 0 ? context.viewStatesUpdateTimeDelta.count() : 1.f;
+                    float alpha = context.viewStatesUpdateTime.count() / deltaTime;
                     alpha = glm::clamp(alpha, 0.0f, 1.0f);
+                    context.viewStatesUpdateTime += std::chrono::duration_cast<generic::model::TimeSpan>(frameTime);
 
                     if(auto* frame = profiling::getCurrentFrame(context.profiling))
                     {

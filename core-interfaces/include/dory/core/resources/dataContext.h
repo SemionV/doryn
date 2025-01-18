@@ -18,7 +18,7 @@ namespace dory::core::resources
         IdType mainWindowId = nullId;
         profiling::Profiling profiling {};
         scene::SceneViewStateSet viewStates {};
-        std::chrono::steady_clock::time_point viewStatesUpdateTime {};
+        generic::model::TimeSpan viewStatesUpdateTime {};
         generic::model::TimeSpan viewStatesUpdateTimeDelta {};
 
         explicit DataContext(configuration::Configuration& configuration, Localization& localization):
