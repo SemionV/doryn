@@ -57,7 +57,7 @@ namespace dory::game::logic
                     glm::vec3 stepVector = getMoveDirectionVector(directionValue, distance);
 
                     float accelerationDistance = distance;
-                    float highVelocity = 0.3f;
+                    float highVelocity = 0.8f;
                     float startVelocity = highVelocity;
                     float lowVelocity = 0.01f;
 
@@ -78,7 +78,7 @@ namespace dory::game::logic
                             -1.f * calculateAcceleration(highVelocity, startVelocity, accelerationDistance)
                     });
 
-                    core::resources::profiling::startNewCapture(dataContext.profiling, dataContext.profiling.captureIdCounter++, 1000);
+                    /*core::resources::profiling::startNewCapture(dataContext.profiling, dataContext.profiling.captureIdCounter++, 1000);*/
                 }
             }
         }
@@ -100,10 +100,10 @@ namespace dory::game::logic
                 {
                     sceneService->removeComponent(view.cameraId, *scene, *linearMovement);
 
-                    if(auto* capture = core::resources::profiling::getCurrentCapture(dataContext.profiling))
+                    /*if(auto* capture = core::resources::profiling::getCurrentCapture(dataContext.profiling))
                     {
                         capture->done = true;
-                    }
+                    }*/
                 }
             }
         }

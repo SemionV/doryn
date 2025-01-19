@@ -1,5 +1,7 @@
 #pragma once
 
+#include <dory/generic/model.h>
+
 #include "configuration.h"
 #include "localization.h"
 #include "id.h"
@@ -15,6 +17,9 @@ namespace dory::core::resources
         IdType outputGroupNodeId = nullId;
         IdType mainWindowId = nullId;
         profiling::Profiling profiling {};
+        scene::SceneViewStateSet viewStates {};
+        generic::model::TimeSpan viewStatesUpdateTime {};
+        generic::model::TimeSpan viewStatesUpdateTimeDelta {};
 
         explicit DataContext(configuration::Configuration& configuration, Localization& localization):
             configuration(configuration),

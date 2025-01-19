@@ -11,11 +11,22 @@
 
 namespace dory::game
 {
-    Bootstrap::Bootstrap(core::Registry &registry):
+    using namespace core;
+    using namespace resources;
+    using namespace entities;
+    using namespace repositories;
+    using namespace services;
+    using namespace devices;
+    using namespace controllers;
+    using namespace dory::generic::extension;
+    using namespace generic::extension;
+    using namespace generic::registry;
+
+    Bootstrap::Bootstrap(Registry &registry):
         _registry(registry)
     {}
 
-    bool Bootstrap::initialize(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
+    bool Bootstrap::initialize(const LibraryHandle& libraryHandle, DataContext& context)
     {
         loadConfiguration(libraryHandle, context);
         connectDevices(libraryHandle, context);
@@ -27,30 +38,21 @@ namespace dory::game
         return true;
     }
 
-    bool Bootstrap::run(core::resources::DataContext& context)
+    bool Bootstrap::run(DataContext& context)
     {
-        _registry.get<dory::core::services::ILoopService>([&context](dory::core::services::ILoopService* frameService) {
+        _registry.get<ILoopService>([&context](ILoopService* frameService) {
             frameService->startLoop(context);
         });
 
         return true;
     }
 
-    void Bootstrap::cleanup(core::resources::DataContext &context)
+    void Bootstrap::cleanup(DataContext &context)
     {
-        _registry.get<
-                generic::registry::Service<dory::core::services::ILogService, core::resources::Logger::App>,
-                generic::registry::Service<core::devices::ITerminalDevice>,
-                generic::registry::Service<core::devices::IStandardIODevice>,
-                generic::registry::Service<core::devices::IFileWatcherDevice>,
-                generic::registry::Service<core::devices::IImageStreamDevice>,
-                generic::registry::Service<core::services::ILibraryService>>
-                ([&context](dory::core::services::ILogService* logger,
-                    core::devices::ITerminalDevice* terminalDevice,
-                    core::devices::IStandardIODevice* ioDevice,
-                    core::devices::IFileWatcherDevice* fileWatcherDevice,
-                    core::devices::IImageStreamDevice* imageStreamDevice,
-                    core::services::ILibraryService* libraryService)
+        _registry.get<Service<ILogService, Logger::App>, Service<ITerminalDevice>, Service<IStandardIODevice>, Service<IFileWatcherDevice>,
+                                Service<IImageStreamDevice>, Service<ILibraryService>>
+                ([&context](ILogService* logger, ITerminalDevice* terminalDevice, IStandardIODevice* ioDevice, IFileWatcherDevice* fileWatcherDevice,
+                                IImageStreamDevice* imageStreamDevice, ILibraryService* libraryService)
                 {
                     terminalDevice->exitCommandMode();
                     logger->information(std::string_view {"Cleanup..."});
@@ -62,7 +64,7 @@ namespace dory::game
                     libraryService->unloadAll();
                 });
 
-        _registry.getAll<core::devices::IWindowSystemDevice, core::resources::WindowSystem>([&context](const auto& devices) {
+        _registry.getAll<IWindowSystemDevice, WindowSystem>([&context](const auto& devices) {
             for(const auto& [key, value] : devices)
             {
                 auto deviceRef = value.lock();
@@ -74,26 +76,26 @@ namespace dory::game
         });
     }
 
-    void Bootstrap::loadConfiguration(const generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
+    void Bootstrap::loadConfiguration(const LibraryHandle& libraryHandle, DataContext& context)
     {
-        _registry.get<dory::core::services::IMultiSinkLogService>(dory::core::resources::Logger::Config, [this, &context](dory::core::services::IMultiSinkLogService* logger){
+        _registry.get<IMultiSinkLogService>(Logger::Config, [this, &context](IMultiSinkLogService* logger){
             logger->initialize(context.configuration.loggingConfiguration.configurationLogger, _registry);
         });
 
-        _registry.get<dory::core::services::IConfigurationService>([&context](dory::core::services::IConfigurationService* configurationService){
+        _registry.get<IConfigurationService>([&context](IConfigurationService* configurationService){
             configurationService->load(context.configuration);
         });
 
-        _registry.get<dory::core::services::IMultiSinkLogService, dory::core::resources::Logger::App>([this, &context](dory::core::services::IMultiSinkLogService* logger){
+        _registry.get<IMultiSinkLogService, Logger::App>([this, &context](IMultiSinkLogService* logger){
             logger->initialize(context.configuration.loggingConfiguration.mainLogger, _registry);
         });
 
-        _registry.get<dory::core::services::ILocalizationService>([&context](dory::core::services::ILocalizationService* localizationService){
+        _registry.get<ILocalizationService>([&context](ILocalizationService* localizationService){
             localizationService->load(context.configuration, context.localization);
         });
     }
 
-    void connectDeviceGroup(core::resources::DataContext& context, const auto& devices)
+    void connectDeviceGroup(DataContext& context, const auto& devices)
     {
         for(const auto& [key, value] : devices)
         {
@@ -105,20 +107,20 @@ namespace dory::game
         }
     }
 
-    void Bootstrap::connectDevices(const generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
+    void Bootstrap::connectDevices(const LibraryHandle& libraryHandle, DataContext& context)
     {
         _registry.get<
-                generic::registry::Service<core::services::ILogService, core::resources::Logger::App>,
-                generic::registry::Service<core::devices::IStandardIODevice>,
-                generic::registry::Service<core::devices::ITerminalDevice>,
-                generic::registry::Service<core::devices::IImageStreamDevice>,
-                generic::registry::Service<core::devices::IFileWatcherDevice>>(
+                Service<ILogService, Logger::App>,
+                Service<IStandardIODevice>,
+                Service<ITerminalDevice>,
+                Service<IImageStreamDevice>,
+                Service<IFileWatcherDevice>>(
         [&context](
-            core::services::ILogService* logger,
-            core::devices::IStandardIODevice* ioDevice,
-            core::devices::ITerminalDevice* terminalDevice,
-            core::devices::IImageStreamDevice* imageStreamDevice,
-            core::devices::IFileWatcherDevice* fileWatcherDevice)
+            ILogService* logger,
+            IStandardIODevice* ioDevice,
+            ITerminalDevice* terminalDevice,
+            IImageStreamDevice* imageStreamDevice,
+            IFileWatcherDevice* fileWatcherDevice)
         {
             logger->information(fmt::format("Dory Game, {0}.{1}, {2}",
                                             context.configuration.buildInfo.version,
@@ -131,76 +133,78 @@ namespace dory::game
             imageStreamDevice->connect(context);
         });
 
-        _registry.getAll<core::devices::IWindowSystemDevice, core::resources::WindowSystem>([&context](const auto& devices) {
+        _registry.getAll<IWindowSystemDevice, WindowSystem>([&context](const auto& devices) {
             connectDeviceGroup(context, devices);
         });
 
-        _registry.getAll<core::devices::IGpuDevice, core::resources::GraphicalSystem>([&context](const auto& devices) {
+        _registry.getAll<IGpuDevice, GraphicalSystem>([&context](const auto& devices) {
             connectDeviceGroup(context, devices);
         });
     }
 
-    void Bootstrap::buildPipeline(const generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
+    void Bootstrap::buildPipeline(const LibraryHandle& libraryHandle, DataContext& context)
     {
-        _registry.get<dory::core::repositories::IPipelineRepository>([this, &libraryHandle, &context](dory::core::repositories::IPipelineRepository* pipelineRepository){
+        auto pipelineRepo = _registry.get<IPipelineRepository>();
 
-            auto inputGroup = core::resources::entities::PipelineNode{};
-            auto outputGroup = core::resources::entities::PipelineNode{};
+        pipelineRepo->addNode(nullId, libraryHandle, std::make_shared<WindowSystemController>(_registry));
 
-            auto inputGroupId = context.inputGroupNodeId = pipelineRepository->addNode(inputGroup);
-            auto outputGroupId = context.outputGroupNodeId = pipelineRepository->addNode(outputGroup);
+        pipelineRepo->addNode(nullId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context){
+            _registry.get<
+                    Service<events::window::Bundle::IDispatcher>,
+                    Service<events::io::Bundle::IDispatcher>,
+                    Service<events::filesystem::Bundle::IDispatcher>,
+                    Service<events::scene::Bundle::IDispatcher>>(
+                [&context](events::window::Bundle::IDispatcher* windowDispatcher,
+                            events::io::Bundle::IDispatcher* ioDispatcher,
+                            events::filesystem::Bundle::IDispatcher* fsDispatcher,
+                           events::scene::Bundle::IDispatcher* sceneDispatcher)
+            {
+                windowDispatcher->fireAll(context);
+                ioDispatcher->fireAll(context);
+                fsDispatcher->fireAll(context);
+                sceneDispatcher->fireAll(context);
+            });
+        });
 
-            auto submitInputEvents = [this](auto referenceId, const auto& timeStep, core::resources::DataContext& context){
-                _registry.get<
-                        generic::registry::Service<core::events::window::Bundle::IDispatcher>,
-                        generic::registry::Service<core::events::io::Bundle::IDispatcher>,
-                        generic::registry::Service<core::events::filesystem::Bundle::IDispatcher>,
-                        generic::registry::Service<core::events::scene::Bundle::IDispatcher>>(
-                    [&context](core::events::window::Bundle::IDispatcher* windowDispatcher,
-                                core::events::io::Bundle::IDispatcher* ioDispatcher,
-                                core::events::filesystem::Bundle::IDispatcher* fsDispatcher,
-                               core::events::scene::Bundle::IDispatcher* sceneDispatcher)
-                {
-                    windowDispatcher->fireAll(context);
-                    ioDispatcher->fireAll(context);
-                    fsDispatcher->fireAll(context);
-                    sceneDispatcher->fireAll(context);
-                });
-            };
-            auto updateHandle = dory::generic::extension::ResourceHandle<dory::core::resources::entities::PipelineNode::UpdateFunctionType>{ libraryHandle, submitInputEvents };
-            auto node = dory::core::resources::entities::PipelineNode(updateHandle, inputGroupId);
-            pipelineRepository->addNode(node);
+        generic::model::TimeSpan animationStepTimeAccumulator {};
+        const auto animationNodeId = pipelineRepo->addTriggerNode(nullId, libraryHandle, [&animationStepTimeAccumulator](auto nodeId, const auto& timeStep, DataContext& context)
+        {
+            constexpr int maxUpdatesPerFrame = 5;
+            constexpr auto fixedDeltaTime = generic::model::TimeSpan{1.f / 30.f};
+            entities::NodeUpdateCounter updateCounter { 0, fixedDeltaTime };
+            animationStepTimeAccumulator += timeStep;
 
-            auto flushOutput = [this](auto referenceId, const auto& timeStep, dory::core::resources::DataContext& context){
-                _registry.get<dory::core::devices::IStandardIODevice>([](dory::core::devices::IStandardIODevice* ioDevice){
-                    ioDevice->flush();
-                });
-            };
-            updateHandle = dory::generic::extension::ResourceHandle<dory::core::resources::entities::PipelineNode::UpdateFunctionType>{ libraryHandle, flushOutput };
-            node = dory::core::resources::entities::PipelineNode(updateHandle, outputGroupId);
-            pipelineRepository->addNode(node);
+            while(animationStepTimeAccumulator >= fixedDeltaTime && updateCounter.count < maxUpdatesPerFrame)
+            {
+                updateCounter.count++;
+                animationStepTimeAccumulator -= fixedDeltaTime;
+            }
 
-            auto windowSystemController = std::make_shared<core::controllers::WindowSystemController>(_registry);
-            auto controllerHandle = generic::extension::ResourceHandle<core::resources::entities::PipelineNode::ControllerPointerType>{ libraryHandle, windowSystemController };
-            pipelineRepository->addNode(core::resources::entities::PipelineNode{controllerHandle, inputGroupId});
+            return updateCounter;
+        });
 
-            auto accelerationMovementController = std::make_shared<core::controllers::AccelerationMovementController>(_registry);
-            controllerHandle = generic::extension::ResourceHandle<core::resources::entities::PipelineNode::ControllerPointerType>{libraryHandle, accelerationMovementController };
-            pipelineRepository->addNode(core::resources::entities::PipelineNode{controllerHandle, context.inputGroupNodeId});
+        pipelineRepo->addNode(animationNodeId, libraryHandle, std::make_shared<AccelerationMovementController>(_registry));
+        pipelineRepo->addNode(animationNodeId, libraryHandle, std::make_shared<MovementController>(_registry));
+        pipelineRepo->addNode(animationNodeId, libraryHandle, std::make_shared<TransformController>(_registry));
+        pipelineRepo->addNode(animationNodeId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context) {
+            if(auto viewService = _registry.get<IViewService>())
+            {
+                viewService->updateViewsState(context.viewStates);
+                context.viewStatesUpdateTime = {};
+                context.viewStatesUpdateTimeDelta = timeStep;
+            }
+        });
 
-            auto movementController = std::make_shared<core::controllers::MovementController>(_registry);
-            controllerHandle = generic::extension::ResourceHandle<core::resources::entities::PipelineNode::ControllerPointerType>{ libraryHandle, movementController };
-            pipelineRepository->addNode(core::resources::entities::PipelineNode{controllerHandle, context.inputGroupNodeId});
-
-            auto transformController = std::make_shared<core::controllers::TransformController>(_registry);
-            controllerHandle = generic::extension::ResourceHandle<core::resources::entities::PipelineNode::ControllerPointerType>{ libraryHandle, transformController };
-            pipelineRepository->addNode(core::resources::entities::PipelineNode{controllerHandle, context.inputGroupNodeId});
+        pipelineRepo->addNode(nullId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context) {
+            _registry.get<IStandardIODevice>([](IStandardIODevice* ioDevice){
+                ioDevice->flush();
+            });
         });
     }
 
-    void Bootstrap::loadExtensions(const generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
+    void Bootstrap::loadExtensions(const LibraryHandle& libraryHandle, DataContext& context)
     {
-        _registry.get<core::services::ILibraryService>([&context](core::services::ILibraryService* libraryService) {
+        _registry.get<ILibraryService>([&context](ILibraryService* libraryService) {
             for(const auto& extension : context.configuration.extensions)
             {
                 libraryService->load(context, extension);
@@ -214,74 +218,74 @@ namespace dory::game
         return ss.str();
     }
 
-    void Bootstrap::attachEventHandlers(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
+    void Bootstrap::attachEventHandlers(const LibraryHandle& libraryHandle, DataContext& context)
     {
-        _registry.get<core::events::application::Bundle::IListener>([this](core::events::application::Bundle::IListener* listener){
+        _registry.get<events::application::Bundle::IListener>([this](events::application::Bundle::IListener* listener){
             listener->attach([this](auto& context, const auto& event){ this->onApplicationExit(context, event); });
         });
 
-        _registry.get<core::events::window::Bundle::IListener>([this](core::events::window::Bundle::IListener* listener){
-            listener->attach([this](auto& context, const core::events::window::Close& event){ this->onWindowClose(context, event); });
+        _registry.get<events::window::Bundle::IListener>([this](events::window::Bundle::IListener* listener){
+            listener->attach([this](auto& context, const events::window::Close& event){ this->onWindowClose(context, event); });
         });
 
-        _registry.get<core::events::filesystem::Bundle::IListener>([this](core::events::filesystem::Bundle::IListener* listener){
+        _registry.get<events::filesystem::Bundle::IListener>([this](events::filesystem::Bundle::IListener* listener){
             listener->attach([this](auto& context, const auto& event){ this->onFilesystemEvent(context, event); });
         });
 
-        _registry.get<core::services::ILogService, core::resources::Logger::App>([](core::services::ILogService* logger){
+        _registry.get<ILogService, Logger::App>([](ILogService* logger){
             logger->information("main threadId: " + threadIdToString(std::this_thread::get_id()));
         });
     }
 
-    void Bootstrap::attachScrips(const generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
+    void Bootstrap::attachScrips(const LibraryHandle& libraryHandle, DataContext& context)
     {
-        _registry.get<dory::core::services::IScriptService>([this, &libraryHandle](dory::core::services::IScriptService* scriptService){
+        _registry.get<IScriptService>([this, &libraryHandle](IScriptService* scriptService){
 
-            scriptService->addScript("exit", libraryHandle, [this](core::resources::DataContext& context, const std::map<std::string, std::any>& arguments){
+            scriptService->addScript("exit", libraryHandle, [this](DataContext& context, const std::map<std::string, std::any>& arguments){
                 _registry.get<
-                        generic::registry::Service<core::devices::ITerminalDevice>,
-                        generic::registry::Service<core::events::application::Bundle::IDispatcher>>(
-                [&context](core::devices::ITerminalDevice* terminalDevice, core::events::application::Bundle::IDispatcher* applicationDispatcher){
+                        Service<ITerminalDevice>,
+                        Service<events::application::Bundle::IDispatcher>>(
+                [&context](ITerminalDevice* terminalDevice, events::application::Bundle::IDispatcher* applicationDispatcher){
                     terminalDevice->writeLine(fmt::format("-\u001B[31m{0}\u001B[0m-", "exit"));
-                    applicationDispatcher->fire(context, core::events::application::Exit{});
+                    applicationDispatcher->fire(context, events::application::Exit{});
                 });
             });
 
         });
     }
 
-    void Bootstrap::onApplicationExit(core::resources::DataContext& context, const core::events::application::Exit& eventData)
+    void Bootstrap::onApplicationExit(DataContext& context, const events::application::Exit& eventData)
     {
-        _registry.get<dory::core::services::ILoopService>([](dory::core::services::ILoopService* frameService) {
+        _registry.get<ILoopService>([](ILoopService* frameService) {
             frameService->endLoop();
         });
     }
 
-    void Bootstrap::onWindowClose(core::resources::DataContext& context, const core::events::window::Close& eventData)
+    void Bootstrap::onWindowClose(DataContext& context, const events::window::Close& eventData)
     {
-        _registry.get<core::services::IWindowService>([this, &eventData, &context](core::services::IWindowService* windowService) {
+        _registry.get<IWindowService>([this, &eventData, &context](IWindowService* windowService) {
             windowService->closeWindow(eventData.windowId, eventData.windowSystem);
 
             if(eventData.windowId == context.mainWindowId)
             {
-                auto dispatcher = _registry.get<core::events::application::Bundle::IDispatcher>();
+                auto dispatcher = _registry.get<events::application::Bundle::IDispatcher>();
                 if(dispatcher)
                 {
-                    dispatcher->fire(context, core::events::application::Exit{});
+                    dispatcher->fire(context, events::application::Exit{});
                 }
             }
         });
     }
 
-    void Bootstrap::onFilesystemEvent(core::resources::DataContext& context, const core::events::filesystem::FileModified& event)
+    void Bootstrap::onFilesystemEvent(DataContext& context, const events::filesystem::FileModified& event)
     {
-        auto resolver = _registry.get<core::services::IAssetTypeResolver>();
+        auto resolver = _registry.get<IAssetTypeResolver>();
         if(resolver)
         {
             auto assetType = resolver->resolve(context, event.filePath);
             if(assetType)
             {
-                _registry.get<core::services::IAssetReloadHandler>(*assetType, [&context, &event](core::services::IAssetReloadHandler* assetLoader) {
+                _registry.get<IAssetReloadHandler>(*assetType, [&context, &event](IAssetReloadHandler* assetLoader) {
                     assetLoader->reload(context, event.filePath);
                 });
             }

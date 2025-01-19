@@ -1,51 +1,10 @@
 #pragma once
 
+#include <chrono>
+
 namespace dory::generic::model
 {
-    enum UnitScale
-    {
-        Identity = 1,
-        Milli = 1000,
-        Micro = 1000000,
-        Nano = 1000000000
-    };
-
-    struct TimeSpan
-    {
-        long duration;
-        UnitScale unitsPerSecond;
-
-        TimeSpan():
-                duration(0),
-                unitsPerSecond(UnitScale::Milli)
-        {
-        };
-
-        explicit TimeSpan(UnitScale unitsPerSecond):
-                duration(0),
-                unitsPerSecond(unitsPerSecond)
-        {
-        };
-
-        [[nodiscard]] float ToMilliseconds() const
-        {
-            return (duration / (float)unitsPerSecond) * (float)UnitScale::Milli;
-        }
-
-        [[nodiscard]] float ToSeconds() const
-        {
-            return (duration / (float)unitsPerSecond);
-        }
-    };
-
-    class TimeConverter
-    {
-    public:
-        static double ToMilliseconds(TimeSpan timeSpan)
-        {
-            return (timeSpan.duration / (double)timeSpan.unitsPerSecond) * (double)UnitScale::Milli;
-        }
-    };
+    using TimeSpan = std::chrono::duration<float>;
 
     struct Color
     {

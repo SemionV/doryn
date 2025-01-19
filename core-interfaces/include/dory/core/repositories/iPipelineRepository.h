@@ -1,11 +1,9 @@
 #pragma once
 
-#include "iRepository.h"
+#include <dory/core/iController.h>
 #include <dory/core/resources/entity.h>
-#include <dory/core/resources/dataContext.h>
 #include <dory/core/resources/entities/pipelineNode.h>
 #include <dory/generic/baseTypes.h>
-#include "iRepository.h"
 
 namespace dory::core::repositories
 {
@@ -17,6 +15,11 @@ namespace dory::core::repositories
 
         virtual std::span<EntityType> getPipelineNodes() = 0;
         virtual IdType addNode(const EntityType& pipelineNode) = 0;
+        virtual IdType addTriggerNode(IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, const EntityType::UpdateTriggerType& updateTrigger) = 0;
+        virtual IdType addNode(IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, EntityType::ControllerPointerType controller) = 0;
+        virtual IdType addNode(IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, EntityType::ControllerPointerType controller, const EntityType::UpdateTriggerType& updateTrigger) = 0;
+        virtual IdType addNode(IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, const EntityType::UpdateFunctionType& updateFunction) = 0;
+        virtual IdType addNode(IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, const EntityType::UpdateFunctionType& updateFunction, const EntityType::UpdateTriggerType& updateTrigger) = 0;
         virtual void removeNode(IdType id) = 0;
     };
 }

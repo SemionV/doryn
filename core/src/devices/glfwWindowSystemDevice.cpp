@@ -171,7 +171,7 @@ namespace dory::core::devices
         GLFWmonitor* monitor;
         if(monitorCount > 1)
         {
-            monitor = monitors[1];
+            monitor = monitors[0];
         }
         else
         {
