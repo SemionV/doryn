@@ -87,7 +87,7 @@ namespace dory::core::services
                 if(auto pipeline = _registry.get<IPipelineService>()) //it can be hot-swapped, this is why reload it each frame
                 {
                     profiling::pushTimeSlice(context.profiling, "update", steady_clock::now());
-                    pipeline->update(context, std::chrono::duration_cast<generic::model::TimeSpan>(frameTime));
+                    pipeline->update(context, frameTime);
                     profiling::popTimeSlice(context.profiling, steady_clock::now());
                 }
 
@@ -100,7 +100,7 @@ namespace dory::core::services
                     float deltaTime = context.viewStatesUpdateTimeDelta.count() > 0 ? context.viewStatesUpdateTimeDelta.count() : 1.f;
                     float alpha = context.viewStatesUpdateTime.count() / deltaTime;
                     alpha = glm::clamp(alpha, 0.0f, 1.0f);
-                    context.viewStatesUpdateTime += std::chrono::duration_cast<generic::model::TimeSpan>(frameTime);
+                    context.viewStatesUpdateTime += frameTime;
 
                     if(auto* frame = profiling::getCurrentFrame(context.profiling))
                     {

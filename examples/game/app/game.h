@@ -86,7 +86,7 @@ namespace dory::game
             core::resources::entities::View* mainView {};
 
             _registry.get<dory::core::services::IWindowService>([&](dory::core::services::IWindowService* windowService) {
-                auto windowParameters = core::resources::WindowParameters{ 800, 600, "dory game", graphicalContext->id, 16, false, false };
+                auto windowParameters = core::resources::WindowParameters{ 800, 600, "dory game", graphicalContext->id, 16, true, false };
                 auto window = windowService->createWindow(windowParameters, core::resources::WindowSystem::glfw);
                 if(window)
                 {
@@ -170,7 +170,13 @@ namespace dory::game
 
             //Test scene
             loadAssets(context, mainWindow, graphicalContext);
-            buildScene2(context, *mainView);
+            buildScene(context, *mainView);
+            if(auto viewService = _registry.get<core::services::IViewService>())
+            {
+                viewService->updateViewsState(context.viewStates);
+                context.viewStatesUpdateTime = {};
+                context.viewStatesUpdateTimeDelta = {};
+            }
 
             _keyboardHandler.initialize(libraryHandle, context);
 

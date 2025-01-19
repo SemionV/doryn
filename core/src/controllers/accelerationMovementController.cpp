@@ -1,5 +1,6 @@
 #include <dory/core/registry.h>
 #include <dory/core/controllers/accelerationMovementController.h>
+#include <chrono>
 
 namespace dory::core::controllers
 {
@@ -22,7 +23,7 @@ namespace dory::core::controllers
     }
 
     template<typename T>
-    void processAccelerationMovement(entt::registry& registry, float timeStepSeconds)
+    void processAccelerationMovement(entt::registry& registry, std::chrono::duration<float> timeStepSeconds)
     {
         auto view = registry.view<T>();
         for (auto entity : view)
@@ -39,7 +40,7 @@ namespace dory::core::controllers
                    && movement.currentVelocity < movement.highVelocity
                    && distanceLeft > movement.decelerationDistance)
                 {
-                    movement.currentVelocity += movement.acceleration * timeStepSeconds;
+                    movement.currentVelocity += movement.acceleration * timeStepSeconds.count();
                     if(movement.currentVelocity > movement.highVelocity)
                     {
                         movement.currentVelocity = movement.highVelocity;
@@ -49,7 +50,7 @@ namespace dory::core::controllers
                         && movement.currentVelocity > movement.lowVelocity
                         && distanceLeft <= movement.decelerationDistance)
                 {
-                    movement.currentVelocity += movement.deceleration * timeStepSeconds;
+                    movement.currentVelocity += movement.deceleration * timeStepSeconds.count();
                     if(movement.currentVelocity < movement.lowVelocity)
                     {
                         movement.currentVelocity = movement.lowVelocity;
@@ -58,7 +59,7 @@ namespace dory::core::controllers
 
                 if(movement.currentVelocity > 0.f)
                 {
-                    auto step = movement.currentVelocity * timeStepSeconds;
+                    auto step = movement.currentVelocity * timeStepSeconds.count();
                     if(distanceLeft - step < 0.f && !movement.endless)
                     {
                         step = distanceLeft;
@@ -73,7 +74,7 @@ namespace dory::core::controllers
 
     void AccelerationMovementController::update(core::resources::IdType referenceId, const generic::model::TimeSpan& timeStep, core::resources::DataContext& context)
     {
-        float timeStepSeconds = timeStep.count();
+        auto timeStepSeconds = std::chrono::duration_cast<std::chrono::duration<float>>(timeStep);
 
         _registry.getAll<repositories::ISceneRepository, EcsType>([&](const auto& repos) {
             for(const auto& [key, value] : repos)

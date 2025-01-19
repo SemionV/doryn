@@ -127,8 +127,8 @@ namespace dory::game
                                             context.configuration.buildInfo.commitSHA,
                                             context.configuration.buildInfo.timestamp));
 
-            ioDevice->connect(context);
-            terminalDevice->connect(context);
+            //ioDevice->connect(context);
+            //terminalDevice->connect(context);
             fileWatcherDevice->connect(context);
             imageStreamDevice->connect(context);
         });
@@ -170,7 +170,8 @@ namespace dory::game
         const auto animationNodeId = pipelineRepo->addTriggerNode(nullId, libraryHandle, [&animationStepTimeAccumulator](auto nodeId, const auto& timeStep, DataContext& context)
         {
             constexpr int maxUpdatesPerFrame = 5;
-            constexpr auto fixedDeltaTime = generic::model::TimeSpan{1.f / 30.f};
+            constexpr auto animationdDeltaTime = std::chrono::duration<float>{1.f / 30.f};
+            constexpr auto fixedDeltaTime = generic::model::TimeSpan{ std::chrono::duration_cast<generic::model::TimeSpan>(animationdDeltaTime) };
             entities::NodeUpdateCounter updateCounter { 0, fixedDeltaTime };
             animationStepTimeAccumulator += timeStep;
 

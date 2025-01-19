@@ -569,7 +569,7 @@ namespace dory::core::devices
     void OpenglGpuDevice::completeFrame(const Frame& frame, profiling::Profiling& profiling)
     {
         resources::profiling::pushTimeSlice(profiling, "OpenglGpuDevice::completeFrame - glFinish", std::chrono::steady_clock::now());
-        //glFinish();
+        glFinish();
         resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //glFinish
     }
 

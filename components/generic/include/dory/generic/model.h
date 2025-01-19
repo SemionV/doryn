@@ -4,7 +4,7 @@
 
 namespace dory::generic::model
 {
-    using TimeSpan = std::chrono::duration<float>;
+    using TimeSpan = std::chrono::nanoseconds;
 
     struct Color
     {
