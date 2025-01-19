@@ -97,7 +97,7 @@ namespace dory::core::services
 
                             for (auto it = parentTimeSlice->subTimeSlices.rbegin(); it != parentTimeSlice->subTimeSlices.rend(); ++it)
                             {
-                                tree.emplace(&*it, level + 1);
+                                tree.emplace(it->get(), level + 1);
                             }
                         }
                     }
