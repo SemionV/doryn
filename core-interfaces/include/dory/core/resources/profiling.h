@@ -5,7 +5,7 @@
 #include <vector>
 #include <dory/core/resources/scene/scene.h>
 #include <thread>
-#include <stack>
+#include <deque>
 
 namespace dory::core::resources::profiling
 {
@@ -14,7 +14,7 @@ namespace dory::core::resources::profiling
         std::string name {};
         std::chrono::steady_clock::time_point begin;
         std::chrono::steady_clock::time_point end;
-        std::deque<TimeSlice> subTimeSlices;
+        std::deque<std::unique_ptr<TimeSlice>> subTimeSlices;
     };
 
     struct Timing
@@ -154,8 +154,8 @@ namespace dory::core::resources::profiling
             auto& stack = it->second.stack;
             auto* parentTimeSlice = stack.top();
 
-            parentTimeSlice->subTimeSlices.push_back({name, begin});
-            stack.push(&parentTimeSlice->subTimeSlices.back());
+            parentTimeSlice->subTimeSlices.push_back(std::make_unique<TimeSlice>(name, begin));
+            stack.push(parentTimeSlice->subTimeSlices.back().get());
         }
 
         //push root time slice on stack
