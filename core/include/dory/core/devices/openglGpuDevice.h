@@ -43,6 +43,7 @@ namespace dory::core::devices
         void bindShader(const std::string& sourceCode, resources::assets::ShaderType type, resources::bindings::ShaderBinding* shaderBinding) override;
         void bindMaterial(resources::bindings::MaterialBinding* materialBinding, const std::vector<resources::bindings::ShaderBinding*>& shaders) override;
         void drawFrame(const resources::objects::Frame& frame, resources::profiling::Profiling& profiling) override;
+        void completeFrame(const resources::objects::Frame& frame, resources::profiling::Profiling& profiling) override;
         bool getFrontBufferImage(const resources::entities::View& view, resources::assets::Image& image) override;
         bool getBackBufferImage(const resources::entities::View& view, resources::assets::Image& image) override;
     };

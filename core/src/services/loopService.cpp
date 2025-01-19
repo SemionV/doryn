@@ -33,6 +33,7 @@ namespace dory::core::services
             auto fpsAccumulator = nanoseconds{0};
             const auto fpsInterval = seconds{1};
             std::size_t frameCounter = 1;
+            std::size_t fps = 0;
 
             steady_clock::time_point lastTimestamp = steady_clock::now();
 
@@ -44,7 +45,7 @@ namespace dory::core::services
 
                 profiling::popTimeSlice(context.profiling, currentTimestamp);
 
-                //11Analyze and drop completed Capture
+                //Analyze and drop completed Capture
                 //TODO: move capture analysis to a pipeline node
                 if(auto* capture = profiling::getCurrentCapture(context.profiling))
                 {
@@ -69,12 +70,18 @@ namespace dory::core::services
                     frameTime = milliseconds(250);
                 }
 
-                frameTime = duration_cast<nanoseconds>(generic::model::TimeSpan(1.f / 60.f));
+                //frameTime = duration_cast<nanoseconds>(generic::model::TimeSpan(1.f / 60.f));
 
                 fpsAccumulator += frameTime;
                 while (fpsAccumulator >= fpsInterval)
                 {
                     fpsAccumulator = fpsAccumulator - fpsInterval;
+
+                    if(auto logger = _registry.get<ILogService>())
+                    {
+                        logger->information(fmt::format("FPS: {}", fps));
+                    }
+                    fps = 0;
                 }
 
                 if(auto pipeline = _registry.get<IPipelineService>()) //it can be hot-swapped, this is why reload it each frame
@@ -107,6 +114,7 @@ namespace dory::core::services
                 }
 
                 frameCounter++;
+                fps++;
             }
         }
 

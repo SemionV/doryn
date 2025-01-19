@@ -35,6 +35,7 @@ public:
     MOCK_METHOD(void, bindShader, (const std::string& sourceCode, resources::assets::ShaderType type, ShaderBinding* shaderBinding));
     MOCK_METHOD(void, bindMaterial, (MaterialBinding* materialBinding, const std::vector<ShaderBinding*>& shaders));
     MOCK_METHOD(void, drawFrame, (const Frame& frame, profiling::Profiling& profiling));
+    MOCK_METHOD(void, completeFrame, (const Frame& frame, profiling::Profiling& profiling));
     MOCK_METHOD(bool, getFrontBufferImage, (const resources::entities::View& view, resources::assets::Image& image));
     MOCK_METHOD(bool, getBackBufferImage, (const resources::entities::View& view, resources::assets::Image& image));
 };

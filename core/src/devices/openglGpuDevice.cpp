@@ -23,8 +23,6 @@ namespace dory::core::devices
 
     bool getFrameBufferPixels(const GLenum buffer, const entities::View& view, assets::Image& image)
     {
-        glFinish();
-
         // Bind the specified buffer
         glReadBuffer(buffer);
 
@@ -565,13 +563,14 @@ namespace dory::core::devices
             }
         }
 
-        glFlush();
-
-        resources::profiling::pushTimeSlice(profiling, "OpenglGpuDevice::drawFrame - glFinish", std::chrono::steady_clock::now());
-        glFinish();
-        resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //glFinish
-
         resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //"OpenglGpuDevice::drawFrame - draw meshes"
+    }
+
+    void OpenglGpuDevice::completeFrame(const Frame& frame, profiling::Profiling& profiling)
+    {
+        resources::profiling::pushTimeSlice(profiling, "OpenglGpuDevice::completeFrame - glFinish", std::chrono::steady_clock::now());
+        //glFinish();
+        resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //glFinish
     }
 
     bool OpenglGpuDevice::getFrontBufferImage(const entities::View& view, assets::Image& image)
@@ -715,5 +714,7 @@ namespace dory::core::devices
         {
             glDrawArrays(GL_TRIANGLES, 0, (GLsizei)glMesh->vertexCount);
         }
+
+        glFlush();//TODO: practically this command is not needed
     }
 }

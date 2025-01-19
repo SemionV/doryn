@@ -134,6 +134,8 @@ namespace dory::core::services::graphics
             windowService->swapBuffers(window);
             resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //"Renderer::draw - swap buffers"
 
+            gpuDevice->completeFrame(frame, profiling);
+
             resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //"Renderer::draw"
         }
     }
