@@ -12,8 +12,8 @@ namespace dory::core::resources::profiling
     struct TimeSlice
     {
         std::string name {};
-        std::chrono::steady_clock::time_point begin;
-        std::chrono::steady_clock::time_point end;
+        std::chrono::high_resolution_clock::time_point begin;
+        std::chrono::high_resolution_clock::time_point end;
         std::deque<std::unique_ptr<TimeSlice>> subTimeSlices;
     };
 
@@ -146,8 +146,9 @@ namespace dory::core::resources::profiling
         return nullptr;
     }
 
-    inline void pushTimeSlice(Frame& frame, const std::string& name, const std::chrono::steady_clock::time_point begin)
+    inline void pushTimeSlice(Frame& frame, const std::string& name)
     {
+        auto begin = std::chrono::high_resolution_clock::now();
         const auto it = frame.timings.find(std::this_thread::get_id());
         if(it != frame.timings.end() && !it->second.stack.empty())
         {
@@ -157,10 +158,9 @@ namespace dory::core::resources::profiling
             parentTimeSlice->subTimeSlices.push_back(std::make_unique<TimeSlice>(name, begin));
             stack.push(parentTimeSlice->subTimeSlices.back().get());
         }
-
-        //push root time slice on stack
-        if(auto [it, success] = frame.timings.emplace(std::this_thread::get_id(), Timing{}); success)
+        else if(auto [it, success] = frame.timings.emplace(std::this_thread::get_id(), Timing{}); success)
         {
+            //push root time slice on stack
             auto& [stack, root] = it->second;
             stack.push(&root);
             root.name = name;
@@ -168,8 +168,9 @@ namespace dory::core::resources::profiling
         }
     }
 
-    inline void popTimeSlice(Frame& frame, const std::chrono::steady_clock::time_point end)
+    inline void popTimeSlice(Frame& frame)
     {
+        auto end = std::chrono::high_resolution_clock::now();
         const auto it = frame.timings.find(std::this_thread::get_id());
         if(it != frame.timings.end() && !it->second.stack.empty())
         {
@@ -180,25 +181,25 @@ namespace dory::core::resources::profiling
         }
     }
 
-    inline void pushTimeSlice(Profiling& profiling, const std::string& name, const std::chrono::steady_clock::time_point begin)
+    inline void pushTimeSlice(Profiling& profiling, const std::string& name)
     {
         if(auto* capture = getCurrentCapture(profiling))
         {
             if(auto* frame = getCurrentFrame(*capture))
             {
-                pushTimeSlice(*frame, name, begin);
+                pushTimeSlice(*frame, name);
             }
         }
     }
 
-    inline void popTimeSlice(Profiling& profiling, const std::chrono::steady_clock::time_point end)
+    inline void popTimeSlice(Profiling& profiling)
     {
         auto* capture = getCurrentCapture(profiling);
         if(capture)
         {
             if(auto* frame = getCurrentFrame(*capture))
             {
-                popTimeSlice(*frame, end);
+                popTimeSlice(*frame);
             }
         }
     }

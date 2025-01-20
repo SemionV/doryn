@@ -1,7 +1,6 @@
 #include <dory/core/registry.h>
 #include <dory/core/services/loopService.h>
 #include <dory/core/services/iPipelineService.h>
-#include <dory/generic/model.h>
 #include <chrono>
 #include <spdlog/fmt/fmt.h>
 
@@ -47,15 +46,15 @@ namespace dory::core::services
 
             //core::resources::profiling::startNewCapture(context.profiling, context.profiling.captureIdCounter++, 100);
 
-            steady_clock::time_point lastTimestamp = steady_clock::now();
+            high_resolution_clock::time_point lastTimestamp = high_resolution_clock::now();
 
             while(!isStop)
             {
-                steady_clock::time_point currentTimestamp = steady_clock::now();
+                auto currentTimestamp = high_resolution_clock::now();
                 auto frameTime = duration_cast<nanoseconds>(currentTimestamp - lastTimestamp);
                 lastTimestamp = currentTimestamp;
 
-                profiling::popTimeSlice(context.profiling, currentTimestamp);
+                profiling::popTimeSlice(context.profiling);
 
                 //Analyze and drop completed Capture
                 //TODO: move capture analysis to a pipeline node
@@ -75,14 +74,14 @@ namespace dory::core::services
                     {
                         if(auto* frame = profiling::addNewFrame(*capture, frameCounter))
                         {
-                            profiling::pushTimeSlice(*frame, std::string{ profiling::Profiling::frameRootTimeSlice }, currentTimestamp);
+                            profiling::pushTimeSlice(*frame, std::string{ profiling::Profiling::frameRootTimeSlice });
                         }
                     }
                 }
 
-                /*profiling::pushTimeSlice(context.profiling, "wait", steady_clock::now());
-                busyWait(std::chrono::milliseconds{ 5 });
-                profiling::popTimeSlice(context.profiling, steady_clock::now());*/
+                //profiling::pushTimeSlice(context.profiling, "wait");
+                //busyWait(std::chrono::milliseconds{ 5 });
+                //profiling::popTimeSlice(context.profiling);
 
                 if (frameTime > milliseconds(250)) {
                     frameTime = milliseconds(250);
@@ -108,9 +107,9 @@ namespace dory::core::services
 
                 if(auto pipeline = _registry.get<IPipelineService>()) //it can be hot-swapped, this is why reload it each frame
                 {
-                    profiling::pushTimeSlice(context.profiling, "update", steady_clock::now());
+                    profiling::pushTimeSlice(context.profiling, "update");
                     pipeline->update(context, frameTime);
-                    profiling::popTimeSlice(context.profiling, steady_clock::now());
+                    profiling::popTimeSlice(context.profiling);
                 }
 
                 frameCounter++;

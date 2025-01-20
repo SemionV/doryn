@@ -43,7 +43,7 @@ namespace dory::core::services::graphics
                         const GraphicalContext& graphicalContext,
                         profiling::Profiling& profiling)
     {
-        resources::profiling::pushTimeSlice(profiling, "Renderer::draw", std::chrono::steady_clock::now());
+        resources::profiling::pushTimeSlice(profiling, "Renderer::draw");
 
         auto& view = viewState.view;
 
@@ -96,13 +96,13 @@ namespace dory::core::services::graphics
                 }
             }
 
-            /*resources::profiling::pushTimeSlice(profiling, "Renderer::draw - set window context", std::chrono::steady_clock::now());
+            resources::profiling::pushTimeSlice(profiling, "Renderer::draw - set window context");
             windowService->setCurrentWindow(window);
-            resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //Renderer::draw - set window context*/
+            resources::profiling::popTimeSlice(profiling); //Renderer::draw - set window context
 
-            resources::profiling::pushTimeSlice(profiling, "Renderer::draw - draw", std::chrono::steady_clock::now());
+            resources::profiling::pushTimeSlice(profiling, "Renderer::draw - draw");
             gpuDevice->drawFrame(frame, profiling);
-            resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //"Renderer::draw - draw"
+            resources::profiling::popTimeSlice(profiling); //"Renderer::draw - draw"
 
             /*auto imageStreamService = _registry.get<services::IImageStreamService>();
             auto* currentFrame = profiling::getCurrentFrame(profiling);
@@ -130,13 +130,13 @@ namespace dory::core::services::graphics
                 }
             }*/
 
-            resources::profiling::pushTimeSlice(profiling, "Renderer::draw - swap buffers", std::chrono::steady_clock::now());
+            resources::profiling::pushTimeSlice(profiling, "Renderer::draw - swap buffers");
             windowService->swapBuffers(window);
-            resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //"Renderer::draw - swap buffers"
+            resources::profiling::popTimeSlice(profiling); //"Renderer::draw - swap buffers"
 
             gpuDevice->completeFrame(frame, profiling);
 
-            resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //"Renderer::draw"
+            resources::profiling::popTimeSlice(profiling); //"Renderer::draw"
         }
     }
 }

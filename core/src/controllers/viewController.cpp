@@ -26,7 +26,7 @@ namespace dory::core::controllers
     {
         if(auto viewService = _registry.get<IViewService>())
         {
-            profiling::pushTimeSlice(context.profiling, "rendering", steady_clock::now());
+            profiling::pushTimeSlice(context.profiling, "rendering");
 
             float deltaTime = context.viewStatesUpdateTimeDelta.count() > 0 ? context.viewStatesUpdateTimeDelta.count() : 1.f;
             float alpha = context.viewStatesUpdateTime.count() / deltaTime;
@@ -39,9 +39,9 @@ namespace dory::core::controllers
                 frame->alpha = alpha;
             }
 
-            viewService->updateViews(context.viewStates, /*alpha*/1.f, context.profiling);
+            viewService->updateViews(context.viewStates, alpha, context.profiling);
 
-            profiling::popTimeSlice(context.profiling, steady_clock::now());
+            profiling::popTimeSlice(context.profiling);
         }
     }
 }

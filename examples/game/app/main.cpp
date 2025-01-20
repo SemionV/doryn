@@ -746,9 +746,9 @@ GLuint createShaderProgram(const char* vertexSource, const char* fragmentSource)
 
 int main() {
     // Try setting thread priority high (as in your original code)
-    if (!SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST)) {
+    /*if (!SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST)) {
         std::cerr << "Failed to set thread priority!" << std::endl;
-    }
+    }*/
 
     // Print clock resolution info (from your original code)
     std::cout << "Clock resolution: "

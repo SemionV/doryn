@@ -24,7 +24,7 @@ namespace dory::core::devices
 
     void GlfwWindowSystemDevice::pollEvents(resources::DataContext& context)
     {
-        resources::profiling::pushTimeSlice(context.profiling, "GlfwWindowSystemDevice::pollEvents", std::chrono::steady_clock::now());
+        resources::profiling::pushTimeSlice(context.profiling, "GlfwWindowSystemDevice::pollEvents");
 
         glfwPollEvents();
 
@@ -46,7 +46,7 @@ namespace dory::core::devices
             });
         });
 
-        resources::profiling::popTimeSlice(context.profiling,  std::chrono::steady_clock::now());
+        resources::profiling::popTimeSlice(context.profiling);
     }
 
     resources::entities::GlfwWindow* GlfwWindowSystemDevice::getWindow(Registry& registry, GLFWwindow* windowHandler)
@@ -199,14 +199,16 @@ namespace dory::core::devices
             return;
         }
 
-        glfwSwapInterval(parameters.vSync ? 1 : 0);
-
         glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE); //TODO: pass this as a parameter
         glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
         if(parameters.sampling)
         {
             glfwWindowHint(GLFW_SAMPLES, parameters.sampling);
         }
+
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         GLFWwindow* glfwWindowHandler {};
         if(parameters.fullScreen)
@@ -226,6 +228,7 @@ namespace dory::core::devices
 
         glfwMakeContextCurrent(glfwWindowHandler);
 
+        glfwSwapInterval(parameters.vSync ? 1 : 0);
         glfwSetWindowUserPointer(glfwWindow.handler, &_registry);
         glfwSetFramebufferSizeCallback(glfwWindow.handler, framebufferSizeCallback);
         glfwSetKeyCallback(glfwWindow.handler, keyCallback);

@@ -519,7 +519,7 @@ namespace dory::core::devices
 
     void OpenglGpuDevice::drawFrame(const Frame& frame, profiling::Profiling& profiling)
     {
-        resources::profiling::pushTimeSlice(profiling, "OpenglGpuDevice::drawFrame - setup", std::chrono::steady_clock::now());
+        resources::profiling::pushTimeSlice(profiling, "OpenglGpuDevice::drawFrame - setup");
 
         /*if(auto* currentFrame = profiling::getCurrentFrame(profiling))
         {
@@ -535,16 +535,16 @@ namespace dory::core::devices
             currentFrame->drawFrameBufferIndex = drawBuffer == GL_BACK;
         }*/
 
-        resources::profiling::pushTimeSlice(profiling, "OpenglGpuDevice::drawFrame - enable depth test", std::chrono::steady_clock::now());
+        resources::profiling::pushTimeSlice(profiling, "OpenglGpuDevice::drawFrame - enable depth test");
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL);
-        resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //enable depth test
+        resources::profiling::popTimeSlice(profiling); //enable depth test
 
         glClearColor(frame.clearColor.x, frame.clearColor.y, frame.clearColor.z, frame.clearColor.w);
 
-        resources::profiling::pushTimeSlice(profiling, "OpenglGpuDevice::drawFrame - clear buffers", std::chrono::steady_clock::now());
+        resources::profiling::pushTimeSlice(profiling, "OpenglGpuDevice::drawFrame - clear buffers");
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-        resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //clear buffers
+        resources::profiling::popTimeSlice(profiling); //clear buffers
 
         glViewport((GLint)frame.viewport.x, (GLint)frame.viewport.y, (GLint)frame.viewport.width, (GLint)frame.viewport.height);
 
@@ -553,9 +553,9 @@ namespace dory::core::devices
 
         uniforms.viewProjectionTransform = frame.viewProjectionTransform;
 
-        resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //setup
+        resources::profiling::popTimeSlice(profiling); //setup
 
-        resources::profiling::pushTimeSlice(profiling, "OpenglGpuDevice::drawFrame - draw meshes", std::chrono::steady_clock::now());
+        resources::profiling::pushTimeSlice(profiling, "OpenglGpuDevice::drawFrame - draw meshes");
 
         for(const auto& [material, meshes] : frame.meshMap)
         {
@@ -569,7 +569,7 @@ namespace dory::core::devices
             }
         }
 
-        resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //"OpenglGpuDevice::drawFrame - draw meshes"
+        resources::profiling::popTimeSlice(profiling); //"OpenglGpuDevice::drawFrame - draw meshes"
     }
 
     void OpenglGpuDevice::completeFrame(const Frame& frame, profiling::Profiling& profiling)

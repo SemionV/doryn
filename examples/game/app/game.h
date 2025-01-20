@@ -86,7 +86,7 @@ namespace dory::game
             core::resources::entities::View* mainView {};
 
             _registry.get<dory::core::services::IWindowService>([&](dory::core::services::IWindowService* windowService) {
-                auto windowParameters = core::resources::WindowParameters{ 800, 600, "dory game", graphicalContext->id, 16, false, false };
+                auto windowParameters = core::resources::WindowParameters{ 800, 800, "dory game", graphicalContext->id, 16, false, false };
                 auto window = windowService->createWindow(windowParameters, core::resources::WindowSystem::glfw);
                 if(window)
                 {
@@ -170,7 +170,7 @@ namespace dory::game
 
             //Test scene
             loadAssets(context, mainWindow, graphicalContext);
-            buildScene2(context, *mainView);
+            buildScene(context, *mainView);
             if(auto viewService = _registry.get<core::services::IViewService>())
             {
                 viewService->updateViewsState(context.viewStates);
@@ -469,29 +469,10 @@ namespace dory::game
                     view.cameraId = sceneService->addObject(*scene, core::resources::objects::SceneObject {
                             "camera",
                             core::resources::nullId,
-                            { { -1.f, 0.f, 0.f }, glm::quat{} }
+                            { { 0.f, 0.f, 0.f }, glm::quat{} }
                     });
                     sceneService->addComponent(view.cameraId, *scene, core::resources::scene::components::Mesh{ pointMeshId });
                     sceneService->addComponent(view.cameraId, *scene, core::resources::scene::components::Material{ 1 });
-
-                    /*float distance = 1.f;
-                    glm::vec3 stepVector = glm::vec3{1.f, 0.f, 0.f};
-
-                    float accelerationDistance = distance;
-                    float highVelocity = 0.3f;
-                    float startVelocity = highVelocity;
-                    float lowVelocity = 0.01f;
-                    sceneService->addComponent(view.cameraId, *scene, core::resources::scene::components::LinearMovement {
-                        true,
-                        stepVector,
-                        startVelocity,
-                        highVelocity,
-                        lowVelocity,
-                        startVelocity,
-                        accelerationDistance,
-                        0.f,
-                        0.f
-                    });*/
                 }
 
                 return scene;

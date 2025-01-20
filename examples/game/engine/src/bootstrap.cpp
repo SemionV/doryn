@@ -40,8 +40,8 @@ namespace dory::game
 
     bool Bootstrap::run(DataContext& context)
     {
-        _registry.get<ILoopService>([&context](ILoopService* frameService) {
-            frameService->startLoop(context);
+        _registry.get<ILoopService>([&context](ILoopService* loopService) {
+            loopService->startLoop(context);
         });
 
         return true;
@@ -164,58 +164,12 @@ namespace dory::game
             });
         });
 
-        //pandle the objects on the screen
-        pipelineRepo->addNode(nullId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context) {
-            static bool movingRight { true };
-
-            _registry.getAll<repositories::ISceneRepository, EcsType>([&](const auto& repos) {
-                for(const auto& [key, value] : repos)
-                {
-                    auto repoRef = value.lock();
-                    if(repoRef)
-                    {
-                        repoRef->each([&](core::resources::scene::Scene& scene) {
-                            if(scene.ecsType == core::resources::EcsType::entt)
-                            {
-                                auto& enttScene = (core::resources::scene::EnttScene&)scene;
-                                auto& registry = enttScene.registry;
-
-                                auto view = registry.view<resources::scene::components::Position>();
-                                for (auto entity : view)
-                                {
-                                    auto& position = view.get<resources::scene::components::Position>(entity);
-
-                                    if(position.value.x >= 1.f)
-                                    {
-                                        movingRight = false;
-                                    }
-                                    else if(position.value.x <= -1.f)
-                                    {
-                                        movingRight = true;
-                                    }
-
-                                    auto speed = glm::vec3 { 0.5f, 0.f, 0.f };
-                                    if(!movingRight)
-                                    {
-                                        speed.x *= -1.f;
-                                    }
-
-                                    auto deltaTime = std::chrono::duration<float>(timeStep).count();
-                                    position.value += speed * deltaTime;
-                                }
-                            }
-                        });
-                    }
-                }
-            });
-        });
-
         const auto animationNodeId = pipelineRepo->addTriggerNode(nullId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context) mutable
         {
             static std::chrono::nanoseconds animationStepTimeAccumulator { 0 };
 
             constexpr int maxUpdatesPerFrame = 5;
-            constexpr auto fixedDeltaTime = std::chrono::nanoseconds { 33333333 / 2 }; // 1/30 of a second
+            constexpr auto fixedDeltaTime = std::chrono::nanoseconds { 33333333 }; // 1/30 of a second
             entities::NodeUpdateCounter updateCounter { 0, fixedDeltaTime };
             animationStepTimeAccumulator += timeStep;
 
@@ -225,7 +179,7 @@ namespace dory::game
                 animationStepTimeAccumulator -= fixedDeltaTime;
             }
 
-            if(updateCounter.count > 0)
+            if(updateCounter.count > maxUpdatesPerFrame)
             {
                 animationStepTimeAccumulator = {}; // reset accumulator to 0 in case if timeStep is too big
             }
@@ -245,13 +199,12 @@ namespace dory::game
             }
         });
 
+        pipelineRepo->addNode(nullId, libraryHandle, std::make_shared<ViewController>(_registry)); //render views
         pipelineRepo->addNode(nullId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context) {
             _registry.get<IStandardIODevice>([](IStandardIODevice* ioDevice){
                 ioDevice->flush();
             });
         });
-
-        pipelineRepo->addNode(nullId, libraryHandle, std::make_shared<ViewController>(_registry)); //render views
         pipelineRepo->addNode(nullId, libraryHandle, std::make_shared<WindowSystemController>(_registry)); //poll the window events after rendering
     }
 
