@@ -519,7 +519,9 @@ namespace dory::core::devices
 
     void OpenglGpuDevice::drawFrame(const Frame& frame, profiling::Profiling& profiling)
     {
-        if(auto* currentFrame = profiling::getCurrentFrame(profiling))
+        resources::profiling::pushTimeSlice(profiling, "OpenglGpuDevice::drawFrame - setup", std::chrono::steady_clock::now());
+
+        /*if(auto* currentFrame = profiling::getCurrentFrame(profiling))
         {
             GLint framebufferID;
             glGetIntegerv(GL_FRAMEBUFFER_BINDING, &framebufferID);
@@ -531,10 +533,12 @@ namespace dory::core::devices
             GLint drawBuffer;
             glGetIntegerv(GL_DRAW_BUFFER, &drawBuffer);
             currentFrame->drawFrameBufferIndex = drawBuffer == GL_BACK;
-        }
+        }*/
 
+        resources::profiling::pushTimeSlice(profiling, "OpenglGpuDevice::drawFrame - enable depth test", std::chrono::steady_clock::now());
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL);
+        resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //enable depth test
 
         glClearColor(frame.clearColor.x, frame.clearColor.y, frame.clearColor.z, frame.clearColor.w);
 
@@ -548,6 +552,8 @@ namespace dory::core::devices
         ModelUniforms modelUniforms;
 
         uniforms.viewProjectionTransform = frame.viewProjectionTransform;
+
+        resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //setup
 
         resources::profiling::pushTimeSlice(profiling, "OpenglGpuDevice::drawFrame - draw meshes", std::chrono::steady_clock::now());
 
@@ -568,9 +574,9 @@ namespace dory::core::devices
 
     void OpenglGpuDevice::completeFrame(const Frame& frame, profiling::Profiling& profiling)
     {
-        resources::profiling::pushTimeSlice(profiling, "OpenglGpuDevice::completeFrame - glFinish", std::chrono::steady_clock::now());
+        /*resources::profiling::pushTimeSlice(profiling, "OpenglGpuDevice::completeFrame - glFinish", std::chrono::steady_clock::now());
         glFinish();
-        resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //glFinish
+        resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //glFinish*/
     }
 
     bool OpenglGpuDevice::getFrontBufferImage(const entities::View& view, assets::Image& image)
@@ -672,6 +678,7 @@ namespace dory::core::devices
                 faceMode = GL_LINE;
                 glDisable(GL_CULL_FACE);
 
+                //TODO: move multisampling settings to material
                 glEnable(GL_MULTISAMPLE);
                 glEnable(GL_LINE_SMOOTH);
             }
@@ -714,7 +721,5 @@ namespace dory::core::devices
         {
             glDrawArrays(GL_TRIANGLES, 0, (GLsizei)glMesh->vertexCount);
         }
-
-        glFlush();//TODO: practically this command is not needed
     }
 }

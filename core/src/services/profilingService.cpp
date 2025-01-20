@@ -34,7 +34,7 @@ namespace dory::core::services
             }
 
             const auto averageFrameDuration = totalDuration / capture.frames.size();
-            const auto maxDeviationTime = std::chrono::duration_cast<nanoseconds>(averageFrameDuration * 3.f);
+            const auto maxDeviationTime = std::chrono::duration_cast<nanoseconds>(averageFrameDuration * 0.2f);
             auto nonAverageFrames = std::vector<std::size_t>{};
 
             for(std::size_t i = 0; i < capture.frames.size(); ++i)

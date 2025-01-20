@@ -15,6 +15,16 @@ namespace dory::core::services
     using namespace services;
     using namespace std::chrono;
 
+    void busyWait(std::chrono::milliseconds duration) {
+        // Record the start time
+        auto start = std::chrono::high_resolution_clock::now();
+
+        // Keep looping until the specified duration has elapsed
+        while (std::chrono::high_resolution_clock::now() - start < duration) {
+            // Optionally, do something lightweight here if needed
+        }
+    }
+
     LoopService::LoopService(Registry& registry):
         _registry(registry)
     {}
@@ -34,6 +44,8 @@ namespace dory::core::services
             const auto fpsInterval = seconds{1};
             std::size_t frameCounter = 1;
             std::size_t fps = 0;
+
+            //core::resources::profiling::startNewCapture(context.profiling, context.profiling.captureIdCounter++, 100);
 
             steady_clock::time_point lastTimestamp = steady_clock::now();
 
@@ -56,6 +68,8 @@ namespace dory::core::services
                             profilingService->analyze(*capture);
                         }
                         profiling::removeCurrentCapture(context.profiling);
+
+                        core::resources::profiling::startNewCapture(context.profiling, context.profiling.captureIdCounter++, 100);
                     }
                     else
                     {
@@ -65,6 +79,10 @@ namespace dory::core::services
                         }
                     }
                 }
+
+                /*profiling::pushTimeSlice(context.profiling, "wait", steady_clock::now());
+                busyWait(std::chrono::milliseconds{ 5 });
+                profiling::popTimeSlice(context.profiling, steady_clock::now());*/
 
                 if (frameTime > milliseconds(250)) {
                     frameTime = milliseconds(250);
@@ -80,6 +98,10 @@ namespace dory::core::services
                     if(auto logger = _registry.get<ILogService>())
                     {
                         logger->information(fmt::format("FPS: {}", fps));
+                        if(auto* capture = core::resources::profiling::getCurrentCapture(context.profiling))
+                        {
+                            capture->done = true;
+                        }
                     }
                     fps = 0;
                 }
@@ -88,28 +110,6 @@ namespace dory::core::services
                 {
                     profiling::pushTimeSlice(context.profiling, "update", steady_clock::now());
                     pipeline->update(context, frameTime);
-                    profiling::popTimeSlice(context.profiling, steady_clock::now());
-                }
-
-                if(auto viewService = _registry.get<IViewService>())
-                {
-                    profiling::pushTimeSlice(context.profiling, "rendering", steady_clock::now());
-
-                    steady_clock::time_point now = steady_clock::now();
-
-                    float deltaTime = context.viewStatesUpdateTimeDelta.count() > 0 ? context.viewStatesUpdateTimeDelta.count() : 1.f;
-                    float alpha = context.viewStatesUpdateTime.count() / deltaTime;
-                    alpha = glm::clamp(alpha, 0.0f, 1.0f);
-                    context.viewStatesUpdateTime += frameTime;
-
-                    if(auto* frame = profiling::getCurrentFrame(context.profiling))
-                    {
-                        frame->viewStates.push_back(context.viewStates);
-                        frame->alpha = alpha;
-                    }
-
-                    viewService->updateViews(context.viewStates, alpha, context.profiling);
-
                     profiling::popTimeSlice(context.profiling, steady_clock::now());
                 }
 

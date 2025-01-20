@@ -96,9 +96,9 @@ namespace dory::core::services::graphics
                 }
             }
 
-            resources::profiling::pushTimeSlice(profiling, "Renderer::draw - set window context", std::chrono::steady_clock::now());
+            /*resources::profiling::pushTimeSlice(profiling, "Renderer::draw - set window context", std::chrono::steady_clock::now());
             windowService->setCurrentWindow(window);
-            resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //Renderer::draw - set window context
+            resources::profiling::popTimeSlice(profiling,  std::chrono::steady_clock::now()); //Renderer::draw - set window context*/
 
             resources::profiling::pushTimeSlice(profiling, "Renderer::draw - draw", std::chrono::steady_clock::now());
             gpuDevice->drawFrame(frame, profiling);

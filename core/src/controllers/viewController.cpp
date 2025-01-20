@@ -1,11 +1,16 @@
 #include <dory/core/registry.h>
 #include <dory/core/controllers/viewController.h>
+#include "dory/core/resources/profiling.h"
 
 namespace dory::core::controllers
 {
     ViewController::ViewController(Registry &registry):
         _registry(registry)
     {}
+
+    using namespace resources;
+    using namespace services;
+    using namespace std::chrono;
 
     bool ViewController::initialize(resources::IdType referenceId, resources::DataContext& context)
     {
@@ -19,10 +24,24 @@ namespace dory::core::controllers
 
     void ViewController::update(resources::IdType referenceId, const generic::model::TimeSpan& timeStep, resources::DataContext& context)
     {
-        /*auto viewService = _registry.get<services::IViewService>();
-        if(viewService)
+        if(auto viewService = _registry.get<IViewService>())
         {
-            viewService->updateViews(context);
-        }*/
+            profiling::pushTimeSlice(context.profiling, "rendering", steady_clock::now());
+
+            float deltaTime = context.viewStatesUpdateTimeDelta.count() > 0 ? context.viewStatesUpdateTimeDelta.count() : 1.f;
+            float alpha = context.viewStatesUpdateTime.count() / deltaTime;
+            alpha = glm::clamp(alpha, 0.0f, 1.0f);
+            context.viewStatesUpdateTime += timeStep;
+
+            if(auto* frame = profiling::getCurrentFrame(context.profiling))
+            {
+                frame->viewStates.push_back(context.viewStates);
+                frame->alpha = alpha;
+            }
+
+            viewService->updateViews(context.viewStates, /*alpha*/1.f, context.profiling);
+
+            profiling::popTimeSlice(context.profiling, steady_clock::now());
+        }
     }
 }

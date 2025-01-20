@@ -86,7 +86,7 @@ namespace dory::game
             core::resources::entities::View* mainView {};
 
             _registry.get<dory::core::services::IWindowService>([&](dory::core::services::IWindowService* windowService) {
-                auto windowParameters = core::resources::WindowParameters{ 800, 600, "dory game", graphicalContext->id, 16, true, false };
+                auto windowParameters = core::resources::WindowParameters{ 800, 600, "dory game", graphicalContext->id, 16, false, false };
                 auto window = windowService->createWindow(windowParameters, core::resources::WindowSystem::glfw);
                 if(window)
                 {
@@ -164,13 +164,13 @@ namespace dory::game
                 }
             }
 
-            _registry.get<core::devices::ITerminalDevice>([](core::devices::ITerminalDevice* terminalDevice) {
+            /*_registry.get<core::devices::ITerminalDevice>([](core::devices::ITerminalDevice* terminalDevice) {
                 terminalDevice->enterCommandMode();
-            });
+            });*/
 
             //Test scene
             loadAssets(context, mainWindow, graphicalContext);
-            buildScene(context, *mainView);
+            buildScene2(context, *mainView);
             if(auto viewService = _registry.get<core::services::IViewService>())
             {
                 viewService->updateViewsState(context.viewStates);
@@ -469,7 +469,7 @@ namespace dory::game
                     view.cameraId = sceneService->addObject(*scene, core::resources::objects::SceneObject {
                             "camera",
                             core::resources::nullId,
-                            { { 0.f, 0.f, 0.f }, glm::quat{} }
+                            { { -1.f, 0.f, 0.f }, glm::quat{} }
                     });
                     sceneService->addComponent(view.cameraId, *scene, core::resources::scene::components::Mesh{ pointMeshId });
                     sceneService->addComponent(view.cameraId, *scene, core::resources::scene::components::Material{ 1 });
