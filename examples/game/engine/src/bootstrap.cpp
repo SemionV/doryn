@@ -234,7 +234,7 @@ namespace dory::game
                 animationStepTimeAccumulator -= fixedDeltaTime;
             }
 
-            if(updateCounter.count > maxUpdatesPerFrame)
+            if(updateCounter.count == maxUpdatesPerFrame)
             {
                 animationStepTimeAccumulator = {}; // reset accumulator to 0 in case if timeStep is too big
             }

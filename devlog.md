@@ -1,6 +1,10 @@
 # Development log
 
 Tasks:
+* Unit Tests:
+  * Pipeline update
+  * Profiling API
+  * View state blending
 * Profiling
   * Frame stream
   * Conditional compilation of Profiling feature into the resulting binaries
