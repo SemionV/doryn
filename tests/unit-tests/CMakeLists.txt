@@ -7,10 +7,11 @@ add_executable(${PROJECT_NAME}
         graphics/meshAssetBinderTests.cpp
         camera.cpp
         graphics/geometry.cpp
-        pipelineTests.cpp)
+        pipelineServiceTests.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-core)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 AddGoogleTests(${PROJECT_NAME})
 if(DORY_TEST_COVERAGE)

@@ -27,6 +27,7 @@ namespace dory::core::resources::entities
         std::optional<generic::extension::ResourceHandle<UpdateTriggerType>> updateTrigger {};
         IdType parentNodeId {};
         std::string name {};
+        bool skipUpdate {};
 
         PipelineNode() = default;
 

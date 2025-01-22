@@ -29,9 +29,14 @@ namespace dory::core::services
             auto stack = std::vector<QueueItem> { { nullId } }; //put nullId item on top of the tree
             auto nodeUpdates = std::unordered_map<IdType, entities::NodeUpdateCounter>{};
 
-            for(std::size_t i = 0; i < nodes.size(); ++i)
+            entities::PipelineNode lastNode {};
+            lastNode.skipUpdate = true;
+            lastNode.parentNodeId = nullId;
+            const size_t size = nodes.size();
+
+            for(std::size_t i = 0; i <= size; ++i)
             {
-                auto& node = nodes[i];
+                auto& node = i < size ? nodes[i] : lastNode;
 
                 //Find how many levels of hierarchy the parent node is higher the current node
                 std::size_t levels = 0;
@@ -71,6 +76,8 @@ namespace dory::core::services
                         repeatBranchUpdate = true;
                         break;
                     }
+
+                    nodeUpdates.erase(id);
                 }
 
                 if(repeatBranchUpdate)
@@ -79,6 +86,7 @@ namespace dory::core::services
                 }
 
                 entities::NodeUpdateCounter updateCounter { 0, timeStep };
+
                 if(auto it = nodeUpdates.find(node.parentNodeId); it != nodeUpdates.end())
                 {
                     updateCounter.deltaTime = it->second.deltaTime;
@@ -89,7 +97,7 @@ namespace dory::core::services
                     updateCounter = it->second;
                 }
 
-                if(updateCounter.count == 0)
+                if(updateCounter.count == 0 && !node.skipUpdate)
                 {
                     if(node.updateTrigger)
                     {
@@ -97,7 +105,17 @@ namespace dory::core::services
                         //continue to the next node in the pipeline
                         if(auto updateTrigger = node.updateTrigger->lock())
                         {
-                            updateCounter = (*updateTrigger)(node.id, updateCounter.deltaTime, context);
+                            try
+                            {
+                                updateCounter = (*updateTrigger)(node.id, updateCounter.deltaTime, context);
+                            }
+                            catch(const std::exception& e)
+                            {
+                                if(auto logger = _registry.get<ILogService>())
+                                {
+                                    logger->error(fmt::format("Triggering node {}({}): {}", node.name, node.id, e.what()));
+                                }
+                            }
                         }
                     }
                     else

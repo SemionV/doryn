@@ -10,8 +10,8 @@ namespace dory::core
     class IController: public generic::Interface
     {
     public:
-        virtual bool initialize(resources::IdType referenceId, resources::DataContext& context) = 0;
-        virtual void stop(resources::IdType referenceId, resources::DataContext& context) = 0;
-        virtual void update(resources::IdType referenceId, const generic::model::TimeSpan& timeStep, resources::DataContext& context) = 0;
+        virtual bool initialize(resources::IdType nodeId, resources::DataContext& context) = 0;
+        virtual void stop(resources::IdType nodeId, resources::DataContext& context) = 0;
+        virtual void update(resources::IdType nodeId, const generic::model::TimeSpan& timeStep, resources::DataContext& context) = 0;
     };
 }

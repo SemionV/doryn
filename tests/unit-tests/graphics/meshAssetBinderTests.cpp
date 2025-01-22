@@ -3,10 +3,11 @@
 
 #include <dory/core/registry.h>
 #include <dory/core/services/graphics/meshAssetBinder.h>
-#include "dory/core/devices/iGpuDevice.h"
 #include <dory/core/repositories/assets/iMeshRepository.h>
 #include <dory/core/repositories/bindings/iMeshBindingRepository.h>
 #include <dory/core/repositories/bindings/iBufferBindingRepository.h>
+
+#include "mocks/gpuDevice.h"
 
 using namespace dory;
 using namespace dory::core;
@@ -22,23 +23,6 @@ using namespace dory::core::resources::assets;
 using namespace dory::core::resources::entities;
 using namespace dory::core::resources::objects;
 using namespace testing;
-
-class GpuDeviceMock: public IGpuDevice
-{
-public:
-    MOCK_METHOD(void, connect, (DataContext& context));
-    MOCK_METHOD(void, disconnect, (DataContext& context));
-    MOCK_METHOD(bool, allocateBuffer, (BufferBinding* bufferBinding, std::size_t size));
-    MOCK_METHOD(void, deallocateBuffer, (BufferBinding* bufferBinding));
-    MOCK_METHOD(void, writeData, (BufferBinding* bufferBinding, std::size_t offset, std::size_t size, const void* data));
-    MOCK_METHOD(void, bindMesh, (MeshBinding* meshBinding, const BufferBinding* vertexBuffer, const BufferBinding* indexBuffer));
-    MOCK_METHOD(void, bindShader, (const std::string& sourceCode, resources::assets::ShaderType type, ShaderBinding* shaderBinding));
-    MOCK_METHOD(void, bindMaterial, (MaterialBinding* materialBinding, const std::vector<ShaderBinding*>& shaders));
-    MOCK_METHOD(void, drawFrame, (const Frame& frame, profiling::Profiling& profiling));
-    MOCK_METHOD(void, completeFrame, (const Frame& frame, profiling::Profiling& profiling));
-    MOCK_METHOD(bool, getFrontBufferImage, (const resources::entities::View& view, resources::assets::Image& image));
-    MOCK_METHOD(bool, getBackBufferImage, (const resources::entities::View& view, resources::assets::Image& image));
-};
 
 template<typename TInterface, typename TEntity = TInterface::EntityType>
 class EntityRepositoryMock: public TInterface
