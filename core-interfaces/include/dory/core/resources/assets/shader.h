@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../entity.h"
+#include <filesystem>
 
 namespace dory::core::resources::assets
 {

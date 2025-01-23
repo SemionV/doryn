@@ -42,8 +42,7 @@ FetchContent_MakeAvailable(spdlog)
 set(CMAKE_CXX_FLAGS "${SAVED_CMAKE_CXX_FLAGS}")
 
 FetchContent_Declare(reflcpp
-        GIT_REPOSITORY https://github.com/veselink1/refl-cpp.git
-        GIT_TAG v0.12.4)
+        GIT_REPOSITORY https://github.com/veselink1/refl-cpp.git)
 FetchContent_MakeAvailable(reflcpp)
 
 FetchContent_Declare(glfw

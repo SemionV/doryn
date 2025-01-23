@@ -3,6 +3,7 @@
 #include <dory/generic/baseTypes.h>
 #include <dory/core/resources/dataContext.h>
 #include <dory/core/resources/scene/scene.h>
+#include <dory/core/resources/scene/sceneDto.h>
 
 namespace dory::core::services
 {

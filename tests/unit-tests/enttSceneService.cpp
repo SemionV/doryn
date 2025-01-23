@@ -9,7 +9,6 @@ namespace resources = dory::core::resources;
 namespace objects = resources::objects;
 namespace scene = resources::scene;
 namespace services = dory::core::services;
-namespace math = dory::math;
 namespace components = scene::components;
 
 struct TestSceneContext

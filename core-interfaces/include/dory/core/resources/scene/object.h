@@ -2,6 +2,7 @@
 
 #include "../id.h"
 #include <vector>
+#include <string>
 #include <unordered_map>
 #include <dory/math/linearAlgebra.h>
 

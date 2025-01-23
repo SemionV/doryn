@@ -1,6 +1,5 @@
 #pragma once
 
-#include <dory/math/linearAlgebra.h>
 #include "../id.h"
 #include "transform.h"
 #include <string>

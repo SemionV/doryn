@@ -8,7 +8,7 @@ REFL_TYPE(dory::core::resources::objects::MaterialProperties)
         REFL_FIELD(color)
         REFL_FIELD(color2)
         REFL_FIELD(color3)
-REFL_END
+REFL_END;
 
 REFL_TYPE(dory::core::resources::bindings::uniforms::StaticUniforms)
         REFL_FIELD(material)

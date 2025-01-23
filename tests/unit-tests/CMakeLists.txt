@@ -7,7 +7,8 @@ add_executable(${PROJECT_NAME}
         graphics/meshAssetBinderTests.cpp
         camera.cpp
         graphics/geometry.cpp
-        pipelineServiceTests.cpp)
+        pipelineServiceTests.cpp
+        serialization.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-core)
