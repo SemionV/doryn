@@ -198,7 +198,6 @@ TEST(AssetBinder, bind)
     auto mesh = Mesh
     {
         1,
-        nullId, //TODO: test that material is bound properly
         3,
         Vectors<float>{ 2, std::vector<float>{ 1.f, 1.f,  -1.f, 1.f,  0.f, -1.f } },
         Vectors<float>{ 3, std::vector<float>{ 0.f, 0.f, 1.f,  0.f, 0.f, 1.f,  0.f, 0.f, 1.f } },
@@ -215,7 +214,6 @@ TEST(AssetBinder, bindMeshWithFewerAttributes)
     auto mesh = Mesh
     {
         1,
-        nullId,
         3,
         Vectors<float>{ 2, std::vector<float>{ 1.f, 1.f,  -1.f, 1.f,  0.f, -1.f } },
         Vectors<float>{},

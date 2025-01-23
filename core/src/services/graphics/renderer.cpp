@@ -51,6 +51,7 @@ namespace dory::core::services::graphics
         auto meshBindingRepository = _registry.get<IMeshBindingRepository>(graphicalContext.graphicalSystem);
         auto materialBindingRepository = _registry.get<IMaterialBindingRepository>(graphicalContext.graphicalSystem);
         auto windowService = _registry.get<services::IWindowService>();
+        auto logger = _registry.get<ILogService>();
 
         if(gpuDevice && meshBindingRepository && materialBindingRepository && windowService)
         {
@@ -63,35 +64,46 @@ namespace dory::core::services::graphics
                 if(graphicalContext.meshBindings.contains(object.meshId))
                 {
                     IdType bindingId = graphicalContext.meshBindings.at(object.meshId);
-                    auto* meshBinding = meshBindingRepository->get(bindingId);
-                    if(meshBinding)
+                    if(auto* meshBinding = meshBindingRepository->get(bindingId))
                     {
-                        auto* material = materialBindingRepository->get(meshBinding->materialBindingId);
+                        MaterialBinding* material = nullptr;
 
-                        if(!frame.meshMap.contains(material))
+                        if(auto matIt = graphicalContext.materialBindings.find(object.materialId); matIt != graphicalContext.materialBindings.end())
                         {
-                            frame.meshMap[material] = {};
+                            material = materialBindingRepository->get(matIt->second);
                         }
 
-                        objects::Transform transform {};
-
-                        auto prevObjectIt = viewState.previous.objects.find(objectId);
-                        if(prevObjectIt != viewState.previous.objects.end())
+                        if(material)
                         {
-                            auto& prevTransform = prevObjectIt->second.transform;
+                            if(!frame.meshMap.contains(material))
+                            {
+                                frame.meshMap[material] = {};
+                            }
 
-                            transform.scale = glm::mix(prevTransform.scale, object.transform.scale, alpha);
-                            transform.rotation = glm::slerp(prevTransform.rotation, object.transform.rotation, alpha);
-                            transform.position = glm::mix(prevTransform.position, object.transform.position, alpha);
+                            objects::Transform transform {};
+
+                            auto prevObjectIt = viewState.previous.objects.find(objectId);
+                            if(prevObjectIt != viewState.previous.objects.end())
+                            {
+                                auto& prevTransform = prevObjectIt->second.transform;
+
+                                transform.scale = glm::mix(prevTransform.scale, object.transform.scale, alpha);
+                                transform.rotation = glm::slerp(prevTransform.rotation, object.transform.rotation, alpha);
+                                transform.position = glm::mix(prevTransform.position, object.transform.position, alpha);
+                            }
+                            else
+                            {
+                                transform.scale = object.transform.scale;
+                                transform.rotation = object.transform.rotation;
+                                transform.position = object.transform.position;
+                            }
+
+                            frame.meshMap[material].emplace_back(MeshItem{ meshBinding, getTransformMatrix(transform) });
                         }
-                        else
+                        else if(logger)
                         {
-                            transform.scale = object.transform.scale;
-                            transform.rotation = object.transform.rotation;
-                            transform.position = object.transform.position;
+                            logger->error(fmt::format("Material {} is not found for mesh {}", object.materialId, object.meshId));
                         }
-
-                        frame.meshMap[material].emplace_back(MeshItem{ meshBinding, getTransformMatrix(transform) });
                     }
                 }
             }

@@ -170,7 +170,7 @@ namespace dory::game
 
             //Test scene
             loadAssets(context, mainWindow, graphicalContext);
-            buildScene2(context, *mainView);
+            buildScene(context, *mainView);
             if(auto viewService = _registry.get<core::services::IViewService>())
             {
                 viewService->updateViewsState(context.viewStates);
@@ -218,6 +218,7 @@ namespace dory::game
                         core::resources::assets::PolygonMode::Wireframe
                 });
                 materialId = material->id;
+                materialRepo->setName(materialId, "wireframe");
 
                 auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::shader);
                 if(assetBinder)
@@ -252,6 +253,7 @@ namespace dory::game
                         { vertexShaderId, fragmentShaderId }
                 });
                 materialGouraudId = material->id;
+                materialRepo->setName(materialGouraudId, "gouraud");
 
                 auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::shader);
                 if(assetBinder)
@@ -271,7 +273,6 @@ namespace dory::game
             if(meshRepo)
             {
                 auto mesh = meshRepo->insert(core::resources::assets::Mesh{});
-                mesh->materialId = materialGouraudId;
                 mesh->positions.componentsCount = 2;
                 mesh->positions.components = {-1.f, 0.f,  0.f, -1.f,  0.f, 1.f,};
                 mesh->vertexCount = mesh->positions.components.size() / mesh->positions.componentsCount;
@@ -294,7 +295,6 @@ namespace dory::game
                 meshGenerator->triangle(1.f, -0.5f, *mesh);
                 //meshGenerator->rectangle(0.5f, 0.5f, *mesh);
                 //meshGenerator->cube(0.5f, *mesh);
-                mesh->materialId = materialId;
 
                 /*mesh->colors.componentsCount = 4;
                 mesh->colors.components = {1.f,0.f,0.f,1.f, 0.f,1.f,0.f,1.f, 0.f,0.f,1.f,1.f};*/
@@ -302,7 +302,6 @@ namespace dory::game
                 auto meshPoint = meshRepo->insert(core::resources::assets::Mesh{});
                 meshRepo->setName(meshPoint->id, "point");
                 meshGenerator->rectangle(0.1f, 0.1f, *meshPoint);
-                meshPoint->materialId = materialId;
 
                 auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::mesh);
                 if(assetBinder)
@@ -317,6 +316,7 @@ namespace dory::game
         core::resources::scene::Scene* buildScene(core::resources::DataContext& context, core::resources::entities::View& view)
         {
             auto meshRepo = _registry.get<core::repositories::assets::IMeshRepository>();
+            auto materialRepo = _registry.get<core::repositories::assets::IMaterialRepository>();
             auto sceneRepo = _registry.get<core::repositories::ISceneRepository>();
             auto sceneService = _registry.get<core::services::ISceneService>();
 
@@ -372,7 +372,7 @@ namespace dory::game
 
                     auto cubeObjectId = sceneService->addObject(*scene, cubeObject);
                     sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Mesh{ cubeMeshId });
-                    sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Material{ 1 }); //TODO: use proper material id(get by material name)
+                    sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::Material{ materialRepo->getId("wireframe") });
                     float rAccelerationDistance = glm::radians(30.f);
                     float rStartVelocity = 0.0f;
                     float rHighVelocity = glm::radians(45.f);
@@ -399,7 +399,7 @@ namespace dory::game
                     };
                     auto pointObjectId = sceneService->addObject(*scene, pointObject);
                     sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Mesh{ pointMeshId });
-                    sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Material{ 1 }); //TODO: use proper material id(get by material name)
+                    sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Material{ materialRepo->getId("wireframe") });
 
                     float accelerationDistance = 0.3f;
                     float startVelocity = 0.0f;
@@ -443,7 +443,7 @@ namespace dory::game
                     };
                     auto pointObjectId = sceneService->addObject(*scene, pointObject);
                     sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Mesh{ pointMeshId });
-                    sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Material{ 1 }); //TODO: use proper material id(get by material name)
+                    sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::Material{ materialRepo->getId("wireframe") });
                 }
 
                 return scene;
@@ -455,6 +455,7 @@ namespace dory::game
         core::resources::scene::Scene* buildScene2(core::resources::DataContext& context, core::resources::entities::View& view)
         {
             auto meshRepo = _registry.get<core::repositories::assets::IMeshRepository>();
+            auto materialRepo = _registry.get<core::repositories::assets::IMaterialRepository>();
             auto sceneRepo = _registry.get<core::repositories::ISceneRepository>();
             auto sceneService = _registry.get<core::services::ISceneService>();
 
@@ -472,7 +473,7 @@ namespace dory::game
                             { { 0.f, 0.f, 0.f }, glm::quat{} }
                     });
                     sceneService->addComponent(view.cameraId, *scene, core::resources::scene::components::Mesh{ pointMeshId });
-                    sceneService->addComponent(view.cameraId, *scene, core::resources::scene::components::Material{ 1 });
+                    sceneService->addComponent(view.cameraId, *scene, core::resources::scene::components::Material{ materialRepo->getId("wireframe") });
                 }
 
                 return scene;

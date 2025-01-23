@@ -23,7 +23,6 @@ namespace dory::core::resources::bindings
     struct MeshBinding: Entity<>
     {
         IdType meshId;
-        IdType materialBindingId {};
         IdType vertexBufferId;
         std::size_t vertexBufferOffset {};
         std::size_t vertexCount;

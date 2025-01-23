@@ -7,6 +7,9 @@ namespace dory::game
 {
     class DemoSceneBuilder: public core::services::ISceneBuilder, public core::DependencyResolver
     {
+    private:
+        void loadAssets(core::resources::DataContext& context);
+
     public:
         explicit DemoSceneBuilder(core::Registry& registry);
 

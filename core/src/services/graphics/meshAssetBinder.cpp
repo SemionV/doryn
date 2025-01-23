@@ -46,11 +46,6 @@ namespace dory::core::services::graphics
             {
                 meshBinding->meshId = mesh->id;
 
-                if(graphicalContext.materialBindings.contains(mesh->materialId))
-                {
-                    meshBinding->materialBindingId = graphicalContext.materialBindings[mesh->materialId];
-                }
-
                 uploadMeshData(graphicalContext, mesh, meshBinding, mesh->positions, mesh->normals,
                                mesh->textureCoordinates, mesh->colors);
 
