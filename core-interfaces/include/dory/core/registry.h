@@ -59,6 +59,7 @@
 #include <dory/core/services/iLibraryService.h>
 #include <dory/core/services/files/iImageFileService.h>
 #include <dory/core/services/iProfilingService.h>
+#include <dory/core/services/iSceneBuilder.h>
 
 namespace dory::core
 {

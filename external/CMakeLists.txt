@@ -84,3 +84,9 @@ FetchContent_Declare(
         GIT_REPOSITORY    https://github.com/cameron314/concurrentqueue
 )
 FetchContent_MakeAvailable(concurrentqueue)
+
+FetchContent_Declare(
+        magic_enum
+        GIT_REPOSITORY    https://github.com/Neargye/magic_enum.git
+)
+FetchContent_MakeAvailable(magic_enum)

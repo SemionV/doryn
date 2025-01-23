@@ -1,5 +1,5 @@
 #include <dory/core/registry.h>
-#include "cameraService.h"
+#include <dory/game/logic/cameraService.h>
 #include <dory/core/resources/scene/enttScene.h>
 #include <dory/core/resources/scene/components.h>
 

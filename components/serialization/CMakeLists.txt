@@ -6,4 +6,5 @@ target_link_libraries(${DORY_MODULE_NAME} INTERFACE
         dory-generic
         nlohmann_json::nlohmann_json
         ryml::ryml
-        refl-cpp)
+        refl-cpp
+        magic_enum::magic_enum)

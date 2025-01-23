@@ -1,21 +1,27 @@
 #pragma once
 
 #include <unordered_map>
+#include <vector>
 #include <dory/core/resources/assets/shader.h>
+#include <dory/core/resources/assets/material.h>
 #include <dory/core/resources/objects/transform.h>
 #include <dory/core/resources/objects/materialProperties.h>
+#include <dory/core/resources/scene/components.h>
 
 namespace dory::core::resources::scene::dto
 {
     struct Shader
     {
+        assets::ShaderType type {};
         std::string filename {};
     };
 
     struct Material
     {
-        std::unordered_map<assets::ShaderType, std::string> shaders {};
+        std::vector<std::string> baseMaterials {};
+        std::vector<std::string> shaders {};
         objects::MaterialProperties properties;
+        assets::PolygonMode polygonMode;
     };
 
     struct Mesh
@@ -30,11 +36,19 @@ namespace dory::core::resources::scene::dto
         std::unordered_map<std::string, Mesh> meshes {};
     };
 
+    struct ObjectComponents
+    {
+        std::optional<components::LinearMovement> linearMovement;
+        std::optional<components::RotationMovement> rotationMovement;
+    };
+
     struct Object
     {
         objects::Transform transform {};
         std::string mesh {};
         std::string material {};
+        ObjectComponents components;
+        std::unordered_map<std::string, Object> children {};
     };
 
     struct Scene

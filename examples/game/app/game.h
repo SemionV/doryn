@@ -4,7 +4,7 @@
 #include <dory/core/resources/scene/components.h>
 #include <dory/core/resources/scene/enttScene.h>
 #include <dory/core/resources/assetType.h>
-#include "logic/mainSceneKeyboardHandler.h"
+#include <dory/game/logic/mainSceneKeyboardHandler.h>
 
 namespace dory::game
 {
@@ -86,7 +86,7 @@ namespace dory::game
             core::resources::entities::View* mainView {};
 
             _registry.get<dory::core::services::IWindowService>([&](dory::core::services::IWindowService* windowService) {
-                auto windowParameters = core::resources::WindowParameters{ 800, 800, "dory game", graphicalContext->id, 16, false, false };
+                auto windowParameters = core::resources::WindowParameters{ 800, 800, "dory game", graphicalContext->id, 16, true, true };
                 auto window = windowService->createWindow(windowParameters, core::resources::WindowSystem::glfw);
                 if(window)
                 {

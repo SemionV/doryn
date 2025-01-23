@@ -3,6 +3,7 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <magic_enum/magic_enum.hpp>
 
 class IController
 {
@@ -55,4 +56,79 @@ TEST(ControllerFactory, createByName)
 
     EXPECT_TRUE(controllerInstance != nullptr);
     controllerInstance->update(std::chrono::nanoseconds { 1 });
+}
+
+// 1) Define your enum class
+enum class Color
+{
+    Red,
+    Green,
+    Blue
+};
+
+enum class ToneMapping {
+#define IKAROS_ENUM_ToneMapping \
+	IKAROS_ENUM_E(None) \
+	IKAROS_ENUM_E(Uncharted2) \
+	IKAROS_ENUM_E(ACES)
+#define IKAROS_ENUM_E(_entry) _entry,
+
+	IKAROS_ENUM_ToneMapping
+
+#undef IKAROS_ENUM_E
+};
+
+template<typename TEnum>
+struct EnumTypeDescriptor
+{
+    constexpr static std::array<std::pair<TEnum, const char *>, 0> lookupTable = {};
+};
+
+template<>
+struct EnumTypeDescriptor<ToneMapping>
+{
+    constexpr static std::array lookupTable = {
+#define IKAROS_ENUM_E(_entry) std::pair{ToneMapping::_entry, #_entry},
+        IKAROS_ENUM_ToneMapping
+#undef IKAROS_ENUM_E
+    };
+};
+
+template<typename TEnum>
+constexpr std::optional<TEnum> fromString(std::string_view s)
+{
+    for (auto const& [enumVal, enumName] : EnumTypeDescriptor<TEnum>::lookupTable)
+    {
+        if (enumName == s)
+        {
+            return enumVal;
+        }
+    }
+
+    return {};
+}
+
+template<typename TEnum>
+constexpr std::string_view toString(TEnum value)
+{
+    for (auto const& [enumVal, enumName] : EnumTypeDescriptor<TEnum>::lookupTable)
+    {
+        if (enumVal == value)
+        {
+            return enumName;
+        }
+    }
+    return "Unknown";
+}
+
+constexpr std::optional<ToneMapping> choice2 = fromString<ToneMapping>("ACES");
+constexpr std::string_view name = toString(ToneMapping::Uncharted2);
+
+TEST(Enums, reflection)
+{
+    constexpr Color optionValue = magic_enum::enum_cast<Color>("Green").value();
+    constexpr std::string_view optionName = magic_enum::enum_name(Color::Blue);
+
+    EXPECT_EQ(optionValue, Color::Green);
+    EXPECT_EQ(optionName, "Blue");
 }

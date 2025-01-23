@@ -1,5 +1,5 @@
 #include <dory/core/registry.h>
-#include "mainSceneKeyboardHandler.h"
+#include <dory/game/logic/mainSceneKeyboardHandler.h>
 #include <dory/core/resources/dataContext.h>
 
 namespace dory::game::logic
