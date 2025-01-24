@@ -58,3 +58,28 @@ objects:
         value: [ 0.0, 0.0, 1.0 ]
         acceleration: 0.08
         currentVelocity: 0.2
+pipeline:
+  - node: per-frame-update
+    trigger:
+      elapsedTime:
+        milliseconds: 16.666
+    children:
+      - node: all-views-update
+        controller:
+          view: {}
+      - node: animation
+        controller:
+          animation:
+            frames: 24
+        trigger:
+          logic:
+            flag: true
+  - node: physics
+    parent: per-frame-update
+    controller:
+      physics:
+        precision: 0.00000000000001
+    trigger:
+      elapsedTime:
+        milliseconds: 33.333
+

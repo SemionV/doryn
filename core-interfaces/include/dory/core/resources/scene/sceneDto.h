@@ -20,8 +20,8 @@ namespace dory::core::resources::scene::dto
     {
         std::vector<std::string> baseMaterials {};
         std::vector<std::string> shaders {};
-        objects::MaterialProperties properties;
-        assets::PolygonMode polygonMode;
+        objects::MaterialProperties properties {};
+        assets::PolygonMode polygonMode {};
     };
 
     struct Mesh
@@ -38,8 +38,8 @@ namespace dory::core::resources::scene::dto
 
     struct ObjectComponents
     {
-        std::optional<components::LinearMovement> linearMovement;
-        std::optional<components::RotationMovement> rotationMovement;
+        std::optional<components::LinearMovement> linearMovement {};
+        std::optional<components::RotationMovement> rotationMovement {};
     };
 
     struct Object
@@ -51,11 +51,60 @@ namespace dory::core::resources::scene::dto
         std::unordered_map<std::string, Object> children {};
     };
 
+    struct PhysicsController
+    {
+        float precision {};
+    };
+
+    struct AnimationController
+    {
+        std::size_t frames {};
+    };
+
+    struct ViewController
+    {};
+
+    struct Controller
+    {
+        std::optional<PhysicsController> physics {};
+        std::optional<AnimationController> animation {};
+        std::optional<ViewController> view {};
+    };
+
+    struct ElapsedTimeTrigger
+    {
+        std::optional<float> seconds {};
+        std::optional<float> milliseconds {};
+        std::optional<float> microseconds {};
+        std::optional<float> nanoseconds {};
+    };
+
+    struct LogicTrigger
+    {
+        bool flag {};
+    };
+
+    struct Trigger
+    {
+        std::optional<ElapsedTimeTrigger> elapsedTime {};
+        std::optional<LogicTrigger> logic {};
+    };
+
+    struct Node
+    {
+        std::string node {};
+        std::string parent {};
+        Controller controller {};
+        Trigger trigger {};
+        std::vector<Node> children {};
+    };
+
     struct Scene
     {
         Assets assets;
         std::unordered_map<std::string, Object> objects {};
         std::unordered_map<std::string, std::string> cameras {};
         std::unordered_map<std::string, std::string> lights {};
+        std::vector<Node> pipeline {};
     };
 }
