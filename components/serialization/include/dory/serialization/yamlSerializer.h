@@ -2,6 +2,7 @@
 
 #include "objectVisitor.h"
 #include "yamlSerializationContext.h"
+#include <magic_enum/magic_enum.hpp>
 
 namespace dory::serialization::yaml
 {
@@ -26,6 +27,19 @@ namespace dory::serialization::yaml
             auto current = context.parents.top();
             current |= c4::yml::NodeType_e::VAL;
             writeValue(value, current, context);
+        }
+    };
+
+    struct SerializerEnumPolicy
+    {
+        template<typename T>
+        static void process(T& value, YamlContext& context)
+        {
+            auto current = context.parents.top();
+            current |= c4::yml::NodeType_e::VAL;
+
+            auto valueName = magic_enum::enum_name(value);
+            current = toRymlCStr(valueName);
         }
     };
 
@@ -117,53 +131,57 @@ namespace dory::serialization::yaml
     struct SerializerContainerPolicy: public ContainerPolicy<SerializerContainerPolicy, TreeStructureContext<ryml::NodeRef>>
     {
         template<typename TCollection>
-        inline static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
+        requires(generic::is_dynamic_collection_v<TCollection>)
+        static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
         {
             auto currentNode = parents.top();
             currentNode |= c4::yml::NodeType_e::SEQ;
             size = collection.size();
         }
 
-        template<typename TCollection, typename TKeysContainer>
-        inline static void buildDictionaryKeysList(TCollection& collection, std::stack<NodeType>& parents, TKeysContainer& keys)
+        template<typename TCollection>
+        requires(generic::is_dictionary_v<TCollection>)
+        static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
         {
             auto currentNode = parents.top();
             currentNode |= c4::yml::NodeType_e::MAP;
 
-            for(auto& pair : collection)
-            {
-                keys.emplace(pair.first);
-            }
+            size = collection.size();
         }
 
         template<typename TCollection>
-        inline static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
+        requires(generic::is_dynamic_collection_v<TCollection>)
+        static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
         {
             auto currentNode = parents.top();
             auto& item = collection[index];
 
-            auto itemNode = currentNode.append_child();
+            const auto itemNode = currentNode.append_child();
             parents.push(itemNode);
 
            return item;
         }
 
         template<typename TCollection>
-        inline static auto& getDictionaryItem(TCollection& collection, const auto& key, std::stack<NodeType>& parents)
+        requires(generic::is_dictionary_v<TCollection>)
+        static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
         {
+            auto& item = getMapItem(collection, index);
+
             auto currentNode = parents.top();
             auto itemNode = currentNode.append_child();
-            const c4::csubstr &substring = toRymlCStr(key);
-            itemNode.set_key(substring);
+            auto keyString = getKeyString(item.first);
+            itemNode.set_key(toRymlCStr(keyString));
             parents.push(itemNode);
 
-            return collection.at(std::string { key });
+            return item.second;
         }
     };
 
     struct YamlSerializationPolicies: public VisitorDefaultPolicies
     {
         using ValuePolicy = SerializerValuePolicy;
+        using EnumPolicy = SerializerEnumPolicy;
         using ObjectPolicy = SerializerObjectPolicy;
         using MemberPolicy = SerializerMemberPolicy;
         using CollectionPolicy = SerializerCollectionPolicy;

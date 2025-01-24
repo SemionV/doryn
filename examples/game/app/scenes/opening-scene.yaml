@@ -1,7 +1,7 @@
 assets:
   shaders:
     simpleVertexShader:
-      type: vertex #support enums
+      type: vertex
       filename: assets/shaders/simpleVertex
     simpleFragmentShader:
       type: fragment
@@ -10,7 +10,7 @@ assets:
     wireframeWhite:
       shaders: [ simpleVertexShader, simpleFragmentShader ]
       properties:
-        color: [ 1.0, 1.0, 1.0, 1.0 ] #support glm types
+        color: [ 1.0, 1.0, 1.0, 1.0 ] #support glm types: vec2, vec3, vec4, quat
       polygonMode: Wireframe
     wireframeRed:
       baseMaterials: [ wireframeWhite ] #support object merging

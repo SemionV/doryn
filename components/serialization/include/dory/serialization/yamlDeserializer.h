@@ -16,7 +16,8 @@ namespace dory::serialization::yaml
 
         inline static void readValue(std::string& value, ryml::NodeRef& node)
         {
-            value = std::string(node.val().str, node.val().len);
+            auto yamlValue = node.val();
+            value = std::string(yamlValue.str, yamlValue.len);
         }
 
     public:
@@ -27,6 +28,24 @@ namespace dory::serialization::yaml
             if(current.has_val())
             {
                 readValue(value, current);
+            }
+        }
+    };
+
+    struct DeserializerEnumPolicy
+    {
+        template<typename T>
+        static void process(T& value, YamlContext& context)
+        {
+            if(const auto current = context.parents.top(); current.has_val())
+            {
+                const auto yamlValue = current.val();
+                const auto enumName = std::string_view(yamlValue.str, yamlValue.len);
+
+                if(auto enumValue = magic_enum::enum_cast<T>(enumName))
+                {
+                    value = *enumValue;
+                }
             }
         }
     };
@@ -93,33 +112,31 @@ namespace dory::serialization::yaml
     struct DeserializerContainerPolicy: public ContainerPolicy<DeserializerContainerPolicy, TreeStructureContext<ryml::NodeRef>>
     {
         template<typename TCollection>
-        inline static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
+        requires(generic::is_dynamic_collection_v<TCollection>)
+        static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
         {
             auto currentNode = parents.top();
             size = currentNode.is_seq() ? currentNode.num_children() : 0;
         }
 
-        template<typename TCollection, typename TKeysContainer>
-        inline static void buildDictionaryKeysList(TCollection& collection, std::stack<NodeType>& parents, TKeysContainer& keys)
+        template<typename TCollection>
+        requires(generic::is_dictionary_v<TCollection>)
+        static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
         {
             auto currentNode = parents.top();
-
             if(currentNode.is_map())
             {
-                size_t count = currentNode.num_children();
-                for(std::size_t i = 0; i < count; ++i)
-                {
-                    auto itemNode = currentNode.at(i);
-                    auto nodeKey = itemNode.key();
-                    auto key = std::string_view(nodeKey.str, nodeKey.len);
-
-                    keys.emplace(key);
-                }
+                size = currentNode.num_children();
+            }
+            else
+            {
+                size = 0;
             }
         }
 
         template<typename TCollection>
-        inline static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
+        requires(generic::is_dynamic_collection_v<TCollection>)
+        static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
         {
             auto currentNode = parents.top();
             auto itemNode = currentNode.at(index);
@@ -129,25 +146,41 @@ namespace dory::serialization::yaml
         }
 
         template<typename TCollection>
-        inline static auto& getDictionaryItem(TCollection& collection, const auto& key, std::stack<NodeType>& parents)
+        requires(generic::is_dictionary_v<TCollection>)
+        static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
         {
-            auto currentNode = parents.top();
-            auto itemNode = currentNode.at(toRymlCStr(key));
-            parents.push(itemNode);
+            using ValueType = typename TCollection::mapped_type;
 
-            const std::string keyString { key };
-            if(collection.contains(keyString))
+            auto currentNode = parents.top();
+
+            if(currentNode.is_map())
             {
-                return collection[keyString];
+                auto itemNode = currentNode.at(index);
+                parents.push(itemNode);
+                auto nodeKey = itemNode.key();
+                const auto keyString = std::string_view(nodeKey.str, nodeKey.len);
+                const auto key = getKeyValue<TCollection>(keyString);
+
+                auto it = collection.find(key);
+                if(it != collection.end())
+                {
+                    return it->second;
+                }
+
+                if(auto result = collection.emplace(key, ValueType{}); result.second)
+                {
+                    return result.first->second;
+                }
             }
 
-            return collection[keyString] = typename TCollection::mapped_type{};
+            return collection[typename TCollection::key_type{}]; //in case if normal emplace to the dictionary did not work, we return an item for default value of the key
         }
     };
 
     struct YamlDeserializationPolicies: public VisitorDefaultPolicies
     {
         using ValuePolicy = DeserializerValuePolicy;
+        using EnumPolicy = DeserializerEnumPolicy;
         using MemberPolicy = DeserializerMemberPolicy;
         using CollectionItemPolicy = DeserializerCollectionItemPolicy;
         using ContainerPolicyType = DeserializerContainerPolicy;

@@ -15,6 +15,16 @@ namespace dory::serialization::json
         }
     };
 
+    struct SerializerEnumPolicy
+    {
+        template<typename T>
+        static void process(T& value, JsonContext& context)
+        {
+            auto current = context.parents.top();
+            *current = magic_enum::enum_name(value);
+        }
+    };
+
     struct SerializerObjectPolicy
     {
         template<typename T>
@@ -96,22 +106,14 @@ namespace dory::serialization::json
     struct SerializerContainerPolicy: public ContainerPolicy<SerializerContainerPolicy, TreeStructureContext<json*>>
     {
         template<typename TCollection>
-        inline static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
+        static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
         {
             size = collection.size();
         }
 
-        template<typename TCollection, typename TKeysContainer>
-        inline static void buildDictionaryKeysList(TCollection& collection, std::stack<NodeType>& parents, TKeysContainer& keys)
-        {
-            for(auto& pair : collection)
-            {
-                keys.emplace(pair.first);
-            }
-        }
-
         template<typename TCollection>
-        inline static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
+        requires(generic::is_dynamic_collection_v<TCollection>)
+        static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
         {
             auto currentNode = parents.top();
             auto& item = collection[index];
@@ -123,20 +125,23 @@ namespace dory::serialization::json
         }
 
         template<typename TCollection>
-        inline static auto& getDictionaryItem(TCollection& collection, const auto& key, std::stack<NodeType>& parents)
+        requires(generic::is_dictionary_v<TCollection>)
+        static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
         {
-            auto currentNode = parents.top();
+            auto& item = getMapItem(collection, index);
 
-            auto& itemNode = currentNode->operator[](key);
+            auto currentNode = parents.top();
+            auto& itemNode = currentNode->operator[](getKeyString(item.first));
             parents.push(&itemNode);
 
-            return collection.at(std::string { key });
+            return item.second;
         }
     };
 
     struct JsonSerializationPolicies: public VisitorDefaultPolicies
     {
         using ValuePolicy = SerializerValuePolicy;
+        using EnumPolicy = SerializerEnumPolicy;
         using ObjectPolicy = SerializerObjectPolicy;
         using MemberPolicy = SerializerMemberPolicy;
         using CollectionPolicy = SerializerCollectionPolicy;

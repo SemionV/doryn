@@ -1,6 +1,7 @@
 #pragma once
 
 #include <refl.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 namespace dory::reflection
 {

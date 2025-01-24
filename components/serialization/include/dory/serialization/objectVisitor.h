@@ -17,6 +17,14 @@ namespace dory::serialization
         }
     };
 
+    struct DefaultEnumPolicy
+    {
+        template<typename T, typename TContext>
+        static void process(T&& value, TContext& context)
+        {
+        }
+    };
+
     struct DefaultObjectPolicy
     {
         template<typename TContext, typename T>
@@ -102,7 +110,6 @@ namespace dory::serialization
         std::stack<TNode> parents;
         std::stack<std::size_t> collectionIndexesStack;
         std::stack<std::size_t> collectionSizesStack;
-        std::stack<std::queue<std::string_view>> dictionaryKeysStack;
 
         explicit TreeStructureContext(TNode data)
         {
@@ -120,8 +127,57 @@ namespace dory::serialization
         using ContextType = TreeStructureContext<TNode, Ts...>;
 
         template<typename TCollection>
-        requires(generic::is_dynamic_collection_v<TCollection>)
-        inline static void beginCollection(TCollection& collection, ContextType& context)
+        static auto getKeyValue(const auto& key)
+        {
+            return typename TCollection::key_type { key }; //string key
+        }
+
+        template<typename TCollection>
+        requires(std::is_enum_v<typename TCollection::key_type>)
+        static auto getKeyValue(const auto& key)
+        {
+            auto enumValue = magic_enum::enum_cast<typename TCollection::key_type>(key);
+            if(enumValue)
+            {
+                return *enumValue;
+            }
+
+            return typename TCollection::key_type{};
+        }
+
+        template<typename T>
+        static auto getKeyString(const T& key)
+        {
+            return std::string_view { key };
+        }
+
+        template<typename T>
+        requires(std::is_enum_v<T>)
+        static auto getKeyString(const T& key)
+        {
+            return magic_enum::enum_name(key);
+        }
+
+        template<typename TCollection>
+        static auto& getMapItem(TCollection& collection, const auto& index)
+        {
+            size_t currentIndex = 0;
+
+            for(const auto& pair : collection)
+            {
+                if (currentIndex == index)
+                {
+                    return pair;
+                }
+
+                ++currentIndex;
+            }
+
+            assert(false);
+        }
+
+        template<typename TCollection>
+        static void beginCollection(TCollection& collection, ContextType& context)
         {
             context.collectionIndexesStack.emplace(0);
             auto& size = context.collectionSizesStack.emplace(0);
@@ -129,15 +185,7 @@ namespace dory::serialization
         }
 
         template<typename TCollection>
-        requires(generic::is_dictionary_v<TCollection>)
-        inline static void beginCollection(TCollection& collection, ContextType& context)
-        {
-            auto& keys = context.dictionaryKeysStack.emplace();
-            TDerived::buildDictionaryKeysList(collection, context.parents, keys);
-        }
-
-        template<typename TCollection>
-        inline static auto nextItem(TCollection& collection, ContextType& context)
+        static auto nextItem(TCollection& collection, ContextType& context)
         {
             if(itemsLeft<TCollection>(context))
             {
@@ -150,23 +198,13 @@ namespace dory::serialization
         }
 
         template<typename TCollection>
-        requires(generic::is_dynamic_collection_v<TCollection>)
-        inline static bool itemsLeft(ContextType& context)
+        static bool itemsLeft(ContextType& context)
         {
             return context.collectionIndexesStack.top() < context.collectionSizesStack.top();
         }
 
         template<typename TCollection>
-        requires(generic::is_dictionary_v<TCollection>)
-        inline static bool itemsLeft(ContextType& context)
-        {
-            auto& keys = context.dictionaryKeysStack.top();
-            return !keys.empty();
-        }
-
-        template<typename TCollection>
-        requires(generic::is_dynamic_collection_v<TCollection>)
-        inline static auto& getItem(TCollection& collection, ContextType& context)
+        static auto& getItem(TCollection& collection, ContextType& context)
         {
             auto& index = context.collectionIndexesStack.top();
             auto& item = TDerived::getCollectionItem(collection, index, context.parents);
@@ -174,41 +212,24 @@ namespace dory::serialization
             return item;
         }
 
-        template<typename TCollection>
-        requires(generic::is_dictionary_v<TCollection>)
-        inline static auto& getItem(TCollection& collection, ContextType& context)
-        {
-            auto& keys = context.dictionaryKeysStack.top();
-            auto& key = keys.front();
-            keys.pop();
-
-            return TDerived::getDictionaryItem(collection, key, context.parents);
-        }
-
         template<typename T>
-        inline static void endItem(auto& item, T& collection, ContextType& context)
+        static void endItem(auto& item, T& collection, ContextType& context)
         {
             context.parents.pop();
         }
 
         template<typename TCollection>
-        requires(generic::is_dynamic_collection_v<TCollection>)
-        inline static void endCollection(TCollection& collection, ContextType& context)
+        static void endCollection(TCollection& collection, ContextType& context)
         {
             context.collectionIndexesStack.pop();
             context.collectionSizesStack.pop();
-        }
-        template<typename TCollection>
-        requires(generic::is_dictionary_v<TCollection>)
-        inline static void endCollection(TCollection& collection, ContextType& context)
-        {
-            context.dictionaryKeysStack.pop();
         }
     };
 
     struct VisitorDefaultPolicies
     {
         using ValuePolicy = DefaultValuePolicy;
+        using EnumPolicy = DefaultEnumPolicy;
         using ObjectPolicy = DefaultObjectPolicy;
         using MemberPolicy = DefaultMemberPolicy;
         using CollectionPolicy = DefaultCollectionPolicy;
@@ -225,6 +246,13 @@ namespace dory::serialization
         static void visit(T&& object, TContext& context)
         {
             TPolicies::ValuePolicy::process(std::forward<T>(object), context);
+        }
+
+        template<typename T, typename TContext>
+        requires(std::is_enum_v<std::remove_reference_t<T>>)
+        static void visit(T&& object, TContext& context)
+        {
+            TPolicies::EnumPolicy::process(std::forward<T>(object), context);
         }
 
         template<typename T, typename TContext>

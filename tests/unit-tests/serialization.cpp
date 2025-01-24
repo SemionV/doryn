@@ -5,6 +5,11 @@
 #include <gmock/gmock.h>
 #include <magic_enum/magic_enum.hpp>
 
+#include <dory/serialization/yamlDeserializer.h>
+#include <dory/serialization/yamlSerializer.h>
+#include <dory/serialization/jsonDeserializer.h>
+#include <dory/serialization/jsonSerializer.h>
+
 class IController
 {
 public:
@@ -58,71 +63,12 @@ TEST(ControllerFactory, createByName)
     controllerInstance->update(std::chrono::nanoseconds { 1 });
 }
 
-// 1) Define your enum class
 enum class Color
 {
     Red,
     Green,
     Blue
 };
-
-enum class ToneMapping {
-#define IKAROS_ENUM_ToneMapping \
-	IKAROS_ENUM_E(None) \
-	IKAROS_ENUM_E(Uncharted2) \
-	IKAROS_ENUM_E(ACES)
-#define IKAROS_ENUM_E(_entry) _entry,
-
-	IKAROS_ENUM_ToneMapping
-
-#undef IKAROS_ENUM_E
-};
-
-template<typename TEnum>
-struct EnumTypeDescriptor
-{
-    constexpr static std::array<std::pair<TEnum, const char *>, 0> lookupTable = {};
-};
-
-template<>
-struct EnumTypeDescriptor<ToneMapping>
-{
-    constexpr static std::array lookupTable = {
-#define IKAROS_ENUM_E(_entry) std::pair{ToneMapping::_entry, #_entry},
-        IKAROS_ENUM_ToneMapping
-#undef IKAROS_ENUM_E
-    };
-};
-
-template<typename TEnum>
-constexpr std::optional<TEnum> fromString(std::string_view s)
-{
-    for (auto const& [enumVal, enumName] : EnumTypeDescriptor<TEnum>::lookupTable)
-    {
-        if (enumName == s)
-        {
-            return enumVal;
-        }
-    }
-
-    return {};
-}
-
-template<typename TEnum>
-constexpr std::string_view toString(TEnum value)
-{
-    for (auto const& [enumVal, enumName] : EnumTypeDescriptor<TEnum>::lookupTable)
-    {
-        if (enumVal == value)
-        {
-            return enumName;
-        }
-    }
-    return "Unknown";
-}
-
-constexpr std::optional<ToneMapping> choice2 = fromString<ToneMapping>("ACES");
-constexpr std::string_view name = toString(ToneMapping::Uncharted2);
 
 TEST(Enums, reflection)
 {
@@ -131,4 +77,171 @@ TEST(Enums, reflection)
 
     EXPECT_EQ(optionValue, Color::Green);
     EXPECT_EQ(optionName, "Blue");
+}
+
+enum class ShaderType
+{
+    unknown,
+    vertex,
+    fragment
+};
+
+struct Shader
+{
+    std::string filename {};
+    ShaderType type {};
+};
+
+REFL_TYPE(Shader)
+    REFL_FIELD(filename)
+    REFL_FIELD(type)
+REFL_END
+
+struct Material
+{
+    std::unordered_map<ShaderType, std::string> shaders {};
+};
+
+REFL_TYPE(Material)
+    REFL_FIELD(shaders)
+REFL_END
+
+TEST(YamlDeserialization, deserializeEnumValue)
+{
+    const auto yaml = R"(
+filename: assets/shaders/simpleVertex
+type: fragment
+)";
+
+    auto shader = dory::serialization::yaml::deserialize<Shader>(yaml);
+
+    EXPECT_EQ(shader.filename, "assets/shaders/simpleVertex");
+    EXPECT_EQ(shader.type, ShaderType::fragment);
+}
+
+TEST(YamlDeserialization, deserializeInvalidEnumValue)
+{
+    const auto yaml = R"(
+filename: assets/shaders/simpleVertex
+type: geometry
+)";
+
+    auto shader = dory::serialization::yaml::deserialize<Shader>(yaml);
+
+    EXPECT_EQ(shader.filename, "assets/shaders/simpleVertex");
+    EXPECT_EQ(shader.type, ShaderType::unknown);
+}
+
+TEST(YamlSerialization, serializeEnumValue)
+{
+    auto shader = Shader { "assets/shaders/simpleVertex", ShaderType::fragment };
+    const auto yaml = dory::serialization::yaml::serialize(shader);
+
+    auto shaderReverse = dory::serialization::yaml::deserialize<Shader>(yaml);
+
+    EXPECT_EQ(shaderReverse.filename, shader.filename);
+    EXPECT_EQ(shaderReverse.type, shader.type);
+}
+
+TEST(YamlDeserialization, deserializeDictionaryWithEnumKeys)
+{
+    const auto yaml = R"(
+shaders:
+  vertex: vertexShader
+  fragment: fragmentShader
+)";
+
+    auto material = dory::serialization::yaml::deserialize<Material>(yaml);
+
+    EXPECT_EQ(material.shaders.size(), 2);
+    EXPECT_EQ(material.shaders[ShaderType::vertex], "vertexShader");
+    EXPECT_EQ(material.shaders[ShaderType::fragment], "fragmentShader");
+}
+
+TEST(YamlSerialization, serializeDictionaryWithEnumKeys)
+{
+    auto material = Material {
+            {
+                { ShaderType::vertex, "vertexShader" },
+                { ShaderType::fragment, "fragmentShader" }
+            }
+    };
+
+    auto yaml = dory::serialization::yaml::serialize(material);
+
+    auto materialReverse = dory::serialization::yaml::deserialize<Material>(yaml);
+
+    EXPECT_EQ(materialReverse.shaders.size(), material.shaders.size());
+    EXPECT_EQ(materialReverse.shaders[ShaderType::vertex], material.shaders[ShaderType::vertex]);
+    EXPECT_EQ(materialReverse.shaders[ShaderType::fragment], material.shaders[ShaderType::fragment]);
+}
+
+TEST(JsonDeserialization, deserializeEnumValue)
+{
+    const auto json = R"({
+"filename": "assets/shaders/simpleVertex",
+"type": "fragment"
+})";
+
+    auto shader = dory::serialization::json::deserialize<Shader>(json);
+
+    EXPECT_EQ(shader.filename, "assets/shaders/simpleVertex");
+    EXPECT_EQ(shader.type, ShaderType::fragment);
+}
+
+TEST(JsonDeserialization, deserializeInvalidEnumValue)
+{
+    const auto json = R"({
+"filename": "assets/shaders/simpleVertex",
+"type": "geometry"
+})";
+
+    auto shader = dory::serialization::json::deserialize<Shader>(json);
+
+    EXPECT_EQ(shader.filename, "assets/shaders/simpleVertex");
+    EXPECT_EQ(shader.type, ShaderType::unknown);
+}
+
+TEST(JsonSerialization, serializeEnumValue)
+{
+    auto shader = Shader { "assets/shaders/simpleVertex", ShaderType::fragment };
+    const auto json = dory::serialization::json::serialize(shader);
+
+    auto shaderReverse = dory::serialization::json::deserialize<Shader>(json);
+
+    EXPECT_EQ(shaderReverse.filename, shader.filename);
+    EXPECT_EQ(shaderReverse.type, shader.type);
+}
+
+TEST(JsonDeserialization, deserializeDictionaryWithEnumKeys)
+{
+    const auto json = R"({
+"shaders": {
+  "vertex": "vertexShader",
+  "fragment": "fragmentShader"
+}})";
+
+    auto material = dory::serialization::json::deserialize<Material>(json);
+
+    EXPECT_EQ(material.shaders.size(), 2);
+    EXPECT_EQ(material.shaders[ShaderType::vertex], "vertexShader");
+    EXPECT_EQ(material.shaders[ShaderType::fragment], "fragmentShader");
+}
+
+TEST(JsonSerialization, serializeDictionaryWithEnumKeys)
+{
+    auto material = Material {
+            {
+                { ShaderType::vertex, "vertexShader" },
+                { ShaderType::fragment, "fragmentShader" }
+            }
+    };
+
+    auto json = dory::serialization::json::serialize(material);
+
+    auto materialReverse = dory::serialization::json::deserialize<Material>(json);
+
+    EXPECT_EQ(materialReverse.shaders.size(), material.shaders.size());
+    EXPECT_EQ(materialReverse.shaders[ShaderType::vertex], material.shaders[ShaderType::vertex]);
+    EXPECT_EQ(materialReverse.shaders[ShaderType::fragment], material.shaders[ShaderType::fragment]);
 }
