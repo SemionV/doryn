@@ -4,11 +4,15 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <magic_enum/magic_enum.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include <dory/serialization/yamlDeserializer.h>
 #include <dory/serialization/yamlSerializer.h>
 #include <dory/serialization/jsonDeserializer.h>
 #include <dory/serialization/jsonSerializer.h>
+#include <dory/math/linearAlgebra.h>
+#include <spdlog/fmt/bundled/format.h>
 
 class IController
 {
@@ -106,6 +110,24 @@ REFL_TYPE(Material)
     REFL_FIELD(shaders)
 REFL_END
 
+using vec2 = std::array<float, 2>;
+using vec3 = std::array<float, 3>;
+using vec4 = std::array<float, 4>;
+using quat = std::array<float, 4>;
+
+struct Transform
+{
+    vec3 position;
+    quat rotation;
+    vec3 scale;
+};
+
+REFL_TYPE(Transform)
+    REFL_FIELD(position)
+    REFL_FIELD(rotation)
+    REFL_FIELD(scale)
+REFL_END
+
 TEST(YamlDeserialization, deserializeEnumValue)
 {
     const auto yaml = R"(
@@ -130,6 +152,34 @@ type: geometry
 
     EXPECT_EQ(shader.filename, "assets/shaders/simpleVertex");
     EXPECT_EQ(shader.type, ShaderType::unknown);
+}
+
+TEST(YamlMathDeserialization, deserializeVectors)
+{
+    const auto yaml = R"(
+position: [1.0, 2.0, 3.1]
+rotation: [3.14546456, 2.2, 1.1, 4.56]
+scale: [1.5, 2.1, 3.1]
+)";
+
+    const auto transform = dory::serialization::yaml::deserialize<Transform>(yaml);
+
+    const auto position = dory::math::toVector(transform.position);
+    const glm::quat rotation = dory::math::toQuaternion(transform.rotation);
+    const auto scale = dory::math::toVector(transform.scale);
+
+    EXPECT_EQ(position.x, 1.0f);
+    EXPECT_EQ(position.y, 2.0f);
+    EXPECT_EQ(position.z, 3.1f);
+
+    EXPECT_EQ(rotation.w, 3.14546456f);
+    EXPECT_EQ(rotation.x, 2.2f);
+    EXPECT_EQ(rotation.y, 1.1f);
+    EXPECT_EQ(rotation.z, 4.56f);
+
+    EXPECT_EQ(scale.x, 1.5f);
+    EXPECT_EQ(scale.y, 2.1f);
+    EXPECT_EQ(scale.z, 3.1f);
 }
 
 TEST(YamlSerialization, serializeEnumValue)

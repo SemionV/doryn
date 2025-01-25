@@ -290,7 +290,7 @@ namespace dory::serialization
         static void visit(T&& object, TContext& context)
         {
             using TArray = std::decay_t<T>;
-            constexpr const typename TArray::size_type size = generic::array_size<TArray>::size;
+            constexpr typename TArray::size_type size = generic::array_size<TArray>::size;
 
             TPolicies::CollectionPolicy::template beginCollection<typename TArray::value_type, size>(context);
 

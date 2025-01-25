@@ -42,9 +42,21 @@ namespace dory::core::resources::scene::dto
         std::optional<components::RotationMovement> rotationMovement {};
     };
 
+    using vec2 = std::array<float, 2>;
+    using vec3 = std::array<float, 3>;
+    using vec4 = std::array<float, 4>;
+    using quat = std::array<float, 4>;
+
+    struct Transform
+    {
+        vec3 position;
+        quat rotation;
+        vec3 scale;
+    };
+
     struct Object
     {
-        objects::Transform transform {};
+        Transform transform {};
         std::string mesh {};
         std::string material {};
         ObjectComponents components;

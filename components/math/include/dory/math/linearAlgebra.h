@@ -9,6 +9,25 @@
 
 namespace dory::math
 {
+    template<typename TComponent, auto size, template<auto, class, auto = glm::defaultp> class TVector = glm::vec>
+    auto toVector(const std::array<TComponent, size>& array)
+    {
+        TVector<size, TComponent> vector {};
+
+        for(std::size_t i = 0; i < size; ++i)
+        {
+            vector[i] = array[i];
+        }
+
+        return vector;
+    }
+
+    template<typename TComponent>
+    auto toQuaternion(const std::array<TComponent, 4>& array)
+    {
+        return glm::quat { array[0], array[1], array[2], array[3] };
+    }
+
     using Dimensions4 = std::integral_constant<std::size_t, 4>;
     using Dimensions3 = std::integral_constant<std::size_t, 3>;
     using Dimensions2 = std::integral_constant<std::size_t, 2>;
