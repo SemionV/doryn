@@ -13,9 +13,9 @@ assets:
         color: [ 1.0, 1.0, 1.0, 1.0 ]
       polygonMode: Wireframe
     wireframeRed:
-      baseMaterials: [ wireframeWhite ] #support object merging
+      baseMaterials: [ wireframeWhite ] #support object copy
       properties:
-        color: [ 1.0, 0.0, 0.0, 1.0 ]
+        color: [ 1.0, 0.0, 0.0, 1.0 ] #support different types objects merging
   meshes:
     cube:
       filename: assets/meshes/cube

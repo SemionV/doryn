@@ -4,24 +4,33 @@
 #include <vector>
 #include <dory/core/resources/assets/shader.h>
 #include <dory/core/resources/assets/material.h>
-#include <dory/core/resources/objects/transform.h>
-#include <dory/core/resources/objects/materialProperties.h>
 #include <dory/core/resources/scene/components.h>
 
 namespace dory::core::resources::scene::dto
 {
+    using vec2 = std::array<float, 2>;
+    using vec3 = std::array<float, 3>;
+    using vec4 = std::array<float, 4>;
+    using quat = std::array<float, 4>;
+    using color = std::array<float, 4>;
+
     struct Shader
     {
         assets::ShaderType type {};
         std::string filename {};
     };
 
+    struct MaterialProperties
+    {
+        std::optional<color> color {};
+    };
+
     struct Material
     {
         std::vector<std::string> baseMaterials {};
         std::vector<std::string> shaders {};
-        objects::MaterialProperties properties {};
-        assets::PolygonMode polygonMode {};
+        MaterialProperties properties {};
+        std::optional<assets::PolygonMode> polygonMode {};
     };
 
     struct Mesh
@@ -41,11 +50,6 @@ namespace dory::core::resources::scene::dto
         std::optional<components::LinearMovement> linearMovement {};
         std::optional<components::RotationMovement> rotationMovement {};
     };
-
-    using vec2 = std::array<float, 2>;
-    using vec3 = std::array<float, 3>;
-    using vec4 = std::array<float, 4>;
-    using quat = std::array<float, 4>;
 
     struct Transform
     {
