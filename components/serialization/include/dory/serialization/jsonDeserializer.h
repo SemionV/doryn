@@ -54,7 +54,7 @@ namespace dory::serialization::json
         {
             if(beginMember(member, i, context))
             {
-                member.value = TValue{};
+                member.value.emplace();
                 return true;
             }
 

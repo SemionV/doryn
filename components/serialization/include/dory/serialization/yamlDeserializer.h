@@ -83,7 +83,7 @@ namespace dory::serialization::yaml
 
             if(beginMemberGeneric(tempMember, i, context))
             {
-                member.value = TValue{};
+                member.value.emplace();
                 return true;
             }
 

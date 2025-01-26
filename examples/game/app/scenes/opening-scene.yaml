@@ -13,7 +13,7 @@ assets:
         color: [ 1.0, 1.0, 1.0, 1.0 ]
       polygonMode: Wireframe
     wireframeRed:
-      baseMaterials: [ wireframeWhite ] #support object copy
+      baseMaterials: [ wireframeWhite ]
       properties: #support different types objects merging, merge MaterialProperties objects from different domains
         color: [ 1.0, 0.0, 0.0, 1.0 ]
   meshes:
