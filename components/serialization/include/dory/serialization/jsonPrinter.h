@@ -58,17 +58,17 @@ namespace dory::serialization
 
     struct PrintMemberPolicy
     {
-        template<typename TContext, class T>
-        inline static bool beginMember(const std::string_view& memberName, T& value, const std::size_t i, TContext& context)
+        template<typename TContext>
+        static bool beginMember(auto&& member, const std::size_t i, TContext& context)
         {
             JsonFormatting::printIndent(context);
-            context.stream << "\"" << memberName << "\"" << ": ";
+            context.stream << "\"" << member.name << "\"" << ": ";
 
             return true;
         }
 
         template<typename TContext>
-        inline static void endMember(const bool lastMember, TContext& context)
+        static void endMember(const bool lastMember, TContext& context)
         {
             if(!lastMember)
             {

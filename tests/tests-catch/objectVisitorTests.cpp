@@ -121,12 +121,12 @@ namespace dory::serialization
 
     struct MemberPolicyTest
     {
-        template<typename TContext, class T>
-        inline static bool beginMember(const std::string_view& memberName, T& value, const std::size_t i, TContext& context)
+        template<typename TContext>
+        inline static bool beginMember(auto&& member, const std::size_t i, TContext& context)
         {
             assert(std::holds_alternative<ObjectRepresentation>(context.currentValueNode->value));
             auto valueNode = std::make_shared<ValueNode>(context.currentValueNode);
-            std::get<ObjectRepresentation>(context.currentValueNode->value).emplace(memberName, valueNode);
+            std::get<ObjectRepresentation>(context.currentValueNode->value).emplace(member.name, valueNode);
             context.currentValueNode = valueNode;
 
             return true;

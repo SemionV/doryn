@@ -11,6 +11,7 @@
 #include <dory/serialization/yamlSerializer.h>
 #include <dory/serialization/jsonDeserializer.h>
 #include <dory/serialization/jsonSerializer.h>
+#include <dory/serialization/objectCopy.h>
 #include <dory/math/linearAlgebra.h>
 #include <spdlog/fmt/bundled/format.h>
 

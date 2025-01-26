@@ -44,29 +44,34 @@ namespace dory::serialization::json
 
     struct SerializerMemberPolicy
     {
-        template<class T>
-        inline static bool beginMember(const std::string_view& memberName, T& value, const std::size_t i, JsonContext& context)
+        static bool beginMemberGeneric(auto&& member, const std::size_t i, JsonContext& context)
         {
             auto* currentJson = context.parents.top();
 
-            auto& memberJson = currentJson->operator[](memberName);
+            auto& memberJson = currentJson->operator[](member.name);
             context.parents.push(&memberJson);
 
             return true;
         }
 
-        template<class T>
-        inline static bool beginMember(const std::string_view& memberName, const std::optional<T>& value, const std::size_t i, JsonContext& context)
+        static bool beginMember(auto&& member, const std::size_t i, JsonContext& context)
         {
-            if(value.has_value())
+            return beginMemberGeneric(member, i, context);
+        }
+
+        template<class T, class TValue>
+        requires(generic::is_optional_v<std::decay_t<TValue>>)
+        static bool beginMember(reflection::ClassMember<T, TValue>& member, const std::size_t i, JsonContext& context)
+        {
+            if(member.value.has_value())
             {
-                return beginMember(memberName, *value, i, context);
+                return beginMemberGeneric(member, i, context);
             }
 
             return false;
         }
 
-        inline static void endMember(const bool lastMember, JsonContext& context)
+        static void endMember(const bool lastMember, JsonContext& context)
         {
             context.parents.pop();
         }

@@ -52,15 +52,13 @@ namespace dory::serialization::yaml
 
     struct DeserializerMemberPolicy
     {
-        template<class T>
-        inline static bool beginMember(const std::string_view& memberName, const T& value, const std::size_t i, YamlContext& context)
+        static bool beginMemberGeneric(auto&& member, const std::size_t i, YamlContext& context)
         {
             auto current = context.parents.top();
-            const auto& name = toRymlCStr(memberName);
+            const auto& name = toRymlCStr(member.name);
             if(current.is_map() && current.has_child(name))
             {
-                auto member = current[name];
-                context.parents.push(member);
+                context.parents.push(current[name]);
 
                 return true;
             }
@@ -68,20 +66,31 @@ namespace dory::serialization::yaml
             return false;
         }
 
-        template<class T>
-        inline static bool beginMember(const std::string_view& memberName, std::optional<T>& value, const std::size_t i, YamlContext& context)
+        static bool beginMember(auto&& member, const std::size_t i, YamlContext& context)
         {
-            T tempValue;
-            if(beginMember(memberName, tempValue, i, context))
+            return beginMemberGeneric(member, i, context);
+        }
+
+        template<class T, class TValue>
+        static bool beginMember(reflection::ClassMember<T, std::optional<TValue>>& member, const std::size_t i, YamlContext& context)
+        {
+            std::optional<TValue> tempValue;
+            reflection::ClassMember<T, std::optional<TValue>> tempMember {
+                member.name,
+                member.pointer,
+                tempValue
+            };
+
+            if(beginMemberGeneric(tempMember, i, context))
             {
-                value = T{};
+                member.value = TValue{};
                 return true;
             }
 
             return false;
         }
 
-        inline static void endMember(const bool lastMember, YamlContext& context)
+        static void endMember(const bool lastMember, YamlContext& context)
         {
             context.parents.pop();
         }

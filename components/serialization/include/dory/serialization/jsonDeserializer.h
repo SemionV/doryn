@@ -35,13 +35,12 @@ namespace dory::serialization::json
 
     struct DeserializerMemberPolicy
     {
-        template<class T>
-        inline static bool beginMember(const std::string_view& memberName, T& value, const std::size_t i, JsonContext& context)
+        static bool beginMember(auto&& member, const std::size_t i, JsonContext& context)
         {
             auto* currentJson = context.parents.top();
-            if(currentJson->contains(memberName))
+            if(currentJson->contains(member.name))
             {
-                auto& memberJson = currentJson->at(memberName);
+                auto& memberJson = currentJson->at(member.name);
                 context.parents.push(&memberJson);
 
                 return true;
@@ -50,12 +49,12 @@ namespace dory::serialization::json
             return false;
         }
 
-        template<class T>
-        inline static bool beginMember(const std::string_view& memberName, std::optional<T>& value, const std::size_t i, JsonContext& context)
+        template<class T, class TValue>
+        static bool beginMember(reflection::ClassMember<T, std::optional<TValue>>& member, const std::size_t i, JsonContext& context)
         {
-            if(beginMember(memberName, *value, i, context))
+            if(beginMember(member, i, context))
             {
-                value = T{};
+                member.value = TValue{};
                 return true;
             }
 

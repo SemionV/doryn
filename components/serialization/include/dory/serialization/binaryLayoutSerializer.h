@@ -55,7 +55,7 @@ namespace dory::serialization
         {
             auto offset = LayoutAttributeOffsetV<Id, TLayout>;
             BinarySerializationContext context(buffer + offset);
-            dory::serialization::ObjectVisitor<TPolicies>::visit(std::forward<T>(attributeValue), context);
+            ObjectVisitor<TPolicies>::visit(std::forward<T>(attributeValue), context);
 
             return context.offset;
         }

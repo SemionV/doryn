@@ -62,30 +62,35 @@ namespace dory::serialization::yaml
 
     struct SerializerMemberPolicy
     {
-        template<class T>
-        inline static bool beginMember(const std::string_view& memberName, T& value, const std::size_t i, YamlContext& context)
+        static bool beginMemberGeneric(auto&& member, const std::size_t i, YamlContext& context)
         {
             auto current = context.parents.top();
 
             auto memberNode = current.append_child();
-            memberNode.set_key(toRymlCStr(memberName));
+            memberNode.set_key(toRymlCStr(member.name));
             context.parents.push(memberNode);
 
             return true;
         }
 
-        template<class T>
-        inline static bool beginMember(const std::string_view& memberName, const std::optional<T>& value, const std::size_t i, YamlContext& context)
+        static bool beginMember(auto&& member, const std::size_t i, YamlContext& context)
         {
-            if(value.has_value())
+            return beginMemberGeneric(member, i, context);
+        }
+
+        template<class T, class TValue>
+        requires(generic::is_optional_v<std::decay_t<TValue>>)
+        static bool beginMember(reflection::ClassMember<T, TValue>& member, const std::size_t i, YamlContext& context)
+        {
+            if(member.value.has_value())
             {
-                return beginMember(memberName, *value, i, context);
+                return beginMemberGeneric(member, i, context);
             }
 
             return false;
         }
 
-        inline static void endMember(const bool lastMember, YamlContext& context)
+        static void endMember(const bool lastMember, YamlContext& context)
         {
             context.parents.pop();
         }

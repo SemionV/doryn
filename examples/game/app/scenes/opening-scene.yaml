@@ -59,12 +59,12 @@ objects:
         acceleration: 0.08
         currentVelocity: 0.2
 pipeline:
-  - node: per-frame-update
+  - node: scene-update
     trigger:
       elapsedTime:
         milliseconds: 16.666
     children:
-      - node: all-views-update
+      - node: views-update
         controller:
           view: {}
       - node: animation
@@ -75,7 +75,7 @@ pipeline:
           logic:
             flag: true
   - node: physics
-    parent: per-frame-update
+    parent: scene-update
     controller:
       physics:
         precision: 0.00000000000001

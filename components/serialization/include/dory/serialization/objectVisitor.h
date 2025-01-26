@@ -41,8 +41,8 @@ namespace dory::serialization
 
     struct DefaultMemberPolicy
     {
-        template<typename TContext, typename T>
-        inline static bool beginMember(const std::string_view& memberName, T& value, const std::size_t i, TContext& context)
+        template<typename TContext>
+        inline static bool beginMember(auto&& member, const std::size_t i, TContext& context)
         {
             return true;
         }
@@ -339,12 +339,11 @@ namespace dory::serialization
         {
             if(TPolicies::ObjectPolicy::beginObject(std::forward<T>(object), context))
             {
-                reflection::visitClassFields(object, [](auto& memberValue, const std::string_view& memberName,
-                                                        const std::size_t i, const std::size_t memberCount, TContext& context)
+                reflection::visitClassFields(object, []<typename TClassMember>(TClassMember&& member, const std::size_t i, const std::size_t memberCount, TContext& context)
                 {
-                    if(TPolicies::MemberPolicy::beginMember(memberName, memberValue, i, context))
+                    if(TPolicies::MemberPolicy::beginMember(std::forward<TClassMember>(member), i, context))
                     {
-                        visit(memberValue, context);
+                        visit(member.value, context);
                         TPolicies::MemberPolicy::endMember(i == memberCount - 1, context);
                     }
                 }, context);

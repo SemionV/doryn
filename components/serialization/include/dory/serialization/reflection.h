@@ -91,6 +91,18 @@ namespace dory::reflection
         static constexpr const char* value = refl::descriptor::get_simple_name(refl::descriptor::type_descriptor<std::remove_reference_t<T>>{}).data;
     };
 
+    template<typename TClass, typename TMember>
+    struct ClassMember
+    {
+        using ClassType = TClass;
+        using MemberType = TMember;
+        using ResolvedMemberType = std::conditional_t<std::is_const_v<std::remove_reference_t<TClass>>, const TMember&, TMember&>;
+
+        const std::string_view& name;
+        TMember std::decay_t<TClass>::* pointer;
+        ResolvedMemberType value;
+    };
+
     template<typename T, typename F, typename... Args>
     constexpr void visitClassFields(T&& object, F functor, Args&&... args)
     {
@@ -105,7 +117,12 @@ namespace dory::reflection
                 using MemberDescriptorType = U;
 
                 const auto memberName = std::string_view{MemberDescriptorType::name.data, MemberDescriptorType::name.size};
-                functor(object.*MemberDescriptorType::pointer, memberName, i++, memberCount, std::forward<Args>(args)...);
+                auto member = ClassMember<T, typename MemberDescriptorType::value_type> {
+                    memberName,
+                    MemberDescriptorType::pointer,
+                    object.*MemberDescriptorType::pointer
+                };
+                functor(member, i++, memberCount, std::forward<Args>(args)...);
             }
         });
     }
