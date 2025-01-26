@@ -296,3 +296,67 @@ TEST(JsonSerialization, serializeDictionaryWithEnumKeys)
     EXPECT_EQ(materialReverse.shaders[ShaderType::vertex], material.shaders[ShaderType::vertex]);
     EXPECT_EQ(materialReverse.shaders[ShaderType::fragment], material.shaders[ShaderType::fragment]);
 }
+
+enum class FaceRendering
+{
+    solid,
+    wireframe
+};
+
+struct Uniforms
+{
+    std::optional<std::array<float, 4>> color;
+    std::unordered_map<ShaderType, std::string> shaders;
+};
+
+struct Material2
+{
+    std::optional<FaceRendering> face;
+    std::string name {};
+    std::vector<std::string> baseMaterials;
+    Uniforms uniforms;
+};
+
+REFL_TYPE(Uniforms)
+    REFL_FIELD(color)
+    REFL_FIELD(shaders)
+REFL_END
+
+REFL_TYPE(Material2)
+    REFL_FIELD(face)
+    REFL_FIELD(name)
+    REFL_FIELD(baseMaterials)
+    REFL_FIELD(uniforms)
+REFL_END
+
+TEST(ObjectCopy, mergeObjects)
+{
+    auto material = Material2 {};
+    material.name = "destination";
+    material.face = FaceRendering::wireframe;
+    material.baseMaterials = { "mat1" };
+    material.uniforms.shaders[ShaderType::vertex] = "vertexShader";
+
+    auto materialBase = Material2 {};
+    materialBase.name = "source";
+    materialBase.baseMaterials = { "mat2" };
+    materialBase.uniforms.color = { 0.1f, 0.2f, 0.3f, 1.f };
+    materialBase.uniforms.shaders[ShaderType::fragment] = "fragmentShader";
+
+    dory::serialization::object::copy(materialBase, material);
+
+    EXPECT_EQ(material.face, FaceRendering::wireframe);
+    EXPECT_EQ(material.name, "source");
+    EXPECT_EQ(material.baseMaterials.size(), 2);
+    EXPECT_EQ(material.baseMaterials[0], "mat1");
+    EXPECT_EQ(material.baseMaterials[1], "mat2");
+    EXPECT_EQ(material.uniforms.color.has_value(), true);
+    auto color = material.uniforms.color.value();
+    EXPECT_EQ(color[0], 0.1f);
+    EXPECT_EQ(color[1], 0.2f);
+    EXPECT_EQ(color[2], 0.3f);
+    EXPECT_EQ(color[3], 1.f);
+    EXPECT_EQ(material.uniforms.shaders.size(), 2);
+    EXPECT_EQ(material.uniforms.shaders[ShaderType::vertex], "vertexShader");
+    EXPECT_EQ(material.uniforms.shaders[ShaderType::fragment], "fragmentShader");
+}

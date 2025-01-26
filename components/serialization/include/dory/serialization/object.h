@@ -2,9 +2,9 @@
 
 namespace dory::serialization::object
 {
-    struct ObjectCopyContext: TreeStructureContext<void*>
+    struct ObjectCopyContext: TreeStructureContext<const void*>
     {
-        explicit ObjectCopyContext(void* root): TreeStructureContext(root)
+        explicit ObjectCopyContext(const void* root): TreeStructureContext(root)
         {}
     };
 
@@ -15,7 +15,7 @@ namespace dory::serialization::object
         {
             if(const auto current = context.parents.top())
             {
-                value = *static_cast<T*>(current);
+                value = *static_cast<const std::decay_t<T>*>(current);
             }
         }
     };
@@ -27,7 +27,7 @@ namespace dory::serialization::object
         {
             if(const auto current = context.parents.top())
             {
-                value = *static_cast<T*>(current);
+                value = *static_cast<const std::decay_t<T>*>(current);
             }
         }
     };
@@ -55,7 +55,7 @@ namespace dory::serialization::object
         {
             if(const auto currentContext = context.parents.top())
             {
-                auto& currentValue = *static_cast<T*>(currentContext).*member.pointer;
+                auto& currentValue = (*static_cast<const std::decay_t<T>*>(currentContext)).*member.pointer;
                 context.parents.push(&currentValue);
 
                 return true;
@@ -70,9 +70,14 @@ namespace dory::serialization::object
         {
             if(const auto currentContext = context.parents.top())
             {
-                if(auto& currentValue = *static_cast<T*>(currentContext).*member.pointer)
+                if(auto& currentValue = *static_cast<const std::decay_t<T>*>(currentContext).*member.pointer)
                 {
                     context.parents.push(&currentValue.value());
+                    if(!member.value.has_value())
+                    {
+                        member.value.emplace();
+                    }
+
                     return true;
                 }
             }
@@ -93,7 +98,7 @@ namespace dory::serialization::object
         {
 			if(const auto current = context.parents.top())
             {
-                collection = *(TCollection*)current;
+                collection = *(const std::decay_t<TCollection>*)current;
             }
         }
 
@@ -114,13 +119,13 @@ namespace dory::serialization::object
         }
     };
 
-    struct ObjectCopyContainerPolicy: ContainerPolicy<ObjectCopyContainerPolicy, TreeStructureContext<void*>>
+    struct ObjectCopyContainerPolicy: ContainerPolicy<ObjectCopyContainerPolicy, TreeStructureContext<const void*>>
     {
         template<typename TCollection>
         static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
         {
             auto currentContext = parents.top();
-            size = currentContext ? static_cast<TCollection*>(currentContext)->size() : 0;
+            size = currentContext ? static_cast<const TCollection*>(currentContext)->size() : 0;
         }
 
         template<typename TCollection>
@@ -130,7 +135,7 @@ namespace dory::serialization::object
             auto currentCollection = parents.top();
             assert(currentCollection);
 
-            parents.push(&currentCollection[index]);
+            parents.push(&(*(TCollection*)currentCollection)[index]);
 
             return collection.emplace_back(typename TCollection::value_type{});
         }
@@ -144,7 +149,7 @@ namespace dory::serialization::object
             auto currentCollection = parents.top();
             assert(currentCollection);
 
-            auto pair = getMapItem(currentCollection, index);
+            auto& pair = getMapItem(*((const std::decay_t<TCollection>*)currentCollection), index);
             parents.push(&pair.second);
 
             auto it = collection.find(pair.first);
@@ -173,7 +178,7 @@ namespace dory::serialization::object
     };
 
     template<typename T>
-    static void copy(T&& source, T& target)
+    static void copy(const T& source, T& target)
     {
         ObjectCopyContext context(&source);
         ObjectVisitor<ObjectCopyPolicies>::visit(target, context);
