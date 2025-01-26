@@ -98,8 +98,8 @@ namespace dory::serialization::yaml
 
     struct SerializerCollectionPolicy
     {
-        template<typename T, auto N>
-        inline static void beginCollection(YamlContext& context)
+        template<typename T, auto N, typename TCollection>
+        inline static void beginCollection(TCollection&& collection, YamlContext& context)
         {
             auto currentNode = context.parents.top();
             currentNode |= c4::yml::NodeType_e::SEQ;

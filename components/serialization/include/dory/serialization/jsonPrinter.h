@@ -81,8 +81,8 @@ namespace dory::serialization
 
     struct PrintCollectionPolicy
     {
-        template<typename T, auto N, typename TContext>
-        inline static void beginCollection(TContext& context)
+        template<typename T, auto N, class TCollection, typename TContext>
+        inline static void beginCollection(TCollection&& collection, TContext& context)
         {
             context.stream << "[" << std::endl;
             ++context.nestingLevel;

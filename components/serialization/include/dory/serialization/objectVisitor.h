@@ -55,8 +55,8 @@ namespace dory::serialization
 
     struct DefaultCollectionPolicy
     {
-        template<typename T, auto N, typename TContext>
-        inline static void beginCollection(TContext& context)
+        template<typename T, auto N, typename TCollection, typename TContext>
+        inline static void beginCollection(TCollection& collection, TContext& context)
         {
         }
 
@@ -177,7 +177,7 @@ namespace dory::serialization
         }
 
         template<typename TCollection>
-        static void beginCollection(TCollection& collection, ContextType& context)
+        static void beginCollection(TCollection&& collection, ContextType& context)
         {
             context.collectionIndexesStack.emplace(0);
             auto& size = context.collectionSizesStack.emplace(0);
@@ -292,7 +292,7 @@ namespace dory::serialization
             using TArray = std::decay_t<T>;
             constexpr typename TArray::size_type size = generic::array_size<TArray>::size;
 
-            TPolicies::CollectionPolicy::template beginCollection<typename TArray::value_type, size>(context);
+            TPolicies::CollectionPolicy::template beginCollection<typename TArray::value_type, size>(std::forward<T>(object), context);
 
             size_t lastIndex = size - 1;
             for(std::size_t i {}; i < size; ++i)

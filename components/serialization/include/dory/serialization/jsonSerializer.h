@@ -79,8 +79,8 @@ namespace dory::serialization::json
 
     struct SerializerCollectionPolicy
     {
-        template<typename T, auto N>
-        inline static void beginCollection(JsonContext& context)
+        template<typename T, auto N, typename TCollection>
+        inline static void beginCollection(TCollection&& collection, JsonContext& context)
         {
             auto* currentJson = context.parents.top();
             *currentJson = json::array();

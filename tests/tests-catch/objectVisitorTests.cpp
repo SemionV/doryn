@@ -143,8 +143,8 @@ namespace dory::serialization
 
     struct CollectionPolicyTest
     {
-        template<typename T, auto N, typename TContext>
-        inline static void beginCollection(TContext& context)
+        template<typename T, auto N, class TCollection, typename TContext>
+        inline static void beginCollection(TCollection&& collection, TContext& context)
         {
             assert(context.currentValueNode);
             context.currentValueNode->value = CollectionRepresentation();
