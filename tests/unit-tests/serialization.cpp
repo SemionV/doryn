@@ -315,6 +315,7 @@ struct Material2
     std::string name {};
     std::vector<std::string> baseMaterials;
     Uniforms uniforms;
+    int id {};
 };
 
 REFL_TYPE(Uniforms)
@@ -327,6 +328,7 @@ REFL_TYPE(Material2)
     REFL_FIELD(name)
     REFL_FIELD(baseMaterials)
     REFL_FIELD(uniforms)
+    REFL_FIELD(id)
 REFL_END
 
 TEST(ObjectCopy, mergeObjects)
@@ -342,11 +344,13 @@ TEST(ObjectCopy, mergeObjects)
     materialBase.baseMaterials = { "mat2" };
     materialBase.uniforms.color = { 0.1f, 0.2f, 0.3f, 1.f };
     materialBase.uniforms.shaders[ShaderType::fragment] = "fragmentShader";
+    materialBase.id = 2;
 
     dory::serialization::object::copy(materialBase, material);
 
     EXPECT_EQ(material.face, FaceRendering::wireframe);
     EXPECT_EQ(material.name, "source");
+    EXPECT_EQ(material.id, 2);
     EXPECT_EQ(material.baseMaterials.size(), 2);
     EXPECT_EQ(material.baseMaterials[0], "mat1");
     EXPECT_EQ(material.baseMaterials[1], "mat2");
@@ -359,18 +363,4 @@ TEST(ObjectCopy, mergeObjects)
     EXPECT_EQ(material.uniforms.shaders.size(), 2);
     EXPECT_EQ(material.uniforms.shaders[ShaderType::vertex], "vertexShader");
     EXPECT_EQ(material.uniforms.shaders[ShaderType::fragment], "fragmentShader");
-}
-
-struct VisitorContext
-{};
-
-TEST(Visitor, resolve)
-{
-    const std::array<int, 2> value = { 1, 2 };
-    VisitorContext context;
-
-    //dory::serialization::Visitor<decltype(value), VisitorContext>::visit(value, context);
-
-    using ArrayType = std::remove_reference_t<const std::array<int, 2>&>;
-    //ArrayType::fake i;
 }

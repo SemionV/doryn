@@ -12,6 +12,9 @@ namespace dory::reflection
     }
 
     template<typename T>
+    constexpr bool IsReflectableV = refl::trait::is_reflectable_v<T>;
+
+    template<typename T>
     struct MemberCount
     {
         static constexpr int value =  static_cast<int>(refl::detail::type_info<T>::member_count);

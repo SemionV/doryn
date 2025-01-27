@@ -177,10 +177,41 @@ namespace dory::serialization::object
         using ContainerPolicyType = ObjectCopyContainerPolicy;
     };
 
+    struct ObjectCopyVisitor;
+
+    template<typename T, typename TContext>
+    struct Visitor: serialization::Visitor<T, TContext, ObjectCopyPolicies, ObjectCopyVisitor>
+    {
+
+    };
+
+    template<typename T, typename TContext>
+    requires(ObjectCopyPolicies::Traits::IsFundamentalV<T>)
+    struct Visitor<T, TContext>
+    {
+        template<typename F>
+        static void visit(F&& value, TContext& context)
+        {
+            if(const auto current = context.parents.top())
+            {
+                value = *static_cast<const std::decay_t<F>*>(current);
+            }
+        }
+    };
+
+    struct ObjectCopyVisitor
+    {
+        template<typename T, typename TContext>
+        static void visit(T&& object, TContext& context)
+        {
+            Visitor<std::remove_reference_t<T>, TContext>::visit(std::forward<T>(object), context);
+        }
+    };
+
     template<typename T>
     static void copy(const T& source, T& target)
     {
         ObjectCopyContext context(&source);
-        ObjectVisitor<ObjectCopyPolicies>::visit(target, context);
+        ObjectCopyVisitor::visit(target, context);
     }
 }
