@@ -30,7 +30,8 @@ if(POLICY CMP0177)
     cmake_policy(SET CMP0177 NEW)
 endif()
 FetchContent_Declare(rapid-yaml
-        GIT_REPOSITORY https://github.com/biojppm/rapidyaml)
+        GIT_REPOSITORY https://github.com/biojppm/rapidyaml
+        GIT_TAG	v0.7.0)
 FetchContent_MakeAvailable(rapid-yaml)
 target_compile_options(ryml PRIVATE -fPIC)
 

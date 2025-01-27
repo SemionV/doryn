@@ -360,3 +360,17 @@ TEST(ObjectCopy, mergeObjects)
     EXPECT_EQ(material.uniforms.shaders[ShaderType::vertex], "vertexShader");
     EXPECT_EQ(material.uniforms.shaders[ShaderType::fragment], "fragmentShader");
 }
+
+struct VisitorContext
+{};
+
+TEST(Visitor, resolve)
+{
+    const std::array<int, 2> value = { 1, 2 };
+    VisitorContext context;
+
+    //dory::serialization::Visitor<decltype(value), VisitorContext>::visit(value, context);
+
+    using ArrayType = std::remove_reference_t<const std::array<int, 2>&>;
+    //ArrayType::fake i;
+}

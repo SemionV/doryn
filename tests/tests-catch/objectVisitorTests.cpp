@@ -178,7 +178,7 @@ namespace dory::serialization
         }
     };
 
-    struct VisitorPolicies
+    struct VisitorPolicies: public dory::serialization::VisitorDefaultPolicies
     {
         using ValuePolicy = ValuePolicyTest;
         using ObjectPolicy = ObjectPolicyTest;

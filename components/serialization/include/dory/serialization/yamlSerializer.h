@@ -10,15 +10,20 @@ namespace dory::serialization::yaml
     {
     private:
         template<typename T>
-        inline static void writeValue(T& value, ryml::NodeRef& node, YamlContext& context)
+        static void writeValue(T& value, ryml::NodeRef& node, YamlContext& context)
         {
             node << value;
         }
 
-        inline static void writeValue(const std::string& value, ryml::NodeRef& node, YamlContext& context)
+        static void writeValue(const std::string& value, ryml::NodeRef& node, YamlContext& context)
         {
             node = toRymlCStr(value);
         }
+
+        /*static void writeValue(std::string& value, ryml::NodeRef& node, YamlContext& context)
+        {
+            node = toRymlStr(value);
+        }*/
 
     public:
         template<typename T>

@@ -226,6 +226,30 @@ namespace dory::serialization
         }
     };
 
+    struct VisitorTypeTraitPolicies
+    {
+        template<typename T>
+        constexpr static bool IsFundamentalV = std::is_fundamental_v<std::decay_t<T>>;
+
+        template<typename T>
+        constexpr static bool IsEnumV = std::is_enum_v<std::remove_reference_t<T>>;
+
+        template<typename T, typename U>
+        constexpr static bool IsSameV = std::is_same_v<std::decay_t<T>, U>;
+
+        template<typename T, typename U>
+        constexpr static bool IsBaseOfV = std::is_base_of_v<T, std::decay_t<U>>;
+
+        template<typename T>
+        constexpr static bool IsOptionalV = generic::is_optional_v<std::decay_t<T>>;
+
+        template<typename T>
+        constexpr static bool IsArrayV = generic::is_fixed_array_v<std::decay_t<T>>;
+
+        template<typename T>
+        constexpr static bool IsContainerV = generic::is_dynamic_collection_v<T> || generic::is_dictionary_v<T>;
+    };
+
     struct VisitorDefaultPolicies
     {
         using ValuePolicy = DefaultValuePolicy;
@@ -235,6 +259,212 @@ namespace dory::serialization
         using CollectionPolicy = DefaultCollectionPolicy;
         using CollectionItemPolicy = DefaultCollectionItemPolicy;
         using ContainerPolicyType = DefaultContainerPolicy;
+        using Traits = VisitorTypeTraitPolicies;
+    };
+
+    template<typename T, typename TContext, typename TPolicies = VisitorDefaultPolicies>
+    struct Visitor;
+
+    template<typename T, typename TContext, typename TPolicies>
+    struct Visitor
+    {
+        template<typename C>
+        static void visitGeneric(C&& object, TContext& context)
+        {
+            using ObjectType = decltype(object);
+            if(TPolicies::ObjectPolicy::beginObject(std::forward<C>(object), context))
+            {
+                reflection::visitClassFields<ObjectType>(std::forward<C>(object), []<typename TMember>(reflection::ClassMember<ObjectType, TMember>& member, const std::size_t i, const std::size_t memberCount, TContext& ctx)
+                {
+                    if(TPolicies::MemberPolicy::beginMember(member, i, ctx))
+                    {
+                        Visitor<std::remove_reference_t<decltype(member.value)>, TContext, TPolicies>::visit(member.value, ctx);
+                        TPolicies::MemberPolicy::endMember(i == memberCount - 1, ctx);
+                    }
+                }, context);
+
+                TPolicies::ObjectPolicy::endObject(std::forward<C>(object), context);
+            }
+        }
+
+        static void visit(T& object, TContext& context)
+        {
+            visitGeneric(object, context);
+        }
+    };
+
+    template<typename T, typename TContext, typename TPolicies>
+    requires(TPolicies::Traits::template IsFundamentalV<T>)
+    struct Visitor<T, TContext, TPolicies>
+    {
+        template<typename F>
+        static void visit(F&& object, TContext& context)
+        {
+            TPolicies::ValuePolicy::process(std::forward<F>(object), context);
+        }
+    };
+
+    template<typename T, typename TContext, typename TPolicies>
+    requires(TPolicies::Traits::template IsEnumV<T>)
+    struct Visitor<T, TContext, TPolicies>
+    {
+        static void visit(T& object, TContext& context)
+        {
+            TPolicies::EnumPolicy::process(object, context);
+        }
+    };
+
+    template<typename TContext, typename TPolicies>
+    struct StringVisitor
+    {
+        template<typename T>
+        static void visit(T&& object, TContext& context)
+        {
+            TPolicies::ValuePolicy::process(std::forward<T>(object), context);
+        }
+    };
+
+    template<typename TContext, typename TPolicies>
+    struct Visitor<std::string, TContext, TPolicies>
+    {
+        static void visit(std::string& object, TContext& context)
+        {
+            StringVisitor<TContext, TPolicies>::visit(object, context);
+        }
+    };
+
+    template<typename TContext, typename TPolicies>
+    struct Visitor<const std::string, TContext, TPolicies>
+    {
+        static void visit(const std::string& object, TContext& context)
+        {
+            StringVisitor<TContext, TPolicies>::visit(object, context);
+        }
+    };
+
+    template<typename T, typename TContext, typename TPolicies>
+    requires(TPolicies::Traits::template IsBaseOfV<generic::IParameterizedString, T>)
+    struct Visitor<T, TContext, TPolicies>
+    {
+        static void visit(T& object, TContext& context)
+        {
+            TPolicies::ValuePolicy::process(object.getTemplate(), context);
+            object.updateTemplate();
+        }
+    };
+
+    template<typename T, typename TContext, typename TPolicies>
+    requires(TPolicies::Traits::template IsBaseOfV<generic::IParameterizedString, T>)
+    struct Visitor<std::unique_ptr<T>, TContext, TPolicies>
+    {
+        static void visit(std::unique_ptr<T>& object, TContext& context)
+        {
+            TPolicies::ValuePolicy::process(object->getTemplate(), context);
+            object->updateTemplate();
+        }
+
+        static void visit(const std::unique_ptr<T>& object, TContext& context)
+        {
+            TPolicies::ValuePolicy::process(object->getTemplate(), context);
+            object->updateTemplate();
+        }
+    };
+
+    template<typename TValue, typename TContext, typename TPolicies>
+    struct OptionalVisitor
+    {
+        template<typename O>
+        static void visit(O&& optional, TContext& context)
+        {
+            Visitor<TValue, TContext, TPolicies>::visit(*optional, context);
+        }
+    };
+
+    template<typename T, typename TContext, typename TPolicies>
+    struct Visitor<std::optional<T>, TContext, TPolicies>
+    {
+        static void visit(std::optional<T>& object, TContext& context)
+        {
+            Visitor<T, TContext, TPolicies>::visit(*object, context);
+        }
+    };
+
+    template<typename T, typename TContext, typename TPolicies>
+    struct Visitor<const std::optional<T>, TContext, TPolicies>
+    {
+        static void visit(const std::optional<T>& object, TContext& context)
+        {
+            Visitor<const T, TContext, TPolicies>::visit(*object, context);
+        }
+    };
+
+    template<typename TValue, auto size, typename TContext, typename TPolicies>
+    struct ArrayVisitor
+    {
+        template<typename A>
+        static void visit(A&& array, TContext& context)
+        {
+            TPolicies::CollectionPolicy::template beginCollection<TValue, size>(std::forward<A>(array), context);
+
+            const size_t lastIndex = size - 1;
+            for(std::size_t i {}; i < size; ++i)
+            {
+                if(TPolicies::CollectionItemPolicy::beginItem(i, context))
+                {
+                    Visitor<TValue, TContext, TPolicies>::visit(array[i], context);
+                    TPolicies::CollectionItemPolicy::endItem(i == lastIndex, context);
+                }
+            }
+
+            TPolicies::CollectionPolicy::endCollection(context);
+        }
+    };
+
+    template<typename T, auto size, typename TContext, typename TPolicies>
+    struct Visitor<std::array<T, size>, TContext, TPolicies>
+    {
+        static void visit(std::array<T, size>& object, TContext& context)
+        {
+            ArrayVisitor<T, size, TContext, TPolicies>::visit(object, context);
+        }
+    };
+
+    template<typename T, auto size, typename TContext, typename TPolicies>
+    struct Visitor<const std::array<T, size>, TContext, TPolicies>
+    {
+        static void visit(const std::array<T, size>& object, TContext& context)
+        {
+            ArrayVisitor<const T, size, TContext, TPolicies>::visit(object, context);
+        }
+    };
+
+    template<typename T, typename TContext, typename TPolicies>
+    requires(TPolicies::Traits::template IsContainerV<T>)
+    struct Visitor<T, TContext, TPolicies>
+    {
+        template<typename TContainer>
+        static void visitGeneric(TContainer&& object, TContext& context)
+        {
+            TPolicies::ContainerPolicyType::beginCollection(std::forward<TContainer>(object), context);
+
+            auto item = TPolicies::ContainerPolicyType::nextItem(std::forward<TContainer>(object), context);
+            while(item)
+            {
+                auto valueRef = *item;
+                using ValueType = decltype(valueRef.get());
+
+                Visitor<std::remove_reference_t<ValueType>, TContext, TPolicies>::visit(valueRef.get(), context);
+                TPolicies::ContainerPolicyType::endItem(valueRef, std::forward<TContainer>(object), context);
+                item = TPolicies::ContainerPolicyType::nextItem(std::forward<TContainer>(object), context);
+            }
+
+            TPolicies::ContainerPolicyType::endCollection(std::forward<TContainer>(object), context);
+        }
+
+        static void visit(T& object, TContext& context)
+        {
+            visitGeneric(object, context);
+        }
     };
 
     template<typename TPolicies = VisitorDefaultPolicies>
@@ -242,114 +472,9 @@ namespace dory::serialization
     {
     public:
         template<typename T, typename TContext>
-        requires(std::is_fundamental_v<std::remove_reference_t<T>>)
         static void visit(T&& object, TContext& context)
         {
-            TPolicies::ValuePolicy::process(std::forward<T>(object), context);
-        }
-
-        template<typename T, typename TContext>
-        requires(std::is_enum_v<std::remove_reference_t<T>>)
-        static void visit(T&& object, TContext& context)
-        {
-            TPolicies::EnumPolicy::process(std::forward<T>(object), context);
-        }
-
-        template<typename T, typename TContext>
-        requires(std::is_same_v<std::decay_t<T>, std::string>)
-        static void visit(T&& object, TContext& context)
-        {
-            TPolicies::ValuePolicy::process(std::forward<T>(object), context);
-        }
-
-        template<typename T, typename TContext>
-        requires(std::is_base_of_v<dory::generic::IParameterizedString, std::decay_t<T>>)
-        static void visit(T&& object, TContext& context)
-        {
-            TPolicies::ValuePolicy::process(object.getTemplate(), context);
-            object.updateTemplate();
-        }
-
-        template<typename T, typename TContext>
-        requires(std::is_base_of_v<dory::generic::IParameterizedString, T>)
-        static void visit(std::unique_ptr<T>& object, TContext& context)
-        {
-            TPolicies::ValuePolicy::process(object->getTemplate(), context);
-            object->updateTemplate();
-        }
-
-        template<typename T, typename TContext>
-        requires(generic::is_optional_v<std::decay_t<T>>)
-        static void visit(T&& object, TContext& context)
-        {
-            visit(*object, context);
-        }
-
-        template<typename T, typename TContext>
-        requires(generic::is_fixed_array_v<std::decay_t<T>>)
-        static void visit(T&& object, TContext& context)
-        {
-            using TArray = std::decay_t<T>;
-            constexpr typename TArray::size_type size = generic::array_size<TArray>::size;
-
-            TPolicies::CollectionPolicy::template beginCollection<typename TArray::value_type, size>(std::forward<T>(object), context);
-
-            size_t lastIndex = size - 1;
-            for(std::size_t i {}; i < size; ++i)
-            {
-                if(TPolicies::CollectionItemPolicy::beginItem(i, context))
-                {
-                    visit(object[i], context);
-                    TPolicies::CollectionItemPolicy::endItem(i == lastIndex, context);
-                }
-            }
-
-            TPolicies::CollectionPolicy::endCollection(context);
-        }
-
-        template<typename T, typename TContext>
-        requires(generic::is_dynamic_collection_v<T> || generic::is_dictionary_v<T>)
-        static void visit(T&& object, TContext& context)
-        {
-            TPolicies::ContainerPolicyType::beginCollection(std::forward<T>(object), context);
-
-            auto item = TPolicies::ContainerPolicyType::nextItem(std::forward<T>(object), context);
-            while(item)
-            {
-                auto valueRef = *item;
-
-                visit(valueRef.get(), context);
-                TPolicies::ContainerPolicyType::endItem(valueRef, std::forward<T>(object), context);
-                item = TPolicies::ContainerPolicyType::nextItem(std::forward<T>(object), context);
-            }
-
-            TPolicies::ContainerPolicyType::endCollection(std::forward<T>(object), context);
-        }
-
-        template<typename T, typename TContext>
-        requires(std::is_class_v<std::decay_t<T>>
-                 && !generic::is_fixed_array_v<std::decay_t<T>>
-                 && !std::is_same_v<std::decay_t<T>, std::string>
-                 && !std::is_base_of_v<dory::generic::IParameterizedString, dory::generic::ElementType<T>>
-                 && !std::is_base_of_v<dory::generic::IParameterizedString, std::decay_t<T>>
-                 && !generic::is_optional_v<std::decay_t<T>>
-                 && !generic::is_dynamic_collection_v<T>
-                 && !generic::is_dictionary_v<T>)
-        static void visit(T&& object, TContext& context)
-        {
-            if(TPolicies::ObjectPolicy::beginObject(std::forward<T>(object), context))
-            {
-                reflection::visitClassFields(object, []<typename TClassMember>(TClassMember&& member, const std::size_t i, const std::size_t memberCount, TContext& context)
-                {
-                    if(TPolicies::MemberPolicy::beginMember(std::forward<TClassMember>(member), i, context))
-                    {
-                        visit(member.value, context);
-                        TPolicies::MemberPolicy::endMember(i == memberCount - 1, context);
-                    }
-                }, context);
-
-                TPolicies::ObjectPolicy::endObject(std::forward<T>(object), context);
-            }
+            Visitor<std::remove_reference_t<T>, TContext, TPolicies>::visit(std::forward<T>(object), context);
         }
     };
 }

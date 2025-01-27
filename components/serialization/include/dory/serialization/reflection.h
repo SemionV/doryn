@@ -94,12 +94,12 @@ namespace dory::reflection
     template<typename TClass, typename TMember>
     struct ClassMember
     {
-        using ClassType = TClass;
+        using ClassType = std::remove_reference_t<TClass>;
         using MemberType = TMember;
-        using ResolvedMemberType = std::conditional_t<std::is_const_v<std::remove_reference_t<TClass>>, const TMember&, TMember&>;
+        using ResolvedMemberType = std::conditional_t<std::is_const_v<ClassType>, const MemberType&, MemberType&>;
 
         const std::string_view& name;
-        TMember std::decay_t<TClass>::* pointer;
+        MemberType std::decay_t<ClassType>::* pointer;
         ResolvedMemberType value;
     };
 
