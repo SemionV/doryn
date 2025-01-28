@@ -426,7 +426,7 @@ REFL_TYPE(Material2)
     REFL_FIELD(id)
 REFL_END
 
-TEST(ObjectCopy, mergeObjects)
+TEST(ObjectCopy, copyObjects)
 {
     auto material = Material2 {};
     material.name = "destination";
@@ -458,4 +458,9 @@ TEST(ObjectCopy, mergeObjects)
     EXPECT_EQ(material.uniforms.shaders.size(), 2);
     EXPECT_EQ(material.uniforms.shaders[ShaderType::vertex], "vertexShader");
     EXPECT_EQ(material.uniforms.shaders[ShaderType::fragment], "fragmentShader");
+}
+
+TEST(ObjectCopy, mergeObjects)
+{
+    //TODO: test merging of GLM types properties
 }
