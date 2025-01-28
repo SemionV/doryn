@@ -199,13 +199,13 @@ namespace dory::serialization::yaml
         using ContainerPolicyType = SerializerContainerPolicy;
     };
 
-    template<typename T, typename TVisitorBase = ObjectVisitorDefaultBase>
+    template<typename T, typename... TVisitorBases>
     static std::string serialize(const T& object)
     {
         auto tree = ryml::Tree{};
 
         YamlContext context(tree.rootref());
-        ObjectVisitor<YamlSerializationPolicies, TVisitorBase>::visit(object, context);
+        ObjectVisitor<YamlSerializationPolicies, TVisitorBases...>::visit(object, context);
 
         std::stringstream stream;
         stream << tree;

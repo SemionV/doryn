@@ -161,11 +161,11 @@ namespace dory::serialization::object
         using ContainerPolicyType = ObjectCopyContainerPolicy;
     };
 
-    template<typename T, typename TBaseVisitor = ObjectVisitorDefaultBase>
+    template<typename T, typename... TBaseVisitors>
     static void copy(const T& source, T& target)
     {
         ObjectCopyContext context(&source);
-        ObjectVisitor<ObjectCopyPolicies, TBaseVisitor>::visit(target, context);
+        ObjectVisitor<ObjectCopyPolicies, TBaseVisitors...>::visit(target, context);
     }
 
     struct ObjectMergeMemberPolicy
@@ -239,10 +239,10 @@ namespace dory::serialization::object
         using ContainerPolicyType = ObjectCopyContainerPolicy;
     };
 
-    template<typename T, typename TBaseVisitor = ObjectVisitorDefaultBase>
+    template<typename T, typename... TBaseVisitors>
     static void merge(const T& source, T& target)
     {
         ObjectCopyContext context(&source);
-        ObjectVisitor<ObjectMergePolicies, TBaseVisitor>::visit(target, context);
+        ObjectVisitor<ObjectMergePolicies, TBaseVisitors...>::visit(target, context);
     }
 }

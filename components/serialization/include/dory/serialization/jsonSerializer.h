@@ -154,12 +154,12 @@ namespace dory::serialization::json
         using ContainerPolicyType = SerializerContainerPolicy;
     };
 
-    template<typename T, typename TVisitorBase = ObjectVisitorDefaultBase>
+    template<typename T, typename... TVisitorBases>
     static std::string serialize(const T& object, const int indent = -1)
     {
         auto data = json{};
         JsonContext context(&data);
-        ObjectVisitor<JsonSerializationPolicies, TVisitorBase>::visit(object, context);
+        ObjectVisitor<JsonSerializationPolicies, TVisitorBases...>::visit(object, context);
 
         return data.dump(indent);
     }

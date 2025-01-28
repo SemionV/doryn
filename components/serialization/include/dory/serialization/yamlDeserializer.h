@@ -195,20 +195,20 @@ namespace dory::serialization::yaml
         using ContainerPolicyType = DeserializerContainerPolicy;
     };
 
-    template<typename T, typename TVisitorBase = ObjectVisitorDefaultBase>
+    template<typename T, typename... TVisitorBases>
     static void deserialize(std::string source, T& object)
     {
         auto tree = ryml::parse_in_place(toRymlStr(source));
         YamlContext context(tree.rootref());
-        ObjectVisitor<YamlDeserializationPolicies, TVisitorBase>::visit(object, context);
+        ObjectVisitor<YamlDeserializationPolicies, TVisitorBases...>::visit(object, context);
     }
 
-    template<typename T, typename TVisitorBase = ObjectVisitorDefaultBase>
+    template<typename T, typename... TVisitorBases>
     static T deserialize(std::string source)
     {
         auto object = T{};
 
-        deserialize<T, TVisitorBase>(source, object);
+        deserialize<T, TVisitorBases...>(source, object);
 
         return object;
     }

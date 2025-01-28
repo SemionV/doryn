@@ -284,29 +284,11 @@ namespace dory::serialization
         }
     };
 
-    struct DummyObject
-    {};
-
-    struct ObjectVisitorDefaultBase
-    {
-        template<typename TContext>
-        static void visit(DummyObject& object, TContext& context)
-        {
-            static_assert(false);
-        }
-
-        template<typename TContext>
-        static void visit(const DummyObject& object, TContext& context)
-        {
-            static_assert(false);
-        }
-    };
-
-    template<typename TPolicies = VisitorDefaultPolicies, typename TBase = ObjectVisitorDefaultBase>
-    class ObjectVisitor: public TBase
+    template<typename TPolicies = VisitorDefaultPolicies, typename... TBaseVisitors>
+    class ObjectVisitor: public TBaseVisitors...
     {
     public:
-        using TBase::visit;
+        using TBaseVisitors::visit...;
 
         template<typename T, typename TContext>
         requires(std::is_fundamental_v<std::remove_reference_t<T>>)
@@ -407,4 +389,8 @@ namespace dory::serialization
             }
         }
     };
+
+    template<typename TPolicies, typename... TBaseVisitors>
+    class ObjectVisitor<TPolicies, generic::TypeList<TBaseVisitors...>>: ObjectVisitor<TPolicies, TBaseVisitors...>
+    {};
 }
