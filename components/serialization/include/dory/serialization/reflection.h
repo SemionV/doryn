@@ -103,7 +103,7 @@ namespace dory::reflection
 
         const std::string_view& name;
         MemberType std::decay_t<ClassType>::* pointer;
-        ResolvedMemberType value;
+        ResolvedMemberType value {};
     };
 
     template<typename T, typename F, typename... Args>

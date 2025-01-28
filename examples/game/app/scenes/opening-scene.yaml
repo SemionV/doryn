@@ -27,7 +27,7 @@ objects:
     material: wireframeWhite
     transform:
       position: [ 2.3, 0.0, 0.0 ]
-      rotation: [ 45.0, 0.0, 0.0, 1.0 ]
+      rotation: [ 0.0, 0.0, 1.0, 45.0 ]
       scale: [ 2.0, 2.0, 2.0 ]
     components:
       linearMovement:

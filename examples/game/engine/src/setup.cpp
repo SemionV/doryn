@@ -4,6 +4,7 @@
 #include "dory/game/setup.h"
 #include "dory/core/resources/ecsType.h"
 #include <dory/core/resources/assetType.h>
+#include <dory/core/resources/localizationRefl.h>
 
 #ifdef DORY_PLATFORM_LINUX
 #include <dory/core/devices/standardIoDeviceUnix.h>

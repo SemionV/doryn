@@ -8,12 +8,6 @@
 
 namespace dory::core::resources::scene::dto
 {
-    using vec2 = std::array<float, 2>;
-    using vec3 = std::array<float, 3>;
-    using vec4 = std::array<float, 4>;
-    using quat = std::array<float, 4>;
-    using color = std::array<float, 4>;
-
     struct Shader
     {
         assets::ShaderType type {};
@@ -22,7 +16,7 @@ namespace dory::core::resources::scene::dto
 
     struct MaterialProperties
     {
-        std::optional<color> color {};
+        std::optional<glm::vec4> color {};
     };
 
     struct Material
@@ -53,9 +47,9 @@ namespace dory::core::resources::scene::dto
 
     struct Transform
     {
-        vec3 position;
-        quat rotation;
-        vec3 scale;
+        glm::vec3 position;
+        glm::quat rotation;
+        glm::vec3 scale;
     };
 
     struct Object

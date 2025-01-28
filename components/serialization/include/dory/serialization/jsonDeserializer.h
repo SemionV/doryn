@@ -174,22 +174,22 @@ namespace dory::serialization::json
         using ContainerPolicyType = DeserializerContainerPolicy;
     };
 
-    template<typename T>
+    template<typename T, typename TVisitorBase = ObjectVisitorDefaultBase>
     static T deserialize(const std::string& source)
     {
         auto data = json::parse(source);
         JsonContext context(&data);
         auto object = T{};
-        ObjectVisitor<JsonDeserializationPolicies>::visit(object, context);
+        ObjectVisitor<JsonDeserializationPolicies, TVisitorBase>::visit(object, context);
 
         return object;
     }
 
-    template<typename T>
+    template<typename T, typename TVisitorBase = ObjectVisitorDefaultBase>
     static void deserialize(const std::string& source, T& object)
     {
         auto data = json::parse(source);
         JsonContext context(&data);
-        ObjectVisitor<JsonDeserializationPolicies>::visit(object, context);
+        ObjectVisitor<JsonDeserializationPolicies, TVisitorBase>::visit(object, context);
     }
 }

@@ -12,6 +12,7 @@
 #include <dory/serialization/jsonDeserializer.h>
 #include <dory/serialization/jsonSerializer.h>
 #include <dory/serialization/object.h>
+#include <dory/core/services/serializer.h>
 #include <dory/math/linearAlgebra.h>
 #include <spdlog/fmt/bundled/format.h>
 
@@ -123,11 +124,25 @@ struct Transform
     vec3 scale;
 };
 
+struct Transform2
+{
+    glm::vec3 position;
+    glm::quat rotation;
+};
+
+REFL_TYPE(Transform2)
+    REFL_FIELD(position)
+    REFL_FIELD(rotation)
+REFL_END
+
 REFL_TYPE(Transform)
     REFL_FIELD(position)
     REFL_FIELD(rotation)
     REFL_FIELD(scale)
 REFL_END
+
+template<typename TPolicies>
+using GlmObjectVisitorType = dory::core::services::serialization::ObjectVisitor<TPolicies>;
 
 TEST(YamlDeserialization, deserializeEnumValue)
 {
@@ -140,6 +155,46 @@ type: fragment
 
     EXPECT_EQ(shader.filename, "assets/shaders/simpleVertex");
     EXPECT_EQ(shader.type, ShaderType::fragment);
+}
+
+TEST(YamlDeserialization, deserializeGlmVec)
+{
+    const auto yaml = R"(
+position: [0.1, 0.34, 1.89]
+rotation: [1.1, 1.34, 2.89, 1.0]
+)";
+
+    auto [position, rotation] = dory::serialization::yaml::deserialize<Transform2, GlmObjectVisitorType<dory::serialization::yaml::YamlDeserializationPolicies>>(yaml);
+
+    EXPECT_EQ(position.x, 0.1f);
+    EXPECT_EQ(position.y, 0.34f);
+    EXPECT_EQ(position.z, 1.89f);
+
+    EXPECT_EQ(rotation.x, 1.1f);
+    EXPECT_EQ(rotation.y, 1.34f);
+    EXPECT_EQ(rotation.z, 2.89f);
+    EXPECT_EQ(rotation.w, 1.0f);
+}
+
+TEST(YamlSerialization, serializeGlmVec)
+{
+    constexpr Transform2 transform {
+        {0.1f, 0.34f, 1.89f},
+        {1.1f, 1.34f, 2.89f, 1.0f}
+    };
+
+    const auto yaml = dory::serialization::yaml::serialize<Transform2, GlmObjectVisitorType<dory::serialization::yaml::YamlSerializationPolicies>>(transform);
+
+    auto [position, rotation] = dory::serialization::yaml::deserialize<Transform2, GlmObjectVisitorType<dory::serialization::yaml::YamlDeserializationPolicies>>(yaml);
+
+    EXPECT_EQ(position.x, transform.position.x);
+    EXPECT_EQ(position.y, transform.position.y);
+    EXPECT_EQ(position.z, transform.position.z);
+
+    EXPECT_EQ(rotation.x, transform.rotation.x);
+    EXPECT_EQ(rotation.y, transform.rotation.y);
+    EXPECT_EQ(rotation.z, transform.rotation.z);
+    EXPECT_EQ(rotation.w, transform.rotation.w);
 }
 
 TEST(YamlDeserialization, deserializeInvalidEnumValue)
@@ -238,6 +293,46 @@ TEST(JsonDeserialization, deserializeEnumValue)
 
     EXPECT_EQ(shader.filename, "assets/shaders/simpleVertex");
     EXPECT_EQ(shader.type, ShaderType::fragment);
+}
+
+TEST(JsonDeserialization, deserializeGlmVec)
+{
+    const auto json = R"({
+"position": [0.1, 0.34, 1.89],
+"rotation": [1.1, 1.34, 2.89, 1.0]
+})";
+
+    auto [position, rotation] = dory::serialization::json::deserialize<Transform2, GlmObjectVisitorType<dory::serialization::json::JsonDeserializationPolicies>>(json);
+
+    EXPECT_EQ(position.x, 0.1f);
+    EXPECT_EQ(position.y, 0.34f);
+    EXPECT_EQ(position.z, 1.89f);
+
+    EXPECT_EQ(rotation.x, 1.1f);
+    EXPECT_EQ(rotation.y, 1.34f);
+    EXPECT_EQ(rotation.z, 2.89f);
+    EXPECT_EQ(rotation.w, 1.0f);
+}
+
+TEST(JsonSerialization, serializeGlmVec)
+{
+    constexpr Transform2 transform {
+            {0.1f, 0.34f, 1.89f},
+            {1.1f, 1.34f, 2.89f, 1.0f}
+    };
+
+    const auto json = dory::serialization::json::serialize<Transform2, GlmObjectVisitorType<dory::serialization::json::JsonSerializationPolicies>>(transform);
+
+    auto [position, rotation] = dory::serialization::json::deserialize<Transform2, GlmObjectVisitorType<dory::serialization::json::JsonDeserializationPolicies>>(json);
+
+    EXPECT_EQ(position.x, transform.position.x);
+    EXPECT_EQ(position.y, transform.position.y);
+    EXPECT_EQ(position.z, transform.position.z);
+
+    EXPECT_EQ(rotation.x, transform.rotation.x);
+    EXPECT_EQ(rotation.y, transform.rotation.y);
+    EXPECT_EQ(rotation.z, transform.rotation.z);
+    EXPECT_EQ(rotation.w, transform.rotation.w);
 }
 
 TEST(JsonDeserialization, deserializeInvalidEnumValue)
