@@ -108,9 +108,10 @@ namespace dory::serialization::yaml
         {}
     };
 
-    struct DeserializerContainerPolicy: public ContainerPolicy<DeserializerContainerPolicy, TreeStructureContext<ryml::NodeRef>>
+    struct DeserializerContainerPolicy: public ContainerPolicy<DeserializerContainerPolicy>
     {
-        using ContextType = TreeStructureContext<ryml::NodeRef>;
+        using NodeType = ryml::NodeRef;
+        using ContextType = TreeStructureContext<NodeType>;
 
         template<typename TCollection>
         requires(generic::is_dynamic_collection_v<TCollection>)
@@ -133,26 +134,22 @@ namespace dory::serialization::yaml
             }
         }
 
-        template<typename TCollection>
+        template<typename TCollection, typename TItem>
         requires(generic::is_dynamic_collection_v<TCollection>)
-        static auto& getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, ContextType& itemContext)
+        static std::optional<ContextType> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
         {
             auto itemNode = collectionNode.at(index);
-            itemContext = ContextType{ itemNode };
-
-            return collection.emplace_back(typename TCollection::value_type{});
+            *item = &collection.emplace_back(typename TCollection::value_type{});
+            return ContextType{ itemNode };
         }
 
-        template<typename TCollection>
+        template<typename TCollection, typename TItem>
         requires(generic::is_dictionary_v<TCollection>)
-        static auto& getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, ContextType& itemContext)
+        static std::optional<ContextType> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
         {
-            using ValueType = typename TCollection::mapped_type;
-
             if(collectionNode.is_map())
             {
                 auto itemNode = collectionNode.at(index);
-                itemContext = ContextType{ itemNode };
                 auto nodeKey = itemNode.key();
                 const auto keyString = std::string_view(nodeKey.str, nodeKey.len);
                 const auto key = getKeyValue<TCollection>(keyString);
@@ -160,16 +157,22 @@ namespace dory::serialization::yaml
                 auto it = collection.find(key);
                 if(it != collection.end())
                 {
-                    return it->second;
+                    *item = &it->second;
+                }
+                else if(auto result = collection.emplace(key, TItem{}); result.second)
+                {
+                    *item = &result.first->second;
+                }
+                else
+                {
+                    //in case if normal emplace to the dictionary did not work, try to emplace with default key value
+                    *item = &collection.emplace(typename TCollection::key_type{}, TItem{});
                 }
 
-                if(auto result = collection.emplace(key, ValueType{}); result.second)
-                {
-                    return result.first->second;
-                }
+                return ContextType{ itemNode };
             }
 
-            return collection[typename TCollection::key_type{}]; //in case if normal emplace to the dictionary did not work, we return an item for default value of the key
+            return {};
         }
     };
 

@@ -244,6 +244,26 @@ namespace dory::serialization
 
         template<typename T>
         constexpr static bool IsContainerV = generic::is_dynamic_collection_v<T> || generic::is_dictionary_v<T>;
+
+        template<typename T>
+        struct CollectionItemType;
+
+        template<typename T>
+        requires(generic::is_dynamic_collection_v<T>)
+        struct CollectionItemType<T>
+        {
+            using Type = typename T::value_type;
+        };
+
+        template<typename T>
+        requires(generic::is_dictionary_v<T>)
+        struct CollectionItemType<T>
+        {
+            using Type = typename T::mapped_type;
+        };
+
+        template<typename T>
+        using CollectionItemTypeT = typename CollectionItemType<T>::Type;
     };
 
     struct VisitorDefaultPolicies
@@ -337,13 +357,13 @@ namespace dory::serialization
         {
             TPolicies::ContainerPolicyType::beginCollection(std::forward<T>(object), context);
 
-            auto item = TPolicies::ContainerPolicyType::nextItem(std::forward<T>(object), context);
-            while(item)
-            {
-                auto valueRef = *item;
+            using ItemType = typename TPolicies::Traits::template CollectionItemTypeT<std::decay_t<T>>;
 
-                visit(valueRef.get(), context);
-                TPolicies::ContainerPolicyType::endItem(valueRef, std::forward<T>(object), context);
+            ItemType* item;
+            while(auto itemContext = TPolicies::ContainerPolicyType::nextItem(std::forward<T>(object), &item, context))
+            {
+                visit(*item, *itemContext);
+                TPolicies::ContainerPolicyType::endItem(*item, std::forward<T>(object), context);
                 item = TPolicies::ContainerPolicyType::nextItem(std::forward<T>(object), context);
             }
 
