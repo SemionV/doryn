@@ -8,6 +8,12 @@ namespace dory::serialization::object
         {}
     };
 
+    struct ObjectCopyContext: TreeStructureContext<const void*>
+    {
+        explicit ObjectCopyContext(const void* root): TreeStructureContext(root)
+        {}
+    };
+
     struct ObjectCopyValuePolicy
     {
         template<typename T>
@@ -239,8 +245,8 @@ namespace dory::serialization::object
         using ContainerPolicyType = ObjectCopyContainerPolicy;
     };
 
-    template<typename T, typename... TBaseVisitors>
-    static void merge(const T& source, T& target)
+    template<typename T, typename U, typename... TBaseVisitors>
+    static void merge(const T& source, U& target)
     {
         ObjectCopyContext context(&source);
         ObjectVisitor<ObjectMergePolicies, TBaseVisitors...>::visit(target, context);

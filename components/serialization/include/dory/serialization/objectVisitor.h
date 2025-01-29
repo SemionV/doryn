@@ -42,9 +42,9 @@ namespace dory::serialization
     struct DefaultMemberPolicy
     {
         template<typename TContext>
-        inline static bool beginMember(auto&& member, const std::size_t i, TContext& context)
+        inline static auto beginMember(auto&& member, const std::size_t i, TContext& context)
         {
-            return true;
+            return TContext{ context };
         }
 
         template<typename TContext>
@@ -107,25 +107,31 @@ namespace dory::serialization
     template<typename TNode, typename... Ts>
     struct TreeStructureContext: public Ts...
     {
-        std::stack<TNode> parents;
-        std::stack<std::size_t> collectionIndexesStack;
-        std::stack<std::size_t> collectionSizesStack;
+        using NodeType = TNode;
 
-        explicit TreeStructureContext(TNode data)
+        TNode node;
+        std::size_t collectionIndex {};
+        std::size_t collectionSize {};
+
+        /*std::stack<TNode> parents;
+        std::stack<std::size_t> collectionIndexesStack;
+        std::stack<std::size_t> collectionSizesStack;/*/
+
+        TreeStructureContext() = default;
+
+        explicit TreeStructureContext(TNode data):
+            node(data)
         {
-            parents.push(data);
+            /*parents.push(data);*/
         }
     };
 
-    template<typename TDerived, typename TContext>
+    template<typename TDerived>
     struct ContainerPolicy;
 
-    template<typename TDerived, typename TNode, typename... Ts>
-    struct ContainerPolicy<TDerived, TreeStructureContext<TNode, Ts...>>
+    template<typename TDerived>
+    struct ContainerPolicy<TDerived>
     {
-        using NodeType = TNode;
-        using ContextType = TreeStructureContext<TNode, Ts...>;
-
         template<typename TCollection>
         static auto getKeyValue(const auto& key)
         {
@@ -176,54 +182,44 @@ namespace dory::serialization
             assert(false);
         }
 
-        template<typename TCollection>
-        static void beginCollection(TCollection&& collection, ContextType& context)
+        template<typename TCollection, typename TContext>
+        static void beginCollection(TCollection&& collection, TContext& context)
         {
-            context.collectionIndexesStack.emplace(0);
-            auto& size = context.collectionSizesStack.emplace(0);
-            TDerived::setCollectionSize(collection, context.parents, size);
+            context.collectionIndex = 0;
+            TDerived::setCollectionSize(collection, context.node, context.collectionSize);
         }
 
-        template<typename TCollection>
-        static auto nextItem(TCollection& collection, ContextType& context)
+        template<typename TCollection, typename TItem, typename TContext>
+        static auto nextItem(TCollection& collection, TItem** item, TContext& context)
         {
-            if(itemsLeft<TCollection>(context))
+            if(itemsLeft(context))
             {
-                auto& item = getItem(collection, context);
-                return std::optional{std::ref(item)};
+                return getItem(collection, item, context);
             }
 
-            using ValueType = decltype(getItem(std::declval<TCollection&>(), std::declval<ContextType&>()));
-            return std::optional<decltype(std::ref(std::declval<ValueType>()))>{};
+            *item = nullptr;
         }
 
-        template<typename TCollection>
-        static bool itemsLeft(ContextType& context)
+        template<typename TContext>
+        static bool itemsLeft(TContext& context)
         {
-            return context.collectionIndexesStack.top() < context.collectionSizesStack.top();
+            return context.collectionIndex < context.collectionSize;
         }
 
-        template<typename TCollection>
-        static auto& getItem(TCollection& collection, ContextType& context)
+        template<typename TCollection, typename TItem, typename TContext>
+        static auto getItem(TCollection& collection, TItem** item, TContext& context)
         {
-            auto& index = context.collectionIndexesStack.top();
-            auto& item = TDerived::getCollectionItem(collection, index, context.parents);
-            ++index;
-            return item;
+            ++context.collectionIndex;
+            return TDerived::getCollectionItem(collection, context.collectionIndex, context.node, item);
         }
 
-        template<typename T>
-        static void endItem(auto& item, T& collection, ContextType& context)
-        {
-            context.parents.pop();
-        }
+        template<typename TCollection, typename TContext>
+        static void endItem(auto& item, TCollection& collection, TContext& context)
+        {}
 
-        template<typename TCollection>
-        static void endCollection(TCollection& collection, ContextType& context)
-        {
-            context.collectionIndexesStack.pop();
-            context.collectionSizesStack.pop();
-        }
+        template<typename TCollection, typename TContext>
+        static void endCollection(TCollection& collection, TContext& context)
+        {}
     };
 
     struct VisitorTypeTraitPolicies
@@ -273,9 +269,9 @@ namespace dory::serialization
             const size_t lastIndex = size - 1;
             for(std::size_t i {}; i < size; ++i)
             {
-                if(TPolicies::CollectionItemPolicy::beginItem(i, context))
+                if(auto itemContext = TPolicies::CollectionItemPolicy::beginItem(i, context))
                 {
-                    TVisitor::visit(array[i], context);
+                    TVisitor::visit(array[i], *itemContext);
                     TPolicies::CollectionItemPolicy::endItem(i == lastIndex, context);
                 }
             }
@@ -362,9 +358,9 @@ namespace dory::serialization
             {
                 reflection::visitClassFields(object, []<typename TClassMember>(TClassMember&& member, const std::size_t i, const std::size_t memberCount, TContext& context)
                 {
-                    if(TPolicies::MemberPolicy::beginMember(std::forward<TClassMember>(member), i, context))
+                    if(auto memberContext = TPolicies::MemberPolicy::beginMember(std::forward<TClassMember>(member), i, context))
                     {
-                        visit(member.value, context);
+                        visit(member.value, *memberContext);
                         TPolicies::MemberPolicy::endMember(i == memberCount - 1, context);
                     }
                 }, context);

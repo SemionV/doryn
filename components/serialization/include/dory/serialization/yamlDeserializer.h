@@ -9,25 +9,24 @@ namespace dory::serialization::yaml
     {
     private:
         template<typename T>
-        inline static void readValue(T& value, ryml::NodeRef& node)
+        static void readValue(T& value, ryml::NodeRef& node)
         {
             node >> value;
         }
 
-        inline static void readValue(std::string& value, ryml::NodeRef& node)
+        static void readValue(std::string& value, const ryml::NodeRef& node)
         {
-            auto yamlValue = node.val();
+            const auto yamlValue = node.val();
             value = std::string(yamlValue.str, yamlValue.len);
         }
 
     public:
         template<typename T>
-        inline static void process(T& value, YamlContext& context)
+        static void process(T& value, YamlContext& context)
         {
-            auto current = context.parents.top();
-            if(current.has_val())
+            if(context.node.has_val())
             {
-                readValue(value, current);
+                readValue(value, context.node);
             }
         }
     };
@@ -37,7 +36,7 @@ namespace dory::serialization::yaml
         template<typename T>
         static void process(T& value, YamlContext& context)
         {
-            if(const auto current = context.parents.top(); current.has_val())
+            if(const auto current = context.node; current.has_val())
             {
                 const auto yamlValue = current.val();
                 const auto enumName = std::string_view(yamlValue.str, yamlValue.len);
@@ -52,27 +51,25 @@ namespace dory::serialization::yaml
 
     struct DeserializerMemberPolicy
     {
-        static bool beginMemberGeneric(auto&& member, const std::size_t i, YamlContext& context)
+        static std::optional<YamlContext> beginMemberGeneric(auto&& member, const std::size_t i, YamlContext& context)
         {
-            auto current = context.parents.top();
+            auto current = context.node;
             const auto& name = toRymlCStr(member.name);
             if(current.is_map() && current.has_child(name))
             {
-                context.parents.push(current[name]);
-
-                return true;
+                return YamlContext{ current[name] };
             }
 
-            return false;
+            return {};
         }
 
-        static bool beginMember(auto&& member, const std::size_t i, YamlContext& context)
+        static std::optional<YamlContext> beginMember(auto&& member, const std::size_t i, YamlContext& context)
         {
             return beginMemberGeneric(member, i, context);
         }
 
         template<class T, class TValue>
-        static bool beginMember(reflection::ClassMember<T, std::optional<TValue>>& member, const std::size_t i, YamlContext& context)
+        static std::optional<YamlContext> beginMember(reflection::ClassMember<T, std::optional<TValue>>& member, const std::size_t i, YamlContext& context)
         {
             std::optional<TValue> tempValue;
             reflection::ClassMember<T, std::optional<TValue>> tempMember {
@@ -81,61 +78,54 @@ namespace dory::serialization::yaml
                 tempValue
             };
 
-            if(beginMemberGeneric(tempMember, i, context))
+            if(auto memberContextOptional = beginMemberGeneric(tempMember, i, context))
             {
                 member.value.emplace();
-                return true;
+                return memberContextOptional;
             }
 
-            return false;
+            return {};
         }
 
         static void endMember(const bool lastMember, YamlContext& context)
-        {
-            context.parents.pop();
-        }
+        {}
     };
 
     struct DeserializerCollectionItemPolicy
     {
-        inline static bool beginItem(const std::size_t i, YamlContext& context)
+        static std::optional<YamlContext> beginItem(const std::size_t i, YamlContext& context)
         {
-            auto current = context.parents.top();
+            auto current = context.node;
             if(current.is_seq() && i < current.num_children())
             {
-                auto itemNode = current.at(i);
-                context.parents.push(itemNode);
-
-                return true;
+                return YamlContext{ current.at(i) };
             }
 
-            return false;
+            return {};
         }
 
-        inline static void endItem(const bool lastItem, YamlContext& context)
-        {
-            context.parents.pop();
-        }
+        static void endItem(const bool lastItem, YamlContext& context)
+        {}
     };
 
     struct DeserializerContainerPolicy: public ContainerPolicy<DeserializerContainerPolicy, TreeStructureContext<ryml::NodeRef>>
     {
+        using ContextType = TreeStructureContext<ryml::NodeRef>;
+
         template<typename TCollection>
         requires(generic::is_dynamic_collection_v<TCollection>)
-        static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
+        static void setCollectionSize(TCollection& collection, NodeType& collectionNode, std::size_t& size)
         {
-            auto currentNode = parents.top();
-            size = currentNode.is_seq() ? currentNode.num_children() : 0;
+            size = collectionNode.is_seq() ? collectionNode.num_children() : 0;
         }
 
         template<typename TCollection>
         requires(generic::is_dictionary_v<TCollection>)
-        static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
+        static void setCollectionSize(TCollection& collection, NodeType& collectionNode, std::size_t& size)
         {
-            auto currentNode = parents.top();
-            if(currentNode.is_map())
+            if(collectionNode.is_map())
             {
-                size = currentNode.num_children();
+                size = collectionNode.num_children();
             }
             else
             {
@@ -145,27 +135,24 @@ namespace dory::serialization::yaml
 
         template<typename TCollection>
         requires(generic::is_dynamic_collection_v<TCollection>)
-        static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
+        static auto& getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, ContextType& itemContext)
         {
-            auto currentNode = parents.top();
-            auto itemNode = currentNode.at(index);
-            parents.push(itemNode);
+            auto itemNode = collectionNode.at(index);
+            itemContext = ContextType{ itemNode };
 
             return collection.emplace_back(typename TCollection::value_type{});
         }
 
         template<typename TCollection>
         requires(generic::is_dictionary_v<TCollection>)
-        static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
+        static auto& getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, ContextType& itemContext)
         {
             using ValueType = typename TCollection::mapped_type;
 
-            auto currentNode = parents.top();
-
-            if(currentNode.is_map())
+            if(collectionNode.is_map())
             {
-                auto itemNode = currentNode.at(index);
-                parents.push(itemNode);
+                auto itemNode = collectionNode.at(index);
+                itemContext = ContextType{ itemNode };
                 auto nodeKey = itemNode.key();
                 const auto keyString = std::string_view(nodeKey.str, nodeKey.len);
                 const auto key = getKeyValue<TCollection>(keyString);

@@ -6,7 +6,9 @@ namespace dory::serialization::yaml
 {
     struct YamlContext: TreeStructureContext<ryml::NodeRef>
     {
-        explicit YamlContext(ryml::NodeRef root): TreeStructureContext<ryml::NodeRef>(root)
+        YamlContext() = default;
+
+        explicit YamlContext(const ryml::NodeRef& root): TreeStructureContext(root)
         {}
     };
 
