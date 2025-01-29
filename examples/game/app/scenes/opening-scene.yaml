@@ -14,7 +14,7 @@ assets:
       polygonMode: Wireframe
     wireframeRed:
       baseMaterials: [ wireframeWhite ]
-      properties: #support different types objects merging, merge MaterialProperties objects from different domains
+      properties:
         color: [ 1.0, 0.0, 0.0, 1.0 ]
   meshes:
     cube:
@@ -43,7 +43,7 @@ objects:
         mesh: sphere
         material: wireframeRed
   cube2:
-    mesh: cube #indexed rendering
+    mesh: cube
     material: wireframeWhite
     transform:
       position: [ -2.3, 0.0, 0.0 ]

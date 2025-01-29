@@ -1,41 +1,32 @@
 # Development log
 
 Tasks:
-* Unit Tests:
-  * Pipeline update
-  * Profiling API
-  * View state blending
-* Profiling
-  * Frame stream
-  * Conditional compilation of Profiling feature into the resulting binaries
-  * Measure duration of the pipeline steps
-  * Analyze the profiling data
-* Run the whole pipeline in the LoopService, but control the subsystems withing the controllers, who are treating time in different ways. For instance,
-  run window system event polling each iteration, as well as rendering subsystem, but run animation system and game logic only every 16.6 ms, and so on.
-* Job System(Thread pool)
+* Scene
+  * Serialization of scene state
+  * Load scene 
+  * Load mesh assets
+  * Load material assets
+  * Unload scene and assets
+  * Unbind assets from GPU
+* Window view layout(automatic calculation of the views inside a window), update view with layout service on window-resize event
 * Camera
   * Handle user input to a window
   * Free camera
-  * Followup camera 
-* Window view layout(automatic calculation of the views inside a window), update view with layout service on window-resize event
-* Edge-rendering(render edges of a geometric shape before tesselation), polygon offset
-* Stencil buffer and others
-* Rendering 
-  * Utility to quickly setup material and mesh 
+  * Followup camera
+* Rendering
+  * Instanced rendering
   * Highlight edges of a mesh(use polygon offset)
-* Scene
-  * Load mesh assets
-  * Load materialId assets
-  * Load scene graph
-  * Unload scene and assets
-  * Unbind assets from GPU
-* Render Meshes
+  * Stencil buffer and others
+  * Edge-rendering(render edges of a geometric shape before tesselation), polygon offset
+* Job System(Thread pool)
+  * Multithreaded rendering
+* Profiling
+  * Conditional compilation of Profiling feature into the resulting binaries
+  * Profile jobs and analyze data
 * Ray casting(for mouse picking and other features)
 * Mouse picking(redirect event to the corresponding event hub of a view)
-* Multithreaded rendering
 * Animation
 * Collision detection
-* Serialization of scene state
 * Networking/Mutliplayer
 * Spatial partition: https://youtube.com/watch?v=eED4bSkYCB8&si=uOxianrO-zNMLAG3, https://youtu.be/MzUxOe5x24w?si=3PLIEqPTq8w8RLet, https://youtu.be/4r_EvmPKOvY?si=iINNvyGsoYzdaftY, https://youtu.be/6BIfqfC1i7U?si=rJSwRj3xuANSJZ4o
 * Path finding
@@ -47,6 +38,17 @@ Tasks:
   * Setup pipeline for build and tests on windows
   * Setup pipeline for releases
   * Deploy assembled packages to some network storage
+
+**29.01.25**
+* Task done: Unit Tests 
+  * Pipeline update
+* Task done: Profiling
+  * Frame stream
+  * Measure duration of the pipeline steps
+  * Analyze the profiling data
+* Task done: Run the whole pipeline in the LoopService, but control the subsystems withing the controllers, who are treating time in different ways. For instance,
+  run window system event polling each iteration, as well as rendering subsystem, but run animation system and game logic only every 16.6 ms, and so on.
+* Render Meshes
 
 **04.01.25**
 * Task done: Scene entities with model and world transformation components
