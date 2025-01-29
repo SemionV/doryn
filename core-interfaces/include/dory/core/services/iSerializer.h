@@ -5,6 +5,7 @@
 #include <dory/core/resources/dataFormat.h>
 #include <dory/core/resources/configuration.h>
 #include <dory/core/resources/localization.h>
+#include <dory/core/resources/scene/configuration.h>
 
 namespace dory::core::services::serialization
 {
@@ -35,7 +36,8 @@ namespace dory::core::services::serialization
     using SerializationTypes = generic::TypeList<
             resources::configuration::Configuration,
             resources::configuration::Interface,
-            resources::Localization>;
+            resources::Localization,
+            resources::scene::configuration::Scene>;
 
     using ISerializer = ISerializerBundle<SerializationTypes>;
 }

@@ -6,7 +6,7 @@
 #include <dory/core/resources/assets/material.h>
 #include <dory/core/resources/scene/components.h>
 
-namespace dory::core::resources::scene::dto
+namespace dory::core::resources::scene::configuration
 {
     struct Shader
     {
@@ -47,9 +47,9 @@ namespace dory::core::resources::scene::dto
 
     struct Transform
     {
-        glm::vec3 position;
-        glm::quat rotation;
-        glm::vec3 scale;
+        glm::vec3 position {};
+        glm::quat rotation {};
+        glm::vec3 scale {};
     };
 
     struct Object

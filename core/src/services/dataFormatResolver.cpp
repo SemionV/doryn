@@ -5,12 +5,13 @@ namespace dory::core::services
 {
     resources::DataFormat DataFormatResolver::resolveFormat(const std::string_view key)
     {
-        auto lowerCaseKey = dory::generic::toLower(key);
+        const auto lowerCaseKey = dory::generic::toLower(key);
         if(lowerCaseKey == yaml)
         {
             return resources::DataFormat::yaml;
         }
-        else if(lowerCaseKey == json)
+
+        if(lowerCaseKey == json)
         {
             return resources::DataFormat::json;
         }
@@ -26,6 +27,6 @@ namespace dory::core::services
             return resolveFormat(std::string_view{ ++extension.begin(), extension.end() });
         }
 
-        return resolveFormat((std::string_view)extension);
+        return resolveFormat(static_cast<std::string_view>(extension));
     }
 }

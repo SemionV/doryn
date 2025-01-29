@@ -5,6 +5,7 @@
 #include "dory/core/resources/ecsType.h"
 #include <dory/core/resources/assetType.h>
 #include <dory/core/resources/localizationRefl.h>
+#include <dory/core/resources/scene/configurationRefl.h>
 
 #ifdef DORY_PLATFORM_LINUX
 #include <dory/core/devices/standardIoDeviceUnix.h>
@@ -59,6 +60,7 @@
 #include <dory/core/services/imageStreamService.h>
 #include <dory/core/services/files/imageFileService.h>
 #include <dory/core/services/profilingService.h>
+#include <dory/core/services/sceneConfigurationService.h>
 
 namespace dory::game
 {
@@ -151,5 +153,6 @@ namespace dory::game
         registry.set<core::services::files::IImageFileService, core::resources::AssetFileFormat::png>(libraryHandle, std::make_shared<core::services::files::PngImageFileService>());
 
         registry.set<core::services::IProfilingService>(libraryHandle, std::make_shared<core::services::ProfilingService>(registry));
+        registry.set<core::services::ISceneConfigurationService>(libraryHandle, std::make_shared<core::services::SceneConfigurationService>(registry));
     }
 }

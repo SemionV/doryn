@@ -43,6 +43,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/imageStreamService.cpp
         src/services/files/imageFileService.cpp
         src/services/profilingService.cpp
+        src/services/sceneConfigurationService.cpp
         src/controllers/windowSystemController.cpp
         src/controllers/viewController.cpp
         src/controllers/movementController.cpp

@@ -7,8 +7,9 @@ namespace dory::core::services
     class DataFormatResolver: public IDataFormatResolver
     {
     private:
-        constexpr const static char* yaml = "yaml";
-        constexpr const static char* json = "json";
+        constexpr static auto yaml = "yaml";
+        constexpr static auto json = "json";
+        constexpr static auto scene = "scene";
 
     public:
         resources::DataFormat resolveFormat(std::string_view key) override;
