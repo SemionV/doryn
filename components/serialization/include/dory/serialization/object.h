@@ -27,8 +27,8 @@ namespace dory::serialization::object
 
     struct ObjectCopyMemberPolicy
     {
-        template<typename T, typename U, typename TValue>
-        static std::optional<ObjectCopyContext<TValue>> beginMember(reflection::ClassMember<T, TValue>& member, const std::size_t i, ObjectCopyContext<U>& context)
+        template<typename T, typename TValue>
+        static std::optional<ObjectCopyContext<TValue>> beginMember(reflection::ClassMember<T, TValue>& member, const std::size_t i, ObjectCopyContext<T>& context)
         {
             if(context.node)
             {
@@ -39,8 +39,8 @@ namespace dory::serialization::object
             return {};
         }
 
-        template<typename T, typename U, typename TValue>
-        static std::optional<ObjectCopyContext<TValue>> beginMember(reflection::ClassMember<T, std::optional<TValue>>& member, const std::size_t i, ObjectCopyContext<U>& context)
+        template<typename T, typename TValue>
+        static std::optional<ObjectCopyContext<TValue>> beginMember(reflection::ClassMember<T, std::optional<TValue>>& member, const std::size_t i, ObjectCopyContext<T>& context)
         {
             if(context.node)
             {
@@ -153,83 +153,5 @@ namespace dory::serialization::object
     {
         ObjectCopyContext context(&source);
         ObjectVisitor<ObjectCopyPolicies, TBaseVisitors...>::visit(target, context);
-    }
-
-    /*struct ObjectMergeMemberPolicy
-    {
-        template<class T, class TValue>
-        static bool beginMember(reflection::ClassMember<T, TValue>& destinationMember, const std::size_t i, ObjectCopyContext& context)
-        {
-            if(const auto currentContext = context.parents.top())
-            {
-                auto& object = *static_cast<const std::decay_t<T>*>(currentContext);
-                bool result {};
-
-                reflection::visitClassFields(object, [&destinationMember, &result]<typename TClassMember>(TClassMember&& sourceMember, const std::size_t i, const std::size_t memberCount, ObjectCopyContext& context)
-                {
-                    if(sourceMember.name == destinationMember.name && !result)
-                    {
-                        context.parents.push(&sourceMember.value);
-                        result = true;
-                    }
-                }, context);
-
-                return result;
-            }
-
-            return false;
-        }
-
-        template<class T, class TValue>
-        requires(generic::is_optional_v<std::decay_t<TValue>>)
-        static bool beginMember(reflection::ClassMember<T, TValue>& destinationMember, const std::size_t i, ObjectCopyContext& context)
-        {
-            if(const auto currentContext = context.parents.top())
-            {
-                auto& object = *static_cast<const std::decay_t<T>*>(currentContext);
-                bool result {};
-
-                reflection::visitClassFields(object, [&destinationMember, &result]<typename TClassMember>(TClassMember&& sourceMember, const std::size_t i, const std::size_t memberCount, ObjectCopyContext& context)
-                {
-                    if(sourceMember.name == destinationMember.name && !result)
-                    {
-                        context.parents.push(&sourceMember.value.value());
-
-                        if(!destinationMember.value.has_value())
-                        {
-                            destinationMember.value.emplace();
-                        }
-
-                        result = true;
-                    }
-                }, context);
-
-                return result;
-            }
-
-            return false;
-        }
-
-        static void endMember(const bool lastMember, ObjectCopyContext& context)
-        {
-            context.parents.pop();
-        }
-    };*/
-
-    struct ObjectMergePolicies: public VisitorDefaultPolicies
-    {
-        using ValuePolicy = ObjectCopyValuePolicy;
-        using EnumPolicy = ObjectCopyValuePolicy;
-        using MemberPolicy = ObjectCopyMemberPolicy;
-        using CollectionPolicy = ObjectCopyCollectionPolicy;
-        using CollectionItemPolicy = ObjectCopyCollectionItemPolicy;
-        using ContainerPolicyType = ObjectCopyContainerPolicy;
-    };
-
-    template<typename T, typename U, typename... TBaseVisitors>
-    static void merge(const T& source, U& target)
-    {
-        ObjectCopyContext context(&source);
-        ObjectVisitor<ObjectMergePolicies, TBaseVisitors...>::visit(target, context);
     }
 }

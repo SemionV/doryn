@@ -120,11 +120,12 @@ namespace dory::reflection
                 using MemberDescriptorType = U;
 
                 const auto memberName = std::string_view{MemberDescriptorType::name.data, MemberDescriptorType::name.size};
-                auto member = ClassMember<T, typename MemberDescriptorType::value_type> {
+                auto member = ClassMember<std::remove_reference_t<T>, typename MemberDescriptorType::value_type> {
                     memberName,
                     MemberDescriptorType::pointer,
                     object.*MemberDescriptorType::pointer
                 };
+
                 functor(member, i++, memberCount, std::forward<Args>(args)...);
             }
         });

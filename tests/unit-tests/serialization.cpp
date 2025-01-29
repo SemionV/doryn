@@ -483,21 +483,3 @@ REFL_TYPE(Component2)
     REFL_FIELD(value)
     REFL_FIELD(name)
 REFL_END
-
-/*TEST(ObjectCopy, mergeObjects)
-{
-    //TODO: test merging of GLM types properties
-
-    Component destination {
-        1, "initial_name", "stay_as_it_is"
-    };
-    const Component2 source {
-        3, "result_name"
-    };
-
-    dory::serialization::object::merge(source, destination);
-
-    EXPECT_EQ(destination.value, source.value);
-    EXPECT_EQ(destination.name, source.name);
-    EXPECT_EQ(destination.type, "stay_as_it_is");
-}*/
