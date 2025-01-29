@@ -11,10 +11,10 @@ namespace dory::core::services::serialization
 {
     //GLM extensions to the base ObjectVisitor
     template<typename TPolicies>
-    struct ObjectVisitor
+    struct GlmObjectVisitor
     {
         using PoliciesType = TPolicies;
-        using VisitorType = dory::serialization::ObjectVisitor<PoliciesType, ObjectVisitor>;
+        using VisitorType = dory::serialization::ObjectVisitor<PoliciesType, GlmObjectVisitor>;
 
         template<typename T, auto size, typename TContext>
         static void visit(glm::vec<size, T>& vector, TContext& context)
@@ -43,18 +43,46 @@ namespace dory::core::services::serialization
         }
     };
 
+    //Localization extensions to the base ObjectVisitor
+    template<typename TPolicies>
+    struct ParameterizedStringObjectVisitor
+    {
+        using PoliciesType = TPolicies;
+        using VisitorType = dory::serialization::ObjectVisitor<PoliciesType, ParameterizedStringObjectVisitor>;
+
+        template<typename T, typename TContext>
+        requires(std::is_base_of_v<generic::IParameterizedString, std::decay_t<T>>)
+        static void visit(T&& object, TContext& context)
+        {
+            TPolicies::ValuePolicy::process(object.getTemplate(), context);
+            object.updateTemplate();
+        }
+
+        template<typename T, typename TContext>
+        requires(std::is_base_of_v<generic::IParameterizedString, T>)
+        static void visit(std::unique_ptr<T>& object, TContext& context)
+        {
+            TPolicies::ValuePolicy::process(object->getTemplate(), context);
+            object->updateTemplate();
+        }
+    };
+
+    template<typename TPolicies>
+    using ObjectVisitorExtensions = generic::TypeList<GlmObjectVisitor<TPolicies>,
+            struct ParameterizedStringObjectVisitor<TPolicies>>;
+
     template<typename T, typename TPolicy, typename TState>
     class YamlSerializerGeneric: public implementation::ImplementationLevel<TPolicy, TState>
     {
     public:
         inline std::string serialize(const T& object) final
         {
-            return dory::serialization::yaml::serialize<const T, ObjectVisitor<dory::serialization::yaml::YamlDeserializationPolicies>>(object);
+            return dory::serialization::yaml::serialize<const T, ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(object);
         }
 
         inline void deserialize(const std::string& source, T& object) final
         {
-            dory::serialization::yaml::deserialize<T, ObjectVisitor<dory::serialization::yaml::YamlDeserializationPolicies>>(source, object);
+            dory::serialization::yaml::deserialize<T, ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(source, object);
         }
     };
 
@@ -69,12 +97,12 @@ namespace dory::core::services::serialization
     public:
         inline std::string serialize(const T& object) final
         {
-            return dory::serialization::json::serialize<const T, ObjectVisitor<dory::serialization::json::JsonSerializationPolicies>>(object);
+            return dory::serialization::json::serialize<const T, ObjectVisitorExtensions<dory::serialization::json::JsonSerializationPolicies>>(object);
         }
 
         inline void deserialize(const std::string& source, T& object) final
         {
-            dory::serialization::json::deserialize<T, ObjectVisitor<dory::serialization::json::JsonDeserializationPolicies>>(source, object);
+            dory::serialization::json::deserialize<T, ObjectVisitorExtensions<dory::serialization::json::JsonDeserializationPolicies>>(source, object);
         }
     };
 

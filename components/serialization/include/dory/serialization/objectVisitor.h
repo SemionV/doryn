@@ -317,22 +317,6 @@ namespace dory::serialization
         }
 
         template<typename T, typename TContext>
-        requires(std::is_base_of_v<dory::generic::IParameterizedString, std::decay_t<T>>)
-        static void visit(T&& object, TContext& context)
-        {
-            TPolicies::ValuePolicy::process(object.getTemplate(), context);
-            object.updateTemplate();
-        }
-
-        template<typename T, typename TContext>
-        requires(std::is_base_of_v<generic::IParameterizedString, T>)
-        static void visit(std::unique_ptr<T>& object, TContext& context)
-        {
-            TPolicies::ValuePolicy::process(object->getTemplate(), context);
-            object->updateTemplate();
-        }
-
-        template<typename T, typename TContext>
         requires(generic::is_optional_v<std::decay_t<T>>)
         static void visit(T&& object, TContext& context)
         {
@@ -391,6 +375,6 @@ namespace dory::serialization
     };
 
     template<typename TPolicies, typename... TBaseVisitors>
-    class ObjectVisitor<TPolicies, generic::TypeList<TBaseVisitors...>>: ObjectVisitor<TPolicies, TBaseVisitors...>
+    class ObjectVisitor<TPolicies, generic::TypeList<TBaseVisitors...>>: public ObjectVisitor<TPolicies, TBaseVisitors...>
     {};
 }

@@ -142,7 +142,7 @@ REFL_TYPE(Transform)
 REFL_END
 
 template<typename TPolicies>
-using GlmObjectVisitorType = dory::core::services::serialization::ObjectVisitor<TPolicies>;
+using ObjectVisitorExtensions = dory::core::services::serialization::ObjectVisitorExtensions<TPolicies>;
 
 TEST(YamlDeserialization, deserializeEnumValue)
 {
@@ -164,7 +164,7 @@ position: [0.1, 0.34, 1.89]
 rotation: [1.1, 1.34, 2.89, 1.0]
 )";
 
-    auto [position, rotation] = dory::serialization::yaml::deserialize<Transform2, GlmObjectVisitorType<dory::serialization::yaml::YamlDeserializationPolicies>>(yaml);
+    auto [position, rotation] = dory::serialization::yaml::deserialize<Transform2, ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(yaml);
 
     EXPECT_EQ(position.x, 0.1f);
     EXPECT_EQ(position.y, 0.34f);
@@ -183,9 +183,9 @@ TEST(YamlSerialization, serializeGlmVec)
         {1.1f, 1.34f, 2.89f, 1.0f}
     };
 
-    const auto yaml = dory::serialization::yaml::serialize<Transform2, GlmObjectVisitorType<dory::serialization::yaml::YamlSerializationPolicies>>(transform);
+    const auto yaml = dory::serialization::yaml::serialize<Transform2, ObjectVisitorExtensions<dory::serialization::yaml::YamlSerializationPolicies>>(transform);
 
-    auto [position, rotation] = dory::serialization::yaml::deserialize<Transform2, GlmObjectVisitorType<dory::serialization::yaml::YamlDeserializationPolicies>>(yaml);
+    auto [position, rotation] = dory::serialization::yaml::deserialize<Transform2, ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(yaml);
 
     EXPECT_EQ(position.x, transform.position.x);
     EXPECT_EQ(position.y, transform.position.y);
@@ -302,7 +302,7 @@ TEST(JsonDeserialization, deserializeGlmVec)
 "rotation": [1.1, 1.34, 2.89, 1.0]
 })";
 
-    auto [position, rotation] = dory::serialization::json::deserialize<Transform2, GlmObjectVisitorType<dory::serialization::json::JsonDeserializationPolicies>>(json);
+    auto [position, rotation] = dory::serialization::json::deserialize<Transform2, ObjectVisitorExtensions<dory::serialization::json::JsonDeserializationPolicies>>(json);
 
     EXPECT_EQ(position.x, 0.1f);
     EXPECT_EQ(position.y, 0.34f);
@@ -321,9 +321,9 @@ TEST(JsonSerialization, serializeGlmVec)
             {1.1f, 1.34f, 2.89f, 1.0f}
     };
 
-    const auto json = dory::serialization::json::serialize<Transform2, GlmObjectVisitorType<dory::serialization::json::JsonSerializationPolicies>>(transform);
+    const auto json = dory::serialization::json::serialize<Transform2, ObjectVisitorExtensions<dory::serialization::json::JsonSerializationPolicies>>(transform);
 
-    auto [position, rotation] = dory::serialization::json::deserialize<Transform2, GlmObjectVisitorType<dory::serialization::json::JsonDeserializationPolicies>>(json);
+    auto [position, rotation] = dory::serialization::json::deserialize<Transform2, ObjectVisitorExtensions<dory::serialization::json::JsonDeserializationPolicies>>(json);
 
     EXPECT_EQ(position.x, transform.position.x);
     EXPECT_EQ(position.y, transform.position.y);
