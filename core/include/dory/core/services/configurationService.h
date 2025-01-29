@@ -20,9 +20,11 @@ namespace dory::core::services
 {
     struct ConfigurationSectionContext
     {
-        IConfigurationService& configurationService;
+        IConfigurationService* configurationService;
 
-        explicit ConfigurationSectionContext(IConfigurationService& configurationService):
+        ConfigurationSectionContext() = default;
+
+        explicit ConfigurationSectionContext(IConfigurationService* configurationService):
                 configurationService(configurationService)
         {}
     };
@@ -44,7 +46,7 @@ namespace dory::core::services
     {
         template<typename TContext, typename T>
         requires (!IsRecursiveSection<T> && !IsRecursiveSectionMetadata<T>)
-        inline static bool beginObject(T&& object, TContext& context)
+        static bool beginObject(T&& object, TContext& context)
         {
             //skip non-recursive section
             return true;
@@ -52,7 +54,7 @@ namespace dory::core::services
 
         template<typename TContext, typename T>
         requires (IsRecursiveSectionMetadata<T>)
-        inline static bool beginObject(T&& object, TContext& context)
+        static bool beginObject(T&& object, TContext& context)
         {
             //skip recursive section metadata itself
             return false;
@@ -60,13 +62,13 @@ namespace dory::core::services
 
         template<typename T>
         requires IsRecursiveSection<T>
-        inline static bool beginObject(T&& object, ConfigurationSectionContext& context)
+        static bool beginObject(T&& object, ConfigurationSectionContext& context)
         {
             //recursive section
             auto overrideWithFiles = std::vector<std::string>{ std::move(object.section.loadFrom) };
             for(const auto& settingsFile : overrideWithFiles)
             {
-                context.configurationService.load(settingsFile, std::forward<T>(object));
+                context.configurationService->load(settingsFile, std::forward<T>(object));
             }
 
             return true;
@@ -99,7 +101,7 @@ namespace dory::core::services
             auto& saveTo = object.section.saveTo;
             if(!saveTo.empty())
             {
-                context.configurationService.save(saveTo, object);
+                context.configurationService->save(saveTo, object);
             }
 
             return true;
@@ -139,7 +141,7 @@ namespace dory::core::services
         void load(T& configuration) final
         {
             //load recursive sections
-            auto context = ConfigurationSectionContext{ *this };
+            auto context = ConfigurationSectionContext{ this };
             dory::serialization::ObjectVisitor<LoadConfigurationSectionPolicies>::visit(configuration, context);
         }
 
@@ -174,7 +176,7 @@ namespace dory::core::services
                 });
 
                 //load recursive sections
-                auto context = ConfigurationSectionContext{ *this };
+                auto context = ConfigurationSectionContext{ this };
                 dory::serialization::ObjectVisitor<LoadConfigurationSectionPolicies>::visit(configuration, context);
 
                 return true;
@@ -200,7 +202,7 @@ namespace dory::core::services
         void save(const T& configuration) final
         {
             //save recursive sections
-            auto context = ConfigurationSectionContext{ *this };
+            auto context = ConfigurationSectionContext{ this };
             dory::serialization::ObjectVisitor<SaveConfigurationSectionPolicies>::visit(configuration, context);
         }
 

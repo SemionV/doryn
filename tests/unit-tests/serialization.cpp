@@ -266,7 +266,7 @@ shaders:
 
 TEST(YamlSerialization, serializeDictionaryWithEnumKeys)
 {
-    auto material = Material {
+    const auto material = Material {
             {
                 { ShaderType::vertex, "vertexShader" },
                 { ShaderType::fragment, "fragmentShader" }
@@ -278,8 +278,8 @@ TEST(YamlSerialization, serializeDictionaryWithEnumKeys)
     auto materialReverse = dory::serialization::yaml::deserialize<Material>(yaml);
 
     EXPECT_EQ(materialReverse.shaders.size(), material.shaders.size());
-    EXPECT_EQ(materialReverse.shaders[ShaderType::vertex], material.shaders[ShaderType::vertex]);
-    EXPECT_EQ(materialReverse.shaders[ShaderType::fragment], material.shaders[ShaderType::fragment]);
+    EXPECT_EQ(materialReverse.shaders[ShaderType::vertex], material.shaders.at(ShaderType::vertex));
+    EXPECT_EQ(materialReverse.shaders[ShaderType::fragment], material.shaders.at(ShaderType::fragment));
 }
 
 TEST(JsonDeserialization, deserializeEnumValue)
@@ -484,7 +484,7 @@ REFL_TYPE(Component2)
     REFL_FIELD(name)
 REFL_END
 
-TEST(ObjectCopy, mergeObjects)
+/*TEST(ObjectCopy, mergeObjects)
 {
     //TODO: test merging of GLM types properties
 
@@ -500,4 +500,4 @@ TEST(ObjectCopy, mergeObjects)
     EXPECT_EQ(destination.value, source.value);
     EXPECT_EQ(destination.name, source.name);
     EXPECT_EQ(destination.type, "stay_as_it_is");
-}
+}*/

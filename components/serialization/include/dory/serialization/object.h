@@ -40,8 +40,7 @@ namespace dory::serialization::object
         }
 
         template<typename T, typename U, typename TValue>
-        requires(generic::is_optional_v<std::decay_t<TValue>>)
-        static std::optional<ObjectCopyContext<TValue>> beginMember(reflection::ClassMember<T, TValue>& member, const std::size_t i, ObjectCopyContext<U>& context)
+        static std::optional<ObjectCopyContext<TValue>> beginMember(reflection::ClassMember<T, std::optional<TValue>>& member, const std::size_t i, ObjectCopyContext<U>& context)
         {
             if(context.node)
             {
@@ -56,7 +55,7 @@ namespace dory::serialization::object
                 }
             }
 
-            return false;
+            return {};
         }
 
         template<typename U>
@@ -67,7 +66,7 @@ namespace dory::serialization::object
     struct ObjectCopyCollectionPolicy
     {
         template<typename T, auto N, typename TCollection>
-        static void beginCollection(TCollection&& collection, ObjectCopyContext<TCollection>& context)
+        static void beginCollection(TCollection&& collection, ObjectCopyContext<std::remove_reference_t<TCollection>>& context)
         {
 			if(context.node)
             {
@@ -82,8 +81,8 @@ namespace dory::serialization::object
 
     struct ObjectCopyCollectionItemPolicy
     {
-        template<typename TCollection, typename TItem>
-        static std::optional<ObjectCopyContext<TItem>> beginItem(const std::size_t i, ObjectCopyContext<TCollection>& context)
+        template<typename TCollection>
+        static std::optional<ObjectCopyContext<typename TCollection::value_type>> beginItem(const std::size_t i, ObjectCopyContext<TCollection>& context)
         {
             //collection is copied already as a whole, no need to copy the items individually
             return {};
@@ -132,7 +131,7 @@ namespace dory::serialization::object
             else
             {
                 //in case if normal emplace to the dictionary did not work, we return an item for default value of the key
-                *item = &destination.emplace(typename TDestination::key_type{}, TDestinationItem{});
+                *item = &destination.emplace(typename TDestination::key_type{}, TDestinationItem{}).first->second;
             }
 
             return ObjectCopyContext{ &pair.second };

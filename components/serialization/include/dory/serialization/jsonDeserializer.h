@@ -81,7 +81,6 @@ namespace dory::serialization::json
     struct DeserializerContainerPolicy: public ContainerPolicy<DeserializerContainerPolicy>
     {
         using NodeType = json*;
-        using ContextType = TreeStructureContext<NodeType>;
 
         template<typename TCollection>
         requires(generic::is_dynamic_collection_v<TCollection>)
@@ -140,7 +139,7 @@ namespace dory::serialization::json
                         else
                         {
                             //in case if normal emplace to the dictionary did not work, we return an item for default value of the key
-                            *item = collection.emplace(typename TCollection::key_type{}, TItem{});
+                            *item = &collection.emplace(typename TCollection::key_type{}, TItem{}).first->second;
                         }
 
                         return JsonContext{ &itemJson };

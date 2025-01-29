@@ -9,6 +9,7 @@ namespace dory::serialization::yaml
     {
     private:
         template<typename T>
+        requires (!std::is_same_v<T, std::string>)
         static void readValue(T& value, ryml::NodeRef& node)
         {
             node >> value;
@@ -104,7 +105,6 @@ namespace dory::serialization::yaml
     struct DeserializerContainerPolicy: public ContainerPolicy<DeserializerContainerPolicy>
     {
         using NodeType = ryml::NodeRef;
-        using ContextType = TreeStructureContext<NodeType>;
 
         template<typename TCollection>
         requires(generic::is_dynamic_collection_v<TCollection>)
@@ -129,16 +129,16 @@ namespace dory::serialization::yaml
 
         template<typename TCollection, typename TItem>
         requires(generic::is_dynamic_collection_v<TCollection>)
-        static std::optional<ContextType> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
+        static std::optional<YamlContext> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
         {
             auto itemNode = collectionNode.at(index);
             *item = &collection.emplace_back(typename TCollection::value_type{});
-            return ContextType{ itemNode };
+            return YamlContext{ itemNode };
         }
 
         template<typename TCollection, typename TItem>
         requires(generic::is_dictionary_v<TCollection>)
-        static std::optional<ContextType> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
+        static std::optional<YamlContext> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
         {
             if(collectionNode.is_map())
             {
@@ -159,10 +159,10 @@ namespace dory::serialization::yaml
                 else
                 {
                     //in case if normal emplace to the dictionary did not work, try to emplace with default key value
-                    *item = &collection.emplace(typename TCollection::key_type{}, TItem{});
+                    *item = &collection.emplace(typename TCollection::key_type{}, TItem{}).first->second;
                 }
 
-                return ContextType{ itemNode };
+                return YamlContext{ itemNode };
             }
 
             return {};

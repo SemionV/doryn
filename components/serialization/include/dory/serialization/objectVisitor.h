@@ -42,7 +42,7 @@ namespace dory::serialization
     struct DefaultMemberPolicy
     {
         template<typename TContext>
-        inline static auto beginMember(auto&& member, const std::size_t i, TContext& context)
+        inline static std::optional<TContext> beginMember(auto&& member, const std::size_t i, TContext& context)
         {
             return TContext{ context };
         }
@@ -69,7 +69,7 @@ namespace dory::serialization
     struct DefaultCollectionItemPolicy
     {
         template<typename TContext>
-        inline static bool beginItem(const std::size_t i, TContext& context)
+        inline static std::optional<TContext> beginItem(const std::size_t i, TContext& context)
         {
             return true;
         }
@@ -92,8 +92,8 @@ namespace dory::serialization
         {
         }
 
-        template<typename T, typename TContext>
-        inline static std::optional<std::reference_wrapper<generic::GetCollectionValueType<T>>> nextItem(T& collection, TContext& context)
+        template<typename T, typename TItem, typename TContext>
+        inline static std::optional<TContext> nextItem(T& collection, TItem**, TContext& context)
         {
             return {};
         }
@@ -121,10 +121,7 @@ namespace dory::serialization
     };
 
     template<typename TDerived>
-    struct ContainerPolicy;
-
-    template<typename TDerived>
-    struct ContainerPolicy<TDerived>
+    struct ContainerPolicy
     {
         template<typename TCollection>
         static auto getKeyValue(const auto& key)
@@ -188,23 +185,19 @@ namespace dory::serialization
         {
             if(itemsLeft(context))
             {
-                return getItem(collection, item, context);
+                auto itemContext = TDerived::getCollectionItem(collection, context.collectionIndex, context.node, item);
+                ++context.collectionIndex;
+                return itemContext;
             }
 
             *item = nullptr;
+            return decltype(TDerived::getCollectionItem(collection, context.collectionIndex, context.node, item)){};
         }
 
         template<typename TContext>
         static bool itemsLeft(TContext& context)
         {
             return context.collectionIndex < context.collectionSize;
-        }
-
-        template<typename TCollection, typename TItem, typename TContext>
-        static auto getItem(TCollection& collection, TItem** item, TContext& context)
-        {
-            ++context.collectionIndex;
-            return TDerived::getCollectionItem(collection, context.collectionIndex, context.node, item);
         }
 
         template<typename TCollection, typename TContext>
@@ -246,14 +239,28 @@ namespace dory::serialization
         requires(generic::is_dynamic_collection_v<T>)
         struct CollectionItemType<T>
         {
-            using Type = typename T::value_type;
+            using Type = typename std::decay_t<T>::value_type;
+        };
+
+        template<typename T>
+        requires(generic::is_dynamic_collection_v<T>)
+        struct CollectionItemType<const T>
+        {
+            using Type = const typename std::decay_t<T>::value_type;
         };
 
         template<typename T>
         requires(generic::is_dictionary_v<T>)
         struct CollectionItemType<T>
         {
-            using Type = typename T::mapped_type;
+            using Type = typename std::decay_t<T>::mapped_type;
+        };
+
+        template<typename T>
+        requires(generic::is_dictionary_v<T>)
+        struct CollectionItemType<const T>
+        {
+            using Type = const typename std::decay_t<T>::mapped_type;
         };
 
         template<typename T>
@@ -351,14 +358,15 @@ namespace dory::serialization
         {
             TPolicies::ContainerPolicyType::beginCollection(std::forward<T>(object), context);
 
-            using ItemType = typename TPolicies::Traits::template CollectionItemTypeT<std::decay_t<T>>;
+            using ItemType = typename TPolicies::Traits::template CollectionItemTypeT<std::remove_reference_t<T>>;
 
             ItemType* item;
-            while(auto itemContext = TPolicies::ContainerPolicyType::nextItem(std::forward<T>(object), &item, context))
+            auto itemContext = TPolicies::ContainerPolicyType::nextItem(std::forward<T>(object), &item, context);
+            while(itemContext && item)
             {
                 visit(*item, *itemContext);
                 TPolicies::ContainerPolicyType::endItem(*item, std::forward<T>(object), context);
-                item = TPolicies::ContainerPolicyType::nextItem(std::forward<T>(object), context);
+                itemContext = TPolicies::ContainerPolicyType::nextItem(std::forward<T>(object), &item, context);
             }
 
             TPolicies::ContainerPolicyType::endCollection(std::forward<T>(object), context);

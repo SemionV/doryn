@@ -43,7 +43,7 @@ namespace dory::serialization::json
         static std::optional<JsonContext> beginMemberGeneric(auto&& member, const std::size_t i, JsonContext& context)
         {
             auto& memberJson = context.node->operator[](member.name);
-            return JsonContext{ memberJson };
+            return JsonContext{ &memberJson };
         }
 
         static std::optional<JsonContext> beginMember(auto&& member, const std::size_t i, JsonContext& context)
@@ -95,7 +95,6 @@ namespace dory::serialization::json
     struct SerializerContainerPolicy: public ContainerPolicy<SerializerContainerPolicy>
     {
         using NodeType = json*;
-        using ContextType = TreeStructureContext<NodeType>;
 
         template<typename TCollection>
         static void setCollectionSize(TCollection& collection, NodeType& collectionNode, std::size_t& size)

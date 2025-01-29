@@ -130,7 +130,6 @@ namespace dory::serialization::yaml
     struct SerializerContainerPolicy: public ContainerPolicy<SerializerContainerPolicy>
     {
         using NodeType = ryml::NodeRef;
-        using ContextType = TreeStructureContext<NodeType>;
 
         template<typename TCollection>
         requires(generic::is_dynamic_collection_v<TCollection>)
@@ -150,17 +149,17 @@ namespace dory::serialization::yaml
 
         template<typename TCollection, typename TItem>
         requires(generic::is_dynamic_collection_v<TCollection>)
-        static std::optional<ContextType> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
+        static std::optional<YamlContext> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
         {
             *item = &collection[index];
 
             const auto itemNode = collectionNode.append_child();
-            return ContextType{ itemNode };
+            return YamlContext{ itemNode };
         }
 
         template<typename TCollection, typename TItem>
         requires(generic::is_dictionary_v<TCollection>)
-        static std::optional<ContextType> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
+        static std::optional<YamlContext> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
         {
             auto& pair = getMapItem(collection, index);
             *item = &pair.second;
@@ -169,7 +168,7 @@ namespace dory::serialization::yaml
             auto keyString = getKeyString(pair.first);
             itemNode.set_key(toRymlCStr(keyString));
 
-            return ContextType { itemNode };
+            return YamlContext { itemNode };
         }
     };
 
