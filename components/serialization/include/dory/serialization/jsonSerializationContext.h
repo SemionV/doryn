@@ -8,7 +8,7 @@ namespace dory::serialization::json
 
     struct JsonContext: TreeStructureContext<json*>
     {
-        explicit JsonContext(json* data): TreeStructureContext<json *>(data)
+        explicit JsonContext(json* data): TreeStructureContext(data)
         {}
     };
 }

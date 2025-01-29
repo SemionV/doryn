@@ -8,10 +8,9 @@ namespace dory::serialization::json
     struct DeserializerValuePolicy
     {
         template<typename T>
-        inline static void process(T& value, JsonContext& context)
+        static void process(T& value, JsonContext& context)
         {
-            auto* currentJson = context.parents.top();
-            if(!currentJson->empty())
+            if(auto* currentJson = context.node; !currentJson->empty())
             {
                 value = currentJson->get<T>();
             }
@@ -23,7 +22,7 @@ namespace dory::serialization::json
         template<typename T>
         static void process(T& value, JsonContext& context)
         {
-            if(const auto current = context.parents.top(); current && !current->empty())
+            if(const auto current = context.node; current && !current->empty())
             {
                 if(auto enumValue = magic_enum::enum_cast<T>(current->get<std::string_view>()))
                 {
@@ -35,78 +34,69 @@ namespace dory::serialization::json
 
     struct DeserializerMemberPolicy
     {
-        static bool beginMember(auto&& member, const std::size_t i, JsonContext& context)
+        static std::optional<JsonContext> beginMember(auto&& member, const std::size_t i, JsonContext& context)
         {
-            auto* currentJson = context.parents.top();
-            if(currentJson->contains(member.name))
+            if(auto* currentJson = context.node; currentJson->contains(member.name))
             {
                 auto& memberJson = currentJson->at(member.name);
-                context.parents.push(&memberJson);
-
-                return true;
+                return JsonContext{ &memberJson };
             }
 
-            return false;
+            return {};
         }
 
         template<class T, class TValue>
-        static bool beginMember(reflection::ClassMember<T, std::optional<TValue>>& member, const std::size_t i, JsonContext& context)
+        static std::optional<JsonContext> beginMember(reflection::ClassMember<T, std::optional<TValue>>& member, const std::size_t i, JsonContext& context)
         {
-            if(beginMember(member, i, context))
+            if(auto memberContext = beginMember(member, i, context))
             {
                 member.value.emplace();
-                return true;
+                return memberContext;
             }
 
-            return false;
+            return {};
         }
 
-        inline static void endMember(const bool lastMember, JsonContext& context)
-        {
-            context.parents.pop();
-        }
+        static void endMember(const bool lastMember, JsonContext& context)
+        {}
     };
 
     struct DeserializerCollectionItemPolicy
     {
-        inline static bool beginItem(const std::size_t i, JsonContext& context)
+        static std::optional<JsonContext> beginItem(const std::size_t i, JsonContext& context)
         {
-            auto* currentJson = context.parents.top();
-            if(i < currentJson->size())
+            if(auto* currentJson = context.node; i < currentJson->size())
             {
                 auto& itemJson = currentJson->at(i);
-                context.parents.push(&itemJson);
-
-                return true;
+                return JsonContext{ &itemJson };
             }
 
-            return false;
+            return {};
         }
 
-        inline static void endItem(const bool lastItem, JsonContext& context)
-        {
-            context.parents.pop();
-        }
+        static void endItem(const bool lastItem, JsonContext& context)
+        {}
     };
 
-    struct DeserializerContainerPolicy: public ContainerPolicy<DeserializerContainerPolicy, TreeStructureContext<json*>>
+    struct DeserializerContainerPolicy: public ContainerPolicy<DeserializerContainerPolicy>
     {
+        using NodeType = json*;
+        using ContextType = TreeStructureContext<NodeType>;
+
         template<typename TCollection>
         requires(generic::is_dynamic_collection_v<TCollection>)
-        static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
+        static void setCollectionSize(TCollection& collection, NodeType& collectionNode, std::size_t& size)
         {
-            auto* currentJson = parents.top();
-            size = currentJson->is_array() ? currentJson->size() : 0;
+            size = collectionNode->is_array() ? collectionNode->size() : 0;
         }
 
         template<typename TCollection>
         requires(generic::is_dictionary_v<TCollection>)
-        static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
+        static void setCollectionSize(TCollection& collection, NodeType& collectionNode, std::size_t& size)
         {
-            auto* currentJson = parents.top();
-            if(currentJson->is_object())
+            if(collectionNode->is_object())
             {
-                size = std::distance(currentJson->items().begin(), currentJson->items().end());
+                size = std::distance(collectionNode->items().begin(), collectionNode->items().end());
             }
             else
             {
@@ -114,54 +104,53 @@ namespace dory::serialization::json
             }
         }
 
-        template<typename TCollection>
+        template<typename TCollection, typename TItem>
         requires(generic::is_dynamic_collection_v<TCollection>)
-        static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
+        static std::optional<JsonContext> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
         {
-            auto* currentJson = parents.top();
-            auto& itemJson = currentJson->at(index);
-            parents.push(&itemJson);
-
-            return collection.emplace_back(typename TCollection::value_type{});
+            auto& itemJson = collectionNode->at(index);
+            *item = &collection.emplace_back(typename TCollection::value_type{});
+            return JsonContext{ &itemJson };
         }
 
-        template<typename TCollection>
+        template<typename TCollection, typename TItem>
         requires(generic::is_dictionary_v<TCollection>)
-        static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
+        static std::optional<JsonContext> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
         {
-            using ValueType = typename TCollection::mapped_type;
-
-            if(auto* currentJson = parents.top(); currentJson->is_object())
+            if(collectionNode->is_object())
             {
                 std::size_t currentIndex = 0;
-                for(auto& iter : currentJson->items())
+                for(auto& iter : collectionNode->items())
                 {
                     if(currentIndex == index)
                     {
-                        const auto stringKey = iter.key();
+                        const auto& stringKey = iter.key();
                         const auto key = getKeyValue<TCollection>(stringKey);
-                        auto& itemJson = currentJson->at(stringKey);
-                        parents.push(&itemJson);
+                        auto& itemJson = collectionNode->at(stringKey);
 
                         auto it = collection.find(key);
                         if(it != collection.end())
                         {
-                            return it->second;
+                            *item = &it->second;
                         }
-
-                        if(auto result = collection.emplace(key, ValueType{}); result.second)
+                        else if(auto result = collection.emplace(key, TItem{}); result.second)
                         {
-                            return result.first->second;
+                            *item = &result.first->second;
+                        }
+                        else
+                        {
+                            //in case if normal emplace to the dictionary did not work, we return an item for default value of the key
+                            *item = collection.emplace(typename TCollection::key_type{}, TItem{});
                         }
 
-                        break;
+                        return JsonContext{ &itemJson };
                     }
 
                     currentIndex++;
                 }
             }
 
-            return collection[typename TCollection::key_type{}]; //in case if normal emplace to the dictionary did not work, we return an item for default value of the key
+            return {};
         }
     };
 

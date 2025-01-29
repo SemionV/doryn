@@ -2,165 +2,147 @@
 
 namespace dory::serialization::object
 {
-    struct ObjectCopyContext: TreeStructureContext<const void*>
+    template<typename TNode>
+    struct ObjectCopyContext: TreeStructureContext<const TNode*>
     {
-        explicit ObjectCopyContext(const void* root): TreeStructureContext(root)
-        {}
-    };
+        using NodeType = const TNode*;
 
-    struct ObjectCopyContext: TreeStructureContext<const void*>
-    {
-        explicit ObjectCopyContext(const void* root): TreeStructureContext(root)
+        ObjectCopyContext() = default;
+
+        explicit ObjectCopyContext(const TNode* root): TreeStructureContext<NodeType>(root)
         {}
     };
 
     struct ObjectCopyValuePolicy
     {
-        template<typename T>
-        static void process(T&& value, ObjectCopyContext& context)
+        template<typename T, typename U>
+        static void process(T&& value, ObjectCopyContext<U>& context)
         {
-            if(const auto current = context.parents.top())
+            if(context.node)
             {
-                value = *static_cast<const std::decay_t<T>*>(current);
-            }
-        }
-    };
-
-    struct ObjectCopyEnumPolicy
-    {
-        template<typename T>
-        static void process(T&& value, ObjectCopyContext& context)
-        {
-            if(const auto current = context.parents.top())
-            {
-                value = *static_cast<const std::decay_t<T>*>(current);
+                value = *context.node;
             }
         }
     };
 
     struct ObjectCopyMemberPolicy
     {
-        template<class T, class TValue>
-        static bool beginMember(reflection::ClassMember<T, TValue>& member, const std::size_t i, ObjectCopyContext& context)
+        template<typename T, typename U, typename TValue>
+        static std::optional<ObjectCopyContext<TValue>> beginMember(reflection::ClassMember<T, TValue>& member, const std::size_t i, ObjectCopyContext<U>& context)
         {
-            if(const auto currentContext = context.parents.top())
+            if(context.node)
             {
-                auto& currentValue = (*static_cast<const std::decay_t<T>*>(currentContext)).*member.pointer;
-                context.parents.push(&currentValue);
-
-                return true;
+                auto& memberValue = *context.node.*member.pointer;
+                return ObjectCopyContext{ &memberValue };
             }
 
-            return false;
+            return {};
         }
 
-        template<class T, class TValue>
+        template<typename T, typename U, typename TValue>
         requires(generic::is_optional_v<std::decay_t<TValue>>)
-        static bool beginMember(reflection::ClassMember<T, TValue>& member, const std::size_t i, ObjectCopyContext& context)
+        static std::optional<ObjectCopyContext<TValue>> beginMember(reflection::ClassMember<T, TValue>& member, const std::size_t i, ObjectCopyContext<U>& context)
         {
-            if(const auto currentContext = context.parents.top())
+            if(context.node)
             {
-                if(auto& currentValue = *static_cast<const std::decay_t<T>*>(currentContext).*member.pointer)
+                if(auto& memberValue = *context.node.*member.pointer)
                 {
-                    context.parents.push(&currentValue.value());
                     if(!member.value.has_value())
                     {
                         member.value.emplace();
                     }
 
-                    return true;
+                    return ObjectCopyContext{ &memberValue.value() };
                 }
             }
 
             return false;
         }
 
-        static void endMember(const bool lastMember, ObjectCopyContext& context)
-        {
-            context.parents.pop();
-        }
+        template<typename U>
+        static void endMember(const bool lastMember, ObjectCopyContext<U>& context)
+        {}
     };
 
     struct ObjectCopyCollectionPolicy
     {
         template<typename T, auto N, typename TCollection>
-        inline static void beginCollection(TCollection&& collection, ObjectCopyContext& context)
+        static void beginCollection(TCollection&& collection, ObjectCopyContext<TCollection>& context)
         {
-			if(const auto current = context.parents.top())
+			if(context.node)
             {
-                collection = *(const std::decay_t<TCollection>*)current;
+                collection = *context.node;
             }
         }
 
-        inline static void endCollection(ObjectCopyContext& context)
-        {
-        }
+        template<typename TCollection>
+        static void endCollection(ObjectCopyContext<TCollection>& context)
+        {}
     };
 
     struct ObjectCopyCollectionItemPolicy
     {
-        static bool beginItem(const std::size_t i, ObjectCopyContext& context)
+        template<typename TCollection, typename TItem>
+        static std::optional<ObjectCopyContext<TItem>> beginItem(const std::size_t i, ObjectCopyContext<TCollection>& context)
         {
-            return false;
+            //collection is copied already as a whole, no need to copy the items individually
+            return {};
         }
 
-        static void endItem(const bool lastItem, ObjectCopyContext& context)
+        template<typename TItem>
+        static void endItem(const bool lastItem, ObjectCopyContext<TItem>& context)
         {
         }
     };
 
-    struct ObjectCopyContainerPolicy: ContainerPolicy<ObjectCopyContainerPolicy, TreeStructureContext<const void*>>
+    struct ObjectCopyContainerPolicy: ContainerPolicy<ObjectCopyContainerPolicy>
     {
-        template<typename TCollection>
-        static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
+        template<typename TDestination, typename TSource>
+        static void setCollectionSize(TDestination& destination, TSource* source, std::size_t& size)
         {
-            auto currentContext = parents.top();
-            size = currentContext ? static_cast<const TCollection*>(currentContext)->size() : 0;
+            size = source ? source->size() : 0;
         }
 
-        template<typename TCollection>
-        requires(generic::is_dynamic_collection_v<TCollection>)
-        static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
+        template<typename TDestination, typename TSource, typename TDestinationItem>
+        requires(generic::is_dynamic_collection_v<TDestination>)
+        static std::optional<ObjectCopyContext<typename TSource::value_type>> getCollectionItem(TDestination& destination, auto& index, TSource* source, TDestinationItem** item)
         {
-            auto currentCollection = parents.top();
-            assert(currentCollection);
-
-            parents.push(&(*(TCollection*)currentCollection)[index]);
-
-            return collection.emplace_back(typename TCollection::value_type{});
+            assert(source);
+            *item = &destination.emplace_back(TDestinationItem{});
+            return ObjectCopyContext{ &source->operator[](index) };
         }
 
-        template<typename TCollection>
-        requires(generic::is_dictionary_v<TCollection>)
-        static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
+        template<typename TDestination, typename TSource, typename TDestinationItem>
+        requires(generic::is_dictionary_v<TDestination>)
+        static std::optional<ObjectCopyContext<typename TSource::mapped_type>> getCollectionItem(TDestination& destination, auto& index, TSource* source, TDestinationItem** item)
         {
-            using ValueType = typename TCollection::mapped_type;
+            assert(source);
 
-            auto currentCollection = parents.top();
-            assert(currentCollection);
+            auto& pair = getMapItem(*source, index);
 
-            auto& pair = getMapItem(*((const std::decay_t<TCollection>*)currentCollection), index);
-            parents.push(&pair.second);
-
-            auto it = collection.find(pair.first);
-            if(it != collection.end())
+            auto it = destination.find(pair.first);
+            if(it != destination.end())
             {
-                return it->second;
+                *item = &it->second;
+            }
+            else if(auto result = destination.emplace(pair.first, TDestinationItem{}); result.second)
+            {
+                *item = &result.first->second;
+            }
+            else
+            {
+                //in case if normal emplace to the dictionary did not work, we return an item for default value of the key
+                *item = &destination.emplace(typename TDestination::key_type{}, TDestinationItem{});
             }
 
-            if(auto result = collection.emplace(pair.first, ValueType{}); result.second)
-            {
-                return result.first->second;
-            }
-
-            return collection[typename TCollection::key_type{}]; //in case if normal emplace to the dictionary did not work, we return an item for default value of the key
+            return ObjectCopyContext{ &pair.second };
         }
     };
 
     struct ObjectCopyPolicies: public VisitorDefaultPolicies
     {
         using ValuePolicy = ObjectCopyValuePolicy;
-        using EnumPolicy = ObjectCopyEnumPolicy;
+        using EnumPolicy = ObjectCopyValuePolicy;
         using MemberPolicy = ObjectCopyMemberPolicy;
         using CollectionPolicy = ObjectCopyCollectionPolicy;
         using CollectionItemPolicy = ObjectCopyCollectionItemPolicy;
@@ -174,7 +156,7 @@ namespace dory::serialization::object
         ObjectVisitor<ObjectCopyPolicies, TBaseVisitors...>::visit(target, context);
     }
 
-    struct ObjectMergeMemberPolicy
+    /*struct ObjectMergeMemberPolicy
     {
         template<class T, class TValue>
         static bool beginMember(reflection::ClassMember<T, TValue>& destinationMember, const std::size_t i, ObjectCopyContext& context)
@@ -233,13 +215,13 @@ namespace dory::serialization::object
         {
             context.parents.pop();
         }
-    };
+    };*/
 
     struct ObjectMergePolicies: public VisitorDefaultPolicies
     {
         using ValuePolicy = ObjectCopyValuePolicy;
-        using EnumPolicy = ObjectCopyEnumPolicy;
-        using MemberPolicy = ObjectMergeMemberPolicy;
+        using EnumPolicy = ObjectCopyValuePolicy;
+        using MemberPolicy = ObjectCopyMemberPolicy;
         using CollectionPolicy = ObjectCopyCollectionPolicy;
         using CollectionItemPolicy = ObjectCopyCollectionItemPolicy;
         using ContainerPolicyType = ObjectCopyContainerPolicy;

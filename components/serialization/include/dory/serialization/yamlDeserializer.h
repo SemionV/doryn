@@ -71,17 +71,10 @@ namespace dory::serialization::yaml
         template<class T, class TValue>
         static std::optional<YamlContext> beginMember(reflection::ClassMember<T, std::optional<TValue>>& member, const std::size_t i, YamlContext& context)
         {
-            std::optional<TValue> tempValue;
-            reflection::ClassMember<T, std::optional<TValue>> tempMember {
-                member.name,
-                member.pointer,
-                tempValue
-            };
-
-            if(auto memberContextOptional = beginMemberGeneric(tempMember, i, context))
+            if(auto memberContext = beginMemberGeneric(member, i, context))
             {
                 member.value.emplace();
-                return memberContextOptional;
+                return memberContext;
             }
 
             return {};
@@ -93,7 +86,7 @@ namespace dory::serialization::yaml
 
     struct DeserializerCollectionItemPolicy
     {
-        static std::optional<YamlContext> beginItem(const std::size_t i, YamlContext& context)
+        static std::optional<YamlContext> beginItem(const std::size_t i, const YamlContext& context)
         {
             auto current = context.node;
             if(current.is_seq() && i < current.num_children())

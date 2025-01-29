@@ -104,8 +104,8 @@ namespace dory::serialization
         }
     };
 
-    template<typename TNode, typename... Ts>
-    struct TreeStructureContext: public Ts...
+    template<typename TNode>
+    struct TreeStructureContext
     {
         using NodeType = TNode;
 
@@ -113,17 +113,11 @@ namespace dory::serialization
         std::size_t collectionIndex {};
         std::size_t collectionSize {};
 
-        /*std::stack<TNode> parents;
-        std::stack<std::size_t> collectionIndexesStack;
-        std::stack<std::size_t> collectionSizesStack;/*/
-
         TreeStructureContext() = default;
 
-        explicit TreeStructureContext(TNode data):
-            node(data)
-        {
-            /*parents.push(data);*/
-        }
+        explicit TreeStructureContext(TNode node):
+            node(node)
+        {}
     };
 
     template<typename TDerived>

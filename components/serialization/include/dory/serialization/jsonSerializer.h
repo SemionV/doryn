@@ -8,10 +8,9 @@ namespace dory::serialization::json
     struct SerializerValuePolicy
     {
         template<typename T>
-        inline static void process(const T& value, JsonContext& context)
+        static void process(const T& value, JsonContext& context)
         {
-            auto* currentJson = context.parents.top();
-            *currentJson = value;
+            *context.node = value;
         }
     };
 
@@ -20,126 +19,109 @@ namespace dory::serialization::json
         template<typename T>
         static void process(T& value, JsonContext& context)
         {
-            auto current = context.parents.top();
-            *current = magic_enum::enum_name(value);
+            *context.node = magic_enum::enum_name(value);
         }
     };
 
     struct SerializerObjectPolicy
     {
         template<typename T>
-        inline static bool beginObject(T&& object, JsonContext& context)
+        static bool beginObject(T&& object, JsonContext& context)
         {
-            auto* currentJson = context.parents.top();
-            *currentJson = json::object();
-
+            *context.node = json::object();
             return true;
         }
 
         template<typename T>
-        inline static void endObject(T&& object, JsonContext& context)
+        static void endObject(T&& object, JsonContext& context)
         {
         }
     };
 
     struct SerializerMemberPolicy
     {
-        static bool beginMemberGeneric(auto&& member, const std::size_t i, JsonContext& context)
+        static std::optional<JsonContext> beginMemberGeneric(auto&& member, const std::size_t i, JsonContext& context)
         {
-            auto* currentJson = context.parents.top();
-
-            auto& memberJson = currentJson->operator[](member.name);
-            context.parents.push(&memberJson);
-
-            return true;
+            auto& memberJson = context.node->operator[](member.name);
+            return JsonContext{ memberJson };
         }
 
-        static bool beginMember(auto&& member, const std::size_t i, JsonContext& context)
+        static std::optional<JsonContext> beginMember(auto&& member, const std::size_t i, JsonContext& context)
         {
             return beginMemberGeneric(member, i, context);
         }
 
         template<class T, class TValue>
         requires(generic::is_optional_v<std::decay_t<TValue>>)
-        static bool beginMember(reflection::ClassMember<T, TValue>& member, const std::size_t i, JsonContext& context)
+        static std::optional<JsonContext> beginMember(reflection::ClassMember<T, TValue>& member, const std::size_t i, JsonContext& context)
         {
             if(member.value.has_value())
             {
                 return beginMemberGeneric(member, i, context);
             }
 
-            return false;
+            return {};
         }
 
         static void endMember(const bool lastMember, JsonContext& context)
-        {
-            context.parents.pop();
-        }
+        {}
     };
 
     struct SerializerCollectionPolicy
     {
         template<typename T, auto N, typename TCollection>
-        inline static void beginCollection(TCollection&& collection, JsonContext& context)
+        static void beginCollection(TCollection&& collection, JsonContext& context)
         {
-            auto* currentJson = context.parents.top();
-            *currentJson = json::array();
+            *context.node = json::array();
         }
 
-        inline static void endCollection(JsonContext& context)
+        static void endCollection(JsonContext& context)
         {
         }
     };
 
     struct SerializerCollectionItemPolicy
     {
-        inline static bool beginItem(const std::size_t i, JsonContext& context)
+        static std::optional<JsonContext> beginItem(const std::size_t i, const JsonContext& context)
         {
-            auto* currentJson = context.parents.top();
-            auto& itemJson = currentJson->operator[](i);
-            context.parents.push(&itemJson);
-
-            return true;
+            auto& itemJson = context.node->operator[](i);
+            return JsonContext{ &itemJson };
         }
 
-        inline static void endItem(const bool lastItem, JsonContext& context)
-        {
-            context.parents.pop();
-        }
+        static void endItem(const bool lastItem, JsonContext& context)
+        {}
     };
 
-    struct SerializerContainerPolicy: public ContainerPolicy<SerializerContainerPolicy, TreeStructureContext<json*>>
+    struct SerializerContainerPolicy: public ContainerPolicy<SerializerContainerPolicy>
     {
+        using NodeType = json*;
+        using ContextType = TreeStructureContext<NodeType>;
+
         template<typename TCollection>
-        static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
+        static void setCollectionSize(TCollection& collection, NodeType& collectionNode, std::size_t& size)
         {
             size = collection.size();
         }
 
-        template<typename TCollection>
+        template<typename TCollection, typename TItem>
         requires(generic::is_dynamic_collection_v<TCollection>)
-        static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
+        static std::optional<JsonContext> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
         {
-            auto currentNode = parents.top();
-            auto& item = collection[index];
+            *item = &collection[index];
 
-            auto& itemJson = currentNode->operator[](index);
-            parents.push(&itemJson);
-
-            return item;
+            auto& itemJson = collectionNode->operator[](index);
+            return JsonContext{ &itemJson };
         }
 
-        template<typename TCollection>
+        template<typename TCollection, typename TItem>
         requires(generic::is_dictionary_v<TCollection>)
-        static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
+        static std::optional<JsonContext> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
         {
-            auto& item = getMapItem(collection, index);
+            auto& pair = getMapItem(collection, index);
+            *item = &pair.second;
 
-            auto currentNode = parents.top();
-            auto& itemNode = currentNode->operator[](getKeyString(item.first));
-            parents.push(&itemNode);
-
-            return item.second;
+            auto& itemJson = collectionNode->operator[](getKeyString(pair.first));
+            return JsonContext{ &itemJson };
         }
     };
 

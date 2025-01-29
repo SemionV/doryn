@@ -20,16 +20,11 @@ namespace dory::serialization::yaml
             node = toRymlCStr(value);
         }
 
-        /*static void writeValue(std::string& value, ryml::NodeRef& node, YamlContext& context)
-        {
-            node = toRymlStr(value);
-        }*/
-
     public:
         template<typename T>
-        inline static void process(T& value, YamlContext& context)
+        static void process(T& value, YamlContext& context)
         {
-            auto current = context.parents.top();
+            auto current = context.node;
             current |= c4::yml::NodeType_e::VAL;
             writeValue(value, current, context);
         }
@@ -40,7 +35,7 @@ namespace dory::serialization::yaml
         template<typename T>
         static void process(T& value, YamlContext& context)
         {
-            auto current = context.parents.top();
+            auto current = context.node;
             current |= c4::yml::NodeType_e::VAL;
 
             auto valueName = magic_enum::enum_name(value);
@@ -51,62 +46,59 @@ namespace dory::serialization::yaml
     struct SerializerObjectPolicy
     {
         template<typename T>
-        inline static bool beginObject(T&& object, YamlContext& context)
+        static bool beginObject(T&& object, YamlContext& context)
         {
-            auto current = context.parents.top();
+            auto current = context.node;
             current |= c4::yml::NodeType_e::MAP;
 
             return true;
         }
 
         template<typename T>
-        inline static void endObject(T&& object, YamlContext& context)
+        static void endObject(T&& object, YamlContext& context)
         {
         }
     };
 
     struct SerializerMemberPolicy
     {
-        static bool beginMemberGeneric(auto&& member, const std::size_t i, YamlContext& context)
+        static std::optional<YamlContext> beginMemberGeneric(auto&& member, const std::size_t i, YamlContext& context)
         {
-            auto current = context.parents.top();
+            auto current = context.node;
 
             auto memberNode = current.append_child();
             memberNode.set_key(toRymlCStr(member.name));
-            context.parents.push(memberNode);
 
-            return true;
+            return YamlContext{ memberNode };
         }
 
-        static bool beginMember(auto&& member, const std::size_t i, YamlContext& context)
+        static std::optional<YamlContext> beginMember(auto&& member, const std::size_t i, YamlContext& context)
         {
             return beginMemberGeneric(member, i, context);
         }
 
         template<class T, class TValue>
         requires(generic::is_optional_v<std::decay_t<TValue>>)
-        static bool beginMember(reflection::ClassMember<T, TValue>& member, const std::size_t i, YamlContext& context)
+        static std::optional<YamlContext> beginMember(reflection::ClassMember<T, TValue>& member, const std::size_t i, YamlContext& context)
         {
             if(member.value.has_value())
             {
                 return beginMemberGeneric(member, i, context);
             }
 
-            return false;
+            return {};
         }
 
         static void endMember(const bool lastMember, YamlContext& context)
-        {
-            context.parents.pop();
-        }
+        {}
     };
 
     struct SerializerCollectionPolicy
     {
         template<typename T, auto N, typename TCollection>
-        inline static void beginCollection(TCollection&& collection, YamlContext& context)
+        static void beginCollection(TCollection&& collection, YamlContext& context)
         {
-            auto currentNode = context.parents.top();
+            auto currentNode = context.node;
             currentNode |= c4::yml::NodeType_e::SEQ;
 #ifdef DORY_PLATFORM_WIN32
             currentNode |= c4::yml::NodeType_e::FLOW_SL;
@@ -116,75 +108,68 @@ namespace dory::serialization::yaml
 #endif
         }
 
-        inline static void endCollection(YamlContext& context)
+        static void endCollection(YamlContext& context)
         {
         }
     };
 
     struct SerializerCollectionItemPolicy
     {
-        inline static bool beginItem(const std::size_t i, YamlContext& context)
+        static std::optional<YamlContext> beginItem(const std::size_t i, const YamlContext& context)
         {
-            auto current = context.parents.top();
-            auto itemNode = current.append_child();
-            context.parents.push(itemNode);
+            auto current = context.node;
+            const auto itemNode = current.append_child();
 
-            return true;
+            return YamlContext{ itemNode };
         }
 
-        inline static void endItem(const bool lastItem, YamlContext& context)
-        {
-            context.parents.pop();
-        }
+        static void endItem(const bool lastItem, YamlContext& context)
+        {}
     };
 
-    struct SerializerContainerPolicy: public ContainerPolicy<SerializerContainerPolicy, TreeStructureContext<ryml::NodeRef>>
+    struct SerializerContainerPolicy: public ContainerPolicy<SerializerContainerPolicy>
     {
+        using NodeType = ryml::NodeRef;
+        using ContextType = TreeStructureContext<NodeType>;
+
         template<typename TCollection>
         requires(generic::is_dynamic_collection_v<TCollection>)
-        static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
+        static void setCollectionSize(TCollection& collection, NodeType& collectionNode, std::size_t& size)
         {
-            auto currentNode = parents.top();
-            currentNode |= c4::yml::NodeType_e::SEQ;
+            collectionNode |= c4::yml::NodeType_e::SEQ;
             size = collection.size();
         }
 
         template<typename TCollection>
         requires(generic::is_dictionary_v<TCollection>)
-        static void setCollectionSize(TCollection& collection, std::stack<NodeType>& parents, std::size_t& size)
+        static void setCollectionSize(TCollection& collection, NodeType& collectionNode, std::size_t& size)
         {
-            auto currentNode = parents.top();
-            currentNode |= c4::yml::NodeType_e::MAP;
-
+            collectionNode |= c4::yml::NodeType_e::MAP;
             size = collection.size();
         }
 
-        template<typename TCollection>
+        template<typename TCollection, typename TItem>
         requires(generic::is_dynamic_collection_v<TCollection>)
-        static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
+        static std::optional<ContextType> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
         {
-            auto currentNode = parents.top();
-            auto& item = collection[index];
+            *item = &collection[index];
 
-            const auto itemNode = currentNode.append_child();
-            parents.push(itemNode);
-
-           return item;
+            const auto itemNode = collectionNode.append_child();
+            return ContextType{ itemNode };
         }
 
-        template<typename TCollection>
+        template<typename TCollection, typename TItem>
         requires(generic::is_dictionary_v<TCollection>)
-        static auto& getCollectionItem(TCollection& collection, auto& index, std::stack<NodeType>& parents)
+        static std::optional<ContextType> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
         {
-            auto& item = getMapItem(collection, index);
+            auto& pair = getMapItem(collection, index);
+            *item = &pair.second;
 
-            auto currentNode = parents.top();
-            auto itemNode = currentNode.append_child();
-            auto keyString = getKeyString(item.first);
+            auto itemNode = collectionNode.append_child();
+            auto keyString = getKeyString(pair.first);
             itemNode.set_key(toRymlCStr(keyString));
-            parents.push(itemNode);
 
-            return item.second;
+            return ContextType { itemNode };
         }
     };
 
