@@ -77,7 +77,7 @@ namespace dory::core::services::serialization
     public:
         inline std::string serialize(const T& object) final
         {
-            return dory::serialization::yaml::serialize<const T, ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(object);
+            return dory::serialization::yaml::serialize<const T, ObjectVisitorExtensions<dory::serialization::yaml::YamlSerializationPolicies>>(object);
         }
 
         inline void deserialize(const std::string& source, T& object) final

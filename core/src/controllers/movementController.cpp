@@ -42,11 +42,11 @@ namespace dory::core::controllers
                                 auto& position = linearMovementView.get<Position>(entity);
                                 auto& object = linearMovementView.get<Object>(entity);
 
-                                if(movement.step > 0.f)
+                                if(movement.state.step > 0.f)
                                 {
-                                    position.value += glm::normalize(movement.value) * movement.step;
+                                    position.value += glm::normalize(movement.setup.value) * movement.state.step;
 
-                                    if(movement.distanceDone >= glm::length(movement.value) && !movement.endless)
+                                    if(movement.state.distanceDone >= glm::length(movement.setup.value) && !movement.setup.endless)
                                     {
                                         auto eventDispatcher = _registry.get<events::scene::Bundle::IDispatcher>();
                                         if(eventDispatcher)
@@ -64,12 +64,12 @@ namespace dory::core::controllers
                                 auto& orientation = rotationMovementView.get<Orientation>(entity);
                                 auto& object = linearMovementView.get<Object>(entity);
 
-                                if(movement.step > 0.f)
+                                if(movement.state.step > 0.f)
                                 {
-                                    orientation.value = orientation.value * glm::angleAxis(movement.step, glm::normalize(movement.value));
+                                    orientation.value = orientation.value * glm::angleAxis(movement.state.step, glm::normalize(movement.setup.value));
                                     orientation.value = glm::normalize(orientation.value);
 
-                                    if(movement.distanceDone >= glm::length(movement.value) && !movement.endless)
+                                    if(movement.state.distanceDone >= glm::length(movement.setup.value) && !movement.setup.endless)
                                     {
                                         auto eventDispatcher = _registry.get<events::scene::Bundle::IDispatcher>();
                                         if(eventDispatcher)

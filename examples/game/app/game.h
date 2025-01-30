@@ -49,12 +49,11 @@ namespace dory::game
                     //use scene service instead to remove component
                     //registry.remove<TComponent>(it->second);
 
-                    core::resources::scene::components::AccelerationMovement* movement = registry.try_get<TComponent>(it->second);
-                    if(movement)
+                    if(TComponent* movement = registry.try_get<TComponent>(it->second))
                     {
-                        movement->currentVelocity = 0.f;
-                        movement->distanceDone = 0.f;
-                        movement->value *= -1;
+                        movement->state.currentVelocity = 0.f;
+                        movement->state.distanceDone = 0.f;
+                        movement->setup.value *= -1;
                     }
                 }
             }
@@ -345,16 +344,16 @@ namespace dory::game
                     float rStartVelocity = 0.0f;
                     float rHighVelocity = glm::radians(90.f);
                     float rLowVelocity = glm::radians(0.1f);
+
                     sceneService->addComponent(cubeParentObjectId, *scene, core::resources::scene::components::RotationMovement{
-                            false,
-                            glm::vec3 { 0.f, 0.f, 1.f } * glm::radians(360.f),
-                            rStartVelocity,
-                            rHighVelocity,
-                            rLowVelocity,
-                            0.f,
-                            rAccelerationDistance,
+                        {
+                            false, glm::vec3 { 0.f, 0.f, 1.f } * glm::radians(360.f), rHighVelocity, rLowVelocity, rAccelerationDistance,
                             ((rHighVelocity * rHighVelocity) - (rStartVelocity * rStartVelocity)) / (2 * rAccelerationDistance),
                             -((rHighVelocity * rHighVelocity) - (rLowVelocity * rLowVelocity)) / (2 * rAccelerationDistance)
+                        },
+                        {
+                            rStartVelocity
+                        }
                     });
                 }
 
@@ -378,15 +377,14 @@ namespace dory::game
                     float rHighVelocity = glm::radians(45.f);
                     float rLowVelocity = glm::radians(0.1f);
                     sceneService->addComponent(cubeObjectId, *scene, core::resources::scene::components::RotationMovement{
-                            false,
-                            glm::vec3 { 0.f, 0.f, 1.f } * glm::radians(180.f),
-                            rStartVelocity,
-                            rHighVelocity,
-                            rLowVelocity,
-                            0.f,
-                            rAccelerationDistance,
-                            ((rHighVelocity * rHighVelocity) - (rStartVelocity * rStartVelocity)) / (2 * rAccelerationDistance),
-                            -((rHighVelocity * rHighVelocity) - (rLowVelocity * rLowVelocity)) / (2 * rAccelerationDistance)
+                            {
+                                false, glm::vec3 { 0.f, 0.f, 1.f } * glm::radians(180.f), rHighVelocity, rLowVelocity, rAccelerationDistance,
+                                ((rHighVelocity * rHighVelocity) - (rStartVelocity * rStartVelocity)) / (2 * rAccelerationDistance),
+                                -((rHighVelocity * rHighVelocity) - (rLowVelocity * rLowVelocity)) / (2 * rAccelerationDistance)
+                            },
+                            {
+                                rStartVelocity
+                            }
                     });
                 }
 
@@ -406,15 +404,14 @@ namespace dory::game
                     float highVelocity = 0.7f;
                     float lowVelocity = 0.01f;
                     sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::LinearMovement{
-                        false,
-                        glm::vec3 { 1.f, 0.f, 0.f },
-                        startVelocity,
-                        highVelocity,
-                        lowVelocity,
-                        0.f,
-                        accelerationDistance,
-                        ((highVelocity * highVelocity) - (startVelocity * startVelocity)) / (2 * accelerationDistance),
-                        -((highVelocity * highVelocity) - (lowVelocity * lowVelocity)) / (2 * accelerationDistance)
+                        {
+                            false, glm::vec3 { 1.f, 0.f, 0.f }, highVelocity, lowVelocity, accelerationDistance,
+                            ((highVelocity * highVelocity) - (startVelocity * startVelocity)) / (2 * accelerationDistance),
+                            -((highVelocity * highVelocity) - (lowVelocity * lowVelocity)) / (2 * accelerationDistance)
+                        },
+                        {
+                            startVelocity
+                        }
                     });
 
                     float rAccelerationDistance = glm::radians(30.f);
@@ -422,15 +419,14 @@ namespace dory::game
                     float rHighVelocity = glm::radians(180.f);
                     float rLowVelocity = glm::radians(0.1f);
                     sceneService->addComponent(pointObjectId, *scene, core::resources::scene::components::RotationMovement{
-                            false,
-                            glm::vec3 { 0.f, 0.f, 1.f } * glm::radians(180.f),
-                            rStartVelocity,
-                            rHighVelocity,
-                            rLowVelocity,
-                            0.f,
-                            rAccelerationDistance,
+                        {
+                            false, glm::vec3 { 0.f, 0.f, 1.f } * glm::radians(180.f), rHighVelocity, rLowVelocity, rAccelerationDistance,
                             ((rHighVelocity * rHighVelocity) - (rStartVelocity * rStartVelocity)) / (2 * rAccelerationDistance),
                             -((rHighVelocity * rHighVelocity) - (rLowVelocity * rLowVelocity)) / (2 * rAccelerationDistance)
+                        },
+                        {
+                            rStartVelocity
+                        }
                     });
                 }
 

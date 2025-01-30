@@ -28,45 +28,45 @@ namespace dory::core::controllers
         auto view = registry.view<T>();
         for (auto entity : view)
         {
-            AccelerationMovement& movement = view.template get<T>(entity);
+            T& movement = view.template get<T>(entity);
 
-            movement.step = 0.f;
-            float distanceTotal = glm::length(movement.value);
-            float distanceLeft = distanceTotal - movement.distanceDone;
+            movement.state.step = 0.f;
+            float distanceTotal = glm::length(movement.setup.value);
+            float distanceLeft = distanceTotal - movement.state.distanceDone;
 
-            if(distanceLeft > 0.f || movement.endless)
+            if(distanceLeft > 0.f || movement.setup.endless)
             {
-                if(movement.acceleration > 0.f
-                   && movement.currentVelocity < movement.highVelocity
-                   && distanceLeft > movement.decelerationDistance)
+                if(movement.setup.acceleration > 0.f
+                   && movement.state.currentVelocity < movement.setup.highVelocity
+                   && distanceLeft > movement.setup.decelerationDistance)
                 {
-                    movement.currentVelocity += movement.acceleration * timeStepSeconds.count();
-                    if(movement.currentVelocity > movement.highVelocity)
+                    movement.state.currentVelocity += movement.setup.acceleration * timeStepSeconds.count();
+                    if(movement.state.currentVelocity > movement.setup.highVelocity)
                     {
-                        movement.currentVelocity = movement.highVelocity;
+                        movement.state.currentVelocity = movement.setup.highVelocity;
                     }
                 }
-                else if(movement.deceleration < 0.f
-                        && movement.currentVelocity > movement.lowVelocity
-                        && distanceLeft <= movement.decelerationDistance)
+                else if(movement.setup.deceleration < 0.f
+                        && movement.state.currentVelocity > movement.setup.lowVelocity
+                        && distanceLeft <= movement.setup.decelerationDistance)
                 {
-                    movement.currentVelocity += movement.deceleration * timeStepSeconds.count();
-                    if(movement.currentVelocity < movement.lowVelocity)
+                    movement.state.currentVelocity += movement.setup.deceleration * timeStepSeconds.count();
+                    if(movement.state.currentVelocity < movement.setup.lowVelocity)
                     {
-                        movement.currentVelocity = movement.lowVelocity;
+                        movement.state.currentVelocity = movement.setup.lowVelocity;
                     }
                 }
 
-                if(movement.currentVelocity > 0.f)
+                if(movement.state.currentVelocity > 0.f)
                 {
-                    auto step = movement.currentVelocity * timeStepSeconds.count();
-                    if(distanceLeft - step < 0.f && !movement.endless)
+                    auto step = movement.state.currentVelocity * timeStepSeconds.count();
+                    if(distanceLeft - step < 0.f && !movement.setup.endless)
                     {
                         step = distanceLeft;
                     }
 
-                    movement.distanceDone += step;
-                    movement.step = step;
+                    movement.state.distanceDone += step;
+                    movement.state.step = step;
                 }
             }
         }

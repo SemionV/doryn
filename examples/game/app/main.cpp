@@ -42,6 +42,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     auto game = dory::game::Game{registry};
     game.initialize(staticLibraryHandle, context);
 
+    if(auto sceneConfigurationService = registry.get<dory::core::services::ISceneConfigurationService>())
+    {
+        dory::core::resources::scene::configuration::Scene sceneConfig;
+        sceneConfigurationService->load("scenes/opening-scene.yaml", sceneConfig); //TODO: move bootstrap scene filename to configuration
+    }
+
     bootstrap.run(context);
     bootstrap.cleanup(context);
 

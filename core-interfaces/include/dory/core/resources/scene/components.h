@@ -62,22 +62,32 @@ namespace dory::core::resources::scene::components
     struct AccelerationMovement
     {
         bool endless {};
-        glm::vec3 value;
-        float distanceDone;
+        glm::vec3 value {};
         float highVelocity {};
         float lowVelocity {};
-        float currentVelocity {};
         float decelerationDistance {};
         float acceleration {};
         float deceleration {};
+    };
+
+    struct AccelerationMovementState
+    {
+        float currentVelocity {};
+        float distanceDone {};
         float step {};
     };
 
-    struct RotationMovement: public AccelerationMovement
-    {};
+    struct RotationMovement
+    {
+        AccelerationMovement setup;
+        AccelerationMovementState state;
+    };
 
-    struct LinearMovement: public AccelerationMovement
-    {};
+    struct LinearMovement
+    {
+        AccelerationMovement setup;
+        AccelerationMovementState state;
+    };
 
 
 }

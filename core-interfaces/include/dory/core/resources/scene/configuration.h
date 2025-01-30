@@ -61,6 +61,7 @@ namespace dory::core::resources::scene::configuration
         std::unordered_map<std::string, Object> children {};
     };
 
+    //Just for testing -remove later BELOW
     struct PhysicsController
     {
         float precision {};
@@ -99,6 +100,7 @@ namespace dory::core::resources::scene::configuration
         std::optional<ElapsedTimeTrigger> elapsedTime {};
         std::optional<LogicTrigger> logic {};
     };
+    //Just for testing -remove later ABOVE
 
     struct Node
     {

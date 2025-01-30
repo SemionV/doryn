@@ -19,6 +19,11 @@ namespace dory::core::services
         {
             try
             {
+                if(auto logger = _registry.get<ILogService>())
+                {
+                    logger->information(fmt::format("load scene from: {}", filename.c_str()));
+                }
+
                 const std::string data = fileService->read(filename);
                 DataFormat dataFormat = dataFormatResolver->resolveFormat(filename);
 
@@ -46,6 +51,11 @@ namespace dory::core::services
         {
             try
             {
+                if(auto logger = _registry.get<ILogService>())
+                {
+                    logger->information(fmt::format("save scene to: {}", filename.c_str()));
+                }
+
                 DataFormat dataFormat = dataFormatResolver->resolveFormat(filename);
 
                 if(auto serializer = _registry.get<serialization::ISerializer>(dataFormat))
