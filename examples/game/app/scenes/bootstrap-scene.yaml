@@ -58,28 +58,30 @@ objects:
         value: [ 0.0, 0.0, 1.0 ]
         acceleration: 0.08
         currentVelocity: 0.2
-pipeline:
-  - node: scene-update
+pipeline: #implement a separate service, which is getting pipeline configuration as parameter and processes it
+  scene-update-node:
     trigger:
-      elapsedTime:
-        milliseconds: 16.666
+      type: TimeFrameTrigger
+      milliseconds: 16.666
     children:
-      - node: views-update
+      views-update-node:
         controller:
-          view: {}
-      - node: animation
-        controller:
-          animation:
-            frames: 24
+          type: ViewController
+      animation-update-node:
         trigger:
-          logic:
-            flag: true
-  - node: physics
-    parent: scene-update
-    controller:
-      physics:
-        precision: 0.00000000000001
+          type: LogicTrigger
+          flag: true
+        controller:
+          type: AnimationController
+          frames: 24
+  physics-node:
+    parent: scene-update-node #this kind of node could be added by some extension module in a separate scene yaml file, thus cannot be described in the parent's children node
     trigger:
-      elapsedTime:
-        milliseconds: 33.333
-
+      type: TimeFrameTrigger
+      milliseconds: 33.333
+    controller:
+      type: PhysicsController
+      precision: 0.00000000000001
+director:
+  type: "SomeDirector"
+  someParameter: 23

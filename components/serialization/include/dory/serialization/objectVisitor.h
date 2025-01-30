@@ -301,6 +301,28 @@ namespace dory::serialization
         }
     };
 
+    template<typename TPolicies, typename TVisitor>
+    struct ClassVisitor
+    {
+        template<typename T, typename TContext>
+        static void visit(T&& object, TContext& context)
+        {
+            if(TPolicies::ObjectPolicy::beginObject(std::forward<T>(object), context))
+            {
+                reflection::visitClassFields(object, []<typename TClassMember>(TClassMember&& member, const std::size_t i, const std::size_t memberCount, TContext& ctx)
+                {
+                    if(auto memberContext = TPolicies::MemberPolicy::beginMember(std::forward<TClassMember>(member), i, ctx))
+                    {
+                        TVisitor::visit(member.value, *memberContext);
+                        TPolicies::MemberPolicy::endMember(i == memberCount - 1, ctx);
+                    }
+                }, context);
+
+                TPolicies::ObjectPolicy::endObject(std::forward<T>(object), context);
+            }
+        }
+    };
+
     template<typename TPolicies = VisitorDefaultPolicies, typename... TBaseVisitors>
     class ObjectVisitor: public TBaseVisitors...
     {
@@ -376,19 +398,7 @@ namespace dory::serialization
         requires(reflection::IsReflectableV<std::decay_t<std::remove_reference_t<T>>> && std::is_class_v<std::decay_t<std::remove_reference_t<T>>>)
         static void visit(T&& object, TContext& context)
         {
-            if(TPolicies::ObjectPolicy::beginObject(std::forward<T>(object), context))
-            {
-                reflection::visitClassFields(object, []<typename TClassMember>(TClassMember&& member, const std::size_t i, const std::size_t memberCount, TContext& context)
-                {
-                    if(auto memberContext = TPolicies::MemberPolicy::beginMember(std::forward<TClassMember>(member), i, context))
-                    {
-                        visit(member.value, *memberContext);
-                        TPolicies::MemberPolicy::endMember(i == memberCount - 1, context);
-                    }
-                }, context);
-
-                TPolicies::ObjectPolicy::endObject(std::forward<T>(object), context);
-            }
+            ClassVisitor<TPolicies, ObjectVisitor>::visit(std::forward<T>(object), context);
         }
     };
 
