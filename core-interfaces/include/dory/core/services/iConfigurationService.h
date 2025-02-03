@@ -11,10 +11,10 @@ namespace dory::core::services
     class IConfigurationServiceGeneric
     {
     public:
-        virtual bool load(const std::filesystem::path& configurationPath, T& configuration) = 0;
-        virtual void load(T& configuration) = 0;
-        virtual bool save(const std::filesystem::path& configurationPath, const T& configuration) = 0;
-        virtual void save(const T& configuration) = 0;
+        virtual bool load(const std::filesystem::path& configurationPath, T& configuration, resources::DataContext& dataContext) = 0;
+        virtual void load(T& configuration, resources::DataContext& dataContext) = 0;
+        virtual bool save(const std::filesystem::path& configurationPath, const T& configuration, resources::DataContext& dataContext) = 0;
+        virtual void save(const T& configuration, resources::DataContext& dataContext) = 0;
     };
 
     template<typename... Ts>

@@ -7,24 +7,24 @@ namespace dory::serialization::json
 {
     struct DeserializerValuePolicy
     {
-        template<typename T>
-        static void process(T& value, JsonContext& context)
+        template<typename T, typename TRegistry, typename TDataContext>
+        static void process(T& value, JsonContext<TRegistry, TDataContext>& context)
         {
             if(auto* currentJson = context.node; !currentJson->empty())
             {
-                value = currentJson->get<T>();
+                value = currentJson->template get<T>();
             }
         }
     };
 
     struct DeserializerEnumPolicy
     {
-        template<typename T>
-        static void process(T& value, JsonContext& context)
+        template<typename T, typename TRegistry, typename TDataContext>
+        static void process(T& value, JsonContext<TRegistry, TDataContext>& context)
         {
             if(const auto current = context.node; current && !current->empty())
             {
-                if(auto enumValue = magic_enum::enum_cast<T>(current->get<std::string_view>()))
+                if(auto enumValue = magic_enum::enum_cast<T>(current->template get<std::string_view>()))
                 {
                     value = *enumValue;
                 }
@@ -34,19 +34,20 @@ namespace dory::serialization::json
 
     struct DeserializerMemberPolicy
     {
-        static std::optional<JsonContext> beginMember(auto&& member, const std::size_t i, JsonContext& context)
+        template<typename TRegistry, typename TDataContext>
+        static std::optional<JsonContext<TRegistry, TDataContext>> beginMember(auto&& member, const std::size_t i, JsonContext<TRegistry, TDataContext>& context)
         {
             if(auto* currentJson = context.node; currentJson->contains(member.name))
             {
                 auto& memberJson = currentJson->at(member.name);
-                return JsonContext{ &memberJson };
+                return JsonContext{ &memberJson, context.registry, context.dataContext };
             }
 
             return {};
         }
 
-        template<class T, class TValue>
-        static std::optional<JsonContext> beginMember(reflection::ClassMember<T, std::optional<TValue>>& member, const std::size_t i, JsonContext& context)
+        template<class T, class TValue, typename TRegistry, typename TDataContext>
+        static std::optional<JsonContext<TRegistry, TDataContext>> beginMember(reflection::ClassMember<T, std::optional<TValue>>& member, const std::size_t i, JsonContext<TRegistry, TDataContext>& context)
         {
             if(auto memberContext = beginMember(member, i, context))
             {
@@ -57,24 +58,27 @@ namespace dory::serialization::json
             return {};
         }
 
-        static void endMember(const bool lastMember, JsonContext& context)
+        template<typename TRegistry, typename TDataContext>
+        static void endMember(const bool lastMember, JsonContext<TRegistry, TDataContext>& context)
         {}
     };
 
     struct DeserializerCollectionItemPolicy
     {
-        static std::optional<JsonContext> beginItem(const std::size_t i, JsonContext& context)
+        template<typename TRegistry, typename TDataContext>
+        static std::optional<JsonContext<TRegistry, TDataContext>> beginItem(const std::size_t i, JsonContext<TRegistry, TDataContext>& context)
         {
             if(auto* currentJson = context.node; i < currentJson->size())
             {
                 auto& itemJson = currentJson->at(i);
-                return JsonContext{ &itemJson };
+                return JsonContext{ &itemJson, context.registry, context.dataContext };
             }
 
             return {};
         }
 
-        static void endItem(const bool lastItem, JsonContext& context)
+        template<typename TRegistry, typename TDataContext>
+        static void endItem(const bool lastItem, JsonContext<TRegistry, TDataContext>& context)
         {}
     };
 
@@ -103,18 +107,20 @@ namespace dory::serialization::json
             }
         }
 
-        template<typename TCollection, typename TItem>
+        template<typename TCollection, typename TItem, typename TRegistry, typename TDataContext>
         requires(generic::is_dynamic_collection_v<TCollection>)
-        static std::optional<JsonContext> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
+        static std::optional<JsonContext<TRegistry, TDataContext>> getCollectionItem(JsonContext<TRegistry, TDataContext>& context,
+            TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
         {
             auto& itemJson = collectionNode->at(index);
             *item = &collection.emplace_back(typename TCollection::value_type{});
-            return JsonContext{ &itemJson };
+            return JsonContext{ &itemJson, context.registry, context.dataContext };
         }
 
-        template<typename TCollection, typename TItem>
+        template<typename TCollection, typename TItem, typename TRegistry, typename TDataContext>
         requires(generic::is_dictionary_v<TCollection>)
-        static std::optional<JsonContext> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
+        static std::optional<JsonContext<TRegistry, TDataContext>> getCollectionItem(JsonContext<TRegistry, TDataContext>& context,
+            TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
         {
             if(collectionNode->is_object())
             {
@@ -142,7 +148,7 @@ namespace dory::serialization::json
                             *item = &collection.emplace(typename TCollection::key_type{}, TItem{}).first->second;
                         }
 
-                        return JsonContext{ &itemJson };
+                        return JsonContext{ &itemJson, context.registry, context.dataContext };
                     }
 
                     currentIndex++;
@@ -162,22 +168,22 @@ namespace dory::serialization::json
         using ContainerPolicyType = DeserializerContainerPolicy;
     };
 
-    template<typename T, typename... TVisitorBases>
-    static T deserialize(const std::string& source)
+    template<typename T, typename TRegistry, typename TDataContext, typename... TVisitorBases>
+    static T deserialize(const std::string& source, TRegistry& registry, TDataContext& dataContext)
     {
         auto data = json::parse(source);
-        JsonContext context(&data);
+        JsonContext<TRegistry, TDataContext> context(&data, registry, dataContext);
         auto object = T{};
         ObjectVisitor<JsonDeserializationPolicies, TVisitorBases...>::visit(object, context);
 
         return object;
     }
 
-    template<typename T, typename... TVisitorBases>
-    static void deserialize(const std::string& source, T& object)
+    template<typename T, typename TRegistry, typename TDataContext, typename... TVisitorBases>
+    static void deserialize(const std::string& source, T& object, TRegistry& registry, TDataContext& dataContext)
     {
         auto data = json::parse(source);
-        JsonContext context(&data);
+        JsonContext<TRegistry, TDataContext> context(&data, registry, dataContext);
         ObjectVisitor<JsonDeserializationPolicies, TVisitorBases...>::visit(object, context);
     }
 }

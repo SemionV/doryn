@@ -1,14 +1,52 @@
 #pragma once
 
-#include <stack>
 #include <queue>
 
 #include "reflection.h"
-#include <dory/generic/parameterizedString.h>
 #include <dory/generic/typeTraits.h>
 
 namespace dory::serialization
 {
+    template<typename TRegistry, typename TDataContext>
+    struct Context
+    {
+        TRegistry& registry;
+        TDataContext& dataContext;
+
+        Context(TRegistry& registry, TDataContext& dataContext):
+            registry(registry), dataContext(dataContext)
+        {}
+
+        Context(const Context& other):
+            registry(other.registry),
+            dataContext(other.dataContext)
+        {}
+
+        Context& operator=(const Context& other)
+        {
+            return *this;
+        }
+    };
+
+    template<typename TNode, typename TRegistry, typename TDataContext>
+    struct TreeStructureContext: Context<TRegistry, TDataContext>
+    {
+        using NodeType = TNode;
+
+        TNode node;
+        std::size_t collectionIndex {};
+        std::size_t collectionSize {};
+
+        TreeStructureContext() = default;
+
+        explicit TreeStructureContext(TNode node, TRegistry& registry, TDataContext& dataContext):
+            Context<TRegistry, TDataContext>(registry, dataContext),
+            node(node)
+        {}
+
+        TreeStructureContext(const TreeStructureContext& other) = default;
+    };
+
     struct DefaultValuePolicy
     {
         template<typename T, typename TContext>
@@ -104,22 +142,6 @@ namespace dory::serialization
         }
     };
 
-    template<typename TNode>
-    struct TreeStructureContext
-    {
-        using NodeType = TNode;
-
-        TNode node;
-        std::size_t collectionIndex {};
-        std::size_t collectionSize {};
-
-        TreeStructureContext() = default;
-
-        explicit TreeStructureContext(TNode node):
-            node(node)
-        {}
-    };
-
     template<typename TDerived>
     struct ContainerPolicy
     {
@@ -185,13 +207,13 @@ namespace dory::serialization
         {
             if(itemsLeft(context))
             {
-                auto itemContext = TDerived::getCollectionItem(collection, context.collectionIndex, context.node, item);
+                auto itemContext = TDerived::getCollectionItem(context, collection, context.collectionIndex, context.node, item);
                 ++context.collectionIndex;
                 return itemContext;
             }
 
             *item = nullptr;
-            return decltype(TDerived::getCollectionItem(collection, context.collectionIndex, context.node, item)){};
+            return decltype(TDerived::getCollectionItem(context, collection, context.collectionIndex, context.node, item)){};
         }
 
         template<typename TContext>

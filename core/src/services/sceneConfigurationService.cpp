@@ -10,7 +10,7 @@ namespace dory::core::services
     SceneConfigurationService::SceneConfigurationService(Registry& registry): DependencyResolver(registry)
     {}
 
-    void SceneConfigurationService::load(const std::filesystem::path& filename, scene::configuration::Scene& configuration)
+    void SceneConfigurationService::load(const std::filesystem::path& filename, scene::configuration::Scene& configuration, DataContext& dataContext)
     {
         auto fileService = _registry.get<IFileService>();
         auto dataFormatResolver = _registry.get<IDataFormatResolver>();
@@ -29,7 +29,7 @@ namespace dory::core::services
 
                 if(auto serializer = _registry.get<serialization::ISerializer>(dataFormat))
                 {
-                    serializer->deserialize(data, configuration);
+                    serializer->deserialize(data, configuration, _registry, dataContext);
                 }
             }
             catch(const std::exception& e)
@@ -42,7 +42,7 @@ namespace dory::core::services
         }
     }
 
-    void SceneConfigurationService::save(const std::filesystem::path& filename, const scene::configuration::Scene& configuration)
+    void SceneConfigurationService::save(const std::filesystem::path& filename, const scene::configuration::Scene& configuration, DataContext& dataContext)
     {
         auto fileService = _registry.get<IFileService>();
         auto dataFormatResolver = _registry.get<IDataFormatResolver>();
@@ -60,7 +60,7 @@ namespace dory::core::services
 
                 if(auto serializer = _registry.get<serialization::ISerializer>(dataFormat))
                 {
-                    const auto data = serializer->serialize(configuration);
+                    const auto data = serializer->serialize(configuration, _registry, dataContext);
                     fileService->write(filename, data);
                 }
             }

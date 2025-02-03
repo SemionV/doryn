@@ -151,10 +151,11 @@ filename: assets/shaders/simpleVertex
 type: fragment
 )";
 
-    auto shader = dory::serialization::yaml::deserialize<Shader>(yaml);
+    int registry, context;
+    const auto [filename, type] = dory::serialization::yaml::deserialize<Shader>(yaml, registry, context);
 
-    EXPECT_EQ(shader.filename, "assets/shaders/simpleVertex");
-    EXPECT_EQ(shader.type, ShaderType::fragment);
+    EXPECT_EQ(filename, "assets/shaders/simpleVertex");
+    EXPECT_EQ(type, ShaderType::fragment);
 }
 
 TEST(YamlDeserialization, deserializeGlmVec)
@@ -164,7 +165,9 @@ position: [0.1, 0.34, 1.89]
 rotation: [1.1, 1.34, 2.89, 1.0]
 )";
 
-    auto [position, rotation] = dory::serialization::yaml::deserialize<Transform2, ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(yaml);
+    int registry, context;
+    auto [position, rotation] = dory::serialization::yaml::deserialize<Transform2, int, int,
+        ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(yaml, registry, context);
 
     EXPECT_EQ(position.x, 0.1f);
     EXPECT_EQ(position.y, 0.34f);
@@ -183,9 +186,12 @@ TEST(YamlSerialization, serializeGlmVec)
         {1.1f, 1.34f, 2.89f, 1.0f}
     };
 
-    const auto yaml = dory::serialization::yaml::serialize<Transform2, ObjectVisitorExtensions<dory::serialization::yaml::YamlSerializationPolicies>>(transform);
+    int registry, context;
+    const auto yaml = dory::serialization::yaml::serialize<Transform2, int, int,
+        ObjectVisitorExtensions<dory::serialization::yaml::YamlSerializationPolicies>>(transform, registry, context);
 
-    auto [position, rotation] = dory::serialization::yaml::deserialize<Transform2, ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(yaml);
+    auto [position, rotation] = dory::serialization::yaml::deserialize<Transform2, int, int,
+        ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(yaml, registry, context);
 
     EXPECT_EQ(position.x, transform.position.x);
     EXPECT_EQ(position.y, transform.position.y);
@@ -204,7 +210,8 @@ filename: assets/shaders/simpleVertex
 type: geometry
 )";
 
-    auto shader = dory::serialization::yaml::deserialize<Shader>(yaml);
+    int registry, context;
+    auto shader = dory::serialization::yaml::deserialize<Shader>(yaml, registry, context);
 
     EXPECT_EQ(shader.filename, "assets/shaders/simpleVertex");
     EXPECT_EQ(shader.type, ShaderType::unknown);
@@ -218,7 +225,8 @@ rotation: [3.14546456, 2.2, 1.1, 4.56]
 scale: [1.5, 2.1, 3.1]
 )";
 
-    const auto transform = dory::serialization::yaml::deserialize<Transform>(yaml);
+    int registry, context;
+    const auto transform = dory::serialization::yaml::deserialize<Transform>(yaml, registry, context);
 
     const auto position = dory::math::toVector(transform.position);
     const glm::quat rotation = dory::math::toQuaternion(transform.rotation);
@@ -241,9 +249,10 @@ scale: [1.5, 2.1, 3.1]
 TEST(YamlSerialization, serializeEnumValue)
 {
     auto shader = Shader { "assets/shaders/simpleVertex", ShaderType::fragment };
-    const auto yaml = dory::serialization::yaml::serialize(shader);
+    int registry, context;
+    const auto yaml = dory::serialization::yaml::serialize(shader, registry, context);
 
-    auto shaderReverse = dory::serialization::yaml::deserialize<Shader>(yaml);
+    auto shaderReverse = dory::serialization::yaml::deserialize<Shader>(yaml, registry, context);
 
     EXPECT_EQ(shaderReverse.filename, shader.filename);
     EXPECT_EQ(shaderReverse.type, shader.type);
@@ -257,11 +266,12 @@ shaders:
   fragment: fragmentShader
 )";
 
-    auto material = dory::serialization::yaml::deserialize<Material>(yaml);
+    int registry, context;
+    auto [shaders] = dory::serialization::yaml::deserialize<Material>(yaml, registry, context);
 
-    EXPECT_EQ(material.shaders.size(), 2);
-    EXPECT_EQ(material.shaders[ShaderType::vertex], "vertexShader");
-    EXPECT_EQ(material.shaders[ShaderType::fragment], "fragmentShader");
+    EXPECT_EQ(shaders.size(), 2);
+    EXPECT_EQ(shaders[ShaderType::vertex], "vertexShader");
+    EXPECT_EQ(shaders[ShaderType::fragment], "fragmentShader");
 }
 
 TEST(YamlSerialization, serializeDictionaryWithEnumKeys)
@@ -273,13 +283,14 @@ TEST(YamlSerialization, serializeDictionaryWithEnumKeys)
             }
     };
 
-    auto yaml = dory::serialization::yaml::serialize(material);
+    int registry, context;
+    const auto yaml = dory::serialization::yaml::serialize(material, registry, context);
 
-    auto materialReverse = dory::serialization::yaml::deserialize<Material>(yaml);
+    auto [shaders] = dory::serialization::yaml::deserialize<Material>(yaml, registry, context);
 
-    EXPECT_EQ(materialReverse.shaders.size(), material.shaders.size());
-    EXPECT_EQ(materialReverse.shaders[ShaderType::vertex], material.shaders.at(ShaderType::vertex));
-    EXPECT_EQ(materialReverse.shaders[ShaderType::fragment], material.shaders.at(ShaderType::fragment));
+    EXPECT_EQ(shaders.size(), material.shaders.size());
+    EXPECT_EQ(shaders[ShaderType::vertex], material.shaders.at(ShaderType::vertex));
+    EXPECT_EQ(shaders[ShaderType::fragment], material.shaders.at(ShaderType::fragment));
 }
 
 TEST(JsonDeserialization, deserializeEnumValue)
@@ -289,10 +300,11 @@ TEST(JsonDeserialization, deserializeEnumValue)
 "type": "fragment"
 })";
 
-    auto shader = dory::serialization::json::deserialize<Shader>(json);
+    int registry, context;
+    auto [filename, type] = dory::serialization::json::deserialize<Shader>(json, registry, context);
 
-    EXPECT_EQ(shader.filename, "assets/shaders/simpleVertex");
-    EXPECT_EQ(shader.type, ShaderType::fragment);
+    EXPECT_EQ(filename, "assets/shaders/simpleVertex");
+    EXPECT_EQ(type, ShaderType::fragment);
 }
 
 TEST(JsonDeserialization, deserializeGlmVec)
@@ -302,7 +314,9 @@ TEST(JsonDeserialization, deserializeGlmVec)
 "rotation": [1.1, 1.34, 2.89, 1.0]
 })";
 
-    auto [position, rotation] = dory::serialization::json::deserialize<Transform2, ObjectVisitorExtensions<dory::serialization::json::JsonDeserializationPolicies>>(json);
+    int registry, context;
+    auto [position, rotation] = dory::serialization::json::deserialize<Transform2, int, int,
+        ObjectVisitorExtensions<dory::serialization::json::JsonDeserializationPolicies>>(json, registry, context);
 
     EXPECT_EQ(position.x, 0.1f);
     EXPECT_EQ(position.y, 0.34f);
@@ -321,9 +335,12 @@ TEST(JsonSerialization, serializeGlmVec)
             {1.1f, 1.34f, 2.89f, 1.0f}
     };
 
-    const auto json = dory::serialization::json::serialize<Transform2, ObjectVisitorExtensions<dory::serialization::json::JsonSerializationPolicies>>(transform);
+    int registry, context;
+    const auto json = dory::serialization::json::serialize<Transform2, int, int,
+        ObjectVisitorExtensions<dory::serialization::json::JsonSerializationPolicies>>(transform, registry, context);
 
-    auto [position, rotation] = dory::serialization::json::deserialize<Transform2, ObjectVisitorExtensions<dory::serialization::json::JsonDeserializationPolicies>>(json);
+    auto [position, rotation] = dory::serialization::json::deserialize<Transform2, int, int,
+        ObjectVisitorExtensions<dory::serialization::json::JsonDeserializationPolicies>>(json, registry, context);
 
     EXPECT_EQ(position.x, transform.position.x);
     EXPECT_EQ(position.y, transform.position.y);
@@ -342,21 +359,23 @@ TEST(JsonDeserialization, deserializeInvalidEnumValue)
 "type": "geometry"
 })";
 
-    auto shader = dory::serialization::json::deserialize<Shader>(json);
+    int registry, context;
+    auto [filename, type] = dory::serialization::json::deserialize<Shader>(json, registry, context);
 
-    EXPECT_EQ(shader.filename, "assets/shaders/simpleVertex");
-    EXPECT_EQ(shader.type, ShaderType::unknown);
+    EXPECT_EQ(filename, "assets/shaders/simpleVertex");
+    EXPECT_EQ(type, ShaderType::unknown);
 }
 
 TEST(JsonSerialization, serializeEnumValue)
 {
-    auto shader = Shader { "assets/shaders/simpleVertex", ShaderType::fragment };
-    const auto json = dory::serialization::json::serialize(shader);
+    const auto shader = Shader { "assets/shaders/simpleVertex", ShaderType::fragment };
+    int registry, context;
+    const auto json = dory::serialization::json::serialize(shader, registry, context);
 
-    auto shaderReverse = dory::serialization::json::deserialize<Shader>(json);
+    auto [filename, type] = dory::serialization::json::deserialize<Shader>(json, registry, context);
 
-    EXPECT_EQ(shaderReverse.filename, shader.filename);
-    EXPECT_EQ(shaderReverse.type, shader.type);
+    EXPECT_EQ(filename, shader.filename);
+    EXPECT_EQ(type, shader.type);
 }
 
 TEST(JsonDeserialization, deserializeDictionaryWithEnumKeys)
@@ -367,11 +386,12 @@ TEST(JsonDeserialization, deserializeDictionaryWithEnumKeys)
   "fragment": "fragmentShader"
 }})";
 
-    auto material = dory::serialization::json::deserialize<Material>(json);
+    int registry, context;
+    auto [shaders] = dory::serialization::json::deserialize<Material>(json, registry, context);
 
-    EXPECT_EQ(material.shaders.size(), 2);
-    EXPECT_EQ(material.shaders[ShaderType::vertex], "vertexShader");
-    EXPECT_EQ(material.shaders[ShaderType::fragment], "fragmentShader");
+    EXPECT_EQ(shaders.size(), 2);
+    EXPECT_EQ(shaders[ShaderType::vertex], "vertexShader");
+    EXPECT_EQ(shaders[ShaderType::fragment], "fragmentShader");
 }
 
 TEST(JsonSerialization, serializeDictionaryWithEnumKeys)
@@ -383,13 +403,14 @@ TEST(JsonSerialization, serializeDictionaryWithEnumKeys)
             }
     };
 
-    auto json = dory::serialization::json::serialize(material);
+    int registry, context;
+    const auto json = dory::serialization::json::serialize(material, registry, context);
 
-    auto materialReverse = dory::serialization::json::deserialize<Material>(json);
+    auto [shaders] = dory::serialization::json::deserialize<Material>(json, registry, context);
 
-    EXPECT_EQ(materialReverse.shaders.size(), material.shaders.size());
-    EXPECT_EQ(materialReverse.shaders[ShaderType::vertex], material.shaders[ShaderType::vertex]);
-    EXPECT_EQ(materialReverse.shaders[ShaderType::fragment], material.shaders[ShaderType::fragment]);
+    EXPECT_EQ(shaders.size(), material.shaders.size());
+    EXPECT_EQ(shaders[ShaderType::vertex], material.shaders[ShaderType::vertex]);
+    EXPECT_EQ(shaders[ShaderType::fragment], material.shaders[ShaderType::fragment]);
 }
 
 enum class FaceRendering
@@ -441,7 +462,8 @@ TEST(ObjectCopy, copyObjects)
     materialBase.uniforms.shaders[ShaderType::fragment] = "fragmentShader";
     materialBase.id = 2;
 
-    dory::serialization::object::copy(materialBase, material);
+    int registry, context;
+    dory::serialization::object::copy(materialBase, material, registry, context);
 
     EXPECT_EQ(material.face, FaceRendering::wireframe);
     EXPECT_EQ(material.name, "source");

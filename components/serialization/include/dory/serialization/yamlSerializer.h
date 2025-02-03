@@ -9,20 +9,21 @@ namespace dory::serialization::yaml
     struct SerializerValuePolicy
     {
     private:
-        template<typename T>
-        static void writeValue(T& value, ryml::NodeRef& node, YamlContext& context)
+        template<typename T, typename TRegistry, typename TDataContext>
+        static void writeValue(T& value, ryml::NodeRef& node, YamlContext<TRegistry, TDataContext>& context)
         {
             node << value;
         }
 
-        static void writeValue(const std::string& value, ryml::NodeRef& node, YamlContext& context)
+        template<typename TRegistry, typename TDataContext>
+        static void writeValue(const std::string& value, ryml::NodeRef& node, YamlContext<TRegistry, TDataContext>& context)
         {
             node = toRymlCStr(value);
         }
 
     public:
-        template<typename T>
-        static void process(T& value, YamlContext& context)
+        template<typename T, typename TRegistry, typename TDataContext>
+        static void process(T& value, YamlContext<TRegistry, TDataContext>& context)
         {
             auto current = context.node;
             current |= c4::yml::NodeType_e::VAL;
@@ -32,8 +33,8 @@ namespace dory::serialization::yaml
 
     struct SerializerEnumPolicy
     {
-        template<typename T>
-        static void process(T& value, YamlContext& context)
+        template<typename T, typename TRegistry, typename TDataContext>
+        static void process(T& value, YamlContext<TRegistry, TDataContext>& context)
         {
             auto current = context.node;
             current |= c4::yml::NodeType_e::VAL;
@@ -45,8 +46,8 @@ namespace dory::serialization::yaml
 
     struct SerializerObjectPolicy
     {
-        template<typename T>
-        static bool beginObject(T&& object, YamlContext& context)
+        template<typename T, typename TRegistry, typename TDataContext>
+        static bool beginObject(T&& object, YamlContext<TRegistry, TDataContext>& context)
         {
             auto current = context.node;
             current |= c4::yml::NodeType_e::MAP;
@@ -54,32 +55,34 @@ namespace dory::serialization::yaml
             return true;
         }
 
-        template<typename T>
-        static void endObject(T&& object, YamlContext& context)
+        template<typename T, typename TRegistry, typename TDataContext>
+        static void endObject(T&& object, YamlContext<TRegistry, TDataContext>& context)
         {
         }
     };
 
     struct SerializerMemberPolicy
     {
-        static std::optional<YamlContext> beginMemberGeneric(auto&& member, const std::size_t i, YamlContext& context)
+        template<typename TRegistry, typename TDataContext>
+        static std::optional<YamlContext<TRegistry, TDataContext>> beginMemberGeneric(auto&& member, const std::size_t i, YamlContext<TRegistry, TDataContext>& context)
         {
             auto current = context.node;
 
             auto memberNode = current.append_child();
             memberNode.set_key(toRymlCStr(member.name));
 
-            return YamlContext{ memberNode };
+            return YamlContext{ memberNode, context.registry, context.dataContext };
         }
 
-        static std::optional<YamlContext> beginMember(auto&& member, const std::size_t i, YamlContext& context)
+        template<typename TRegistry, typename TDataContext>
+        static std::optional<YamlContext<TRegistry, TDataContext>> beginMember(auto&& member, const std::size_t i, YamlContext<TRegistry, TDataContext>& context)
         {
             return beginMemberGeneric(member, i, context);
         }
 
-        template<class T, class TValue>
+        template<class T, class TValue, typename TRegistry, typename TDataContext>
         requires(generic::is_optional_v<std::decay_t<TValue>>)
-        static std::optional<YamlContext> beginMember(reflection::ClassMember<T, TValue>& member, const std::size_t i, YamlContext& context)
+        static std::optional<YamlContext<TRegistry, TDataContext>> beginMember(reflection::ClassMember<T, TValue>& member, const std::size_t i, YamlContext<TRegistry, TDataContext>& context)
         {
             if(member.value.has_value())
             {
@@ -89,14 +92,15 @@ namespace dory::serialization::yaml
             return {};
         }
 
-        static void endMember(const bool lastMember, YamlContext& context)
+        template<typename TRegistry, typename TDataContext>
+        static void endMember(const bool lastMember, YamlContext<TRegistry, TDataContext>& context)
         {}
     };
 
     struct SerializerCollectionPolicy
     {
-        template<typename T, auto N, typename TCollection>
-        static void beginCollection(TCollection&& collection, YamlContext& context)
+        template<typename T, auto N, typename TCollection, typename TRegistry, typename TDataContext>
+        static void beginCollection(TCollection&& collection, YamlContext<TRegistry, TDataContext>& context)
         {
             auto currentNode = context.node;
             currentNode |= c4::yml::NodeType_e::SEQ;
@@ -108,22 +112,25 @@ namespace dory::serialization::yaml
 #endif
         }
 
-        static void endCollection(YamlContext& context)
+        template<typename TRegistry, typename TDataContext>
+        static void endCollection(YamlContext<TRegistry, TDataContext>& context)
         {
         }
     };
 
     struct SerializerCollectionItemPolicy
     {
-        static std::optional<YamlContext> beginItem(const std::size_t i, const YamlContext& context)
+        template<typename TRegistry, typename TDataContext>
+        static std::optional<YamlContext<TRegistry, TDataContext>> beginItem(const std::size_t i, const YamlContext<TRegistry, TDataContext>& context)
         {
             auto current = context.node;
             const auto itemNode = current.append_child();
 
-            return YamlContext{ itemNode };
+            return YamlContext{ itemNode, context.registry, context.dataContext };
         }
 
-        static void endItem(const bool lastItem, YamlContext& context)
+        template<typename TRegistry, typename TDataContext>
+        static void endItem(const bool lastItem, YamlContext<TRegistry, TDataContext>& context)
         {}
     };
 
@@ -147,19 +154,21 @@ namespace dory::serialization::yaml
             size = collection.size();
         }
 
-        template<typename TCollection, typename TItem>
+        template<typename TCollection, typename TItem, typename TRegistry, typename TDataContext>
         requires(generic::is_dynamic_collection_v<TCollection>)
-        static std::optional<YamlContext> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
+        static std::optional<YamlContext<TRegistry, TDataContext>> getCollectionItem(YamlContext<TRegistry, TDataContext>& context,
+            TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
         {
             *item = &collection[index];
 
             const auto itemNode = collectionNode.append_child();
-            return YamlContext{ itemNode };
+            return YamlContext{ itemNode, context.registry, context.dataContext };
         }
 
-        template<typename TCollection, typename TItem>
+        template<typename TCollection, typename TItem, typename TRegistry, typename TDataContext>
         requires(generic::is_dictionary_v<TCollection>)
-        static std::optional<YamlContext> getCollectionItem(TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
+        static std::optional<YamlContext<TRegistry, TDataContext>> getCollectionItem(YamlContext<TRegistry, TDataContext>& context,
+            TCollection& collection, auto& index, NodeType& collectionNode, TItem** item)
         {
             auto& pair = getMapItem(collection, index);
             *item = &pair.second;
@@ -168,7 +177,7 @@ namespace dory::serialization::yaml
             auto keyString = getKeyString(pair.first);
             itemNode.set_key(toRymlCStr(keyString));
 
-            return YamlContext { itemNode };
+            return YamlContext { itemNode, context.registry, context.dataContext };
         }
     };
 
@@ -183,12 +192,12 @@ namespace dory::serialization::yaml
         using ContainerPolicyType = SerializerContainerPolicy;
     };
 
-    template<typename T, typename... TVisitorBases>
-    static std::string serialize(const T& object)
+    template<typename T, typename TRegistry, typename TDataContext, typename... TVisitorBases>
+    static std::string serialize(const T& object, TRegistry& registry, TDataContext& dataContext)
     {
         auto tree = ryml::Tree{};
 
-        YamlContext context(tree.rootref());
+        YamlContext<TRegistry, TDataContext> context(tree.rootref(), registry, dataContext);
         ObjectVisitor<YamlSerializationPolicies, TVisitorBases...>::visit(object, context);
 
         std::stringstream stream;

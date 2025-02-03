@@ -1,5 +1,6 @@
 #pragma once
 
+#include <dory/core/resources/dataContext.h>
 #include <dory/core/services/iLocalizationService.h>
 
 namespace dory::core
@@ -18,6 +19,6 @@ namespace dory::core::services
     public:
         explicit LocalizationService(Registry& registry);
 
-        void load(const resources::configuration::Configuration& configuration, resources::Localization& localization) override;
+        void load(const resources::configuration::Configuration& configuration, resources::Localization& localization, resources::DataContext& dataContext) override;
     };
 }

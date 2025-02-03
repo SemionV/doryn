@@ -9,6 +9,6 @@ namespace dory::core::services
     class ILocalizationService: public generic::Interface
     {
     public:
-        virtual void load(const resources::configuration::Configuration& configuration, resources::Localization& localization) = 0;
+        virtual void load(const resources::configuration::Configuration& configuration, resources::Localization& localization, resources::DataContext& dataContext) = 0;
     };
 }

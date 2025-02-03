@@ -9,7 +9,7 @@ namespace dory::core::services
             _registry(registry)
     {}
 
-    void LocalizationService::load(const resources::configuration::Configuration& configuration, resources::Localization& localization)
+    void LocalizationService::load(const resources::configuration::Configuration& configuration, resources::Localization& localization, resources::DataContext& dataContext)
     {
         auto& activeLanguage = configuration.userInterface.activeLanguage;
         if(configuration.localizations.contains(activeLanguage))
@@ -36,9 +36,9 @@ namespace dory::core::services
                         dataFormat = resolver->resolveFormat(fileName);
                     });
 
-                    _registry.get<serialization::ISerializer>(dataFormat, [&data, &localization](serialization::ISerializer* serializer)
+                    _registry.get<serialization::ISerializer>(dataFormat, [this, &dataContext, &data, &localization](serialization::ISerializer* serializer)
                     {
-                        serializer->deserialize(data, localization);
+                        serializer->deserialize(data, localization, _registry, dataContext);
                     });
                 }
                 catch (const std::exception& e)

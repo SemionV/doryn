@@ -10,7 +10,7 @@ namespace dory::core::services
     public:
         explicit SceneConfigurationService(Registry& registry);
 
-        void load(const std::filesystem::path& filename, resources::scene::configuration::Scene& configuration) final;
-        void save(const std::filesystem::path& filename, const resources::scene::configuration::Scene& configuration) final;
+        void load(const std::filesystem::path& filename, resources::scene::configuration::Scene& configuration, resources::DataContext& dataContext) final;
+        void save(const std::filesystem::path& filename, const resources::scene::configuration::Scene& configuration, resources::DataContext& dataContext) final;
     };
 }

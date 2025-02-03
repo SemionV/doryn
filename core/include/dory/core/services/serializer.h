@@ -79,6 +79,7 @@ namespace dory::core::services::serialization
     template<typename TInstance, typename TFactory>
     struct FactoryInstance
     {
+        //TODO: use ResourceHandle instead, support hot reloading
         std::unique_ptr<TInstance> instance;
         std::string factoryKey {};
     };
@@ -106,6 +107,11 @@ namespace dory::core::services::serialization
             {
                 factoryInstance.instance = factory->template loadInstance<TInstance>(context);
             }
+
+            if(factoryInstance.instance)
+            {
+                dory::serialization::ClassVisitor<TPolicies, VisitorType>::visit(factoryInstance.instance, context);
+            }
         }
 
         template<typename TInstance, typename TFactory, typename TContext>
@@ -113,9 +119,9 @@ namespace dory::core::services::serialization
         {
             dory::serialization::ClassVisitor<TPolicies, VisitorType>::visit(factoryInstance, context);
 
-            if(auto factory = context.registry.template get<TFactory>(factoryInstance.factoryKey))
+            if(factoryInstance.instance)
             {
-                factory->template saveInstance<TInstance>(factoryInstance.instance, context);
+                dory::serialization::ClassVisitor<TPolicies, VisitorType>::visit(factoryInstance.instance, context);
             }
         }
     };
@@ -124,14 +130,16 @@ namespace dory::core::services::serialization
     class YamlSerializerGeneric: public implementation::ImplementationLevel<TPolicy, TState>
     {
     public:
-        inline std::string serialize(const T& object) final
+        std::string serialize(const T& object, Registry& registry, resources::DataContext& dataContext) final
         {
-            return dory::serialization::yaml::serialize<const T, ObjectVisitorExtensions<dory::serialization::yaml::YamlSerializationPolicies>>(object);
+            return dory::serialization::yaml::serialize<const T, Registry, resources::DataContext,
+                ObjectVisitorExtensions<dory::serialization::yaml::YamlSerializationPolicies>>(object, registry, dataContext);
         }
 
-        inline void deserialize(const std::string& source, T& object) final
+        void deserialize(const std::string& source, T& object, Registry& registry, resources::DataContext& dataContext) final
         {
-            dory::serialization::yaml::deserialize<T, ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(source, object);
+            dory::serialization::yaml::deserialize<T, Registry, resources::DataContext,
+                ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(source, object, registry, dataContext);
         }
     };
 
@@ -144,14 +152,16 @@ namespace dory::core::services::serialization
     class JsonSerializerGeneric: public implementation::ImplementationLevel<TPolicy, TState>
     {
     public:
-        inline std::string serialize(const T& object) final
+        std::string serialize(const T& object, Registry& registry, resources::DataContext& dataContext) final
         {
-            return dory::serialization::json::serialize<const T, ObjectVisitorExtensions<dory::serialization::json::JsonSerializationPolicies>>(object);
+            return dory::serialization::json::serialize<const T, Registry, resources::DataContext,
+                ObjectVisitorExtensions<dory::serialization::json::JsonSerializationPolicies>>(object, registry, dataContext);
         }
 
-        inline void deserialize(const std::string& source, T& object) final
+        void deserialize(const std::string& source, T& object, Registry& registry, resources::DataContext& dataContext) final
         {
-            dory::serialization::json::deserialize<T, ObjectVisitorExtensions<dory::serialization::json::JsonDeserializationPolicies>>(source, object);
+            dory::serialization::json::deserialize<T, Registry, resources::DataContext,
+                ObjectVisitorExtensions<dory::serialization::json::JsonDeserializationPolicies>>(source, object, registry, dataContext);
         }
     };
 

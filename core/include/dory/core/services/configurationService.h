@@ -18,13 +18,12 @@ namespace dory::core
 
 namespace dory::core::services
 {
-    struct ConfigurationSectionContext
+    struct ConfigurationSectionContext: dory::serialization::Context<Registry, resources::DataContext>
     {
         IConfigurationService* configurationService;
 
-        ConfigurationSectionContext() = default;
-
-        explicit ConfigurationSectionContext(IConfigurationService* configurationService):
+        explicit ConfigurationSectionContext(IConfigurationService* configurationService, Registry& registry, resources::DataContext& dataContext):
+                dory::serialization::Context<dory::core::Registry, dory::core::resources::DataContext>(registry, dataContext),
                 configurationService(configurationService)
         {}
     };
@@ -68,7 +67,7 @@ namespace dory::core::services
             auto overrideWithFiles = std::vector<std::string>{ std::move(object.section.loadFrom) };
             for(const auto& settingsFile : overrideWithFiles)
             {
-                context.configurationService->load(settingsFile, std::forward<T>(object));
+                context.configurationService->load(settingsFile, std::forward<T>(object), context.dataContext);
             }
 
             return true;
@@ -101,7 +100,7 @@ namespace dory::core::services
             auto& saveTo = object.section.saveTo;
             if(!saveTo.empty())
             {
-                context.configurationService->save(saveTo, object);
+                context.configurationService->save(saveTo, object, context.dataContext);
             }
 
             return true;
@@ -138,14 +137,14 @@ namespace dory::core::services
             implementation::ImplementationLevel<TPolicy, TState>(registry)
         {}
 
-        void load(T& configuration) final
+        void load(T& configuration, resources::DataContext& dataContext) final
         {
             //load recursive sections
-            auto context = ConfigurationSectionContext{ this };
+            auto context = ConfigurationSectionContext{ this, this->_registry, dataContext };
             dory::serialization::ObjectVisitor<LoadConfigurationSectionPolicies>::visit(configuration, context);
         }
 
-        bool load(const std::filesystem::path& configurationPath, T& configuration) final
+        bool load(const std::filesystem::path& configurationPath, T& configuration, resources::DataContext& dataContext) final
         {
             try
             {
@@ -167,16 +166,16 @@ namespace dory::core::services
                     dataFormat = resolver->resolveFormat(configurationPath);
                 });
 
-                this->_registry.template get<serialization::ISerializer>(dataFormat, [&data, &configuration](serialization::ISerializer* serializer)
+                this->_registry.template get<serialization::ISerializer>(dataFormat, [this, &data, &configuration, &dataContext](serialization::ISerializer* serializer)
                 {
                     if(serializer)
                     {
-                        serializer->deserialize(data, configuration);
+                        serializer->deserialize(data, configuration, this->_registry, dataContext);
                     }
                 });
 
                 //load recursive sections
-                auto context = ConfigurationSectionContext{ this };
+                auto context = ConfigurationSectionContext{ this, this->_registry, dataContext };
                 dory::serialization::ObjectVisitor<LoadConfigurationSectionPolicies>::visit(configuration, context);
 
                 return true;
@@ -199,14 +198,14 @@ namespace dory::core::services
             return false;
         }
 
-        void save(const T& configuration) final
+        void save(const T& configuration, resources::DataContext& dataContext) final
         {
             //save recursive sections
-            auto context = ConfigurationSectionContext{ this };
+            auto context = ConfigurationSectionContext{ this, this->_registry, dataContext };
             dory::serialization::ObjectVisitor<SaveConfigurationSectionPolicies>::visit(configuration, context);
         }
 
-        bool save(const std::filesystem::path& configurationPath, const T& configuration) final
+        bool save(const std::filesystem::path& configurationPath, const T& configuration, resources::DataContext& dataContext) final
         {
             try
             {
@@ -222,11 +221,11 @@ namespace dory::core::services
                 });
 
                 std::string data {};
-                this->_registry.template get<serialization::ISerializer>(dataFormat, [&data, &configuration](serialization::ISerializer* serializer)
+                this->_registry.template get<serialization::ISerializer>(dataFormat, [this, &data, &configuration, &dataContext](serialization::ISerializer* serializer)
                 {
                     if(serializer)
                     {
-                        data = serializer->serialize(configuration);
+                        data = serializer->serialize(configuration, this->_registry, dataContext);
                     }
                 });
 

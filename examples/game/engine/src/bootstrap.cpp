@@ -83,7 +83,7 @@ namespace dory::game
         });
 
         _registry.get<IConfigurationService>([&context](IConfigurationService* configurationService){
-            configurationService->load(context.configuration);
+            configurationService->load(context.configuration, context);
         });
 
         _registry.get<IMultiSinkLogService, Logger::App>([this, &context](IMultiSinkLogService* logger){
@@ -91,7 +91,7 @@ namespace dory::game
         });
 
         _registry.get<ILocalizationService>([&context](ILocalizationService* localizationService){
-            localizationService->load(context.configuration, context.localization);
+            localizationService->load(context.configuration, context.localization, context);
         });
     }
 

@@ -2,10 +2,15 @@
 
 #include <string>
 #include <dory/generic/typeList.h>
-#include <dory/core/resources/dataFormat.h>
 #include <dory/core/resources/configuration.h>
 #include <dory/core/resources/localization.h>
 #include <dory/core/resources/scene/configuration.h>
+#include <dory/core/resources/dataContext.h>
+
+namespace dory::core
+{
+    struct Registry;
+}
 
 namespace dory::core::services::serialization
 {
@@ -13,8 +18,8 @@ namespace dory::core::services::serialization
     class ISerializerGeneric
     {
     public:
-        virtual std::string serialize(const T& object) = 0;
-        virtual void deserialize(const std::string& source, T& object) = 0;
+        virtual std::string serialize(const T& object, Registry& registry, resources::DataContext& dataContext) = 0;
+        virtual void deserialize(const std::string& source, T& object, Registry& registry, resources::DataContext& dataContext) = 0;
     };
 
     template<typename... Ts>
