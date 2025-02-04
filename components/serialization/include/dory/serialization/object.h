@@ -3,12 +3,12 @@
 namespace dory::serialization::object
 {
     template<typename TNode, typename TRegistry, typename TDataContext>
-    struct ObjectCopyContext: TreeStructureContext<const TNode*, TRegistry, TDataContext>
+    struct ObjectCopyContext: generic::serialization::TreeStructureContext<const TNode*, TRegistry, TDataContext>
     {
         using NodeType = const TNode*;
 
         explicit ObjectCopyContext(const TNode* root, TRegistry& registry, TDataContext& dataContext):
-            TreeStructureContext<NodeType, TRegistry, TDataContext>(root, registry, dataContext)
+            generic::serialization::TreeStructureContext<NodeType, TRegistry, TDataContext>(root, registry, dataContext)
         {}
     };
 

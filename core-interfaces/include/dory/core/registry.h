@@ -61,6 +61,7 @@
 #include <dory/core/services/iProfilingService.h>
 #include <dory/core/services/iSceneBuilder.h>
 #include <dory/core/services/iSceneConfigurationService.h>
+#include <dory/core/services/iObjectFactory.h>
 
 namespace dory::core
 {
@@ -139,7 +140,8 @@ namespace dory::core
             generic::registry::ServiceEntry<services::files::IImageFileService, resources::AssetFileFormat>,
             generic::registry::ServiceEntry<services::IProfilingService>,
             generic::registry::ServiceEntry<services::ISceneBuilder>,
-            generic::registry::ServiceEntry<services::ISceneConfigurationService>>
+            generic::registry::ServiceEntry<services::ISceneConfigurationService>,
+            generic::registry::ServiceEntry<services::IObjectFactory<IController>, std::string>>
     {};
 
     template<typename T>

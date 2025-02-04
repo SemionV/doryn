@@ -18,12 +18,12 @@ namespace dory::core
 
 namespace dory::core::services
 {
-    struct ConfigurationSectionContext: dory::serialization::Context<Registry, resources::DataContext>
+    struct ConfigurationSectionContext: generic::serialization::Context<Registry, resources::DataContext>
     {
         IConfigurationService* configurationService;
 
         explicit ConfigurationSectionContext(IConfigurationService* configurationService, Registry& registry, resources::DataContext& dataContext):
-                dory::serialization::Context<dory::core::Registry, dory::core::resources::DataContext>(registry, dataContext),
+                generic::serialization::Context<dory::core::Registry, dory::core::resources::DataContext>(registry, dataContext),
                 configurationService(configurationService)
         {}
     };

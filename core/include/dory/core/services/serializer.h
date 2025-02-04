@@ -2,6 +2,7 @@
 
 #include <dory/core/services/iSerializer.h>
 #include <dory/core/implementation.h>
+#include <dory/core/resources/serialization.h>
 #include <dory/serialization/yamlSerializer.h>
 #include <dory/serialization/yamlDeserializer.h>
 #include <dory/serialization/jsonSerializer.h>
@@ -16,8 +17,13 @@ namespace dory::core::services::serialization
     struct ParameterizedStringObjectVisitor;
 
     template<typename TPolicies>
-    using ObjectVisitorExtensions = generic::TypeList<GlmObjectVisitor<TPolicies>,
-            struct ParameterizedStringObjectVisitor<TPolicies>>;
+    struct ClassInstanceFactoryObjectVisitor;
+
+    template<typename TPolicies>
+    using ObjectVisitorExtensions = generic::TypeList<
+            GlmObjectVisitor<TPolicies>,
+            ParameterizedStringObjectVisitor<TPolicies>,
+            ClassInstanceFactoryObjectVisitor<TPolicies>>;
 
     //GLM extensions to the base ObjectVisitor
     template<typename TPolicies>
@@ -75,15 +81,6 @@ namespace dory::core::services::serialization
         }
     };
 
-    //TODO: move to dory::core::resources namespace
-    template<typename TInstance, typename TFactory>
-    struct FactoryInstance
-    {
-        //TODO: use ResourceHandle instead, support hot reloading
-        std::unique_ptr<TInstance> instance;
-        std::string factoryKey {};
-    };
-
     //TODO:
     // Create a base class for all serialization Contexts and put Registry&, DataContext& and DataFormat fields to it
     // Add serialization/deserialization methods to all sorts of serializers, which are getting an existing serialization Context as a parameter
@@ -94,18 +91,18 @@ namespace dory::core::services::serialization
 
     //ControllerFactory extensions to the base ObjectVisitor
     template<typename TPolicies>
-    struct ControllerFactoryObjectVisitor
+    struct ClassInstanceFactoryObjectVisitor
     {
         using VisitorType = dory::serialization::ObjectVisitor<TPolicies, ObjectVisitorExtensions<TPolicies>>;
 
-        template<typename TInstance, typename TFactory, typename TContext>
-        static void visit(FactoryInstance<TInstance, TFactory>& factoryInstance, TContext& context)
+        template<typename TInstance, typename TContext>
+        static void visit(resources::serialization::FactoryInstance<TInstance>& factoryInstance, TContext& context)
         {
             dory::serialization::ClassVisitor<TPolicies, VisitorType>::visit(factoryInstance, context);
 
-            if(auto factory = context.registry.template get<TFactory>(factoryInstance.factoryKey))
+            if(auto factory = context.registry.template get<IObjectFactory<TInstance>>(factoryInstance.type))
             {
-                factoryInstance.instance = factory->template loadInstance<TInstance>(context);
+                factoryInstance.instance = factory->createInstance(context);
             }
 
             if(factoryInstance.instance)
@@ -114,8 +111,8 @@ namespace dory::core::services::serialization
             }
         }
 
-        template<typename TInstance, typename TFactory, typename TContext>
-        static void visit(const FactoryInstance<TInstance, TFactory>& factoryInstance, TContext& context)
+        template<typename TInstance, typename TContext>
+        static void visit(const resources::serialization::FactoryInstance<TInstance>& factoryInstance, TContext& context)
         {
             dory::serialization::ClassVisitor<TPolicies, VisitorType>::visit(factoryInstance, context);
 

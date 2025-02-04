@@ -7,14 +7,17 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include <dory/core/resources/serialization.h>
 #include <dory/serialization/yamlDeserializer.h>
 #include <dory/serialization/yamlSerializer.h>
 #include <dory/serialization/jsonDeserializer.h>
 #include <dory/serialization/jsonSerializer.h>
 #include <dory/serialization/object.h>
 #include <dory/core/services/serializer.h>
+#include <dory/core/services/iObjectFactory.h>
 #include <dory/math/linearAlgebra.h>
 #include <spdlog/fmt/bundled/format.h>
+#include <dory/core/resources/objectFactoryRefl.h>
 
 class IController
 {
@@ -482,26 +485,22 @@ TEST(ObjectCopy, copyObjects)
     EXPECT_EQ(material.uniforms.shaders[ShaderType::fragment], "fragmentShader");
 }
 
-struct Component
+struct PipelineConfiguration
 {
-    int value {};
-    std::string name;
-    std::string type;
+    dory::core::resources::serialization::FactoryInstance<IController> controller;
 };
 
-struct Component2
+REFL_TYPE(PipelineConfiguration)
+    REFL_FIELD(controller)
+REFL_END
+
+TEST(ObjectFactory, createInstance)
 {
-    int value {};
-    std::string name;
-};
+    const auto yaml = R"(
+trigger:
+  type: TestController
+)";
 
-REFL_TYPE(Component)
-    REFL_FIELD(value)
-    REFL_FIELD(name)
-    REFL_FIELD(type)
-REFL_END
-
-REFL_TYPE(Component2)
-    REFL_FIELD(value)
-    REFL_FIELD(name)
-REFL_END
+    int registry, context;
+    auto [shaders] = dory::serialization::yaml::deserialize<Material>(yaml, registry, context);
+}
