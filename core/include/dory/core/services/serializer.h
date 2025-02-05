@@ -81,15 +81,7 @@ namespace dory::core::services::serialization
         }
     };
 
-    //TODO:
-    // Create a base class for all serialization Contexts and put Registry&, DataContext& and DataFormat fields to it
-    // Add serialization/deserialization methods to all sorts of serializers, which are getting an existing serialization Context as a parameter
-    // Implement Factory as a templated class, which should be registered in the service container relative to a string key and a TInstance specialization
-    // The Factory implementation takes a reference to the base serialization Context class and searches for a serializer according to DataFormat value
-    // The Factory either allocates a new object of type TInstance and sends it down to a corresponding deserializator together with deserialization context
-    // or takes the existing instance of TInstance and send is down to a corresponding serialization together with the serialization Context
-
-    //ControllerFactory extensions to the base ObjectVisitor
+    //ClassInstanceFactory extensions to the base ObjectVisitor
     template<typename TPolicies>
     struct ClassInstanceFactoryObjectVisitor
     {
@@ -104,11 +96,6 @@ namespace dory::core::services::serialization
             {
                 factoryInstance.instance = factory->createInstance(context);
             }
-
-            if(factoryInstance.instance)
-            {
-                dory::serialization::ClassVisitor<TPolicies, VisitorType>::visit(factoryInstance.instance, context);
-            }
         }
 
         template<typename TInstance, typename TContext>
@@ -116,9 +103,9 @@ namespace dory::core::services::serialization
         {
             dory::serialization::ClassVisitor<TPolicies, VisitorType>::visit(factoryInstance, context);
 
-            if(factoryInstance.instance)
+            if(auto instance = factoryInstance.instance.lock())
             {
-                dory::serialization::ClassVisitor<TPolicies, VisitorType>::visit(factoryInstance.instance, context);
+                dory::serialization::ClassVisitor<TPolicies, VisitorType>::visit(*instance, context);
             }
         }
     };

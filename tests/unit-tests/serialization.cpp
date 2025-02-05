@@ -494,7 +494,7 @@ class ObjectFactoryMock final : public dory::core::services::IObjectFactory<T>
 {
 public:
     using SerializationContextType = dory::generic::serialization::Context<dory::core::services::serialization::SerializationContextPoliciesType>;
-    MOCK_METHOD(std::unique_ptr<T>, createInstance, (SerializationContextType& context), (final));
+    MOCK_METHOD(dory::generic::extension::ResourceHandle<std::shared_ptr<T>>, createInstance, (SerializationContextType& context), (final));
 };
 
 TEST(ObjectFactory, createInstanceFromYaml)
@@ -510,8 +510,9 @@ controller:
     dory::core::resources::configuration::Configuration configuration {};
     dory::core::resources::Localization localization {};
     dory::core::resources::DataContext context { configuration, localization};
-    auto someController = std::make_unique<SomeController>();
+    auto someController = std::make_shared<SomeController>();
     someController->parameter = 4;
+    auto someControllerHandle = dory::generic::extension::ResourceHandle<std::shared_ptr<dory::core::IController>> { libraryHandle, someController };
 
     const auto controllerFactory = std::make_shared<ObjectFactoryMock<dory::core::IController>>();
     registry.set<dory::core::services::IObjectFactory<dory::core::IController>>(libraryHandle, controllerFactory, std::string { "SomeController" });
@@ -524,11 +525,11 @@ controller:
 
         return yamlContextIsCorrect && &serializationContext.registry == &registry && &serializationContext.dataContext == &context;
     });
-    EXPECT_CALL(*controllerFactory, createInstance(serializationContextMatcher)).WillOnce(Return(ByMove(std::move(someController))));
+    EXPECT_CALL(*controllerFactory, createInstance(serializationContextMatcher)).WillOnce(Return(someControllerHandle));
 
     auto contextBase = dory::generic::serialization::Context<dory::core::services::serialization::SerializationContextPoliciesType>{ registry, context, dory::core::resources::DataFormat::yaml };
     auto [controller] = dory::serialization::yaml::deserialize<PipelineNode, dory::core::services::serialization::SerializationContextPoliciesType,
         ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(yaml, std::move(contextBase));
 
-    EXPECT_TRUE(controller.instance);
+    EXPECT_TRUE(*controller.instance.lock());
 }
