@@ -142,6 +142,15 @@ namespace dory::core::services::serialization
             dory::serialization::yaml::deserialize<T, SerializationContextPoliciesType,
                 ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(source, object, std::move(contextBase));
         }
+
+        void deserialize(T& object, generic::serialization::Context<SerializationContextPoliciesType>& context) final
+        {
+            assert(context.dataFormat == resources::DataFormat::yaml);
+
+            auto& yamlContext = static_cast<dory::serialization::yaml::YamlContext<SerializationContextPoliciesType>&>(context);
+            dory::serialization::yaml::deserialize<T, SerializationContextPoliciesType,
+                ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(object, yamlContext);
+        }
     };
 
     struct YamlSerializerPolicy: implementation::ImplementationPolicy<implementation::ImplementationList<YamlSerializerGeneric>>
@@ -167,6 +176,15 @@ namespace dory::core::services::serialization
 
             dory::serialization::json::deserialize<T, SerializationContextPoliciesType,
                 ObjectVisitorExtensions<dory::serialization::json::JsonDeserializationPolicies>>(source, object, std::move(contextBase));
+        }
+
+        void deserialize(T& object, generic::serialization::Context<SerializationContextPoliciesType>& context) final
+        {
+            assert(context.dataFormat == resources::DataFormat::json);
+
+            auto& jsonContext = static_cast<dory::serialization::json::JsonContext<SerializationContextPoliciesType>&>(context);
+            dory::serialization::json::deserialize<T, SerializationContextPoliciesType,
+                ObjectVisitorExtensions<dory::serialization::json::JsonDeserializationPolicies>>(object, jsonContext);
         }
     };
 

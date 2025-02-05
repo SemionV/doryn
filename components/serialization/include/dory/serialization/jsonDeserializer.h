@@ -169,11 +169,17 @@ namespace dory::serialization::json
     };
 
     template<typename T, typename TContextPolicies, typename... TVisitorBases>
+    static void deserialize(T& object, JsonContext<TContextPolicies>& context)
+    {
+        ObjectVisitor<JsonDeserializationPolicies, TVisitorBases...>::visit(object, context);
+    }
+
+    template<typename T, typename TContextPolicies, typename... TVisitorBases>
     static void deserialize(const std::string& source, T& object, generic::serialization::Context<TContextPolicies>&& baseContext)
     {
         auto data = json::parse(source);
         JsonContext<TContextPolicies> context(&data, baseContext);
-        ObjectVisitor<JsonDeserializationPolicies, TVisitorBases...>::visit(object, context);
+        deserialize<T, TContextPolicies, TVisitorBases...>(object, context);
     }
 
     template<typename T, typename TContextPolicies, typename... TVisitorBases>

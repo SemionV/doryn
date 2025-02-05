@@ -23,6 +23,7 @@ namespace dory::core::services::serialization
     public:
         virtual std::string serialize(const T& object, Registry& registry, resources::DataContext& dataContext) = 0;
         virtual void deserialize(const std::string& source, T& object, Registry& registry, resources::DataContext& dataContext) = 0;
+        virtual void deserialize(T& object, generic::serialization::Context<SerializationContextPoliciesType>& context) = 0;
     };
 
     template<typename... Ts>

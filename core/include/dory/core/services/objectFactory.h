@@ -11,7 +11,14 @@ namespace dory::core::services
     public:
         std::unique_ptr<TInterface> createInstance(generic::serialization::Context<typename IObjectFactory<TInterface>::SerializationContextPoliciesType>& context) final
         {
-            return std::make_unique<TImplementation>(context.registry);
+            auto instance = std::make_unique<TImplementation>(context.registry);
+
+            if(auto serializer = context.registry.template get<serialization::ISerializer>(context.dataFormat))
+            {
+                serializer->deserialize(instance, context);
+            }
+
+            return instance;
         }
     };
 }

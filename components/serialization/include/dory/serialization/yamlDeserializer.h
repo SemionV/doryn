@@ -186,11 +186,17 @@ namespace dory::serialization::yaml
     };
 
     template<typename T, typename TContextPolicies, typename... TVisitorBases>
+    static void deserialize(T& object, YamlContext<TContextPolicies>& context)
+    {
+        ObjectVisitor<YamlDeserializationPolicies, TVisitorBases...>::visit(object, context);
+    }
+
+    template<typename T, typename TContextPolicies, typename... TVisitorBases>
     static void deserialize(const std::string& source, T& object, generic::serialization::Context<TContextPolicies>&& contextBase)
     {
         auto tree = ryml::parse_in_arena(toRymlCStr(source));
         YamlContext<TContextPolicies> context(tree.rootref(), contextBase);
-        ObjectVisitor<YamlDeserializationPolicies, TVisitorBases...>::visit(object, context);
+        deserialize<T, TContextPolicies, TVisitorBases...>(object, context);
     }
 
     template<typename T, typename TContextPolicies, typename... TVisitorBases>
