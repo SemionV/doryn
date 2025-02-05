@@ -129,14 +129,18 @@ namespace dory::core::services::serialization
     public:
         std::string serialize(const T& object, Registry& registry, resources::DataContext& dataContext) final
         {
-            return dory::serialization::yaml::serialize<const T, Registry, resources::DataContext,
-                ObjectVisitorExtensions<dory::serialization::yaml::YamlSerializationPolicies>>(object, registry, dataContext);
+            auto contextBase = dory::generic::serialization::Context<SerializationContextPoliciesType>{ registry, dataContext, resources::DataFormat::yaml };
+
+            return dory::serialization::yaml::serialize<const T, SerializationContextPoliciesType,
+                ObjectVisitorExtensions<dory::serialization::yaml::YamlSerializationPolicies>>(object, std::move(contextBase));
         }
 
         void deserialize(const std::string& source, T& object, Registry& registry, resources::DataContext& dataContext) final
         {
-            dory::serialization::yaml::deserialize<T, Registry, resources::DataContext,
-                ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(source, object, registry, dataContext);
+            auto contextBase = dory::generic::serialization::Context<SerializationContextPoliciesType>{ registry, dataContext, resources::DataFormat::yaml };
+
+            dory::serialization::yaml::deserialize<T, SerializationContextPoliciesType,
+                ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(source, object, std::move(contextBase));
         }
     };
 
@@ -151,14 +155,18 @@ namespace dory::core::services::serialization
     public:
         std::string serialize(const T& object, Registry& registry, resources::DataContext& dataContext) final
         {
-            return dory::serialization::json::serialize<const T, Registry, resources::DataContext,
-                ObjectVisitorExtensions<dory::serialization::json::JsonSerializationPolicies>>(object, registry, dataContext);
+            auto contextBase = dory::generic::serialization::Context<SerializationContextPoliciesType>{ registry, dataContext, resources::DataFormat::yaml };
+
+            return dory::serialization::json::serialize<const T, SerializationContextPoliciesType,
+                ObjectVisitorExtensions<dory::serialization::json::JsonSerializationPolicies>>(object, std::move(contextBase));
         }
 
         void deserialize(const std::string& source, T& object, Registry& registry, resources::DataContext& dataContext) final
         {
-            dory::serialization::json::deserialize<T, Registry, resources::DataContext,
-                ObjectVisitorExtensions<dory::serialization::json::JsonDeserializationPolicies>>(source, object, registry, dataContext);
+            auto contextBase = dory::generic::serialization::Context<SerializationContextPoliciesType>{ registry, dataContext, resources::DataFormat::yaml };
+
+            dory::serialization::json::deserialize<T, SerializationContextPoliciesType,
+                ObjectVisitorExtensions<dory::serialization::json::JsonDeserializationPolicies>>(source, object, std::move(contextBase));
         }
     };
 

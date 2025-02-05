@@ -150,4 +150,5 @@ namespace dory::core
     template<typename T, typename TIdentifier>
     using RegistryResourceScopeWithId = generic::extension::RegistryResourceScope<T, Registry, TIdentifier>;
 
+    using SerializationContextPoliciesType = generic::serialization::ContextPolicies<Registry, resources::DataContext, resources::DataFormat>;
 }

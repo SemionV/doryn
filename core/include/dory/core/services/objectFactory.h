@@ -9,7 +9,7 @@ namespace dory::core::services
     class ObjectFactory: public IObjectFactory<TInterface>
     {
     public:
-        std::unique_ptr<TInterface> createInstance(generic::serialization::Context<Registry, resources::DataContext>& context) final
+        std::unique_ptr<TInterface> createInstance(generic::serialization::Context<typename IObjectFactory<TInterface>::SerializationContextPoliciesType>& context) final
         {
             return std::make_unique<TImplementation>(context.registry);
         }

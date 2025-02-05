@@ -2,19 +2,35 @@
 
 namespace dory::generic::serialization
 {
-    template<typename TRegistry, typename TDataContext>
+    template<typename TRegistry, typename TDataContext, typename TDataFormat>
+    struct ContextPolicies
+    {
+        using RegistryType = TRegistry;
+        using DataContextType = TDataContext;
+        using DataFormatType = TDataFormat;
+    };
+
+    template<typename TContextPolicies>
     struct Context
     {
-        TRegistry& registry;
-        TDataContext& dataContext;
+        typename TContextPolicies::RegistryType& registry;
+        typename TContextPolicies::DataContextType& dataContext;
+        typename TContextPolicies::DataFormatType dataFormat;
 
-        Context(TRegistry& registry, TDataContext& dataContext):
-            registry(registry), dataContext(dataContext)
+        Context(typename TContextPolicies::RegistryType& registry, typename TContextPolicies::DataContextType& dataContext, typename TContextPolicies::DataFormatType dataFormat):
+            registry(registry), dataContext(dataContext), dataFormat(dataFormat)
         {}
 
         Context(const Context& other):
             registry(other.registry),
-            dataContext(other.dataContext)
+            dataContext(other.dataContext),
+            dataFormat(other.dataFormat)
+        {}
+
+        Context(Context&& other) noexcept:
+            registry(other.registry),
+            dataContext(other.dataContext),
+            dataFormat(other.dataFormat)
         {}
 
         Context& operator=(const Context& other)
@@ -23,8 +39,8 @@ namespace dory::generic::serialization
         }
     };
 
-    template<typename TNode, typename TRegistry, typename TDataContext>
-    struct TreeStructureContext: Context<TRegistry, TDataContext>
+    template<typename TNode, typename TContextPolicies>
+    struct TreeStructureContext: Context<TContextPolicies>
     {
         using NodeType = TNode;
 
@@ -34,8 +50,13 @@ namespace dory::generic::serialization
 
         TreeStructureContext() = default;
 
-        explicit TreeStructureContext(TNode node, TRegistry& registry, TDataContext& dataContext):
-            Context<TRegistry, TDataContext>(registry, dataContext),
+        explicit TreeStructureContext(TNode node, const Context<TContextPolicies>& otherContext):
+            Context<TContextPolicies>(otherContext),
+            node(node)
+        {}
+
+        explicit TreeStructureContext(TNode node, Context<TContextPolicies>&& otherContext):
+            Context<TContextPolicies>(otherContext),
             node(node)
         {}
 

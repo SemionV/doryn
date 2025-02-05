@@ -14,6 +14,8 @@ namespace dory::core::services
     class IObjectFactory: public generic::Interface
     {
     public:
-        virtual std::unique_ptr<T> createInstance(generic::serialization::Context<Registry, resources::DataContext>& context) = 0;
+        using SerializationContextPoliciesType = generic::serialization::ContextPolicies<Registry, resources::DataContext, resources::DataFormat>;
+
+        virtual std::unique_ptr<T> createInstance(generic::serialization::Context<SerializationContextPoliciesType>& context) = 0;
     };
 }

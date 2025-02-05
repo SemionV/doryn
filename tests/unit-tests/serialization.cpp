@@ -152,6 +152,12 @@ REFL_END
 template<typename TPolicies>
 using ObjectVisitorExtensions = dory::core::services::serialization::ObjectVisitorExtensions<TPolicies>;
 
+using SerializationContextPoliciesType = dory::generic::serialization::ContextPolicies<int, int, int>;
+int defaultRegistry;
+int defaultDataContext;
+int defaultDataFormat;
+dory::generic::serialization::Context<SerializationContextPoliciesType> serializationContext { defaultRegistry, defaultDataContext, defaultDataFormat };
+
 TEST(YamlDeserialization, deserializeEnumValue)
 {
     const auto yaml = R"(
@@ -159,8 +165,7 @@ filename: assets/shaders/simpleVertex
 type: fragment
 )";
 
-    int registry, context;
-    const auto [filename, type] = dory::serialization::yaml::deserialize<Shader>(yaml, registry, context);
+    const auto [filename, type] = dory::serialization::yaml::deserialize<Shader>(yaml, std::move(serializationContext));
 
     EXPECT_EQ(filename, "assets/shaders/simpleVertex");
     EXPECT_EQ(type, ShaderType::fragment);
@@ -173,9 +178,8 @@ position: [0.1, 0.34, 1.89]
 rotation: [1.1, 1.34, 2.89, 1.0]
 )";
 
-    int registry, context;
-    auto [position, rotation] = dory::serialization::yaml::deserialize<Transform2, int, int,
-        ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(yaml, registry, context);
+    auto [position, rotation] = dory::serialization::yaml::deserialize<Transform2, SerializationContextPoliciesType,
+        ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(yaml, std::move(serializationContext));
 
     EXPECT_EQ(position.x, 0.1f);
     EXPECT_EQ(position.y, 0.34f);
@@ -194,12 +198,11 @@ TEST(YamlSerialization, serializeGlmVec)
         {1.1f, 1.34f, 2.89f, 1.0f}
     };
 
-    int registry, context;
-    const auto yaml = dory::serialization::yaml::serialize<Transform2, int, int,
-        ObjectVisitorExtensions<dory::serialization::yaml::YamlSerializationPolicies>>(transform, registry, context);
+    const auto yaml = dory::serialization::yaml::serialize<Transform2, SerializationContextPoliciesType,
+        ObjectVisitorExtensions<dory::serialization::yaml::YamlSerializationPolicies>>(transform, std::move(serializationContext));
 
-    auto [position, rotation] = dory::serialization::yaml::deserialize<Transform2, int, int,
-        ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(yaml, registry, context);
+    auto [position, rotation] = dory::serialization::yaml::deserialize<Transform2, SerializationContextPoliciesType,
+        ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(yaml, std::move(serializationContext));
 
     EXPECT_EQ(position.x, transform.position.x);
     EXPECT_EQ(position.y, transform.position.y);
@@ -218,8 +221,7 @@ filename: assets/shaders/simpleVertex
 type: geometry
 )";
 
-    int registry, context;
-    auto shader = dory::serialization::yaml::deserialize<Shader>(yaml, registry, context);
+    auto shader = dory::serialization::yaml::deserialize<Shader>(yaml, std::move(serializationContext));
 
     EXPECT_EQ(shader.filename, "assets/shaders/simpleVertex");
     EXPECT_EQ(shader.type, ShaderType::unknown);
@@ -233,8 +235,7 @@ rotation: [3.14546456, 2.2, 1.1, 4.56]
 scale: [1.5, 2.1, 3.1]
 )";
 
-    int registry, context;
-    const auto transform = dory::serialization::yaml::deserialize<Transform>(yaml, registry, context);
+    const auto transform = dory::serialization::yaml::deserialize<Transform>(yaml, std::move(serializationContext));
 
     const auto position = dory::math::toVector(transform.position);
     const glm::quat rotation = dory::math::toQuaternion(transform.rotation);
@@ -256,14 +257,13 @@ scale: [1.5, 2.1, 3.1]
 
 TEST(YamlSerialization, serializeEnumValue)
 {
-    auto shader = Shader { "assets/shaders/simpleVertex", ShaderType::fragment };
-    int registry, context;
-    const auto yaml = dory::serialization::yaml::serialize(shader, registry, context);
+    const auto shader = Shader { "assets/shaders/simpleVertex", ShaderType::fragment };
+    const auto yaml = dory::serialization::yaml::serialize(shader, std::move(serializationContext));
 
-    auto shaderReverse = dory::serialization::yaml::deserialize<Shader>(yaml, registry, context);
+    auto [filename, type] = dory::serialization::yaml::deserialize<Shader>(yaml, std::move(serializationContext));
 
-    EXPECT_EQ(shaderReverse.filename, shader.filename);
-    EXPECT_EQ(shaderReverse.type, shader.type);
+    EXPECT_EQ(filename, shader.filename);
+    EXPECT_EQ(type, shader.type);
 }
 
 TEST(YamlDeserialization, deserializeDictionaryWithEnumKeys)
@@ -274,8 +274,7 @@ shaders:
   fragment: fragmentShader
 )";
 
-    int registry, context;
-    auto [shaders] = dory::serialization::yaml::deserialize<Material>(yaml, registry, context);
+    auto [shaders] = dory::serialization::yaml::deserialize<Material>(yaml, std::move(serializationContext));
 
     EXPECT_EQ(shaders.size(), 2);
     EXPECT_EQ(shaders[ShaderType::vertex], "vertexShader");
@@ -291,10 +290,9 @@ TEST(YamlSerialization, serializeDictionaryWithEnumKeys)
             }
     };
 
-    int registry, context;
-    const auto yaml = dory::serialization::yaml::serialize(material, registry, context);
+    const auto yaml = dory::serialization::yaml::serialize(material, std::move(serializationContext));
 
-    auto [shaders] = dory::serialization::yaml::deserialize<Material>(yaml, registry, context);
+    auto [shaders] = dory::serialization::yaml::deserialize<Material>(yaml, std::move(serializationContext));
 
     EXPECT_EQ(shaders.size(), material.shaders.size());
     EXPECT_EQ(shaders[ShaderType::vertex], material.shaders.at(ShaderType::vertex));
@@ -308,8 +306,7 @@ TEST(JsonDeserialization, deserializeEnumValue)
 "type": "fragment"
 })";
 
-    int registry, context;
-    auto [filename, type] = dory::serialization::json::deserialize<Shader>(json, registry, context);
+    auto [filename, type] = dory::serialization::json::deserialize<Shader>(json, std::move(serializationContext));
 
     EXPECT_EQ(filename, "assets/shaders/simpleVertex");
     EXPECT_EQ(type, ShaderType::fragment);
@@ -322,9 +319,8 @@ TEST(JsonDeserialization, deserializeGlmVec)
 "rotation": [1.1, 1.34, 2.89, 1.0]
 })";
 
-    int registry, context;
-    auto [position, rotation] = dory::serialization::json::deserialize<Transform2, int, int,
-        ObjectVisitorExtensions<dory::serialization::json::JsonDeserializationPolicies>>(json, registry, context);
+    auto [position, rotation] = dory::serialization::json::deserialize<Transform2, SerializationContextPoliciesType,
+        ObjectVisitorExtensions<dory::serialization::json::JsonDeserializationPolicies>>(json, std::move(serializationContext));
 
     EXPECT_EQ(position.x, 0.1f);
     EXPECT_EQ(position.y, 0.34f);
@@ -343,12 +339,11 @@ TEST(JsonSerialization, serializeGlmVec)
             {1.1f, 1.34f, 2.89f, 1.0f}
     };
 
-    int registry, context;
-    const auto json = dory::serialization::json::serialize<Transform2, int, int,
-        ObjectVisitorExtensions<dory::serialization::json::JsonSerializationPolicies>>(transform, registry, context);
+    const auto json = dory::serialization::json::serialize<Transform2, SerializationContextPoliciesType,
+        ObjectVisitorExtensions<dory::serialization::json::JsonSerializationPolicies>>(transform, std::move(serializationContext));
 
-    auto [position, rotation] = dory::serialization::json::deserialize<Transform2, int, int,
-        ObjectVisitorExtensions<dory::serialization::json::JsonDeserializationPolicies>>(json, registry, context);
+    auto [position, rotation] = dory::serialization::json::deserialize<Transform2, SerializationContextPoliciesType,
+        ObjectVisitorExtensions<dory::serialization::json::JsonDeserializationPolicies>>(json, std::move(serializationContext));
 
     EXPECT_EQ(position.x, transform.position.x);
     EXPECT_EQ(position.y, transform.position.y);
@@ -367,8 +362,7 @@ TEST(JsonDeserialization, deserializeInvalidEnumValue)
 "type": "geometry"
 })";
 
-    int registry, context;
-    auto [filename, type] = dory::serialization::json::deserialize<Shader>(json, registry, context);
+    auto [filename, type] = dory::serialization::json::deserialize<Shader>(json, std::move(serializationContext));
 
     EXPECT_EQ(filename, "assets/shaders/simpleVertex");
     EXPECT_EQ(type, ShaderType::unknown);
@@ -377,10 +371,9 @@ TEST(JsonDeserialization, deserializeInvalidEnumValue)
 TEST(JsonSerialization, serializeEnumValue)
 {
     const auto shader = Shader { "assets/shaders/simpleVertex", ShaderType::fragment };
-    int registry, context;
-    const auto json = dory::serialization::json::serialize(shader, registry, context);
+    const auto json = dory::serialization::json::serialize(shader, std::move(serializationContext));
 
-    auto [filename, type] = dory::serialization::json::deserialize<Shader>(json, registry, context);
+    auto [filename, type] = dory::serialization::json::deserialize<Shader>(json, std::move(serializationContext));
 
     EXPECT_EQ(filename, shader.filename);
     EXPECT_EQ(type, shader.type);
@@ -394,8 +387,7 @@ TEST(JsonDeserialization, deserializeDictionaryWithEnumKeys)
   "fragment": "fragmentShader"
 }})";
 
-    int registry, context;
-    auto [shaders] = dory::serialization::json::deserialize<Material>(json, registry, context);
+    auto [shaders] = dory::serialization::json::deserialize<Material>(json, std::move(serializationContext));
 
     EXPECT_EQ(shaders.size(), 2);
     EXPECT_EQ(shaders[ShaderType::vertex], "vertexShader");
@@ -411,10 +403,9 @@ TEST(JsonSerialization, serializeDictionaryWithEnumKeys)
             }
     };
 
-    int registry, context;
-    const auto json = dory::serialization::json::serialize(material, registry, context);
+    const auto json = dory::serialization::json::serialize(material, std::move(serializationContext));
 
-    auto [shaders] = dory::serialization::json::deserialize<Material>(json, registry, context);
+    auto [shaders] = dory::serialization::json::deserialize<Material>(json, std::move(serializationContext));
 
     EXPECT_EQ(shaders.size(), material.shaders.size());
     EXPECT_EQ(shaders[ShaderType::vertex], material.shaders[ShaderType::vertex]);
@@ -470,8 +461,7 @@ TEST(ObjectCopy, copyObjects)
     materialBase.uniforms.shaders[ShaderType::fragment] = "fragmentShader";
     materialBase.id = 2;
 
-    int registry, context;
-    dory::serialization::object::copy(materialBase, material, registry, context);
+    dory::serialization::object::copy(materialBase, material, std::move(serializationContext));
 
     EXPECT_EQ(material.face, FaceRendering::wireframe);
     EXPECT_EQ(material.name, "source");
@@ -503,7 +493,7 @@ template<typename T>
 class ObjectFactoryMock final : public dory::core::services::IObjectFactory<T>
 {
 public:
-    using SerializationContextType = dory::generic::serialization::Context<dory::core::Registry, dory::core::resources::DataContext>;
+    using SerializationContextType = dory::generic::serialization::Context<dory::core::services::serialization::SerializationContextPoliciesType>;
     MOCK_METHOD(std::unique_ptr<T>, createInstance, (SerializationContextType& context), (final));
 };
 
@@ -528,7 +518,7 @@ controller:
 
     using SerializationContextType = ObjectFactoryMock<dory::core::IController>::SerializationContextType;
     const auto serializationContextMatcher = Truly([&](SerializationContextType& serializationContext) {
-        const auto& yamlDeserializationContext = static_cast<dory::serialization::yaml::YamlContext<decltype(registry), decltype(context)>&>(serializationContext);
+        const auto& yamlDeserializationContext = static_cast<dory::serialization::yaml::YamlContext<dory::core::services::serialization::SerializationContextPoliciesType>&>(serializationContext);
         const auto current = yamlDeserializationContext.node;
         const bool yamlContextIsCorrect = current.is_map() && current.has_child("parameter") && current.has_child("type");
 
@@ -536,8 +526,9 @@ controller:
     });
     EXPECT_CALL(*controllerFactory, createInstance(serializationContextMatcher)).WillOnce(Return(ByMove(std::move(someController))));
 
-    auto [controller] = dory::serialization::yaml::deserialize<PipelineNode, decltype(registry), decltype(context),
-        ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(yaml, registry, context);
+    auto contextBase = dory::generic::serialization::Context<dory::core::services::serialization::SerializationContextPoliciesType>{ registry, context, dory::core::resources::DataFormat::yaml };
+    auto [controller] = dory::serialization::yaml::deserialize<PipelineNode, dory::core::services::serialization::SerializationContextPoliciesType,
+        ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(yaml, std::move(contextBase));
 
     EXPECT_TRUE(controller.instance);
 }

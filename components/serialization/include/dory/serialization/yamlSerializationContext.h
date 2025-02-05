@@ -4,11 +4,15 @@
 
 namespace dory::serialization::yaml
 {
-    template<typename TRegistry, typename TDataContext>
-    struct YamlContext: generic::serialization::TreeStructureContext<ryml::NodeRef, TRegistry, TDataContext>
+    template<typename TContextPolicies>
+    struct YamlContext: generic::serialization::TreeStructureContext<ryml::NodeRef, TContextPolicies>
     {
-        explicit YamlContext(const ryml::NodeRef& root, TRegistry& registry, TDataContext& dataContext):
-            generic::serialization::TreeStructureContext<ryml::NodeRef, TRegistry, TDataContext>(root, registry, dataContext)
+        explicit YamlContext(const ryml::NodeRef& root, generic::serialization::Context<TContextPolicies>&& otherContext):
+            generic::serialization::TreeStructureContext<ryml::NodeRef, TContextPolicies>(root, otherContext)
+        {}
+
+        explicit YamlContext(const ryml::NodeRef& root, const generic::serialization::Context<TContextPolicies>& otherContext):
+            generic::serialization::TreeStructureContext<ryml::NodeRef, TContextPolicies>(root, otherContext)
         {}
 
         YamlContext(const YamlContext& other) = default;

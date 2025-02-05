@@ -2,20 +2,24 @@
 
 namespace dory::serialization::object
 {
-    template<typename TNode, typename TRegistry, typename TDataContext>
-    struct ObjectCopyContext: generic::serialization::TreeStructureContext<const TNode*, TRegistry, TDataContext>
+    template<typename TNode, typename TContextPolicies>
+    struct ObjectCopyContext: generic::serialization::TreeStructureContext<const TNode*, TContextPolicies>
     {
         using NodeType = const TNode*;
 
-        explicit ObjectCopyContext(const TNode* root, TRegistry& registry, TDataContext& dataContext):
-            generic::serialization::TreeStructureContext<NodeType, TRegistry, TDataContext>(root, registry, dataContext)
+        explicit ObjectCopyContext(const TNode* root, generic::serialization::Context<TContextPolicies>& otherContext):
+            generic::serialization::TreeStructureContext<const TNode*, TContextPolicies>(root, otherContext)
+        {}
+
+        explicit ObjectCopyContext(const TNode* root, generic::serialization::Context<TContextPolicies>&& otherContext):
+            generic::serialization::TreeStructureContext<const TNode*, TContextPolicies>(root, otherContext)
         {}
     };
 
     struct ObjectCopyValuePolicy
     {
-        template<typename T, typename U, typename TRegistry, typename TDataContext>
-        static void process(T&& value, ObjectCopyContext<U, TRegistry, TDataContext>& context)
+        template<typename T, typename U, typename TContextPolicies>
+        static void process(T&& value, ObjectCopyContext<U, TContextPolicies>& context)
         {
             if(context.node)
             {
@@ -26,21 +30,21 @@ namespace dory::serialization::object
 
     struct ObjectCopyMemberPolicy
     {
-        template<typename T, typename TValue, typename TRegistry, typename TDataContext>
-        static std::optional<ObjectCopyContext<TValue, TRegistry, TDataContext>> beginMember(reflection::ClassMember<T, TValue>& member, const std::size_t i, ObjectCopyContext<T, TDataContext, TRegistry>& context)
+        template<typename T, typename TValue, typename TContextPolicies>
+        static std::optional<ObjectCopyContext<TValue, TContextPolicies>> beginMember(reflection::ClassMember<T, TValue>& member, const std::size_t i, ObjectCopyContext<T, TContextPolicies>& context)
         {
             if(context.node)
             {
                 auto& memberValue = *context.node.*member.pointer;
-                return ObjectCopyContext{ &memberValue, context.registry, context.dataContext };
+                return ObjectCopyContext{ &memberValue, context };
             }
 
             return {};
         }
 
-        template<typename T, typename TValue, typename TRegistry, typename TDataContext>
-        static std::optional<ObjectCopyContext<TValue, TRegistry, TDataContext>> beginMember(reflection::ClassMember<T, std::optional<TValue>>& member,
-            const std::size_t i, ObjectCopyContext<T, TRegistry, TDataContext>& context)
+        template<typename T, typename TValue, typename TContextPolicies>
+        static std::optional<ObjectCopyContext<TValue, TContextPolicies>> beginMember(reflection::ClassMember<T, std::optional<TValue>>& member,
+            const std::size_t i, ObjectCopyContext<T, TContextPolicies>& context)
         {
             if(context.node)
             {
@@ -51,22 +55,22 @@ namespace dory::serialization::object
                         member.value.emplace();
                     }
 
-                    return ObjectCopyContext{ &memberValue.value(), context.registry, context.dataContext };
+                    return ObjectCopyContext{ &memberValue.value(), context };
                 }
             }
 
             return {};
         }
 
-        template<typename U, typename TRegistry, typename TDataContext>
-        static void endMember(const bool lastMember, ObjectCopyContext<U, TRegistry, TDataContext>& context)
+        template<typename U, typename TContextPolicies>
+        static void endMember(const bool lastMember, ObjectCopyContext<U, TContextPolicies>& context)
         {}
     };
 
     struct ObjectCopyCollectionPolicy
     {
-        template<typename T, auto N, typename TCollection, typename TRegistry, typename TDataContext>
-        static void beginCollection(TCollection&& collection, ObjectCopyContext<std::remove_reference_t<TCollection>, TRegistry, TDataContext>& context)
+        template<typename T, auto N, typename TCollection, typename TContextPolicies>
+        static void beginCollection(TCollection&& collection, ObjectCopyContext<std::remove_reference_t<TCollection>, TContextPolicies>& context)
         {
 			if(context.node)
             {
@@ -74,22 +78,22 @@ namespace dory::serialization::object
             }
         }
 
-        template<typename TCollection, typename TRegistry, typename TDataContext>
-        static void endCollection(ObjectCopyContext<TCollection, TRegistry, TDataContext>& context)
+        template<typename TCollection, typename TContextPolicies>
+        static void endCollection(ObjectCopyContext<TCollection, TContextPolicies>& context)
         {}
     };
 
     struct ObjectCopyCollectionItemPolicy
     {
-        template<typename TCollection, typename TRegistry, typename TDataContext>
-        static std::optional<ObjectCopyContext<typename TCollection::value_type, TRegistry, TDataContext>> beginItem(const std::size_t i, ObjectCopyContext<TCollection, TRegistry, TDataContext>& context)
+        template<typename TCollection, typename TContextPolicies>
+        static std::optional<ObjectCopyContext<typename TCollection::value_type, TContextPolicies>> beginItem(const std::size_t i, ObjectCopyContext<TCollection, TContextPolicies>& context)
         {
             //collection is copied already as a whole, no need to copy the items individually
             return {};
         }
 
-        template<typename TItem, typename TRegistry, typename TDataContext>
-        static void endItem(const bool lastItem, ObjectCopyContext<TItem, TRegistry, TDataContext>& context)
+        template<typename TItem, typename TContextPolicies>
+        static void endItem(const bool lastItem, ObjectCopyContext<TItem, TContextPolicies>& context)
         {
         }
     };
@@ -102,19 +106,19 @@ namespace dory::serialization::object
             size = source ? source->size() : 0;
         }
 
-        template<typename TDestination, typename TSource, typename TDestinationItem, typename TRegistry, typename TDataContext>
+        template<typename TDestination, typename TSource, typename TDestinationItem, typename TContextPolicies>
         requires(generic::is_dynamic_collection_v<TDestination>)
-        static std::optional<ObjectCopyContext<typename TSource::value_type, TRegistry, TDataContext>> getCollectionItem(ObjectCopyContext<TSource, TRegistry, TDataContext>& context,
+        static std::optional<ObjectCopyContext<typename TSource::value_type, TContextPolicies>> getCollectionItem(ObjectCopyContext<TSource, TContextPolicies>& context,
             TDestination& destination, auto& index, const TSource* source, TDestinationItem** item)
         {
             assert(source);
             *item = &destination.emplace_back(TDestinationItem{});
-            return ObjectCopyContext{ &source->operator[](index), context.registry, context.dataContext };
+            return ObjectCopyContext{ &source->operator[](index), context };
         }
 
-        template<typename TDestination, typename TSource, typename TDestinationItem, typename TRegistry, typename TDataContext>
+        template<typename TDestination, typename TSource, typename TDestinationItem, typename TContextPolicies>
         requires(generic::is_dictionary_v<TDestination>)
-        static std::optional<ObjectCopyContext<typename TSource::mapped_type, TRegistry, TDataContext>> getCollectionItem(ObjectCopyContext<TSource, TRegistry, TDataContext>& context,
+        static std::optional<ObjectCopyContext<typename TSource::mapped_type, TContextPolicies>> getCollectionItem(ObjectCopyContext<TSource, TContextPolicies>& context,
             TDestination& destination, auto& index, const TSource* source, TDestinationItem** item)
         {
             assert(source);
@@ -136,7 +140,7 @@ namespace dory::serialization::object
                 *item = &destination.emplace(typename TDestination::key_type{}, TDestinationItem{}).first->second;
             }
 
-            return ObjectCopyContext{ &pair.second, context.registry, context.dataContext };
+            return ObjectCopyContext{ &pair.second, context };
         }
     };
 
@@ -150,10 +154,10 @@ namespace dory::serialization::object
         using ContainerPolicyType = ObjectCopyContainerPolicy;
     };
 
-    template<typename T, typename TRegistry, typename TDataContext, typename... TBaseVisitors>
-    static void copy(const T& source, T& target, TRegistry& registry, TDataContext& dataContext)
+    template<typename T, typename TContextPolicies, typename... TBaseVisitors>
+    static void copy(const T& source, T& target, generic::serialization::Context<TContextPolicies>&& contextBase)
     {
-        ObjectCopyContext<T, TRegistry, TDataContext> context(&source, registry, dataContext);
+        ObjectCopyContext<T, TContextPolicies> context(&source, contextBase);
         ObjectVisitor<ObjectCopyPolicies, TBaseVisitors...>::visit(target, context);
     }
 }

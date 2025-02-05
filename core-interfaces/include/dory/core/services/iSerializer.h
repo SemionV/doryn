@@ -6,6 +6,7 @@
 #include <dory/core/resources/localization.h>
 #include <dory/core/resources/scene/configuration.h>
 #include <dory/core/resources/dataContext.h>
+#include <dory/generic/serialization.h>
 
 namespace dory::core
 {
@@ -14,6 +15,8 @@ namespace dory::core
 
 namespace dory::core::services::serialization
 {
+    using SerializationContextPoliciesType = generic::serialization::ContextPolicies<Registry, resources::DataContext, resources::DataFormat>;
+
     template<typename T>
     class ISerializerGeneric
     {

@@ -6,11 +6,15 @@ namespace dory::serialization::json
 {
     using json = nlohmann::json;
 
-    template<typename TRegistry, typename TDataContext>
-    struct JsonContext: generic::serialization::TreeStructureContext<json*, TRegistry, TDataContext>
+    template<typename TContextPolicies>
+    struct JsonContext: generic::serialization::TreeStructureContext<json*, TContextPolicies>
     {
-        explicit JsonContext(json* data, TRegistry& registry, TDataContext& dataContext):
-            generic::serialization::TreeStructureContext<json*, TRegistry, TDataContext>(data, registry, dataContext)
+        explicit JsonContext(json* data, const generic::serialization::Context<TContextPolicies>& otherContext):
+            generic::serialization::TreeStructureContext<json*, TContextPolicies>(data, otherContext)
+        {}
+
+        explicit JsonContext(json* data, generic::serialization::Context<TContextPolicies>&& otherContext):
+            generic::serialization::TreeStructureContext<json*, TContextPolicies>(data, otherContext)
         {}
     };
 }

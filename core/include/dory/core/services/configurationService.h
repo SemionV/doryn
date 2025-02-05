@@ -18,12 +18,17 @@ namespace dory::core
 
 namespace dory::core::services
 {
-    struct ConfigurationSectionContext: generic::serialization::Context<Registry, resources::DataContext>
+    struct ConfigurationSectionContext: generic::serialization::Context<serialization::SerializationContextPoliciesType>
     {
         IConfigurationService* configurationService;
 
-        explicit ConfigurationSectionContext(IConfigurationService* configurationService, Registry& registry, resources::DataContext& dataContext):
-                generic::serialization::Context<dory::core::Registry, dory::core::resources::DataContext>(registry, dataContext),
+        explicit ConfigurationSectionContext(IConfigurationService* configurationService, generic::serialization::Context<serialization::SerializationContextPoliciesType>&& contextBase):
+                generic::serialization::Context<serialization::SerializationContextPoliciesType>(contextBase),
+                configurationService(configurationService)
+        {}
+
+        explicit ConfigurationSectionContext(IConfigurationService* configurationService, generic::serialization::Context<serialization::SerializationContextPoliciesType>& contextBase):
+                generic::serialization::Context<serialization::SerializationContextPoliciesType>(contextBase),
                 configurationService(configurationService)
         {}
     };
@@ -140,7 +145,8 @@ namespace dory::core::services
         void load(T& configuration, resources::DataContext& dataContext) final
         {
             //load recursive sections
-            auto context = ConfigurationSectionContext{ this, this->_registry, dataContext };
+            auto baseContext = generic::serialization::Context<serialization::SerializationContextPoliciesType>{ this->_registry, dataContext, resources::DataFormat::unknown };
+            auto context = ConfigurationSectionContext{ this, std::move(baseContext) };
             dory::serialization::ObjectVisitor<LoadConfigurationSectionPolicies>::visit(configuration, context);
         }
 
@@ -175,7 +181,8 @@ namespace dory::core::services
                 });
 
                 //load recursive sections
-                auto context = ConfigurationSectionContext{ this, this->_registry, dataContext };
+                auto baseContext = generic::serialization::Context<serialization::SerializationContextPoliciesType>{ this->_registry, dataContext, resources::DataFormat::unknown };
+                auto context = ConfigurationSectionContext{ this, std::move(baseContext) };
                 dory::serialization::ObjectVisitor<LoadConfigurationSectionPolicies>::visit(configuration, context);
 
                 return true;
@@ -201,7 +208,8 @@ namespace dory::core::services
         void save(const T& configuration, resources::DataContext& dataContext) final
         {
             //save recursive sections
-            auto context = ConfigurationSectionContext{ this, this->_registry, dataContext };
+            auto baseContext = generic::serialization::Context<serialization::SerializationContextPoliciesType>{ this->_registry, dataContext, resources::DataFormat::unknown };
+            auto context = ConfigurationSectionContext{ this, std::move(baseContext) };
             dory::serialization::ObjectVisitor<SaveConfigurationSectionPolicies>::visit(configuration, context);
         }
 
