@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include <dory/core/registry.h>
 #include <dory/core/resources/serialization.h>
 #include <dory/serialization/yamlDeserializer.h>
 #include <dory/serialization/yamlSerializer.h>
@@ -19,26 +20,31 @@
 #include <spdlog/fmt/bundled/format.h>
 #include <dory/core/resources/objectFactoryRefl.h>
 
-class IController
+using namespace testing;
+
+class SomeController: public dory::core::IController
 {
 public:
-    virtual ~IController() = default;
+    int parameter {};
 
-    virtual void update(std::chrono::nanoseconds deltaTime) = 0;
-};
+    bool initialize(dory::core::resources::IdType nodeId, dory::core::resources::DataContext& context) override
+    {
+        return true;
+    }
 
-class SomeController: public IController
-{
-public:
-    void update(std::chrono::nanoseconds deltaTime) override
+    void stop(dory::core::resources::IdType nodeId, dory::core::resources::DataContext& context) override
+    {}
+
+    void update(dory::core::resources::IdType nodeId, const dory::generic::model::TimeSpan& timeStep, dory::core::resources::DataContext& context) override
     {
         std::cout << "SomeController::update" << std::endl;
     }
 };
 
-REFL_AUTO (
-    type(SomeController)
-)
+REFL_TYPE(SomeController)
+    REFL_FIELD(parameter)
+REFL_END
+
 
 struct Controllers
 {
@@ -52,7 +58,7 @@ REFL_END
 TEST(ControllerFactory, createByName)
 {
     constexpr std::string_view typeName = "SomeController";
-    std::shared_ptr<IController> controllerInstance;
+    std::shared_ptr<dory::core::IController> controllerInstance;
 
     auto typeDescriptor = refl::reflect<Controllers>();
 
@@ -69,7 +75,6 @@ TEST(ControllerFactory, createByName)
     });
 
     EXPECT_TRUE(controllerInstance != nullptr);
-    controllerInstance->update(std::chrono::nanoseconds { 1 });
 }
 
 enum class Color
@@ -485,22 +490,54 @@ TEST(ObjectCopy, copyObjects)
     EXPECT_EQ(material.uniforms.shaders[ShaderType::fragment], "fragmentShader");
 }
 
-struct PipelineConfiguration
+struct PipelineNode
 {
-    dory::core::resources::serialization::FactoryInstance<IController> controller;
+    dory::core::resources::serialization::FactoryInstance<dory::core::IController> controller;
 };
 
-REFL_TYPE(PipelineConfiguration)
+REFL_TYPE(PipelineNode)
     REFL_FIELD(controller)
 REFL_END
 
-TEST(ObjectFactory, createInstance)
+template<typename T>
+class ObjectFactoryMock final : public dory::core::services::IObjectFactory<T>
+{
+public:
+    using SerializationContextType = dory::generic::serialization::Context<dory::core::Registry, dory::core::resources::DataContext>;
+    MOCK_METHOD(std::unique_ptr<T>, createInstance, (SerializationContextType& context), (final));
+};
+
+TEST(ObjectFactory, createInstanceFromYaml)
 {
     const auto yaml = R"(
-trigger:
-  type: TestController
+controller:
+  type: SomeController
+  parameter: 4
 )";
 
-    int registry, context;
-    auto [shaders] = dory::serialization::yaml::deserialize<Material>(yaml, registry, context);
+    dory::core::Registry registry{};
+    const dory::generic::extension::LibraryHandle libraryHandle {};
+    dory::core::resources::configuration::Configuration configuration {};
+    dory::core::resources::Localization localization {};
+    dory::core::resources::DataContext context { configuration, localization};
+    auto someController = std::make_unique<SomeController>();
+    someController->parameter = 4;
+
+    const auto controllerFactory = std::make_shared<ObjectFactoryMock<dory::core::IController>>();
+    registry.set<dory::core::services::IObjectFactory<dory::core::IController>>(libraryHandle, controllerFactory, std::string { "SomeController" });
+
+    using SerializationContextType = ObjectFactoryMock<dory::core::IController>::SerializationContextType;
+    const auto serializationContextMatcher = Truly([&](SerializationContextType& serializationContext) {
+        const auto& yamlDeserializationContext = static_cast<dory::serialization::yaml::YamlContext<decltype(registry), decltype(context)>&>(serializationContext);
+        const auto current = yamlDeserializationContext.node;
+        const bool yamlContextIsCorrect = current.is_map() && current.has_child("parameter") && current.has_child("type");
+
+        return yamlContextIsCorrect && &serializationContext.registry == &registry && &serializationContext.dataContext == &context;
+    });
+    EXPECT_CALL(*controllerFactory, createInstance(serializationContextMatcher)).WillOnce(Return(ByMove(std::move(someController))));
+
+    auto [controller] = dory::serialization::yaml::deserialize<PipelineNode, decltype(registry), decltype(context),
+        ObjectVisitorExtensions<dory::serialization::yaml::YamlDeserializationPolicies>>(yaml, registry, context);
+
+    EXPECT_TRUE(controller.instance);
 }
