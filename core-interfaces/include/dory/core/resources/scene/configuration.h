@@ -5,6 +5,8 @@
 #include <dory/core/resources/assets/shader.h>
 #include <dory/core/resources/assets/material.h>
 #include <dory/core/resources/scene/components.h>
+#include <dory/core/resources/serialization.h>
+#include <dory/core/iController.h>
 
 namespace dory::core::resources::scene::configuration
 {
@@ -61,54 +63,12 @@ namespace dory::core::resources::scene::configuration
         std::unordered_map<std::string, Object> children {};
     };
 
-    //Just for testing -remove later BELOW
-    struct PhysicsController
-    {
-        float precision {};
-    };
-
-    struct AnimationController
-    {
-        std::size_t frames {};
-    };
-
-    struct ViewController
-    {};
-
-    struct Controller
-    {
-        std::optional<PhysicsController> physics {};
-        std::optional<AnimationController> animation {};
-        std::optional<ViewController> view {};
-    };
-
-    struct ElapsedTimeTrigger
-    {
-        std::optional<float> seconds {};
-        std::optional<float> milliseconds {};
-        std::optional<float> microseconds {};
-        std::optional<float> nanoseconds {};
-    };
-
-    struct LogicTrigger
-    {
-        bool flag {};
-    };
-
-    struct Trigger
-    {
-        std::optional<ElapsedTimeTrigger> elapsedTime {};
-        std::optional<LogicTrigger> logic {};
-    };
-    //Just for testing -remove later ABOVE
-
     struct Node
     {
-        std::string node {};
         std::string parent {};
-        Controller controller {};
-        Trigger trigger {};
-        std::vector<Node> children {};
+        serialization::FactoryInstance<ITrigger> trigger {};
+        serialization::FactoryInstance<IController> controller {};
+        std::unordered_map<std::string, Node> children {};
     };
 
     struct Scene
@@ -117,6 +77,6 @@ namespace dory::core::resources::scene::configuration
         std::unordered_map<std::string, Object> objects {};
         std::unordered_map<std::string, std::string> cameras {};
         std::unordered_map<std::string, std::string> lights {};
-        std::vector<Node> pipeline {};
+        std::unordered_map<std::string, Node> pipeline {};
     };
 }

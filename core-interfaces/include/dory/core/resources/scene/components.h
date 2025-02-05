@@ -88,6 +88,4 @@ namespace dory::core::resources::scene::components
         AccelerationMovement setup;
         AccelerationMovementState state;
     };
-
-
 }

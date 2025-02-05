@@ -48,17 +48,10 @@ REFL_TYPE(dory::core::resources::scene::configuration::Object)
     REFL_FIELD(children)
 REFL_END;
 
-REFL_TYPE(dory::core::resources::scene::configuration::Controller)
-REFL_END;
-
-REFL_TYPE(dory::core::resources::scene::configuration::Trigger)
-REFL_END;
-
 REFL_TYPE(dory::core::resources::scene::configuration::Node)
-    REFL_FIELD(node)
     REFL_FIELD(parent)
-    REFL_FIELD(controller)
     REFL_FIELD(trigger)
+    REFL_FIELD(controller)
     REFL_FIELD(children)
 REFL_END;
 
