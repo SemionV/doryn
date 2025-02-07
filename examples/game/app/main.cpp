@@ -39,13 +39,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     auto bootstrap = dory::game::Bootstrap{registry};
     bootstrap.initialize(staticLibraryHandle, context);
 
-    auto game = dory::game::Game{registry};
+    auto game = dory::game::Game{ registry };
     game.initialize(staticLibraryHandle, context);
 
     if(auto sceneConfigurationService = registry.get<dory::core::services::ISceneConfigurationService>())
     {
         dory::core::resources::scene::configuration::Scene sceneConfig;
-        sceneConfigurationService->load("scenes/bootstrap-scene.yaml", sceneConfig, context); //TODO: move bootstrap scene filename to configuration
+        sceneConfigurationService->load("scenes/bootstrap.yaml", sceneConfig, context); //TODO: move bootstrap scene filename to configuration/command-line parameter
 
         if(auto sceneBuilder = registry.get<dory::core::services::ISceneBuilder>())
         {

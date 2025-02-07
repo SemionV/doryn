@@ -1,6 +1,8 @@
 #pragma once
 
 #include <refl.hpp>
+#include <dory/core/controllers/accelerationMovementController.h>
+#include <dory/core/controllers/viewController.h>
 #include <dory/core/resources/scene/configuration.h>
 
 REFL_TYPE(dory::core::resources::scene::configuration::Shader)
@@ -61,4 +63,7 @@ REFL_TYPE(dory::core::resources::scene::configuration::Scene)
     REFL_FIELD(cameras)
     REFL_FIELD(lights)
     REFL_FIELD(pipeline)
+REFL_END;
+
+REFL_TYPE(dory::core::controllers::ViewController)
 REFL_END;

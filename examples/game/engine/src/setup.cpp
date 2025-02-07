@@ -15,6 +15,7 @@
 #ifdef DORY_PLATFORM_WIN32
 #include <dory/core/devices/standardIoDeviceWin32.h>
 #endif
+#include <dory/core/controllers/viewController.h>
 #include <dory/core/devices/terminalDevice.h>
 #include <dory/core/devices/glfwWindowSystemDevice.h>
 #include <dory/core/devices/openglGpuDevice.h>
@@ -156,6 +157,10 @@ namespace dory::game
         registry.set<core::services::files::IImageFileService, core::resources::AssetFileFormat::png>(libraryHandle, std::make_shared<core::services::files::PngImageFileService>());
 
         registry.set<core::services::IProfilingService>(libraryHandle, std::make_shared<core::services::ProfilingService>(registry));
+
         registry.set<core::services::ISceneConfigurationService>(libraryHandle, std::make_shared<core::services::SceneConfigurationService>(registry));
+
+        auto viewControllerFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::ViewController>>(libraryHandle);
+        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, viewControllerFactory, std::string { "ViewController" });
     }
 }
