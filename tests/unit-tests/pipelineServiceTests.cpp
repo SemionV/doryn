@@ -105,7 +105,7 @@ public:
             return trigger->trigger(nodeId, timeStep, context);
         };
         const auto triggerHandle = generic::extension::ResourceHandle{ _libraryHandle, std::move(triggerLambda) };
-        node.updateTrigger = triggerHandle;
+        node.triggerFunction = triggerHandle;
     }
 
     template<typename TController = ControllerMock>
@@ -114,7 +114,7 @@ public:
         const auto controller = std::make_shared<TController>();
         EXPECT_CALL(*controller, update(Eq(node.id), Eq(deltaTime), _contextMatcher)).Times(updateCount);
 
-        auto handle = generic::extension::ResourceHandle{ _libraryHandle, std::static_pointer_cast<void>(std::move(controller)) };
+        auto handle = generic::extension::ResourceHandle{ _libraryHandle, std::static_pointer_cast<IController>(std::move(controller)) };
         node.attachedController = handle;
     }
 

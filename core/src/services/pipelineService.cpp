@@ -3,6 +3,7 @@
 #include <dory/core/events/eventTypes.h>
 #include <dory/core/repositories/iPipelineRepository.h>
 #include "dory/core/iController.h"
+#include "dory/core/iTrigger.h"
 #include <vector>
 #include <set>
 #include <spdlog/fmt/fmt.h>
@@ -99,28 +100,35 @@ namespace dory::core::services
 
                 if(updateCounter.count == 0 && !node.skipUpdate)
                 {
-                    if(node.updateTrigger)
+                    try
                     {
-                        //If dll with the trigger impl is unloaded or the trigger is false,
-                        //continue to the next node in the pipeline
-                        if(auto updateTrigger = node.updateTrigger->lock())
+                        if(node.triggerFunction)
                         {
-                            try
+                            //If dll with the trigger impl is unloaded or the trigger is false,
+                            //continue to the next node in the pipeline
+                            if(auto updateTrigger = node.triggerFunction->lock())
                             {
                                 updateCounter = (*updateTrigger)(node.id, updateCounter.deltaTime, context);
                             }
-                            catch(const std::exception& e)
+                        }
+                        else if(node.trigger)
+                        {
+                            if(auto trigger = node.trigger->lock())
                             {
-                                if(auto logger = _registry.get<ILogService>())
-                                {
-                                    logger->error(fmt::format("Triggering node {}({}): {}", node.name, node.id, e.what()));
-                                }
+                                updateCounter = trigger->check(node.id, updateCounter.deltaTime, context);
                             }
                         }
+                        else
+                        {
+                            updateCounter.count = 1;
+                        }
                     }
-                    else
+                    catch(const std::exception& e)
                     {
-                        updateCounter.count = 1;
+                        if(auto logger = _registry.get<ILogService>())
+                        {
+                            logger->error(fmt::format("Triggering node {}({}): {}", node.name, node.id, e.what()));
+                        }
                     }
                 }
 
