@@ -5,4 +5,4 @@ pipeline:
   animation-update:
     trigger:
       type: TimeFrameTrigger
-      nanoseconds: 33333333
+      milliseconds: 33.33

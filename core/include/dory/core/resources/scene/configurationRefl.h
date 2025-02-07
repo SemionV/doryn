@@ -71,4 +71,8 @@ REFL_END;
 
 REFL_TYPE(dory::core::triggers::TimeFrameTrigger)
     REFL_FIELD(nanoseconds)
+    REFL_FIELD(microseconds)
+    REFL_FIELD(milliseconds)
+    REFL_FIELD(seconds)
+    REFL_FIELD(minutes)
 REFL_END;

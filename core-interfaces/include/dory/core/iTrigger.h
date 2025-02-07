@@ -11,5 +11,6 @@ namespace dory::core
     {
     public:
         virtual resources::entities::NodeUpdateCounter check(resources::IdType nodeId, const generic::model::TimeSpan& timeStep, resources::DataContext& context) = 0;
+        virtual bool initialize(resources::IdType nodeId, resources::DataContext& context) = 0;
     };
 }

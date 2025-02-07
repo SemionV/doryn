@@ -75,7 +75,7 @@ pipeline: #implement a separate service, which is getting pipeline configuration
           type: AnimationController
           frames: 24
   physics-node:
-    parent: scene-update-node #this kind of node could be added by some extension module in a separate scene yaml file, thus cannot be described in the parent's children node
+    parent: scene-update-node
     trigger:
       type: TimeFrameTrigger
       milliseconds: 33.333
@@ -83,5 +83,5 @@ pipeline: #implement a separate service, which is getting pipeline configuration
       type: PhysicsController
       precision: 0.00000000000001
 director:
-  type: "SomeDirector"
+  type: SomeDirector
   someParameter: 23
