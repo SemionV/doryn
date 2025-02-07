@@ -2,7 +2,7 @@
 
 #include <dory/core/services/iSerializer.h>
 #include <dory/core/implementation.h>
-#include <dory/core/resources/serialization.h>
+#include <dory/core/resources/factory.h>
 #include <dory/serialization/yamlSerializer.h>
 #include <dory/serialization/yamlDeserializer.h>
 #include <dory/serialization/jsonSerializer.h>
@@ -88,7 +88,7 @@ namespace dory::core::services::serialization
         using VisitorType = dory::serialization::ObjectVisitor<TPolicies, ObjectVisitorExtensions<TPolicies>>;
 
         template<typename TInstance, typename TContext>
-        static void visit(resources::serialization::FactoryInstance<TInstance>& factoryInstance, TContext& context)
+        static void visit(resources::factory::Instance<TInstance>& factoryInstance, TContext& context)
         {
             dory::serialization::ClassVisitor<TPolicies, VisitorType>::visit(factoryInstance, context);
 
@@ -99,7 +99,7 @@ namespace dory::core::services::serialization
         }
 
         template<typename TInstance, typename TContext>
-        static void visit(const resources::serialization::FactoryInstance<TInstance>& factoryInstance, TContext& context)
+        static void visit(const resources::factory::Instance<TInstance>& factoryInstance, TContext& context)
         {
             dory::serialization::ClassVisitor<TPolicies, VisitorType>::visit(factoryInstance, context);
 

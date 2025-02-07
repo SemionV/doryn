@@ -1,0 +1,8 @@
+pipeline:
+  view-update:
+    controller:
+      type: ViewController
+  animation-update:
+    trigger:
+      type: TimeFrameTrigger
+      nanoseconds: 33333333

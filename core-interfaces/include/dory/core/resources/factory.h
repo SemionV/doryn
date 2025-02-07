@@ -1,9 +1,9 @@
 #pragma once
 
-namespace dory::core::resources::serialization
+namespace dory::core::resources::factory
 {
     template<typename TInstance>
-    struct FactoryInstance
+    struct Instance
     {
         generic::extension::ResourceHandle<std::shared_ptr<TInstance>> instance {};
         std::string type {};

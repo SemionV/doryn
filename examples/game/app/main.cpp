@@ -45,7 +45,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     if(auto sceneConfigurationService = registry.get<dory::core::services::ISceneConfigurationService>())
     {
         dory::core::resources::scene::configuration::Scene sceneConfig;
-        sceneConfigurationService->load("scenes/bootstrap.yaml", sceneConfig, context); //TODO: move bootstrap scene filename to configuration/command-line parameter
+        sceneConfigurationService->load("scenes/root.yaml", sceneConfig, context); //TODO: move bootstrap scene filename to configuration/command-line parameter
 
         if(auto sceneBuilder = registry.get<dory::core::services::ISceneBuilder>())
         {

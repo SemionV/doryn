@@ -8,7 +8,7 @@ namespace dory::core::triggers
         DependencyResolver(registry)
     {}
 
-    resources::entities::NodeUpdateCounter TimeFrameTrigger::check(IdType nodeId, const generic::model::TimeSpan& timeStep, DataContext& context)
+    entities::NodeUpdateCounter TimeFrameTrigger::check(IdType nodeId, const generic::model::TimeSpan& timeStep, DataContext& context)
     {
         const auto fixedDeltaTime = std::chrono::nanoseconds { nanoseconds };
         entities::NodeUpdateCounter updateCounter { 0, fixedDeltaTime };

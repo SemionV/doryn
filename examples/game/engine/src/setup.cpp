@@ -160,6 +160,9 @@ namespace dory::game
 
         registry.set<core::services::ISceneConfigurationService>(libraryHandle, std::make_shared<core::services::SceneConfigurationService>(registry));
 
+        auto timeFrameTriggerFactory = std::make_shared<core::services::ObjectFactory<core::ITrigger, core::triggers::TimeFrameTrigger>>(libraryHandle);
+        registry.set<core::services::IObjectFactory<core::ITrigger>>(libraryHandle, timeFrameTriggerFactory, std::string { "TimeFrameTrigger" });
+
         auto viewControllerFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::ViewController>>(libraryHandle);
         registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, viewControllerFactory, std::string { "ViewController" });
     }

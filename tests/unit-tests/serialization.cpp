@@ -8,7 +8,7 @@
 #include <glm/gtc/quaternion.hpp>
 
 #include <dory/core/registry.h>
-#include <dory/core/resources/serialization.h>
+#include <dory/core/resources/factory.h>
 #include <dory/serialization/yamlDeserializer.h>
 #include <dory/serialization/yamlSerializer.h>
 #include <dory/serialization/jsonDeserializer.h>
@@ -482,7 +482,7 @@ TEST(ObjectCopy, copyObjects)
 
 struct PipelineNode
 {
-    dory::core::resources::serialization::FactoryInstance<dory::core::IController> controller;
+    dory::core::resources::factory::Instance<dory::core::IController> controller;
 };
 
 REFL_TYPE(PipelineNode)

@@ -5,7 +5,7 @@
 #include <dory/core/resources/assets/shader.h>
 #include <dory/core/resources/assets/material.h>
 #include <dory/core/resources/scene/components.h>
-#include <dory/core/resources/serialization.h>
+#include <dory/core/resources/factory.h>
 #include <dory/core/iController.h>
 
 namespace dory::core::resources::scene::configuration
@@ -66,8 +66,8 @@ namespace dory::core::resources::scene::configuration
     struct Node
     {
         std::string parent {};
-        serialization::FactoryInstance<ITrigger> trigger {};
-        serialization::FactoryInstance<IController> controller {};
+        factory::Instance<ITrigger> trigger {};
+        factory::Instance<IController> controller {};
         std::unordered_map<std::string, Node> children {};
     };
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <map>
 #include <dory/generic/registryLayer.h>
 #include "events/eventTypes.h"
 #include <dory/core/resources/dataFormat.h>

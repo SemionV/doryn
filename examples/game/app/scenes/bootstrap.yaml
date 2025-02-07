@@ -1,4 +1,0 @@
-pipeline:
-  view-update:
-    controller:
-      type: ViewController
