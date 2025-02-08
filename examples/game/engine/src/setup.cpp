@@ -173,5 +173,6 @@ namespace dory::game
         registerObjectFactory<core::IController, core::controllers::MovementController>("MovementController", libraryHandle, registry);
         registerObjectFactory<core::IController, core::controllers::TransformController>("TransformController", libraryHandle, registry);
         registerObjectFactory<core::IController, core::controllers::ConsoleFlusher>("ConsoleFlusher", libraryHandle, registry);
+        registerObjectFactory<core::IController, core::controllers::WindowSystemController>("WindowSystemController", libraryHandle, registry);
     }
 }

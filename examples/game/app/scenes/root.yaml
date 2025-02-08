@@ -42,3 +42,7 @@ pipeline:
       parent: post-update
       controller:
         type: ConsoleFlusher
+    pump-window-events:
+      parent: post-update
+      controller:
+        type: WindowSystemController

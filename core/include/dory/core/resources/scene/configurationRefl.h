@@ -1,6 +1,7 @@
 #pragma once
 
 #include <refl.hpp>
+#include <dory/core/triggers/timeFrameTrigger.h>
 #include <dory/core/controllers/viewController.h>
 #include <dory/core/controllers/frameCounter.h>
 #include <dory/core/controllers/profiler.h>
@@ -10,7 +11,7 @@
 #include <dory/core/controllers/movementController.h>
 #include <dory/core/controllers/transformController.h>
 #include <dory/core/controllers/consoleFlusher.h>
-#include <dory/core/triggers/timeFrameTrigger.h>
+#include <dory/core/controllers/windowSystemController.h>
 #include <dory/core/resources/scene/configuration.h>
 
 REFL_TYPE(dory::core::resources::scene::configuration::Shader)
@@ -116,4 +117,7 @@ REFL_TYPE(dory::core::controllers::TransformController)
 REFL_END;
 
 REFL_TYPE(dory::core::controllers::ConsoleFlusher)
+REFL_END;
+
+REFL_TYPE(dory::core::controllers::WindowSystemController)
 REFL_END;

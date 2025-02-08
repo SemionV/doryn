@@ -149,7 +149,6 @@ namespace dory::game
         pipelineRepo->addNode(PipelineNode { nullId, nullId, Name{ "pre-update" } });
         pipelineRepo->addNode(PipelineNode { nullId, nullId, Name{ "update" } });
         pipelineRepo->addNode(PipelineNode { nullId, nullId, Name{ "post-update" } });
-        pipelineRepo->addNode(nullId, libraryHandle, std::make_shared<WindowSystemController>(_registry)); //poll the window events after rendering
     }
 
     void Bootstrap::loadExtensions(const LibraryHandle& libraryHandle, DataContext& context)
