@@ -148,24 +148,6 @@ namespace dory::game
 
         pipelineRepo->addNode(PipelineNode { nullId, nullId, Name{ "pre-update" } });
 
-        pipelineRepo->addNode(nullId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context){
-            _registry.get<
-                    Service<events::window::Bundle::IDispatcher>,
-                    Service<events::io::Bundle::IDispatcher>,
-                    Service<events::filesystem::Bundle::IDispatcher>,
-                    Service<events::scene::Bundle::IDispatcher>>(
-                [&context](events::window::Bundle::IDispatcher* windowDispatcher,
-                            events::io::Bundle::IDispatcher* ioDispatcher,
-                            events::filesystem::Bundle::IDispatcher* fsDispatcher,
-                           events::scene::Bundle::IDispatcher* sceneDispatcher)
-            {
-                windowDispatcher->fireAll(context);
-                ioDispatcher->fireAll(context);
-                fsDispatcher->fireAll(context);
-                sceneDispatcher->fireAll(context);
-            });
-        });
-
         const auto animationNodeId = pipelineRepo->addTriggerNode(nullId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context) mutable
         {
             static std::chrono::nanoseconds animationStepTimeAccumulator { 0 };

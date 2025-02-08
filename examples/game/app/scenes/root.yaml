@@ -1,11 +1,15 @@
 name: root
 pipeline:
   nodes:
-    profiler:
+    events:
       parent: pre-update
-      #controller:
-      #  type: Profiler
-    view-update:
+      controller:
+        type: EventDispatcher
+    #profiler:
+    #  parent: pre-update
+    #  controller:
+    #    type: Profiler
+    view:
       parent: post-update
       controller:
         type: ViewController

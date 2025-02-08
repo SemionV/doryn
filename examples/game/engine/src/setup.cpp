@@ -173,5 +173,8 @@ namespace dory::game
 
         const auto profilerFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::Profiler>>(libraryHandle);
         registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, profilerFactory, core::resources::Name{ "Profiler" });
+
+        const auto eventDispatcherFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::EventDispatcher>>(libraryHandle);
+        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, eventDispatcherFactory, core::resources::Name{ "EventDispatcher" });
     }
 }

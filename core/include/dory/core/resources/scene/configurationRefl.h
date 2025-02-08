@@ -5,6 +5,7 @@
 #include <dory/core/controllers/viewController.h>
 #include <dory/core/controllers/frameCounter.h>
 #include <dory/core/controllers/profiler.h>
+#include <dory/core/controllers/eventDispatcher.h>
 #include <dory/core/triggers/timeFrameTrigger.h>
 #include <dory/core/resources/scene/configuration.h>
 
@@ -89,6 +90,9 @@ REFL_TYPE(dory::core::controllers::FrameCounter)
 REFL_END;
 
 REFL_TYPE(dory::core::controllers::Profiler)
+REFL_END;
+
+REFL_TYPE(dory::core::controllers::EventDispatcher)
 REFL_END;
 
 REFL_TYPE(dory::core::triggers::TimeFrameTrigger)
