@@ -2,6 +2,10 @@ name: root
 pipeline:
   nodes:
     view-update:
+      parent: post-update
+      trigger:
+        type: TimeFrameTrigger
+        milliseconds: 16.0
       controller:
         type: ViewController
     animation-update:

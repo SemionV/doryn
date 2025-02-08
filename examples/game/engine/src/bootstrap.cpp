@@ -254,7 +254,8 @@ namespace dory::game
             }
         });
 
-        pipelineRepo->addNode(nullId, libraryHandle, std::make_shared<ViewController>(_registry)); //render views
+        //pipelineRepo->addNode(nullId, libraryHandle, std::make_shared<ViewController>(_registry)); //render views
+        pipelineRepo->addNode(PipelineNode { nullId, nullId, Name{ "post-update" } }); //render views
         pipelineRepo->addNode(nullId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context) {
             _registry.get<IStandardIODevice>([](IStandardIODevice* ioDevice){
                 ioDevice->flush();

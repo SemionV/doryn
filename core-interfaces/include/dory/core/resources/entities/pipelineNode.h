@@ -30,7 +30,7 @@ namespace dory::core::resources::entities
         using ControllerPointerType = std::shared_ptr<IController>;
         using TriggerPointerType = std::shared_ptr<ITrigger>;
 
-        std::optional<generic::extension::ResourceHandle<ControllerPointerType>> attachedController {};
+        std::optional<generic::extension::ResourceHandle<ControllerPointerType>> controller {};
         std::optional<generic::extension::ResourceHandle<UpdateFunctionType>> updateFunction {};
         std::optional<generic::extension::ResourceHandle<TriggerPointerType>> trigger {};
         std::optional<generic::extension::ResourceHandle<UpdateTriggerType>> triggerFunction {};
@@ -62,7 +62,7 @@ namespace dory::core::resources::entities
         explicit PipelineNode(generic::extension::ResourceHandle<ControllerPointerType> attachedController,
                               const IdType parentNodeId = nullId,
                               Name name = {}):
-                attachedController(std::move(attachedController)),
+                controller(std::move(attachedController)),
                 parentNodeId(parentNodeId),
                 name(std::move(name))
         {}
@@ -71,7 +71,7 @@ namespace dory::core::resources::entities
                               generic::extension::ResourceHandle<UpdateTriggerType> triggerFunction,
                               const IdType parentNodeId = nullId,
                               Name name = {}):
-                attachedController(std::move(attachedController)),
+                controller(std::move(attachedController)),
                 triggerFunction(triggerFunction),
                 parentNodeId(parentNodeId),
                 name(std::move(name))

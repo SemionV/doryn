@@ -9,6 +9,6 @@ namespace dory::core::services
     class ISceneBuilder: public generic::Interface
     {
     public:
-        virtual resources::scene::Scene* build(const resources::scene::configuration::Scene& configuration) = 0;
+        virtual resources::scene::Scene* build(const resources::scene::configuration::Scene& configuration, resources::DataContext& context) = 0;
     };
 }

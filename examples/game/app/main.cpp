@@ -49,7 +49,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 
         if(auto sceneBuilder = registry.get<dory::core::services::ISceneBuilder>())
         {
-            auto* scene = sceneBuilder->build(sceneConfig);
+            auto* scene = sceneBuilder->build(sceneConfig, context);
         }
     }
 

@@ -141,9 +141,9 @@ namespace dory::core::services
 
                     try
                     {
-                        if(node.attachedController)
+                        if(node.controller)
                         {
-                            if(auto controllerRef = node.attachedController->lock())
+                            if(auto controllerRef = node.controller->lock())
                             {
                                 if(const auto controller = std::static_pointer_cast<IController>(*controllerRef))
                                 {
@@ -183,9 +183,9 @@ namespace dory::core::services
         _registry.get<IPipelineRepository>([&context](IPipelineRepository* repository){
             for(auto nodes = repository->getPipelineNodes(); auto& node : nodes)
             {
-                if(node.attachedController)
+                if(node.controller)
                 {
-                    if(auto controllerRef = node.attachedController->lock())
+                    if(auto controllerRef = node.controller->lock())
                     {
                         if(const auto controller = std::static_pointer_cast<IController>(*controllerRef))
                         {
@@ -197,7 +197,7 @@ namespace dory::core::services
         });
     }
 
-    void PipelineService::buildPipeline(scene::Scene& scene, const scene::configuration::Pipeline& pipeline)
+    void PipelineService::buildPipeline(scene::Scene& scene, const scene::configuration::Pipeline& pipeline, DataContext& context)
     {
         if(auto pipelineRepo = _registry.get<IPipelineRepository>())
         {
@@ -227,9 +227,27 @@ namespace dory::core::services
                     pipelineNode.sceneId = scene.id;
                     pipelineNode.parentNodeId = parentId;
 
-                    //TODO: setup trigger and controller
+                    if(auto trigger = node->trigger.instance.lock())
+                    {
+                        pipelineNode.trigger = node->trigger.instance;
+                    }
+
+                    if(auto controller = node->controller.instance.lock())
+                    {
+                        pipelineNode.controller = node->controller.instance;
+                    }
 
                     const auto id = pipelineRepo->addNode(pipelineNode);
+
+                    if(auto trigger = node->trigger.instance.lock())
+                    {
+                        trigger->initialize(id, context);
+                    }
+
+                    if(auto controller = node->controller.instance.lock())
+                    {
+                        controller->initialize(id, context);
+                    }
 
                     for(const auto& [childName, childNode] : node->children)
                     {

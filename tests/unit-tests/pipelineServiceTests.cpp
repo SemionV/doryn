@@ -116,7 +116,7 @@ public:
         EXPECT_CALL(*controller, update(Eq(node.id), Eq(deltaTime), _contextMatcher)).Times(updateCount);
 
         auto handle = generic::extension::ResourceHandle{ _libraryHandle, std::static_pointer_cast<IController>(std::move(controller)) };
-        node.attachedController = handle;
+        node.controller = handle;
     }
 
     template<typename TController = ControllerMock>
