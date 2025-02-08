@@ -9,6 +9,25 @@ pipeline:
     #  parent: pre-update
     #  controller:
     #    type: Profiler
+    update:
+      parent: update
+      trigger:
+        type: TimeFrameTrigger
+        duration:
+          milliseconds: 33.333333333
+      children:
+        accelerator:
+          controller:
+            type: AccelerationMovementController
+        movement:
+          controller:
+            type: MovementController
+        transform:
+          controller:
+            type: TransformController
+        state:
+          controller:
+            type: StateUpdater
     view:
       parent: post-update
       controller:
@@ -19,8 +38,7 @@ pipeline:
             type: FrameCounter
             interval:
               seconds: 1.0
-    animation-update:
-      trigger:
-        type: TimeFrameTrigger
-        duration:
-          milliseconds: 33.33
+    console-flush:
+      parent: post-update
+      controller:
+        type: ConsoleFlusher

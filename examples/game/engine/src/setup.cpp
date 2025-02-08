@@ -176,5 +176,20 @@ namespace dory::game
 
         const auto eventDispatcherFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::EventDispatcher>>(libraryHandle);
         registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, eventDispatcherFactory, core::resources::Name{ "EventDispatcher" });
+
+        const auto stateUpdaterFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::StateUpdater>>(libraryHandle);
+        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, stateUpdaterFactory, core::resources::Name{ "StateUpdater" });
+
+        const auto acceleratorFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::AccelerationMovementController>>(libraryHandle);
+        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, acceleratorFactory, core::resources::Name{ "AccelerationMovementController" });
+
+        const auto movementControllerFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::MovementController>>(libraryHandle);
+        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, movementControllerFactory, core::resources::Name{ "MovementController" });
+
+        const auto transformControllerFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::TransformController>>(libraryHandle);
+        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, transformControllerFactory, core::resources::Name{ "TransformController" });
+
+        const auto consloeFlusherFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::ConsoleFlusher>>(libraryHandle);
+        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, consloeFlusherFactory, core::resources::Name{ "ConsoleFlusher" });
     }
 }

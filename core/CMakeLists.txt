@@ -53,6 +53,8 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/controllers/frameCounter.cpp
         src/controllers/profiler.cpp
         src/controllers/eventDispatcher.cpp
+        src/controllers/stateUpdater.cpp
+        src/controllers/consoleFlusher.cpp
         src/triggers/timeFrameTrigger.cpp
         ${DORY_PLATFORM_MODULES})
 

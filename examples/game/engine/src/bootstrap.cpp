@@ -147,48 +147,8 @@ namespace dory::game
         auto pipelineRepo = _registry.get<IPipelineRepository>();
 
         pipelineRepo->addNode(PipelineNode { nullId, nullId, Name{ "pre-update" } });
-
-        const auto animationNodeId = pipelineRepo->addTriggerNode(nullId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context) mutable
-        {
-            static std::chrono::nanoseconds animationStepTimeAccumulator { 0 };
-
-            constexpr int maxUpdatesPerFrame = 5;
-            constexpr auto fixedDeltaTime = std::chrono::nanoseconds { 33333333 }; // 1/30 of a second
-            entities::NodeUpdateCounter updateCounter { 0, fixedDeltaTime };
-            animationStepTimeAccumulator += timeStep;
-
-            while(animationStepTimeAccumulator >= fixedDeltaTime && updateCounter.count < maxUpdatesPerFrame)
-            {
-                updateCounter.count++;
-                animationStepTimeAccumulator -= fixedDeltaTime;
-            }
-
-            if(updateCounter.count == maxUpdatesPerFrame)
-            {
-                animationStepTimeAccumulator = {}; // reset accumulator to 0 in case if timeStep is too big
-            }
-
-            return updateCounter;
-        });
-
-        pipelineRepo->addNode(animationNodeId, libraryHandle, std::make_shared<AccelerationMovementController>(_registry));
-        pipelineRepo->addNode(animationNodeId, libraryHandle, std::make_shared<MovementController>(_registry));
-        pipelineRepo->addNode(animationNodeId, libraryHandle, std::make_shared<TransformController>(_registry));
-        pipelineRepo->addNode(animationNodeId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context) {
-            if(auto viewService = _registry.get<IViewService>())
-            {
-                viewService->updateViewsState(context.viewStates);
-                context.viewStatesUpdateTime = {};
-                context.viewStatesUpdateTimeDelta = timeStep;
-            }
-        });
-
+        pipelineRepo->addNode(PipelineNode { nullId, nullId, Name{ "update" } });
         pipelineRepo->addNode(PipelineNode { nullId, nullId, Name{ "post-update" } });
-        pipelineRepo->addNode(nullId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context) {
-            _registry.get<IStandardIODevice>([](IStandardIODevice* ioDevice){
-                ioDevice->flush();
-            });
-        });
         pipelineRepo->addNode(nullId, libraryHandle, std::make_shared<WindowSystemController>(_registry)); //poll the window events after rendering
     }
 

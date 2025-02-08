@@ -1,11 +1,15 @@
 #pragma once
 
 #include <refl.hpp>
-#include <dory/core/controllers/accelerationMovementController.h>
 #include <dory/core/controllers/viewController.h>
 #include <dory/core/controllers/frameCounter.h>
 #include <dory/core/controllers/profiler.h>
 #include <dory/core/controllers/eventDispatcher.h>
+#include <dory/core/controllers/stateUpdater.h>
+#include <dory/core/controllers/accelerationMovementController.h>
+#include <dory/core/controllers/movementController.h>
+#include <dory/core/controllers/transformController.h>
+#include <dory/core/controllers/consoleFlusher.h>
 #include <dory/core/triggers/timeFrameTrigger.h>
 #include <dory/core/resources/scene/configuration.h>
 
@@ -82,6 +86,10 @@ REFL_TYPE(dory::core::resources::Duration)
     REFL_FIELD(minutes)
 REFL_END;
 
+REFL_TYPE(dory::core::triggers::TimeFrameTrigger)
+    REFL_FIELD(duration)
+REFL_END;
+
 REFL_TYPE(dory::core::controllers::ViewController)
 REFL_END;
 
@@ -95,6 +103,17 @@ REFL_END;
 REFL_TYPE(dory::core::controllers::EventDispatcher)
 REFL_END;
 
-REFL_TYPE(dory::core::triggers::TimeFrameTrigger)
-    REFL_FIELD(duration)
+REFL_TYPE(dory::core::controllers::StateUpdater)
+REFL_END;
+
+REFL_TYPE(dory::core::controllers::AccelerationMovementController)
+REFL_END;
+
+REFL_TYPE(dory::core::controllers::MovementController)
+REFL_END;
+
+REFL_TYPE(dory::core::controllers::TransformController)
+REFL_END;
+
+REFL_TYPE(dory::core::controllers::ConsoleFlusher)
 REFL_END;
