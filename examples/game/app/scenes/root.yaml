@@ -2,41 +2,32 @@ name: root
 pipeline:
   nodes:
     events:
-      controller:
-        type: EventDispatcher
+      controller: EventDispatcher
     #profiler:
-    #  controller:
-    #    type: Profiler
+    #  controller: Profiler
     update:
       trigger:
         type: TimeFrameTrigger
         duration:
           milliseconds: 33.333333333
       children:
-        accelerator:
-          controller:
-            type: AccelerationMovementController
-        movement:
-          controller:
-            type: MovementController
-        transform:
-          controller:
-            type: TransformController
-        state:
-          controller:
-            type: StateUpdater
-    view:
-      controller:
-        type: ViewController
+        accelerate-objects:
+          controller: AccelerationMovementController
+        move-objects:
+          controller: MovementController
+        transform-objects:
+          controller: TransformController
+        make-state-snapshot:
+          controller: StateUpdater
+    render-views:
+      controller: ViewController
       children:
-        fps:
-          controller:
+        output-fps:
+          controllerInstance:
             type: FrameCounter
             interval:
               seconds: 1.0
-    console-flush:
-      controller:
-        type: ConsoleFlusher
+    flush-console:
+      controller: ConsoleFlusher
     pump-window-events:
-      controller:
-        type: WindowSystemController
+      controller: WindowSystemController

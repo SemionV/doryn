@@ -43,5 +43,11 @@ namespace dory::core::services
 
             return generic::extension::ResourceHandle<std::shared_ptr<TInterface>>{ _libraryHandle, instance };
         }
+
+        generic::extension::ResourceHandle<std::shared_ptr<TInterface>> createNewInstance(Registry& registry) final
+        {
+            auto instance = std::make_shared<TImplementation>(registry);
+            return generic::extension::ResourceHandle<std::shared_ptr<TInterface>>{ _libraryHandle, instance };
+        }
     };
 }

@@ -62,6 +62,7 @@ REFL_END;
 REFL_TYPE(dory::core::resources::scene::configuration::Node)
     REFL_FIELD(parent)
     REFL_FIELD(trigger)
+    REFL_FIELD(controllerInstance)
     REFL_FIELD(controller)
     REFL_FIELD(children)
 REFL_END;

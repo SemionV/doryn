@@ -238,21 +238,34 @@ namespace dory::core::services
                         pipelineNode.trigger = node->trigger.instance;
                     }
 
-                    if(auto controller = node->controller.instance.lock())
+                    if(auto controller = node->controllerInstance.instance.lock())
                     {
-                        pipelineNode.controller = node->controller.instance;
+                        pipelineNode.controller = node->controllerInstance.instance;
+                    }
+                    else if(!node->controller.empty())
+                    {
+                        if(auto factory = _registry.get<IObjectFactory<IController>>(Name{ node->controller }))
+                        {
+                            pipelineNode.controller = factory->createNewInstance(_registry);
+                        }
                     }
 
                     const auto id = pipelineRepo->addNode(pipelineNode);
 
-                    if(auto trigger = node->trigger.instance.lock())
+                    if(pipelineNode.trigger)
                     {
-                        trigger->initialize(id, context);
+                        if(auto trigger = pipelineNode.trigger->lock())
+                        {
+                            trigger->initialize(id, context);
+                        }
                     }
 
-                    if(auto controller = node->controller.instance.lock())
+                    if(pipelineNode.controller)
                     {
-                        controller->initialize(id, context);
+                        if(auto controller = pipelineNode.controller->lock())
+                        {
+                            controller->initialize(id, context);
+                        }
                     }
 
                     for(const auto& [childName, childNode] : node->children)

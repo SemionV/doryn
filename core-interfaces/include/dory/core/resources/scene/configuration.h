@@ -67,7 +67,8 @@ namespace dory::core::resources::scene::configuration
     {
         std::string parent {};
         factory::Instance<ITrigger> trigger {};
-        factory::Instance<IController> controller {};
+        factory::Instance<IController> controllerInstance {};
+        std::string controller {};
         std::unordered_map<std::string, Node> children {};
     };
 

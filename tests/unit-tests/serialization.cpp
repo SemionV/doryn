@@ -495,6 +495,7 @@ class ObjectFactoryMock final : public dory::core::services::IObjectFactory<T>
 public:
     using SerializationContextType = dory::generic::serialization::Context<dory::core::services::serialization::SerializationContextPoliciesType>;
     MOCK_METHOD(dory::generic::extension::ResourceHandle<std::shared_ptr<T>>, createInstance, (SerializationContextType& context), (final));
+    MOCK_METHOD(dory::generic::extension::ResourceHandle<std::shared_ptr<T>>, createNewInstance, (dory::core::Registry& registry), (final));
 };
 
 TEST(ObjectFactory, createInstanceFromYaml)
