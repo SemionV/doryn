@@ -3,12 +3,16 @@ pipeline:
   nodes:
     view-update:
       parent: post-update
-      trigger:
-        type: TimeFrameTrigger
-        milliseconds: 16.0
       controller:
         type: ViewController
+      children:
+        fps:
+          controller:
+            type: FrameCounter
+            interval:
+              seconds: 1.0
     animation-update:
       trigger:
         type: TimeFrameTrigger
-        milliseconds: 33.33
+        duration:
+          milliseconds: 33.33

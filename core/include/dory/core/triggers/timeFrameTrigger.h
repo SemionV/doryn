@@ -3,6 +3,7 @@
 #include <optional>
 #include <dory/core/iTrigger.h>
 #include <dory/core/dependencyResolver.h>
+#include <dory/core/resources/duration.h>
 
 namespace dory::core::triggers
 {
@@ -13,11 +14,7 @@ namespace dory::core::triggers
         std::chrono::nanoseconds fixedDeltaTime {};
 
     public:
-        std::optional<float> nanoseconds {};
-        std::optional<float> microseconds {};
-        std::optional<float> milliseconds {};
-        std::optional<float> seconds {};
-        std::optional<float> minutes {};
+        resources::Duration duration;
         std::size_t maxUpdatesPerFrame { 5 };
 
         explicit TimeFrameTrigger(Registry& registry);

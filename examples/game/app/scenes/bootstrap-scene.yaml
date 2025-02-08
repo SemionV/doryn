@@ -84,6 +84,6 @@ pipeline: #implement a separate service, which is getting pipeline configuration
       controller:
         type: PhysicsController
         precision: 0.00000000000001
-director:
-  type: SomeDirector
-  someParameter: 23
+directors:
+  - type: SomeDirector
+    someParameter: 23

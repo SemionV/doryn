@@ -177,7 +177,7 @@ namespace dory::game
         });
 
         //FPS
-        pipelineRepo->addNode(nullId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context) {
+        /*pipelineRepo->addNode(nullId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context) {
             constexpr auto fpsInterval = std::chrono::seconds{1};
             static auto fpsAccumulator = std::chrono::nanoseconds{0};
             static std::size_t fps = 0;
@@ -199,7 +199,9 @@ namespace dory::game
             }
 
             fps++;
-        });
+        });*/
+
+        pipelineRepo->addNode(PipelineNode { nullId, nullId, Name{ "pre-update" } });
 
         pipelineRepo->addNode(nullId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context){
             _registry.get<
@@ -254,8 +256,7 @@ namespace dory::game
             }
         });
 
-        //pipelineRepo->addNode(nullId, libraryHandle, std::make_shared<ViewController>(_registry)); //render views
-        pipelineRepo->addNode(PipelineNode { nullId, nullId, Name{ "post-update" } }); //render views
+        pipelineRepo->addNode(PipelineNode { nullId, nullId, Name{ "post-update" } });
         pipelineRepo->addNode(nullId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context) {
             _registry.get<IStandardIODevice>([](IStandardIODevice* ioDevice){
                 ioDevice->flush();

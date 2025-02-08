@@ -27,34 +27,9 @@ namespace dory::core::triggers
         return updateCounter;
     }
 
-    bool TimeFrameTrigger::initialize(resources::IdType nodeId, resources::DataContext& context)
+    bool TimeFrameTrigger::initialize(IdType nodeId, DataContext& context)
     {
-        if(nanoseconds)
-        {
-            const std::chrono::duration<float, std::milli> duration { *nanoseconds };
-            fixedDeltaTime = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
-        }
-        else if(microseconds)
-        {
-            const std::chrono::duration<float, std::micro> duration { *microseconds };
-            fixedDeltaTime = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
-        }
-        else if(milliseconds)
-        {
-            const std::chrono::duration<float, std::milli> duration { *milliseconds };
-            fixedDeltaTime = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
-        }
-        else if(seconds)
-        {
-            const std::chrono::duration<float> duration{ *seconds };
-            fixedDeltaTime = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
-        }
-        else if(minutes)
-        {
-            const std::chrono::duration<float, std::ratio<60>> duration{ *minutes };
-            fixedDeltaTime = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
-        }
-
+        getDuration(duration, fixedDeltaTime);
         return true;
     }
 }

@@ -162,10 +162,13 @@ namespace dory::game
         registry.set<core::services::ISceneConfigurationService>(libraryHandle, std::make_shared<core::services::SceneConfigurationService>(registry));
         registry.set<core::services::ISceneBuilder>(libraryHandle, std::make_shared<core::services::SceneBuilder>(registry));
 
-        auto timeFrameTriggerFactory = std::make_shared<core::services::ObjectFactory<core::ITrigger, core::triggers::TimeFrameTrigger>>(libraryHandle);
-        registry.set<core::services::IObjectFactory<core::ITrigger>>(libraryHandle, timeFrameTriggerFactory, std::string { "TimeFrameTrigger" });
+        const auto timeFrameTriggerFactory = std::make_shared<core::services::ObjectFactory<core::ITrigger, core::triggers::TimeFrameTrigger>>(libraryHandle);
+        registry.set<core::services::IObjectFactory<core::ITrigger>>(libraryHandle, timeFrameTriggerFactory, core::resources::Name{ "TimeFrameTrigger" });
 
-        auto viewControllerFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::ViewController>>(libraryHandle);
-        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, viewControllerFactory, std::string { "ViewController" });
+        const auto viewControllerFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::ViewController>>(libraryHandle);
+        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, viewControllerFactory, core::resources::Name{ "ViewController" });
+
+        const auto fpsCounterFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::FrameCounter>>(libraryHandle);
+        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, fpsCounterFactory, core::resources::Name{ "FrameCounter" });
     }
 }

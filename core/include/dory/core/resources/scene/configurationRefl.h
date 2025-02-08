@@ -3,6 +3,7 @@
 #include <refl.hpp>
 #include <dory/core/controllers/accelerationMovementController.h>
 #include <dory/core/controllers/viewController.h>
+#include <dory/core/controllers/frameCounter.h>
 #include <dory/core/triggers/timeFrameTrigger.h>
 #include <dory/core/resources/scene/configuration.h>
 
@@ -71,13 +72,21 @@ REFL_TYPE(dory::core::resources::scene::configuration::Scene)
     REFL_FIELD(pipeline)
 REFL_END;
 
-REFL_TYPE(dory::core::controllers::ViewController)
-REFL_END;
-
-REFL_TYPE(dory::core::triggers::TimeFrameTrigger)
+REFL_TYPE(dory::core::resources::Duration)
     REFL_FIELD(nanoseconds)
     REFL_FIELD(microseconds)
     REFL_FIELD(milliseconds)
     REFL_FIELD(seconds)
     REFL_FIELD(minutes)
+REFL_END;
+
+REFL_TYPE(dory::core::controllers::ViewController)
+REFL_END;
+
+REFL_TYPE(dory::core::controllers::FrameCounter)
+    REFL_FIELD(interval)
+REFL_END;
+
+REFL_TYPE(dory::core::triggers::TimeFrameTrigger)
+    REFL_FIELD(duration)
 REFL_END;

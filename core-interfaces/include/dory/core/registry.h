@@ -140,8 +140,8 @@ namespace dory::core
             generic::registry::ServiceEntry<services::IProfilingService>,
             generic::registry::ServiceEntry<services::ISceneBuilder>,
             generic::registry::ServiceEntry<services::ISceneConfigurationService>,
-            generic::registry::ServiceEntry<services::IObjectFactory<ITrigger>, std::string>,
-            generic::registry::ServiceEntry<services::IObjectFactory<IController>, std::string>>
+            generic::registry::ServiceEntry<services::IObjectFactory<ITrigger>, resources::Name>,
+            generic::registry::ServiceEntry<services::IObjectFactory<IController>, resources::Name>>
     {};
 
     template<typename T>
