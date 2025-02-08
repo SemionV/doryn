@@ -30,7 +30,6 @@ namespace dory::game
     {
         loadConfiguration(libraryHandle, context);
         connectDevices(libraryHandle, context);
-        buildPipeline(libraryHandle, context);
         loadExtensions(libraryHandle, context);
         attachEventHandlers(libraryHandle, context);
         attachScrips(libraryHandle, context);
@@ -140,15 +139,6 @@ namespace dory::game
         _registry.getAll<IGpuDevice, GraphicalSystem>([&context](const auto& devices) {
             connectDeviceGroup(context, devices);
         });
-    }
-
-    void Bootstrap::buildPipeline(const LibraryHandle& libraryHandle, DataContext& context)
-    {
-        auto pipelineRepo = _registry.get<IPipelineRepository>();
-
-        pipelineRepo->addNode(PipelineNode { nullId, nullId, Name{ "pre-update" } });
-        pipelineRepo->addNode(PipelineNode { nullId, nullId, Name{ "update" } });
-        pipelineRepo->addNode(PipelineNode { nullId, nullId, Name{ "post-update" } });
     }
 
     void Bootstrap::loadExtensions(const LibraryHandle& libraryHandle, DataContext& context)

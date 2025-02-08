@@ -39,6 +39,9 @@ Tasks:
   * Setup pipeline for releases
   * Deploy assembled packages to some network storage
 
+**08.02.25**
+* Task done: fully configurable by yaml main loop pipeline
+
 **29.01.25**
 * Task done: Unit Tests 
   * Pipeline update

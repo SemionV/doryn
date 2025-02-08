@@ -2,15 +2,12 @@ name: root
 pipeline:
   nodes:
     events:
-      parent: pre-update
       controller:
         type: EventDispatcher
     #profiler:
-    #  parent: pre-update
     #  controller:
     #    type: Profiler
     update:
-      parent: update
       trigger:
         type: TimeFrameTrigger
         duration:
@@ -29,7 +26,6 @@ pipeline:
           controller:
             type: StateUpdater
     view:
-      parent: post-update
       controller:
         type: ViewController
       children:
@@ -39,10 +35,8 @@ pipeline:
             interval:
               seconds: 1.0
     console-flush:
-      parent: post-update
       controller:
         type: ConsoleFlusher
     pump-window-events:
-      parent: post-update
       controller:
         type: WindowSystemController
