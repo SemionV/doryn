@@ -1,6 +1,10 @@
 name: root
 pipeline:
   nodes:
+    profiler:
+      parent: pre-update
+      #controller:
+      #  type: Profiler
     view-update:
       parent: post-update
       controller:

@@ -51,6 +51,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/controllers/accelerationMovementController.cpp
         src/controllers/transformController.cpp
         src/controllers/frameCounter.cpp
+        src/controllers/profiler.cpp
         src/triggers/timeFrameTrigger.cpp
         ${DORY_PLATFORM_MODULES})
 

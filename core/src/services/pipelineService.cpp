@@ -199,6 +199,8 @@ namespace dory::core::services
 
     void PipelineService::buildPipeline(scene::Scene& scene, const scene::configuration::Pipeline& pipeline, DataContext& context)
     {
+        auto logger = _registry.get<ILogService>();
+
         if(auto pipelineRepo = _registry.get<IPipelineRepository>())
         {
             using EntryType = std::tuple<const IdType, const std::string*, const scene::configuration::Node*>;
@@ -209,9 +211,13 @@ namespace dory::core::services
                 auto parentId = nullId;
                 if(!rootNode.parent.empty())
                 {
-                    if(const auto node = pipelineRepo->getNode(Name{ rootNodeName }))
+                    if(const auto node = pipelineRepo->getNode(Name{ rootNode.parent }))
                     {
                         parentId = node->id;
+                    }
+                    else if(logger)
+                    {
+                        logger->error(fmt::format(R"(Parent node "{}" is not found for node "{}")", rootNode.parent, rootNodeName));
                     }
                 }
 

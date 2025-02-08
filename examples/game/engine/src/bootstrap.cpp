@@ -146,61 +146,6 @@ namespace dory::game
     {
         auto pipelineRepo = _registry.get<IPipelineRepository>();
 
-        //Profiling
-        pipelineRepo->addNode(nullId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context) {
-            static std::size_t frameCounter = 1;
-
-            auto* capture = profiling::getCurrentCapture(context.profiling);
-            if(!capture)
-            {
-                //profiling::startNewCapture(context.profiling, context.profiling.captureIdCounter++, 100);
-            }
-            else
-            {
-                if(capture->done)
-                {
-                    if(auto profilingService = _registry.get<IProfilingService>())
-                    {
-                        profilingService->analyze(*capture);
-                    }
-                    profiling::removeCurrentCapture(context.profiling);
-
-                    profiling::startNewCapture(context.profiling, context.profiling.captureIdCounter++, 100);
-                }
-                else
-                {
-                    profiling::addNewFrame(*capture, frameCounter);
-                }
-            }
-
-            frameCounter++;
-        });
-
-        //FPS
-        /*pipelineRepo->addNode(nullId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context) {
-            constexpr auto fpsInterval = std::chrono::seconds{1};
-            static auto fpsAccumulator = std::chrono::nanoseconds{0};
-            static std::size_t fps = 0;
-
-            fpsAccumulator += timeStep;
-            while (fpsAccumulator >= fpsInterval)
-            {
-                fpsAccumulator = fpsAccumulator - fpsInterval;
-
-                if(auto logger = _registry.get<ILogService>())
-                {
-                    logger->information(fmt::format("FPS: {}", fps));
-                    if(auto* capture = profiling::getCurrentCapture(context.profiling))
-                    {
-                        capture->done = true;
-                    }
-                }
-                fps = 0;
-            }
-
-            fps++;
-        });*/
-
         pipelineRepo->addNode(PipelineNode { nullId, nullId, Name{ "pre-update" } });
 
         pipelineRepo->addNode(nullId, libraryHandle, [this](auto nodeId, const auto& timeStep, DataContext& context){

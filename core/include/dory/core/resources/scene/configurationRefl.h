@@ -4,6 +4,7 @@
 #include <dory/core/controllers/accelerationMovementController.h>
 #include <dory/core/controllers/viewController.h>
 #include <dory/core/controllers/frameCounter.h>
+#include <dory/core/controllers/profiler.h>
 #include <dory/core/triggers/timeFrameTrigger.h>
 #include <dory/core/resources/scene/configuration.h>
 
@@ -85,6 +86,9 @@ REFL_END;
 
 REFL_TYPE(dory::core::controllers::FrameCounter)
     REFL_FIELD(interval)
+REFL_END;
+
+REFL_TYPE(dory::core::controllers::Profiler)
 REFL_END;
 
 REFL_TYPE(dory::core::triggers::TimeFrameTrigger)

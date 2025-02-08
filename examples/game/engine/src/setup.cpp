@@ -170,5 +170,8 @@ namespace dory::game
 
         const auto fpsCounterFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::FrameCounter>>(libraryHandle);
         registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, fpsCounterFactory, core::resources::Name{ "FrameCounter" });
+
+        const auto profilerFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::Profiler>>(libraryHandle);
+        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, profilerFactory, core::resources::Name{ "Profiler" });
     }
 }
