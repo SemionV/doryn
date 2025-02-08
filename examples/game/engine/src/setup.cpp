@@ -162,34 +162,16 @@ namespace dory::game
         registry.set<core::services::ISceneConfigurationService>(libraryHandle, std::make_shared<core::services::SceneConfigurationService>(registry));
         registry.set<core::services::ISceneBuilder>(libraryHandle, std::make_shared<core::services::SceneBuilder>(registry));
 
-        const auto timeFrameTriggerFactory = std::make_shared<core::services::ObjectFactory<core::ITrigger, core::triggers::TimeFrameTrigger>>(libraryHandle);
-        registry.set<core::services::IObjectFactory<core::ITrigger>>(libraryHandle, timeFrameTriggerFactory, core::resources::Name{ "TimeFrameTrigger" });
+        registerObjectFactory<core::ITrigger, core::triggers::TimeFrameTrigger>("TimeFrameTrigger", libraryHandle, registry);
 
-        const auto viewControllerFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::ViewController>>(libraryHandle);
-        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, viewControllerFactory, core::resources::Name{ "ViewController" });
-
-        const auto fpsCounterFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::FrameCounter>>(libraryHandle);
-        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, fpsCounterFactory, core::resources::Name{ "FrameCounter" });
-
-        const auto profilerFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::Profiler>>(libraryHandle);
-        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, profilerFactory, core::resources::Name{ "Profiler" });
-
-        const auto eventDispatcherFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::EventDispatcher>>(libraryHandle);
-        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, eventDispatcherFactory, core::resources::Name{ "EventDispatcher" });
-
-        const auto stateUpdaterFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::StateUpdater>>(libraryHandle);
-        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, stateUpdaterFactory, core::resources::Name{ "StateUpdater" });
-
-        const auto acceleratorFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::AccelerationMovementController>>(libraryHandle);
-        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, acceleratorFactory, core::resources::Name{ "AccelerationMovementController" });
-
-        const auto movementControllerFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::MovementController>>(libraryHandle);
-        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, movementControllerFactory, core::resources::Name{ "MovementController" });
-
-        const auto transformControllerFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::TransformController>>(libraryHandle);
-        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, transformControllerFactory, core::resources::Name{ "TransformController" });
-
-        const auto consloeFlusherFactory = std::make_shared<core::services::ObjectFactory<core::IController, core::controllers::ConsoleFlusher>>(libraryHandle);
-        registry.set<core::services::IObjectFactory<core::IController>>(libraryHandle, consloeFlusherFactory, core::resources::Name{ "ConsoleFlusher" });
+        registerObjectFactory<core::IController, core::controllers::ViewController>("ViewController", libraryHandle, registry);
+        registerObjectFactory<core::IController, core::controllers::FrameCounter>("FrameCounter", libraryHandle, registry);
+        registerObjectFactory<core::IController, core::controllers::Profiler>("Profiler", libraryHandle, registry);
+        registerObjectFactory<core::IController, core::controllers::EventDispatcher>("EventDispatcher", libraryHandle, registry);
+        registerObjectFactory<core::IController, core::controllers::StateUpdater>("StateUpdater", libraryHandle, registry);
+        registerObjectFactory<core::IController, core::controllers::AccelerationMovementController>("AccelerationMovementController", libraryHandle, registry);
+        registerObjectFactory<core::IController, core::controllers::MovementController>("MovementController", libraryHandle, registry);
+        registerObjectFactory<core::IController, core::controllers::TransformController>("TransformController", libraryHandle, registry);
+        registerObjectFactory<core::IController, core::controllers::ConsoleFlusher>("ConsoleFlusher", libraryHandle, registry);
     }
 }

@@ -4,6 +4,7 @@
 #include "dory/generic/macros.h"
 #include "dory/core/repository.h"
 #include "dory/core/events.h"
+#include "dory/core/services/objectFactory.h"
 
 namespace dory::game
 {
@@ -37,6 +38,13 @@ namespace dory::game
         {
             auto instance = std::make_shared<core::repositories::Repository<TEntity>>();
             registry.set<core::repositories::IRepository<TEntity>>(libraryHandle, instance);
+        }
+
+        template<typename TInterface, typename TImplementation>
+        void registerObjectFactory(const char* name, const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
+        {
+            const auto factory = std::make_shared<core::services::ObjectFactory<TInterface, TImplementation>>(libraryHandle);
+            registry.set<core::services::IObjectFactory<TInterface>>(libraryHandle, factory, core::resources::Name {name});
         }
 
     public:

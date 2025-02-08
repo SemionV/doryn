@@ -3,6 +3,7 @@
 #include <dory/core/services/iObjectFactory.h>
 #include <dory/serialization/yamlSerializer.h>
 #include <dory/serialization/jsonSerializer.h>
+#include <dory/core/services/serializer.h>
 
 namespace dory::core::services
 {
