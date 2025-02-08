@@ -59,6 +59,7 @@ REFL_TYPE(dory::core::resources::scene::configuration::Node)
 REFL_END;
 
 REFL_TYPE(dory::core::resources::scene::configuration::Scene)
+    REFL_FIELD(name)
     REFL_FIELD(assets)
     REFL_FIELD(objects)
     REFL_FIELD(cameras)

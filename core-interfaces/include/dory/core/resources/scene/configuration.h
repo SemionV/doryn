@@ -73,6 +73,7 @@ namespace dory::core::resources::scene::configuration
 
     struct Scene
     {
+        std::string name;
         Assets assets;
         std::unordered_map<std::string, Object> objects {};
         std::unordered_map<std::string, std::string> cameras {};

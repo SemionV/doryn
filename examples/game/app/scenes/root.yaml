@@ -1,3 +1,4 @@
+name: root
 pipeline:
   view-update:
     controller:

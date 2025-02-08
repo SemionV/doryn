@@ -1,3 +1,4 @@
+name: bootstrap
 assets:
   shaders:
     simpleVertexShader:

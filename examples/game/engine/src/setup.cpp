@@ -65,6 +65,7 @@
 #include <dory/core/services/profilingService.h>
 #include <dory/core/services/sceneConfigurationService.h>
 #include <dory/core/services/objectFactory.h>
+#include <dory/core/services/sceneBuilder.h>
 
 namespace dory::game
 {
@@ -159,6 +160,7 @@ namespace dory::game
         registry.set<core::services::IProfilingService>(libraryHandle, std::make_shared<core::services::ProfilingService>(registry));
 
         registry.set<core::services::ISceneConfigurationService>(libraryHandle, std::make_shared<core::services::SceneConfigurationService>(registry));
+        registry.set<core::services::ISceneBuilder>(libraryHandle, std::make_shared<core::services::SceneBuilder>(registry));
 
         auto timeFrameTriggerFactory = std::make_shared<core::services::ObjectFactory<core::ITrigger, core::triggers::TimeFrameTrigger>>(libraryHandle);
         registry.set<core::services::IObjectFactory<core::ITrigger>>(libraryHandle, timeFrameTriggerFactory, std::string { "TimeFrameTrigger" });
