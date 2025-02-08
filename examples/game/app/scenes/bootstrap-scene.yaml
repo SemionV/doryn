@@ -60,29 +60,30 @@ objects:
         acceleration: 0.08
         currentVelocity: 0.2
 pipeline: #implement a separate service, which is getting pipeline configuration as parameter and processes it
-  scene-update-node:
-    trigger:
-      type: TimeFrameTrigger
-      milliseconds: 16.666
-    children:
-      views-update-node:
-        controller:
-          type: ViewController
-      animation-update-node:
-        trigger:
-          type: LogicTrigger
-          flag: true
-        controller:
-          type: AnimationController
-          frames: 24
-  physics-node:
-    parent: scene-update-node
-    trigger:
-      type: TimeFrameTrigger
-      milliseconds: 33.333
-    controller:
-      type: PhysicsController
-      precision: 0.00000000000001
+  nodes:
+    scene-update-node:
+      trigger:
+        type: TimeFrameTrigger
+        milliseconds: 16.666
+      children:
+        views-update-node:
+          controller:
+            type: ViewController
+        animation-update-node:
+          trigger:
+            type: LogicTrigger
+            flag: true
+          controller:
+            type: AnimationController
+            frames: 24
+    physics-node:
+      parent: scene-update-node
+      trigger:
+        type: TimeFrameTrigger
+        milliseconds: 33.333
+      controller:
+        type: PhysicsController
+        precision: 0.00000000000001
 director:
   type: SomeDirector
   someParameter: 23

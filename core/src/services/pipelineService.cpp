@@ -12,6 +12,7 @@ namespace dory::core::services
 {
     using namespace core;
     using namespace resources;
+    using namespace repositories;
 
     PipelineService::PipelineService(Registry& registry):
             _registry(registry)
@@ -23,9 +24,9 @@ namespace dory::core::services
         std::size_t pipelineIndex {};
     };
 
-    void PipelineService::update(resources::DataContext& context, const generic::model::TimeSpan& timeStep)
+    void PipelineService::update(DataContext& context, const generic::model::TimeSpan& timeStep)
     {
-        _registry.get<repositories::IPipelineRepository>([this, &context, &timeStep](repositories::IPipelineRepository* repository){
+        _registry.get<IPipelineRepository>([this, &context, &timeStep](IPipelineRepository* repository){
             auto nodes = repository->getPipelineNodes();
             auto stack = std::vector<QueueItem> { { nullId } }; //put nullId item on top of the tree
             auto nodeUpdates = std::unordered_map<IdType, entities::NodeUpdateCounter>{};
@@ -170,27 +171,23 @@ namespace dory::core::services
         });
     }
 
-    void PipelineService::initialize(resources::DataContext& context)
+    void PipelineService::initialize(DataContext& context)
     {
         _registry.get<events::pipeline::Bundle::IDispatcher>([&context](events::pipeline::Bundle::IDispatcher* dispatcher){
             dispatcher->fire(context, events::pipeline::Initialize{});
         });
     }
 
-    void PipelineService::stop(resources::DataContext& context)
+    void PipelineService::stop(DataContext& context)
     {
-        _registry.get<repositories::IPipelineRepository>([&context](repositories::IPipelineRepository* repository){
-            auto nodes = repository->getPipelineNodes();
-
-            for(auto& node : nodes)
+        _registry.get<IPipelineRepository>([&context](IPipelineRepository* repository){
+            for(auto nodes = repository->getPipelineNodes(); auto& node : nodes)
             {
                 if(node.attachedController)
                 {
-                    auto controllerRef = node.attachedController->lock();
-                    if(controllerRef)
+                    if(auto controllerRef = node.attachedController->lock())
                     {
-                        auto controller = std::static_pointer_cast<IController>(*controllerRef);
-                        if(controller)
+                        if(const auto controller = std::static_pointer_cast<IController>(*controllerRef))
                         {
                             controller->stop(node.id, context);
                         }
@@ -198,5 +195,48 @@ namespace dory::core::services
                 }
             }
         });
+    }
+
+    void PipelineService::buildPipeline(scene::Scene& scene, const scene::configuration::Pipeline& pipeline)
+    {
+        if(auto pipelineRepo = _registry.get<IPipelineRepository>())
+        {
+            using EntryType = std::tuple<const IdType, const std::string*, const scene::configuration::Node*>;
+            auto stack = std::stack<EntryType>{};
+
+            for(const auto& [rootNodeName, rootNode] : pipeline.nodes)
+            {
+                auto parentId = nullId;
+                if(!rootNode.parent.empty())
+                {
+                    if(const auto node = pipelineRepo->getNode(Name{ rootNodeName }))
+                    {
+                        parentId = node->id;
+                    }
+                }
+
+                stack.emplace(parentId, &rootNodeName, &rootNode);
+
+                while(!stack.empty())
+                {
+                    const auto& [parentId, nodeName, node] = stack.top();
+                    stack.pop();
+
+                    auto pipelineNode = entities::PipelineNode {};
+                    pipelineNode.name = *nodeName;
+                    pipelineNode.sceneId = scene.id;
+                    pipelineNode.parentNodeId = parentId;
+
+                    //TODO: setup trigger and controller
+
+                    const auto id = pipelineRepo->addNode(pipelineNode);
+
+                    for(const auto& [childName, childNode] : node->children)
+                    {
+                        stack.emplace(id, &childName, &childNode);
+                    }
+                }
+            }
+        }
     }
 }

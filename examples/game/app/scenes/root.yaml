@@ -1,9 +1,10 @@
 name: root
 pipeline:
-  view-update:
-    controller:
-      type: ViewController
-  animation-update:
-    trigger:
-      type: TimeFrameTrigger
-      milliseconds: 33.33
+  nodes:
+    view-update:
+      controller:
+        type: ViewController
+    animation-update:
+      trigger:
+        type: TimeFrameTrigger
+        milliseconds: 33.33

@@ -4,6 +4,7 @@
 #include <dory/generic/model.h>
 #include <functional>
 #include <dory/generic/extension/resourceHandle.h>
+#include <dory/core/resources/name.h>
 #include <string>
 #include <optional>
 #include <utility>
@@ -34,14 +35,15 @@ namespace dory::core::resources::entities
         std::optional<generic::extension::ResourceHandle<TriggerPointerType>> trigger {};
         std::optional<generic::extension::ResourceHandle<UpdateTriggerType>> triggerFunction {};
         IdType parentNodeId {};
-        std::string name {};
+        Name name {};
         bool skipUpdate {};
+        IdType sceneId {};
 
         PipelineNode() = default;
 
         explicit PipelineNode(const IdType id,
                               const IdType parentNodeId = nullId,
-                              std::string name = ""):
+                              Name name = {}):
                 Entity(id),
                 parentNodeId(parentNodeId),
                 name(std::move(name))
@@ -50,7 +52,7 @@ namespace dory::core::resources::entities
         explicit PipelineNode(const IdType id,
                               generic::extension::ResourceHandle<UpdateTriggerType> triggerFunction,
                               const IdType parentNodeId = nullId,
-                              std::string name = ""):
+                              Name name = {}):
                 Entity(id),
                 triggerFunction(triggerFunction),
                 parentNodeId(parentNodeId),
@@ -59,7 +61,7 @@ namespace dory::core::resources::entities
 
         explicit PipelineNode(generic::extension::ResourceHandle<ControllerPointerType> attachedController,
                               const IdType parentNodeId = nullId,
-                              std::string name = ""):
+                              Name name = {}):
                 attachedController(std::move(attachedController)),
                 parentNodeId(parentNodeId),
                 name(std::move(name))
@@ -68,7 +70,7 @@ namespace dory::core::resources::entities
         explicit PipelineNode(generic::extension::ResourceHandle<ControllerPointerType> attachedController,
                               generic::extension::ResourceHandle<UpdateTriggerType> triggerFunction,
                               const IdType parentNodeId = nullId,
-                              std::string name = ""):
+                              Name name = {}):
                 attachedController(std::move(attachedController)),
                 triggerFunction(triggerFunction),
                 parentNodeId(parentNodeId),
@@ -77,7 +79,7 @@ namespace dory::core::resources::entities
 
         explicit PipelineNode(generic::extension::ResourceHandle<UpdateFunctionType> updateFunction,
                               const IdType parentNodeId = nullId,
-                              std::string name = ""):
+                              Name name = {}):
                 updateFunction(std::move(updateFunction)),
                 parentNodeId(parentNodeId),
                 name(std::move(name))
@@ -86,7 +88,7 @@ namespace dory::core::resources::entities
         explicit PipelineNode(generic::extension::ResourceHandle<UpdateFunctionType> updateFunction,
                               generic::extension::ResourceHandle<UpdateTriggerType> triggerFunction,
                               const IdType parentNodeId = nullId,
-                              std::string name = ""):
+                              Name name = {}):
                 updateFunction(std::move(updateFunction)),
                 triggerFunction(triggerFunction),
                 parentNodeId(parentNodeId),

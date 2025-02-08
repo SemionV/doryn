@@ -71,6 +71,11 @@ namespace dory::core::resources::scene::configuration
         std::unordered_map<std::string, Node> children {};
     };
 
+    struct Pipeline
+    {
+        std::unordered_map<std::string, Node> nodes {};
+    };
+
     struct Scene
     {
         std::string name;
@@ -78,6 +83,6 @@ namespace dory::core::resources::scene::configuration
         std::unordered_map<std::string, Object> objects {};
         std::unordered_map<std::string, std::string> cameras {};
         std::unordered_map<std::string, std::string> lights {};
-        std::unordered_map<std::string, Node> pipeline {};
+        Pipeline pipeline;
     };
 }

@@ -4,6 +4,7 @@
 #include <dory/core/resources/entity.h>
 #include <dory/core/resources/entities/pipelineNode.h>
 #include <dory/generic/baseTypes.h>
+#include <dory/core/resources/name.h>
 
 namespace dory::core::repositories
 {
@@ -21,5 +22,6 @@ namespace dory::core::repositories
         virtual IdType addNode(IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, const EntityType::UpdateFunctionType& updateFunction) = 0;
         virtual IdType addNode(IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, const EntityType::UpdateFunctionType& updateFunction, const EntityType::UpdateTriggerType& updateTrigger) = 0;
         virtual void removeNode(IdType id) = 0;
+        virtual EntityType* getNode(const resources::Name& name) = 0;
     };
 }

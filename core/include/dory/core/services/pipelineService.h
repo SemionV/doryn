@@ -17,8 +17,9 @@ namespace dory::core::services
     public:
         explicit PipelineService(Registry& registry);
 
-        void update(resources::DataContext& context, const generic::model::TimeSpan& timeStep) override;
-        void initialize(resources::DataContext& context) override;
-        void stop(resources::DataContext& context) override;
+        void update(resources::DataContext& context, const generic::model::TimeSpan& timeStep) final;
+        void initialize(resources::DataContext& context) final;
+        void stop(resources::DataContext& context) final;
+        void buildPipeline(resources::scene::Scene& scene, const resources::scene::configuration::Pipeline& pipeline) final;
     };
 }

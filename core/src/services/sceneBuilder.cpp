@@ -20,7 +20,7 @@ namespace dory::core::services
 
         if(sceneRepo && sceneService)
         {
-            auto scene = sceneRepo->insert(Scene{ {}, configuration.name });
+            const auto scene = sceneRepo->insert(Scene{ {}, configuration.name });
             if(!scene)
             {
                 if(logger)
@@ -29,6 +29,11 @@ namespace dory::core::services
                 }
 
                 return nullptr;
+            }
+
+            if(auto pipelineService = _registry.get<IPipelineService>())
+            {
+                pipelineService->buildPipeline(*scene, configuration.pipeline);
             }
 
             return scene;

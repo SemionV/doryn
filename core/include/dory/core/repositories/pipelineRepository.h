@@ -33,5 +33,6 @@ namespace dory::core::repositories
         IdType addNode(IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, const EntityType::UpdateFunctionType& updateFunction) override;
         IdType addNode(IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, const EntityType::UpdateFunctionType& updateFunction, const EntityType::UpdateTriggerType& updateTrigger) override;
         void removeNode(IdType id) override;
+        EntityType* getNode(const resources::Name& name) final;
     };
 }

@@ -29,6 +29,7 @@ public:
     MOCK_METHOD(IdType, addNode, (IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, const EntityType::UpdateFunctionType& updateFunction));
     MOCK_METHOD(IdType, addNode, (IdType parentNode, const generic::extension::LibraryHandle& libraryHandle, const EntityType::UpdateFunctionType& updateFunction, const EntityType::UpdateTriggerType& updateTrigger));
     MOCK_METHOD(void, removeNode, (IdType id));
+    MOCK_METHOD(EntityType*, getNode, (const Name& name));
 };
 
 class ControllerMock final: public IController

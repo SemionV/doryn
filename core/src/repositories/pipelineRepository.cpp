@@ -18,7 +18,7 @@ namespace dory::core::repositories
             std::stack<IdType> tree;
 
             auto it = _nodes.begin();
-            auto end = _nodes.end();
+            const auto end = _nodes.end();
             while (it != end)
             {
                 if(tree.empty())
@@ -48,7 +48,7 @@ namespace dory::core::repositories
                     }
                 }
 
-                it++;
+                ++it;
             }
 
             if(!tree.empty())
@@ -157,5 +157,18 @@ namespace dory::core::repositories
         {
             _nodes.erase(*firstNode, end);
         }
+    }
+
+    PipelineRepository::EntityType* PipelineRepository::getNode(const resources::Name& name)
+    {
+        for(auto& node : _nodes)
+        {
+            if(node.name == name)
+            {
+                return &node;
+            }
+        }
+
+        return nullptr;
     }
 }
