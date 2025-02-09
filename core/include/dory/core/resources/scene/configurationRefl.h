@@ -78,6 +78,7 @@ REFL_TYPE(dory::core::resources::scene::configuration::Scene)
     REFL_FIELD(cameras)
     REFL_FIELD(lights)
     REFL_FIELD(pipeline)
+    REFL_FIELD(directors)
 REFL_END;
 
 REFL_TYPE(dory::core::resources::Duration)

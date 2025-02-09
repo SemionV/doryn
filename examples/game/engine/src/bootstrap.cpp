@@ -1,10 +1,5 @@
 #include <dory/core/registry.h>
 #include "dory/game/bootstrap.h"
-#include <dory/core/controllers/windowSystemController.h>
-#include <dory/core/controllers/accelerationMovementController.h>
-#include <dory/core/controllers/movementController.h>
-#include <dory/core/controllers/transformController.h>
-#include <dory/core/controllers/viewController.h>
 #include <regex>
 #include <thread>
 #include <spdlog/fmt/fmt.h>
@@ -17,7 +12,6 @@ namespace dory::game
     using namespace repositories;
     using namespace services;
     using namespace devices;
-    using namespace controllers;
     using namespace dory::generic::extension;
     using namespace generic::extension;
     using namespace generic::registry;

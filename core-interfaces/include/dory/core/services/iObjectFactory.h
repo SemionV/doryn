@@ -5,7 +5,7 @@
 
 namespace dory::core
 {
-    struct Registry;
+    class Registry;
 }
 
 namespace dory::core::services

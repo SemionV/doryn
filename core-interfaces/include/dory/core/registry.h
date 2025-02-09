@@ -61,6 +61,7 @@
 #include <dory/core/services/iSceneBuilder.h>
 #include <dory/core/services/iSceneConfigurationService.h>
 #include <dory/core/services/iObjectFactory.h>
+#include <dory/core/services/iSceneDirector.h>
 
 namespace dory::core
 {
@@ -141,7 +142,8 @@ namespace dory::core
             generic::registry::ServiceEntry<services::ISceneBuilder>,
             generic::registry::ServiceEntry<services::ISceneConfigurationService>,
             generic::registry::ServiceEntry<services::IObjectFactory<ITrigger>, resources::Name>,
-            generic::registry::ServiceEntry<services::IObjectFactory<IController>, resources::Name>>
+            generic::registry::ServiceEntry<services::IObjectFactory<IController>, resources::Name>,
+            generic::registry::ServiceEntry<services::IObjectFactory<services::ISceneDirector>, resources::Name>>
     {};
 
     template<typename T>

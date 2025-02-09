@@ -7,6 +7,7 @@
 #include <dory/core/resources/scene/components.h>
 #include <dory/core/resources/factory.h>
 #include <dory/core/iController.h>
+#include <dory/core/services/iSceneDirector.h>
 
 namespace dory::core::resources::scene::configuration
 {
@@ -85,5 +86,6 @@ namespace dory::core::resources::scene::configuration
         std::unordered_map<std::string, std::string> cameras {};
         std::unordered_map<std::string, std::string> lights {};
         Pipeline pipeline;
+        std::vector<factory::Instance<services::ISceneDirector>> directors;
     };
 }

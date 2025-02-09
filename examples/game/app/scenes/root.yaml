@@ -31,3 +31,7 @@ pipeline:
       controller: ConsoleFlusher
     pump-window-events:
       controller: WindowSystemController
+directors:
+  - type: AssetLoader
+  - type: RootLogic
+  - type: SceneSelector
