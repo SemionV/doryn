@@ -80,6 +80,7 @@ REFL_TYPE(dory::core::resources::scene::configuration::SceneConfiguration)
     REFL_FIELD(cameras)
     REFL_FIELD(lights)
     REFL_FIELD(pipeline)
+    REFL_FIELD(devices)
     REFL_FIELD(directors)
 REFL_END;
 

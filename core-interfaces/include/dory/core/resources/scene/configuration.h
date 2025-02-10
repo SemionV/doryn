@@ -86,6 +86,7 @@ namespace dory::core::resources::scene::configuration
         std::unordered_map<std::string, std::string> cameras {};
         std::unordered_map<std::string, std::string> lights {};
         Pipeline pipeline;
+        std::vector<factory::Instance<devices::IDevice>> devices;
         std::vector<factory::Instance<services::ISceneDirector>> directors;
     };
 }

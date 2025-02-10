@@ -21,5 +21,6 @@ namespace dory::core::services
         void initialize(resources::DataContext& context) final;
         void stop(resources::DataContext& context) final;
         void buildPipeline(resources::scene::Scene& scene, const resources::scene::configuration::Pipeline& pipeline, resources::DataContext& context) final;
+        void destroyPipeline(resources::scene::Scene& scene, const resources::scene::configuration::Pipeline& pipeline, resources::DataContext& context) final;
     };
 }

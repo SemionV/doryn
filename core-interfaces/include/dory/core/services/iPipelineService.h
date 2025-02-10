@@ -13,5 +13,6 @@ namespace dory::core::services
         virtual void initialize(resources::DataContext& context) = 0;
         virtual void stop(resources::DataContext& context) = 0;
         virtual void buildPipeline(resources::scene::Scene& scene, const resources::scene::configuration::Pipeline& pipeline, resources::DataContext& context) = 0;
+        virtual void destroyPipeline(resources::scene::Scene& scene, const resources::scene::configuration::Pipeline& pipeline, resources::DataContext& context) = 0;
     };
 }

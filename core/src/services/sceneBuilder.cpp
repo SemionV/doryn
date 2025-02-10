@@ -45,6 +45,14 @@ namespace dory::core::services
 
             scene->configurationId = configurationEntity->id;
 
+            for(const auto& [instance, type] : configurationEntity->devices)
+            {
+                if(auto device = instance.lock())
+                {
+                    device->connect(context);
+                }
+            }
+
             if(auto pipelineService = _registry.get<IPipelineService>())
             {
                 pipelineService->buildPipeline(*scene, configurationEntity->pipeline, context);
@@ -62,5 +70,10 @@ namespace dory::core::services
         }
 
         return nullptr;
+    }
+
+    void SceneBuilder::destroy(const Scene& scene, DataContext& context)
+    {
+        //TODO: implement
     }
 }

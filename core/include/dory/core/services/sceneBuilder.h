@@ -16,5 +16,6 @@ namespace dory::core::services
         explicit SceneBuilder(Registry& registry);
 
         resources::scene::Scene* build(const resources::scene::configuration::SceneConfiguration& configuration, resources::DataContext& context) final;
+        void destroy(const resources::scene::Scene& scene, resources::DataContext& context) final;
     };
 }

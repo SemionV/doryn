@@ -276,4 +276,9 @@ namespace dory::core::services
             }
         }
     }
+
+    void PipelineService::destroyPipeline(scene::Scene& scene, const scene::configuration::Pipeline& pipeline, DataContext& context)
+    {
+        //TODO: implement
+    }
 }

@@ -132,11 +132,11 @@ namespace dory::core
             generic::registry::ServiceEntry<services::IViewService>,
             generic::registry::ServiceEntry<services::IWindowService>,
             generic::registry::ServiceEntry<services::IAssetTypeResolver>,
-            generic::registry::ServiceEntry<services::IAssetReloadHandler, std::string>,
+            generic::registry::ServiceEntry<services::IAssetReloadHandler, resources::Name>,
             generic::registry::ServiceEntry<services::ISceneService>,
             generic::registry::ServiceEntry<services::ISceneService, resources::EcsType>,
             generic::registry::ServiceEntry<services::ISceneQueryService, resources::EcsType>,
-            generic::registry::ServiceEntry<services::graphics::IAssetBinder, std::string_view>,
+            generic::registry::ServiceEntry<services::graphics::IAssetBinder, resources::Name>,
             generic::registry::ServiceEntry<services::generators::IMeshGenerator>,
             generic::registry::ServiceEntry<services::IImageStreamService>,
             generic::registry::ServiceEntry<services::files::IImageFileService, resources::AssetFileFormat>,
@@ -145,6 +145,7 @@ namespace dory::core
             generic::registry::ServiceEntry<services::ISceneConfigurationService>,
             generic::registry::ServiceEntry<services::IObjectFactory<ITrigger>, resources::Name>,
             generic::registry::ServiceEntry<services::IObjectFactory<IController>, resources::Name>,
+            generic::registry::ServiceEntry<services::IObjectFactory<devices::IDevice>, resources::Name>,
             generic::registry::ServiceEntry<services::IObjectFactory<services::ISceneDirector>, resources::Name>>
     {};
 

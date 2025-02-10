@@ -30,7 +30,7 @@ namespace dory::core::services::scene::directors
         });
     }
 
-    void ConfigurationLoader::destroy(Scene& scene, DataContext& context)
+    void ConfigurationLoader::destroy(Scene& scene, SceneConfiguration& sceneConfig, DataContext& context)
     {
     }
 }

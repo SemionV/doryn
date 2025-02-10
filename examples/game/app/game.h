@@ -219,14 +219,14 @@ namespace dory::game
                 materialId = material->id;
                 materialRepo->setName(materialId, "wireframe");
 
-                auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::shader);
+                auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::Name{ core::resources::AssetTypeName::shader });
                 if(assetBinder)
                 {
                     assetBinder->bind(vertexShaderId, *graphicalContext);
                     assetBinder->bind(fragmentShaderId, *graphicalContext);
                 }
 
-                assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::material);
+                assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::Name{ core::resources::AssetTypeName::material });
                 if(assetBinder)
                 {
                     assetBinder->bind(materialId, *graphicalContext);
@@ -254,14 +254,14 @@ namespace dory::game
                 materialGouraudId = material->id;
                 materialRepo->setName(materialGouraudId, "gouraud");
 
-                auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::shader);
+                auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::Name{ core::resources::AssetTypeName::shader });
                 if(assetBinder)
                 {
                     assetBinder->bind(vertexShaderId, *graphicalContext);
                     assetBinder->bind(fragmentShaderId, *graphicalContext);
                 }
 
-                assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::material);
+                assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::Name{ core::resources::AssetTypeName::material });
                 if(assetBinder)
                 {
                     assetBinder->bind(materialGouraudId, *graphicalContext);
@@ -278,7 +278,7 @@ namespace dory::game
                 mesh->colors.componentsCount = 4;
                 mesh->colors.components = {1.f,0.f,0.f,1.f, 0.f,1.f,0.f,1.f, 0.f,0.f,1.f,1.f};
 
-                auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::mesh);
+                auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::Name{ core::resources::AssetTypeName::mesh });
                 if(assetBinder)
                 {
                     windowService->setCurrentWindow(*window);
@@ -302,7 +302,7 @@ namespace dory::game
                 meshRepo->setName(meshPoint->id, "point");
                 meshGenerator->rectangle(0.1f, 0.1f, *meshPoint);
 
-                auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::AssetTypeName::mesh);
+                auto assetBinder = _registry.get<core::services::graphics::IAssetBinder>(core::resources::Name{ core::resources::AssetTypeName::mesh });
                 if(assetBinder)
                 {
                     windowService->setCurrentWindow(*window);

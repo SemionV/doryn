@@ -141,9 +141,9 @@ namespace dory::game
         registry.set<core::services::IViewService>(libraryHandle, std::make_shared<core::services::ViewService>(registry));
 
         registry.set<core::services::graphics::IRenderer>(libraryHandle, std::make_shared<core::services::graphics::Renderer>(registry));
-        registry.set<core::services::graphics::IAssetBinder>(libraryHandle, std::make_shared<core::services::graphics::MeshAssetBinder>(registry), core::resources::AssetTypeName::mesh);
-        registry.set<core::services::graphics::IAssetBinder>(libraryHandle, std::make_shared<core::services::graphics::MaterialAssetBinder>(registry), core::resources::AssetTypeName::material);
-        registry.set<core::services::graphics::IAssetBinder>(libraryHandle, std::make_shared<core::services::graphics::ShaderAssetBinder>(registry), core::resources::AssetTypeName::shader);
+        registry.set<core::services::graphics::IAssetBinder>(libraryHandle, std::make_shared<core::services::graphics::MeshAssetBinder>(registry), core::resources::Name{ core::resources::AssetTypeName::mesh });
+        registry.set<core::services::graphics::IAssetBinder>(libraryHandle, std::make_shared<core::services::graphics::MaterialAssetBinder>(registry), core::resources::Name{ core::resources::AssetTypeName::material });
+        registry.set<core::services::graphics::IAssetBinder>(libraryHandle, std::make_shared<core::services::graphics::ShaderAssetBinder>(registry), core::resources::Name{ core::resources::AssetTypeName::shader });
 
         registry.set<core::services::IAssetTypeResolver>(libraryHandle, std::make_shared<core::services::AssetTypeResolver>());
         registry.set<core::services::IAssetReloadHandler>(libraryHandle, std::make_shared<core::services::loaders::ExtensionLoader>(registry), std::string{core::resources::AssetTypeName::extension});

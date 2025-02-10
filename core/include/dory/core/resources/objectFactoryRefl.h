@@ -14,3 +14,7 @@ REFL_END
 REFL_TYPE(dory::core::resources::factory::Instance<dory::core::services::ISceneDirector>)
         REFL_FIELD(type)
 REFL_END
+
+REFL_TYPE(dory::core::resources::factory::Instance<dory::core::devices::IDevice>)
+        REFL_FIELD(type)
+REFL_END

@@ -36,6 +36,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     bootLoggerConfig.rotationLogger = dory::core::resources::configuration::RotationLogSink{"logs/boot.log"};
     bootLoggerConfig.stdoutLogger = dory::core::resources::configuration::StdoutLogSink{};
 
+    dory::core::resources::scene::Scene* rootScene;
+
     if(auto sceneConfigurationService = registry.get<dory::core::services::ISceneConfigurationService>())
     {
         dory::core::resources::scene::configuration::SceneConfiguration sceneConfig;
@@ -43,7 +45,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 
         if(auto sceneBuilder = registry.get<dory::core::services::ISceneBuilder>())
         {
-            auto* scene = sceneBuilder->build(sceneConfig, context);
+            rootScene = sceneBuilder->build(sceneConfig, context);
         }
     }
 
@@ -52,6 +54,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 
     auto game = dory::game::Game{ registry };
     game.initialize(staticLibraryHandle, context);
+
+    if(rootScene)
+    {
+        if(auto sceneBuilder = registry.get<dory::core::services::ISceneBuilder>())
+        {
+            sceneBuilder->destroy(*rootScene, context);
+        }
+    }
 
     bootstrap.run(context);
     bootstrap.cleanup(context);

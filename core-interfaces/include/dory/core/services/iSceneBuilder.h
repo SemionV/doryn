@@ -10,5 +10,6 @@ namespace dory::core::services
     {
     public:
         virtual resources::scene::Scene* build(const resources::scene::configuration::SceneConfiguration& configuration, resources::DataContext& context) = 0;
+        virtual void destroy(const resources::scene::Scene& scene, resources::DataContext& context) = 0;
     };
 }

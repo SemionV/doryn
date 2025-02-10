@@ -11,6 +11,6 @@ namespace dory::core::services::scene::directors
         explicit ConfigurationLoader(Registry& registry);
 
         void initialize(resources::scene::Scene& scene, resources::scene::configuration::SceneConfiguration& sceneConfig, resources::DataContext& context) final;
-        void destroy(resources::scene::Scene& scene, resources::DataContext& context) final;
+        void destroy(resources::scene::Scene& scene, resources::scene::configuration::SceneConfiguration& sceneConfig, resources::DataContext& context) final;
     };
 }
