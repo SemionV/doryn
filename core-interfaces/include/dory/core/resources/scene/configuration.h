@@ -78,7 +78,7 @@ namespace dory::core::resources::scene::configuration
         std::unordered_map<std::string, Node> nodes {};
     };
 
-    struct SceneConfiguration
+    struct SceneConfiguration: Entity<>
     {
         std::string name;
         Assets assets;

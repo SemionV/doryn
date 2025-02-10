@@ -15,10 +15,11 @@ namespace dory::core::services
     Scene* SceneBuilder::build(const scene::configuration::SceneConfiguration& configuration, DataContext& context)
     {
         auto sceneRepo = _registry.get<ISceneRepository>();
+        auto sceneConfigRepo = _registry.get<ISceneConfigurationRepository>();
         auto sceneService = _registry.get<ISceneService>();
         auto logger = _registry.get<ILogService>();
 
-        if(sceneRepo && sceneService)
+        if(sceneRepo && sceneConfigRepo && sceneService)
         {
             const auto scene = sceneRepo->insert(Scene{ {}, configuration.name });
             if(!scene)
@@ -31,9 +32,30 @@ namespace dory::core::services
                 return nullptr;
             }
 
+            auto configurationEntity = sceneConfigRepo->insert(configuration);
+            if(!configurationEntity)
+            {
+                if(logger)
+                {
+                    logger->error(fmt::format("Cannot insert scene configuration to SceneConfigurationRepository"));
+                }
+
+                return nullptr;
+            }
+
+            scene->configurationId = configurationEntity->id;
+
             if(auto pipelineService = _registry.get<IPipelineService>())
             {
-                pipelineService->buildPipeline(*scene, configuration.pipeline, context);
+                pipelineService->buildPipeline(*scene, configurationEntity->pipeline, context);
+            }
+
+            for(const auto& [instance, type] : configurationEntity->directors)
+            {
+                if(auto director = instance.lock())
+                {
+                    director->initialize(*scene, *configurationEntity, context);
+                }
             }
 
             return scene;

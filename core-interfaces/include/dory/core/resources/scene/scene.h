@@ -4,9 +4,14 @@
 #include "../ecsType.h"
 #include "../objects/transform.h"
 #include "../entities/view.h"
-#include "components.h"
 #include <string>
+#include <memory>
 #include <unordered_map>
+
+namespace dory::core::resources::scene::configuration
+{
+    struct SceneConfiguration;
+}
 
 namespace dory::core::resources::scene
 {
@@ -14,6 +19,7 @@ namespace dory::core::resources::scene
     {
         std::string name {};
         EcsType ecsType {};
+        IdType configurationId;
     };
 
     struct VisibleObject

@@ -34,6 +34,7 @@
 #include <dory/core/repositories/iImageStreamRepository.h>
 #include <dory/core/repositories/iRepository.h>
 #include <dory/core/repositories/iPipelineRepository.h>
+#include <dory/core/repositories/iSceneConfigurationRepository.h>
 
 #include <dory/core/services/iSerializer.h>
 #include <dory/core/services/iDataFormatResolver.h>
@@ -112,6 +113,7 @@ namespace dory::core
             generic::registry::ServiceEntry<repositories::bindings::IBufferBindingRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::bindings::IShaderBindingRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::bindings::IMaterialBindingRepository, resources::GraphicalSystem>,
+            generic::registry::ServiceEntry<repositories::ISceneConfigurationRepository>,
             /*Services*/
             generic::registry::ServiceEntry<services::ILibraryService>,
             generic::registry::ServiceEntry<services::IFileService>,

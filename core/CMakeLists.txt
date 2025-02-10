@@ -45,6 +45,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/profilingService.cpp
         src/services/sceneConfigurationService.cpp
         src/services/sceneBuilder.cpp
+        src/services/scene/directors/assetLoader.cpp
         src/controllers/windowSystemController.cpp
         src/controllers/viewController.cpp
         src/controllers/movementController.cpp

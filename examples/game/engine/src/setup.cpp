@@ -37,6 +37,7 @@
 #include <dory/core/repositories/bindings/shaderBindingRepository.h>
 #include <dory/core/repositories/bindings/materialBindingRepository.h>
 #include <dory/core/repositories/enttSceneRepository.h>
+#include <dory/core/repositories/sceneConfigurationRepository.h>
 
 #include <dory/core/services/fileService.h>
 #include <dory/core/services/libraryService.h>
@@ -66,6 +67,7 @@
 #include <dory/core/services/sceneConfigurationService.h>
 #include <dory/core/services/objectFactory.h>
 #include <dory/core/services/sceneBuilder.h>
+#include <dory/core/services/scene/directors/assetLoader.h>
 
 namespace dory::game
 {
@@ -108,6 +110,7 @@ namespace dory::game
         registry.set<core::repositories::bindings::IBufferBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::BufferBindingRepository>());
         registry.set<core::repositories::bindings::IShaderBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::ShaderBindingRepository>());
         registry.set<core::repositories::bindings::IMaterialBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::MaterialBindingRepository>());
+        registry.set<core::repositories::ISceneConfigurationRepository>(libraryHandle, std::make_shared<core::repositories::SceneConfigurationRepository>());
 
         registry.set<core::repositories::IShaderRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::ShaderRepository>());
         registry.set<core::repositories::IShaderProgramRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::ShaderProgramRepository>());
@@ -174,5 +177,7 @@ namespace dory::game
         registerObjectFactory<core::IController, core::controllers::TransformController>("TransformController", libraryHandle, registry);
         registerObjectFactory<core::IController, core::controllers::ConsoleFlusher>("ConsoleFlusher", libraryHandle, registry);
         registerObjectFactory<core::IController, core::controllers::WindowSystemController>("WindowSystemController", libraryHandle, registry);
+
+        registerObjectFactory<core::services::ISceneDirector, core::services::scene::directors::AssetLoader>("AssetLoader", libraryHandle, registry);
     }
 }

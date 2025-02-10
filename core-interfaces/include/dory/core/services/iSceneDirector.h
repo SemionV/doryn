@@ -13,7 +13,7 @@ namespace dory::core::services
     class ISceneDirector: generic::Interface
     {
     public:
-        virtual void initialize(resources::scene::Scene& scene, resources::DataContext& context) = 0;
+        virtual void initialize(resources::scene::Scene& scene, resources::scene::configuration::SceneConfiguration& sceneConfig, resources::DataContext& context) = 0;
         virtual void destroy(resources::scene::Scene& scene, resources::DataContext& context) = 0;
     };
 }
