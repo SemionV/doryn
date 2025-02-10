@@ -12,7 +12,7 @@ namespace dory::core::services
         DependencyResolver(registry)
     {}
 
-    Scene* SceneBuilder::build(const scene::configuration::Scene& configuration, DataContext& context)
+    Scene* SceneBuilder::build(const scene::configuration::SceneConfiguration& configuration, DataContext& context)
     {
         auto sceneRepo = _registry.get<ISceneRepository>();
         auto sceneService = _registry.get<ISceneService>();

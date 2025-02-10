@@ -46,7 +46,7 @@ namespace dory::core::services::serialization
             resources::configuration::Configuration,
             resources::configuration::Interface,
             resources::Localization,
-            resources::scene::configuration::Scene>;
+            resources::scene::configuration::SceneConfiguration>;
 
     using ISerializer = ISerializerBundle<SerializationTypes>;
 }

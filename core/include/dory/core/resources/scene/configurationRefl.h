@@ -71,7 +71,7 @@ REFL_TYPE(dory::core::resources::scene::configuration::Pipeline)
     REFL_FIELD(nodes)
 REFL_END;
 
-REFL_TYPE(dory::core::resources::scene::configuration::Scene)
+REFL_TYPE(dory::core::resources::scene::configuration::SceneConfiguration)
     REFL_FIELD(name)
     REFL_FIELD(assets)
     REFL_FIELD(objects)

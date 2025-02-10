@@ -15,6 +15,6 @@ namespace dory::core::services
     public:
         explicit SceneBuilder(Registry& registry);
 
-        resources::scene::Scene* build(const resources::scene::configuration::Scene& configuration, resources::DataContext& context) final;
+        resources::scene::Scene* build(const resources::scene::configuration::SceneConfiguration& configuration, resources::DataContext& context) final;
     };
 }

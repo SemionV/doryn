@@ -10,7 +10,7 @@ namespace dory::core::services
     SceneConfigurationService::SceneConfigurationService(Registry& registry): DependencyResolver(registry)
     {}
 
-    void SceneConfigurationService::load(const std::filesystem::path& filename, scene::configuration::Scene& configuration, DataContext& dataContext)
+    void SceneConfigurationService::load(const std::filesystem::path& filename, scene::configuration::SceneConfiguration& configuration, DataContext& dataContext)
     {
         auto fileService = _registry.get<IFileService>();
         auto dataFormatResolver = _registry.get<IDataFormatResolver>();
@@ -42,7 +42,7 @@ namespace dory::core::services
         }
     }
 
-    void SceneConfigurationService::save(const std::filesystem::path& filename, const scene::configuration::Scene& configuration, DataContext& dataContext)
+    void SceneConfigurationService::save(const std::filesystem::path& filename, const scene::configuration::SceneConfiguration& configuration, DataContext& dataContext)
     {
         auto fileService = _registry.get<IFileService>();
         auto dataFormatResolver = _registry.get<IDataFormatResolver>();

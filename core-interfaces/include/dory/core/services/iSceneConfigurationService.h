@@ -9,7 +9,7 @@ namespace dory::core::services
     class ISceneConfigurationService: public generic::Interface
     {
     public:
-        virtual void load(const std::filesystem::path& filename, resources::scene::configuration::Scene& configuration, resources::DataContext& dataContext) = 0;
-        virtual void save(const std::filesystem::path& filename, const resources::scene::configuration::Scene& configuration, resources::DataContext& dataContext) = 0;
+        virtual void load(const std::filesystem::path& filename, resources::scene::configuration::SceneConfiguration& configuration, resources::DataContext& dataContext) = 0;
+        virtual void save(const std::filesystem::path& filename, const resources::scene::configuration::SceneConfiguration& configuration, resources::DataContext& dataContext) = 0;
     };
 }
