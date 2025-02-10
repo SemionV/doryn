@@ -43,8 +43,22 @@ namespace dory::game
         template<typename TInterface, typename TImplementation>
         void registerObjectFactory(const char* name, const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
         {
-            const auto factory = std::make_shared<core::services::ObjectFactory<TInterface, TImplementation>>(libraryHandle);
-            registry.set<core::services::IObjectFactory<TInterface>>(libraryHandle, factory, core::resources::Name {name});
+            const auto factory = std::make_shared<core::services::ObjectFactory<TInterface, TImplementation>>(libraryHandle, registry);
+            registry.set<core::services::IObjectFactory<TInterface>>(libraryHandle, factory, core::resources::Name{ name });
+        }
+
+        template<typename TInterface, typename TInstanceInterface>
+        void registerSingletonObjectFactory(const char* name, const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
+        {
+            const auto factory = std::make_shared<core::services::SingletonObjectFactory<TInterface, TInstanceInterface>>(registry);
+            registry.set<core::services::IObjectFactory<TInterface>>(libraryHandle, factory, core::resources::Name{ name });
+        }
+
+        template<typename TInterface, typename TInstanceInterface, auto Identifier>
+        void registerSingletonObjectFactory(const char* name, const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
+        {
+            const auto factory = std::make_shared<core::services::SingletonIdentifierObjectFactory<TInterface, TInstanceInterface, Identifier>>(registry);
+            registry.set<core::services::IObjectFactory<TInterface>>(libraryHandle, factory, core::resources::Name{ name });
         }
 
     public:

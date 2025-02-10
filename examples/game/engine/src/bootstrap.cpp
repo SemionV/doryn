@@ -22,7 +22,6 @@ namespace dory::game
 
     bool Bootstrap::initialize(const LibraryHandle& libraryHandle, DataContext& context)
     {
-        connectDevices(libraryHandle, context);
         loadExtensions(libraryHandle, context);
         attachEventHandlers(libraryHandle, context);
         attachScrips(libraryHandle, context);
@@ -65,53 +64,6 @@ namespace dory::game
                     deviceRef->disconnect(context);
                 }
             }
-        });
-    }
-
-    void connectDeviceGroup(DataContext& context, const auto& devices)
-    {
-        for(const auto& [key, value] : devices)
-        {
-            auto deviceRef = value.lock();
-            if(deviceRef)
-            {
-                deviceRef->connect(context);
-            }
-        }
-    }
-
-    void Bootstrap::connectDevices(const LibraryHandle& libraryHandle, DataContext& context)
-    {
-        _registry.get<
-                Service<ILogService, Logger::App>,
-                Service<IStandardIODevice>,
-                Service<ITerminalDevice>,
-                Service<IImageStreamDevice>,
-                Service<IFileWatcherDevice>>(
-        [&context](
-            ILogService* logger,
-            IStandardIODevice* ioDevice,
-            ITerminalDevice* terminalDevice,
-            IImageStreamDevice* imageStreamDevice,
-            IFileWatcherDevice* fileWatcherDevice)
-        {
-            logger->information(fmt::format("Dory Game, {0}.{1}, {2}",
-                                            context.configuration.buildInfo.version,
-                                            context.configuration.buildInfo.commitSHA,
-                                            context.configuration.buildInfo.timestamp));
-
-            ioDevice->connect(context);
-            terminalDevice->connect(context);
-            fileWatcherDevice->connect(context);
-            imageStreamDevice->connect(context);
-        });
-
-        _registry.getAll<IWindowSystemDevice, WindowSystem>([&context](const auto& devices) {
-            connectDeviceGroup(context, devices);
-        });
-
-        _registry.getAll<IGpuDevice, GraphicalSystem>([&context](const auto& devices) {
-            connectDeviceGroup(context, devices);
         });
     }
 

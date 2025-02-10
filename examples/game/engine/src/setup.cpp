@@ -65,7 +65,6 @@
 #include <dory/core/services/files/imageFileService.h>
 #include <dory/core/services/profilingService.h>
 #include <dory/core/services/sceneConfigurationService.h>
-#include <dory/core/services/objectFactory.h>
 #include <dory/core/services/sceneBuilder.h>
 #include <dory/core/services/scene/directors/assetLoader.h>
 
@@ -83,11 +82,22 @@ namespace dory::game
         registerEventBufferBundle<core::events::scene::Bundle>(libraryHandle, registry);
 
         registry.set<core::devices::IStandardIODevice>(libraryHandle, std::make_shared<core::devices::StandardIODevice>(registry));
+        registerSingletonObjectFactory<core::devices::IDevice, core::devices::IStandardIODevice>("StandardIODevice", libraryHandle, registry);
+
         registry.set<core::devices::ITerminalDevice>(libraryHandle, std::make_shared<core::devices::TerminalDevice>(registry));
+        registerSingletonObjectFactory<core::devices::IDevice, core::devices::ITerminalDevice>("TerminalDevice", libraryHandle, registry);
+
         registry.set<core::devices::IWindowSystemDevice, core::resources::WindowSystem::glfw>(libraryHandle, std::make_shared<core::devices::GlfwWindowSystemDevice>(registry));
+        registerSingletonObjectFactory<core::devices::IDevice, core::devices::IWindowSystemDevice, core::resources::WindowSystem::glfw>("GlfwWindowSystemDevice", libraryHandle, registry);
+
         registry.set<core::devices::IFileWatcherDevice>(libraryHandle, std::make_shared<core::devices::FileWatcherDevice>(registry));
+        registerSingletonObjectFactory<core::devices::IDevice, core::devices::IFileWatcherDevice>("FileWatcherDevice", libraryHandle, registry);
+
         registry.set<core::devices::IGpuDevice, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::devices::OpenglGpuDevice>(registry));
+        registerSingletonObjectFactory<core::devices::IDevice, core::devices::IGpuDevice, core::resources::GraphicalSystem::opengl>("OpenglGpuDevice", libraryHandle, registry);
+
         registry.set<core::devices::IImageStreamDevice>(libraryHandle, std::make_shared<core::devices::ImageStreamDevice>(registry));
+        registerSingletonObjectFactory<core::devices::IDevice, core::devices::IImageStreamDevice>("ImageStreamDevice", libraryHandle, registry);
 
         registry.set<core::repositories::IImageStreamRepository>(libraryHandle, std::make_shared<core::repositories::ImageStreamRepository>());
         registry.set<core::repositories::IViewRepository>(libraryHandle, std::make_shared<core::repositories::ViewRepository>());

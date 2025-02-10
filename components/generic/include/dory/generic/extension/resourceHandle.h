@@ -21,6 +21,12 @@ namespace dory::generic::extension
                 _resource(resource)
         {}
 
+        template<typename TResourceParentType>
+        ResourceHandle<TResourceParentType> clone()
+        {
+            return ResourceHandle<TResourceParentType>{ _library, _resource };
+        }
+
         ResourceRef<TResource> lock() const
         {
             if(_library.isStatic())

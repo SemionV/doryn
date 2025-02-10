@@ -81,6 +81,16 @@ namespace dory::generic::registry
             RegistrationEntryRoot<TServiceInterface>::invoke(resourceRef, std::forward<A>(action));
         }
 
+        auto _getHandle(const TIdentifier& identifier)
+        {
+            if(_serviceHandles.contains(identifier))
+            {
+                return _serviceHandles[identifier];
+            }
+
+            return extension::ResourceHandle<typename RegistrationEntryRoot<TServiceInterface>::ServicePtrType>{extension::LibraryHandle{}, nullptr};
+        }
+
         template<typename A>
         requires(std::is_invocable_v<A, const HandlesMapType&>)
         void _getAll(A&& action)
@@ -119,6 +129,11 @@ namespace dory::generic::registry
         auto _get(const ServiceIdentifier& identifier)
         {
             return _get();
+        }
+
+        auto _getHandle()
+        {
+            return _serviceHandle;
         }
 
         template<typename A>
@@ -184,6 +199,18 @@ namespace dory::generic::registry
         auto get()
         {
             return this->RegistrationEntry<TService, ServiceIdentifier>::_get();
+        }
+
+        template<typename TService>
+        auto getHandle()
+        {
+            return this->RegistrationEntry<TService, ServiceIdentifier>::_getHandle();
+        }
+
+        template<typename TService, auto identifier>
+        auto getHandle()
+        {
+            return this->RegistrationEntry<TService, decltype(identifier)>::_getHandle(identifier);
         }
 
         template<typename TService, auto identifier>

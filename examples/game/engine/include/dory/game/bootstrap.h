@@ -19,9 +19,6 @@ namespace dory::game
         core::Registry& _registry;
 
         void attachEventHandlers(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
-        void connectDevices(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
-        void buildPipeline(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
-        void buildPipeline2(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
         void attachScrips(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
         void loadExtensions(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
 

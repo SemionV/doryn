@@ -1,4 +1,11 @@
 name: root
+devices:
+  - type: StandardIODevice
+  - type: TerminalDevice
+  - type: GlfwWindowSystemDevice
+  - type: FileWatcherDevice
+  - type: OpenglGpuDevice
+  - type: ImageStreamDevice
 pipeline:
   nodes:
     events:

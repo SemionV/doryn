@@ -246,7 +246,7 @@ namespace dory::core::services
                     {
                         if(auto factory = _registry.get<IObjectFactory<IController>>(Name{ node->controller }))
                         {
-                            pipelineNode.controller = factory->createNewInstance(_registry);
+                            pipelineNode.controller = factory->createObject(nullptr);
                         }
                     }
 

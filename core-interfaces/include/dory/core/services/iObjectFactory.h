@@ -16,7 +16,6 @@ namespace dory::core::services
     public:
         using SerializationContextPoliciesType = generic::serialization::ContextPolicies<Registry, resources::DataContext, resources::DataFormat>;
 
-        virtual generic::extension::ResourceHandle<std::shared_ptr<T>> createInstance(generic::serialization::Context<SerializationContextPoliciesType>& context) = 0;
-        virtual generic::extension::ResourceHandle<std::shared_ptr<T>> createNewInstance(Registry& registry) = 0;
+        virtual generic::extension::ResourceHandle<std::shared_ptr<T>> createObject(generic::serialization::Context<SerializationContextPoliciesType>* context) = 0;
     };
 }

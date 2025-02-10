@@ -94,7 +94,7 @@ namespace dory::core::services::serialization
 
             if(auto factory = context.registry.template get<IObjectFactory<TInstance>>(factoryInstance.type))
             {
-                factoryInstance.instance = factory->createInstance(context);
+                factoryInstance.instance = factory->createObject(&context);
             }
         }
 

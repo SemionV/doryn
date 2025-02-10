@@ -76,6 +76,14 @@ namespace dory::game
 
         bool initialize(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
         {
+            if(auto logger = _registry.get<core::services::ILogService>())
+            {
+                logger->information(fmt::format("Dory Game, {0}.{1}, {2}",
+                                            context.configuration.buildInfo.version,
+                                            context.configuration.buildInfo.commitSHA,
+                                            context.configuration.buildInfo.timestamp));
+            }
+
             core::resources::entities::GraphicalContext* graphicalContext = nullptr;
             _registry.get<core::repositories::IGraphicalContextRepository>([&graphicalContext](auto* graphicalContextRepository) {
                 graphicalContext = graphicalContextRepository->insert(core::resources::entities::GraphicalContext{ {}, core::resources::GraphicalSystem::opengl });

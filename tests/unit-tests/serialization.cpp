@@ -494,8 +494,7 @@ class ObjectFactoryMock final : public dory::core::services::IObjectFactory<T>
 {
 public:
     using SerializationContextType = dory::generic::serialization::Context<dory::core::services::serialization::SerializationContextPoliciesType>;
-    MOCK_METHOD(dory::generic::extension::ResourceHandle<std::shared_ptr<T>>, createInstance, (SerializationContextType& context), (final));
-    MOCK_METHOD(dory::generic::extension::ResourceHandle<std::shared_ptr<T>>, createNewInstance, (dory::core::Registry& registry), (final));
+    MOCK_METHOD(dory::generic::extension::ResourceHandle<std::shared_ptr<T>>, createObject, (SerializationContextType* context), (final));
 };
 
 TEST(ObjectFactory, createInstanceFromYaml)
@@ -519,14 +518,14 @@ controller:
     registry.set<dory::core::services::IObjectFactory<dory::core::IController>>(libraryHandle, controllerFactory, std::string { "SomeController" });
 
     using SerializationContextType = ObjectFactoryMock<dory::core::IController>::SerializationContextType;
-    const auto serializationContextMatcher = Truly([&](SerializationContextType& serializationContext) {
-        const auto& yamlDeserializationContext = static_cast<dory::serialization::yaml::YamlContext<dory::core::services::serialization::SerializationContextPoliciesType>&>(serializationContext);
-        const auto current = yamlDeserializationContext.node;
+    const auto serializationContextMatcher = Truly([&](SerializationContextType* serializationContext) {
+        const auto yamlDeserializationContext = static_cast<dory::serialization::yaml::YamlContext<dory::core::services::serialization::SerializationContextPoliciesType>*>(serializationContext);
+        const auto current = yamlDeserializationContext->node;
         const bool yamlContextIsCorrect = current.is_map() && current.has_child("parameter") && current.has_child("type");
 
-        return yamlContextIsCorrect && &serializationContext.registry == &registry && &serializationContext.dataContext == &context;
+        return yamlContextIsCorrect && &serializationContext->registry == &registry && &serializationContext->dataContext == &context;
     });
-    EXPECT_CALL(*controllerFactory, createInstance(serializationContextMatcher)).WillOnce(Return(someControllerHandle));
+    EXPECT_CALL(*controllerFactory, createObject(serializationContextMatcher)).WillOnce(Return(someControllerHandle));
 
     auto contextBase = dory::generic::serialization::Context<dory::core::services::serialization::SerializationContextPoliciesType>{ registry, context, dory::core::resources::DataFormat::yaml };
     auto [controller] = dory::serialization::yaml::deserialize<PipelineNode, dory::core::services::serialization::SerializationContextPoliciesType,
