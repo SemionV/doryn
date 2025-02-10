@@ -32,6 +32,5 @@ pipeline:
     pump-window-events:
       controller: WindowSystemController
 directors:
+  - type: ConfigurationLoader
   - type: AssetLoader
-  - type: RootLogic
-  - type: SceneSelector

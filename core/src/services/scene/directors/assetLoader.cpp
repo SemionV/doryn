@@ -13,6 +13,7 @@ namespace dory::core::services::scene::directors
 
     void AssetLoader::initialize(Scene& scene, SceneConfiguration& sceneConfig, DataContext& context)
     {
+        
     }
 
     void AssetLoader::destroy(Scene& scene, DataContext& context)

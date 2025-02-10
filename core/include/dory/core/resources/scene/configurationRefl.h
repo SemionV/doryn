@@ -13,6 +13,7 @@
 #include <dory/core/controllers/consoleFlusher.h>
 #include <dory/core/controllers/windowSystemController.h>
 #include <dory/core/services/scene/directors/assetLoader.h>
+#include <dory/core/services/scene/directors/configurationLoader.h>
 #include <dory/core/resources/scene/configuration.h>
 
 REFL_TYPE(dory::core::resources::scene::configuration::Shader)
@@ -126,4 +127,7 @@ REFL_TYPE(dory::core::controllers::WindowSystemController)
 REFL_END;
 
 REFL_TYPE(dory::core::services::scene::directors::AssetLoader)
+REFL_END;
+
+REFL_TYPE(dory::core::services::scene::directors::ConfigurationLoader)
 REFL_END;
