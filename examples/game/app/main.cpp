@@ -55,6 +55,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     auto game = dory::game::Game{ registry };
     game.initialize(staticLibraryHandle, context);
 
+    bootstrap.run(context);
+
     if(rootScene)
     {
         if(auto sceneBuilder = registry.get<dory::core::services::ISceneBuilder>())
@@ -63,7 +65,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
         }
     }
 
-    bootstrap.run(context);
     bootstrap.cleanup(context);
 
     return 0;

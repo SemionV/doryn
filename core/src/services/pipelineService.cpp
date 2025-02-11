@@ -197,7 +197,7 @@ namespace dory::core::services
         });
     }
 
-    void PipelineService::buildPipeline(scene::Scene& scene, const scene::configuration::Pipeline& pipeline, DataContext& context)
+    void PipelineService::buildPipeline(const scene::Scene& scene, const scene::configuration::Pipeline& pipeline, DataContext& context)
     {
         auto logger = _registry.get<ILogService>();
 
@@ -277,7 +277,7 @@ namespace dory::core::services
         }
     }
 
-    void PipelineService::destroyPipeline(scene::Scene& scene, const scene::configuration::Pipeline& pipeline, DataContext& context)
+    void PipelineService::destroyPipeline(const scene::Scene& scene, const scene::configuration::Pipeline& pipeline, DataContext& context)
     {
         //TODO: implement
     }

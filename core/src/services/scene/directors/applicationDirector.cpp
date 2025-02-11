@@ -38,6 +38,15 @@ namespace dory::core::services::scene::directors
 
     void ApplicationDirector::destroy(Scene& scene, SceneConfiguration& sceneConfig, DataContext& context)
     {
+        if(auto terminalDevice = _registry.get<devices::ITerminalDevice>())
+        {
+            terminalDevice->exitCommandMode();
+        }
+
+        if(auto logger = _registry.get<ILogService>())
+        {
+            logger->information(std::string_view{ "Cleanup..." });
+        }
     }
 
     void ApplicationDirector::onApplicationExit(DataContext& context, const events::application::Exit& eventData) const

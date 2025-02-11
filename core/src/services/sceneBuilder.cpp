@@ -1,6 +1,7 @@
 #include <dory/core/registry.h>
 #include <dory/core/services/sceneBuilder.h>
 #include <spdlog/fmt/fmt.h>
+#include <stack>
 
 namespace dory::core::services
 {
@@ -80,8 +81,84 @@ namespace dory::core::services
         return nullptr;
     }
 
-    void SceneBuilder::destroy(const Scene& scene, DataContext& context)
+    void destroyScene(Scene& scene, DataContext& context, Registry& registry)
     {
-        //TODO: implement
+        auto sceneConfigRepo = registry.get<ISceneConfigurationRepository>();
+        auto sceneRepo = registry.get<ISceneRepository>();
+
+        if(sceneConfigRepo && sceneRepo)
+        {
+            if(const auto sceneConfig = sceneConfigRepo->get(scene.configurationId))
+            {
+                //Call Directors do destroy the Scene in reverse order
+                for(int i = static_cast<int>(sceneConfig->directors.size()) - 1; i >= 0; --i)
+                {
+                    const auto& [instance, type] = sceneConfig->directors[i];
+                    if(auto director = instance.lock())
+                    {
+                        director->destroy(scene, *sceneConfig, context);
+                    }
+                }
+
+                if(auto pipelineService = registry.get<IPipelineService>())
+                {
+                    pipelineService->destroyPipeline(scene, sceneConfig->pipeline, context);
+                }
+
+                for(const auto& [instance, type] : sceneConfig->devices)
+                {
+                    if(auto device = instance.lock())
+                    {
+                        device->disconnect(context);
+                    }
+                }
+
+                if(auto libraryService = registry.get<ILibraryService>())
+                {
+                    for(const auto& extension : sceneConfig->extensions)
+                    {
+                        libraryService->unload(extension.name);
+                    }
+                }
+            }
+
+            sceneRepo->remove(scene.id);
+        }
+    }
+
+    void SceneBuilder::destroy(Scene& scene, DataContext& context)
+    {
+        if(auto sceneRepo = _registry.get<ISceneRepository>())
+        {
+            std::stack<Scene*> hierarchy;
+            std::stack<Scene*> stack;
+            stack.push(&scene);
+
+            //Build hierarchy stack
+            while(!stack.empty())
+            {
+                auto currentScene = stack.top();
+                stack.pop();
+
+                hierarchy.push(currentScene);
+
+                for(const auto childSceneId : currentScene->childScenes)
+                {
+                    if(const auto childScene = sceneRepo->get(childSceneId))
+                    {
+                        stack.push(childScene);
+                    }
+                }
+            }
+
+            //Traverse the tree from bottom up
+            while(!hierarchy.empty())
+            {
+                const auto currentScene = hierarchy.top();
+                hierarchy.pop();
+
+                destroyScene(*currentScene, context, _registry);
+            }
+        }
     }
 }

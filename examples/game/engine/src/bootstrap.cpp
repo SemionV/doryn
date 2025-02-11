@@ -51,31 +51,10 @@ namespace dory::game
 
     void Bootstrap::cleanup(DataContext &context)
     {
-        _registry.get<Service<ILogService, Logger::App>, Service<ITerminalDevice>, Service<IStandardIODevice>, Service<IFileWatcherDevice>,
-                                Service<IImageStreamDevice>, Service<ILibraryService>>
-                ([&context](ILogService* logger, ITerminalDevice* terminalDevice, IStandardIODevice* ioDevice, IFileWatcherDevice* fileWatcherDevice,
-                                IImageStreamDevice* imageStreamDevice, ILibraryService* libraryService)
-                {
-                    terminalDevice->exitCommandMode();
-                    logger->information(std::string_view {"Cleanup..."});
-                    terminalDevice->disconnect(context);
-                    ioDevice->disconnect(context);
-                    fileWatcherDevice->disconnect(context);
-                    imageStreamDevice->disconnect(context);
-
-                    libraryService->unloadAll();
-                });
-
-        _registry.getAll<IWindowSystemDevice, WindowSystem>([&context](const auto& devices) {
-            for(const auto& [key, value] : devices)
-            {
-                auto deviceRef = value.lock();
-                if(deviceRef)
-                {
-                    deviceRef->disconnect(context);
-                }
-            }
-        });
+        if(auto libraryService = _registry.get<ILibraryService>())
+        {
+            libraryService->unloadAll();
+        }
     }
 
     void Bootstrap::loadConfiguration(const LibraryHandle& libraryHandle, DataContext& context) const
@@ -99,11 +78,12 @@ namespace dory::game
 
     void Bootstrap::loadExtensions(const LibraryHandle& libraryHandle, DataContext& context) const
     {
-        _registry.get<ILibraryService>([&context](ILibraryService* libraryService) {
+        if(auto libraryService = _registry.get<ILibraryService>())
+        {
             for(const auto& extension : context.configuration.extensions)
             {
                 libraryService->load(context, extension);
             }
-        });
+        }
     }
 }

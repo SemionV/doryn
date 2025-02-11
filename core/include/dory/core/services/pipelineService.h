@@ -20,7 +20,7 @@ namespace dory::core::services
         void update(resources::DataContext& context, const generic::model::TimeSpan& timeStep) final;
         void initialize(resources::DataContext& context) final;
         void stop(resources::DataContext& context) final;
-        void buildPipeline(resources::scene::Scene& scene, const resources::scene::configuration::Pipeline& pipeline, resources::DataContext& context) final;
-        void destroyPipeline(resources::scene::Scene& scene, const resources::scene::configuration::Pipeline& pipeline, resources::DataContext& context) final;
+        void buildPipeline(const resources::scene::Scene& scene, const resources::scene::configuration::Pipeline& pipeline, resources::DataContext& context) final;
+        void destroyPipeline(const resources::scene::Scene& scene, const resources::scene::configuration::Pipeline& pipeline, resources::DataContext& context) final;
     };
 }

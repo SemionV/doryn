@@ -2,7 +2,6 @@
 
 #include <dory/generic/baseTypes.h>
 #include <dory/core/resources/scene/scene.h>
-#include <dory/core/resources/scene/configuration.h>
 
 namespace dory::core::services
 {
@@ -10,6 +9,6 @@ namespace dory::core::services
     {
     public:
         virtual resources::scene::Scene* build(const resources::scene::configuration::SceneConfiguration& configuration, resources::DataContext& context) = 0;
-        virtual void destroy(const resources::scene::Scene& scene, resources::DataContext& context) = 0;
+        virtual void destroy(resources::scene::Scene& scene, resources::DataContext& context) = 0;
     };
 }
