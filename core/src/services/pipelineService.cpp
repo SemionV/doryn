@@ -197,16 +197,16 @@ namespace dory::core::services
         });
     }
 
-    void PipelineService::buildPipeline(const scene::Scene& scene, const scene::configuration::Pipeline& pipeline, DataContext& context)
+    void PipelineService::buildPipeline(const scene::Scene& scene, scene::configuration::Pipeline& pipeline, DataContext& context)
     {
         auto logger = _registry.get<ILogService>();
 
         if(auto pipelineRepo = _registry.get<IPipelineRepository>())
         {
-            using EntryType = std::tuple<const IdType, const std::string*, const scene::configuration::Node*>;
+            using EntryType = std::tuple<const IdType, const std::string*, scene::configuration::Node*>;
             auto stack = std::stack<EntryType>{};
 
-            for(const auto& [rootNodeName, rootNode] : pipeline.nodes)
+            for(auto& [rootNodeName, rootNode] : pipeline.nodes)
             {
                 auto parentId = nullId;
                 if(!rootNode.parent.empty())
@@ -225,7 +225,7 @@ namespace dory::core::services
 
                 while(!stack.empty())
                 {
-                    const auto& [parentId, nodeName, node] = stack.top();
+                    auto& [parentId, nodeName, node] = stack.top();
                     stack.pop();
 
                     auto pipelineNode = entities::PipelineNode {};
@@ -251,6 +251,7 @@ namespace dory::core::services
                     }
 
                     const auto id = pipelineRepo->addNode(pipelineNode);
+                    node->pipelineNodeId = id;
 
                     if(pipelineNode.trigger)
                     {
@@ -268,7 +269,7 @@ namespace dory::core::services
                         }
                     }
 
-                    for(const auto& [childName, childNode] : node->children)
+                    for(auto& [childName, childNode] : node->children)
                     {
                         stack.emplace(id, &childName, &childNode);
                     }
@@ -279,6 +280,38 @@ namespace dory::core::services
 
     void PipelineService::destroyPipeline(const scene::Scene& scene, const scene::configuration::Pipeline& pipeline, DataContext& context)
     {
-        //TODO: implement
+        if(auto pipelineRepo = _registry.get<IPipelineRepository>())
+        {
+            std::stack<const scene::configuration::Node*> hierarchy;
+            std::stack<const scene::configuration::Node*> stack;
+
+            //Build the hierarchy of nodes
+            for(const auto& [key, node] : pipeline.nodes)
+            {
+                stack.push(&node);
+
+                while(!stack.empty())
+                {
+                    auto currentNode = stack.top();
+                    stack.pop();
+
+                    hierarchy.push(currentNode);
+
+                    for(const auto& [childKey, childNode] : currentNode->children)
+                    {
+                        stack.push(&childNode);
+                    }
+                }
+            }
+
+            //Traverse the tree from bottom up
+            while(!hierarchy.empty())
+            {
+                const auto currentNode = hierarchy.top();
+                hierarchy.pop();
+
+                pipelineRepo->removeNode(currentNode->pipelineNodeId);
+            }
+        }
     }
 }

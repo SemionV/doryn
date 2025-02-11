@@ -67,6 +67,7 @@ namespace dory::core::resources::scene::configuration
 
     struct Node
     {
+        IdType pipelineNodeId;
         std::string parent {};
         factory::Instance<ITrigger> trigger {};
         factory::Instance<IController> controllerInstance {};

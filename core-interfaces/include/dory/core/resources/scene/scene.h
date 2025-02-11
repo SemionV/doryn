@@ -22,6 +22,7 @@ namespace dory::core::resources::scene
         EcsType ecsType {};
         IdType configurationId;
         std::vector<resources::IdType> childScenes;
+
     };
 
     struct VisibleObject
