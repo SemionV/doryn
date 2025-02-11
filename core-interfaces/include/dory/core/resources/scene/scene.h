@@ -6,6 +6,7 @@
 #include "../entities/view.h"
 #include <string>
 #include <memory>
+#include <vector>
 #include <unordered_map>
 
 namespace dory::core::resources::scene::configuration

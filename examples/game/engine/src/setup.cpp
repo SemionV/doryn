@@ -67,6 +67,7 @@
 #include <dory/core/services/sceneConfigurationService.h>
 #include <dory/core/services/sceneBuilder.h>
 #include <dory/core/services/scene/directors/assetLoader.h>
+#include <dory/core/services/scene/directors/applicationDirector.h>
 
 namespace dory::game
 {
@@ -189,5 +190,6 @@ namespace dory::game
         registerObjectFactory<core::IController, core::controllers::WindowSystemController>("WindowSystemController", libraryHandle, registry);
 
         registerObjectFactory<core::services::ISceneDirector, core::services::scene::directors::AssetLoader>("AssetLoader", libraryHandle, registry);
+        registerObjectFactory<core::services::ISceneDirector, core::services::scene::directors::ApplicationDirector>("ApplicationDirector", libraryHandle, registry);
     }
 }

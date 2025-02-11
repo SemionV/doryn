@@ -16,6 +16,13 @@ namespace dory::game
     using namespace generic::extension;
     using namespace generic::registry;
 
+    std::string threadIdToString(const std::thread::id& id)
+    {
+        std::stringstream ss;
+        ss << id;
+        return ss.str();
+    }
+
     Bootstrap::Bootstrap(Registry &registry):
         _registry(registry)
     {}
@@ -24,29 +31,13 @@ namespace dory::game
     {
         loadConfiguration(libraryHandle, context);
         loadExtensions(libraryHandle, context);
-        attachEventHandlers(libraryHandle, context);
-        attachScrips(libraryHandle, context);
+
+        if(auto logger = _registry.get<ILogService, Logger::Config>())
+        {
+            logger->information(fmt::format("main threadId: {}", threadIdToString(std::this_thread::get_id())));
+        }
 
         return true;
-    }
-
-    void Bootstrap::loadConfiguration(const LibraryHandle& libraryHandle, DataContext& context)
-    {
-        _registry.get<IMultiSinkLogService>(Logger::Config, [this, &context](IMultiSinkLogService* logger){
-            logger->initialize(context.configuration.loggingConfiguration.configurationLogger, _registry);
-        });
-
-        _registry.get<IConfigurationService>([&context](IConfigurationService* configurationService){
-            configurationService->load(context.configuration, context);
-        });
-
-        _registry.get<IMultiSinkLogService, Logger::App>([this, &context](IMultiSinkLogService* logger){
-            logger->initialize(context.configuration.loggingConfiguration.mainLogger, _registry);
-        });
-
-        _registry.get<ILocalizationService>([&context](ILocalizationService* localizationService){
-            localizationService->load(context.configuration, context.localization, context);
-        });
     }
 
     bool Bootstrap::run(DataContext& context)
@@ -87,7 +78,26 @@ namespace dory::game
         });
     }
 
-    void Bootstrap::loadExtensions(const LibraryHandle& libraryHandle, DataContext& context)
+    void Bootstrap::loadConfiguration(const LibraryHandle& libraryHandle, DataContext& context) const
+    {
+        _registry.get<IMultiSinkLogService>(Logger::Config, [this, &context](IMultiSinkLogService* logger){
+            logger->initialize(context.configuration.loggingConfiguration.configurationLogger, _registry);
+        });
+
+        _registry.get<IConfigurationService>([&context](IConfigurationService* configurationService){
+            configurationService->load(context.configuration, context);
+        });
+
+        _registry.get<IMultiSinkLogService, Logger::App>([this, &context](IMultiSinkLogService* logger){
+            logger->initialize(context.configuration.loggingConfiguration.mainLogger, _registry);
+        });
+
+        _registry.get<ILocalizationService>([&context](ILocalizationService* localizationService){
+            localizationService->load(context.configuration, context.localization, context);
+        });
+    }
+
+    void Bootstrap::loadExtensions(const LibraryHandle& libraryHandle, DataContext& context) const
     {
         _registry.get<ILibraryService>([&context](ILibraryService* libraryService) {
             for(const auto& extension : context.configuration.extensions)
@@ -95,86 +105,5 @@ namespace dory::game
                 libraryService->load(context, extension);
             }
         });
-    }
-
-    std::string threadIdToString(const std::thread::id& id) {
-        std::stringstream ss;
-        ss << id;
-        return ss.str();
-    }
-
-    void Bootstrap::attachEventHandlers(const LibraryHandle& libraryHandle, DataContext& context)
-    {
-        _registry.get<events::application::Bundle::IListener>([this](events::application::Bundle::IListener* listener){
-            listener->attach([this](auto& context, const auto& event){ this->onApplicationExit(context, event); });
-        });
-
-        _registry.get<events::window::Bundle::IListener>([this](events::window::Bundle::IListener* listener){
-            listener->attach([this](auto& context, const events::window::Close& event){ this->onWindowClose(context, event); });
-        });
-
-        _registry.get<events::filesystem::Bundle::IListener>([this](events::filesystem::Bundle::IListener* listener){
-            listener->attach([this](auto& context, const auto& event){ this->onFilesystemEvent(context, event); });
-        });
-
-        _registry.get<ILogService, Logger::App>([](ILogService* logger){
-            logger->information("main threadId: " + threadIdToString(std::this_thread::get_id()));
-        });
-    }
-
-    void Bootstrap::attachScrips(const LibraryHandle& libraryHandle, DataContext& context)
-    {
-        _registry.get<IScriptService>([this, &libraryHandle](IScriptService* scriptService){
-
-            scriptService->addScript("exit", libraryHandle, [this](DataContext& context, const std::map<std::string, std::any>& arguments){
-                _registry.get<
-                        Service<ITerminalDevice>,
-                        Service<events::application::Bundle::IDispatcher>>(
-                [&context](ITerminalDevice* terminalDevice, events::application::Bundle::IDispatcher* applicationDispatcher){
-                    terminalDevice->writeLine(fmt::format("-\u001B[31m{0}\u001B[0m-", "exit"));
-                    applicationDispatcher->fire(context, events::application::Exit{});
-                });
-            });
-
-        });
-    }
-
-    void Bootstrap::onApplicationExit(DataContext& context, const events::application::Exit& eventData)
-    {
-        _registry.get<ILoopService>([](ILoopService* frameService) {
-            frameService->endLoop();
-        });
-    }
-
-    void Bootstrap::onWindowClose(DataContext& context, const events::window::Close& eventData)
-    {
-        _registry.get<IWindowService>([this, &eventData, &context](IWindowService* windowService) {
-            windowService->closeWindow(eventData.windowId, eventData.windowSystem);
-
-            if(eventData.windowId == context.mainWindowId)
-            {
-                auto dispatcher = _registry.get<events::application::Bundle::IDispatcher>();
-                if(dispatcher)
-                {
-                    dispatcher->fire(context, events::application::Exit{});
-                }
-            }
-        });
-    }
-
-    void Bootstrap::onFilesystemEvent(DataContext& context, const events::filesystem::FileModified& event)
-    {
-        auto resolver = _registry.get<IAssetTypeResolver>();
-        if(resolver)
-        {
-            auto assetType = resolver->resolve(context, event.filePath);
-            if(assetType)
-            {
-                _registry.get<IAssetReloadHandler>(*assetType, [&context, &event](IAssetReloadHandler* assetLoader) {
-                    assetLoader->reload(context, event.filePath);
-                });
-            }
-        }
-
     }
 }

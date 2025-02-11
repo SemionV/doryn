@@ -39,4 +39,5 @@ pipeline:
     pump-window-events:
       controller: WindowSystemController
 directors:
+  - type: ApplicationDirector
   - type: AssetLoader
