@@ -40,4 +40,5 @@ pipeline:
       controller: WindowSystemController
 directors:
   - type: ApplicationDirector
+  - type: ViewDirector
   - type: AssetLoader

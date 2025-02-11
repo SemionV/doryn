@@ -14,6 +14,7 @@
 #include <dory/core/controllers/windowSystemController.h>
 #include <dory/core/services/scene/directors/assetLoader.h>
 #include <dory/core/services/scene/directors/applicationDirector.h>
+#include <dory/core/services/scene/directors/viewDirector.h>
 #include <dory/core/resources/scene/configuration.h>
 
 REFL_TYPE(dory::core::resources::scene::configuration::Shader)
@@ -71,6 +72,17 @@ REFL_END;
 
 REFL_TYPE(dory::core::resources::scene::configuration::Pipeline)
     REFL_FIELD(nodes)
+REFL_END;
+
+REFL_TYPE(dory::core::resources::scene::configuration::GraphicalContext)
+    REFL_FIELD(graphicalSystem)
+REFL_END;
+
+REFL_TYPE(dory::core::resources::scene::configuration::Window)
+    REFL_FIELD(width)
+    REFL_FIELD(height)
+    REFL_FIELD(title)
+    REFL_FIELD(graphicalContext)
 REFL_END;
 
 REFL_TYPE(dory::core::resources::scene::configuration::SceneConfiguration)
@@ -131,4 +143,7 @@ REFL_TYPE(dory::core::services::scene::directors::AssetLoader)
 REFL_END;
 
 REFL_TYPE(dory::core::services::scene::directors::ApplicationDirector)
+REFL_END;
+
+REFL_TYPE(dory::core::services::scene::directors::ViewDirector)
 REFL_END;

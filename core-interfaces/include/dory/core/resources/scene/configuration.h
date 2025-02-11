@@ -7,6 +7,7 @@
 #include <dory/core/resources/assets/material.h>
 #include <dory/core/resources/scene/components.h>
 #include <dory/core/resources/factory.h>
+#include <dory/core/resources/graphicalSystem.h>
 #include <dory/core/iController.h>
 #include <dory/core/services/iSceneDirector.h>
 
@@ -80,6 +81,24 @@ namespace dory::core::resources::scene::configuration
         std::unordered_map<std::string, Node> nodes {};
     };
 
+    struct GraphicalContext
+    {
+        GraphicalSystem graphicalSystem;
+    };
+
+    struct Window
+    {
+        std::size_t width;
+        std::size_t height;
+        std::string title;
+        std::string graphicalContext;
+    };
+
+    struct View
+    {
+        
+    };
+
     struct SceneConfiguration: Entity<>
     {
         std::string name;
@@ -91,5 +110,7 @@ namespace dory::core::resources::scene::configuration
         std::vector<resources::configuration::Extension> extensions;
         std::vector<factory::Instance<devices::IDevice>> devices;
         std::vector<factory::Instance<services::ISceneDirector>> directors;
+        std::unordered_map<std::string, GraphicalContext> graphicalContexts {};
+        std::unordered_map<std::string, Window> windows {};
     };
 }
