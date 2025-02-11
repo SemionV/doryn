@@ -188,7 +188,6 @@ namespace dory::game
         registerObjectFactory<core::IController, core::controllers::ConsoleFlusher>("ConsoleFlusher", libraryHandle, registry);
         registerObjectFactory<core::IController, core::controllers::WindowSystemController>("WindowSystemController", libraryHandle, registry);
 
-        registerObjectFactory<core::services::ISceneDirector, core::services::scene::directors::ConfigurationLoader>("ConfigurationLoader", libraryHandle, registry);
         registerObjectFactory<core::services::ISceneDirector, core::services::scene::directors::AssetLoader>("AssetLoader", libraryHandle, registry);
     }
 }

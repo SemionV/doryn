@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <dory/core/resources/configuration.h>
 #include <dory/core/resources/assets/shader.h>
 #include <dory/core/resources/assets/material.h>
 #include <dory/core/resources/scene/components.h>
@@ -86,6 +87,7 @@ namespace dory::core::resources::scene::configuration
         std::unordered_map<std::string, std::string> cameras {};
         std::unordered_map<std::string, std::string> lights {};
         Pipeline pipeline;
+        std::vector<resources::configuration::Extension> extensions;
         std::vector<factory::Instance<devices::IDevice>> devices;
         std::vector<factory::Instance<services::ISceneDirector>> directors;
     };

@@ -45,6 +45,14 @@ namespace dory::core::services
 
             scene->configurationId = configurationEntity->id;
 
+            if(auto libraryService = _registry.get<ILibraryService>())
+            {
+                for(const auto& extension : configuration.extensions)
+                {
+                    libraryService->load(context, extension);
+                }
+            }
+
             for(const auto& [instance, type] : configurationEntity->devices)
             {
                 if(auto device = instance.lock())

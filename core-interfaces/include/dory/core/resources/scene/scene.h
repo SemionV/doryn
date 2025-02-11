@@ -20,6 +20,7 @@ namespace dory::core::resources::scene
         std::string name {};
         EcsType ecsType {};
         IdType configurationId;
+        std::vector<resources::IdType> childScenes;
     };
 
     struct VisibleObject
@@ -42,5 +43,5 @@ namespace dory::core::resources::scene
         SceneState current;
     };
 
-    using SceneViewStateSet = std::unordered_map<resources::IdType, resources::scene::SceneViewState>;
+    using SceneViewStateSet = std::unordered_map<IdType, SceneViewState>;
 }

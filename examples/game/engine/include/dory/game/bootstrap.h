@@ -18,9 +18,10 @@ namespace dory::game
     private:
         core::Registry& _registry;
 
-        void attachEventHandlers(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
-        void attachScrips(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
-        void loadExtensions(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
+        void loadConfiguration(const generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
+        void attachEventHandlers(const generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
+        void attachScrips(const generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
+        void loadExtensions(const generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context);
 
         void onApplicationExit(core::resources::DataContext& context, const core::events::application::Exit& eventData);
         void onWindowClose(core::resources::DataContext& context, const core::events::window::Close& eventData);

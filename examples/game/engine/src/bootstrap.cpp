@@ -22,11 +22,31 @@ namespace dory::game
 
     bool Bootstrap::initialize(const LibraryHandle& libraryHandle, DataContext& context)
     {
+        loadConfiguration(libraryHandle, context);
         loadExtensions(libraryHandle, context);
         attachEventHandlers(libraryHandle, context);
         attachScrips(libraryHandle, context);
 
         return true;
+    }
+
+    void Bootstrap::loadConfiguration(const LibraryHandle& libraryHandle, DataContext& context)
+    {
+        _registry.get<IMultiSinkLogService>(Logger::Config, [this, &context](IMultiSinkLogService* logger){
+            logger->initialize(context.configuration.loggingConfiguration.configurationLogger, _registry);
+        });
+
+        _registry.get<IConfigurationService>([&context](IConfigurationService* configurationService){
+            configurationService->load(context.configuration, context);
+        });
+
+        _registry.get<IMultiSinkLogService, Logger::App>([this, &context](IMultiSinkLogService* logger){
+            logger->initialize(context.configuration.loggingConfiguration.mainLogger, _registry);
+        });
+
+        _registry.get<ILocalizationService>([&context](ILocalizationService* localizationService){
+            localizationService->load(context.configuration, context.localization, context);
+        });
     }
 
     bool Bootstrap::run(DataContext& context)
