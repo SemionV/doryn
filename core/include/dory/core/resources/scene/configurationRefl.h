@@ -79,8 +79,6 @@ REFL_TYPE(dory::core::resources::scene::configuration::GraphicalContext)
 REFL_END;
 
 REFL_TYPE(dory::core::resources::scene::configuration::Window)
-    REFL_FIELD(width)
-    REFL_FIELD(height)
     REFL_FIELD(title)
     REFL_FIELD(graphicalContext)
 REFL_END;

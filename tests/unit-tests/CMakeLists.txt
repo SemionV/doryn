@@ -8,7 +8,8 @@ add_executable(${PROJECT_NAME}
         camera.cpp
         graphics/geometry.cpp
         pipelineServiceTests.cpp
-        serialization.cpp)
+        serialization.cpp
+        layoutTests.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-core)
