@@ -1,5 +1,7 @@
 #pragma once
 
+#include <dory/generic/extension/resourceHandle.h>
+
 namespace dory::core::resources::factory
 {
     template<typename TInstance>

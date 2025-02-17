@@ -63,12 +63,13 @@
 #include <dory/core/services/iSceneConfigurationService.h>
 #include <dory/core/services/iObjectFactory.h>
 #include <dory/core/services/iSceneDirector.h>
+#include <dory/core/services/iLayoutService.h>
 
 namespace dory::core
 {
     namespace repositories
     {
-        using ICameraRepository = repositories::IRepository<resources::entities::Camera>;
+        using ICameraRepository = IRepository<resources::entities::Camera>;
     }
 
     class Registry: public generic::registry::RegistryLayer<
@@ -143,6 +144,7 @@ namespace dory::core
             generic::registry::ServiceEntry<services::IProfilingService>,
             generic::registry::ServiceEntry<services::ISceneBuilder>,
             generic::registry::ServiceEntry<services::ISceneConfigurationService>,
+            generic::registry::ServiceEntry<services::ILayoutService>,
             generic::registry::ServiceEntry<services::IObjectFactory<ITrigger>, resources::Name>,
             generic::registry::ServiceEntry<services::IObjectFactory<IController>, resources::Name>,
             generic::registry::ServiceEntry<services::IObjectFactory<devices::IDevice>, resources::Name>,
