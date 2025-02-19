@@ -8,6 +8,29 @@ using namespace dory::core::resources;
 using namespace dory::core::resources::scene;
 using namespace dory::core::resources::scene::configuration;
 
+TEST(LayoutTests, layoutControl)
+{
+    layout::Container container1;
+
+    //set size to available space in the parent
+    container1.size = {};
+
+    //set size by size of the content, both width and height
+    container1.size = layout::Size{};
+
+    container1.size = layout::Size {};
+    //set width to available width in the parent
+    container1.size->width = {};
+    //set height by the height of the content
+    container1.size->height = layout::Dimension{};
+    container1.size->height->percents = {};
+    container1.size->height->pixels = {};
+    //set height to explicit value
+    container1.size->height = layout::Dimension{};
+    container1.size->height->percents = {};
+    container1.size->height->pixels = { 100 };
+}
+
 TEST(LayoutTests, gridLayout)
 {
     layout::Container layoutContainer {"root"};
@@ -30,5 +53,5 @@ TEST(LayoutTests, gridLayout)
     row1Container.position = {};
     row1Container.size = {}; //take the rest of the parents available space
 
-    layoutContainer.containers = { row1Container, row2Container, row3Container, row4Container };
+    //layoutContainer.containers = { row1Container, row2Container, row3Container, row4Container };
 }

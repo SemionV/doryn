@@ -107,14 +107,23 @@ namespace dory::core::resources::scene::configuration
             std::optional<Dimension> height{}; //if it has no value use content height
         };
 
-        struct Container;
-
         struct Container
         {
             std::string name;
             std::optional<Position> position {};
             std::optional<Size> size {}; //if it has no value use container's available space
-            std::vector<Container> containers;
+        };
+
+        struct Column;
+
+        struct Row: public Container
+        {
+            std::vector<Column> columns;
+        };
+
+        struct Column: public Container
+        {
+            std::vector<Row> rows;
         };
     }
 

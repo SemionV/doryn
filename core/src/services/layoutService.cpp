@@ -1,57 +1,93 @@
 #include <dory/core/services/layoutService.h>
+#include <cmath>
 
 namespace dory::core::services
 {
     using namespace resources;
     using namespace resources::scene;
     using namespace resources::scene::configuration;
+    using namespace resources::scene::configuration;
 
-    layout::Position getAvailablePosition(layout::Container& parentContainer, const std::size_t index)
+    objects::layout::Column calculateColumn(const layout::Column& definition, const objects::layout::Size& availableSpace);
+
+    objects::layout::Row calculateRow(const layout::Row& definition, const objects::layout::Size& availableSpace)
     {
-        layout::Position position { layout::Dimension{ 0 }, layout::Dimension{ 0 } };
+        std::optional<int> rowWidth {};
+        std::optional<int> rowHeight {};
 
-        //TODO: travers the child containers and find next available position
-
-        return position;
-    }
-
-    layout::Size getAvailableSize(layout::Container& parentContainer, const layout::Position& position )
-    {
-        assert(parentContainer.size.has_value());
-        layout::Size size { *parentContainer.size };
-
-        //TODO: calculate free space available for position
-
-        return size;
-    }
-
-    void calculateContainer(layout::Container& parentContainer, const layout::Container& containerDefinition, const std::size_t index)
-    {
-        layout::Container& container = parentContainer.containers[index];
-
-        //consider container's size by definition
-        if(containerDefinition.size.has_value())
+        if(definition.size)
         {
+            if(definition.size->width)
+            {
+                if(definition.size->width->percents)
+                {
+                    rowWidth = std::floor(static_cast<float>(availableSpace.width) * (*definition.size->width->percents * 0.01f));
+                }
+                else if(definition.size->width->pixels)
+                {
+                    rowWidth = *definition.size->width->pixels;
+                }
+            }
 
+            if(definition.size->height)
+            {
+                if(definition.size->height->percents)
+                {
+                    rowHeight = std::floor(static_cast<float>(availableSpace.height) * (*definition.size->height->percents * 0.01f));
+                }
+                else if(definition.size->height->pixels)
+                {
+                    rowHeight = *definition.size->height->pixels;
+                }
+            }
         }
-        //use available space to set size of the container
-        else
+
+        objects::layout::Size availableSpaceRow { };
+        availableSpaceRow.width = rowWidth ? rowWidth.value() : availableSpace.width;
+        availableSpaceRow.height = rowHeight ? rowHeight.value() : availableSpace.height;
+        for(const auto& columnDefinition : definition.columns)
         {
-            const layout::Position availablePosition = getAvailablePosition(parentContainer, index);
-            layout::Size availableSize = getAvailableSize(parentContainer, availablePosition);
-
-            container.position = availablePosition;
-            container.size = availableSize;
+            objects::layout::Column column = calculateColumn(columnDefinition, availableSpace);
+            //TODO: subdue the column's dimensions from the leftover free space
+            //TODO: implement line-wrapping, move columns to the next line
         }
+
+        if(!rowWidth)
+        {
+            rowWidth = availableSpace.width - availableSpaceRow.width;
+        }
+        if(!rowHeight)
+        {
+            rowHeight = availableSpace.height - availableSpaceRow.height;
+        }
+
+        //both dimensions have to be calculated by this time
+        assert(rowWidth);
+        assert(rowHeight);
+
+        objects::layout::Row row;
+
+        row.size.width = *rowWidth;
+        row.size.height = *rowHeight;
+
+        return row;
     }
 
-    layout::Container LayoutService::calculate(const layout::Container& container, const layout::Size& constraintSize)
+    objects::layout::Column calculateColumn(const layout::Column& definition, const objects::layout::Size& availableSpace)
     {
-        layout::Container result {container.name};
-        layout::Container parentContainer { "", {}, constraintSize, { result } };
+        std::optional<int> columnWidth {};
+        std::optional<int> columnHeight {};
 
-        calculateContainer(parentContainer, container, 0);
+        objects::layout::Column column;
 
-        return result;
+        column.size.width = *columnWidth;
+        column.size.height = *columnHeight;
+
+        return column;
+    }
+
+    objects::layout::Row LayoutService::calculate(const layout::Row& layoutDefinition, const resources::objects::layout::Size& availableSpace)
+    {
+        return calculateRow(layoutDefinition, availableSpace);
     }
 }

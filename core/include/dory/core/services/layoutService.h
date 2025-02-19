@@ -7,7 +7,7 @@ namespace dory::core::services
     class LayoutService: public ILayoutService
     {
     public:
-        resources::scene::configuration::layout::Container calculate(const resources::scene::configuration::layout::Container& container,
-            const resources::scene::configuration::layout::Size& constraintSize) final;
+        resources::objects::layout::Row calculate(const resources::scene::configuration::layout::Row& layoutDefinition,
+            const resources::objects::layout::Size& availableSpace) final;
     };
 }
