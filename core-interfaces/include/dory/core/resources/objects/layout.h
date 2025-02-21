@@ -6,14 +6,14 @@ namespace dory::core::resources::objects::layout
 {
     struct Position
     {
-        int x{};
-        int y{};
+        std::size_t x{};
+        std::size_t y{};
     };
 
     struct Size
     {
-        int width{};
-        int height{}; //if it has no value use content height
+        std::size_t width{};
+        std::size_t height{}; //if it has no value use content height
     };
 
     struct Container
@@ -24,13 +24,21 @@ namespace dory::core::resources::objects::layout
     };
 
     struct Column;
+    struct Row;
+    struct DetachedContainer;
 
     struct Row: public Container
     {
-        std::vector<Container> columns {};
+        std::vector<Column> columns {};
+        std::vector<DetachedContainer> detachedContainers {};
     };
 
     struct Column: public Container
+    {
+        std::vector<Row> rows {};
+    };
+
+    struct DetachedContainer: public Container
     {
         std::vector<Row> rows {};
     };

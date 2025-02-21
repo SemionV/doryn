@@ -9,7 +9,7 @@ namespace dory::core::services
     class ILayoutService: public generic::Interface
     {
     public:
-        virtual resources::objects::layout::Row calculate(const resources::scene::configuration::layout::Row& layoutDefinition,
+        virtual resources::objects::layout::DetachedContainer calculate(const resources::scene::configuration::layout::PositionedContainer& layoutDefinition,
             const resources::objects::layout::Size& availableSpace) = 0;
     };
 }

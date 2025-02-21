@@ -8,86 +8,184 @@ namespace dory::core::services
     using namespace resources::scene::configuration;
     using namespace resources::scene::configuration;
 
-    objects::layout::Column calculateColumn(const layout::Column& definition, const objects::layout::Size& availableSpace);
+    void calculateLayout(const layout::Column& definition, objects::layout::Column& column, std::size_t parentHeight);
+    void calculateLayout(const layout::PositionedContainer& definition, objects::layout::DetachedContainer& container,
+        std::size_t parentWidth, std::size_t parentHeight);
 
-    objects::layout::Row calculateRow(const layout::Row& definition, const objects::layout::Size& availableSpace)
+    struct DefinedSize
     {
-        std::optional<int> rowWidth {};
-        std::optional<int> rowHeight {};
+        std::optional<int> width {};
+        std::optional<int> height {};
+    };
 
-        if(definition.size)
+    template<typename T>
+    bool isDefined(const std::optional<T>& optionalValue)
+    {
+        return optionalValue.has_value();
+    }
+
+    inline bool isDefined(const layout::Dimension& dimension)
+    {
+        return dimension.percents.has_value() || dimension.pixels.has_value();
+    }
+
+    std::size_t getDimensionValue(const layout::Dimension& dimension, const std::size_t wholeValue, const std::size_t defaultValue = 0)
+    {
+        std::size_t result = defaultValue;
+
+        if(dimension.percents)
         {
-            if(definition.size->width)
+            result = std::floor(static_cast<float>(wholeValue) * (*dimension.percents * 0.01f));
+        }
+        else if(dimension.pixels)
+        {
+            result = *dimension.pixels;
+        }
+
+        return result;
+    }
+
+    inline std::size_t getColumnHeight(const layout::Column& definition, const std::size_t rowHeight)
+    {
+        std::size_t result { rowHeight };
+
+        if(isDefined(definition.size) && isDefined(definition.size->height))
+        {
+            result = getDimensionValue(*definition.size->height, rowHeight, 0);
+        }
+
+        return result;
+    }
+
+    void processContainer(const layout::PositionedContainer& containerDefinition,
+        objects::layout::DetachedContainer& container,
+        const std::size_t parentWidth, const std::size_t parentHeight)
+    {
+        container.name = containerDefinition.name;
+
+        if(isDefined(containerDefinition.size))
+        {
+            if(isDefined(containerDefinition.size->width))
             {
-                if(definition.size->width->percents)
+                container.size.width = getDimensionValue(*containerDefinition.size->width, parentWidth);
+            }
+
+            if(isDefined(containerDefinition.size->height))
+            {
+                container.size.height = getDimensionValue(*containerDefinition.size->height, parentHeight);
+            }
+        }
+
+        calculateLayout(containerDefinition, container, parentWidth, parentHeight);
+
+        //TODO: calculate position: fixed, auto center, origin
+    }
+
+    /*
+     * if width or height are 0 in the row.size, it means those dimensions are defined by the content size(or there is no space for the row in the parent)
+     */
+    void calculateLayout(const layout::Row& definition, objects::layout::Row& row, std::size_t parentWidth)
+    {
+        if(row.size.width > 0)
+        {
+            //if row's width has a non-zero value, we divide it between the row's columns and take all available height of the row
+            std::optional<std::size_t> flexibleChildIndex {};
+            std::size_t actualWidth {};
+            for(std::size_t i= 0; i < definition.columns.size(); ++i)
+            {
+                const auto& columnDefinition = definition.columns[i];
+                auto column = row.columns.emplace_back();
+                column.name = columnDefinition.name;
+
+                if(isDefined(columnDefinition.size) && isDefined(columnDefinition.size->width))
                 {
-                    rowWidth = std::floor(static_cast<float>(availableSpace.width) * (*definition.size->width->percents * 0.01f));
+                    column.size.width = getDimensionValue(*columnDefinition.size->width, row.size.width);
+                    column.size.height = getColumnHeight(columnDefinition, row.size.height);
+                    calculateLayout(columnDefinition, column, row.size.height);
+
+                    actualWidth += column.size.width;
                 }
-                else if(definition.size->width->pixels)
+                else
                 {
-                    rowWidth = *definition.size->width->pixels;
+                    flexibleChildIndex = i;
                 }
             }
 
-            if(definition.size->height)
+            if(flexibleChildIndex)
             {
-                if(definition.size->height->percents)
+                //process the latest flexible-width column
+                const auto & columnDefinition = definition.columns[*flexibleChildIndex];
+                objects::layout::Column column = row.columns[*flexibleChildIndex];
+
+                const std::size_t columnWidth = row.size.width >= actualWidth ? row.size.width - actualWidth : 0;
+                column.size.width = columnWidth;
+                column.size.height = getColumnHeight(columnDefinition, row.size.height);
+                calculateLayout(columnDefinition, column, row.size.height);
+
+                if(columnWidth == 0)
                 {
-                    rowHeight = std::floor(static_cast<float>(availableSpace.height) * (*definition.size->height->percents * 0.01f));
+                    //if column's width was zero before calling calculateLayout, it has to stay zero in order to not mess up the width of the row
+                    //the column possible was stretched by its contents
+                    column.size.width = 0;
                 }
-                else if(definition.size->height->pixels)
+            }
+
+            //set x-positions
+            std::size_t currentWidth {};
+            for(objects::layout::Column& column : row.columns)
+            {
+                column.position.x = currentWidth;
+                currentWidth += column.size.width;
+            }
+        }
+        else
+        {
+            //if row's width value is zero, we stretch the row with columns and if parent's width
+            //is non-zero also, we wrap the lines of columns in order to fill the available space
+            //by width and by height, otherwise the columns will be placed in a single line
+
+            //TODO: implement line-wrap mode when the row cannot exceed parent's width, but its own width is defined by the width of the inner columns
+
+            //TODO: set column positions
+        }
+
+        //calculate actual height of the row in case of has to be defined be its content height
+        if(row.size.height == 0)
+        {
+            for(const objects::layout::Column& column : row.columns)
+            {
+                const size_t height = column.position.x + column.size.height;
+                if(height > row.size.height)
                 {
-                    rowHeight = *definition.size->height->pixels;
+                    row.size.height = height;
                 }
             }
         }
 
-        objects::layout::Size availableSpaceRow { };
-        availableSpaceRow.width = rowWidth ? rowWidth.value() : availableSpace.width;
-        availableSpaceRow.height = rowHeight ? rowHeight.value() : availableSpace.height;
-        for(const auto& columnDefinition : definition.columns)
+        //process detached containers
+        for(const layout::PositionedContainer& containerDefinition : definition.positionedContainers)
         {
-            objects::layout::Column column = calculateColumn(columnDefinition, availableSpace);
-            //TODO: subdue the column's dimensions from the leftover free space
-            //TODO: implement line-wrapping, move columns to the next line
+            objects::layout::DetachedContainer container = row.detachedContainers.emplace_back();
+            processContainer(containerDefinition, container, row.size.width, row.size.height);
         }
-
-        if(!rowWidth)
-        {
-            rowWidth = availableSpace.width - availableSpaceRow.width;
-        }
-        if(!rowHeight)
-        {
-            rowHeight = availableSpace.height - availableSpaceRow.height;
-        }
-
-        //both dimensions have to be calculated by this time
-        assert(rowWidth);
-        assert(rowHeight);
-
-        objects::layout::Row row;
-
-        row.size.width = *rowWidth;
-        row.size.height = *rowHeight;
-
-        return row;
     }
 
-    objects::layout::Column calculateColumn(const layout::Column& definition, const objects::layout::Size& availableSpace)
+    void calculateLayout(const layout::Column& definition, objects::layout::Column& column, std::size_t parentHeight)
     {
-        std::optional<int> columnWidth {};
-        std::optional<int> columnHeight {};
 
-        objects::layout::Column column;
-
-        column.size.width = *columnWidth;
-        column.size.height = *columnHeight;
-
-        return column;
     }
 
-    objects::layout::Row LayoutService::calculate(const layout::Row& layoutDefinition, const resources::objects::layout::Size& availableSpace)
+    void calculateLayout(const layout::PositionedContainer& definition, objects::layout::DetachedContainer& container,
+        const std::size_t parentWidth, const std::size_t parentHeight)
     {
-        return calculateRow(layoutDefinition, availableSpace);
+        //TODO: calculate inner layout(rows)
+    }
+
+    objects::layout::DetachedContainer LayoutService::calculate(const layout::PositionedContainer& layoutDefinition, const objects::layout::Size& availableSpace)
+    {
+        objects::layout::DetachedContainer container;
+        processContainer(layoutDefinition, container, availableSpace.width, availableSpace.height);
+
+        return container;
     }
 }
