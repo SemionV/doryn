@@ -113,21 +113,17 @@ namespace dory::core::resources::scene::configuration
             std::optional<Size> size {}; //if it has no value use container's available space
         };
 
-        struct Column;
-        struct Row;
-
-        struct PositionedContainer: public Container
-        {
-            std::optional<Position> position {};
-            std::vector<Row> rows;
-        };
+        //struct Column;
+        //struct Row;
+        struct PositionedContainer;
 
         struct FloatingContainer: public Container
         {
             std::vector<PositionedContainer> positionedContainers;
+            std::vector<FloatingContainer> children;
         };
 
-        struct Row: public FloatingContainer
+        /*struct Row: public FloatingContainer
         {
             std::vector<Column> columns;
         };
@@ -135,6 +131,11 @@ namespace dory::core::resources::scene::configuration
         struct Column: public FloatingContainer
         {
             std::vector<Row> rows;
+        };*/
+
+        struct PositionedContainer: public FloatingContainer
+        {
+            std::optional<Position> position {};
         };
     }
 

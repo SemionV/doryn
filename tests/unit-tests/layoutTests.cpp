@@ -33,7 +33,7 @@ TEST(LayoutTests, layoutControl)
 
 TEST(LayoutTests, gridLayout)
 {
-    layout::Container layoutContainer {"root"};
+    /*layout::Container layoutContainer {"root"};
     layoutContainer.position = {}; //get automatically positioned(it should be {0,0})
     layoutContainer.size = {}; //get the full size of the parent surface(should be {parentWidth, parentHeight})
 
@@ -51,7 +51,7 @@ TEST(LayoutTests, gridLayout)
 
     layout::Container row4Container {"row4"};
     row1Container.position = {};
-    row1Container.size = {}; //take the rest of the parents available space
+    row1Container.size = {}; //take the rest of the parents available space*/
 
     //layoutContainer.containers = { row1Container, row2Container, row3Container, row4Container };
 }

@@ -21,25 +21,6 @@ namespace dory::core::resources::objects::layout
         Name name {};
         Position position {};
         Size size {};
-    };
-
-    struct Column;
-    struct Row;
-    struct DetachedContainer;
-
-    struct Row: public Container
-    {
-        std::vector<Column> columns {};
-        std::vector<DetachedContainer> detachedContainers {};
-    };
-
-    struct Column: public Container
-    {
-        std::vector<Row> rows {};
-    };
-
-    struct DetachedContainer: public Container
-    {
-        std::vector<Row> rows {};
+        std::vector<Container> children {};
     };
 }
