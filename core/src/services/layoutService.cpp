@@ -8,8 +8,8 @@ namespace dory::core::services
     using namespace resources::scene::configuration;
     using namespace resources::scene::configuration;
 
-    void calculateColumnLayout(const layout::Column& definition, objects::layout::Container& column, std::size_t parentHeight);
-    void calculateRowLayout(const layout::Row& definition, objects::layout::Container& row, std::size_t parentWidth);
+    void calculateColumnLayout(const layout::FloatingContainer& definition, objects::layout::Container& column, std::size_t parentHeight);
+    void calculateRowLayout(const layout::FloatingContainer& definition, objects::layout::Container& row, std::size_t parentWidth);
 
     struct DefinedSize
     {
@@ -151,27 +151,32 @@ namespace dory::core::services
             auto& column = container.children.emplace_back();
             column.name = columnDefinition.name;
 
+            auto& x = column.position.*TPolicies::xProperty;
+            auto& y = column.position.*TPolicies::yProperty;
+            const auto& width = column.size.*TPolicies::widthProperty;
+            const auto& height = column.size.*TPolicies::heightProperty;
+
             //TODO: generalize width and height properties
             setContainerSize(columnDefinition.size, column.size, 0, container.size.height, 0, 0);
 
-            if(lineMaxWidth > 0 && currentX + column.size.*TPolicies::widthProperty > lineMaxWidth)
+            if(lineMaxWidth > 0 && currentX + width > lineMaxWidth)
             {
                 currentX = 0;
                 currentY = currentHeight;
             }
 
-            column.position.*TPolicies::xProperty = currentX;
-            column.position.*TPolicies::yProperty = currentY;
+            x = currentX;
+            y = currentY;
 
-            currentX += column.size.*TPolicies::widthProperty;
+            currentX += width;
 
-            if(const size_t height = column.size.*TPolicies::heightProperty + column.position.*TPolicies::yProperty; height > currentHeight)
+            if(const size_t extent = height + y; extent > currentHeight)
             {
-                currentHeight = height;
+                currentHeight = extent;
             }
-            if(const size_t width = column.size.*TPolicies::widthProperty + column.position.*TPolicies::xProperty; width > currentWidth)
+            if(const size_t extent = width + x; extent > currentWidth)
             {
-                currentWidth = width;
+                currentWidth = extent;
             }
         }
 
@@ -247,7 +252,7 @@ namespace dory::core::services
             //if row's width value is zero, we stretch the row with columns and if parent's width
             //is non-zero also, we wrap the lines of columns in order to fill the available space
             //by width and by height, otherwise the columns will be placed in a single line
-            
+
             buildTiles<HorizontalLinePolicies>(definition, row, parentWidth);
         }
 
