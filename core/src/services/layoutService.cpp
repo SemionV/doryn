@@ -59,7 +59,8 @@ namespace dory::core::services
 
         if(dimension.percents)
         {
-            result = std::floor(static_cast<float>(wholeValue) * (*dimension.percents * 0.01f));
+            const float value = static_cast<float>(wholeValue) * (*dimension.percents * 0.01f);
+            result = std::round(value);
         }
         else if(dimension.pixels)
         {
@@ -190,6 +191,10 @@ namespace dory::core::services
                     {
                         height = getContainerSizeDimension(*sizeDefinition.*TPolicies::heightDefinitionProperty, containerHeight, containerHeight);
                     }
+                    else
+                    {
+                        height = containerHeight;
+                    }
                     calculateLayout(childDefinition, child, containerWidth);
 
                     actualWidth += width;
@@ -209,7 +214,7 @@ namespace dory::core::services
         {
             //process the latest flexible-width column
             const auto & childDefinition = definitions[*flexibleChildIndex];
-            objects::layout::Container child = container.children[*flexibleChildIndex];
+            objects::layout::Container& child = container.children[*flexibleChildIndex];
             auto& width = child.size.*TPolicies::widthProperty;
             auto& height = child.size.*TPolicies::heightProperty;
 
@@ -219,6 +224,10 @@ namespace dory::core::services
             if(isDefined(sizeDefinition))
             {
                 height = getContainerSizeDimension(*sizeDefinition.*TPolicies::heightDefinitionProperty, containerHeight, containerHeight);
+            }
+            else
+            {
+                height = containerHeight;
             }
             calculateLayout(childDefinition, child, containerWidth);
 
