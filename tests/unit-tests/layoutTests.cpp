@@ -241,3 +241,39 @@ TEST(LayoutTests, gridThreeRowsLine)
     assertContainer(container.children[1], row2.name, 0, 168, availableSpace.width, 500);
     assertContainer(container.children[2], row3.name, 0, 668, availableSpace.width, 100);
 }
+
+TEST(LayoutTests, combinedThreeColumnAndRowsGridLayout)
+{
+    layout::PositionedContainer root {};
+    root.name = "root";
+
+    layout::FloatingContainer& column1 = root.horizontal.emplace_back();
+    column1.size = layout::Size { layout::Dimension{ 124 }, {} };
+
+    layout::FloatingContainer& column2 = root.horizontal.emplace_back();
+    layout::FloatingContainer& row1 = column2.vertical.emplace_back();
+    row1.size = layout::Size { {}, layout::Dimension{ 168 } };
+    layout::FloatingContainer& row2 = column2.vertical.emplace_back();
+    layout::FloatingContainer& row3 = column2.vertical.emplace_back();
+    row3.size = layout::Size { {}, layout::Dimension{ 100 } };
+
+    layout::FloatingContainer& column3 = root.horizontal.emplace_back();
+    column3.size = layout::Size { layout::Dimension{ 100 }, {} };
+
+    services::LayoutService layoutService;
+    constexpr objects::layout::Size availableSpace{ 1024, 768 };
+    const objects::layout::Container container = layoutService.calculate(root, availableSpace);
+
+    EXPECT_EQ(container.name, root.name);
+    EXPECT_EQ(container.children.size(), 3);
+
+    assertContainer(container.children[0], column1.name, 0, 0, 124, availableSpace.height);
+    assertContainer(container.children[2], column3.name, 924, 0, 100, availableSpace.height);
+
+    auto& column2Container = container.children[1];
+    assertContainer(column2Container, column2.name, 124, 0, 800, availableSpace.height);
+    EXPECT_EQ(column2Container.children.size(), 3);
+    assertContainer(column2Container.children[0], row1.name, 0, 0, column2Container.size.width, 168);
+    assertContainer(column2Container.children[1], row2.name, 0, 168, column2Container.size.width, 500);
+    assertContainer(column2Container.children[2], row3.name, 0, 668, column2Container.size.width, 100);
+}
