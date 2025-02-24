@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <dory/core/resources/scene/configuration.h>
+#include <dory/core/resources/objects/layout.h>
+#include <dory/core/services/layoutService.h>
 
 using namespace dory;
 using namespace dory::core;
@@ -31,27 +33,86 @@ TEST(LayoutTests, layoutControl)
     container1.size->height->pixels = { 100 };
 }
 
-TEST(LayoutTests, gridLayout)
+TEST(LayoutTests, centeredPosition)
 {
-    /*layout::Container layoutContainer {"root"};
-    layoutContainer.position = {}; //get automatically positioned(it should be {0,0})
-    layoutContainer.size = {}; //get the full size of the parent surface(should be {parentWidth, parentHeight})
+    layout::PositionedContainer root {};
+    root.name = "root";
 
-    layout::Container row1Container {"row1"};
-    row1Container.position = {};
-    row1Container.size = { {}, layout::Dimension{100}};
+    root.size = layout::Size {
+        layout::Dimension { 150 },
+        layout::Dimension { 100 }
+    };
 
-    layout::Container row2Container {"row2"};
-    row1Container.position = {};
-    row1Container.size = { {}, layout::Dimension{100}};
+    services::LayoutService layoutService;
+    const objects::layout::Container container = layoutService.calculate(root, objects::layout::Size{ 350, 400 });
 
-    layout::Container row3Container {"row3"};
-    row1Container.position = {};
-    row1Container.size = { {}, layout::Dimension{100}};
+    EXPECT_EQ(container.name, root.name);
+    EXPECT_EQ(container.size.width, 150);
+    EXPECT_EQ(container.size.height, 100);
+    EXPECT_EQ(container.position.x, 100);
+    EXPECT_EQ(container.position.y, 150);
+}
 
-    layout::Container row4Container {"row4"};
-    row1Container.position = {};
-    row1Container.size = {}; //take the rest of the parents available space*/
+TEST(LayoutTests, originPosition)
+{
+    layout::PositionedContainer root {};
+    root.name = "root";
 
-    //layoutContainer.containers = { row1Container, row2Container, row3Container, row4Container };
+    root.position = layout::Position {
+        layout::Dimension {},
+        layout::Dimension {}
+    };
+    root.size = layout::Size {
+        layout::Dimension { 150 },
+        layout::Dimension { 100 }
+    };
+
+    services::LayoutService layoutService;
+    const objects::layout::Container container = layoutService.calculate(root, objects::layout::Size{ 350, 400 });
+
+    EXPECT_EQ(container.name, root.name);
+    EXPECT_EQ(container.size.width, 150);
+    EXPECT_EQ(container.size.height, 100);
+    EXPECT_EQ(container.position.x, 0);
+    EXPECT_EQ(container.position.y, 0);
+}
+
+TEST(LayoutTests, explicitPosition)
+{
+    layout::PositionedContainer root {};
+    root.name = "root";
+
+    root.position = layout::Position {
+        layout::Dimension { 12 },
+        layout::Dimension { 225 }
+    };
+    root.size = layout::Size {
+        layout::Dimension { 150 },
+        layout::Dimension { 100 }
+    };
+
+    services::LayoutService layoutService;
+    const objects::layout::Container container = layoutService.calculate(root, objects::layout::Size{ 350, 400 });
+
+    EXPECT_EQ(container.name, root.name);
+    EXPECT_EQ(container.size.width, 150);
+    EXPECT_EQ(container.size.height, 100);
+    EXPECT_EQ(container.position.x, 12);
+    EXPECT_EQ(container.position.y, 225);
+}
+
+TEST(LayoutTests, fullScreen)
+{
+    layout::PositionedContainer root {};
+    root.name = "root";
+
+    services::LayoutService layoutService;
+    constexpr objects::layout::Size availableSpace{ 1024, 768 };
+    const objects::layout::Container container = layoutService.calculate(root, availableSpace);
+
+    EXPECT_EQ(container.name, root.name);
+    EXPECT_EQ(container.size.width, availableSpace.width);
+    EXPECT_EQ(container.size.height, availableSpace.height);
+    EXPECT_EQ(container.position.x, 0);
+    EXPECT_EQ(container.position.y, 0);
 }

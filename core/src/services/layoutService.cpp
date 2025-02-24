@@ -326,7 +326,7 @@ namespace dory::core::services
             calculateInnerHeight<TPolicies>(container);
         }
     }
-    
+
     void calculateLayout(const layout::FloatingContainer& definition, objects::layout::Container& container, std::size_t parentWidth)
     {
         //it might be confusing, but despite container's width and height are const in this function,
