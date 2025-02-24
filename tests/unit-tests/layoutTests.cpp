@@ -191,3 +191,53 @@ TEST(LayoutTests, gridTwoRowsLine)
     assertContainer(container.children[0], row1.name, 0, 0, availableSpace.width, 168);
     assertContainer(container.children[1], row2.name, 0, 168, availableSpace.width, 600);
 }
+
+TEST(LayoutTests, gridThreeColumnsLine)
+{
+    layout::PositionedContainer root {};
+    root.name = "root";
+
+    layout::FloatingContainer& column1 = root.horizontal.emplace_back();
+    column1.size = layout::Size { layout::Dimension{ 124 }, {} };
+
+    layout::FloatingContainer& column2 = root.horizontal.emplace_back();
+
+    layout::FloatingContainer& column3 = root.horizontal.emplace_back();
+    column3.size = layout::Size { layout::Dimension{ 100 }, {} };
+
+    services::LayoutService layoutService;
+    constexpr objects::layout::Size availableSpace{ 1024, 768 };
+    const objects::layout::Container container = layoutService.calculate(root, availableSpace);
+
+    EXPECT_EQ(container.name, root.name);
+    EXPECT_EQ(container.children.size(), 3);
+
+    assertContainer(container.children[0], column1.name, 0, 0, 124, availableSpace.height);
+    assertContainer(container.children[1], column2.name, 124, 0, 800, availableSpace.height);
+    assertContainer(container.children[2], column3.name, 924, 0, 100, availableSpace.height);
+}
+
+TEST(LayoutTests, gridThreeRowsLine)
+{
+    layout::PositionedContainer root {};
+    root.name = "root";
+
+    layout::FloatingContainer& row1 = root.vertical.emplace_back();
+    row1.size = layout::Size { {}, layout::Dimension{ 168 } };
+
+    layout::FloatingContainer& row2 = root.vertical.emplace_back();
+
+    layout::FloatingContainer& row3 = root.vertical.emplace_back();
+    row3.size = layout::Size { {}, layout::Dimension{ 100 } };
+
+    services::LayoutService layoutService;
+    constexpr objects::layout::Size availableSpace{ 1024, 768 };
+    const objects::layout::Container container = layoutService.calculate(root, availableSpace);
+
+    EXPECT_EQ(container.name, root.name);
+    EXPECT_EQ(container.children.size(), 3);
+
+    assertContainer(container.children[0], row1.name, 0, 0, availableSpace.width, 168);
+    assertContainer(container.children[1], row2.name, 0, 168, availableSpace.width, 500);
+    assertContainer(container.children[2], row3.name, 0, 668, availableSpace.width, 100);
+}
