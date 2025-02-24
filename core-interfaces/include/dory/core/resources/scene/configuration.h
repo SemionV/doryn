@@ -117,8 +117,9 @@ namespace dory::core::resources::scene::configuration
 
         struct FloatingContainer: public Container
         {
-            std::vector<PositionedContainer> positionedContainers;
-            std::vector<FloatingContainer> children;
+            std::vector<PositionedContainer> positioned;
+            std::vector<FloatingContainer> horizontal;
+            std::vector<FloatingContainer> vertical;
         };
 
         struct PositionedContainer: public FloatingContainer
