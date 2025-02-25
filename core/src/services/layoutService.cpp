@@ -40,7 +40,7 @@ namespace dory::core::services
         static constexpr std::optional<layout::Dimension> layout::Size::* heightDefinitionProperty = &layout::Size::width;
     };
 
-    void calculateLayout(const layout::FloatingContainer& definition, objects::layout::Container& container, std::size_t parentWidth);
+    void calculateLayout(const layout::FloatingContainer& definition, objects::layout::Container& container, std::size_t parentWidth, std::size_t parentHeight);
 
     template<typename T>
     bool isDefined(const std::optional<T>& optionalValue)
@@ -153,16 +153,6 @@ namespace dory::core::services
         }
     }
 
-    void processDetachedContainer(const layout::PositionedContainer& containerDefinition,
-        objects::layout::Container& container,
-        const std::size_t parentWidth, const std::size_t parentHeight)
-    {
-        container.name = containerDefinition.name;
-        setContainerSize<HorizontalLinePolicies>(containerDefinition.size, container.size, parentWidth, parentHeight, parentWidth, parentHeight);
-        calculateLayout(containerDefinition, container, parentWidth);
-        setContainerPosition<HorizontalLinePolicies>(containerDefinition, container, parentWidth, parentHeight);
-    }
-
     template<typename TPolicies>
     void buildLine(const std::vector<layout::FloatingContainer>& definitions, objects::layout::Container& container)
     {
@@ -195,7 +185,7 @@ namespace dory::core::services
                     {
                         height = containerHeight;
                     }
-                    calculateLayout(childDefinition, child, containerWidth);
+                    calculateLayout(childDefinition, child, containerWidth, containerHeight);
 
                     actualWidth += width;
                 }
@@ -229,7 +219,7 @@ namespace dory::core::services
             {
                 height = containerHeight;
             }
-            calculateLayout(childDefinition, child, containerWidth);
+            calculateLayout(childDefinition, child, containerWidth, containerHeight);
 
             if(columnWidth == 0)
             {
@@ -271,7 +261,7 @@ namespace dory::core::services
 
             setContainerSize<TPolicies>(childDefinition.size, child.size, 0, container.size.*TPolicies::heightProperty, 0, 0);
 
-            calculateLayout(childDefinition, child, container.size.*TPolicies::widthProperty);
+            calculateLayout(childDefinition, child, container.size.width, container.size.height);
 
             if(lineMaxWidth > 0 && currentX + width > lineMaxWidth)
             {
@@ -306,13 +296,23 @@ namespace dory::core::services
         {
             for(const objects::layout::Container& child : container.children)
             {
-                const size_t height = child.position.*TPolicies::xProperty + child.size.*TPolicies::heightProperty;
+                const size_t height = child.position.*TPolicies::yProperty + child.size.*TPolicies::heightProperty;
                 if(height > containerHeight)
                 {
                     containerHeight = height;
                 }
             }
         }
+    }
+
+    void processDetachedContainer(const layout::PositionedContainer& containerDefinition,
+        objects::layout::Container& container,
+        const std::size_t parentWidth, const std::size_t parentHeight)
+    {
+        container.name = containerDefinition.name;
+        setContainerSize<HorizontalLinePolicies>(containerDefinition.size, container.size, parentWidth, parentHeight, parentWidth, parentHeight);
+        calculateLayout(containerDefinition, container, parentWidth, parentHeight);
+        setContainerPosition<HorizontalLinePolicies>(containerDefinition, container, parentWidth, parentHeight);
     }
 
     template<typename TPolicies>
@@ -336,7 +336,7 @@ namespace dory::core::services
         }
     }
 
-    void calculateLayout(const layout::FloatingContainer& definition, objects::layout::Container& container, std::size_t parentWidth)
+    void calculateLayout(const layout::FloatingContainer& definition, objects::layout::Container& container, const std::size_t parentWidth, const std::size_t parentHeight)
     {
         //it might be confusing, but despite container's width and height are const in this function,
         //they might be updated in the sub-functions called from this function and change their value eventually
@@ -345,11 +345,11 @@ namespace dory::core::services
 
         if(!definition.horizontal.empty())
         {
-            calculateGridLayout<HorizontalLinePolicies>(definition.horizontal, container, containerWidth);
+            calculateGridLayout<HorizontalLinePolicies>(definition.horizontal, container, parentWidth);
         }
         else if(!definition.vertical.empty())
         {
-            calculateGridLayout<VerticalLinePolicies>(definition.vertical, container, containerHeight);
+            calculateGridLayout<VerticalLinePolicies>(definition.vertical, container, parentHeight);
         }
 
         //process detached containers

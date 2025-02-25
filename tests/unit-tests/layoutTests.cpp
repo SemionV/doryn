@@ -277,3 +277,134 @@ TEST(LayoutTests, combinedThreeColumnAndRowsGridLayout)
     assertContainer(column2Container.children[1], row2.name, 0, 168, column2Container.size.width, 500);
     assertContainer(column2Container.children[2], row3.name, 0, 668, column2Container.size.width, 100);
 }
+
+TEST(LayoutTests, stretchContainerOversized)
+{
+    layout::PositionedContainer root {};
+    root.name = "root";
+
+    root.size = layout::Size {
+        {}, layout::Dimension{}
+    };
+
+    layout::FloatingContainer& column1 = root.horizontal.emplace_back();
+    column1.size = layout::Size { {}, layout::Dimension{ 3000 } };
+
+    services::LayoutService layoutService;
+    constexpr objects::layout::Size availableSpace{ 1024, 768 };
+    const objects::layout::Container container = layoutService.calculate(root, availableSpace);
+
+    assertContainer(container, root.name, 0, 0, availableSpace.width, 3000);
+    EXPECT_EQ(container.children.size(), 1);
+
+    auto& innerContainer = container.children[0];
+    assertContainer(innerContainer, column1.name, 0, 0, availableSpace.width, 3000);
+}
+
+TEST(LayoutTests, horizontalTiles)
+{
+    layout::PositionedContainer root {};
+    root.name = "root";
+
+    root.size = layout::Size {
+        layout::Dimension{ 350 }, layout::Dimension{}
+    };
+
+    layout::FloatingContainer& tilesColumn = root.horizontal.emplace_back();
+    tilesColumn.size = layout::Size { layout::Dimension{}, layout::Dimension{} };
+
+    layout::FloatingContainer& column1 = tilesColumn.horizontal.emplace_back();
+    column1.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
+
+    layout::FloatingContainer& column2 = tilesColumn.horizontal.emplace_back();
+    column2.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
+
+    layout::FloatingContainer& column3 = tilesColumn.horizontal.emplace_back();
+    column3.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
+
+    layout::FloatingContainer& column4 = tilesColumn.horizontal.emplace_back();
+    column4.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
+
+    layout::FloatingContainer& column5 = tilesColumn.horizontal.emplace_back();
+    column5.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
+
+    services::LayoutService layoutService;
+    constexpr objects::layout::Size availableSpace{ 1024, 768 };
+    const objects::layout::Container container = layoutService.calculate(root, availableSpace);
+
+    assertContainer(container, root.name, 337, 284, 350, 200);
+    EXPECT_EQ(container.children.size(), 1);
+
+    auto& tilesContainer = container.children[0];
+    assertContainer(tilesContainer, tilesColumn.name, 0, 0, 300, 200);
+    EXPECT_EQ(tilesContainer.children.size(), 5);
+
+    auto& tile1 = tilesContainer.children[0];
+    assertContainer(tile1, column1.name, 0, 0, 100, 100);
+
+    auto& tile2 = tilesContainer.children[1];
+    assertContainer(tile2, column2.name, 100, 0, 100, 100);
+
+    auto& tile3 = tilesContainer.children[2];
+    assertContainer(tile3, column3.name, 200, 0, 100, 100);
+
+    auto& tile4 = tilesContainer.children[3];
+    assertContainer(tile4, column4.name, 0, 100, 100, 100);
+
+    auto& tile5 = tilesContainer.children[4];
+    assertContainer(tile5, column5.name, 100, 100, 100, 100);
+}
+
+TEST(LayoutTests, verticalTiles)
+{
+    layout::PositionedContainer root {};
+    root.name = "root";
+
+    root.size = layout::Size {
+        layout::Dimension{}, layout::Dimension{ 350 }
+    };
+
+    layout::FloatingContainer& tilesColumn = root.horizontal.emplace_back();
+    tilesColumn.size = layout::Size { layout::Dimension{}, layout::Dimension{} };
+
+    layout::FloatingContainer& column1 = tilesColumn.vertical.emplace_back();
+    column1.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
+
+    layout::FloatingContainer& column2 = tilesColumn.vertical.emplace_back();
+    column2.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
+
+    layout::FloatingContainer& column3 = tilesColumn.vertical.emplace_back();
+    column3.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
+
+    layout::FloatingContainer& column4 = tilesColumn.vertical.emplace_back();
+    column4.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
+
+    layout::FloatingContainer& column5 = tilesColumn.vertical.emplace_back();
+    column5.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
+
+    services::LayoutService layoutService;
+    constexpr objects::layout::Size availableSpace{ 1024, 768 };
+    const objects::layout::Container container = layoutService.calculate(root, availableSpace);
+
+    assertContainer(container, root.name, 412, 209, 200, 350);
+    EXPECT_EQ(container.children.size(), 1);
+
+    auto& tilesContainer = container.children[0];
+    assertContainer(tilesContainer, tilesColumn.name, 0, 0, 200, 300);
+    EXPECT_EQ(tilesContainer.children.size(), 5);
+
+    auto& tile1 = tilesContainer.children[0];
+    assertContainer(tile1, column1.name, 0, 0, 100, 100);
+
+    auto& tile2 = tilesContainer.children[1];
+    assertContainer(tile2, column2.name, 0, 100, 100, 100);
+
+    auto& tile3 = tilesContainer.children[2];
+    assertContainer(tile3, column3.name, 0, 200, 100, 100);
+
+    auto& tile4 = tilesContainer.children[3];
+    assertContainer(tile4, column4.name, 100, 0, 100, 100);
+
+    auto& tile5 = tilesContainer.children[4];
+    assertContainer(tile5, column5.name, 100, 100, 100, 100);
+}
