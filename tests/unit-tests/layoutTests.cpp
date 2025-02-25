@@ -10,32 +10,9 @@ using namespace dory::core::resources;
 using namespace dory::core::resources::scene;
 using namespace dory::core::resources::scene::configuration;
 
-TEST(LayoutTests, layoutControl)
-{
-    layout::Container container1;
-
-    //set size to available space in the parent
-    container1.size = {};
-
-    //set size by size of the content, both width and height
-    container1.size = layout::Size{};
-
-    container1.size = layout::Size {};
-    //set width to available width in the parent
-    container1.size->width = {};
-    //set height by the height of the content
-    container1.size->height = layout::Dimension{};
-    container1.size->height->percents = {};
-    container1.size->height->pixels = {};
-    //set height to explicit value
-    container1.size->height = layout::Dimension{};
-    container1.size->height->percents = {};
-    container1.size->height->pixels = { 100 };
-}
-
 TEST(LayoutTests, centeredPosition)
 {
-    layout::PositionedContainer root {};
+    layout::ContainerDefinition root {};
     root.name = "root";
 
     root.size = layout::Size {
@@ -55,7 +32,7 @@ TEST(LayoutTests, centeredPosition)
 
 TEST(LayoutTests, originPosition)
 {
-    layout::PositionedContainer root {};
+    layout::ContainerDefinition root {};
     root.name = "root";
 
     root.position = layout::Position {
@@ -79,7 +56,7 @@ TEST(LayoutTests, originPosition)
 
 TEST(LayoutTests, explicitPosition)
 {
-    layout::PositionedContainer root {};
+    layout::ContainerDefinition root {};
     root.name = "root";
 
     root.position = layout::Position {
@@ -103,7 +80,7 @@ TEST(LayoutTests, explicitPosition)
 
 TEST(LayoutTests, fullScreen)
 {
-    layout::PositionedContainer root {};
+    layout::ContainerDefinition root {};
     root.name = "root";
 
     services::LayoutService layoutService;
@@ -119,7 +96,7 @@ TEST(LayoutTests, fullScreen)
 
 TEST(LayoutTests, percentDimensions)
 {
-    layout::PositionedContainer root {};
+    layout::ContainerDefinition root {};
     root.name = "root";
     root.size = layout::Size {
         layout::Dimension { {}, {10.f} },
@@ -152,13 +129,14 @@ void assertContainer(const objects::layout::Container& container, const Name& na
 
 TEST(LayoutTests, gridTwoColumnsLine)
 {
-    layout::PositionedContainer root {};
+    layout::ContainerDefinition root {};
     root.name = "root";
+    root.horizontal = std::vector<layout::ContainerDefinition>{};
 
-    layout::FloatingContainer& column1 = root.horizontal.emplace_back();
+    layout::ContainerDefinition& column1 = root.horizontal->emplace_back();
     column1.size = layout::Size { layout::Dimension{ 124 }, {} }; //124px width, 100% height
 
-    layout::FloatingContainer& column2 = root.horizontal.emplace_back(); //100% - 124px width, 100% height
+    layout::ContainerDefinition& column2 = root.horizontal->emplace_back(); //100% - 124px width, 100% height
 
     services::LayoutService layoutService;
     constexpr objects::layout::Size availableSpace{ 1024, 768 };
@@ -173,13 +151,14 @@ TEST(LayoutTests, gridTwoColumnsLine)
 
 TEST(LayoutTests, gridTwoRowsLine)
 {
-    layout::PositionedContainer root {};
+    layout::ContainerDefinition root {};
     root.name = "root";
+    root.vertical = std::vector<layout::ContainerDefinition>{};
 
-    layout::FloatingContainer& row1 = root.vertical.emplace_back();
+    layout::ContainerDefinition& row1 = root.vertical->emplace_back();
     row1.size = layout::Size { {}, layout::Dimension{ 168 } };
 
-    layout::FloatingContainer& row2 = root.vertical.emplace_back();
+    layout::ContainerDefinition& row2 = root.vertical->emplace_back();
 
     services::LayoutService layoutService;
     constexpr objects::layout::Size availableSpace{ 1024, 768 };
@@ -194,15 +173,16 @@ TEST(LayoutTests, gridTwoRowsLine)
 
 TEST(LayoutTests, gridThreeColumnsLine)
 {
-    layout::PositionedContainer root {};
+    layout::ContainerDefinition root {};
     root.name = "root";
+    root.horizontal = std::vector<layout::ContainerDefinition>{};
 
-    layout::FloatingContainer& column1 = root.horizontal.emplace_back();
+    layout::ContainerDefinition& column1 = root.horizontal->emplace_back();
     column1.size = layout::Size { layout::Dimension{ 124 }, {} };
 
-    layout::FloatingContainer& column2 = root.horizontal.emplace_back();
+    layout::ContainerDefinition& column2 = root.horizontal->emplace_back();
 
-    layout::FloatingContainer& column3 = root.horizontal.emplace_back();
+    layout::ContainerDefinition& column3 = root.horizontal->emplace_back();
     column3.size = layout::Size { layout::Dimension{ 100 }, {} };
 
     services::LayoutService layoutService;
@@ -219,15 +199,16 @@ TEST(LayoutTests, gridThreeColumnsLine)
 
 TEST(LayoutTests, gridThreeRowsLine)
 {
-    layout::PositionedContainer root {};
+    layout::ContainerDefinition root {};
     root.name = "root";
+    root.vertical = std::vector<layout::ContainerDefinition>{};
 
-    layout::FloatingContainer& row1 = root.vertical.emplace_back();
+    layout::ContainerDefinition& row1 = root.vertical->emplace_back();
     row1.size = layout::Size { {}, layout::Dimension{ 168 } };
 
-    layout::FloatingContainer& row2 = root.vertical.emplace_back();
+    layout::ContainerDefinition& row2 = root.vertical->emplace_back();
 
-    layout::FloatingContainer& row3 = root.vertical.emplace_back();
+    layout::ContainerDefinition& row3 = root.vertical->emplace_back();
     row3.size = layout::Size { {}, layout::Dimension{ 100 } };
 
     services::LayoutService layoutService;
@@ -244,20 +225,22 @@ TEST(LayoutTests, gridThreeRowsLine)
 
 TEST(LayoutTests, combinedThreeColumnAndRowsGridLayout)
 {
-    layout::PositionedContainer root {};
+    layout::ContainerDefinition root {};
     root.name = "root";
+    root.horizontal = std::vector<layout::ContainerDefinition>{};
 
-    layout::FloatingContainer& column1 = root.horizontal.emplace_back();
+    layout::ContainerDefinition& column1 = root.horizontal->emplace_back();
     column1.size = layout::Size { layout::Dimension{ 124 }, {} };
 
-    layout::FloatingContainer& column2 = root.horizontal.emplace_back();
-    layout::FloatingContainer& row1 = column2.vertical.emplace_back();
+    layout::ContainerDefinition& column2 = root.horizontal->emplace_back();
+    column2.vertical = std::vector<layout::ContainerDefinition>{};
+    layout::ContainerDefinition& row1 = column2.vertical->emplace_back();
     row1.size = layout::Size { {}, layout::Dimension{ 168 } };
-    layout::FloatingContainer& row2 = column2.vertical.emplace_back();
-    layout::FloatingContainer& row3 = column2.vertical.emplace_back();
+    layout::ContainerDefinition& row2 = column2.vertical->emplace_back();
+    layout::ContainerDefinition& row3 = column2.vertical->emplace_back();
     row3.size = layout::Size { {}, layout::Dimension{ 100 } };
 
-    layout::FloatingContainer& column3 = root.horizontal.emplace_back();
+    layout::ContainerDefinition& column3 = root.horizontal->emplace_back();
     column3.size = layout::Size { layout::Dimension{ 100 }, {} };
 
     services::LayoutService layoutService;
@@ -280,14 +263,15 @@ TEST(LayoutTests, combinedThreeColumnAndRowsGridLayout)
 
 TEST(LayoutTests, stretchContainerOversized)
 {
-    layout::PositionedContainer root {};
+    layout::ContainerDefinition root {};
     root.name = "root";
+    root.horizontal = std::vector<layout::ContainerDefinition>{};
 
     root.size = layout::Size {
         {}, layout::Dimension{}
     };
 
-    layout::FloatingContainer& column1 = root.horizontal.emplace_back();
+    layout::ContainerDefinition& column1 = root.horizontal->emplace_back();
     column1.size = layout::Size { {}, layout::Dimension{ 3000 } };
 
     services::LayoutService layoutService;
@@ -303,29 +287,31 @@ TEST(LayoutTests, stretchContainerOversized)
 
 TEST(LayoutTests, horizontalTiles)
 {
-    layout::PositionedContainer root {};
+    layout::ContainerDefinition root {};
     root.name = "root";
+    root.horizontal = std::vector<layout::ContainerDefinition>{};
 
     root.size = layout::Size {
         layout::Dimension{ 350 }, layout::Dimension{}
     };
 
-    layout::FloatingContainer& tilesColumn = root.horizontal.emplace_back();
+    layout::ContainerDefinition& tilesColumn = root.horizontal->emplace_back();
     tilesColumn.size = layout::Size { layout::Dimension{}, layout::Dimension{} };
+    tilesColumn.horizontal = std::vector<layout::ContainerDefinition>{};
 
-    layout::FloatingContainer& column1 = tilesColumn.horizontal.emplace_back();
+    layout::ContainerDefinition& column1 = tilesColumn.horizontal->emplace_back();
     column1.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
-    layout::FloatingContainer& column2 = tilesColumn.horizontal.emplace_back();
+    layout::ContainerDefinition& column2 = tilesColumn.horizontal->emplace_back();
     column2.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
-    layout::FloatingContainer& column3 = tilesColumn.horizontal.emplace_back();
+    layout::ContainerDefinition& column3 = tilesColumn.horizontal->emplace_back();
     column3.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
-    layout::FloatingContainer& column4 = tilesColumn.horizontal.emplace_back();
+    layout::ContainerDefinition& column4 = tilesColumn.horizontal->emplace_back();
     column4.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
-    layout::FloatingContainer& column5 = tilesColumn.horizontal.emplace_back();
+    layout::ContainerDefinition& column5 = tilesColumn.horizontal->emplace_back();
     column5.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
     services::LayoutService layoutService;
@@ -357,29 +343,31 @@ TEST(LayoutTests, horizontalTiles)
 
 TEST(LayoutTests, verticalTiles)
 {
-    layout::PositionedContainer root {};
+    layout::ContainerDefinition root {};
     root.name = "root";
+    root.horizontal = std::vector<layout::ContainerDefinition>{};
 
     root.size = layout::Size {
         layout::Dimension{}, layout::Dimension{ 350 }
     };
 
-    layout::FloatingContainer& tilesColumn = root.horizontal.emplace_back();
+    layout::ContainerDefinition& tilesColumn = root.horizontal->emplace_back();
     tilesColumn.size = layout::Size { layout::Dimension{}, layout::Dimension{} };
+    tilesColumn.vertical = std::vector<layout::ContainerDefinition>{};
 
-    layout::FloatingContainer& column1 = tilesColumn.vertical.emplace_back();
+    layout::ContainerDefinition& column1 = tilesColumn.vertical->emplace_back();
     column1.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
-    layout::FloatingContainer& column2 = tilesColumn.vertical.emplace_back();
+    layout::ContainerDefinition& column2 = tilesColumn.vertical->emplace_back();
     column2.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
-    layout::FloatingContainer& column3 = tilesColumn.vertical.emplace_back();
+    layout::ContainerDefinition& column3 = tilesColumn.vertical->emplace_back();
     column3.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
-    layout::FloatingContainer& column4 = tilesColumn.vertical.emplace_back();
+    layout::ContainerDefinition& column4 = tilesColumn.vertical->emplace_back();
     column4.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
-    layout::FloatingContainer& column5 = tilesColumn.vertical.emplace_back();
+    layout::ContainerDefinition& column5 = tilesColumn.vertical->emplace_back();
     column5.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
     services::LayoutService layoutService;

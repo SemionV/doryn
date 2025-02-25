@@ -107,30 +107,20 @@ namespace dory::core::resources::scene::configuration
             std::optional<Dimension> height{}; //if it has no value use content height
         };
 
-        struct Container
+        struct ContainerDefinition
         {
-            std::string name;
-            std::optional<Size> size {}; //if it has no value use container's available space
-        };
-
-        struct PositionedContainer;
-
-        struct FloatingContainer: public Container
-        {
-            std::vector<PositionedContainer> positioned;
-            std::vector<FloatingContainer> horizontal;
-            std::vector<FloatingContainer> vertical;
-        };
-
-        struct PositionedContainer: public FloatingContainer
-        {
+            std::string name {};
+            std::optional<Size> size {};
             std::optional<Position> position {};
+            std::optional<std::vector<ContainerDefinition>> positioned  {};
+            std::optional<std::vector<ContainerDefinition>> horizontal {};
+            std::optional<std::vector<ContainerDefinition>> vertical {};
         };
     }
 
     struct Window
     {
-        layout::Container container;
+        layout::ContainerDefinition container;
         std::string title;
         std::string graphicalContext;
     };
@@ -153,6 +143,6 @@ namespace dory::core::resources::scene::configuration
         std::vector<factory::Instance<services::ISceneDirector>> directors;
         std::unordered_map<std::string, GraphicalContext> graphicalContexts {};
         std::unordered_map<std::string, Window> windows {};
-        std::unordered_map<std::string, layout::Container> layouts {};
+        std::unordered_map<std::string, layout::ContainerDefinition> layouts {};
     };
 }

@@ -40,7 +40,7 @@ namespace dory::core::services
         static constexpr std::optional<layout::Dimension> layout::Size::* heightDefinitionProperty = &layout::Size::width;
     };
 
-    void calculateLayout(const layout::FloatingContainer& definition, objects::layout::Container& container, std::size_t parentWidth, std::size_t parentHeight);
+    void calculateLayout(const layout::ContainerDefinition& definition, objects::layout::Container& container, std::size_t parentWidth, std::size_t parentHeight);
 
     template<typename T>
     bool isDefined(const std::optional<T>& optionalValue)
@@ -112,7 +112,7 @@ namespace dory::core::services
     }
 
     template<typename TPolicies>
-    void setContainerPosition(const layout::PositionedContainer& containerDefinition,
+    void setContainerPosition(const layout::ContainerDefinition& containerDefinition,
         objects::layout::Container& container,
         const std::size_t parentWidth, const std::size_t parentHeight)
     {
@@ -154,7 +154,7 @@ namespace dory::core::services
     }
 
     template<typename TPolicies>
-    void buildLine(const std::vector<layout::FloatingContainer>& definitions, objects::layout::Container& container)
+    void buildLine(const std::vector<layout::ContainerDefinition>& definitions, objects::layout::Container& container)
     {
         const auto& containerWidth = container.size.*TPolicies::widthProperty;
         const auto& containerHeight = container.size.*TPolicies::heightProperty;
@@ -239,7 +239,7 @@ namespace dory::core::services
     }
 
     template<typename TPolicies>
-    void buildTiles(const std::vector<layout::FloatingContainer>& definitions, objects::layout::Container& container, const std::size_t lineMaxWidth)
+    void buildTiles(const std::vector<layout::ContainerDefinition>& definitions, objects::layout::Container& container, const std::size_t lineMaxWidth)
     {
         //if row's width value is zero, we stretch the row with columns and if parent's width
         //is non-zero also, we wrap the lines of columns in order to fill the available space
@@ -249,7 +249,7 @@ namespace dory::core::services
         std::size_t currentY {};
         std::size_t currentHeight {};
         std::size_t currentWidth {};
-        for(const layout::FloatingContainer& childDefinition : definitions)
+        for(const layout::ContainerDefinition& childDefinition : definitions)
         {
             auto& child = container.children.emplace_back();
             child.name = childDefinition.name;
@@ -305,7 +305,7 @@ namespace dory::core::services
         }
     }
 
-    void processDetachedContainer(const layout::PositionedContainer& containerDefinition,
+    void processDetachedContainer(const layout::ContainerDefinition& containerDefinition,
         objects::layout::Container& container,
         const std::size_t parentWidth, const std::size_t parentHeight)
     {
@@ -316,7 +316,7 @@ namespace dory::core::services
     }
 
     template<typename TPolicies>
-    void calculateGridLayout(const std::vector<layout::FloatingContainer>& definitions, objects::layout::Container& container, std::size_t parentWidth)
+    void calculateGridLayout(const std::vector<layout::ContainerDefinition>& definitions, objects::layout::Container& container, std::size_t parentWidth)
     {
         const auto& containerWidth = container.size.*TPolicies::widthProperty;
         const auto& containerHeight = container.size.*TPolicies::heightProperty;
@@ -336,32 +336,51 @@ namespace dory::core::services
         }
     }
 
-    void calculateLayout(const layout::FloatingContainer& definition, objects::layout::Container& container, const std::size_t parentWidth, const std::size_t parentHeight)
+    void calculateLayout(const layout::ContainerDefinition& definition, objects::layout::Container& container, const std::size_t parentWidth, const std::size_t parentHeight)
     {
         //it might be confusing, but despite container's width and height are const in this function,
         //they might be updated in the sub-functions called from this function and change their value eventually
         const auto& containerWidth = container.size.width;
         const auto& containerHeight = container.size.height;
 
-        if(!definition.horizontal.empty())
+        if(definition.horizontal)
         {
-            calculateGridLayout<HorizontalLinePolicies>(definition.horizontal, container, parentWidth);
+            calculateGridLayout<HorizontalLinePolicies>(*definition.horizontal, container, parentWidth);
         }
-        else if(!definition.vertical.empty())
+        else if(definition.vertical)
         {
-            calculateGridLayout<VerticalLinePolicies>(definition.vertical, container, parentHeight);
+            calculateGridLayout<VerticalLinePolicies>(*definition.vertical, container, parentHeight);
         }
 
         //process detached containers
-        for(const layout::PositionedContainer& childDefinition : definition.positioned)
+        if(definition.positioned)
         {
-            objects::layout::Container& child = container.children.emplace_back();
-            processDetachedContainer(childDefinition, child, containerWidth, containerHeight);
+            for(const layout::ContainerDefinition& childDefinition : *definition.positioned)
+            {
+                objects::layout::Container& child = container.children.emplace_back();
+                processDetachedContainer(childDefinition, child, containerWidth, containerHeight);
+            }
         }
     }
 
-    objects::layout::Container LayoutService::calculate(const layout::PositionedContainer& layoutDefinition, const objects::layout::Size& availableSpace)
+    objects::layout::Container calculateWithoutRecursion(const layout::ContainerDefinition& layoutDefinition, const objects::layout::Size& availableSpace);
+
+    objects::layout::Container LayoutService::calculate(const layout::ContainerDefinition& layoutDefinition, const objects::layout::Size& availableSpace)
     {
+        objects::layout::Container container;
+        processDetachedContainer(layoutDefinition, container, availableSpace.width, availableSpace.height);
+
+        return container;
+    }
+
+    /*---------------------------------------------------non-recursive implementation attempt---------------------------------------------------*/
+
+#include <stack>
+
+    objects::layout::Container calculateWithoutRecursion(const layout::ContainerDefinition& layoutDefinition, const objects::layout::Size& availableSpace)
+    {
+        std::stack<layout::ContainerDefinition*> stack;
+
         objects::layout::Container container;
         processDetachedContainer(layoutDefinition, container, availableSpace.width, availableSpace.height);
 
