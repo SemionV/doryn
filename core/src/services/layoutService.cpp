@@ -388,49 +388,55 @@ namespace dory::core::services
             currentContainer->name = currentDefinition->name;
 
             const auto& parentWidth = *parentSize.*TPolicies::widthProperty;
-            const auto& parentHeight = *parentSize.*TPolicies::widthHeight;
+            const auto& parentHeight = *parentSize.*TPolicies::heightProperty;
             auto& parentActualWidth = *parentActualSize.*TPolicies::widthProperty;
 
-            setContainerSize<TPolicies>(currentDefinition->size, currentContainer->size, parentWidth, parentHeight, 0/*do not stretch container's width*/, parentHeight);
+            setContainerSize<TPolicies>(currentDefinition->size, currentContainer->size, parentWidth, parentHeight, 0/*do not stretch container*/, 0);
 
             //set flexible container size
-            if(!isDefined(currentDefinition->size) || !isDefined(currentDefinition->size.*TPolicies::widthProperty))
+            auto& sizeDefinition = currentDefinition->size;
+            if(!isDefined(sizeDefinition) || !isDefined(*sizeDefinition.*TPolicies::widthDefinitionProperty))
             {
                 //use available parent's width
-                const auto& width = currentContainer->size.*TPolicies::widthProperty;
                 const std::size_t columnWidth = parentWidth >= parentActualWidth ? parentWidth - parentActualWidth : 0;
-                width = columnWidth;
+                currentContainer->size.*TPolicies::widthProperty = columnWidth;
             }
 
             parentActualWidth += currentContainer->size.*TPolicies::widthProperty;
 
             //sort children on fixed size and flexible siblings
-            std::vector<const layout::ContainerDefinition*> siblings(*currentDefinition.*TPolicies::childrenProperty.size()); //reserve memory for all children
-            const layout::ContainerDefinition* flexibleSibling {};
-            for(const auto& childDefinition : *currentDefinition.*TPolicies::childrenProperty)
+            if(auto& children = *currentDefinition.*TPolicies::childrenProperty)
             {
-                //skip flexible containers, because their children do not know the size of the parent yet to calculate percents
-                if(isDefined(childDefinition.size) && isDefined(childDefinition.size.*TPolicies::widthProperty))
+                using SiblingEntry = std::tuple<const layout::ContainerDefinition*, objects::layout::Container*>;
+                std::vector<SiblingEntry> siblings(children.value().size()); //reserve memory for all children
+                std::optional<SiblingEntry> flexibleSibling {};
+                for(const auto& childDefinition : *children)
                 {
-                    siblings.emplace_back(&childDefinition);
+                    auto& childContainer = currentContainer->children.emplace_back();
+
+                    //skip flexible containers, because their children do not know the size of the parent yet to calculate percents
+                    auto& childSizeDefinition = childDefinition.size;
+                    if(isDefined(childSizeDefinition) && isDefined(*childSizeDefinition.*TPolicies::widthDefinitionProperty))
+                    {
+                        siblings.emplace_back(&childDefinition, &childContainer);
+                    }
+                    else
+                    {
+                        flexibleSibling = SiblingEntry{ &childDefinition, &childContainer };
+                    }
                 }
-                else
+
+                //push flexible sibling on stack first, then fixed-width siblings
+                if(flexibleSibling)
                 {
-                    flexibleSibling = &childDefinition;
+                    auto [childDefinition, childContainer] = *flexibleSibling;
+                    stack.emplace(childDefinition, childContainer, &currentContainer->size, &currentContainer->actualSize);
                 }
-            }
 
-            //push flexible sibling on stack first, then fixed-width siblings
-            if(flexibleSibling)
-            {
-                auto& childContainer = currentContainer->children.emplace_back();
-                stack.emplace(flexibleSibling, &childContainer, &currentContainer->size, &currentContainer->actualSize);
-            }
-
-            for(const auto* childDefinition : siblings)
-            {
-                auto& childContainer = currentContainer->children.emplace_back();
-                stack.emplace(childDefinition, &childContainer, &currentContainer->size, &currentContainer->actualSize);
+                for(auto [childDefinition, childContainer] : siblings)
+                {
+                    stack.emplace(childDefinition, childContainer, &currentContainer->size, &currentContainer->actualSize);
+                }
             }
         }
     }
