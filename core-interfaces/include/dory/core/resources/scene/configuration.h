@@ -115,14 +115,15 @@ namespace dory::core::resources::scene::configuration
             std::optional<std::vector<ContainerDefinition>> positioned  {};
             std::optional<std::vector<ContainerDefinition>> horizontal {};
             std::optional<std::vector<ContainerDefinition>> vertical {};
+            std::optional<ContainerDefinition> tileset {};
         };
     }
 
     struct Window
     {
-        layout::ContainerDefinition container;
-        std::string title;
-        std::string graphicalContext;
+        layout::ContainerDefinition container {};
+        std::string title {};
+        std::string graphicalContext {};
     };
 
     struct View

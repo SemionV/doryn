@@ -25,6 +25,8 @@ namespace dory::core::services
         static constexpr std::optional<layout::Dimension> layout::Position::* yDefinitionProperty = &layout::Position::y;
         static constexpr std::optional<layout::Dimension> layout::Size::* widthDefinitionProperty = &layout::Size::width;
         static constexpr std::optional<layout::Dimension> layout::Size::* heightDefinitionProperty = &layout::Size::height;
+
+        static constexpr std::optional<std::vector<layout::ContainerDefinition>> layout::ContainerDefinition::* childrenProperty = &layout::ContainerDefinition::horizontal;
     };
 
     struct VerticalLinePolicies
@@ -38,6 +40,8 @@ namespace dory::core::services
         static constexpr std::optional<layout::Dimension> layout::Position::* yDefinitionProperty = &layout::Position::x;
         static constexpr std::optional<layout::Dimension> layout::Size::* widthDefinitionProperty = &layout::Size::height;
         static constexpr std::optional<layout::Dimension> layout::Size::* heightDefinitionProperty = &layout::Size::width;
+
+        static constexpr std::optional<std::vector<layout::ContainerDefinition>> layout::ContainerDefinition::* childrenProperty = &layout::ContainerDefinition::vertical;
     };
 
     void calculateLayout(const layout::ContainerDefinition& definition, objects::layout::Container& container, std::size_t parentWidth, std::size_t parentHeight);
@@ -177,14 +181,7 @@ namespace dory::core::services
                 if(isDefined(widthDefinition))
                 {
                     width = getDimensionValue(*widthDefinition, containerWidth);
-                    if(isDefined(sizeDefinition))
-                    {
-                        height = getContainerSizeDimension(*sizeDefinition.*TPolicies::heightDefinitionProperty, containerHeight, containerHeight);
-                    }
-                    else
-                    {
-                        height = containerHeight;
-                    }
+                    height = getContainerSizeDimension(*sizeDefinition.*TPolicies::heightDefinitionProperty, containerHeight, containerHeight);
                     calculateLayout(childDefinition, child, containerWidth, containerHeight);
 
                     actualWidth += width;
@@ -377,13 +374,206 @@ namespace dory::core::services
 
 #include <stack>
 
+    template<typename TPolicies>
+    void buildContainerLines(const layout::ContainerDefinition& containerDefinition, objects::layout::Container& rootContainer, const objects::layout::Size& availableSpace)
+    {
+        std::stack<std::tuple<const layout::ContainerDefinition*, objects::layout::Container*, const objects::layout::Size*, objects::layout::Size*>> stack;
+        stack.emplace(&containerDefinition, &rootContainer, &availableSpace, &rootContainer.actualSize);
+
+        while(!stack.empty())
+        {
+            auto& [currentDefinition, currentContainer, parentSize, parentActualSize] = stack.top();
+            stack.pop();
+
+            currentContainer->name = currentDefinition->name;
+
+            const auto& parentWidth = *parentSize.*TPolicies::widthProperty;
+            const auto& parentHeight = *parentSize.*TPolicies::widthHeight;
+            auto& parentActualWidth = *parentActualSize.*TPolicies::widthProperty;
+
+            setContainerSize<TPolicies>(currentDefinition->size, currentContainer->size, parentWidth, parentHeight, 0/*do not stretch container's width*/, parentHeight);
+
+            //set flexible container size
+            if(!isDefined(currentDefinition->size) || !isDefined(currentDefinition->size.*TPolicies::widthProperty))
+            {
+                //use available parent's width
+                const auto& width = currentContainer->size.*TPolicies::widthProperty;
+                const std::size_t columnWidth = parentWidth >= parentActualWidth ? parentWidth - parentActualWidth : 0;
+                width = columnWidth;
+            }
+
+            parentActualWidth += currentContainer->size.*TPolicies::widthProperty;
+
+            //sort children on fixed size and flexible siblings
+            std::vector<const layout::ContainerDefinition*> siblings(*currentDefinition.*TPolicies::childrenProperty.size()); //reserve memory for all children
+            const layout::ContainerDefinition* flexibleSibling {};
+            for(const auto& childDefinition : *currentDefinition.*TPolicies::childrenProperty)
+            {
+                //skip flexible containers, because their children do not know the size of the parent yet to calculate percents
+                if(isDefined(childDefinition.size) && isDefined(childDefinition.size.*TPolicies::widthProperty))
+                {
+                    siblings.emplace_back(&childDefinition);
+                }
+                else
+                {
+                    flexibleSibling = &childDefinition;
+                }
+            }
+
+            //push flexible sibling on stack first, then fixed-width siblings
+            if(flexibleSibling)
+            {
+                auto& childContainer = currentContainer->children.emplace_back();
+                stack.emplace(flexibleSibling, &childContainer, &currentContainer->size, &currentContainer->actualSize);
+            }
+
+            for(const auto* childDefinition : siblings)
+            {
+                auto& childContainer = currentContainer->children.emplace_back();
+                stack.emplace(childDefinition, &childContainer, &currentContainer->size, &currentContainer->actualSize);
+            }
+        }
+    }
+
+    template<typename TPolicies>
+    void buildContainerTiles(const layout::ContainerDefinition& containerDefinition, objects::layout::Container& rootContainer, const objects::layout::Size& availableSpace)
+    {
+
+    }
+
     objects::layout::Container calculateWithoutRecursion(const layout::ContainerDefinition& layoutDefinition, const objects::layout::Size& availableSpace)
     {
-        std::stack<layout::ContainerDefinition*> stack;
-
         objects::layout::Container container;
-        processDetachedContainer(layoutDefinition, container, availableSpace.width, availableSpace.height);
+
+        buildContainerLines<HorizontalLinePolicies>(layoutDefinition, container, availableSpace);
+        buildContainerLines<VerticalLinePolicies>(layoutDefinition, container, availableSpace);
+
+        // * build tiles
+        // * calculate flexible containers
+        // *
 
         return container;
+
+        /*const std::size_t parentWidth = availableSpace.width;
+        const std::size_t parentHeight = availableSpace.height;
+
+        container.name = layoutDefinition.name;
+        setContainerSize<HorizontalLinePolicies>(layoutDefinition.size, container.size, parentWidth, parentHeight, parentWidth, parentHeight);
+
+        while(!stack.empty())
+        {
+            const layout::ContainerDefinition* currentDefinition = stack.top();
+            stack.pop();
+
+            if(currentDefinition->horizontal)
+            {
+                const auto& containerWidth = container.size.*HorizontalLinePolicies::widthProperty;
+                const auto& containerHeight = container.size.*HorizontalLinePolicies::heightProperty;
+
+                const auto& definitions = *currentDefinition->horizontal;
+
+                if(containerWidth > 0)
+                {
+                    //if row's width has a non-zero value, we divide it between the row's columns and take all available height of the row
+                    std::optional<std::size_t> flexibleChildIndex {};
+                    std::size_t actualWidth {};
+                    for(std::size_t i= 0; i < definitions.size(); ++i)
+                    {
+                        const auto& childDefinition = definitions[i];
+                        auto& child = container.children.emplace_back();
+                        child.name = childDefinition.name;
+                        auto& width = child.size.*HorizontalLinePolicies::widthProperty;
+                        auto& height = child.size.*HorizontalLinePolicies::heightProperty;
+
+                        const auto& sizeDefinition = childDefinition.size;
+                        if(isDefined(sizeDefinition))
+                        {
+                            const auto& widthDefinition = *sizeDefinition.*HorizontalLinePolicies::widthDefinitionProperty;
+                            if(isDefined(widthDefinition))
+                            {
+                                width = getDimensionValue(*widthDefinition, containerWidth);
+                                height = getContainerSizeDimension(*sizeDefinition.*HorizontalLinePolicies::heightDefinitionProperty, containerHeight, containerHeight);
+
+                                calculateLayout(childDefinition, child, containerWidth, containerHeight);
+
+                                actualWidth += width;
+                            }
+                            else
+                            {
+                                flexibleChildIndex = i;
+                            }
+                        }
+                        else
+                        {
+                            flexibleChildIndex = i;
+                        }
+                    }
+
+                    if(flexibleChildIndex)
+                    {
+                        //process the latest flexible-width column
+                        const auto & childDefinition = definitions[*flexibleChildIndex];
+                        objects::layout::Container& child = container.children[*flexibleChildIndex];
+                        auto& width = child.size.*HorizontalLinePolicies::widthProperty;
+                        auto& height = child.size.*HorizontalLinePolicies::heightProperty;
+
+                        const std::size_t columnWidth = containerWidth >= actualWidth ? containerWidth - actualWidth : 0;
+                        width = columnWidth;
+                        const auto& sizeDefinition = childDefinition.size;
+                        if(isDefined(sizeDefinition))
+                        {
+                            height = getContainerSizeDimension(*sizeDefinition.*HorizontalLinePolicies::heightDefinitionProperty, containerHeight, containerHeight);
+                        }
+                        else
+                        {
+                            height = containerHeight;
+                        }
+                        calculateLayout(childDefinition, child, containerWidth, containerHeight);
+
+                        if(columnWidth == 0)
+                        {
+                            //if column's width was zero before calling calculateLayout, it has to stay zero in order to not mess up the width of the row
+                            //the column possible was stretched by its contents
+                            width = 0;
+                        }
+                    }
+
+                    //set x-positions
+                    std::size_t currentWidth {};
+                    for(objects::layout::Container& child : container.children)
+                    {
+                        child.position.*HorizontalLinePolicies::xProperty = currentWidth;
+                        currentWidth += child.size.*HorizontalLinePolicies::widthProperty;
+                    }
+                }
+                else
+                {
+                    //buildTiles<TPolicies>(definitions, container, parentWidth);
+                }
+
+                if(containerHeight == 0)
+                {
+                    //calculateInnerHeight<TPolicies>(container);
+                }
+            }
+            else if(currentDefinition->vertical)
+            {
+                calculateGridLayout<VerticalLinePolicies>(*currentDefinition->vertical, container, parentHeight);
+            }
+
+            //process detached containers
+            if(currentDefinition->positioned)
+            {
+                for(const layout::ContainerDefinition& childDefinition : *currentDefinition->positioned)
+                {
+                    objects::layout::Container& child = container.children.emplace_back();
+                    processDetachedContainer(childDefinition, child, containerWidth, containerHeight);
+                }
+            }
+        }
+
+        setContainerPosition<HorizontalLinePolicies>(layoutDefinition, container, parentWidth, parentHeight);
+
+        return container;*/
     }
 }

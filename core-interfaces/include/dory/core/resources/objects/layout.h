@@ -21,6 +21,8 @@ namespace dory::core::resources::objects::layout
         Name name {};
         Position position {};
         Size size {};
+        Size actualSize {};
         std::vector<Container> children {};
+        std::vector<Container> detachedChildren {};
     };
 }

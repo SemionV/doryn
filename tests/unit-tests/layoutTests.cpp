@@ -396,3 +396,6 @@ TEST(LayoutTests, verticalTiles)
     auto& tile5 = tilesContainer.children[4];
     assertContainer(tile5, column5.name, 100, 100, 100, 100);
 }
+
+//TODO: write a test for a 3 column layout with a flexible column in the middle, which contains another three columns with a flexible column in the middle,
+//where one of the columns has width defined as a percent of the parents width
