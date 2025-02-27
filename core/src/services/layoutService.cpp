@@ -46,15 +46,15 @@ namespace dory::core::services
 
     struct LinePolicies
     {
-        const std::size_t objects::layout::Position::* xProperty = &objects::layout::Position::y;
-        const std::size_t objects::layout::Position::* yProperty = &objects::layout::Position::x;
-        const std::size_t objects::layout::Size::* widthProperty = &objects::layout::Size::height;
-        const std::size_t objects::layout::Size::* heightProperty = &objects::layout::Size::width;
+        std::size_t objects::layout::Position::* const xProperty = &objects::layout::Position::y;
+        std::size_t objects::layout::Position::* const yProperty = &objects::layout::Position::x;
+        std::size_t objects::layout::Size::* const widthProperty = &objects::layout::Size::height;
+        std::size_t objects::layout::Size::* const heightProperty = &objects::layout::Size::width;
 
-        const std::optional<layout::Dimension> layout::Position::* xDefinitionProperty = &layout::Position::y;
-        const std::optional<layout::Dimension> layout::Position::* yDefinitionProperty = &layout::Position::x;
-        const std::optional<layout::Dimension> layout::Size::* widthDefinitionProperty = &layout::Size::height;
-        const std::optional<layout::Dimension> layout::Size::* heightDefinitionProperty = &layout::Size::width;
+        const std::optional<layout::Dimension> layout::Position::* const xDefinitionProperty = &layout::Position::y;
+        const std::optional<layout::Dimension> layout::Position::* const yDefinitionProperty = &layout::Position::x;
+        const std::optional<layout::Dimension> layout::Size::* const widthDefinitionProperty = &layout::Size::height;
+        const std::optional<layout::Dimension> layout::Size::* const heightDefinitionProperty = &layout::Size::width;
 
         const std::optional<std::vector<layout::ContainerDefinition>> layout::ContainerDefinition::* childrenProperty = &layout::ContainerDefinition::vertical;
     };
@@ -431,8 +431,8 @@ namespace dory::core::services
 
     struct ListContainerEntry: public StackContainerEntry
     {
-        std::size_t actualWidth {};
-        std::size_t actualHeight {};
+        std::size_t contentWidth {};
+        std::size_t contentHeight {};
 
         explicit ListContainerEntry(const StackContainerEntry& stackEntry):
             StackContainerEntry(stackEntry)
@@ -542,6 +542,66 @@ namespace dory::core::services
 
             //TODO: add tileset children on stack
             //TODO: add detached containers on stack
+        }
+    }
+
+    void calculateDimensions(ContainerList& list)
+    {
+        for(ListContainerEntry& entry : list.entries)
+        {
+            if(entry.definition) //top entry does not have definition
+            {
+                const auto widthProperty = entry.linePolicies.widthProperty;
+                const auto heightProperty = entry.linePolicies.heightProperty;
+                const auto widthDefinitionProperty = entry.linePolicies.widthDefinitionProperty;
+                const auto heightDefinitionProperty = entry.linePolicies.heightDefinitionProperty;
+
+                auto& parentEntry = list.entries[entry.parentIndex];
+                auto& parentSize = parentEntry.container->size;
+                const auto availableWidth = parentSize.*widthProperty - parentEntry.contentWidth;
+                const auto availableHeight = parentSize.*heightProperty;
+
+                std::size_t& width = entry.container->size.*widthProperty;
+                std::size_t& height = entry.container->size.*heightProperty;
+
+                auto& sizeDefinition = entry.definition->size;
+                if(isDefined(sizeDefinition))
+                {
+                    auto& widthDefinition = *sizeDefinition.*widthDefinitionProperty;
+                    if(isDefined(widthDefinition))
+                    {
+                        width = getDimensionValue(*widthDefinition, parentSize.*widthProperty);
+                    }
+                    else
+                    {
+                        width = availableWidth;
+                    }
+
+                    parentEntry.contentWidth += width;
+                    //TODO: increase parent's size.width if it is defined by the width of the content
+
+                    if(isDefined(*sizeDefinition.*heightDefinitionProperty))
+                    {
+
+                    }
+                    else
+                    {
+                        height = availableHeight;
+                    }
+
+                    if(parentEntry.contentHeight < height)
+                    {
+                        parentEntry.contentHeight = height;
+                    }
+
+                    //TODO: increase parent's size.height if it is defined by the height of the content
+                }
+                else
+                {
+                    width = availableWidth;
+                    height = availableHeight;
+                }
+            }
         }
     }
 
