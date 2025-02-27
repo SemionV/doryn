@@ -1,12 +1,12 @@
 root:
   parent: null
-  size: { width: 0, height: 0 }
+  size: { width: w1, height: h1 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
   type: floating
   orientation: horizontal
   sizeUpstream: self
-  
+
 column1:
   parent: root
   size: { width: 0, height: 0 }
@@ -33,7 +33,7 @@ column1_t1:
   type: tile
   orientation: horizontal
   sizeUpstream: self
-  
+
 column1_t2:
   parent: column1_1
   size: { width: 0, height: 0 }
@@ -42,7 +42,7 @@ column1_t2:
   type: tile
   orientation: horizontal
   sizeUpstream: self
-  
+
 column1_t3:
   parent: column1_1
   size: { width: 0, height: 0 }
@@ -51,7 +51,7 @@ column1_t3:
   type: tile
   orientation: horizontal
   sizeUpstream: self
-  
+
 column1_t4:
   parent: column1_1
   size: { width: 0, height: 0 }
@@ -60,7 +60,7 @@ column1_t4:
   type: tile
   orientation: horizontal
   sizeUpstream: self
-  
+
 column1_t5:
   parent: column1_1
   size: { width: 0, height: 0 }
@@ -69,7 +69,7 @@ column1_t5:
   type: tile
   orientation: horizontal
   sizeUpstream: self
-  
+
 column1_2:
   parent: column1
   size: { width: 0, height: 0 }
@@ -78,7 +78,7 @@ column1_2:
   type: cell
   orientation: horizontal
   sizeUpstream: children
-  
+
 view1:
   parent: column1_2
   size: { width: 0, height: 0 }
@@ -87,7 +87,7 @@ view1:
   type: cell
   orientation: horizontal
   sizeUpstream: self
-  
+
 column2:
   parent: root
   size: { width: 0, height: 0 }
@@ -96,7 +96,7 @@ column2:
   type: cell
   orientation: horizontal
   sizeUpstream: parent
-  
+
 row1:
   parent: column2
   size: { width: 0, height: 0 }
@@ -105,7 +105,7 @@ row1:
   type: cell
   orientation: vertical
   sizeUpstream: self
-  
+
 row2:
   parent: column2
   size: { width: 0, height: 0 }
@@ -114,7 +114,7 @@ row2:
   type: cell
   orientation: vertical
   sizeUpstream: parent
-  
+
 row3:
   parent: column2
   size: { width: 0, height: 0 }
@@ -123,7 +123,7 @@ row3:
   type: cell
   orientation: vertical
   sizeUpstream: self
-  
+
 row3_t1:
   parent: row3
   size: { width: 0, height: 0 }
@@ -132,7 +132,7 @@ row3_t1:
   type: tile
   orientation: vertical
   sizeUpstream: self
-  
+
 row3_t2:
   parent: row3
   size: { width: 0, height: 0 }
@@ -141,7 +141,7 @@ row3_t2:
   type: tile
   orientation: vertical
   sizeUpstream: self
-  
+
 row3_t3:
   parent: row3
   size: { width: 0, height: 0 }
@@ -150,7 +150,7 @@ row3_t3:
   type: tile
   orientation: vertical
   sizeUpstream: self
-  
+
 column3:
   parent: root
   size: { width: 0, height: 0 }
@@ -159,7 +159,7 @@ column3:
   type: cell
   orientation: horizontal
   sizeUpstream: self
-  
+
 popup1:
   parent: column3
   size: { width: 0, height: 0 }
@@ -168,7 +168,7 @@ popup1:
   type: floating
   orientation: horizontal
   sizeUpstream: self
-  
+
 popup1_c1:
   parent: popup1
   size: { width: 0, height: 0 }
@@ -177,7 +177,7 @@ popup1_c1:
   type: cell
   orientation: horizontal
   sizeUpstream: self
-  
+
 popup1_c2:
   parent: popup1
   size: { width: 0, height: 0 }

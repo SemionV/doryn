@@ -1,5 +1,10 @@
 # Development log
 
+* Pass a container definition instead of availableSpace, which is defining screen and its layout
+* Reduce size of cells(columns and rows) just to one field: size
+* Remember in the list entries the upstream for their size: children, parent, self
+* Update parent to parent size from their children, until hit a floating container or the one whose size upstream is not children
+
 Tasks:
 * Scene
   * Serialization of scene state

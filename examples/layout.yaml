@@ -1,53 +1,53 @@
 root:
-  width: w1
-  height: h1
+  width: { variable: w1 }
+  height: { variable: h1 }
   columns:
     - name: column1
-      size: 0 #from content
+      size: { upstream: children }
       columns:
         - name: column1_1
-          size: w3
+          size: { variable: w3 }
           tileRow:
-            - width: w
-              height: h
-            - width: w
-              height: h
-            - width: w
-              height: h
-            - width: w
-              height: h
-            - width: w
-              height: h
+            - width: { pixels: 10 }
+              height: { percent: 5 }
+            - width: { pixels: 10 }
+              height: { percent: 5 }
+            - width: { pixels: 10 }
+              height: { percent: 5 }
+            - width: { pixels: 10 }
+              height: { percent: 5 }
+            - width: { pixels: 10 }
+              height: { percent: 5 }
         - name: column1_2
-          size: 0 #from content
+          size: { upstream: children }
           view:
             name: view1
-            width: w4
-            height: h2 #more than the height of the container
+            width: { variable: w4 }
+            height: { variable: h2 }
     - name: column2
-      size: null #from parent
+      size: { upstream: parent }
       rows:
         - name: row1
-          size: h3
+          size: { variable: h3 }
         - name: row2
-          size: null #from parent
+          size: { upstream: parent }
         - name: row3
-          size: h4%
+          size: { variable: h4% }
           tileColumn:
-            - width: w
-              height: h
-            - width: w
-              height: h
-            - width: w
-              height: h
+            - width: { pixels: 10 }
+              height: { percent: 5 }
+            - width: { pixels: 10 }
+              height: { percent: 5 }
+            - width: { pixels: 10 }
+              height: { percent: 5 }
     - name: column3
-      size: w2%
+      size: { variable: h4% }
       floating:
         - name: popup1
-          width: w5%
-          width: h5%
-          x: null #centered
-          y: h6%
+          width: { variable: w5% }
+          height: { variable: h5% }
+          x: { align: center }
+          y: { variable: h6% }
           columns:
-            - size: 50%
-            - size: 50%
+            - size: { percent: 50.0 }
+            - size: { percent: 50.0 }
