@@ -112,10 +112,15 @@ namespace dory::core::resources::scene::configuration
             std::string name {};
             std::optional<Size> size {};
             std::optional<Position> position {};
+
+            //Detached
             std::optional<std::vector<ContainerDefinition>> positioned  {};
+
+            //Line
             std::optional<std::vector<ContainerDefinition>> horizontal {};
             std::optional<std::vector<ContainerDefinition>> vertical {};
-            std::optional<Size> tilesetSizeConstraints {};
+
+            //Tileset
             std::optional<std::vector<ContainerDefinition>> horizontalTileset {};
             std::optional<std::vector<ContainerDefinition>> verticalTileset {};
         };
