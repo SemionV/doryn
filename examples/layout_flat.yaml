@@ -1,0 +1,145 @@
+root:
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+  
+column1:
+  parent: root
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+  
+column1_1:
+  parent: column1
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+
+column1_t1:
+  parent: column1_1
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+  
+column1_t2:
+  parent: column1_1
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+  
+column1_t3:
+  parent: column1_1
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+  
+column1_t4:
+  parent: column1_1
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+  
+column1_t5:
+  parent: column1_1
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+  
+column1_2:
+  parent: column1
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+  
+view1:
+  parent: column1_2
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+  
+column2:
+  parent: root
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+  
+row1:
+  parent: column2
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+  
+row2:
+  parent: column2
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+  
+row3:
+  parent: column2
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+  
+row3_t1:
+  parent: row3
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+  
+row3_t2:
+  parent: row3
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+  
+row3_t3:
+  parent: row3
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+  
+column3:
+  parent: root
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+  
+popup1:
+  parent: column3
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+  
+popup1_c1:
+  parent: popup1
+  width:
+  height:
+  contentWidth:
+  contentHeight:
+  
+popup1_c2:
+  parent: popup1
+  width:
+  height:
+  contentWidth:
+  contentHeight:

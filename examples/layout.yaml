@@ -1,0 +1,53 @@
+root:
+  width: w1
+  height: h1
+  columns:
+    - name: column1
+      size: 0 #from content
+      columns:
+        - name: column1_1
+          size: w3
+          tileRow:
+            - width: w
+              height: h
+            - width: w
+              height: h
+            - width: w
+              height: h
+            - width: w
+              height: h
+            - width: w
+              height: h
+        - name: column1_2
+          size: 0 #from content
+          view:
+            name: view1
+            width: w4
+            height: h2 #more than the height of the container
+    - name: column2
+      size: null #from parent
+      rows:
+        - name: row1
+          size: h3
+        - name: row2
+          size: null #from parent
+        - name: row3
+          size: h4%
+          tileColumn:
+            - width: w
+              height: h
+            - width: w
+              height: h
+            - width: w
+              height: h
+    - name: column3
+      size: w2%
+      floating:
+        - name: popup1
+          width: w5%
+          width: h5%
+          x: null #centered
+          y: h6%
+          columns:
+            - size: 50%
+            - size: 50%
