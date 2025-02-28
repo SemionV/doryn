@@ -3,186 +3,444 @@ root:
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: floating
-  orientation: horizontal
-  sizeUpstream: self
+  children: 0, 2, 1 #use absolute indices instead of relative
+  alignment:
+    dimensions:
+      - axis: x
+        align: relative #center line origin
+      - axis: y
+        align: relative
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: source #parent, children
+        propagation: false
+      - axis: height
+        upstream: source #parent, children
+        propagation: false
+  cursor: { x: 0, y: 0 }
   
 column1:
   parent: root
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: cell
-  orientation: horizontal
-  sizeUpstream: children
+  children: 0, 1
+  alignment:
+    dimensions:
+      - axis: x
+        align: line
+      - axis: y
+        align: origin
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: children
+        propagation: true
+      - axis: height
+        upstream: parent
+        propagation: true
 
 column1_1:
   parent: column1
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: cell
-  orientation: horizontal
-  sizeUpstream: self
+  children: 0, 1, 2, 3, 4
+  alignment:
+    direction: x #index of an axis
+    dimensions:
+      - axis: x
+        align: line
+      - axis: y
+        align: origin
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: source
+        propagation: true
+      - axis: height
+        upstream: parent
+        propagation: true
 
 column1_t1:
   parent: column1_1
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: tile
-  orientation: horizontal
-  sizeUpstream: self
+  alignment:
+    direction: x
+    dimensions:
+      - axis: x
+        align: line
+      - axis: y
+        align: line
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: source
+        propagation: false
+      - axis: height
+        upstream: source
+        propagation: false
   
 column1_t2:
   parent: column1_1
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: tile
-  orientation: horizontal
-  sizeUpstream: self
-  
+  alignment:
+    direction: x
+    dimensions:
+      - axis: x
+        align: line
+      - axis: y
+        align: line
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: source
+        propagation: false
+      - axis: height
+        upstream: source
+        propagation: false
+
 column1_t3:
   parent: column1_1
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: tile
-  orientation: horizontal
-  sizeUpstream: self
-  
+  alignment:
+    direction: x
+    dimensions:
+      - axis: x
+        align: line
+      - axis: y
+        align: line
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: source
+        propagation: false
+      - axis: height
+        upstream: source
+        propagation: false
+
 column1_t4:
   parent: column1_1
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: tile
-  orientation: horizontal
-  sizeUpstream: self
-  
+  alignment:
+    direction: x
+    dimensions:
+      - axis: x
+        align: line
+      - axis: y
+        align: line
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: source
+        propagation: false
+      - axis: height
+        upstream: source
+        propagation: false
+
 column1_t5:
   parent: column1_1
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: tile
-  orientation: horizontal
-  sizeUpstream: self
+  alignment:
+    direction: x
+    dimensions:
+      - axis: x
+        align: line
+      - axis: y
+        align: line
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: source
+        propagation: false
+      - axis: height
+        upstream: source
+        propagation: false
   
 column1_2:
   parent: column1
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: cell
-  orientation: horizontal
-  sizeUpstream: children
+  children: 0
+  alignment:
+    direction: x
+    dimensions:
+      - axis: x
+        align: line
+      - axis: y
+        align: origin
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: children
+        propagation: true
+      - axis: height
+        upstream: parent
+        propagation: true
   
 view1:
   parent: column1_2
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: cell
-  orientation: horizontal
-  sizeUpstream: self
+  alignment:
+    direction: x
+    dimensions:
+      - axis: x
+        align: line
+      - axis: y
+        align: origin
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: source
+        propagation: true
+      - axis: height
+        upstream: parent
+        propagation: true
   
 column2:
   parent: root
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: cell
-  orientation: horizontal
-  sizeUpstream: parent
+  children: 0, 2, 1
+  alignment:
+    direction: x
+    dimensions:
+      - axis: x
+        align: line
+      - axis: y
+        align: origin
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: source
+        propagation: true
+      - axis: height
+        upstream: parent
+        propagation: true
   
 row1:
   parent: column2
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: cell
-  orientation: vertical
-  sizeUpstream: self
+  alignment:
+    direction: y
+    dimensions:
+      - axis: x
+        align: origin
+      - axis: y
+        align: line
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: parent
+        propagation: true
+      - axis: height
+        upstream: source
+        propagation: true
   
 row2:
   parent: column2
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: cell
-  orientation: vertical
-  sizeUpstream: parent
+  alignment:
+    direction: y
+    dimensions:
+      - axis: x
+        align: origin
+      - axis: y
+        align: line
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: parent
+        propagation: true
+      - axis: height
+        upstream: parent
+        propagation: true
   
 row3:
   parent: column2
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: cell
-  orientation: vertical
-  sizeUpstream: self
+  children: 0, 1, 2
+  alignment:
+    direction: y
+    dimensions:
+      - axis: x
+        align: origin
+      - axis: y
+        align: line
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: parent
+        propagation: true
+      - axis: height
+        upstream: source
+        propagation: true
   
 row3_t1:
   parent: row3
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: tile
-  orientation: vertical
-  sizeUpstream: self
+  alignment:
+    direction: y
+    dimensions:
+      - axis: x
+        align: line
+      - axis: y
+        align: line
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: source
+        propagation: false
+      - axis: height
+        upstream: source
+        propagation: false
   
 row3_t2:
   parent: row3
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: tile
-  orientation: vertical
-  sizeUpstream: self
+  alignment:
+    direction: y
+    dimensions:
+      - axis: x
+        align: line
+      - axis: y
+        align: line
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: source
+        propagation: false
+      - axis: height
+        upstream: source
+        propagation: false
   
 row3_t3:
   parent: row3
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: tile
-  orientation: vertical
-  sizeUpstream: self
+  alignment:
+    direction: y
+    dimensions:
+      - axis: x
+        align: line
+      - axis: y
+        align: line
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: source
+        propagation: false
+      - axis: height
+        upstream: source
+        propagation: false
   
 column3:
   parent: root
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: cell
-  orientation: horizontal
-  sizeUpstream: self
+  children: 0
+  alignment:
+    direction: x
+    dimensions:
+      - axis: x
+        align: line
+      - axis: y
+        align: origin
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: source
+        propagation: true
+      - axis: height
+        upstream: parent
+        propagation: true
   
 popup1:
   parent: column3
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: floating
-  orientation: horizontal
-  sizeUpstream: self
+  children: 0, 1
+  alignment:
+    dimensions:
+      - axis: x
+        align: center
+      - axis: y
+        align: relative
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: source
+        propagation: false
+      - axis: height
+        upstream: source
+        propagation: false
   
 popup1_c1:
   parent: popup1
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: cell
-  orientation: horizontal
-  sizeUpstream: self
+  alignment:
+    direction: x
+    dimensions:
+      - axis: x
+        align: line
+      - axis: y
+        align: origin
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: source
+        propagation: true
+      - axis: height
+        upstream: parent
+        propagation: true
   
 popup1_c2:
   parent: popup1
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
-  type: cell
-  orientation: horizontal
-  sizeUpstream: self
+  alignment:
+    direction: x
+    dimensions:
+      - axis: x
+        align: line
+      - axis: y
+        align: origin
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: source
+        propagation: true
+      - axis: height
+        upstream: parent
+        propagation: true
