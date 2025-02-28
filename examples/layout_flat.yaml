@@ -3,22 +3,22 @@ root:
   size: { width: 0, height: 0 }
   position: { x: 0, y: 0 }
   contentSize: { width: 0, height: 0 }
+  cursor: { x: 0, y: 0 }
   children: 0, 2, 1 #use absolute indices instead of relative
   alignment:
     dimensions:
       - axis: x
-        align: relative #center line origin
+        align: center #relative line origin
       - axis: y
-        align: relative
+        align: center
   stretching:
     dimensions:
       - axis: width
-        upstream: source #parent, children
+        value: { variable: w1 }
         propagation: false
       - axis: height
-        upstream: source #parent, children
+        value: { variable: h1 }
         propagation: false
-  cursor: { x: 0, y: 0 }
   
 column1:
   parent: root
@@ -35,7 +35,7 @@ column1:
   stretching:
     dimensions:
       - axis: width
-        upstream: children
+        value: { upstream: children }
         propagation: true
       - axis: height
         upstream: parent
@@ -57,7 +57,8 @@ column1_1:
   stretching:
     dimensions:
       - axis: width
-        upstream: source
+        upstream: self
+        value: { variable: w3 }
         propagation: true
       - axis: height
         upstream: parent
@@ -78,10 +79,12 @@ column1_t1:
   stretching:
     dimensions:
       - axis: width
-        upstream: source
+        upstream: self
+        value: { pixels: 10 }
         propagation: false
       - axis: height
-        upstream: source
+        upstream: self
+        value: { percents: 5 }
         propagation: false
   
 column1_t2:
@@ -99,10 +102,12 @@ column1_t2:
   stretching:
     dimensions:
       - axis: width
-        upstream: source
+        upstream: self
+        value: { pixels: 10 }
         propagation: false
       - axis: height
-        upstream: source
+        upstream: self
+        value: { percents: 5 }
         propagation: false
 
 column1_t3:
@@ -120,10 +125,12 @@ column1_t3:
   stretching:
     dimensions:
       - axis: width
-        upstream: source
+        upstream: self
+        value: { pixels: 10 }
         propagation: false
       - axis: height
-        upstream: source
+        upstream: self
+        value: { percents: 5 }
         propagation: false
 
 column1_t4:
@@ -141,10 +148,12 @@ column1_t4:
   stretching:
     dimensions:
       - axis: width
-        upstream: source
+        upstream: self
+        value: { pixels: 10 }
         propagation: false
       - axis: height
-        upstream: source
+        upstream: self
+        value: { percents: 5 }
         propagation: false
 
 column1_t5:
@@ -162,10 +171,12 @@ column1_t5:
   stretching:
     dimensions:
       - axis: width
-        upstream: source
+        upstream: self
+        value: { pixels: 10 }
         propagation: false
       - axis: height
-        upstream: source
+        upstream: self
+        value: { percents: 5 }
         propagation: false
   
 column1_2:
@@ -205,7 +216,8 @@ view1:
   stretching:
     dimensions:
       - axis: width
-        upstream: source
+        upstream: self
+        value: { variable: w4 }
         propagation: true
       - axis: height
         upstream: parent
@@ -227,7 +239,7 @@ column2:
   stretching:
     dimensions:
       - axis: width
-        upstream: source
+        upstream: parent
         propagation: true
       - axis: height
         upstream: parent
@@ -251,28 +263,8 @@ row1:
         upstream: parent
         propagation: true
       - axis: height
-        upstream: source
-        propagation: true
-  
-row2:
-  parent: column2
-  size: { width: 0, height: 0 }
-  position: { x: 0, y: 0 }
-  contentSize: { width: 0, height: 0 }
-  alignment:
-    direction: y
-    dimensions:
-      - axis: x
-        align: origin
-      - axis: y
-        align: line
-  stretching:
-    dimensions:
-      - axis: width
-        upstream: parent
-        propagation: true
-      - axis: height
-        upstream: parent
+        upstream: self
+        value: { variable: h3 }
         propagation: true
   
 row3:
@@ -294,7 +286,7 @@ row3:
         upstream: parent
         propagation: true
       - axis: height
-        upstream: source
+        upstream: self
         propagation: true
   
 row3_t1:
@@ -312,10 +304,11 @@ row3_t1:
   stretching:
     dimensions:
       - axis: width
-        upstream: source
+        upstream: parent
         propagation: false
       - axis: height
-        upstream: source
+        upstream: self
+        value: { variable: h4% }
         propagation: false
   
 row3_t2:
@@ -333,10 +326,10 @@ row3_t2:
   stretching:
     dimensions:
       - axis: width
-        upstream: source
+        upstream: self
         propagation: false
       - axis: height
-        upstream: source
+        upstream: self
         propagation: false
   
 row3_t3:
@@ -354,11 +347,32 @@ row3_t3:
   stretching:
     dimensions:
       - axis: width
-        upstream: source
+        upstream: self
         propagation: false
       - axis: height
-        upstream: source
+        upstream: self
         propagation: false
+
+row2:
+  parent: column2
+  size: { width: 0, height: 0 }
+  position: { x: 0, y: 0 }
+  contentSize: { width: 0, height: 0 }
+  alignment:
+    direction: y
+    dimensions:
+      - axis: x
+        align: origin
+      - axis: y
+        align: line
+  stretching:
+    dimensions:
+      - axis: width
+        upstream: parent
+        propagation: true
+      - axis: height
+        upstream: parent
+        propagation: true
   
 column3:
   parent: root
@@ -376,7 +390,7 @@ column3:
   stretching:
     dimensions:
       - axis: width
-        upstream: source
+        upstream: self
         propagation: true
       - axis: height
         upstream: parent
@@ -397,10 +411,10 @@ popup1:
   stretching:
     dimensions:
       - axis: width
-        upstream: source
+        upstream: self
         propagation: false
       - axis: height
-        upstream: source
+        upstream: self
         propagation: false
   
 popup1_c1:
@@ -418,7 +432,7 @@ popup1_c1:
   stretching:
     dimensions:
       - axis: width
-        upstream: source
+        upstream: self
         propagation: true
       - axis: height
         upstream: parent
@@ -439,7 +453,7 @@ popup1_c2:
   stretching:
     dimensions:
       - axis: width
-        upstream: source
+        upstream: self
         propagation: true
       - axis: height
         upstream: parent

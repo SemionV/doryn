@@ -3,45 +3,45 @@ root:
   height: { variable: h1 }
   columns:
     - name: column1
-      size: { upstream: children }
+      width: { upstream: children }
       columns:
         - name: column1_1
-          size: { variable: w3 }
+          width: { variable: w3 }
           tileRow:
             - width: { pixels: 10 }
-              height: { percent: 5 }
+              height: { percents: 5 }
             - width: { pixels: 10 }
-              height: { percent: 5 }
+              height: { percents: 5 }
             - width: { pixels: 10 }
-              height: { percent: 5 }
+              height: { percents: 5 }
             - width: { pixels: 10 }
-              height: { percent: 5 }
+              height: { percents: 5 }
             - width: { pixels: 10 }
-              height: { percent: 5 }
+              height: { percents: 5 }
         - name: column1_2
-          size: { upstream: children }
+          width: { upstream: children }
           view:
             name: view1
             width: { variable: w4 }
-            height: { variable: h2 }
+            height: { upstream: parent }
     - name: column2
-      size: { upstream: parent }
+      width: { upstream: parent }
       rows:
         - name: row1
-          size: { variable: h3 }
+          height: { variable: h3 }
         - name: row2
-          size: { upstream: parent }
+          height: { upstream: parent }
         - name: row3
-          size: { variable: h4% }
+          height: { variable: h4% }
           tileColumn:
             - width: { pixels: 10 }
-              height: { percent: 5 }
+              height: { percents: 5 }
             - width: { pixels: 10 }
-              height: { percent: 5 }
+              height: { percents: 5 }
             - width: { pixels: 10 }
-              height: { percent: 5 }
+              height: { percents: 5 }
     - name: column3
-      size: { variable: h4% }
+      width: { variable: h4% }
       floating:
         - name: popup1
           width: { variable: w5% }
@@ -49,5 +49,5 @@ root:
           x: { align: center }
           y: { variable: h6% }
           columns:
-            - size: { percent: 50.0 }
-            - size: { percent: 50.0 }
+            - width: { percents: 50.0 }
+            - width: { percents: 50.0 }
