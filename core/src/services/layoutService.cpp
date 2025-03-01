@@ -16,10 +16,10 @@ namespace dory::core::services
 
     struct HorizontalLinePolicies
     {
-        static constexpr std::size_t objects::layout::Position::* xProperty = &objects::layout::Position::x;
-        static constexpr std::size_t objects::layout::Position::* yProperty = &objects::layout::Position::y;
-        static constexpr std::size_t objects::layout::Size::* widthProperty = &objects::layout::Size::width;
-        static constexpr std::size_t objects::layout::Size::* heightProperty = &objects::layout::Size::height;
+        static constexpr int objects::layout::Position::* xProperty = &objects::layout::Position::x;
+        static constexpr int objects::layout::Position::* yProperty = &objects::layout::Position::y;
+        static constexpr int objects::layout::Size::* widthProperty = &objects::layout::Size::width;
+        static constexpr int objects::layout::Size::* heightProperty = &objects::layout::Size::height;
 
         static constexpr std::optional<layout::Dimension> layout::Position::* xDefinitionProperty = &layout::Position::x;
         static constexpr std::optional<layout::Dimension> layout::Position::* yDefinitionProperty = &layout::Position::y;
@@ -31,10 +31,10 @@ namespace dory::core::services
 
     struct VerticalLinePolicies
     {
-        static constexpr std::size_t objects::layout::Position::* xProperty = &objects::layout::Position::y;
-        static constexpr std::size_t objects::layout::Position::* yProperty = &objects::layout::Position::x;
-        static constexpr std::size_t objects::layout::Size::* widthProperty = &objects::layout::Size::height;
-        static constexpr std::size_t objects::layout::Size::* heightProperty = &objects::layout::Size::width;
+        static constexpr int objects::layout::Position::* xProperty = &objects::layout::Position::y;
+        static constexpr int objects::layout::Position::* yProperty = &objects::layout::Position::x;
+        static constexpr int objects::layout::Size::* widthProperty = &objects::layout::Size::height;
+        static constexpr int objects::layout::Size::* heightProperty = &objects::layout::Size::width;
 
         static constexpr std::optional<layout::Dimension> layout::Position::* xDefinitionProperty = &layout::Position::y;
         static constexpr std::optional<layout::Dimension> layout::Position::* yDefinitionProperty = &layout::Position::x;
@@ -46,10 +46,10 @@ namespace dory::core::services
 
     struct LinePolicies
     {
-        std::size_t objects::layout::Position::* const xProperty = &objects::layout::Position::y;
-        std::size_t objects::layout::Position::* const yProperty = &objects::layout::Position::x;
-        std::size_t objects::layout::Size::* const widthProperty = &objects::layout::Size::height;
-        std::size_t objects::layout::Size::* const heightProperty = &objects::layout::Size::width;
+        int objects::layout::Position::* const xProperty = &objects::layout::Position::y;
+        int objects::layout::Position::* const yProperty = &objects::layout::Position::x;
+        int objects::layout::Size::* const widthProperty = &objects::layout::Size::height;
+        int objects::layout::Size::* const heightProperty = &objects::layout::Size::width;
 
         const std::optional<layout::Dimension> layout::Position::* const xDefinitionProperty = &layout::Position::y;
         const std::optional<layout::Dimension> layout::Position::* const yDefinitionProperty = &layout::Position::x;
@@ -561,8 +561,8 @@ namespace dory::core::services
                 const auto availableWidth = parentSize.*widthProperty - parentEntry.contentWidth;
                 const auto availableHeight = parentSize.*heightProperty;
 
-                std::size_t& width = entry.container->size.*widthProperty;
-                std::size_t& height = entry.container->size.*heightProperty;
+                int& width = entry.container->size.*widthProperty;
+                int& height = entry.container->size.*heightProperty;
 
                 auto& sizeDefinition = entry.definition->size;
                 if(isDefined(sizeDefinition))

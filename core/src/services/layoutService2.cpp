@@ -6,14 +6,6 @@ namespace dory::core::services
     using namespace resources;
     using namespace resources::scene;
     using namespace resources::scene::configuration;
-    using namespace resources::scene::configuration;
-
-    objects::layout::Container LayoutService2::calculate(const layout::ContainerDefinition& layoutDefinition)
-    {
-        objects::layout::Container root;
-
-        return root;
-    }
 
     int getDimensionValue(const objects::layout::StretchingAxis& axis, const objects::layout::Size& parentSize,
         const objects::layout::Size& parentContentSize, const objects::layout::Variables& variables)
@@ -44,25 +36,35 @@ namespace dory::core::services
         return result;
     }
 
-    void propagateValue(std::size_t nodeIndex, std::size_t parentIndex, const objects::layout::StretchingAxisProperty axisProperty, objects::layout::NodeList& list)
+    objects::layout::NodeStateList buildNodeList(const objects::layout::NodeSetupList& setupList)
     {
-        const auto& node = list.nodes[nodeIndex];
-        const objects::layout::StretchingAxis& axis = node.stretching.axes.*axisProperty;
+        objects::layout::NodeStateList list;
+
+        return list;
+    }
+
+    void propagateValue(std::size_t nodeIndex, std::size_t parentIndex, const objects::layout::StretchingAxisProperty axisProperty,
+        const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList)
+    {
+        const auto& nodeSetup = setupList.nodes[nodeIndex];
+        const auto& nodeState = stateList.nodes[nodeIndex];
+        const objects::layout::StretchingAxis& axis = nodeSetup.stretching.axes.*axisProperty;
 
         if(axis.valuePropagation)
         {
-            const int value = node.size.*axis.property;
+            const int value = nodeState.size.*axis.property;
 
-            while(nodeIndex != parentIndex)
+            while(nodeIndex != parentIndex) //the first node on the list has parent index pointing on himself
             {
-                auto& parentNode = list.nodes[parentIndex];
-                const objects::layout::StretchingAxis& parentAxis = parentNode.stretching.axes.*axisProperty;
+                auto& parentNodeSetup = setupList.nodes[parentIndex];
+                auto& parentNodeState = stateList.nodes[parentIndex];
+                const objects::layout::StretchingAxis& parentAxis = parentNodeSetup.stretching.axes.*axisProperty;
 
-                parentNode.contentSize.*parentAxis.property += value;
+                parentNodeState.contentSize.*parentAxis.property += value;
 
                 if(parentAxis.value.upstream == objects::layout::Upstream::children)
                 {
-                    parentNode.size.*parentAxis.property += value;
+                    parentNodeState.size.*parentAxis.property += value;
                 }
                 else
                 {
@@ -75,29 +77,50 @@ namespace dory::core::services
                 }
 
                 nodeIndex = parentIndex;
-                parentIndex = parentNode.parent;
+                parentIndex = parentNodeSetup.parent;
             }
         }
     }
 
-    void calculateSizes(objects::layout::NodeList& list, const objects::layout::Variables& variables)
+    void calculateSizes(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList, const objects::layout::Variables& variables)
     {
-        for(std::size_t i = 0; i < list.nodes.size(); ++i)
+        for(std::size_t i = 0; i < setupList.nodes.size(); ++i)
         {
-            auto& node = list.nodes[i];
-            auto& parentNode = list.nodes[node.parent];
+            auto& nodeSetup = setupList.nodes[i];
+            auto& nodeState = stateList.nodes[i];
+            auto& parentNodeState = stateList.nodes[nodeSetup.parent];
 
-            const auto& stretching = node.stretching;
+            const auto& stretching = nodeSetup.stretching;
 
-            auto& width = node.size.*stretching.axes.width.property;
-            auto& height = node.size.*stretching.axes.height.property;
+            auto& width = nodeState.size.*stretching.axes.width.property;
+            auto& height = nodeState.size.*stretching.axes.height.property;
 
-            width = getDimensionValue(stretching.axes.width, parentNode.size, parentNode.contentSize, variables);
-            height = getDimensionValue(stretching.axes.height, parentNode.size, parentNode.contentSize, variables);
+            width = getDimensionValue(stretching.axes.width, parentNodeState.size, parentNodeState.contentSize, variables);
+            height = getDimensionValue(stretching.axes.height, parentNodeState.size, parentNodeState.contentSize, variables);
 
-            propagateValue(i, node.parent, &objects::layout::StretchingAxes::width, list);
-            propagateValue(i, node.parent, &objects::layout::StretchingAxes::height, list);
+            propagateValue(i, nodeSetup.parent, &objects::layout::StretchingAxes::width, setupList, stateList);
+            propagateValue(i, nodeSetup.parent, &objects::layout::StretchingAxes::height, setupList, stateList);
         }
+    }
+
+    void calculatePositions(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList, const objects::layout::Variables& variables)
+    {
+
+    }
+
+    objects::layout::Container buildContainer(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList)
+    {
+        objects::layout::Container rootContainer;
+        return rootContainer;
+    }
+
+    objects::layout::Container LayoutService2::calculate(const objects::layout::NodeSetupList& setupList, const objects::layout::Variables& variables)
+    {
+        objects::layout::NodeStateList stateList = buildNodeList(setupList);
+        calculateSizes(setupList, stateList, variables);
+        calculatePositions(setupList, stateList, variables);
+
+        return buildContainer(setupList, stateList);
     }
 }
 

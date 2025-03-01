@@ -91,21 +91,30 @@ namespace dory::core::resources::objects::layout
         StretchingAxes axes {};
     };
 
-    struct NodeItem
+    struct NodeItemSetup
     {
         std::size_t parent {};
-        Size size {};
-        Position position {};
-        Size contentSize {};
-        Position cursor {};
         std::vector<std::size_t> children{};
         Alignment alignment {};
         Stretching stretching {};
     };
 
-    struct NodeList
+    struct NodeItemState
     {
-        std::vector<NodeItem> nodes {};
+        Size size {};
+        Position position {};
+        Size contentSize {};
+        Position cursor {};
+    };
+
+    struct NodeSetupList
+    {
+        std::vector<NodeItemSetup> nodes {};
+    };
+
+    struct NodeStateList
+    {
+        std::vector<NodeItemState> nodes {};
     };
 
     //a dummy class to represent variables storage
