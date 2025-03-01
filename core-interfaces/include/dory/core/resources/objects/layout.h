@@ -33,10 +33,14 @@ namespace dory::core::resources::objects::layout
 
     struct DimensionValue
     {
-        Upstream upstream { Upstream::self };
         std::optional<Name> variable {};
         std::optional<float> percents {};
         std::optional<int> pixels {};
+    };
+
+    struct SizeValue: public DimensionValue
+    {
+        Upstream upstream { Upstream::self };
     };
 
     using PositionProperty = int Position::*;
@@ -74,7 +78,7 @@ namespace dory::core::resources::objects::layout
     struct StretchingAxis
     {
         SizeProperty property {};
-        DimensionValue value {};
+        SizeValue value {};
         bool valuePropagation {};
     };
 

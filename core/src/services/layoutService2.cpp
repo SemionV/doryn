@@ -7,7 +7,27 @@ namespace dory::core::services
     using namespace resources::scene;
     using namespace resources::scene::configuration;
 
-    int getDimensionValue(const objects::layout::StretchingAxis& axis, const objects::layout::Size& parentSize,
+    int getValue(const objects::layout::DimensionValue& value, const int parentSize, const objects::layout::Variables& variables)
+    {
+        int result {};
+
+        if(value.pixels)
+        {
+            result = *value.pixels;
+        }
+        else if(value.percents)
+        {
+            result = static_cast<int>(std::round(*value.percents * 0.01f * static_cast<float>(parentSize)));
+        }
+        else if(value.variable)
+        {
+            //TODO: read value from a variable
+        }
+
+        return result;
+    }
+
+    int getSizeValue(const objects::layout::StretchingAxis& axis, const objects::layout::Size& parentSize,
         const objects::layout::Size& parentContentSize, const objects::layout::Variables& variables)
     {
         int result {};
@@ -15,22 +35,28 @@ namespace dory::core::services
         const auto value = axis.value;
         if(value.upstream == objects::layout::Upstream::self)
         {
-            if(value.pixels)
-            {
-                result = *value.pixels;
-            }
-            else if(value.percents)
-            {
-                result = static_cast<int>(std::round(*value.percents * 0.01f * static_cast<float>(parentSize.*axis.property)));
-            }
-            else if(value.variable)
-            {
-                //TODO: read value from a variable
-            }
+            result = getValue(value, parentSize.*axis.property, variables);
         }
         else if(value.upstream == objects::layout::Upstream::parent)
         {
             result = parentSize.*axis.property - parentContentSize.*axis.property;
+        }
+
+        return result;
+    }
+
+    int getPositionValue(const objects::layout::AlignmentAxis& axis, bool directionAxis, const objects::layout::NodeItemSetup& parentNodeSetup,
+        objects::layout::NodeItemState parentNodeState, const objects::layout::Variables& variables)
+    {
+        int result {};
+
+        if(axis.order == objects::layout::AlignOrder::origin)
+        {
+            result = 0;
+        }
+        else if(axis.order == objects::layout::AlignOrder::center)
+        {
+
         }
 
         return result;
@@ -95,8 +121,8 @@ namespace dory::core::services
             auto& width = nodeState.size.*stretching.axes.width.property;
             auto& height = nodeState.size.*stretching.axes.height.property;
 
-            width = getDimensionValue(stretching.axes.width, parentNodeState.size, parentNodeState.contentSize, variables);
-            height = getDimensionValue(stretching.axes.height, parentNodeState.size, parentNodeState.contentSize, variables);
+            width = getSizeValue(stretching.axes.width, parentNodeState.size, parentNodeState.contentSize, variables);
+            height = getSizeValue(stretching.axes.height, parentNodeState.size, parentNodeState.contentSize, variables);
 
             propagateValue(i, nodeSetup.parent, &objects::layout::StretchingAxes::width, setupList, stateList);
             propagateValue(i, nodeSetup.parent, &objects::layout::StretchingAxes::height, setupList, stateList);
@@ -105,7 +131,19 @@ namespace dory::core::services
 
     void calculatePositions(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList, const objects::layout::Variables& variables)
     {
+        for(std::size_t i = 0; i < setupList.nodes.size(); ++i)
+        {
+            auto& nodeSetup = setupList.nodes[i];
+            auto& nodeState = stateList.nodes[i];
+            auto& parentNodeState = stateList.nodes[nodeSetup.parent];
 
+            const auto& alignment = nodeSetup.alignment;
+
+            auto& x = nodeState.position.*alignment.axes.x.property;
+            auto& y = nodeState.position.*alignment.axes.x.property;
+
+            if(alignment.)
+        }
     }
 
     objects::layout::Container buildContainer(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList)
