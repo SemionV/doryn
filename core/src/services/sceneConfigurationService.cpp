@@ -1,6 +1,7 @@
 #include <dory/core/registry.h>
 #include <dory/core/services/sceneConfigurationService.h>
 #include <spdlog/fmt/fmt.h>
+#include <filesystem>
 
 namespace dory::core::services
 {
@@ -21,7 +22,7 @@ namespace dory::core::services
             {
                 if(auto logger = _registry.get<ILogService>())
                 {
-                    logger->information(fmt::format("load scene from: {}", filename.c_str()));
+                    logger->information(fmt::format("load scene from: {}", filename.string()));
                 }
 
                 const std::string data = fileService->read(filename);
@@ -36,7 +37,7 @@ namespace dory::core::services
             {
                 _registry.get<ILogService>([&e, &filename](ILogService* logger)
                 {
-                    logger->warning(fmt::format("Cannot load scene configuration({}): {}", filename.c_str(), e.what()));
+                    logger->warning(fmt::format("Cannot load scene configuration({}): {}", filename.string(), e.what()));
                 });
             }
         }
@@ -53,7 +54,7 @@ namespace dory::core::services
             {
                 if(auto logger = _registry.get<ILogService>())
                 {
-                    logger->information(fmt::format("save scene to: {}", filename.c_str()));
+                    logger->information(fmt::format("save scene to: {}", filename.string()));
                 }
 
                 DataFormat dataFormat = dataFormatResolver->resolveFormat(filename);
@@ -68,7 +69,7 @@ namespace dory::core::services
             {
                 _registry.get<ILogService>([&e, &filename](ILogService* logger)
                 {
-                    logger->warning(fmt::format("Cannot save scene configuration({}): {}", filename.c_str(), e.what()));
+                    logger->warning(fmt::format("Cannot save scene configuration({}): {}", filename.string(), e.what()));
                 });
             }
         }

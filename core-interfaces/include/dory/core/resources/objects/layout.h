@@ -50,6 +50,7 @@ namespace dory::core::resources::objects::layout
     {
         center,
         line,
+        tiles,
         origin,
         relative
     };
@@ -71,7 +72,6 @@ namespace dory::core::resources::objects::layout
 
     struct Alignment
     {
-        AlignmentAxisProperty direction {}; //priority axis for alignment
         AlignmentAxes axes {};
     };
 

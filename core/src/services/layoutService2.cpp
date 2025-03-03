@@ -45,18 +45,17 @@ namespace dory::core::services
         return result;
     }
 
-    int getPositionValue(const objects::layout::AlignmentAxis& axis, bool directionAxis, const objects::layout::NodeItemSetup& parentNodeSetup,
-        objects::layout::NodeItemState parentNodeState, const objects::layout::Variables& variables)
+    int getPositionValue(const objects::layout::AlignmentAxis& axis, const int nodeSize, const int parentSize, const objects::layout::Variables& variables)
     {
         int result {};
 
-        if(axis.order == objects::layout::AlignOrder::origin)
+        if(axis.order == objects::layout::AlignOrder::center)
         {
-            result = 0;
+            result = static_cast<int>(std::round(static_cast<float>(parentSize - nodeSize) / 2.f));
         }
-        else if(axis.order == objects::layout::AlignOrder::center)
+        else if(axis.order == objects::layout::AlignOrder::relative)
         {
-
+            result = getValue(axis.value, parentSize, variables);
         }
 
         return result;
@@ -76,6 +75,7 @@ namespace dory::core::services
         const auto& nodeState = stateList.nodes[nodeIndex];
         const objects::layout::StretchingAxis& axis = nodeSetup.stretching.axes.*axisProperty;
 
+        //TODO: it can be calculated automatically if we consider that is true in case if alignment of the node is "line" on the current axis
         if(axis.valuePropagation)
         {
             const int value = nodeState.size.*axis.property;
@@ -135,14 +135,56 @@ namespace dory::core::services
         {
             auto& nodeSetup = setupList.nodes[i];
             auto& nodeState = stateList.nodes[i];
-            auto& parentNodeState = stateList.nodes[nodeSetup.parent];
 
-            const auto& alignment = nodeSetup.alignment;
+            int lineHeight {};
+            int lineWidth {};
 
-            auto& x = nodeState.position.*alignment.axes.x.property;
-            auto& y = nodeState.position.*alignment.axes.x.property;
+            for(const auto j : nodeSetup.children)
+            {
+                auto& childNodeSetup = setupList.nodes[j];
+                auto& childNodeState = stateList.nodes[j];
 
-            if(alignment.)
+                const auto& [axes] = childNodeSetup.alignment;
+                const auto& xAxis = axes.x;
+                const auto& yAxis = axes.y;
+
+                if(xAxis.order != objects::layout::AlignOrder::origin)
+                {
+                    if(xAxis.order == objects::layout::AlignOrder::line)
+                    {
+                        childNodeState.position.x = nodeState.cursor.x;
+                        nodeState.cursor.x += childNodeState.size.width;
+                    }
+                    else if(xAxis.order == objects::layout::AlignOrder::tiles)
+                    {
+                        if(nodeState.cursor.x + childNodeState.size.width < nodeState.size.width)
+                        {
+                            childNodeState.position.x = nodeState.cursor.x;
+                            childNodeState.position.y = nodeState.cursor.y;
+
+                            nodeState.cursor.x += childNodeState.size.width;
+                        }
+                        else
+                        {
+                            nodeState.cursor.y += lineHeight;
+                            nodeState.cursor.x = 0;
+                            lineHeight = 0;
+                        }
+
+                        childNodeState.position.x = nodeState.cursor.x;
+                        childNodeState.position.y = nodeState.cursor.y;
+
+                        if(childNodeState.size.height > lineHeight)
+                        {
+                            lineHeight = childNodeState.size.height;
+                        }
+                    }
+                    else
+                    {
+                        childNodeState.position.x = getPositionValue(xAxis, childNodeState.size.width, nodeState.size.width, variables);
+                    }
+                }
+            }
         }
     }
 
