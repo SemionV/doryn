@@ -96,7 +96,7 @@ namespace dory::core::services
     objects::layout::NodeStateList buildNodeList(const objects::layout::NodeSetupList& setupList)
     {
         objects::layout::NodeStateList list;
-
+        list.nodes.reserve(setupList.nodes.size());
         return list;
     }
 
@@ -106,7 +106,7 @@ namespace dory::core::services
         const auto& nodeSetup = setupList.nodes[nodeIndex];
         const auto& nodeState = stateList.nodes[nodeIndex];
         const objects::layout::StretchingAxis& axis = nodeSetup.stretching.axes.*axisProperty;
-        
+
         if(axis.valuePropagation)
         {
             const int value = nodeState.size.*axis.property;
