@@ -106,8 +106,7 @@ namespace dory::core::services
         const auto& nodeSetup = setupList.nodes[nodeIndex];
         const auto& nodeState = stateList.nodes[nodeIndex];
         const objects::layout::StretchingAxis& axis = nodeSetup.stretching.axes.*axisProperty;
-
-        //TODO: it can be calculated automatically if we consider that is true in case if alignment of the node is "line" on the current axis
+        
         if(axis.valuePropagation)
         {
             const int value = nodeState.size.*axis.property;
@@ -184,13 +183,51 @@ namespace dory::core::services
         }
     }
 
-    objects::layout::Container buildContainer(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList)
+    std::unique_ptr<objects::layout::Container> buildContainer(const objects::layout::NodeSetupList& setupList, const objects::layout::NodeStateList& stateList)
     {
-        objects::layout::Container rootContainer;
+        std::unique_ptr<objects::layout::Container> rootContainer {};
+        std::vector<objects::layout::Container*> lookupTable(stateList.nodes.size());
+
+        for(std::size_t i = 0; i < stateList.nodes.size(); ++i)
+        {
+            const auto& nodeState = stateList.nodes[i];
+            const auto& nodeSetup = setupList.nodes[i];
+
+            objects::layout::Container* container {};
+
+            if(nodeSetup.parent != i)
+            {
+                auto parentNodeSetup = setupList.nodes[nodeSetup.parent];
+                for(std::size_t j = 0; j < parentNodeSetup.children.size(); ++j)
+                {
+                    if(parentNodeSetup->children[j] == i)
+                    {
+                        const auto parentContainer = lookupTable[nodeSetup.parent];
+                        container = lookupTable[i] = &parentContainer->children[j];
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                //root node
+                rootContainer = std::make_unique<objects::layout::Container>();
+                lookupTable[i] = container = rootContainer.get();
+            }
+
+            if(container)
+            {
+                container->children.reserve(nodeSetup.children.size());
+                container->name = nodeSetup.name;
+                container->position = nodeState.position;
+                container->size = nodeState.size;
+            }
+        }
+
         return rootContainer;
     }
 
-    objects::layout::Container LayoutService2::calculate(const objects::layout::NodeSetupList& setupList, const objects::layout::Variables& variables)
+    std::unique_ptr<objects::layout::Container> LayoutService2::calculate(const objects::layout::NodeSetupList& setupList, const objects::layout::Variables& variables)
     {
         objects::layout::NodeStateList stateList = buildNodeList(setupList);
         calculateSizes(setupList, stateList, variables);

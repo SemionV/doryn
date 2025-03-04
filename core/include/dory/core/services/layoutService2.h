@@ -7,7 +7,7 @@ namespace dory::core::services
     class LayoutService2: public ILayoutService2
     {
     public:
-        resources::objects::layout::Container calculate(const resources::objects::layout::NodeSetupList& setupList,
+        std::unique_ptr<resources::objects::layout::Container> calculate(const resources::objects::layout::NodeSetupList& setupList,
             const resources::objects::layout::Variables& variables) final;
     };
 }
