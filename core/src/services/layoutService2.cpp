@@ -45,17 +45,49 @@ namespace dory::core::services
         return result;
     }
 
-    int getPositionValue(const objects::layout::AlignmentAxis& axis, const int nodeSize, const int parentSize, const objects::layout::Variables& variables)
+    int getPositionValue(const objects::layout::AlignmentAxis& xAxis, const objects::layout::AlignmentAxis& yAxis,
+        const objects::layout::StretchingAxis& widthAxis, const objects::layout::StretchingAxis& heightAxis,
+        objects::layout::LineCursor& cursor, const objects::layout::Size& size, const objects::layout::Size& parentSize,
+        const objects::layout::Variables& variables)
     {
         int result {};
 
-        if(axis.order == objects::layout::AlignOrder::center)
+        const auto& nodeWidth = size.*widthAxis.property;
+        const auto& nodeHeight = size.*widthAxis.property;
+        const auto& parentWidth = parentSize.*widthAxis.property;
+
+        auto& upperLeftCursorY = cursor.upperLeftCorner.*yAxis.property;
+        auto& bottomRightCursorX = cursor.bottomRightCorner.*xAxis.property;
+        auto& bottomRightCursorY = cursor.bottomRightCorner.*yAxis.property;
+
+        if(xAxis.order == objects::layout::AlignOrder::line)
         {
-            result = static_cast<int>(std::round(static_cast<float>(parentSize - nodeSize) / 2.f));
+            if(yAxis.order == objects::layout::AlignOrder::wrap && bottomRightCursorX + nodeWidth > parentWidth)
+            {
+                upperLeftCursorY += bottomRightCursorY - upperLeftCursorY;
+                bottomRightCursorY += upperLeftCursorY;
+                bottomRightCursorX = 0;
+            }
+
+            result = bottomRightCursorX;
+            bottomRightCursorX += nodeWidth;
+
+            if(nodeHeight > bottomRightCursorY - upperLeftCursorY)
+            {
+                bottomRightCursorY = upperLeftCursorY + nodeHeight;
+            }
         }
-        else if(axis.order == objects::layout::AlignOrder::relative)
+        else if(xAxis.order == objects::layout::AlignOrder::wrap)
         {
-            result = getValue(axis.value, parentSize, variables);
+            result = upperLeftCursorY;
+        }
+        else if(xAxis.order == objects::layout::AlignOrder::center)
+        {
+            result = static_cast<int>(std::round(static_cast<float>(parentWidth - nodeWidth) / 2.f));
+        }
+        else if(xAxis.order == objects::layout::AlignOrder::relative)
+        {
+            result = getValue(xAxis.value, parentWidth, variables);
         }
 
         return result;
@@ -136,54 +168,18 @@ namespace dory::core::services
             auto& nodeSetup = setupList.nodes[i];
             auto& nodeState = stateList.nodes[i];
 
-            int lineHeight {};
-            int lineWidth {};
-
             for(const auto j : nodeSetup.children)
             {
                 auto& childNodeSetup = setupList.nodes[j];
                 auto& childNodeState = stateList.nodes[j];
 
-                const auto& [axes] = childNodeSetup.alignment;
-                const auto& xAxis = axes.x;
-                const auto& yAxis = axes.y;
+                const auto& xAxis = childNodeSetup.alignment.axes.x;
+                const auto& yAxis = childNodeSetup.alignment.axes.y;
+                const auto& widthAxis = childNodeSetup.stretching.axes.width;
+                const auto& heightAxis = childNodeSetup.stretching.axes.height;
 
-                if(xAxis.order != objects::layout::AlignOrder::origin)
-                {
-                    if(xAxis.order == objects::layout::AlignOrder::line)
-                    {
-                        childNodeState.position.x = nodeState.cursor.x;
-                        nodeState.cursor.x += childNodeState.size.width;
-                    }
-                    else if(xAxis.order == objects::layout::AlignOrder::tiles)
-                    {
-                        if(nodeState.cursor.x + childNodeState.size.width < nodeState.size.width)
-                        {
-                            childNodeState.position.x = nodeState.cursor.x;
-                            childNodeState.position.y = nodeState.cursor.y;
-
-                            nodeState.cursor.x += childNodeState.size.width;
-                        }
-                        else
-                        {
-                            nodeState.cursor.y += lineHeight;
-                            nodeState.cursor.x = 0;
-                            lineHeight = 0;
-                        }
-
-                        childNodeState.position.x = nodeState.cursor.x;
-                        childNodeState.position.y = nodeState.cursor.y;
-
-                        if(childNodeState.size.height > lineHeight)
-                        {
-                            lineHeight = childNodeState.size.height;
-                        }
-                    }
-                    else
-                    {
-                        childNodeState.position.x = getPositionValue(xAxis, childNodeState.size.width, nodeState.size.width, variables);
-                    }
-                }
+                childNodeState.position.x = getPositionValue(xAxis, yAxis, widthAxis, heightAxis, nodeState.cursor, childNodeState.size, nodeState.size, variables);
+                childNodeState.position.y = getPositionValue(yAxis, xAxis, heightAxis, widthAxis, nodeState.cursor, childNodeState.size, nodeState.size, variables);
             }
         }
     }

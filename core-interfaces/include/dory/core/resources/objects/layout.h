@@ -50,7 +50,7 @@ namespace dory::core::resources::objects::layout
     {
         center,
         line,
-        tiles,
+        wrap,
         origin,
         relative
     };
@@ -103,12 +103,18 @@ namespace dory::core::resources::objects::layout
         Stretching stretching {};
     };
 
+    struct LineCursor
+    {
+        Position upperLeftCorner {};
+        Position bottomRightCorner {};
+    };
+
     struct NodeItemState
     {
         Size size {};
         Position position {};
         Size contentSize {};
-        Position cursor {};
+        LineCursor cursor {};
     };
 
     struct NodeSetupList
