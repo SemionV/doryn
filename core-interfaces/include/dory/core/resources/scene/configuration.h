@@ -126,6 +126,43 @@ namespace dory::core::resources::scene::configuration
         };
     }
 
+    namespace layout2
+    {
+        enum class Upstream
+        {
+            parent,
+            children
+        };
+
+        struct Dimension
+        {
+            std::optional<int> pixels {};
+            std::optional<std::string> variable {};
+            std::optional<float> percents {};
+        };
+
+        struct DimensionSegment: public Dimension
+        {
+            std::optional<Upstream> upstream {};
+        };
+
+        struct ContainerDefinition
+        {
+            DimensionSegment width;
+            DimensionSegment height;
+            Dimension x;
+            Dimension y;
+            std::string name {};
+
+            std::vector<ContainerDefinition> columns;
+            std::vector<ContainerDefinition> rows;
+            std::vector<ContainerDefinition> tileRow;
+            std::vector<ContainerDefinition> tileColumn;
+            std::vector<ContainerDefinition> floating;
+            std::vector<ContainerDefinition> slides;
+        };
+    }
+
     struct Window
     {
         layout::ContainerDefinition container {};

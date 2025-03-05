@@ -97,7 +97,7 @@ namespace dory::core::resources::objects::layout
 
     struct NodeItemSetup
     {
-        Name name;
+        Name name {};
         std::size_t parent {};
         std::vector<std::size_t> children{};
         Alignment alignment {};

@@ -200,7 +200,7 @@ namespace dory::core::services
                 auto parentNodeSetup = setupList.nodes[nodeSetup.parent];
                 for(std::size_t j = 0; j < parentNodeSetup.children.size(); ++j)
                 {
-                    if(parentNodeSetup->children[j] == i)
+                    if(parentNodeSetup.children[j] == i)
                     {
                         const auto parentContainer = lookupTable[nodeSetup.parent];
                         container = lookupTable[i] = &parentContainer->children[j];
@@ -236,4 +236,3 @@ namespace dory::core::services
         return buildContainer(setupList, stateList);
     }
 }
-

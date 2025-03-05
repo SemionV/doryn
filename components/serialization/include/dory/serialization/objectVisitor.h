@@ -154,6 +154,8 @@ namespace dory::serialization
             }
 
             assert(false);
+
+            return *collection.end();
         }
 
         template<typename TCollection, typename TContext>
