@@ -9,7 +9,8 @@ add_executable(${PROJECT_NAME}
         graphics/geometry.cpp
         pipelineServiceTests.cpp
         serialization.cpp
-        layoutTests.cpp)
+        layoutTests.cpp
+        layoutSetupTests.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-core)

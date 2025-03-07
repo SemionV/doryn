@@ -57,11 +57,22 @@ namespace dory::core::services
         axis.value = getSizeValue(valueDefinition);
     }
 
-    void setupAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::AlignOrder order, const objects::layout::PositionProperty property, const layout2::Dimension& valueDefinition)
+    void setupAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::AlignOrder order, const objects::layout::PositionProperty property)
     {
         axis.order = order;
         axis.property = property;
+    }
+
+    void setupAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::AlignOrder order, const objects::layout::PositionProperty property, const layout2::Dimension& valueDefinition)
+    {
+        setupAlignmentAxis(axis, order, property);
         axis.value = getDimensionValue(valueDefinition);
+    }
+
+    void setupAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::AlignOrder order, const objects::layout::PositionProperty property, const int value)
+    {
+        setupAlignmentAxis(axis, order, property);
+        axis.value.pixels = value;
     }
 
     objects::layout::Stretching getStretching(const layout2::ContainerDefinition& containerDefinition, const bool valueTransparent)
@@ -132,7 +143,10 @@ namespace dory::core::services
 
     objects::layout::Alignment getSlideAlignment(const layout2::ContainerDefinition& containerDefinition)
     {
-        return getAlignment(containerDefinition, objects::layout::AlignOrder::origin, objects::layout::AlignOrder::origin);
+        objects::layout::Alignment alignment;
+        setupAlignmentAxis(alignment.axes.x, objects::layout::AlignOrder::origin, &objects::layout::Position::x, 0);
+        setupAlignmentAxis(alignment.axes.y, objects::layout::AlignOrder::origin, &objects::layout::Position::y, 0);
+        return alignment;
     }
 
     objects::layout::NodeSetupList LayoutSetupService::buildSetupList(const layout2::ContainerDefinition& containerDefinition)
