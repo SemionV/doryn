@@ -55,7 +55,7 @@ void assertColumnNode(const objects::layout::NodeItemSetup& itemSetup)
     EXPECT_EQ(y.order, objects::layout::AlignOrder::origin);
 
     EXPECT_TRUE(w.valuePropagation);
-    EXPECT_TRUE(h.valuePropagation);
+    EXPECT_FALSE(h.valuePropagation);
     EXPECT_EQ(h.value.upstream, objects::layout::Upstream::parent);
 }
 
@@ -122,6 +122,7 @@ TEST(LayoutSetupTests, screenSetup)
 TEST(LayoutSetupTests, columnsSetup)
 {
     layout2::ContainerDefinition rootDefinition {};
+    rootDefinition.columns.reserve(4);
 
     layout2::ContainerDefinition& column = rootDefinition.columns.emplace_back();
     column.name = "column1";

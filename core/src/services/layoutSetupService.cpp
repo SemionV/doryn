@@ -33,15 +33,17 @@ namespace dory::core::services
 
         if(valueDefinition.upstream)
         {
-            switch(layout2::Upstream upstreamDefinition = *valueDefinition.upstream)
+            switch(*valueDefinition.upstream)
             {
             case layout2::Upstream::parent:
                 {
                     result.upstream = objects::layout::Upstream::parent;
+                    break;
                 }
             case layout2::Upstream::children:
                 {
                     result.upstream = objects::layout::Upstream::children;
+                    break;
                 }
             default: result.upstream = objects::layout::Upstream::self;
             }
@@ -85,12 +87,26 @@ namespace dory::core::services
 
     objects::layout::Stretching getColumnStretching(const layout2::ContainerDefinition& containerDefinition)
     {
-        return getStretching(containerDefinition, true);
+        objects::layout::Stretching stretching;
+        setupStretchingAxis(stretching.axes.width, &objects::layout::Size::width, containerDefinition.width, true);
+        auto& heightAxis = stretching.axes.height;
+        heightAxis.property = &objects::layout::Size::height;
+        heightAxis.valuePropagation = false;
+        heightAxis.value.upstream = objects::layout::Upstream::parent;
+
+        return stretching;
     }
 
     objects::layout::Stretching getRowStretching(const layout2::ContainerDefinition& containerDefinition)
     {
-        return getStretching(containerDefinition, true);
+        objects::layout::Stretching stretching;
+        setupStretchingAxis(stretching.axes.height, &objects::layout::Size::height, containerDefinition.height, true);
+        auto& widthAxis = stretching.axes.width;
+        widthAxis.property = &objects::layout::Size::width;
+        widthAxis.valuePropagation = false;
+        widthAxis.value.upstream = objects::layout::Upstream::parent;
+
+        return stretching;
     }
 
     objects::layout::Stretching getTileStretching(const layout2::ContainerDefinition& containerDefinition)
@@ -174,8 +190,9 @@ namespace dory::core::services
                 stack.emplace(&childDefinition, i, getFloatingAlignment(containerDefinition), getFloatingStretching(childDefinition));
             }
 
-            for(const auto& childDefinition : definition->columns)
+            for(std::size_t j = definition->columns.size(); j > 0; --j)
             {
+                const auto& childDefinition = definition->columns[j - 1];
                 stack.emplace(&childDefinition, i, getColumnAlignment(containerDefinition), getColumnStretching(childDefinition));
             }
 
