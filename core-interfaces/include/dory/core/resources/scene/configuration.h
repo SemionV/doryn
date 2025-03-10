@@ -161,6 +161,8 @@ namespace dory::core::resources::scene::configuration
             std::vector<ContainerDefinition> floating;
             std::vector<ContainerDefinition> slides;
         };
+
+        using DimensionSegmentProperty = DimensionSegment ContainerDefinition::*;
     }
 
     struct Window

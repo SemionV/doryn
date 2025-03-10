@@ -185,8 +185,9 @@ namespace dory::core::services
                 parendNode.children.emplace_back(i);
             }
 
-            for(const auto& childDefinition : definition->floating)
+            for(std::size_t j = definition->floating.size(); j > 0; --j)
             {
+                const auto& childDefinition = definition->floating[j - 1];
                 stack.emplace(&childDefinition, i, getFloatingAlignment(containerDefinition), getFloatingStretching(childDefinition));
             }
 
@@ -196,23 +197,27 @@ namespace dory::core::services
                 stack.emplace(&childDefinition, i, getColumnAlignment(containerDefinition), getColumnStretching(childDefinition));
             }
 
-            for(const auto& childDefinition : definition->rows)
+            for(std::size_t j = definition->rows.size(); j > 0; --j)
             {
+                const auto& childDefinition = definition->rows[j - 1];
                 stack.emplace(&childDefinition, i, getRowAlignment(containerDefinition), getRowStretching(childDefinition));
             }
 
-            for(const auto& childDefinition : definition->tileRow)
+            for(std::size_t j = definition->tileRow.size(); j > 0; --j)
             {
+                const auto& childDefinition = definition->tileRow[j - 1];
                 stack.emplace(&childDefinition, i, getTileRowAlignment(containerDefinition), getTileStretching(childDefinition));
             }
 
-            for(const auto& childDefinition : definition->tileColumn)
+            for(std::size_t j = definition->tileColumn.size(); j > 0; --j)
             {
+                const auto& childDefinition = definition->tileColumn[j - 1];
                 stack.emplace(&childDefinition, i, getTileColumnAlignment(containerDefinition), getTileStretching(childDefinition));
             }
 
-            for(const auto& childDefinition : definition->slides)
+            for(std::size_t j = definition->slides.size(); j > 0; --j)
             {
+                const auto& childDefinition = definition->slides[j - 1];
                 stack.emplace(&childDefinition, i, getSlideAlignment(containerDefinition), getSlideStretching(childDefinition));
             }
 
