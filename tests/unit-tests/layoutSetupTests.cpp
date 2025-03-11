@@ -173,12 +173,20 @@ void columnSetupTest(const layout2::ContainerDefinition& rootDefinition, std::ve
     const objects::layout::NodeItemSetup& column2Setup = nodes[2];
     assertNode(column2Setup, column2.name, 0);
     assertColumnNode(column2Setup, axes, 50.f);
-    const objects::layout::NodeItemSetup& column3Setup = nodes[3];
-    assertNode(column3Setup, column3.name, 0);
-    assertColumnNode(column3Setup, axes, objects::layout::Upstream::parent);
-    const objects::layout::NodeItemSetup& column4Setup = nodes[4];
+    const objects::layout::NodeItemSetup& column4Setup = nodes[3];
     assertNode(column4Setup, column4.name, 0);
     assertColumnNode(column4Setup, axes, "grid.columnWidth");
+    const objects::layout::NodeItemSetup& column3Setup = nodes[4]; //flexible column must be las in the sequence of columns
+    assertNode(column3Setup, column3.name, 0);
+    assertColumnNode(column3Setup, axes, objects::layout::Upstream::parent);
+
+    const auto& rootNode = nodes[0];
+
+    EXPECT_EQ(rootNode.children.size(), 4);
+    EXPECT_EQ(rootNode.children[0], 1);
+    EXPECT_EQ(rootNode.children[1], 2);
+    EXPECT_EQ(rootNode.children[2], 4);
+    EXPECT_EQ(rootNode.children[3], 3);
 }
 
 TEST(LayoutSetupTests, columnsSetup)

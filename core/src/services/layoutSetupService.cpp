@@ -165,60 +165,86 @@ namespace dory::core::services
         return alignment;
     }
 
+    struct StackNodeEntry
+    {
+        const layout2::ContainerDefinition* definition {};
+        std::size_t parentIndex {};
+        std::size_t index {};
+        objects::layout::Alignment alignment {};
+        objects::layout::Stretching stretching {};
+    };
+
+    void addChildDefinitions(std::vector<StackNodeEntry>& children, std::size_t parentIndex,
+        const std::vector<layout2::ContainerDefinition>& definitions, const auto& getAlignment, const auto& getStretching)
+    {
+        std::vector<StackNodeEntry> flexibleChildren {};
+
+        for(std::size_t i = 0; i < definitions.size(); ++i)
+        {
+            const auto& definition = definitions[i];
+            if(definition.width.upstream == layout2::Upstream::parent ||
+                definition.height.upstream == layout2::Upstream::parent)
+            {
+                flexibleChildren.emplace_back(&definition, parentIndex, i, getAlignment(definition), getStretching(definition));
+            }
+            else
+            {
+                children.emplace_back(&definition, parentIndex, i, getAlignment(definition), getStretching(definition));
+            }
+        }
+
+        for(auto& entry : flexibleChildren)
+        {
+            children.emplace_back(std::move(entry));
+        }
+    }
+
     objects::layout::NodeSetupList LayoutSetupService::buildSetupList(const layout2::ContainerDefinition& containerDefinition)
     {
         objects::layout::NodeSetupList setupList;
 
-        std::stack<std::tuple<const layout2::ContainerDefinition*, std::size_t, objects::layout::Alignment, objects::layout::Stretching>> stack;
-        stack.emplace(&containerDefinition, 0, getSlideAlignment(containerDefinition), getSlideStretching(containerDefinition));
+        std::stack<StackNodeEntry> stack;
+        stack.emplace(&containerDefinition, 0, 0, getSlideAlignment(containerDefinition), getSlideStretching(containerDefinition));
+
+        auto columnAlignment = [](const auto& def){return getColumnAlignment(def);};
+        auto columnStretching = [](const auto& def){return getColumnStretching(def);};
+        auto rowAlignment = [](const auto& def){return getRowAlignment(def);};
+        auto rowStretching = [](const auto& def){return getRowStretching(def);};
+        auto tileRowAlignment = [](const auto& def){return getTileRowAlignment(def);};
+        auto tileColumnAlignment = [](const auto& def){return getTileColumnAlignment(def);};
+        auto tileStretching = [](const auto& def){return getTileStretching(def);};
+        auto slideAlignment = [](const auto& def){return getSlideAlignment(def);};
+        auto slideStretching = [](const auto& def){return getSlideStretching(def);};
+        auto floatingAlignment = [](const auto& def){return getFloatingAlignment(def);};
+        auto floatingStretching = [](const auto& def){return getFloatingStretching(def);};
 
         std::size_t i {};
         while(!stack.empty())
         {
-            auto [definition, parentIndex, alignment, stretching] = stack.top();
+            auto [definition, parentIndex, index, alignment, stretching] = stack.top();
             stack.pop();
 
-            setupList.nodes.emplace_back(definition->name, parentIndex, std::vector<std::size_t>{}, alignment, stretching);
+            objects::layout::NodeItemSetup& node = setupList.nodes.emplace_back(definition->name, parentIndex, std::vector<std::size_t>{}, alignment, stretching);
             if(parentIndex != i)
             {
                 objects::layout::NodeItemSetup& parendNode = setupList.nodes[parentIndex];
-                parendNode.children.emplace_back(i);
+                parendNode.children[index] = i;
             }
 
-            for(std::size_t j = definition->floating.size(); j > 0; --j)
-            {
-                const auto& childDefinition = definition->floating[j - 1];
-                stack.emplace(&childDefinition, i, getFloatingAlignment(containerDefinition), getFloatingStretching(childDefinition));
-            }
+            std::vector<StackNodeEntry> children;
 
-            for(std::size_t j = definition->columns.size(); j > 0; --j)
-            {
-                const auto& childDefinition = definition->columns[j - 1];
-                stack.emplace(&childDefinition, i, getColumnAlignment(containerDefinition), getColumnStretching(childDefinition));
-            }
+            addChildDefinitions(children, i, definition->columns, columnAlignment, columnStretching);
+            addChildDefinitions(children, i, definition->rows, rowAlignment, rowStretching);
+            addChildDefinitions(children, i, definition->tileRow, tileRowAlignment, tileStretching);
+            addChildDefinitions(children, i, definition->tileColumn, tileColumnAlignment, tileStretching);
+            addChildDefinitions(children, i, definition->slides, slideAlignment, slideStretching);
+            addChildDefinitions(children, i, definition->floating, floatingAlignment, floatingStretching);
 
-            for(std::size_t j = definition->rows.size(); j > 0; --j)
-            {
-                const auto& childDefinition = definition->rows[j - 1];
-                stack.emplace(&childDefinition, i, getRowAlignment(containerDefinition), getRowStretching(childDefinition));
-            }
+            node.children.resize(children.size());
 
-            for(std::size_t j = definition->tileRow.size(); j > 0; --j)
+            for(std::size_t j = children.size(); j > 0; --j)
             {
-                const auto& childDefinition = definition->tileRow[j - 1];
-                stack.emplace(&childDefinition, i, getTileRowAlignment(containerDefinition), getTileStretching(childDefinition));
-            }
-
-            for(std::size_t j = definition->tileColumn.size(); j > 0; --j)
-            {
-                const auto& childDefinition = definition->tileColumn[j - 1];
-                stack.emplace(&childDefinition, i, getTileColumnAlignment(containerDefinition), getTileStretching(childDefinition));
-            }
-
-            for(std::size_t j = definition->slides.size(); j > 0; --j)
-            {
-                const auto& childDefinition = definition->slides[j - 1];
-                stack.emplace(&childDefinition, i, getSlideAlignment(containerDefinition), getSlideStretching(childDefinition));
+                stack.emplace(children[j - 1]);
             }
 
             ++i;

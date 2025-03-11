@@ -147,13 +147,13 @@ namespace dory::core::services
             auto& nodeState = stateList.nodes[i];
             auto& parentNodeState = stateList.nodes[nodeSetup.parent];
 
-            const auto& stretching = nodeSetup.stretching;
+            const auto& [axes]= nodeSetup.stretching;
 
-            auto& width = nodeState.size.*stretching.axes.width.property;
-            auto& height = nodeState.size.*stretching.axes.height.property;
+            auto& width = nodeState.size.*axes.width.property;
+            auto& height = nodeState.size.*axes.height.property;
 
-            width = getSizeValue(stretching.axes.width, parentNodeState.size, parentNodeState.contentSize, variables);
-            height = getSizeValue(stretching.axes.height, parentNodeState.size, parentNodeState.contentSize, variables);
+            width = getSizeValue(axes.width, parentNodeState.size, parentNodeState.contentSize, variables);
+            height = getSizeValue(axes.height, parentNodeState.size, parentNodeState.contentSize, variables);
 
             propagateValue(i, nodeSetup.parent, &objects::layout::StretchingAxes::width, setupList, stateList);
             propagateValue(i, nodeSetup.parent, &objects::layout::StretchingAxes::height, setupList, stateList);

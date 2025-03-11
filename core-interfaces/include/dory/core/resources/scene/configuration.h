@@ -154,12 +154,12 @@ namespace dory::core::resources::scene::configuration
             Dimension y;
             std::string name {};
 
-            std::vector<ContainerDefinition> columns;
-            std::vector<ContainerDefinition> rows;
-            std::vector<ContainerDefinition> tileRow;
-            std::vector<ContainerDefinition> tileColumn;
-            std::vector<ContainerDefinition> floating;
-            std::vector<ContainerDefinition> slides;
+            std::vector<ContainerDefinition> columns {};
+            std::vector<ContainerDefinition> rows {};
+            std::vector<ContainerDefinition> tileRow {};
+            std::vector<ContainerDefinition> tileColumn {};
+            std::vector<ContainerDefinition> floating {};
+            std::vector<ContainerDefinition> slides {};
         };
 
         using DimensionSegmentProperty = DimensionSegment ContainerDefinition::*;
