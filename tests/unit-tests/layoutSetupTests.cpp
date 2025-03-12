@@ -65,6 +65,11 @@ void assertAxis(const objects::layout::StretchingAxis& axis, const T& size, cons
     EXPECT_EQ(axis.valuePropagation, valuePropagation);
 }
 
+void assertAxis(const objects::layout::AlignmentAxis& axis, const objects::layout::AlignOrder order)
+{
+    EXPECT_EQ(axis.order, order);
+}
+
 void assertAxis(const objects::layout::AlignmentAxis& axis, const int position)
 {
     EXPECT_TRUE(axis.value.pixels);
@@ -87,7 +92,7 @@ template<typename T>
 void assertAxis(const objects::layout::AlignmentAxis& axis, const T& position, const objects::layout::AlignOrder order)
 {
     assertAxis(axis, position);
-    EXPECT_EQ(axis.order, order);
+    assertAxis(axis, order);
 }
 
 void assertNode(const objects::layout::NodeItemSetup& itemSetup, const Name& name, const std::size_t parentIndex)
@@ -279,4 +284,45 @@ TEST(LayoutSetupTests, columnTilesSetup)
 {
     layout2::ContainerDefinition rootDefinition {};
     tileRowSetupTest(rootDefinition, rootDefinition.tileColumn, rowAxes, &layout2::ContainerDefinition::height, &layout2::ContainerDefinition::width);
+}
+
+TEST(LayoutSetupTests, floatingSetup)
+{
+    layout2::ContainerDefinition rootDefinition {};
+
+    auto& floatings = rootDefinition.floating;
+    floatings.reserve(2);
+
+    layout2::ContainerDefinition& floating = floatings.emplace_back();
+    floating.name = "floating1";
+    floating.x.pixels = 100;
+    floating.y.pixels = 100;
+    floating.width.pixels = 10;
+    floating.height.pixels = 10;
+
+    layout2::ContainerDefinition& floating2 = floatings.emplace_back();
+    floating2.name = "floating2";
+    floating2.x.percents = 10.f;
+    floating2.y.align = layout2::Align::center;
+    floating2.width.upstream = layout2::Upstream::children;
+    floating2.height.upstream = layout2::Upstream::children;
+
+    services::LayoutSetupService setupService {};
+    const auto [nodes] = setupService.buildSetupList(rootDefinition);
+
+    EXPECT_EQ(nodes.size(), 3);
+
+    const objects::layout::NodeItemSetup& floating1Setup = nodes[1];
+    assertNode(floating1Setup, floating.name, 0);
+    assertAxis(floating1Setup.alignment.axes.x, 100, objects::layout::AlignOrder::relative);
+    assertAxis(floating1Setup.alignment.axes.y, 100, objects::layout::AlignOrder::relative);
+    assertAxis(floating1Setup.stretching.axes.width, 10, false);
+    assertAxis(floating1Setup.stretching.axes.width, 10, false);
+
+    const objects::layout::NodeItemSetup& floating2Setup = nodes[2];
+    assertNode(floating2Setup, floating2.name, 0);
+    assertAxis(floating2Setup.alignment.axes.x, 10.f, objects::layout::AlignOrder::relative);
+    assertAxis(floating2Setup.alignment.axes.y, objects::layout::AlignOrder::center);
+    assertAxis(floating2Setup.stretching.axes.width, objects::layout::Upstream::children, false);
+    assertAxis(floating2Setup.stretching.axes.width, objects::layout::Upstream::children, false);
 }

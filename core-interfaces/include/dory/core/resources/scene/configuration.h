@@ -128,6 +128,13 @@ namespace dory::core::resources::scene::configuration
 
     namespace layout2
     {
+        enum class Align
+        {
+            origin,
+            relative,
+            center
+        };
+
         enum class Upstream
         {
             parent,
@@ -141,6 +148,11 @@ namespace dory::core::resources::scene::configuration
             std::optional<float> percents {};
         };
 
+        struct DimensionPoint: public Dimension
+        {
+            Align align { Align::relative };
+        };
+
         struct DimensionSegment: public Dimension
         {
             std::optional<Upstream> upstream {};
@@ -150,8 +162,8 @@ namespace dory::core::resources::scene::configuration
         {
             DimensionSegment width;
             DimensionSegment height;
-            Dimension x;
-            Dimension y;
+            DimensionPoint x;
+            DimensionPoint y;
             std::string name {};
 
             std::vector<ContainerDefinition> columns {};
@@ -163,6 +175,7 @@ namespace dory::core::resources::scene::configuration
         };
 
         using DimensionSegmentProperty = DimensionSegment ContainerDefinition::*;
+        using DimensionPointProperty = DimensionSegment ContainerDefinition::*;
     }
 
     struct Window

@@ -152,9 +152,28 @@ namespace dory::core::services
         return getAlignment(containerDefinition, objects::layout::AlignOrder::wrap, objects::layout::AlignOrder::line);
     }
 
+    void setupFloatingAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::PositionProperty positionProperty, const layout2::DimensionPoint& dimension)
+    {
+        auto order { objects::layout::AlignOrder::relative };
+
+        if(dimension.align == layout2::Align::center)
+        {
+            order = objects::layout::AlignOrder::center;
+        }
+        else if(dimension.align == layout2::Align::origin)
+        {
+            order = objects::layout::AlignOrder::origin;
+        }
+
+        setupAlignmentAxis(axis, order, positionProperty, dimension);
+    }
+
     objects::layout::Alignment getFloatingAlignment(const layout2::ContainerDefinition& containerDefinition)
     {
-        return getAlignment(containerDefinition, objects::layout::AlignOrder::relative, objects::layout::AlignOrder::relative);
+        objects::layout::Alignment alignment;
+        setupFloatingAlignmentAxis(alignment.axes.x, &objects::layout::Position::x, containerDefinition.x);
+        setupFloatingAlignmentAxis(alignment.axes.y, &objects::layout::Position::y, containerDefinition.y);
+        return alignment;
     }
 
     objects::layout::Alignment getSlideAlignment(const layout2::ContainerDefinition& containerDefinition)
