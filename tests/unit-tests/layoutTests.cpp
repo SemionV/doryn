@@ -384,42 +384,77 @@ TEST(LayoutTests, columnOfThreeRows)
     assertContainer(row3, row3Definition.name, 0, windowHeight - row3Height, windowWidth, row3Height);
 }
 
-TEST(LayoutTests, combinedThreeColumnAndRowsGridLayout)
+TEST(LayoutTests, combinedThreeColumnAndRowsGridLayout2)
 {
-    layout::ContainerDefinition root {};
-    root.name = "root";
-    root.horizontal = std::vector<layout::ContainerDefinition>(3);
+    constexpr int windowWidth = 1024;
+    constexpr int windowHeight = 768;
+    constexpr int column1Width = 124;
+    constexpr int column3Width = 50;
+    constexpr int row1Height = 168;
+    constexpr int row3Height = 50;
 
-    layout::ContainerDefinition& column1 = (*root.horizontal)[0];
-    column1.size = layout::Size { layout::Dimension{ 124 }, {} };
+    layout2::ContainerDefinition definition;
+    definition.name = "window";
+    definition.width.pixels = windowWidth;
+    definition.height.pixels = windowHeight;
 
-    layout::ContainerDefinition& column2 = (*root.horizontal)[1];
-    column2.vertical = std::vector<layout::ContainerDefinition>(3);
-    layout::ContainerDefinition& row1 = (*column2.vertical)[0];
-    row1.size = layout::Size { {}, layout::Dimension{ 168 } };
-    layout::ContainerDefinition& row2 = (*column2.vertical)[1];
-    layout::ContainerDefinition& row3 = (*column2.vertical)[2];
-    row3.size = layout::Size { {}, layout::Dimension{ 100 } };
+    auto& columns = definition.columns;
+    columns.resize(3);
 
-    layout::ContainerDefinition& column3 = (*root.horizontal)[2];
-    column3.size = layout::Size { layout::Dimension{ 100 }, {} };
+    auto& column1Definition = columns[0];
+    column1Definition.name = "column1";
+    column1Definition.width.pixels = column1Width;
 
-    services::LayoutService layoutService;
-    constexpr objects::layout::Size availableSpace{ 1024, 768 };
-    const objects::layout::Container container = layoutService.calculate(root, availableSpace);
+    auto& column2Definition = columns[1];
+    column2Definition.name = "column2";
+    column2Definition.width.upstream = layout2::Upstream::parent;
 
-    EXPECT_EQ(container.name, root.name);
-    EXPECT_EQ(container.children.size(), 3);
+    auto& rows = column2Definition.rows;
+    rows.resize(3);
 
-    assertContainer(container.children[0], column1.name, 0, 0, 124, availableSpace.height);
-    assertContainer(container.children[2], column3.name, 924, 0, 100, availableSpace.height);
+    auto& row1Definition = rows[0];
+    row1Definition.name = "row1";
+    row1Definition.height.pixels = row1Height;
 
-    auto& column2Container = container.children[1];
-    assertContainer(column2Container, column2.name, 124, 0, 800, availableSpace.height);
-    EXPECT_EQ(column2Container.children.size(), 3);
-    assertContainer(column2Container.children[0], row1.name, 0, 0, column2Container.size.width, 168);
-    assertContainer(column2Container.children[1], row2.name, 0, 168, column2Container.size.width, 500);
-    assertContainer(column2Container.children[2], row3.name, 0, 668, column2Container.size.width, 100);
+    auto& row2Definition = rows[1];
+    row2Definition.name = "row2";
+    row2Definition.height.upstream = layout2::Upstream::parent;
+
+    auto& row3Definition = rows[2];
+    row3Definition.name = "row3";
+    row3Definition.height.pixels = row3Height;
+
+    auto& column3Definition = columns[2];
+    column3Definition.name = "column3";
+    column3Definition.width.pixels = column3Width;
+
+    services::LayoutSetupService setupService {};
+    const auto setupList = setupService.buildSetupList(definition);
+
+    services::LayoutService2 layoutService;
+    const auto window = layoutService.calculate(setupList, objects::layout::Variables{});
+
+    ASSERT_TRUE(!!window);
+    assertContainer(*window, definition.name, 0, 0, windowWidth, windowHeight, 3);
+    const auto& column1 = window->children[0];
+    assertContainer(column1, column1Definition.name, 0, 0, column1Width, windowHeight);
+    const auto& column2 = window->children[1];
+    constexpr int expectedColumn2Width = windowWidth - column1Width - column3Width;
+    assertContainer(column2, column2Definition.name, column1Width, 0, expectedColumn2Width, windowHeight, 3);
+    const auto& column3 = window->children[2];
+    assertContainer(column3, column3Definition.name, windowWidth - column3Width, 0, column3Width, windowHeight);
+
+    const auto& row1 = column2.children[0];
+    assertContainer(row1, row1Definition.name, 0, 0, expectedColumn2Width, row1Height);
+    const auto& row2 = column2.children[1];
+    assertContainer(row2, row2Definition.name, 0, row1Height, expectedColumn2Width, windowHeight - row1Height - row3Height);
+    const auto& row3 = column2.children[2];
+    assertContainer(row3, row3Definition.name, 0, windowHeight - row3Height, expectedColumn2Width, row3Height);
+}
+
+TEST(LayoutTests, oversizedChild)
+{
+
 }
 
 TEST(LayoutTests, stretchContainerOversized)
