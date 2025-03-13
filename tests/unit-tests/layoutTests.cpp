@@ -452,35 +452,34 @@ TEST(LayoutTests, combinedThreeColumnAndRowsGridLayout2)
     assertContainer(row3, row3Definition.name, 0, windowHeight - row3Height, expectedColumn2Width, row3Height);
 }
 
-TEST(LayoutTests, oversizedChild)
+TEST(LayoutTests, scrollableContent)
 {
+    constexpr int windowWidth = 400;
+    constexpr int windowHeight = 400;
+    constexpr int contentHeight = 3000;
 
-}
+    layout2::ContainerDefinition windowDefinition;
+    windowDefinition.name = "window";
+    windowDefinition.width.pixels = windowWidth;
+    windowDefinition.height.pixels = windowHeight;
 
-TEST(LayoutTests, stretchContainerOversized)
-{
-    layout::ContainerDefinition root {};
-    root.name = "root";
-    root.horizontal = std::vector<layout::ContainerDefinition>{};
+    windowDefinition.slides.resize(1);
 
-    root.size = layout::Size {
-        {}, layout::Dimension{}
-    };
+    layout2::ContainerDefinition& slideDefinition = windowDefinition.slides[0];
+    slideDefinition.name = "slide";
+    slideDefinition.width.upstream = layout2::Upstream::parent;
+    slideDefinition.height.pixels = contentHeight;
 
-    root.horizontal->reserve(1);
+    services::LayoutSetupService setupService {};
+    const auto setupList = setupService.buildSetupList(windowDefinition);
 
-    layout::ContainerDefinition& column1 = root.horizontal->emplace_back();
-    column1.size = layout::Size { {}, layout::Dimension{ 3000 } };
+    services::LayoutService2 layoutService;
+    const auto window = layoutService.calculate(setupList, objects::layout::Variables{});
 
-    services::LayoutService layoutService;
-    constexpr objects::layout::Size availableSpace{ 1024, 768 };
-    const objects::layout::Container container = layoutService.calculate(root, availableSpace);
-
-    assertContainer(container, root.name, 0, 0, availableSpace.width, 3000);
-    EXPECT_EQ(container.children.size(), 1);
-
-    auto& innerContainer = container.children[0];
-    assertContainer(innerContainer, column1.name, 0, 0, availableSpace.width, 3000);
+    ASSERT_TRUE(!!window);
+    assertContainer(*window, windowDefinition.name, 0, 0, windowWidth, windowHeight, 1);
+    const auto& slide = window->children[0];
+    assertContainer(slide, slideDefinition.name, 0, 0, windowWidth, contentHeight);
 }
 
 TEST(LayoutTests, horizontalTiles)
