@@ -96,7 +96,7 @@ namespace dory::core::services
     objects::layout::NodeStateList buildNodeList(const objects::layout::NodeSetupList& setupList)
     {
         objects::layout::NodeStateList list;
-        list.nodes.reserve(setupList.nodes.size());
+        list.nodes.resize(setupList.nodes.size());
         return list;
     }
 
@@ -217,7 +217,7 @@ namespace dory::core::services
 
             if(container)
             {
-                container->children.reserve(nodeSetup.children.size());
+                container->children.resize(nodeSetup.children.size());
                 container->name = nodeSetup.name;
                 container->position = nodeState.position;
                 container->size = nodeState.size;

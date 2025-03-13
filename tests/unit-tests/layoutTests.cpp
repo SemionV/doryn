@@ -3,6 +3,8 @@
 #include <dory/core/resources/scene/configuration.h>
 #include <dory/core/resources/objects/layout.h>
 #include <dory/core/services/layoutService.h>
+#include <dory/core/services/layoutService2.h>
+#include <dory/core/services/layoutSetupService.h>
 
 using namespace dory;
 using namespace dory::core;
@@ -10,24 +12,75 @@ using namespace dory::core::resources;
 using namespace dory::core::resources::scene;
 using namespace dory::core::resources::scene::configuration;
 
+void assertContainer(const objects::layout::Container& container, const Name& name, const int x, const int y,
+    const int width, const int height)
+{
+    EXPECT_EQ(container.name, name);
+    EXPECT_EQ(container.size.width, width);
+    EXPECT_EQ(container.size.height, height);
+    EXPECT_EQ(container.position.x, x);
+    EXPECT_EQ(container.position.y, y);
+}
+
+void assertContainer(const objects::layout::Container& container, const Name& name, const int x, const int y,
+    const int width, const int height, const std::size_t childrenCount)
+{
+    assertContainer(container, name, x, y, width, height);
+    EXPECT_EQ(container.children.size(), childrenCount);
+}
+
+void testWindow(const int screenWidth, const int screenHeight, const int x, const int y, const int width, const int height,
+    const layout2::ContainerDefinition& definition)
+{
+    layout2::ContainerDefinition screenDefinition {};
+    screenDefinition.width.pixels = screenWidth;
+    screenDefinition.height.pixels = screenHeight;
+    screenDefinition.name = "screen";
+
+    screenDefinition.floating.emplace_back(definition);
+
+    services::LayoutSetupService setupService {};
+    const auto setupList = setupService.buildSetupList(screenDefinition);
+
+    services::LayoutService2 layoutService;
+    const auto screen = layoutService.calculate(setupList, objects::layout::Variables{});
+
+    ASSERT_TRUE(!!screen);
+    assertContainer(*screen, screenDefinition.name, 0, 0, screenWidth, screenHeight, 1);
+    const auto& window = screen->children[0];
+    assertContainer(window, definition.name, x, y, width, height);
+}
+
+TEST(LayoutTests, relativePosition)
+{
+    constexpr int x = 30;
+    constexpr int y = 10;
+    constexpr int width = 150;
+    constexpr int height = 100;
+
+    layout2::ContainerDefinition definition;
+    definition.name = "window";
+    definition.x.pixels = x;
+    definition.y.pixels = y;
+    definition.width.pixels = width;
+    definition.height.pixels = height;
+
+    testWindow(1024, 768, x, y, width, height, definition);
+}
+
 TEST(LayoutTests, centeredPosition)
 {
-    layout::ContainerDefinition root {};
-    root.name = "root";
+    constexpr int width = 150;
+    constexpr int height = 100;
 
-    root.size = layout::Size {
-        layout::Dimension { 150 },
-        layout::Dimension { 100 }
-    };
+    layout2::ContainerDefinition definition;
+    definition.name = "window";
+    definition.x.align = layout2::Align::center;
+    definition.y.align = layout2::Align::center;
+    definition.width.pixels = width;
+    definition.height.pixels = height;
 
-    services::LayoutService layoutService;
-    const objects::layout::Container container = layoutService.calculate(root, objects::layout::Size{ 350, 400 });
-
-    EXPECT_EQ(container.name, root.name);
-    EXPECT_EQ(container.size.width, 150);
-    EXPECT_EQ(container.size.height, 100);
-    EXPECT_EQ(container.position.x, 100);
-    EXPECT_EQ(container.position.y, 150);
+    testWindow(350, 400, 100, 150, width, height, definition);
 }
 
 TEST(LayoutTests, originPosition)
@@ -52,30 +105,6 @@ TEST(LayoutTests, originPosition)
     EXPECT_EQ(container.size.height, 100);
     EXPECT_EQ(container.position.x, 0);
     EXPECT_EQ(container.position.y, 0);
-}
-
-TEST(LayoutTests, explicitPosition)
-{
-    layout::ContainerDefinition root {};
-    root.name = "root";
-
-    root.position = layout::Position {
-        layout::Dimension { 12 },
-        layout::Dimension { 225 }
-    };
-    root.size = layout::Size {
-        layout::Dimension { 150 },
-        layout::Dimension { 100 }
-    };
-
-    services::LayoutService layoutService;
-    const objects::layout::Container container = layoutService.calculate(root, objects::layout::Size{ 350, 400 });
-
-    EXPECT_EQ(container.name, root.name);
-    EXPECT_EQ(container.size.width, 150);
-    EXPECT_EQ(container.size.height, 100);
-    EXPECT_EQ(container.position.x, 12);
-    EXPECT_EQ(container.position.y, 225);
 }
 
 TEST(LayoutTests, fullScreen)
@@ -118,20 +147,14 @@ TEST(LayoutTests, percentDimensions)
     EXPECT_EQ(container.position.y, 100);
 }
 
-void assertContainer(const objects::layout::Container& container, const Name& name, const std::size_t x, const std::size_t y,
-    const std::size_t width, const std::size_t height)
-{
-    EXPECT_EQ(container.size.width, width);
-    EXPECT_EQ(container.size.height, height);
-    EXPECT_EQ(container.position.x, x);
-    EXPECT_EQ(container.position.y, y);
-}
 
 TEST(LayoutTests, gridTwoColumnsLine)
 {
     layout::ContainerDefinition root {};
     root.name = "root";
     root.horizontal = std::vector<layout::ContainerDefinition>{};
+
+    root.horizontal->reserve(2);
 
     layout::ContainerDefinition& column1 = root.horizontal->emplace_back();
     column1.size = layout::Size { layout::Dimension{ 124 }, {} }; //124px width, 100% height
@@ -155,6 +178,8 @@ TEST(LayoutTests, gridTwoRowsLine)
     root.name = "root";
     root.vertical = std::vector<layout::ContainerDefinition>{};
 
+    root.vertical->reserve(2);
+
     layout::ContainerDefinition& row1 = root.vertical->emplace_back();
     row1.size = layout::Size { {}, layout::Dimension{ 168 } };
 
@@ -176,6 +201,8 @@ TEST(LayoutTests, gridThreeColumnsLine)
     layout::ContainerDefinition root {};
     root.name = "root";
     root.horizontal = std::vector<layout::ContainerDefinition>{};
+
+    root.horizontal->reserve(3);
 
     layout::ContainerDefinition& column1 = root.horizontal->emplace_back();
     column1.size = layout::Size { layout::Dimension{ 124 }, {} };
@@ -203,6 +230,8 @@ TEST(LayoutTests, gridThreeRowsLine)
     root.name = "root";
     root.vertical = std::vector<layout::ContainerDefinition>{};
 
+    root.vertical->reserve(3);
+
     layout::ContainerDefinition& row1 = root.vertical->emplace_back();
     row1.size = layout::Size { {}, layout::Dimension{ 168 } };
 
@@ -227,20 +256,20 @@ TEST(LayoutTests, combinedThreeColumnAndRowsGridLayout)
 {
     layout::ContainerDefinition root {};
     root.name = "root";
-    root.horizontal = std::vector<layout::ContainerDefinition>{};
+    root.horizontal = std::vector<layout::ContainerDefinition>(3);
 
-    layout::ContainerDefinition& column1 = root.horizontal->emplace_back();
+    layout::ContainerDefinition& column1 = (*root.horizontal)[0];
     column1.size = layout::Size { layout::Dimension{ 124 }, {} };
 
-    layout::ContainerDefinition& column2 = root.horizontal->emplace_back();
-    column2.vertical = std::vector<layout::ContainerDefinition>{};
-    layout::ContainerDefinition& row1 = column2.vertical->emplace_back();
+    layout::ContainerDefinition& column2 = (*root.horizontal)[1];
+    column2.vertical = std::vector<layout::ContainerDefinition>(3);
+    layout::ContainerDefinition& row1 = (*column2.vertical)[0];
     row1.size = layout::Size { {}, layout::Dimension{ 168 } };
-    layout::ContainerDefinition& row2 = column2.vertical->emplace_back();
-    layout::ContainerDefinition& row3 = column2.vertical->emplace_back();
+    layout::ContainerDefinition& row2 = (*column2.vertical)[1];
+    layout::ContainerDefinition& row3 = (*column2.vertical)[2];
     row3.size = layout::Size { {}, layout::Dimension{ 100 } };
 
-    layout::ContainerDefinition& column3 = root.horizontal->emplace_back();
+    layout::ContainerDefinition& column3 = (*root.horizontal)[2];
     column3.size = layout::Size { layout::Dimension{ 100 }, {} };
 
     services::LayoutService layoutService;
@@ -271,6 +300,8 @@ TEST(LayoutTests, stretchContainerOversized)
         {}, layout::Dimension{}
     };
 
+    root.horizontal->reserve(1);
+
     layout::ContainerDefinition& column1 = root.horizontal->emplace_back();
     column1.size = layout::Size { {}, layout::Dimension{ 3000 } };
 
@@ -289,29 +320,29 @@ TEST(LayoutTests, horizontalTiles)
 {
     layout::ContainerDefinition root {};
     root.name = "root";
-    root.horizontal = std::vector<layout::ContainerDefinition>{};
+    root.horizontal = std::vector<layout::ContainerDefinition>(1);
 
     root.size = layout::Size {
         layout::Dimension{ 350 }, layout::Dimension{}
     };
 
-    layout::ContainerDefinition& tilesColumn = root.horizontal->emplace_back();
+    layout::ContainerDefinition& tilesColumn = (*root.horizontal)[0];
     tilesColumn.size = layout::Size { layout::Dimension{}, layout::Dimension{} };
-    tilesColumn.horizontal = std::vector<layout::ContainerDefinition>{};
+    tilesColumn.horizontal = std::vector<layout::ContainerDefinition>(5);
 
-    layout::ContainerDefinition& column1 = tilesColumn.horizontal->emplace_back();
+    layout::ContainerDefinition& column1 = (*tilesColumn.horizontal)[0];
     column1.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
-    layout::ContainerDefinition& column2 = tilesColumn.horizontal->emplace_back();
+    layout::ContainerDefinition& column2 = (*tilesColumn.horizontal)[1];
     column2.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
-    layout::ContainerDefinition& column3 = tilesColumn.horizontal->emplace_back();
+    layout::ContainerDefinition& column3 = (*tilesColumn.horizontal)[2];;
     column3.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
-    layout::ContainerDefinition& column4 = tilesColumn.horizontal->emplace_back();
+    layout::ContainerDefinition& column4 = (*tilesColumn.horizontal)[3];;
     column4.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
-    layout::ContainerDefinition& column5 = tilesColumn.horizontal->emplace_back();
+    layout::ContainerDefinition& column5 = (*tilesColumn.horizontal)[4];;
     column5.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
     services::LayoutService layoutService;
@@ -345,29 +376,29 @@ TEST(LayoutTests, verticalTiles)
 {
     layout::ContainerDefinition root {};
     root.name = "root";
-    root.horizontal = std::vector<layout::ContainerDefinition>{};
+    root.horizontal = std::vector<layout::ContainerDefinition>(1);
 
     root.size = layout::Size {
         layout::Dimension{}, layout::Dimension{ 350 }
     };
 
-    layout::ContainerDefinition& tilesColumn = root.horizontal->emplace_back();
+    layout::ContainerDefinition& tilesColumn = (*root.horizontal)[0];;
     tilesColumn.size = layout::Size { layout::Dimension{}, layout::Dimension{} };
-    tilesColumn.vertical = std::vector<layout::ContainerDefinition>{};
+    tilesColumn.vertical = std::vector<layout::ContainerDefinition>(5);
 
-    layout::ContainerDefinition& column1 = tilesColumn.vertical->emplace_back();
+    layout::ContainerDefinition& column1 = (*tilesColumn.vertical)[0];
     column1.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
-    layout::ContainerDefinition& column2 = tilesColumn.vertical->emplace_back();
+    layout::ContainerDefinition& column2 = (*tilesColumn.vertical)[1];
     column2.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
-    layout::ContainerDefinition& column3 = tilesColumn.vertical->emplace_back();
+    layout::ContainerDefinition& column3 = (*tilesColumn.vertical)[2];
     column3.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
-    layout::ContainerDefinition& column4 = tilesColumn.vertical->emplace_back();
+    layout::ContainerDefinition& column4 = (*tilesColumn.vertical)[3];
     column4.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
-    layout::ContainerDefinition& column5 = tilesColumn.vertical->emplace_back();
+    layout::ContainerDefinition& column5 = (*tilesColumn.vertical)[4];
     column5.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
 
     services::LayoutService layoutService;

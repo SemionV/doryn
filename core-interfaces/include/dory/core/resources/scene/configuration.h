@@ -109,7 +109,7 @@ namespace dory::core::resources::scene::configuration
 
         struct ContainerDefinition
         {
-            std::string name {};
+            std::string name {""};
             std::optional<Size> size {};
             std::optional<Position> position {};
 
