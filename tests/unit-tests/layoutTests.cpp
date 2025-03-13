@@ -85,91 +85,130 @@ TEST(LayoutTests, centeredPosition)
 
 TEST(LayoutTests, originPosition)
 {
-    layout::ContainerDefinition root {};
-    root.name = "root";
+    constexpr int width = 150;
+    constexpr int height = 100;
 
-    root.position = layout::Position {
-        layout::Dimension {},
-        layout::Dimension {}
-    };
-    root.size = layout::Size {
-        layout::Dimension { 150 },
-        layout::Dimension { 100 }
-    };
+    layout2::ContainerDefinition definition;
+    definition.name = "window";
+    definition.x.align = layout2::Align::origin;
+    definition.y.align = layout2::Align::origin;
+    definition.width.pixels = width;
+    definition.height.pixels = height;
 
-    services::LayoutService layoutService;
-    const objects::layout::Container container = layoutService.calculate(root, objects::layout::Size{ 350, 400 });
-
-    EXPECT_EQ(container.name, root.name);
-    EXPECT_EQ(container.size.width, 150);
-    EXPECT_EQ(container.size.height, 100);
-    EXPECT_EQ(container.position.x, 0);
-    EXPECT_EQ(container.position.y, 0);
+    testWindow(350, 400, 0, 0, width, height, definition);
 }
 
 TEST(LayoutTests, fullScreen)
 {
-    layout::ContainerDefinition root {};
-    root.name = "root";
+    layout2::ContainerDefinition definition;
+    definition.name = "window";
+    definition.x.align = layout2::Align::origin;
+    definition.y.align = layout2::Align::origin;
+    definition.width.upstream = layout2::Upstream::parent;
+    definition.height.upstream = layout2::Upstream::parent;
 
-    services::LayoutService layoutService;
-    constexpr objects::layout::Size availableSpace{ 1024, 768 };
-    const objects::layout::Container container = layoutService.calculate(root, availableSpace);
-
-    EXPECT_EQ(container.name, root.name);
-    EXPECT_EQ(container.size.width, availableSpace.width);
-    EXPECT_EQ(container.size.height, availableSpace.height);
-    EXPECT_EQ(container.position.x, 0);
-    EXPECT_EQ(container.position.y, 0);
+    testWindow(1024, 768, 0, 0, 1024, 768, definition);
 }
 
 TEST(LayoutTests, percentDimensions)
 {
-    layout::ContainerDefinition root {};
-    root.name = "root";
-    root.size = layout::Size {
-        layout::Dimension { {}, {10.f} },
-        layout::Dimension { {}, {20.f} }
-    };
-    root.position = layout::Position {
-        layout::Dimension { {}, {30.f} },
-        layout::Dimension { {}, {10.f} }
-    };
+    layout2::ContainerDefinition definition;
+    definition.name = "window";
+    definition.x.percents = 10.f;
+    definition.y.percents = 20.f;
+    definition.width.percents = 30.f;
+    definition.height.percents = 10.f;
 
-    services::LayoutService layoutService;
-    constexpr objects::layout::Size availableSpace{ 1000, 1000 };
-    const objects::layout::Container container = layoutService.calculate(root, availableSpace);
-
-    EXPECT_EQ(container.name, root.name);
-    EXPECT_EQ(container.size.width, 100);
-    EXPECT_EQ(container.size.height, 200);
-    EXPECT_EQ(container.position.x, 300);
-    EXPECT_EQ(container.position.y, 100);
+    testWindow(1000, 1000, 100, 200, 300, 100, definition);
 }
 
-
-TEST(LayoutTests, gridTwoColumnsLine)
+TEST(LayoutTests, rowOfTwoCoulmns)
 {
-    layout::ContainerDefinition root {};
-    root.name = "root";
-    root.horizontal = std::vector<layout::ContainerDefinition>{};
+    constexpr int windowWidth = 1024;
+    constexpr int windowHeight = 768;
+    constexpr int column1Width = 124;
 
-    root.horizontal->reserve(2);
+    layout2::ContainerDefinition definition;
+    definition.name = "window";
+    definition.width.pixels = windowWidth;
+    definition.height.pixels = windowHeight;
 
-    layout::ContainerDefinition& column1 = root.horizontal->emplace_back();
-    column1.size = layout::Size { layout::Dimension{ 124 }, {} }; //124px width, 100% height
+    auto& columns = definition.columns;
+    columns.resize(2);
 
-    layout::ContainerDefinition& column2 = root.horizontal->emplace_back(); //100% - 124px width, 100% height
+    auto& column1Definition = columns[0];
+    column1Definition.name = "column1";
+    column1Definition.width.pixels = column1Width;
 
-    services::LayoutService layoutService;
-    constexpr objects::layout::Size availableSpace{ 1024, 768 };
-    const objects::layout::Container container = layoutService.calculate(root, availableSpace);
+    auto& column2Definition = columns[1];
+    column2Definition.name = "column2";
+    column2Definition.width.upstream = layout2::Upstream::parent;
 
-    EXPECT_EQ(container.name, root.name);
-    EXPECT_EQ(container.children.size(), 2);
+    services::LayoutSetupService setupService {};
+    const auto setupList = setupService.buildSetupList(definition);
 
-    assertContainer(container.children[0], column1.name, 0, 0, 124, availableSpace.height);
-    assertContainer(container.children[1], column2.name, 124, 0, 900, availableSpace.height);
+    services::LayoutService2 layoutService;
+    const auto window = layoutService.calculate(setupList, objects::layout::Variables{});
+
+    ASSERT_TRUE(!!window);
+    assertContainer(*window, definition.name, 0, 0, windowWidth, windowHeight, 2);
+    const auto& column1 = window->children[0];
+    assertContainer(column1, column1Definition.name, 0, 0, column1Width, windowHeight);
+    const auto& column2 = window->children[1];
+    assertContainer(column2, column2Definition.name, column1Width, 0, windowWidth - column1Width, windowHeight);
+
+}
+
+TEST(LayoutTests, windowStretchedByContent)
+{
+    constexpr int screenWidth = 1024;
+    constexpr int screenHeight = 768;
+    constexpr int windowHeight = 400;
+    constexpr int column1Width = 100;
+    constexpr int column2Width = 200;
+
+    layout2::ContainerDefinition screenDefinition {};
+    screenDefinition.width.pixels = screenWidth;
+    screenDefinition.height.pixels = screenHeight;
+    screenDefinition.name = "screen";
+    screenDefinition.floating.resize(1);
+
+    layout2::ContainerDefinition& windowDefinition = screenDefinition.floating[0];
+    windowDefinition.name = "window";
+    windowDefinition.x.align = layout2::Align::center;
+    windowDefinition.y.align = layout2::Align::center;
+    windowDefinition.width.upstream = layout2::Upstream::children;
+    windowDefinition.height.pixels = windowHeight;
+
+    auto& columns = windowDefinition.columns;
+    columns.resize(2);
+
+    auto& column1Definition = columns[0];
+    column1Definition.name = "column1";
+    column1Definition.width.pixels = column1Width;
+
+    auto& column2Definition = columns[1];
+    column2Definition.name = "column2";
+    column2Definition.width.pixels = column2Width;
+
+    services::LayoutSetupService setupService {};
+    const auto setupList = setupService.buildSetupList(screenDefinition);
+
+    services::LayoutService2 layoutService;
+    const auto screen = layoutService.calculate(setupList, objects::layout::Variables{});
+
+    ASSERT_TRUE(!!screen);
+    assertContainer(*screen, screenDefinition.name, 0, 0, screenWidth, screenHeight, 1);
+    const auto& window = screen->children[0];
+    constexpr int expectedWindowWidth = column1Width + column2Width;
+    const int expectedWindowX = static_cast<int>(std::round(static_cast<float>(screenWidth - expectedWindowWidth) / 2.f));
+    const int expectedWindowY = static_cast<int>(std::round(static_cast<float>(screenHeight - windowHeight) / 2.f));
+    assertContainer(window, windowDefinition.name, expectedWindowX, expectedWindowY, expectedWindowWidth, windowHeight, 2);
+
+    const auto& column1 = window.children[0];
+    assertContainer(column1, column1Definition.name, 0, 0, column1Width, windowHeight);
+    const auto& column2 = window.children[1];
+    assertContainer(column2, column2Definition.name, column1Width, 0, column2Width, windowHeight);
 }
 
 TEST(LayoutTests, gridTwoRowsLine)
