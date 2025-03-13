@@ -122,7 +122,7 @@ TEST(LayoutTests, percentDimensions)
     testWindow(1000, 1000, 100, 200, 300, 100, definition);
 }
 
-TEST(LayoutTests, rowOfTwoCoulmns)
+TEST(LayoutTests, rowOfTwoColumns)
 {
     constexpr int windowWidth = 1024;
     constexpr int windowHeight = 768;
@@ -156,10 +156,45 @@ TEST(LayoutTests, rowOfTwoCoulmns)
     assertContainer(column1, column1Definition.name, 0, 0, column1Width, windowHeight);
     const auto& column2 = window->children[1];
     assertContainer(column2, column2Definition.name, column1Width, 0, windowWidth - column1Width, windowHeight);
-
 }
 
-TEST(LayoutTests, windowStretchedByContent)
+TEST(LayoutTests, columnOfTwoRows)
+{
+    constexpr int windowWidth = 1024;
+    constexpr int windowHeight = 768;
+    constexpr int row1Height = 168;
+
+    layout2::ContainerDefinition definition;
+    definition.name = "window";
+    definition.width.pixels = windowWidth;
+    definition.height.pixels = windowHeight;
+
+    auto& rows = definition.rows;
+    rows.resize(2);
+
+    auto& row1Definition = rows[0];
+    row1Definition.name = "row1";
+    row1Definition.height.pixels = row1Height;
+
+    auto& row2Definition = rows[1];
+    row2Definition.name = "row2";
+    row2Definition.height.upstream = layout2::Upstream::parent;
+
+    services::LayoutSetupService setupService {};
+    const auto setupList = setupService.buildSetupList(definition);
+
+    services::LayoutService2 layoutService;
+    const auto window = layoutService.calculate(setupList, objects::layout::Variables{});
+
+    ASSERT_TRUE(!!window);
+    assertContainer(*window, definition.name, 0, 0, windowWidth, windowHeight, 2);
+    const auto& row1 = window->children[0];
+    assertContainer(row1, row1Definition.name, 0, 0, windowWidth, row1Height);
+    const auto& row2 = window->children[1];
+    assertContainer(row2, row2Definition.name, 0, row1Height, windowWidth, windowHeight - row1Height);
+}
+
+TEST(LayoutTests, windowWidthStretchedByContent)
 {
     constexpr int screenWidth = 1024;
     constexpr int screenHeight = 768;
@@ -211,28 +246,56 @@ TEST(LayoutTests, windowStretchedByContent)
     assertContainer(column2, column2Definition.name, column1Width, 0, column2Width, windowHeight);
 }
 
-TEST(LayoutTests, gridTwoRowsLine)
+TEST(LayoutTests, windowHeightStretchedByContent)
 {
-    layout::ContainerDefinition root {};
-    root.name = "root";
-    root.vertical = std::vector<layout::ContainerDefinition>{};
+    constexpr int screenWidth = 1024;
+    constexpr int screenHeight = 768;
+    constexpr int windowWidth = 400;
+    constexpr int row1Height = 100;
+    constexpr int row2Height = 200;
 
-    root.vertical->reserve(2);
+    layout2::ContainerDefinition screenDefinition {};
+    screenDefinition.width.pixels = screenWidth;
+    screenDefinition.height.pixels = screenHeight;
+    screenDefinition.name = "screen";
+    screenDefinition.floating.resize(1);
 
-    layout::ContainerDefinition& row1 = root.vertical->emplace_back();
-    row1.size = layout::Size { {}, layout::Dimension{ 168 } };
+    layout2::ContainerDefinition& windowDefinition = screenDefinition.floating[0];
+    windowDefinition.name = "window";
+    windowDefinition.x.align = layout2::Align::center;
+    windowDefinition.y.align = layout2::Align::center;
+    windowDefinition.width.pixels = windowWidth;
+    windowDefinition.height.upstream = layout2::Upstream::children;
 
-    layout::ContainerDefinition& row2 = root.vertical->emplace_back();
+    auto& rows = windowDefinition.rows;
+    rows.resize(2);
 
-    services::LayoutService layoutService;
-    constexpr objects::layout::Size availableSpace{ 1024, 768 };
-    const objects::layout::Container container = layoutService.calculate(root, availableSpace);
+    auto& row1Definition = rows[0];
+    row1Definition.name = "row1";
+    row1Definition.height.pixels = row1Height;
 
-    EXPECT_EQ(container.name, root.name);
-    EXPECT_EQ(container.children.size(), 2);
+    auto& row2Definition = rows[1];
+    row2Definition.name = "row2";
+    row2Definition.height.pixels = row2Height;
 
-    assertContainer(container.children[0], row1.name, 0, 0, availableSpace.width, 168);
-    assertContainer(container.children[1], row2.name, 0, 168, availableSpace.width, 600);
+    services::LayoutSetupService setupService {};
+    const auto setupList = setupService.buildSetupList(screenDefinition);
+
+    services::LayoutService2 layoutService;
+    const auto screen = layoutService.calculate(setupList, objects::layout::Variables{});
+
+    ASSERT_TRUE(!!screen);
+    assertContainer(*screen, screenDefinition.name, 0, 0, screenWidth, screenHeight, 1);
+    const auto& window = screen->children[0];
+    constexpr int expectedWindowHeight = row1Height + row2Height;
+    const int expectedWindowX = static_cast<int>(std::round(static_cast<float>(screenWidth - windowWidth) / 2.f));
+    const int expectedWindowY = static_cast<int>(std::round(static_cast<float>(screenHeight - expectedWindowHeight) / 2.f));
+    assertContainer(window, windowDefinition.name, expectedWindowX, expectedWindowY, windowWidth, expectedWindowHeight, 2);
+
+    const auto& row1 = window.children[0];
+    assertContainer(row1, row1Definition.name, 0, 0, windowWidth, row1Height);
+    const auto& row2 = window.children[1];
+    assertContainer(row2, row2Definition.name, 0, row1Height, windowWidth, row2Height);
 }
 
 TEST(LayoutTests, gridThreeColumnsLine)
