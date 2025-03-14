@@ -482,6 +482,52 @@ TEST(LayoutTests, scrollableContent)
     assertContainer(slide, slideDefinition.name, 0, 0, windowWidth, contentHeight);
 }
 
+TEST(LayoutTests, horizontalTiles2)
+{
+    constexpr int windowWidth = 350;
+    constexpr int tileWidth = 100;
+    constexpr int tileHeight = 100;
+
+    layout2::ContainerDefinition windowDefinition;
+    windowDefinition.name = "window";
+    windowDefinition.width.pixels = windowWidth;
+    windowDefinition.height.upstream = layout2::Upstream::children;
+
+    auto& tilesRow = windowDefinition.tileRow;
+    tilesRow.resize(5);
+
+    for(std::size_t i = 0; i < 5; ++i)
+    {
+        layout2::ContainerDefinition& tileDefinition = tilesRow[i];
+        tileDefinition.width.pixels = 100;
+        tileDefinition.height.pixels = 100;
+    }
+
+    services::LayoutSetupService setupService {};
+    const auto setupList = setupService.buildSetupList(windowDefinition);
+
+    services::LayoutService2 layoutService;
+    const auto window = layoutService.calculate(setupList, objects::layout::Variables{});
+
+    ASSERT_TRUE(!!window);
+    assertContainer(*window, windowDefinition.name, 0, 0, windowWidth, tileHeight * 2, 5);
+
+    const auto& tile1 = window->children[0];
+    assertContainer(tile1, "", 0, 0, tileWidth, tileHeight);
+
+    const auto& tile2 = window->children[1];
+    assertContainer(tile2, "", 100, 0, tileWidth, tileHeight);
+
+    const auto& tile3 = window->children[2];
+    assertContainer(tile3, "", 200, 0, tileWidth, tileHeight);
+
+    const auto& tile4 = window->children[3];
+    assertContainer(tile4, "", 0, 100, tileWidth, tileHeight);
+
+    const auto& tile5 = window->children[4];
+    assertContainer(tile5, "", 100, 100, tileWidth, tileHeight);
+}
+
 TEST(LayoutTests, horizontalTiles)
 {
     layout::ContainerDefinition root {};

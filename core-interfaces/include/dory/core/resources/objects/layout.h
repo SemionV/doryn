@@ -55,6 +55,17 @@ namespace dory::core::resources::objects::layout
         relative
     };
 
+    enum class AlignmentStrategy
+    {
+        origin,
+        center,
+        relative,
+        horizontalLine,
+        verticalLine,
+        horizontalTiles,
+        verticalTiles
+    };
+
     struct AlignmentAxis
     {
         PositionProperty property {};
@@ -73,6 +84,7 @@ namespace dory::core::resources::objects::layout
     struct Alignment
     {
         AlignmentAxes axes {};
+        AlignmentStrategy strategy { AlignmentStrategy::origin };
     };
 
     struct StretchingAxis
@@ -109,6 +121,7 @@ namespace dory::core::resources::objects::layout
         Position upperLeftCorner {};
         Position bottomRightCorner {};
     };
+
 
     struct NodeItemState
     {
