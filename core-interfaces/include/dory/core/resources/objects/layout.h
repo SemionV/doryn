@@ -58,7 +58,6 @@ namespace dory::core::resources::objects::layout
     enum class AlignmentStrategy
     {
         origin,
-        center,
         relative,
         horizontalLine,
         verticalLine,

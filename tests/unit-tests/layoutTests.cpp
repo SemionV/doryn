@@ -528,6 +528,10 @@ TEST(LayoutTests, horizontalTiles2)
     assertContainer(tile5, "", 100, 100, tileWidth, tileHeight);
 }
 
+//TODO: unit test for layout like word-wrap text: letters make words(lines of nodes) and words can jump to next line
+//TODO: test three-column layout with a left column filled with tiles vertically and taking width from it's contents, then a flexible-width column and a fixed width column
+//TODO: make a test of a 0-size container filled with tiles, which have to make a column of tiles or a row of tiles accordingly if they are horizontal or vertical alignment
+
 TEST(LayoutTests, horizontalTiles)
 {
     layout::ContainerDefinition root {};

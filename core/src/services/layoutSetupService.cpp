@@ -134,22 +134,30 @@ namespace dory::core::services
 
     objects::layout::Alignment getColumnAlignment(const layout2::ContainerDefinition& containerDefinition)
     {
-        return getAlignment(containerDefinition, objects::layout::AlignOrder::line, objects::layout::AlignOrder::origin);
+        auto alignment = getAlignment(containerDefinition, objects::layout::AlignOrder::line, objects::layout::AlignOrder::origin);
+        alignment.strategy = objects::layout::AlignmentStrategy::horizontalLine;
+        return alignment;
     }
 
     objects::layout::Alignment getRowAlignment(const layout2::ContainerDefinition& containerDefinition)
     {
-        return getAlignment(containerDefinition, objects::layout::AlignOrder::origin, objects::layout::AlignOrder::line);
+        auto alignment = getAlignment(containerDefinition, objects::layout::AlignOrder::origin, objects::layout::AlignOrder::line);
+        alignment.strategy = objects::layout::AlignmentStrategy::verticalLine;
+        return alignment;
     }
 
     objects::layout::Alignment getTileRowAlignment(const layout2::ContainerDefinition& containerDefinition)
     {
-        return getAlignment(containerDefinition, objects::layout::AlignOrder::line, objects::layout::AlignOrder::wrap);
+        auto alignment = getAlignment(containerDefinition, objects::layout::AlignOrder::line, objects::layout::AlignOrder::wrap);
+        alignment.strategy = objects::layout::AlignmentStrategy::horizontalTiles;
+        return alignment;
     }
 
     objects::layout::Alignment getTileColumnAlignment(const layout2::ContainerDefinition& containerDefinition)
     {
-        return getAlignment(containerDefinition, objects::layout::AlignOrder::wrap, objects::layout::AlignOrder::line);
+        auto alignment = getAlignment(containerDefinition, objects::layout::AlignOrder::wrap, objects::layout::AlignOrder::line);
+        alignment.strategy = objects::layout::AlignmentStrategy::verticalTiles;
+        return alignment;
     }
 
     void setupFloatingAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::PositionProperty positionProperty, const layout2::DimensionPoint& dimension)
@@ -173,6 +181,8 @@ namespace dory::core::services
         objects::layout::Alignment alignment;
         setupFloatingAlignmentAxis(alignment.axes.x, &objects::layout::Position::x, containerDefinition.x);
         setupFloatingAlignmentAxis(alignment.axes.y, &objects::layout::Position::y, containerDefinition.y);
+
+        alignment.strategy = objects::layout::AlignmentStrategy::relative;
         return alignment;
     }
 
@@ -181,6 +191,8 @@ namespace dory::core::services
         objects::layout::Alignment alignment;
         setupAlignmentAxis(alignment.axes.x, objects::layout::AlignOrder::origin, &objects::layout::Position::x, 0);
         setupAlignmentAxis(alignment.axes.y, objects::layout::AlignOrder::origin, &objects::layout::Position::y, 0);
+
+        alignment.strategy = objects::layout::AlignmentStrategy::origin;
         return alignment;
     }
 
