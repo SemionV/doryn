@@ -142,7 +142,7 @@ TEST(LayoutTests, rowOfTwoColumns)
 
     auto& column2Definition = columns[1];
     column2Definition.name = "column2";
-    column2Definition.width.upstream = layout2::Upstream::parent;
+    column2Definition.width.upstream = layout2::Upstream::fill;
 
     services::LayoutSetupService setupService {};
     const auto setupList = setupService.buildSetupList(definition);
@@ -178,7 +178,7 @@ TEST(LayoutTests, columnOfTwoRows)
 
     auto& row2Definition = rows[1];
     row2Definition.name = "row2";
-    row2Definition.height.upstream = layout2::Upstream::parent;
+    row2Definition.height.upstream = layout2::Upstream::fill;
 
     services::LayoutSetupService setupService {};
     const auto setupList = setupService.buildSetupList(definition);
@@ -319,7 +319,7 @@ TEST(LayoutTests, rowOfThreeColumns)
 
     auto& column2Definition = columns[1];
     column2Definition.name = "column2";
-    column2Definition.width.upstream = layout2::Upstream::parent;
+    column2Definition.width.upstream = layout2::Upstream::fill;
 
     auto& column3Definition = columns[2];
     column3Definition.name = "column3";
@@ -362,7 +362,7 @@ TEST(LayoutTests, columnOfThreeRows)
 
     auto& row2Definition = rows[1];
     row2Definition.name = "row2";
-    row2Definition.height.upstream = layout2::Upstream::parent;
+    row2Definition.height.upstream = layout2::Upstream::fill;
 
     auto& row3Definition = rows[2];
     row3Definition.name = "row3";
@@ -407,7 +407,7 @@ TEST(LayoutTests, combinedThreeColumnAndRowsGridLayout2)
 
     auto& column2Definition = columns[1];
     column2Definition.name = "column2";
-    column2Definition.width.upstream = layout2::Upstream::parent;
+    column2Definition.width.upstream = layout2::Upstream::fill;
 
     auto& rows = column2Definition.rows;
     rows.resize(3);
@@ -418,7 +418,7 @@ TEST(LayoutTests, combinedThreeColumnAndRowsGridLayout2)
 
     auto& row2Definition = rows[1];
     row2Definition.name = "row2";
-    row2Definition.height.upstream = layout2::Upstream::parent;
+    row2Definition.height.upstream = layout2::Upstream::fill;
 
     auto& row3Definition = rows[2];
     row3Definition.name = "row3";
@@ -528,121 +528,55 @@ TEST(LayoutTests, horizontalTiles2)
     assertContainer(tile5, "", 100, 100, tileWidth, tileHeight);
 }
 
+TEST(LayoutTests, verticalTiles2)
+{
+    constexpr int windowHeight = 350;
+    constexpr int tileWidth = 100;
+    constexpr int tileHeight = 100;
+
+    layout2::ContainerDefinition windowDefinition;
+    windowDefinition.name = "window";
+    windowDefinition.height.pixels = windowHeight;
+    windowDefinition.width.upstream = layout2::Upstream::children;
+
+    auto& tilesColumn = windowDefinition.tileColumn;
+    tilesColumn.resize(5);
+
+    for(std::size_t i = 0; i < 5; ++i)
+    {
+        layout2::ContainerDefinition& tileDefinition = tilesColumn[i];
+        tileDefinition.width.pixels = 100;
+        tileDefinition.height.pixels = 100;
+    }
+
+    services::LayoutSetupService setupService {};
+    const auto setupList = setupService.buildSetupList(windowDefinition);
+
+    services::LayoutService2 layoutService;
+    const auto window = layoutService.calculate(setupList, objects::layout::Variables{});
+
+    ASSERT_TRUE(!!window);
+    assertContainer(*window, windowDefinition.name, 0, 0, tileWidth * 2, windowHeight, 5);
+
+    const auto& tile1 = window->children[0];
+    assertContainer(tile1, "", 0, 0, tileWidth, tileHeight);
+
+    const auto& tile2 = window->children[1];
+    assertContainer(tile2, "", 0, 100, tileWidth, tileHeight);
+
+    const auto& tile3 = window->children[2];
+    assertContainer(tile3, "", 0, 200, tileWidth, tileHeight);
+
+    const auto& tile4 = window->children[3];
+    assertContainer(tile4, "", 100, 0, tileWidth, tileHeight);
+
+    const auto& tile5 = window->children[4];
+    assertContainer(tile5, "", 100, 100, tileWidth, tileHeight);
+}
+
 //TODO: unit test for layout like word-wrap text: letters make words(lines of nodes) and words can jump to next line
 //TODO: test three-column layout with a left column filled with tiles vertically and taking width from it's contents, then a flexible-width column and a fixed width column
 //TODO: make a test of a 0-size container filled with tiles, which have to make a column of tiles or a row of tiles accordingly if they are horizontal or vertical alignment
-
-TEST(LayoutTests, horizontalTiles)
-{
-    layout::ContainerDefinition root {};
-    root.name = "root";
-    root.horizontal = std::vector<layout::ContainerDefinition>(1);
-
-    root.size = layout::Size {
-        layout::Dimension{ 350 }, layout::Dimension{}
-    };
-
-    layout::ContainerDefinition& tilesColumn = (*root.horizontal)[0];
-    tilesColumn.size = layout::Size { layout::Dimension{}, layout::Dimension{} };
-    tilesColumn.horizontal = std::vector<layout::ContainerDefinition>(5);
-
-    layout::ContainerDefinition& column1 = (*tilesColumn.horizontal)[0];
-    column1.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
-
-    layout::ContainerDefinition& column2 = (*tilesColumn.horizontal)[1];
-    column2.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
-
-    layout::ContainerDefinition& column3 = (*tilesColumn.horizontal)[2];;
-    column3.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
-
-    layout::ContainerDefinition& column4 = (*tilesColumn.horizontal)[3];;
-    column4.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
-
-    layout::ContainerDefinition& column5 = (*tilesColumn.horizontal)[4];;
-    column5.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
-
-    services::LayoutService layoutService;
-    constexpr objects::layout::Size availableSpace{ 1024, 768 };
-    const objects::layout::Container container = layoutService.calculate(root, availableSpace);
-
-    assertContainer(container, root.name, 337, 284, 350, 200);
-    EXPECT_EQ(container.children.size(), 1);
-
-    auto& tilesContainer = container.children[0];
-    assertContainer(tilesContainer, tilesColumn.name, 0, 0, 300, 200);
-    EXPECT_EQ(tilesContainer.children.size(), 5);
-
-    auto& tile1 = tilesContainer.children[0];
-    assertContainer(tile1, column1.name, 0, 0, 100, 100);
-
-    auto& tile2 = tilesContainer.children[1];
-    assertContainer(tile2, column2.name, 100, 0, 100, 100);
-
-    auto& tile3 = tilesContainer.children[2];
-    assertContainer(tile3, column3.name, 200, 0, 100, 100);
-
-    auto& tile4 = tilesContainer.children[3];
-    assertContainer(tile4, column4.name, 0, 100, 100, 100);
-
-    auto& tile5 = tilesContainer.children[4];
-    assertContainer(tile5, column5.name, 100, 100, 100, 100);
-}
-
-TEST(LayoutTests, verticalTiles)
-{
-    layout::ContainerDefinition root {};
-    root.name = "root";
-    root.horizontal = std::vector<layout::ContainerDefinition>(1);
-
-    root.size = layout::Size {
-        layout::Dimension{}, layout::Dimension{ 350 }
-    };
-
-    layout::ContainerDefinition& tilesColumn = (*root.horizontal)[0];;
-    tilesColumn.size = layout::Size { layout::Dimension{}, layout::Dimension{} };
-    tilesColumn.vertical = std::vector<layout::ContainerDefinition>(5);
-
-    layout::ContainerDefinition& column1 = (*tilesColumn.vertical)[0];
-    column1.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
-
-    layout::ContainerDefinition& column2 = (*tilesColumn.vertical)[1];
-    column2.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
-
-    layout::ContainerDefinition& column3 = (*tilesColumn.vertical)[2];
-    column3.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
-
-    layout::ContainerDefinition& column4 = (*tilesColumn.vertical)[3];
-    column4.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
-
-    layout::ContainerDefinition& column5 = (*tilesColumn.vertical)[4];
-    column5.size = layout::Size { layout::Dimension{ 100 }, layout::Dimension{ 100 } };
-
-    services::LayoutService layoutService;
-    constexpr objects::layout::Size availableSpace{ 1024, 768 };
-    const objects::layout::Container container = layoutService.calculate(root, availableSpace);
-
-    assertContainer(container, root.name, 412, 209, 200, 350);
-    EXPECT_EQ(container.children.size(), 1);
-
-    auto& tilesContainer = container.children[0];
-    assertContainer(tilesContainer, tilesColumn.name, 0, 0, 200, 300);
-    EXPECT_EQ(tilesContainer.children.size(), 5);
-
-    auto& tile1 = tilesContainer.children[0];
-    assertContainer(tile1, column1.name, 0, 0, 100, 100);
-
-    auto& tile2 = tilesContainer.children[1];
-    assertContainer(tile2, column2.name, 0, 100, 100, 100);
-
-    auto& tile3 = tilesContainer.children[2];
-    assertContainer(tile3, column3.name, 0, 200, 100, 100);
-
-    auto& tile4 = tilesContainer.children[3];
-    assertContainer(tile4, column4.name, 100, 0, 100, 100);
-
-    auto& tile5 = tilesContainer.children[4];
-    assertContainer(tile5, column5.name, 100, 100, 100, 100);
-}
 
 //TODO: write a test for a 3 column layout with a flexible column in the middle, which contains another three columns with a flexible column in the middle,
 //where one of the columns has width defined as a percent of the parents width

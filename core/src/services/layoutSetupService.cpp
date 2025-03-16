@@ -40,6 +40,11 @@ namespace dory::core::services
                     result.upstream = objects::layout::Upstream::parent;
                     break;
                 }
+            case layout2::Upstream::fill:
+                {
+                    result.upstream = objects::layout::Upstream::fill;
+                    break;
+                }
             case layout2::Upstream::children:
                 {
                     result.upstream = objects::layout::Upstream::children;
@@ -213,8 +218,8 @@ namespace dory::core::services
         for(std::size_t i = 0; i < definitions.size(); ++i)
         {
             const auto& definition = definitions[i];
-            if(definition.width.upstream == layout2::Upstream::parent ||
-                definition.height.upstream == layout2::Upstream::parent)
+            if(definition.width.upstream == layout2::Upstream::fill ||
+                definition.height.upstream == layout2::Upstream::fill)
             {
                 flexibleChildren.emplace_back(&definition, parentIndex, i, getAlignment(definition), getStretching(definition));
             }

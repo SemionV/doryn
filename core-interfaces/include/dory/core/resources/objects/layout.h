@@ -28,6 +28,7 @@ namespace dory::core::resources::objects::layout
     {
         self,
         parent,
+        fill,
         children,
     };
 

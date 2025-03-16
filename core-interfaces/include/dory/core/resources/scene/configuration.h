@@ -138,6 +138,7 @@ namespace dory::core::resources::scene::configuration
         enum class Upstream
         {
             parent,
+            fill,
             children
         };
 

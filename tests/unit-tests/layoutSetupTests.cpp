@@ -198,7 +198,7 @@ void columnSetupTest(const layout2::ContainerDefinition& rootDefinition, std::ve
 
     layout2::ContainerDefinition& column3 = columns.emplace_back();
     column3.name = "column3";
-    (column3.*w).upstream = layout2::Upstream::parent;
+    (column3.*w).upstream = layout2::Upstream::fill;
 
     layout2::ContainerDefinition& column4 = columns.emplace_back();
     column4.name = "column4";
@@ -219,7 +219,7 @@ void columnSetupTest(const layout2::ContainerDefinition& rootDefinition, std::ve
     assertColumnNode(column4Setup, axes, "grid.columnWidth");
     const objects::layout::NodeItemSetup& column3Setup = nodes[4]; //flexible column must be las in the sequence of columns
     assertNode(column3Setup, column3.name, 0);
-    assertColumnNode(column3Setup, axes, objects::layout::Upstream::parent);
+    assertColumnNode(column3Setup, axes, objects::layout::Upstream::fill);
 
     const auto& rootNode = nodes[0];
 
