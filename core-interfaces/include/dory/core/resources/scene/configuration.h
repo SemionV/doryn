@@ -130,8 +130,6 @@ namespace dory::core::resources::scene::configuration
     {
         enum class Align
         {
-            origin,
-            relative,
             center
         };
 
@@ -151,7 +149,7 @@ namespace dory::core::resources::scene::configuration
 
         struct DimensionPoint: public Dimension
         {
-            Align align { Align::relative };
+            std::optional<Align> align {};
         };
 
         struct DimensionSegment: public Dimension

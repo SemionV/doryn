@@ -64,21 +64,20 @@ namespace dory::core::services
         axis.value = getSizeValue(valueDefinition);
     }
 
-    void setupAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::AlignOrder order, const objects::layout::PositionProperty property)
+    void setupAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::PositionProperty property)
     {
-        axis.order = order;
         axis.property = property;
     }
 
-    void setupAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::AlignOrder order, const objects::layout::PositionProperty property, const layout2::Dimension& valueDefinition)
+    void setupAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::PositionProperty property, const layout2::Dimension& valueDefinition)
     {
-        setupAlignmentAxis(axis, order, property);
+        setupAlignmentAxis(axis, property);
         axis.value = getDimensionValue(valueDefinition);
     }
 
-    void setupAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::AlignOrder order, const objects::layout::PositionProperty property, const int value)
+    void setupAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::PositionProperty property, const int value)
     {
-        setupAlignmentAxis(axis, order, property);
+        setupAlignmentAxis(axis, property);
         axis.value.pixels = value;
     }
 
@@ -129,56 +128,50 @@ namespace dory::core::services
         return getStretching(containerDefinition, false);
     }
 
-    objects::layout::Alignment getAlignment(const layout2::ContainerDefinition& containerDefinition, objects::layout::AlignOrder xOrder, objects::layout::AlignOrder yOrder)
+    objects::layout::Alignment getAlignment(const layout2::ContainerDefinition& containerDefinition)
     {
         objects::layout::Alignment alignment;
-        setupAlignmentAxis(alignment.axes.x, xOrder, &objects::layout::Position::x, containerDefinition.x);
-        setupAlignmentAxis(alignment.axes.y, yOrder, &objects::layout::Position::y, containerDefinition.y);
+        setupAlignmentAxis(alignment.axes.x, &objects::layout::Position::x, containerDefinition.x);
+        setupAlignmentAxis(alignment.axes.y, &objects::layout::Position::y, containerDefinition.y);
         return alignment;
     }
 
     objects::layout::Alignment getColumnAlignment(const layout2::ContainerDefinition& containerDefinition)
     {
-        auto alignment = getAlignment(containerDefinition, objects::layout::AlignOrder::line, objects::layout::AlignOrder::origin);
+        auto alignment = getAlignment(containerDefinition);
         alignment.strategy = objects::layout::AlignmentStrategy::horizontalLine;
         return alignment;
     }
 
     objects::layout::Alignment getRowAlignment(const layout2::ContainerDefinition& containerDefinition)
     {
-        auto alignment = getAlignment(containerDefinition, objects::layout::AlignOrder::origin, objects::layout::AlignOrder::line);
+        auto alignment = getAlignment(containerDefinition);
         alignment.strategy = objects::layout::AlignmentStrategy::verticalLine;
         return alignment;
     }
 
     objects::layout::Alignment getTileRowAlignment(const layout2::ContainerDefinition& containerDefinition)
     {
-        auto alignment = getAlignment(containerDefinition, objects::layout::AlignOrder::line, objects::layout::AlignOrder::wrap);
+        auto alignment = getAlignment(containerDefinition);
         alignment.strategy = objects::layout::AlignmentStrategy::horizontalTiles;
         return alignment;
     }
 
     objects::layout::Alignment getTileColumnAlignment(const layout2::ContainerDefinition& containerDefinition)
     {
-        auto alignment = getAlignment(containerDefinition, objects::layout::AlignOrder::wrap, objects::layout::AlignOrder::line);
+        auto alignment = getAlignment(containerDefinition);
         alignment.strategy = objects::layout::AlignmentStrategy::verticalTiles;
         return alignment;
     }
 
     void setupFloatingAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::PositionProperty positionProperty, const layout2::DimensionPoint& dimension)
     {
-        auto order { objects::layout::AlignOrder::relative };
-
         if(dimension.align == layout2::Align::center)
         {
-            order = objects::layout::AlignOrder::center;
-        }
-        else if(dimension.align == layout2::Align::origin)
-        {
-            order = objects::layout::AlignOrder::origin;
+            axis.order = objects::layout::AlignOrder::center;
         }
 
-        setupAlignmentAxis(axis, order, positionProperty, dimension);
+        setupAlignmentAxis(axis, positionProperty, dimension);
     }
 
     objects::layout::Alignment getFloatingAlignment(const layout2::ContainerDefinition& containerDefinition)
@@ -194,8 +187,8 @@ namespace dory::core::services
     objects::layout::Alignment getSlideAlignment(const layout2::ContainerDefinition& containerDefinition)
     {
         objects::layout::Alignment alignment;
-        setupAlignmentAxis(alignment.axes.x, objects::layout::AlignOrder::origin, &objects::layout::Position::x, 0);
-        setupAlignmentAxis(alignment.axes.y, objects::layout::AlignOrder::origin, &objects::layout::Position::y, 0);
+        setupAlignmentAxis(alignment.axes.x, &objects::layout::Position::x, 0);
+        setupAlignmentAxis(alignment.axes.y, &objects::layout::Position::y, 0);
 
         alignment.strategy = objects::layout::AlignmentStrategy::origin;
         return alignment;

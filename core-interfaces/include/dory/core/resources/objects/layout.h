@@ -49,11 +49,7 @@ namespace dory::core::resources::objects::layout
 
     enum class AlignOrder
     {
-        center,
-        line,
-        wrap,
-        origin,
-        relative
+        center
     };
 
     enum class AlignmentStrategy
@@ -69,7 +65,7 @@ namespace dory::core::resources::objects::layout
     struct AlignmentAxis
     {
         PositionProperty property {};
-        AlignOrder order { AlignOrder::center };
+        std::optional<AlignOrder> order { };
         DimensionValue value {};
     };
 
@@ -91,7 +87,7 @@ namespace dory::core::resources::objects::layout
     {
         SizeProperty property {};
         SizeValue value {};
-        bool valuePropagation {};
+        bool valuePropagation {}; //TODO: remove field
     };
 
     struct StretchingAxes

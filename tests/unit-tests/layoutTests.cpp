@@ -2,7 +2,6 @@
 #include <gmock/gmock.h>
 #include <dory/core/resources/scene/configuration.h>
 #include <dory/core/resources/objects/layout.h>
-#include <dory/core/services/layoutService.h>
 #include <dory/core/services/layoutService2.h>
 #include <dory/core/services/layoutSetupService.h>
 
@@ -90,8 +89,6 @@ TEST(LayoutTests, originPosition)
 
     layout2::ContainerDefinition definition;
     definition.name = "window";
-    definition.x.align = layout2::Align::origin;
-    definition.y.align = layout2::Align::origin;
     definition.width.pixels = width;
     definition.height.pixels = height;
 
@@ -102,8 +99,6 @@ TEST(LayoutTests, fullScreen)
 {
     layout2::ContainerDefinition definition;
     definition.name = "window";
-    definition.x.align = layout2::Align::origin;
-    definition.y.align = layout2::Align::origin;
     definition.width.upstream = layout2::Upstream::parent;
     definition.height.upstream = layout2::Upstream::parent;
 

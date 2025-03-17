@@ -27,28 +27,6 @@ namespace dory::core::services
         return result;
     }
 
-    int getSizeValue(const objects::layout::StretchingAxis& axis, const objects::layout::Size& parentSize,
-        const objects::layout::Size& parentContentSize, const objects::layout::Variables& variables)
-    {
-        int result {};
-
-        const auto value = axis.value;
-        if(value.upstream == objects::layout::Upstream::self)
-        {
-            result = getValue(value, parentSize.*axis.property, variables);
-        }
-        else if(value.upstream == objects::layout::Upstream::fill)
-        {
-            result = parentSize.*axis.property - parentContentSize.*axis.property;
-        }
-        else if(value.upstream == objects::layout::Upstream::parent)
-        {
-            result = parentSize.*axis.property;
-        }
-
-        return result;
-    }
-
     int getSizeValue(const objects::layout::StretchingAxis& axis, const objects::layout::AlignmentAxis& aAxis, const objects::layout::NodeItemState& parentState, const objects::layout::Variables& variables)
     {
         int result {};
@@ -70,118 +48,11 @@ namespace dory::core::services
         return result;
     }
 
-    int getPositionValue(const objects::layout::AlignmentAxis& xAxis, const objects::layout::AlignmentAxis& yAxis,
-        const objects::layout::StretchingAxis& widthAxis, const objects::layout::StretchingAxis& heightAxis,
-        objects::layout::LineCursor& cursor, const objects::layout::Size& size, const objects::layout::Size& parentSize,
-        const objects::layout::Variables& variables)
-    {
-        int result {};
-
-        const auto& nodeWidth = size.*widthAxis.property;
-        const auto& nodeHeight = size.*widthAxis.property;
-        const auto& parentWidth = parentSize.*widthAxis.property;
-
-        auto& upperLeftCursorY = cursor.upperLeftCorner.*yAxis.property;
-        auto& bottomRightCursorX = cursor.bottomRightCorner.*xAxis.property;
-        auto& bottomRightCursorY = cursor.bottomRightCorner.*yAxis.property;
-
-        if(xAxis.order == objects::layout::AlignOrder::line)
-        {
-            if(yAxis.order == objects::layout::AlignOrder::wrap && bottomRightCursorX + nodeWidth > parentWidth)
-            {
-                upperLeftCursorY = bottomRightCursorY;
-                bottomRightCursorX = 0;
-            }
-
-            result = bottomRightCursorX;
-            bottomRightCursorX += nodeWidth;
-
-            if(nodeHeight > bottomRightCursorY - upperLeftCursorY)
-            {
-                bottomRightCursorY = upperLeftCursorY + nodeHeight;
-            }
-        }
-        else if(xAxis.order == objects::layout::AlignOrder::wrap)
-        {
-            result = upperLeftCursorY;
-        }
-        else if(xAxis.order == objects::layout::AlignOrder::center)
-        {
-            result = static_cast<int>(std::round(static_cast<float>(parentWidth - nodeWidth) / 2.f));
-        }
-        else if(xAxis.order == objects::layout::AlignOrder::relative)
-        {
-            result = getValue(xAxis.value, parentWidth, variables);
-        }
-
-        return result;
-    }
-
     objects::layout::NodeStateList buildNodeList(const objects::layout::NodeSetupList& setupList)
     {
         objects::layout::NodeStateList list;
         list.nodes.resize(setupList.nodes.size());
         return list;
-    }
-
-    void propagateValue(std::size_t nodeIndex, std::size_t parentIndex, const objects::layout::StretchingAxisProperty axisProperty,
-        const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList)
-    {
-        const auto& nodeSetup = setupList.nodes[nodeIndex];
-        const auto& nodeState = stateList.nodes[nodeIndex];
-        const objects::layout::StretchingAxis& axis = nodeSetup.stretching.axes.*axisProperty;
-
-        if(axis.valuePropagation)
-        {
-            const int value = nodeState.size.*axis.property;
-
-            while(nodeIndex != parentIndex) //the first node on the list has parent index pointing on himself
-            {
-                auto& parentNodeSetup = setupList.nodes[parentIndex];
-                auto& parentNodeState = stateList.nodes[parentIndex];
-                const objects::layout::StretchingAxis& parentAxis = parentNodeSetup.stretching.axes.*axisProperty;
-
-                parentNodeState.contentSize.*parentAxis.property += value;
-
-                if(parentAxis.value.upstream == objects::layout::Upstream::children)
-                {
-                    parentNodeState.size.*parentAxis.property += value;
-                }
-                else
-                {
-                    break;
-                }
-
-                if(!parentAxis.valuePropagation)
-                {
-                    break;
-                }
-
-                nodeIndex = parentIndex;
-                parentIndex = parentNodeSetup.parent;
-            }
-        }
-    }
-
-    void calculateSizes(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList, const objects::layout::Variables& variables)
-    {
-        for(std::size_t i = 0; i < setupList.nodes.size(); ++i)
-        {
-            auto& nodeSetup = setupList.nodes[i];
-            auto& nodeState = stateList.nodes[i];
-            auto& parentNodeState = stateList.nodes[nodeSetup.parent];
-
-            const auto& [axes]= nodeSetup.stretching;
-
-            auto& width = nodeState.size.*axes.width.property;
-            auto& height = nodeState.size.*axes.height.property;
-
-            width = getSizeValue(axes.width, parentNodeState.size, parentNodeState.contentSize, variables);
-            height = getSizeValue(axes.height, parentNodeState.size, parentNodeState.contentSize, variables);
-
-            propagateValue(i, nodeSetup.parent, &objects::layout::StretchingAxes::width, setupList, stateList);
-            propagateValue(i, nodeSetup.parent, &objects::layout::StretchingAxes::height, setupList, stateList);
-        }
     }
 
     void setNodePosition(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList,
@@ -399,7 +270,7 @@ namespace dory::core::services
         }
     }
 
-    void calculateSizes2(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList, const objects::layout::Variables& variables)
+    void calculateSizes(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList, const objects::layout::Variables& variables)
     {
         for(std::size_t i = 0; i < setupList.nodes.size(); ++i)
         {
@@ -429,13 +300,10 @@ namespace dory::core::services
                 nodeState.position.x = getValue(x.value, 0, variables);
                 nodeState.position.y = getValue(y.value, 0, variables);
             }
-
-            //TODO: the line nodes have to be reordered
-            //TODO: center and relative aligned nodes have to be positioned
         }
     }
 
-    void calculatePositions2(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList, const objects::layout::Variables& variables)
+    void calculatePositions(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList, const objects::layout::Variables& variables)
     {
         for(std::size_t i = 0; i < setupList.nodes.size(); ++i)
         {
@@ -486,18 +354,24 @@ namespace dory::core::services
                         const auto& xAxis = childNodeSetup.alignment.axes.x;
                         const auto& yAxis = childNodeSetup.alignment.axes.y;
 
-                        if(xAxis.order == objects::layout::AlignOrder::center)
+                        if(xAxis.order)
                         {
-                            childNodeState.position.x = static_cast<int>(std::round(static_cast<float>(nodeState.size.width - childNodeState.size.width) / 2.f));
+                            if(*xAxis.order == objects::layout::AlignOrder::center)
+                            {
+                                childNodeState.position.x = static_cast<int>(std::round(static_cast<float>(nodeState.size.width - childNodeState.size.width) / 2.f));
+                            }
                         }
                         else
                         {
                             childNodeState.position.x = getValue(xAxis.value, nodeState.size.width, variables);
                         }
 
-                        if(yAxis.order == objects::layout::AlignOrder::center)
+                        if(yAxis.order)
                         {
-                            childNodeState.position.y = static_cast<int>(std::round(static_cast<float>(nodeState.size.height - childNodeState.size.height) / 2.f));
+                            if(*yAxis.order == objects::layout::AlignOrder::center)
+                            {
+                                childNodeState.position.y = static_cast<int>(std::round(static_cast<float>(nodeState.size.height - childNodeState.size.height) / 2.f));
+                            }
                         }
                         else
                         {
@@ -508,29 +382,6 @@ namespace dory::core::services
                     }
                 default: break;
                 }
-            }
-        }
-    }
-
-    void calculatePositions(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList, const objects::layout::Variables& variables)
-    {
-        for(std::size_t i = 0; i < setupList.nodes.size(); ++i)
-        {
-            auto& nodeSetup = setupList.nodes[i];
-            auto& nodeState = stateList.nodes[i];
-
-            for(const auto j : nodeSetup.children)
-            {
-                auto& childNodeSetup = setupList.nodes[j];
-                auto& childNodeState = stateList.nodes[j];
-
-                const auto& xAxis = childNodeSetup.alignment.axes.x;
-                const auto& yAxis = childNodeSetup.alignment.axes.y;
-                const auto& widthAxis = childNodeSetup.stretching.axes.width;
-                const auto& heightAxis = childNodeSetup.stretching.axes.height;
-
-                childNodeState.position.x = getPositionValue(xAxis, yAxis, widthAxis, heightAxis, nodeState.cursor, childNodeState.size, nodeState.size, variables);
-                childNodeState.position.y = getPositionValue(yAxis, xAxis, heightAxis, widthAxis, nodeState.cursor, childNodeState.size, nodeState.size, variables);
             }
         }
     }
@@ -582,11 +433,8 @@ namespace dory::core::services
     std::unique_ptr<objects::layout::Container> LayoutService2::calculate(const objects::layout::NodeSetupList& setupList, const objects::layout::Variables& variables)
     {
         objects::layout::NodeStateList stateList = buildNodeList(setupList);
-        //calculateSizes(setupList, stateList, variables);
-        //calculatePositions(setupList, stateList, variables);
-
-        calculateSizes2(setupList, stateList, variables);
-        calculatePositions2(setupList, stateList, variables);
+        calculateSizes(setupList, stateList, variables);
+        calculatePositions(setupList, stateList, variables);
 
         //TODO: make the container's tree a flat list
         return buildContainer(setupList, stateList);
