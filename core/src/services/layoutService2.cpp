@@ -27,7 +27,21 @@ namespace dory::core::services
         return result;
     }
 
-    int getSizeValue(const objects::layout::StretchingAxis& axis, const objects::layout::AlignmentAxis& aAxis, const objects::layout::NodeItemState& parentState, const objects::layout::Variables& variables)
+    int getAlignmentValue(const objects::layout::PositionValue& value, const int size, const int parentSize, const objects::layout::Variables& variables)
+    {
+        if(value.order)
+        {
+            if(value.order.value() == objects::layout::AlignOrder::center)
+            {
+                return static_cast<int>(std::round(static_cast<float>(parentSize - size) / 2.f));
+            }
+        }
+
+        return getValue(value, parentSize, variables);
+    }
+
+    int getSizeValue(const objects::layout::StretchingAxis& axis, const objects::layout::AlignmentAxis& aAxis,
+        const objects::layout::NodeItemState& parentState, const objects::layout::Variables& variables)
     {
         int result {};
 
@@ -354,29 +368,8 @@ namespace dory::core::services
                         const auto& xAxis = childNodeSetup.alignment.axes.x;
                         const auto& yAxis = childNodeSetup.alignment.axes.y;
 
-                        if(xAxis.order)
-                        {
-                            if(*xAxis.order == objects::layout::AlignOrder::center)
-                            {
-                                childNodeState.position.x = static_cast<int>(std::round(static_cast<float>(nodeState.size.width - childNodeState.size.width) / 2.f));
-                            }
-                        }
-                        else
-                        {
-                            childNodeState.position.x = getValue(xAxis.value, nodeState.size.width, variables);
-                        }
-
-                        if(yAxis.order)
-                        {
-                            if(*yAxis.order == objects::layout::AlignOrder::center)
-                            {
-                                childNodeState.position.y = static_cast<int>(std::round(static_cast<float>(nodeState.size.height - childNodeState.size.height) / 2.f));
-                            }
-                        }
-                        else
-                        {
-                            childNodeState.position.y = getValue(yAxis.value, nodeState.size.height, variables);
-                        }
+                        childNodeState.position.x = getAlignmentValue(xAxis.value, childNodeState.size.width, nodeState.size.width, variables);
+                        childNodeState.position.y = getAlignmentValue(yAxis.value, childNodeState.size.height, nodeState.size.height, variables);
 
                         break;
                     }

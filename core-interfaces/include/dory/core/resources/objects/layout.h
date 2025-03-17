@@ -32,11 +32,21 @@ namespace dory::core::resources::objects::layout
         children,
     };
 
+    enum class AlignOrder
+    {
+        center
+    };
+
     struct DimensionValue
     {
         std::optional<Name> variable {};
         std::optional<float> percents {};
         std::optional<int> pixels {};
+    };
+
+    struct PositionValue: public DimensionValue
+    {
+        std::optional<AlignOrder> order { };
     };
 
     struct SizeValue: public DimensionValue
@@ -46,11 +56,6 @@ namespace dory::core::resources::objects::layout
 
     using PositionProperty = int Position::*;
     using SizeProperty = int Size::*;
-
-    enum class AlignOrder
-    {
-        center
-    };
 
     enum class AlignmentStrategy
     {
@@ -65,8 +70,7 @@ namespace dory::core::resources::objects::layout
     struct AlignmentAxis
     {
         PositionProperty property {};
-        std::optional<AlignOrder> order { };
-        DimensionValue value {};
+        PositionValue value {};
     };
 
     struct AlignmentAxes

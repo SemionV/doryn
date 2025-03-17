@@ -7,10 +7,8 @@ namespace dory::core::services
     using namespace resources::scene;
     using namespace resources::scene::configuration;
 
-    objects::layout::DimensionValue getDimensionValue(const layout2::Dimension& valueDefinition)
+    void getDimensionValue(const layout2::Dimension& valueDefinition, objects::layout::DimensionValue& result)
     {
-        objects::layout::DimensionValue result;
-
         if(valueDefinition.pixels)
         {
             result.pixels = *valueDefinition.pixels;
@@ -23,13 +21,29 @@ namespace dory::core::services
         {
             result.variable = *valueDefinition.variable;
         }
+    }
+
+    objects::layout::PositionValue getPositionValue(const layout2::DimensionPoint& valueDefinition)
+    {
+        objects::layout::PositionValue result;
+        if(valueDefinition.align)
+        {
+            if(valueDefinition.align.value() == layout2::Align::center)
+            {
+                result.order = objects::layout::AlignOrder::center;
+            }
+        }
+
+        getDimensionValue(valueDefinition, result);
 
         return result;
     }
 
     objects::layout::SizeValue getSizeValue(const layout2::DimensionSegment& valueDefinition)
     {
-        objects::layout::SizeValue result { getDimensionValue(valueDefinition), objects::layout::Upstream::self };
+        objects::layout::SizeValue result {};
+
+        getDimensionValue(valueDefinition, result);
 
         if(valueDefinition.upstream)
         {
@@ -68,10 +82,10 @@ namespace dory::core::services
         axis.property = property;
     }
 
-    void setupAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::PositionProperty property, const layout2::Dimension& valueDefinition)
+    void setupAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::PositionProperty property, const layout2::DimensionPoint& valueDefinition)
     {
         setupAlignmentAxis(axis, property);
-        axis.value = getDimensionValue(valueDefinition);
+        axis.value = getPositionValue(valueDefinition);
     }
 
     void setupAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::PositionProperty property, const int value)
@@ -150,7 +164,7 @@ namespace dory::core::services
     {
         if(dimension.align == layout2::Align::center)
         {
-            axis.order = objects::layout::AlignOrder::center;
+            axis.value.order = objects::layout::AlignOrder::center;
         }
 
         setupAlignmentAxis(axis, positionProperty, dimension);

@@ -60,7 +60,7 @@ void assertAxis(const objects::layout::StretchingAxis& axis, const Name& size)
 
 void assertAxis(const objects::layout::AlignmentAxis& axis, const objects::layout::AlignOrder order)
 {
-    EXPECT_EQ(axis.order, order);
+    EXPECT_EQ(*axis.value.order, order);
 }
 
 void assertAxis(const objects::layout::AlignmentAxis& axis, const int position)
