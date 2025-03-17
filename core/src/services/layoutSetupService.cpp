@@ -57,10 +57,9 @@ namespace dory::core::services
         return result;
     }
 
-    void setupStretchingAxis(objects::layout::StretchingAxis& axis, const objects::layout::SizeProperty property, const layout2::DimensionSegment& valueDefinition, const bool valueTransparent)
+    void setupStretchingAxis(objects::layout::StretchingAxis& axis, const objects::layout::SizeProperty property, const layout2::DimensionSegment& valueDefinition)
     {
         axis.property = property;
-        axis.valuePropagation = valueTransparent;
         axis.value = getSizeValue(valueDefinition);
     }
 
@@ -81,21 +80,20 @@ namespace dory::core::services
         axis.value.pixels = value;
     }
 
-    objects::layout::Stretching getStretching(const layout2::ContainerDefinition& containerDefinition, const bool valueTransparent)
+    objects::layout::Stretching getStretching(const layout2::ContainerDefinition& containerDefinition)
     {
         objects::layout::Stretching stretching;
-        setupStretchingAxis(stretching.axes.width, &objects::layout::Size::width, containerDefinition.width, valueTransparent);
-        setupStretchingAxis(stretching.axes.height, &objects::layout::Size::height, containerDefinition.height, valueTransparent);
+        setupStretchingAxis(stretching.axes.width, &objects::layout::Size::width, containerDefinition.width);
+        setupStretchingAxis(stretching.axes.height, &objects::layout::Size::height, containerDefinition.height);
         return stretching;
     }
 
     objects::layout::Stretching getColumnStretching(const layout2::ContainerDefinition& containerDefinition)
     {
         objects::layout::Stretching stretching;
-        setupStretchingAxis(stretching.axes.width, &objects::layout::Size::width, containerDefinition.width, true);
+        setupStretchingAxis(stretching.axes.width, &objects::layout::Size::width, containerDefinition.width);
         auto& heightAxis = stretching.axes.height;
         heightAxis.property = &objects::layout::Size::height;
-        heightAxis.valuePropagation = false;
         heightAxis.value.upstream = objects::layout::Upstream::parent;
 
         return stretching;
@@ -104,28 +102,12 @@ namespace dory::core::services
     objects::layout::Stretching getRowStretching(const layout2::ContainerDefinition& containerDefinition)
     {
         objects::layout::Stretching stretching;
-        setupStretchingAxis(stretching.axes.height, &objects::layout::Size::height, containerDefinition.height, true);
+        setupStretchingAxis(stretching.axes.height, &objects::layout::Size::height, containerDefinition.height);
         auto& widthAxis = stretching.axes.width;
         widthAxis.property = &objects::layout::Size::width;
-        widthAxis.valuePropagation = false;
         widthAxis.value.upstream = objects::layout::Upstream::parent;
 
         return stretching;
-    }
-
-    objects::layout::Stretching getTileStretching(const layout2::ContainerDefinition& containerDefinition)
-    {
-        return getStretching(containerDefinition, false);
-    }
-
-    objects::layout::Stretching getFloatingStretching(const layout2::ContainerDefinition& containerDefinition)
-    {
-        return getStretching(containerDefinition, false);
-    }
-
-    objects::layout::Stretching getSlideStretching(const layout2::ContainerDefinition& containerDefinition)
-    {
-        return getStretching(containerDefinition, false);
     }
 
     objects::layout::Alignment getAlignment(const layout2::ContainerDefinition& containerDefinition)
@@ -233,7 +215,7 @@ namespace dory::core::services
         objects::layout::NodeSetupList setupList;
 
         std::stack<StackNodeEntry> stack;
-        stack.emplace(&containerDefinition, 0, 0, getSlideAlignment(containerDefinition), getSlideStretching(containerDefinition));
+        stack.emplace(&containerDefinition, 0, 0, getSlideAlignment(containerDefinition), getStretching(containerDefinition));
 
         auto columnAlignment = [](const auto& def){return getColumnAlignment(def);};
         auto columnStretching = [](const auto& def){return getColumnStretching(def);};
@@ -241,11 +223,9 @@ namespace dory::core::services
         auto rowStretching = [](const auto& def){return getRowStretching(def);};
         auto tileRowAlignment = [](const auto& def){return getTileRowAlignment(def);};
         auto tileColumnAlignment = [](const auto& def){return getTileColumnAlignment(def);};
-        auto tileStretching = [](const auto& def){return getTileStretching(def);};
         auto slideAlignment = [](const auto& def){return getSlideAlignment(def);};
-        auto slideStretching = [](const auto& def){return getSlideStretching(def);};
         auto floatingAlignment = [](const auto& def){return getFloatingAlignment(def);};
-        auto floatingStretching = [](const auto& def){return getFloatingStretching(def);};
+        auto generalStretching = [](const auto& def){return getStretching(def);};
 
         std::size_t i {};
         while(!stack.empty())
@@ -264,10 +244,10 @@ namespace dory::core::services
 
             addChildDefinitions(children, i, definition->columns, columnAlignment, columnStretching);
             addChildDefinitions(children, i, definition->rows, rowAlignment, rowStretching);
-            addChildDefinitions(children, i, definition->tileRow, tileRowAlignment, tileStretching);
-            addChildDefinitions(children, i, definition->tileColumn, tileColumnAlignment, tileStretching);
-            addChildDefinitions(children, i, definition->slides, slideAlignment, slideStretching);
-            addChildDefinitions(children, i, definition->floating, floatingAlignment, floatingStretching);
+            addChildDefinitions(children, i, definition->tileRow, tileRowAlignment, generalStretching);
+            addChildDefinitions(children, i, definition->tileColumn, tileColumnAlignment, generalStretching);
+            addChildDefinitions(children, i, definition->slides, slideAlignment, generalStretching);
+            addChildDefinitions(children, i, definition->floating, floatingAlignment, generalStretching);
 
             node.children.resize(children.size());
 

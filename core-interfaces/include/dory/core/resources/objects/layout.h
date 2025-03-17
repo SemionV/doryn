@@ -87,7 +87,6 @@ namespace dory::core::resources::objects::layout
     {
         SizeProperty property {};
         SizeValue value {};
-        bool valuePropagation {}; //TODO: remove field
     };
 
     struct StretchingAxes
