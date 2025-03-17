@@ -43,8 +43,6 @@ namespace dory::core::services
     {
         objects::layout::SizeValue result {};
 
-        getDimensionValue(valueDefinition, result);
-
         if(valueDefinition.upstream)
         {
             switch(*valueDefinition.upstream)
@@ -64,9 +62,11 @@ namespace dory::core::services
                     result.upstream = objects::layout::Upstream::children;
                     break;
                 }
-            default: result.upstream = objects::layout::Upstream::self;
+            default: result.upstream = objects::layout::Upstream::parent;
             }
         }
+
+        getDimensionValue(valueDefinition, result);
 
         return result;
     }

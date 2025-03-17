@@ -26,7 +26,6 @@ namespace dory::core::resources::objects::layout
 
     enum class Upstream
     {
-        self,
         parent,
         fill,
         children,
@@ -51,7 +50,7 @@ namespace dory::core::resources::objects::layout
 
     struct SizeValue: public DimensionValue
     {
-        Upstream upstream { Upstream::self };
+        std::optional<Upstream> upstream {};
     };
 
     using PositionProperty = int Position::*;

@@ -39,21 +39,18 @@ void assertAxis(const objects::layout::StretchingAxis& axis, const objects::layo
 
 void assertAxis(const objects::layout::StretchingAxis& axis, const int size)
 {
-    assertAxis(axis, objects::layout::Upstream::self);
     EXPECT_TRUE(axis.value.pixels);
     EXPECT_EQ(axis.value.pixels.value(), size);
 }
 
 void assertAxis(const objects::layout::StretchingAxis& axis, const float size)
 {
-    assertAxis(axis, objects::layout::Upstream::self);
     EXPECT_TRUE(axis.value.percents);
     EXPECT_EQ(axis.value.percents.value(), size);
 }
 
 void assertAxis(const objects::layout::StretchingAxis& axis, const Name& size)
 {
-    assertAxis(axis, objects::layout::Upstream::self);
     EXPECT_TRUE(axis.value.variable);
     EXPECT_EQ(axis.value.variable.value(), size);
 }

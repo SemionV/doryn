@@ -46,17 +46,20 @@ namespace dory::core::services
         int result {};
 
         const auto value = axis.value;
-        if(value.upstream == objects::layout::Upstream::self)
+        if(value.upstream)
+        {
+            if(*value.upstream == objects::layout::Upstream::fill)
+            {
+                result = parentState.size.*axis.property - parentState.cursor.bottomRightCorner.*aAxis.property;
+            }
+            else if(*value.upstream == objects::layout::Upstream::parent)
+            {
+                result = parentState.size.*axis.property;
+            }
+        }
+        else
         {
             result = getValue(value, parentState.size.*axis.property, variables);
-        }
-        else if(value.upstream == objects::layout::Upstream::fill)
-        {
-            result = parentState.size.*axis.property - parentState.cursor.bottomRightCorner.*aAxis.property;
-        }
-        else if(value.upstream == objects::layout::Upstream::parent)
-        {
-            result = parentState.size.*axis.property;
         }
 
         return result;
@@ -169,20 +172,26 @@ namespace dory::core::services
         {
             const auto& [widthAxis, heightAxis] = parentNodeSetup.stretching.axes;
             const auto& [upperLeftCorner, bottomRightCorner] = parentNodeState.cursor;
-            if(widthAxis.value.upstream == objects::layout::Upstream::children)
+            if(widthAxis.value.upstream)
             {
-                if(const int newWidth = bottomRightCorner.x; newWidth > parentNodeState.size.width)
+                if(*widthAxis.value.upstream == objects::layout::Upstream::children)
                 {
-                    parentNodeState.size.width = newWidth;
+                    if(const int newWidth = bottomRightCorner.x; newWidth > parentNodeState.size.width)
+                    {
+                        parentNodeState.size.width = newWidth;
+                    }
                 }
             }
 
-            if(heightAxis.value.upstream == objects::layout::Upstream::children)
+            if(heightAxis.value.upstream)
             {
-                const int newHeight = bottomRightCorner.y;
-                if(newHeight > parentNodeState.size.height)
+                if(heightAxis.value.upstream == objects::layout::Upstream::children)
                 {
-                    parentNodeState.size.height = newHeight;
+                    const int newHeight = bottomRightCorner.y;
+                    if(newHeight > parentNodeState.size.height)
+                    {
+                        parentNodeState.size.height = newHeight;
+                    }
                 }
             }
         }
@@ -261,20 +270,26 @@ namespace dory::core::services
             {
                 const auto& [widthAxis, heightAxis] = parentNodeSetup.stretching.axes;
                 const auto& [upperLeftCorner, bottomRightCorner] = parentNodeState.cursor;
-                if(widthAxis.value.upstream == objects::layout::Upstream::children)
+                if(widthAxis.value.upstream)
                 {
-                    if(const int newWidth = bottomRightCorner.x; newWidth > parentNodeState.size.width)
+                    if(*widthAxis.value.upstream == objects::layout::Upstream::children)
                     {
-                        parentNodeState.size.width = newWidth;
+                        if(const int newWidth = bottomRightCorner.x; newWidth > parentNodeState.size.width)
+                        {
+                            parentNodeState.size.width = newWidth;
+                        }
                     }
                 }
 
-                if(heightAxis.value.upstream == objects::layout::Upstream::children)
+                if(heightAxis.value.upstream)
                 {
-                    const int newHeight = bottomRightCorner.y;
-                    if(newHeight > parentNodeState.size.height)
+                    if(*heightAxis.value.upstream == objects::layout::Upstream::children)
                     {
-                        parentNodeState.size.height = newHeight;
+                        const int newHeight = bottomRightCorner.y;
+                        if(newHeight > parentNodeState.size.height)
+                        {
+                            parentNodeState.size.height = newHeight;
+                        }
                     }
                 }
             }
