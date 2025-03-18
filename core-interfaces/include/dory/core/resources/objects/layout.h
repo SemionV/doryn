@@ -101,6 +101,14 @@ namespace dory::core::resources::objects::layout
         std::optional<Strategy> tileStrategy {};
     };
 
+    struct Alignment2
+    {
+        std::array<std::size_t, 2> axes{};
+        std::optional<std::array<PositionValue, 2>> fixedPosition;
+        bool lineWrap {};
+        bool floating {};
+    };
+
     struct StretchingAxis
     {
         SizeProperty property {};
@@ -128,6 +136,7 @@ namespace dory::core::resources::objects::layout
         std::size_t parent {};
         std::vector<std::size_t> children{};
         Alignment alignment {};
+        Alignment2 alignment2 {};
         Stretching stretching {};
     };
 
@@ -136,8 +145,8 @@ namespace dory::core::resources::objects::layout
         Position upperLeftCorner {};
         Position bottomRightCorner {};
 
-        Vector2i ul;
-        Vector2i br;
+        Vector2i ul {};
+        Vector2i br {};
     };
 
     struct NodeItemState

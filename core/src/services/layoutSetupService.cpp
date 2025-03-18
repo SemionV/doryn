@@ -196,6 +196,7 @@ namespace dory::core::services
         std::size_t parentIndex {};
         std::size_t index {};
         objects::layout::Alignment alignment {};
+        objects::layout::Alignment2 alignment2 {};
         objects::layout::Stretching stretching {};
     };
 
@@ -210,11 +211,11 @@ namespace dory::core::services
             if(definition.width.upstream == layout2::Upstream::fill ||
                 definition.height.upstream == layout2::Upstream::fill)
             {
-                flexibleChildren.emplace_back(&definition, parentIndex, i, getAlignment(definition), getStretching(definition));
+                flexibleChildren.emplace_back(&definition, parentIndex, i, getAlignment(definition), objects::layout::Alignment2{}, getStretching(definition));
             }
             else
             {
-                children.emplace_back(&definition, parentIndex, i, getAlignment(definition), getStretching(definition));
+                children.emplace_back(&definition, parentIndex, i, getAlignment(definition),  objects::layout::Alignment2{}, getStretching(definition));
             }
         }
 
@@ -229,7 +230,7 @@ namespace dory::core::services
         objects::layout::NodeSetupList setupList;
 
         std::stack<StackNodeEntry> stack;
-        stack.emplace(&containerDefinition, 0, 0, getSlideAlignment(containerDefinition), getStretching(containerDefinition));
+        stack.emplace(&containerDefinition, 0, 0, getSlideAlignment(containerDefinition), objects::layout::Alignment2{}, getStretching(containerDefinition));
 
         auto columnAlignment = [](const auto& def){return getColumnAlignment(def);};
         auto columnStretching = [](const auto& def){return getColumnStretching(def);};
@@ -244,10 +245,10 @@ namespace dory::core::services
         std::size_t i {};
         while(!stack.empty())
         {
-            auto [definition, parentIndex, index, alignment, stretching] = stack.top();
+            auto [definition, parentIndex, index, alignment, alignment2, stretching] = stack.top();
             stack.pop();
 
-            objects::layout::NodeItemSetup& node = setupList.nodes.emplace_back(definition->name, parentIndex, std::vector<std::size_t>{}, alignment, stretching);
+            objects::layout::NodeItemSetup& node = setupList.nodes.emplace_back(definition->name, parentIndex, std::vector<std::size_t>{}, alignment, alignment2, stretching);
             if(parentIndex != i)
             {
                 objects::layout::NodeItemSetup& parendNode = setupList.nodes[parentIndex];
