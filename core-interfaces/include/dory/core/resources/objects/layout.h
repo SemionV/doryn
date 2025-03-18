@@ -6,6 +6,15 @@ namespace dory::core::resources::objects::layout
 {
     using Vector2i = std::array<int, 2>;
 
+    struct Axes
+    {
+        static constexpr std::size_t x = 0;
+        static constexpr std::size_t y = 1;
+
+        static constexpr auto xy = std::array{x, y};
+        static constexpr auto yx = std::array{y, x};
+    };
+
     struct Position
     {
         int x{};

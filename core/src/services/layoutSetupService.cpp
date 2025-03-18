@@ -71,122 +71,42 @@ namespace dory::core::services
         return result;
     }
 
-    void setupStretchingAxis(objects::layout::StretchingAxis& axis, const objects::layout::SizeProperty property, const layout2::DimensionSegment& valueDefinition)
-    {
-        axis.property = property;
-        axis.value = getSizeValue(valueDefinition);
-    }
-
-    void setupAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::PositionProperty property)
-    {
-        axis.property = property;
-    }
-
-    void setupAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::PositionProperty property, const layout2::DimensionPoint& valueDefinition)
-    {
-        setupAlignmentAxis(axis, property);
-        axis.value = getPositionValue(valueDefinition);
-    }
-
-    void setupAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::PositionProperty property, const int value)
-    {
-        setupAlignmentAxis(axis, property);
-        axis.value.pixels = value;
-    }
-
     objects::layout::Stretching getStretching(const layout2::ContainerDefinition& containerDefinition)
     {
         objects::layout::Stretching stretching;
-        setupStretchingAxis(stretching.axes.width, &objects::layout::Size::width, containerDefinition.width);
-        setupStretchingAxis(stretching.axes.height, &objects::layout::Size::height, containerDefinition.height);
+        stretching.axs[objects::layout::Axes::x] = getSizeValue(containerDefinition.width);
+        stretching.axs[objects::layout::Axes::y] = getSizeValue(containerDefinition.height);
         return stretching;
     }
 
-    objects::layout::Stretching getColumnStretching(const layout2::ContainerDefinition& containerDefinition)
+    objects::layout::Stretching getColumnStretching(const std::size_t fixedAxis, const layout2::ContainerDefinition& containerDefinition)
     {
-        objects::layout::Stretching stretching;
-        setupStretchingAxis(stretching.axes.width, &objects::layout::Size::width, containerDefinition.width);
-        auto& heightAxis = stretching.axes.height;
-        heightAxis.property = &objects::layout::Size::height;
-        heightAxis.value.upstream = objects::layout::Upstream::parent;
-
+        objects::layout::Stretching stretching = getStretching(containerDefinition);
+        stretching.axs[fixedAxis].upstream = objects::layout::Upstream::parent;
         return stretching;
     }
 
-    objects::layout::Stretching getRowStretching(const layout2::ContainerDefinition& containerDefinition)
+    objects::layout::Alignment2 getAlignment(const bool lineWrap, const std::array<std::size_t, 2>& axes)
     {
-        objects::layout::Stretching stretching;
-        setupStretchingAxis(stretching.axes.height, &objects::layout::Size::height, containerDefinition.height);
-        auto& widthAxis = stretching.axes.width;
-        widthAxis.property = &objects::layout::Size::width;
-        widthAxis.value.upstream = objects::layout::Upstream::parent;
-
-        return stretching;
-    }
-
-    objects::layout::Alignment getAlignment(const layout2::ContainerDefinition& containerDefinition)
-    {
-        objects::layout::Alignment alignment;
-        setupAlignmentAxis(alignment.axes.x, &objects::layout::Position::x, containerDefinition.x);
-        setupAlignmentAxis(alignment.axes.y, &objects::layout::Position::y, containerDefinition.y);
+        objects::layout::Alignment2 alignment;
+        alignment.lineWrap = lineWrap;
+        alignment.floating = false;
+        alignment.axes = axes;
         return alignment;
     }
 
-    objects::layout::Alignment getColumnAlignment(const layout2::ContainerDefinition& containerDefinition)
+    objects::layout::Alignment2 getAlignment(const bool floating, const std::array<std::size_t, 2>& axes, const layout2::ContainerDefinition& containerDefinition)
     {
-        auto alignment = getAlignment(containerDefinition);
-        alignment.strategy = objects::layout::AlignmentStrategy::horizontalLine;
-        return alignment;
-    }
+        objects::layout::Alignment2 alignment;
+        alignment.lineWrap = false;
+        alignment.floating = floating;
+        alignment.axes = axes;
 
-    objects::layout::Alignment getRowAlignment(const layout2::ContainerDefinition& containerDefinition)
-    {
-        auto alignment = getAlignment(containerDefinition);
-        alignment.strategy = objects::layout::AlignmentStrategy::verticalLine;
-        return alignment;
-    }
+        std::array<objects::layout::PositionValue, 2> values {};
+        values[axes[objects::layout::Axes::x]] = getPositionValue(containerDefinition.x);
+        values[axes[objects::layout::Axes::y]] = getPositionValue(containerDefinition.y);
+        alignment.fixedPosition = values;
 
-    objects::layout::Alignment getTileRowAlignment(const layout2::ContainerDefinition& containerDefinition)
-    {
-        auto alignment = getAlignment(containerDefinition);
-        alignment.strategy = objects::layout::AlignmentStrategy::horizontalTiles;
-        return alignment;
-    }
-
-    objects::layout::Alignment getTileColumnAlignment(const layout2::ContainerDefinition& containerDefinition)
-    {
-        auto alignment = getAlignment(containerDefinition);
-        alignment.strategy = objects::layout::AlignmentStrategy::verticalTiles;
-        return alignment;
-    }
-
-    void setupFloatingAlignmentAxis(objects::layout::AlignmentAxis& axis, const objects::layout::PositionProperty positionProperty, const layout2::DimensionPoint& dimension)
-    {
-        if(dimension.align == layout2::Align::center)
-        {
-            axis.value.order = objects::layout::AlignOrder::center;
-        }
-
-        setupAlignmentAxis(axis, positionProperty, dimension);
-    }
-
-    objects::layout::Alignment getFloatingAlignment(const layout2::ContainerDefinition& containerDefinition)
-    {
-        objects::layout::Alignment alignment;
-        setupFloatingAlignmentAxis(alignment.axes.x, &objects::layout::Position::x, containerDefinition.x);
-        setupFloatingAlignmentAxis(alignment.axes.y, &objects::layout::Position::y, containerDefinition.y);
-
-        alignment.strategy = objects::layout::AlignmentStrategy::relative;
-        return alignment;
-    }
-
-    objects::layout::Alignment getSlideAlignment(const layout2::ContainerDefinition& containerDefinition)
-    {
-        objects::layout::Alignment alignment;
-        setupAlignmentAxis(alignment.axes.x, &objects::layout::Position::x, 0);
-        setupAlignmentAxis(alignment.axes.y, &objects::layout::Position::y, 0);
-
-        alignment.strategy = objects::layout::AlignmentStrategy::origin;
         return alignment;
     }
 
@@ -195,7 +115,6 @@ namespace dory::core::services
         const layout2::ContainerDefinition* definition {};
         std::size_t parentIndex {};
         std::size_t index {};
-        objects::layout::Alignment alignment {};
         objects::layout::Alignment2 alignment2 {};
         objects::layout::Stretching stretching {};
     };
@@ -211,11 +130,11 @@ namespace dory::core::services
             if(definition.width.upstream == layout2::Upstream::fill ||
                 definition.height.upstream == layout2::Upstream::fill)
             {
-                flexibleChildren.emplace_back(&definition, parentIndex, i, getAlignment(definition), objects::layout::Alignment2{}, getStretching(definition));
+                flexibleChildren.emplace_back(&definition, parentIndex, i, getAlignment(definition), getStretching(definition));
             }
             else
             {
-                children.emplace_back(&definition, parentIndex, i, getAlignment(definition),  objects::layout::Alignment2{}, getStretching(definition));
+                children.emplace_back(&definition, parentIndex, i, getAlignment(definition), getStretching(definition));
             }
         }
 
@@ -230,25 +149,25 @@ namespace dory::core::services
         objects::layout::NodeSetupList setupList;
 
         std::stack<StackNodeEntry> stack;
-        stack.emplace(&containerDefinition, 0, 0, getSlideAlignment(containerDefinition), objects::layout::Alignment2{}, getStretching(containerDefinition));
+        stack.emplace(&containerDefinition, 0, 0, getAlignment(false, objects::layout::Axes::xy, containerDefinition), getStretching(containerDefinition));
 
-        auto columnAlignment = [](const auto& def){return getColumnAlignment(def);};
-        auto columnStretching = [](const auto& def){return getColumnStretching(def);};
-        auto rowAlignment = [](const auto& def){return getRowAlignment(def);};
-        auto rowStretching = [](const auto& def){return getRowStretching(def);};
-        auto tileRowAlignment = [](const auto& def){return getTileRowAlignment(def);};
-        auto tileColumnAlignment = [](const auto& def){return getTileColumnAlignment(def);};
-        auto slideAlignment = [](const auto& def){return getSlideAlignment(def);};
-        auto floatingAlignment = [](const auto& def){return getFloatingAlignment(def);};
+        auto columnAlignment = [](const auto& def){return getAlignment(false, objects::layout::Axes::xy);};
+        auto columnStretching = [](const auto& def){return getColumnStretching(objects::layout::Axes::y, def);};
+        auto rowAlignment = [](const auto& def){return getAlignment(false, objects::layout::Axes::yx);};
+        auto rowStretching = [](const auto& def){return getColumnStretching(objects::layout::Axes::x, def);};
+        auto tileRowAlignment = [](const auto& def){return getAlignment(true, objects::layout::Axes::xy);};
+        auto tileColumnAlignment = [](const auto& def){return getAlignment(true, objects::layout::Axes::yx);};
+        auto slideAlignment = [](const auto& def){return getAlignment(false, objects::layout::Axes::xy, def);};
+        auto floatingAlignment = [](const auto& def){return getAlignment(false, objects::layout::Axes::xy, def);};
         auto generalStretching = [](const auto& def){return getStretching(def);};
 
         std::size_t i {};
         while(!stack.empty())
         {
-            auto [definition, parentIndex, index, alignment, alignment2, stretching] = stack.top();
+            auto [definition, parentIndex, index, alignment, stretching] = stack.top();
             stack.pop();
 
-            objects::layout::NodeItemSetup& node = setupList.nodes.emplace_back(definition->name, parentIndex, std::vector<std::size_t>{}, alignment, alignment2, stretching);
+            objects::layout::NodeItemSetup& node = setupList.nodes.emplace_back(definition->name, parentIndex, std::vector<std::size_t>{}, objects::layout::Alignment{}, alignment, stretching);
             if(parentIndex != i)
             {
                 objects::layout::NodeItemSetup& parendNode = setupList.nodes[parentIndex];
