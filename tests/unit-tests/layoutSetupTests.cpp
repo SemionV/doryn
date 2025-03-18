@@ -10,129 +10,101 @@ using namespace dory::core::resources;
 using namespace dory::core::resources::scene;
 using namespace dory::core::resources::scene::configuration;
 
-struct Axes
+void assertAxis(const objects::layout::DimensionValue& value, const int size)
 {
-    objects::layout::AlignmentAxisProperty x;
-    objects::layout::AlignmentAxisProperty y;
-    objects::layout::StretchingAxisProperty w;
-    objects::layout::StretchingAxisProperty h;
-};
-
-constexpr Axes columnAxes {
-    &objects::layout::AlignmentAxes::x,
-    &objects::layout::AlignmentAxes::y,
-    &objects::layout::StretchingAxes::width,
-    &objects::layout::StretchingAxes::height
-};
-
-constexpr Axes rowAxes {
-    &objects::layout::AlignmentAxes::y,
-    &objects::layout::AlignmentAxes::x,
-    &objects::layout::StretchingAxes::height,
-    &objects::layout::StretchingAxes::width
-};
-
-void assertAxis(const objects::layout::StretchingAxis& axis, const objects::layout::Upstream upstream)
-{
-    EXPECT_EQ(axis.value.upstream, upstream);
+    ASSERT_TRUE(value.pixels);
+    EXPECT_EQ(value.pixels.value(), size);
 }
 
-void assertAxis(const objects::layout::StretchingAxis& axis, const int size)
+void assertAxis(const objects::layout::DimensionValue& value, const float size)
 {
-    EXPECT_TRUE(axis.value.pixels);
-    EXPECT_EQ(axis.value.pixels.value(), size);
+    ASSERT_TRUE(value.percents);
+    EXPECT_EQ(value.percents.value(), size);
 }
 
-void assertAxis(const objects::layout::StretchingAxis& axis, const float size)
+void assertAxis(const objects::layout::DimensionValue& value, const Name& size)
 {
-    EXPECT_TRUE(axis.value.percents);
-    EXPECT_EQ(axis.value.percents.value(), size);
+    ASSERT_TRUE(value.variable);
+    EXPECT_EQ(value.variable.value(), size);
 }
 
-void assertAxis(const objects::layout::StretchingAxis& axis, const Name& size)
+void assertAxis(const objects::layout::PositionValue& value, const objects::layout::AlignOrder order)
 {
-    EXPECT_TRUE(axis.value.variable);
-    EXPECT_EQ(axis.value.variable.value(), size);
+    EXPECT_EQ(*value.order, order);
 }
 
-void assertAxis(const objects::layout::AlignmentAxis& axis, const objects::layout::AlignOrder order)
+void assertAxis(const objects::layout::SizeValue& value, const objects::layout::Upstream upstream)
 {
-    EXPECT_EQ(*axis.value.order, order);
-}
-
-void assertAxis(const objects::layout::AlignmentAxis& axis, const int position)
-{
-    EXPECT_TRUE(axis.value.pixels);
-    EXPECT_EQ(axis.value.pixels.value(), position);
-}
-
-void assertAxis(const objects::layout::AlignmentAxis& axis, const float position)
-{
-    EXPECT_TRUE(axis.value.percents);
-    EXPECT_EQ(axis.value.percents.value(), position);
-}
-
-void assertAxis(const objects::layout::AlignmentAxis& axis, const Name& position)
-{
-    EXPECT_TRUE(axis.value.variable);
-    EXPECT_EQ(axis.value.variable.value(), position);
+    EXPECT_TRUE(value.upstream);
+    EXPECT_EQ(*value.upstream, upstream);
 }
 
 template<typename T>
-void assertAxis(const objects::layout::AlignmentAxis& axis, const T& position, const objects::layout::AlignOrder order)
+void assertAxis(const objects::layout::PositionValue& axis, const T& position, const objects::layout::AlignOrder order)
 {
     assertAxis(axis, position);
     assertAxis(axis, order);
+}
+
+template<typename T>
+void assertAxis(const objects::layout::SizeValue& axis, const T& size, const objects::layout::Upstream upstream)
+{
+    assertAxis(axis, size);
+    assertAxis(axis, upstream);
 }
 
 void assertNode(const objects::layout::NodeItemSetup& itemSetup, const Name& name, const std::size_t parentIndex)
 {
     EXPECT_EQ(itemSetup.name, name);
     EXPECT_EQ(itemSetup.parent, parentIndex);
-
-    auto [x, y] = itemSetup.alignment.axes;
-    auto [w, h] = itemSetup.stretching.axes;
-
-    EXPECT_EQ(x.property, &objects::layout::Position::x);
-    EXPECT_EQ(y.property, &objects::layout::Position::y);
-
-    EXPECT_EQ(w.property, &objects::layout::Size::width);
-    EXPECT_EQ(h.property, &objects::layout::Size::height);
 }
 
-void assertColumnNode(const objects::layout::NodeItemSetup& itemSetup, const Axes& axes, const objects::layout::AlignmentStrategy alignmentStrategy)
+void assertColumnNode(const objects::layout::NodeItemSetup& itemSetup, const objects::layout::Axes2D& axes)
 {
-    EXPECT_EQ(itemSetup.alignment.strategy, alignmentStrategy);
-    auto& h = itemSetup.stretching.axes.*axes.h;
-    assertAxis(h, objects::layout::Upstream::parent);
+    assertAxis(itemSetup.stretching.axs[axes[objects::layout::Axes::y]], objects::layout::Upstream::parent);
+
+    EXPECT_FALSE(itemSetup.alignment2.floating);
+    EXPECT_FALSE(itemSetup.alignment2.lineWrap);
+    EXPECT_FALSE(itemSetup.alignment2.fixedPosition);
+    EXPECT_EQ(itemSetup.alignment2.axes[objects::layout::Axes::x], axes[objects::layout::Axes::x]);
+    EXPECT_EQ(itemSetup.alignment2.axes[objects::layout::Axes::y], axes[objects::layout::Axes::y]);
 }
 
-void assertColumnNode(const objects::layout::NodeItemSetup& itemSetup, const Axes& axes, const int width, const objects::layout::AlignmentStrategy alignmentStrategy)
+template<typename T>
+void assertColumnNode(const objects::layout::NodeItemSetup& itemSetup, const objects::layout::Axes2D& axes, const T& width)
 {
-    assertColumnNode(itemSetup, axes, alignmentStrategy);
-    const objects::layout::StretchingAxis& w = itemSetup.stretching.axes.*axes.w;
-    assertAxis(w, width);
+    assertColumnNode(itemSetup, axes);
+    assertAxis(itemSetup.stretching.axs[axes[objects::layout::Axes::x]], width);
 }
 
-void assertColumnNode(const objects::layout::NodeItemSetup& itemSetup, const Axes& axes, const float width, const objects::layout::AlignmentStrategy alignmentStrategy)
+template<typename T, typename U>
+void assertTileNode(const objects::layout::NodeItemSetup& itemSetup, const objects::layout::Axes2D& axes, const T& width, const U& height)
 {
-    assertColumnNode(itemSetup, axes, alignmentStrategy);
-    const objects::layout::StretchingAxis& w = itemSetup.stretching.axes.*axes.w;
-    assertAxis(w, width);
+    assertAxis(itemSetup.stretching.axs[axes[objects::layout::Axes::x]], width);
+    assertAxis(itemSetup.stretching.axs[axes[objects::layout::Axes::y]], height);
+
+    EXPECT_FALSE(itemSetup.alignment2.floating);
+    EXPECT_TRUE(itemSetup.alignment2.lineWrap);
+    EXPECT_FALSE(itemSetup.alignment2.fixedPosition);
+    EXPECT_EQ(itemSetup.alignment2.axes[objects::layout::Axes::x], axes[objects::layout::Axes::x]);
+    EXPECT_EQ(itemSetup.alignment2.axes[objects::layout::Axes::y], axes[objects::layout::Axes::y]);
 }
 
-void assertColumnNode(const objects::layout::NodeItemSetup& itemSetup, const Axes& axes, const Name& width, const objects::layout::AlignmentStrategy alignmentStrategy)
+template<typename Tx, typename Ty, typename Tw, typename Th>
+void assertFloatingNode(const objects::layout::NodeItemSetup& itemSetup, const objects::layout::Axes2D& axes, const Tx& x, const Ty& y, const Tw& width, const Th& height)
 {
-    assertColumnNode(itemSetup, axes, alignmentStrategy);
-    const objects::layout::StretchingAxis& w = itemSetup.stretching.axes.*axes.w;
-    assertAxis(w, width);
-}
+    const auto& alignment = itemSetup.alignment2;
+    ASSERT_TRUE(alignment.fixedPosition);
+    auto positionValues = alignment.fixedPosition.value();
+    assertAxis(positionValues[axes[objects::layout::Axes::x]], x);
+    assertAxis(positionValues[axes[objects::layout::Axes::y]], y);
+    assertAxis(itemSetup.stretching.axs[axes[objects::layout::Axes::x]], width);
+    assertAxis(itemSetup.stretching.axs[axes[objects::layout::Axes::y]], height);
 
-void assertColumnNode(const objects::layout::NodeItemSetup& itemSetup, const Axes& axes, const objects::layout::Upstream upstream, const objects::layout::AlignmentStrategy alignmentStrategy)
-{
-    assertColumnNode(itemSetup, axes, alignmentStrategy);
-    const objects::layout::StretchingAxis& w = itemSetup.stretching.axes.*axes.w;
-    assertAxis(w, upstream);
+    EXPECT_TRUE(alignment.floating);
+    EXPECT_FALSE(alignment.lineWrap);
+    EXPECT_EQ(alignment.axes[objects::layout::Axes::x], axes[objects::layout::Axes::x]);
+    EXPECT_EQ(alignment.axes[objects::layout::Axes::y], axes[objects::layout::Axes::y]);
 }
 
 TEST(LayoutSetupTests, screenSetup)
@@ -150,35 +122,29 @@ TEST(LayoutSetupTests, screenSetup)
     EXPECT_EQ(nodes.size(), 1);
     const objects::layout::NodeItemSetup& itemSetup = nodes[0];
     assertNode(itemSetup, rootDefinition.name, 0);
-
-    auto [x, y] = itemSetup.alignment.axes;
-    auto [w, h] = itemSetup.stretching.axes;
-
-    EXPECT_EQ(itemSetup.alignment.strategy, objects::layout::AlignmentStrategy::origin);
-    assertAxis(w, width);
-    assertAxis(h, height);
+    assertAxis(itemSetup.stretching.axs[objects::layout::Axes::x], width);
+    assertAxis(itemSetup.stretching.axs[objects::layout::Axes::y], height);
 }
 
-void columnSetupTest(const layout2::ContainerDefinition& rootDefinition, std::vector<layout2::ContainerDefinition>& columns, const Axes& axes, const layout2::DimensionSegmentProperty w,
-    const objects::layout::AlignmentStrategy alignmentStrategy)
+void columnSetupTest(const layout2::ContainerDefinition& rootDefinition, std::vector<layout2::ContainerDefinition>& columns, const objects::layout::Axes2D& axes)
 {
     columns.reserve(4);
 
     layout2::ContainerDefinition& column = columns.emplace_back();
     column.name = "column1";
-    (column.*w).pixels = 100;
+    column.getSize(axes[objects::layout::Axes::x]).pixels = 100;
 
     layout2::ContainerDefinition& column2 = columns.emplace_back();
     column2.name = "column2";
-    (column2.*w).percents = 50.f;
+    column2.getSize(axes[objects::layout::Axes::x]).percents = 50.f;
 
     layout2::ContainerDefinition& column3 = columns.emplace_back();
     column3.name = "column3";
-    (column3.*w).upstream = layout2::Upstream::fill;
+    column3.getSize(axes[objects::layout::Axes::x]).upstream = layout2::Upstream::fill;
 
     layout2::ContainerDefinition& column4 = columns.emplace_back();
     column4.name = "column4";
-    (column4.*w).variable = "grid.columnWidth";
+    column4.getSize(axes[objects::layout::Axes::x]).variable = "grid.columnWidth";
 
     services::LayoutSetupService setupService {};
     const auto [nodes] = setupService.buildSetupList(rootDefinition);
@@ -186,16 +152,16 @@ void columnSetupTest(const layout2::ContainerDefinition& rootDefinition, std::ve
     EXPECT_EQ(nodes.size(), 5);
     const objects::layout::NodeItemSetup& column1Setup = nodes[1];
     assertNode(column1Setup, column.name, 0);
-    assertColumnNode(column1Setup, axes, 100, alignmentStrategy);
+    assertColumnNode(column1Setup, axes, 100);
     const objects::layout::NodeItemSetup& column2Setup = nodes[2];
     assertNode(column2Setup, column2.name, 0);
-    assertColumnNode(column2Setup, axes, 50.f, alignmentStrategy);
+    assertColumnNode(column2Setup, axes, 50.f);
     const objects::layout::NodeItemSetup& column4Setup = nodes[3];
     assertNode(column4Setup, column4.name, 0);
-    assertColumnNode(column4Setup, axes, "grid.columnWidth", alignmentStrategy);
+    assertColumnNode(column4Setup, axes, "grid.columnWidth");
     const objects::layout::NodeItemSetup& column3Setup = nodes[4]; //flexible column must be las in the sequence of columns
     assertNode(column3Setup, column3.name, 0);
-    assertColumnNode(column3Setup, axes, objects::layout::Upstream::fill, alignmentStrategy);
+    assertColumnNode(column3Setup, axes, objects::layout::Upstream::fill);
 
     const auto& rootNode = nodes[0];
 
@@ -209,29 +175,28 @@ void columnSetupTest(const layout2::ContainerDefinition& rootDefinition, std::ve
 TEST(LayoutSetupTests, columnsSetup)
 {
     layout2::ContainerDefinition rootDefinition {};
-    columnSetupTest(rootDefinition, rootDefinition.columns, columnAxes, &layout2::ContainerDefinition::width, objects::layout::AlignmentStrategy::horizontalLine);
+    columnSetupTest(rootDefinition, rootDefinition.columns, objects::layout::Axes::xy);
 }
 
 TEST(LayoutSetupTests, rowsSetup)
 {
     layout2::ContainerDefinition rootDefinition {};
-    columnSetupTest(rootDefinition, rootDefinition.rows, rowAxes, &layout2::ContainerDefinition::height, objects::layout::AlignmentStrategy::verticalLine);
+    columnSetupTest(rootDefinition, rootDefinition.rows, objects::layout::Axes::yx);
 }
 
-void tileRowSetupTest(const layout2::ContainerDefinition& rootDefinition, std::vector<layout2::ContainerDefinition>& tiles, const Axes& axes,
-    const layout2::DimensionSegmentProperty w, const layout2::DimensionSegmentProperty h, const objects::layout::AlignmentStrategy alignmentStrategy)
+void tileRowSetupTest(const layout2::ContainerDefinition& rootDefinition, std::vector<layout2::ContainerDefinition>& tiles, const objects::layout::Axes2D& axes)
 {
     tiles.reserve(2);
 
     layout2::ContainerDefinition& tile = tiles.emplace_back();
     tile.name = "tile1";
-    (tile.*w).pixels = 10;
-    (tile.*h).pixels = 10;
+    tile.getSize(axes[objects::layout::Axes::x]).pixels = 10;
+    tile.getSize(axes[objects::layout::Axes::y]).pixels = 10;
 
     layout2::ContainerDefinition& tile2 = tiles.emplace_back();
     tile2.name = "tile2";
-    (tile2.*w).upstream = layout2::Upstream::children;
-    (tile2.*h).upstream = layout2::Upstream::children;
+    tile.getSize(axes[objects::layout::Axes::x]).upstream = layout2::Upstream::children;
+    tile.getSize(axes[objects::layout::Axes::y]).upstream = layout2::Upstream::children;
 
     services::LayoutSetupService setupService {};
     const auto [nodes] = setupService.buildSetupList(rootDefinition);
@@ -239,30 +204,24 @@ void tileRowSetupTest(const layout2::ContainerDefinition& rootDefinition, std::v
     EXPECT_EQ(nodes.size(), 3);
 
     const objects::layout::NodeItemSetup& tile1Setup = nodes[1];
-    EXPECT_EQ(tile1Setup.alignment.strategy, alignmentStrategy);
     assertNode(tile1Setup, tile.name, 0);
-    assertAxis(tile1Setup.stretching.axes.*axes.w, 10);
-    assertAxis(tile1Setup.stretching.axes.*axes.h, 10);
+    assertTileNode(tile1Setup, axes, 10, 10);
 
     const objects::layout::NodeItemSetup& tile2Setup = nodes[2];
-    EXPECT_EQ(tile2Setup.alignment.strategy, alignmentStrategy);
     assertNode(tile2Setup, tile2.name, 0);
-    assertAxis(tile2Setup.stretching.axes.*axes.w, objects::layout::Upstream::children);
-    assertAxis(tile2Setup.stretching.axes.*axes.h, objects::layout::Upstream::children);
+    assertTileNode(tile1Setup, axes, objects::layout::Upstream::children, objects::layout::Upstream::children);
 }
 
 TEST(LayoutSetupTests, rowTilesSetup)
 {
     layout2::ContainerDefinition rootDefinition {};
-    tileRowSetupTest(rootDefinition, rootDefinition.tileRow, columnAxes, &layout2::ContainerDefinition::width, &layout2::ContainerDefinition::height,
-        objects::layout::AlignmentStrategy::horizontalTiles);
+    tileRowSetupTest(rootDefinition, rootDefinition.tileRow, objects::layout::Axes::xy);
 }
 
 TEST(LayoutSetupTests, columnTilesSetup)
 {
     layout2::ContainerDefinition rootDefinition {};
-    tileRowSetupTest(rootDefinition, rootDefinition.tileColumn, rowAxes, &layout2::ContainerDefinition::height, &layout2::ContainerDefinition::width,
-        objects::layout::AlignmentStrategy::verticalTiles);
+    tileRowSetupTest(rootDefinition, rootDefinition.tileColumn, objects::layout::Axes::yx);
 }
 
 TEST(LayoutSetupTests, floatingSetup)
@@ -293,17 +252,10 @@ TEST(LayoutSetupTests, floatingSetup)
 
     const objects::layout::NodeItemSetup& floating1Setup = nodes[1];
     assertNode(floating1Setup, floating.name, 0);
-    EXPECT_EQ(floating1Setup.alignment.strategy, objects::layout::AlignmentStrategy::relative);
-    assertAxis(floating1Setup.alignment.axes.x, 100);
-    assertAxis(floating1Setup.alignment.axes.y, 100);
-    assertAxis(floating1Setup.stretching.axes.width, 10);
-    assertAxis(floating1Setup.stretching.axes.width, 10);
+    assertFloatingNode(floating1Setup, objects::layout::Axes::xy, 100, 100, 10, 10);
 
     const objects::layout::NodeItemSetup& floating2Setup = nodes[2];
     assertNode(floating2Setup, floating2.name, 0);
-    EXPECT_EQ(floating2Setup.alignment.strategy, objects::layout::AlignmentStrategy::relative);
-    assertAxis(floating2Setup.alignment.axes.x, 10.f);
-    assertAxis(floating2Setup.alignment.axes.y, objects::layout::AlignOrder::center);
-    assertAxis(floating2Setup.stretching.axes.width, objects::layout::Upstream::children);
-    assertAxis(floating2Setup.stretching.axes.width, objects::layout::Upstream::children);
+    assertFloatingNode(floating2Setup, objects::layout::Axes::xy, 10.f, objects::layout::AlignOrder::center,
+        objects::layout::Upstream::children, objects::layout::Upstream::children);
 }

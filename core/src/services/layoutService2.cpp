@@ -121,8 +121,8 @@ namespace dory::core::services
         {
             //line
             auto& axes = strategy.axes;
-            const auto x = axes[0];
-            const auto y = axes[1];
+            const auto x = axes[objects::layout::Axes::x];
+            const auto y = axes[objects::layout::Axes::y];
 
             if(strategy.lineWrap && cursor.br[x] + nodeState.dim[x] > parentNodeState.dim[x])
             {
@@ -130,7 +130,9 @@ namespace dory::core::services
                 cursor.ul[y] = cursor.br[y];
             }
 
-            const objects::layout::Vector2i alignmentPosition = { cursor.br[x], cursor.ul[y] };
+            objects::layout::Vector2i alignmentPosition = { cursor.br[x], cursor.ul[y] };
+            alignmentPosition[x] = cursor.br[x];
+            alignmentPosition[y] = cursor.ul[y];
             toPosition(alignmentPosition, nodeState.pos);
 
             cursor.br[x] += nodeState.dim[x];
@@ -207,10 +209,10 @@ namespace dory::core::services
     {
         container.children.resize(nodeSetup.children.size());
         container.name = nodeSetup.name;
-        container.position.x = nodeState.dim[0];
-        container.position.y = nodeState.dim[1];
-        container.size.width = nodeState.pos[0];
-        container.size.height = nodeState.pos[1];
+        container.position.x = nodeState.pos[objects::layout::Axes::x];
+        container.position.y = nodeState.pos[objects::layout::Axes::y];
+        container.size.width = nodeState.dim[objects::layout::Axes::x];
+        container.size.height = nodeState.dim[objects::layout::Axes::y];
     }
 
     std::unique_ptr<objects::layout::Container> buildContainer(const objects::layout::NodeSetupList& setupList, const objects::layout::NodeStateList& stateList)

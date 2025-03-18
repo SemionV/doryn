@@ -158,7 +158,7 @@ namespace dory::core::services
         auto tileRowAlignment = [](const auto& def){return getAlignment(true, objects::layout::Axes::xy);};
         auto tileColumnAlignment = [](const auto& def){return getAlignment(true, objects::layout::Axes::yx);};
         auto slideAlignment = [](const auto& def){return getAlignment(false, objects::layout::Axes::xy, def);};
-        auto floatingAlignment = [](const auto& def){return getAlignment(false, objects::layout::Axes::xy, def);};
+        auto floatingAlignment = [](const auto& def){return getAlignment(true, objects::layout::Axes::xy, def);};
         auto generalStretching = [](const auto& def){return getStretching(def);};
 
         std::size_t i {};
@@ -167,7 +167,7 @@ namespace dory::core::services
             auto [definition, parentIndex, index, alignment, stretching] = stack.top();
             stack.pop();
 
-            objects::layout::NodeItemSetup& node = setupList.nodes.emplace_back(definition->name, parentIndex, std::vector<std::size_t>{}, objects::layout::Alignment{}, alignment, stretching);
+            objects::layout::NodeItemSetup& node = setupList.nodes.emplace_back(definition->name, parentIndex, std::vector<std::size_t>{}, alignment, stretching);
             if(parentIndex != i)
             {
                 objects::layout::NodeItemSetup& parendNode = setupList.nodes[parentIndex];

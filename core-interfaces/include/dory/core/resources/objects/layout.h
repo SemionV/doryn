@@ -5,6 +5,7 @@
 namespace dory::core::resources::objects::layout
 {
     using Vector2i = std::array<int, 2>;
+    using Axes2D = std::array<std::size_t, 2>;
 
     struct Axes
     {
@@ -64,34 +65,7 @@ namespace dory::core::resources::objects::layout
         std::optional<Upstream> upstream {};
     };
 
-    using PositionProperty = int Position::*;
-    using SizeProperty = int Size::*;
-
-    enum class AlignmentStrategy
-    {
-        origin,
-        relative,
-        horizontalLine,
-        verticalLine,
-        horizontalTiles,
-        verticalTiles
-    };
-
-    struct AlignmentAxis
-    {
-        PositionProperty property {};
-        PositionValue value {};
-    };
-
-    struct AlignmentAxes
-    {
-        AlignmentAxis x;
-        AlignmentAxis y;
-    };
-
-    using AlignmentAxisProperty = AlignmentAxis AlignmentAxes::*;
-
-    struct Strategy
+    struct Strategy //TODO: rename to AlignmentStrategy
     {
         std::array<std::size_t, 2> axes{};
         std::optional<std::array<PositionValue, 2>> fixedPosition;
@@ -99,44 +73,17 @@ namespace dory::core::resources::objects::layout
         bool floating {};
     };
 
-    struct Alignment
+    struct Alignment2 //TODO: remove 2 from the name
     {
-        AlignmentAxes axes {};
-        AlignmentStrategy strategy { AlignmentStrategy::origin };
-
-        std::array<PositionValue, 2> axs {};
-        std::optional<Strategy> originStrategy {};
-        std::optional<Strategy> lineStrategy {};
-        std::optional<Strategy> tileStrategy {};
-    };
-
-    struct Alignment2
-    {
-        std::array<std::size_t, 2> axes{};
+        Axes2D axes{};
         std::optional<std::array<PositionValue, 2>> fixedPosition;
         bool lineWrap {};
         bool floating {};
     };
-
-    struct StretchingAxis
-    {
-        SizeProperty property {};
-        SizeValue value {};
-    };
-
-    struct StretchingAxes
-    {
-        StretchingAxis width;
-        StretchingAxis height;
-    };
-
-    using StretchingAxisProperty = StretchingAxis StretchingAxes::*;
 
     struct Stretching
     {
-        StretchingAxes axes {};
-
-        std::array<SizeValue, 2> axs {};
+        std::array<SizeValue, 2> axs {}; //TODO: rename to axes
     };
 
     struct NodeItemSetup
@@ -144,28 +91,21 @@ namespace dory::core::resources::objects::layout
         Name name {};
         std::size_t parent {};
         std::vector<std::size_t> children{};
-        Alignment alignment {};
-        Alignment2 alignment2 {};
+        Alignment2 alignment2 {}; //TODO: remove 2 from the name
         Stretching stretching {};
     };
 
     struct LineCursor
     {
-        Position upperLeftCorner {};
-        Position bottomRightCorner {};
-
-        Vector2i ul {};
-        Vector2i br {};
+        Vector2i ul {}; //upper-left corner
+        Vector2i br {}; //bottom-right corner
     };
 
     struct NodeItemState
     {
-        Size size {};
-        Position position {};
         LineCursor cursor {};
-
-        Vector2i pos {};
-        Vector2i dim {};
+        Vector2i pos {}; //TODO: rename to position
+        Vector2i dim {}; //TODO: rename to size
     };
 
     struct NodeSetupList

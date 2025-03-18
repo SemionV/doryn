@@ -171,6 +171,26 @@ namespace dory::core::resources::scene::configuration
             std::vector<ContainerDefinition> tileColumn {};
             std::vector<ContainerDefinition> floating {};
             std::vector<ContainerDefinition> slides {};
+
+            DimensionPoint& getPosition(const std::size_t axis)
+            {
+                if(axis == 0)
+                {
+                    return x;
+                }
+
+                return y;
+            }
+
+            DimensionSegment& getSize(const std::size_t axis)
+            {
+                if(axis == 0)
+                {
+                    return width;
+                }
+
+                return height;
+            }
         };
 
         using DimensionSegmentProperty = DimensionSegment ContainerDefinition::*;
