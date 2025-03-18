@@ -102,6 +102,78 @@ namespace dory::core::services
         }
     }
 
+    void toPosition(const objects::layout::Vector2i& position, objects::layout::Vector2i& cursor)
+    {
+        for(std::size_t i = 0; i < cursor.size(); ++i)
+        {
+            cursor[i] = position[i];
+        }
+    }
+
+    void toOrigin(objects::layout::Vector2i& cursor)
+    {
+        toPosition({0, 0}, cursor);
+    }
+
+    void toOrigin(objects::layout::LineCursor& cursor)
+    {
+        toOrigin(cursor.ul);
+        toOrigin(cursor.br);
+    }
+
+    void alignToOrigin(objects::layout::NodeItemState& nodeState, objects::layout::LineCursor& cursor)
+    {
+        toOrigin(cursor);
+        toPosition(cursor.br, nodeState.pos);
+        toPosition(nodeState.dim, cursor.br);
+    }
+
+    void alignToLine(const objects::layout::Strategy& strategy, objects::layout::NodeItemState& nodeState, objects::layout::LineCursor& cursor)
+    {
+        auto& axes = strategy.axes;
+        auto x = axes[0];
+        auto y = axes[1];
+        const objects::layout::Vector2i alignmentPosition = { cursor.br[x], cursor.ul[y] };
+        toPosition(alignmentPosition, nodeState.pos);
+
+        cursor.br[x] += nodeState.dim[x];
+        const int height = cursor.ul[y] + nodeState.dim[y];
+        if(height > cursor.br[y])
+        {
+            cursor.br[y] = height;
+        }
+    }
+
+    void alignToLineWrap(const objects::layout::Strategy& strategy, objects::layout::NodeItemState& nodeState, objects::layout::NodeItemState& parentNodeState, objects::layout::LineCursor& cursor)
+    {
+        auto& axes = strategy.axes;
+        auto x = axes[0];
+        auto y = axes[1];
+
+        if(cursor.br[x] + nodeState.dim[x] > parentNodeState.dim[x])
+        {
+            cursor.br[x] = 0;
+            cursor.ul[y] = cursor.br[y];
+        }
+
+        alignToLine(strategy, nodeState, cursor);
+    }
+
+    void updateSizeToCursor(const objects::layout::LineCursor& cursor, const objects::layout::NodeItemSetup& nodeSetup, objects::layout::NodeItemState& nodeState)
+    {
+        for(std::size_t i = 0; i < nodeSetup.stretching.axs.size(); ++i)
+        {
+            const auto& upstream = nodeSetup.stretching.axs[i].upstream;
+            if(upstream && *upstream == objects::layout::Upstream::children)
+            {
+                if(cursor.br[i] > nodeState.dim[i])
+                {
+                    nodeState.dim[i] = cursor.br[i];
+                }
+            }
+        }
+    }
+
     void setNodePosition(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList,
         std::size_t nodeIndex, std::size_t parentIndex)
     {
@@ -113,10 +185,25 @@ namespace dory::core::services
             auto& parentNodeState = stateList.nodes[nodeSetup.parent];
             const auto& alignment = nodeSetup.alignment;
 
+            objects::layout::LineCursor& cursor = parentNodeState.cursor;
+
+            if(alignment.originStrategy)
+            {
+                alignToOrigin(nodeState, cursor);
+            }
+            else if(alignment.lineStrategy)
+            {
+                alignToLine(*alignment.lineStrategy, nodeState, cursor);
+            }
+            else if(alignment.tileStrategy)
+            {
+                alignToLineWrap(*alignment.tileStrategy, nodeState, parentNodeState, cursor);
+            }
+
+            updateSizeToCursor(cursor, parentNodeSetup, parentNodeState);
+
             auto& xValue = nodeState.position.x;
             auto& yValue = nodeState.position.y;
-
-            objects::layout::LineCursor& cursor = parentNodeState.cursor;
 
             switch(alignment.strategy)
             {
@@ -205,12 +292,13 @@ namespace dory::core::services
             //update parent's size after child node is positioned
             {
                 const auto& [widthAxis, heightAxis] = parentNodeSetup.stretching.axes;
-                const auto& [upperLeftCorner, bottomRightCorner] = parentNodeState.cursor;
+                const auto& [upperLeftCorner, bottomRightCorner, ul, br] = parentNodeState.cursor;
                 if(widthAxis.value.upstream)
                 {
                     if(*widthAxis.value.upstream == objects::layout::Upstream::children)
                     {
-                        if(const int newWidth = bottomRightCorner.x; newWidth > parentNodeState.size.width)
+                        const int newWidth = bottomRightCorner.x;
+                        if(newWidth > parentNodeState.size.width)
                         {
                             parentNodeState.size.width = newWidth;
                         }

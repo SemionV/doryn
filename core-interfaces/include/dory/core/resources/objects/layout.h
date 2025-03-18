@@ -4,6 +4,8 @@
 
 namespace dory::core::resources::objects::layout
 {
+    using Vector2i = std::array<int, 2>;
+
     struct Position
     {
         int x{};
@@ -13,7 +15,7 @@ namespace dory::core::resources::objects::layout
     struct Size
     {
         int width{};
-        int height{}; //if it has no value use content height
+        int height{};
     };
 
     struct Container
@@ -80,10 +82,23 @@ namespace dory::core::resources::objects::layout
 
     using AlignmentAxisProperty = AlignmentAxis AlignmentAxes::*;
 
+    struct Strategy
+    {
+        std::array<std::size_t, 2> axes{};
+        std::optional<std::array<PositionValue, 2>> fixedPosition;
+        bool lineWrap {};
+        bool floating {};
+    };
+
     struct Alignment
     {
         AlignmentAxes axes {};
         AlignmentStrategy strategy { AlignmentStrategy::origin };
+
+        std::array<PositionValue, 2> axs {};
+        std::optional<Strategy> originStrategy {};
+        std::optional<Strategy> lineStrategy {};
+        std::optional<Strategy> tileStrategy {};
     };
 
     struct StretchingAxis
@@ -103,6 +118,8 @@ namespace dory::core::resources::objects::layout
     struct Stretching
     {
         StretchingAxes axes {};
+
+        std::array<SizeValue, 2> axs {};
     };
 
     struct NodeItemSetup
@@ -118,15 +135,19 @@ namespace dory::core::resources::objects::layout
     {
         Position upperLeftCorner {};
         Position bottomRightCorner {};
-    };
 
+        Vector2i ul;
+        Vector2i br;
+    };
 
     struct NodeItemState
     {
         Size size {};
         Position position {};
-        Size contentSize {};
         LineCursor cursor {};
+
+        Vector2i pos {};
+        Vector2i dim {};
     };
 
     struct NodeSetupList
