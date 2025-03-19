@@ -1,10 +1,10 @@
 #pragma once
 
-#include <dory/core/services/iLayoutService2.h>
+#include <dory/core/services/iLayoutService.h>
 
 namespace dory::core::services
 {
-    class LayoutService2: public ILayoutService2
+    class LayoutService: public ILayoutService
     {
     public:
         std::unique_ptr<resources::objects::layout::Container> calculate(const resources::objects::layout::NodeSetupList& setupList,

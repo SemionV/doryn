@@ -1,4 +1,4 @@
-#include <dory/core/services/layoutService2.h>
+#include <dory/core/services/layoutService.h>
 #include <cmath>
 
 namespace dory::core::services
@@ -92,9 +92,9 @@ namespace dory::core::services
 
     void updateSizeToCursor(const objects::layout::LineCursor& cursor, const objects::layout::NodeItemSetup& nodeSetup, objects::layout::NodeItemState& nodeState)
     {
-        for(std::size_t i = 0; i < nodeSetup.stretching.axs.size(); ++i)
+        for(std::size_t i = 0; i < nodeSetup.stretching.axes.size(); ++i)
         {
-            const auto& upstream = nodeSetup.stretching.axs[i].upstream;
+            const auto& upstream = nodeSetup.stretching.axes[i].upstream;
             if(upstream && *upstream == objects::layout::Upstream::children)
             {
                 if(cursor.br[i] > nodeState.dim[i])
@@ -105,7 +105,7 @@ namespace dory::core::services
         }
     }
 
-    void align(const objects::layout::Alignment2& strategy, const objects::layout::NodeItemState& parentNodeState,
+    void align(const objects::layout::Alignment& strategy, const objects::layout::NodeItemState& parentNodeState,
         objects::layout::NodeItemState& nodeState, objects::layout::LineCursor& cursor, const objects::layout::Variables& variables)
     {
         if(strategy.fixedPosition)
@@ -144,7 +144,7 @@ namespace dory::core::services
         }
     }
 
-    void updateParents(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList,
+    void updateBranch(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList,
         std::size_t nodeIndex, std::size_t parentIndex, const objects::layout::Variables& variables)
     {
         do
@@ -153,7 +153,7 @@ namespace dory::core::services
             auto& nodeState = stateList.nodes[nodeIndex];
             auto& parentNodeSetup = setupList.nodes[nodeSetup.parent];
             auto& parentNodeState = stateList.nodes[nodeSetup.parent];
-            const auto& alignment = nodeSetup.alignment2;
+            const auto& alignment = nodeSetup.alignment;
             objects::layout::LineCursor& cursor = parentNodeState.cursor;
 
             if(!alignment.floating)
@@ -178,10 +178,10 @@ namespace dory::core::services
 
             for(std::size_t a = 0; a < nodeState.dim.size(); ++a)
             {
-                nodeState.dim[a] = getSizeValue(nodeSetup.stretching.axs[a], a, parentNodeState, variables);
+                nodeState.dim[a] = getSizeValue(nodeSetup.stretching.axes[a], a, parentNodeState, variables);
             }
 
-            updateParents(setupList, stateList, i, nodeSetup.parent, variables);
+            updateBranch(setupList, stateList, i, nodeSetup.parent, variables);
         }
     }
 
@@ -200,7 +200,7 @@ namespace dory::core::services
                 auto& childNodeSetup = setupList.nodes[j];
                 auto& childNodeState = stateList.nodes[j];
 
-                align(childNodeSetup.alignment2, nodeState, childNodeState, nodeState.cursor, variables);
+                align(childNodeSetup.alignment, nodeState, childNodeState, nodeState.cursor, variables);
             }
         }
     }
@@ -256,7 +256,7 @@ namespace dory::core::services
         return rootContainer;
     }
 
-    std::unique_ptr<objects::layout::Container> LayoutService2::calculate(const objects::layout::NodeSetupList& setupList, const objects::layout::Variables& variables)
+    std::unique_ptr<objects::layout::Container> LayoutService::calculate(const objects::layout::NodeSetupList& setupList, const objects::layout::Variables& variables)
     {
         objects::layout::NodeStateList stateList = buildNodeList(setupList);
         calculateSizes(setupList, stateList, variables);

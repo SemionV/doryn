@@ -64,7 +64,6 @@
 #include <dory/core/services/iObjectFactory.h>
 #include <dory/core/services/iSceneDirector.h>
 #include <dory/core/services/iLayoutService.h>
-#include <dory/core/services/iLayoutService2.h>
 #include <dory/core/services/iLayoutSetupService.h>
 
 namespace dory::core

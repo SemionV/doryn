@@ -7,7 +7,7 @@ namespace dory::core::services
     using namespace resources::scene;
     using namespace resources::scene::configuration;
 
-    void getDimensionValue(const layout2::Dimension& valueDefinition, objects::layout::DimensionValue& result)
+    void getDimensionValue(const layout::Dimension& valueDefinition, objects::layout::DimensionValue& result)
     {
         if(valueDefinition.pixels)
         {
@@ -23,12 +23,12 @@ namespace dory::core::services
         }
     }
 
-    objects::layout::PositionValue getPositionValue(const layout2::DimensionPoint& valueDefinition)
+    objects::layout::PositionValue getPositionValue(const layout::DimensionPoint& valueDefinition)
     {
         objects::layout::PositionValue result;
         if(valueDefinition.align)
         {
-            if(valueDefinition.align.value() == layout2::Align::center)
+            if(valueDefinition.align.value() == layout::Align::center)
             {
                 result.order = objects::layout::AlignOrder::center;
             }
@@ -39,7 +39,7 @@ namespace dory::core::services
         return result;
     }
 
-    objects::layout::SizeValue getSizeValue(const layout2::DimensionSegment& valueDefinition)
+    objects::layout::SizeValue getSizeValue(const layout::DimensionSegment& valueDefinition)
     {
         objects::layout::SizeValue result {};
 
@@ -47,17 +47,17 @@ namespace dory::core::services
         {
             switch(*valueDefinition.upstream)
             {
-            case layout2::Upstream::parent:
+            case layout::Upstream::parent:
                 {
                     result.upstream = objects::layout::Upstream::parent;
                     break;
                 }
-            case layout2::Upstream::fill:
+            case layout::Upstream::fill:
                 {
                     result.upstream = objects::layout::Upstream::fill;
                     break;
                 }
-            case layout2::Upstream::children:
+            case layout::Upstream::children:
                 {
                     result.upstream = objects::layout::Upstream::children;
                     break;
@@ -71,33 +71,33 @@ namespace dory::core::services
         return result;
     }
 
-    objects::layout::Stretching getStretching(const layout2::ContainerDefinition& containerDefinition)
+    objects::layout::Stretching getStretching(const layout::ContainerDefinition& containerDefinition)
     {
         objects::layout::Stretching stretching;
-        stretching.axs[objects::layout::Axes::x] = getSizeValue(containerDefinition.width);
-        stretching.axs[objects::layout::Axes::y] = getSizeValue(containerDefinition.height);
+        stretching.axes[objects::layout::Axes::x] = getSizeValue(containerDefinition.width);
+        stretching.axes[objects::layout::Axes::y] = getSizeValue(containerDefinition.height);
         return stretching;
     }
 
-    objects::layout::Stretching getColumnStretching(const std::size_t fixedAxis, const layout2::ContainerDefinition& containerDefinition)
+    objects::layout::Stretching getColumnStretching(const std::size_t fixedAxis, const layout::ContainerDefinition& containerDefinition)
     {
         objects::layout::Stretching stretching = getStretching(containerDefinition);
-        stretching.axs[fixedAxis].upstream = objects::layout::Upstream::parent;
+        stretching.axes[fixedAxis].upstream = objects::layout::Upstream::parent;
         return stretching;
     }
 
-    objects::layout::Alignment2 getAlignment(const bool lineWrap, const std::array<std::size_t, 2>& axes)
+    objects::layout::Alignment getAlignment(const bool lineWrap, const std::array<std::size_t, 2>& axes)
     {
-        objects::layout::Alignment2 alignment;
+        objects::layout::Alignment alignment;
         alignment.lineWrap = lineWrap;
         alignment.floating = false;
         alignment.axes = axes;
         return alignment;
     }
 
-    objects::layout::Alignment2 getAlignment(const bool floating, const std::array<std::size_t, 2>& axes, const layout2::ContainerDefinition& containerDefinition)
+    objects::layout::Alignment getAlignment(const bool floating, const std::array<std::size_t, 2>& axes, const layout::ContainerDefinition& containerDefinition)
     {
-        objects::layout::Alignment2 alignment;
+        objects::layout::Alignment alignment;
         alignment.lineWrap = false;
         alignment.floating = floating;
         alignment.axes = axes;
@@ -112,23 +112,23 @@ namespace dory::core::services
 
     struct StackNodeEntry
     {
-        const layout2::ContainerDefinition* definition {};
+        const layout::ContainerDefinition* definition {};
         std::size_t parentIndex {};
         std::size_t index {};
-        objects::layout::Alignment2 alignment2 {};
+        objects::layout::Alignment alignment2 {};
         objects::layout::Stretching stretching {};
     };
 
     void addChildDefinitions(std::vector<StackNodeEntry>& children, std::size_t parentIndex,
-        const std::vector<layout2::ContainerDefinition>& definitions, const auto& getAlignment, const auto& getStretching)
+        const std::vector<layout::ContainerDefinition>& definitions, const auto& getAlignment, const auto& getStretching)
     {
         std::vector<StackNodeEntry> flexibleChildren {};
 
         for(std::size_t i = 0; i < definitions.size(); ++i)
         {
             const auto& definition = definitions[i];
-            if(definition.width.upstream == layout2::Upstream::fill ||
-                definition.height.upstream == layout2::Upstream::fill)
+            if(definition.width.upstream == layout::Upstream::fill ||
+                definition.height.upstream == layout::Upstream::fill)
             {
                 flexibleChildren.emplace_back(&definition, parentIndex, i, getAlignment(definition), getStretching(definition));
             }
@@ -144,7 +144,7 @@ namespace dory::core::services
         }
     }
 
-    objects::layout::NodeSetupList LayoutSetupService::buildSetupList(const layout2::ContainerDefinition& containerDefinition)
+    objects::layout::NodeSetupList LayoutSetupService::buildSetupList(const layout::ContainerDefinition& containerDefinition)
     {
         objects::layout::NodeSetupList setupList;
 

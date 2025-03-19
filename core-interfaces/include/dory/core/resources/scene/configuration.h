@@ -69,7 +69,7 @@ namespace dory::core::resources::scene::configuration
 
     struct Node
     {
-        IdType pipelineNodeId;
+        IdType pipelineNodeId {};
         std::string parent {};
         factory::Instance<ITrigger> trigger {};
         factory::Instance<IController> controllerInstance {};
@@ -84,49 +84,10 @@ namespace dory::core::resources::scene::configuration
 
     struct GraphicalContext
     {
-        GraphicalSystem graphicalSystem;
+        GraphicalSystem graphicalSystem {};
     };
 
     namespace layout
-    {
-        struct Dimension
-        {
-            std::optional<std::size_t> pixels{};
-            std::optional<float> percents{};
-        };
-
-        struct Position
-        {
-            std::optional<Dimension> x{};
-            std::optional<Dimension> y{};
-        };
-
-        struct Size
-        {
-            std::optional<Dimension> width{}; //if it has no value use content width
-            std::optional<Dimension> height{}; //if it has no value use content height
-        };
-
-        struct ContainerDefinition
-        {
-            std::string name {""};
-            std::optional<Size> size {};
-            std::optional<Position> position {};
-
-            //Detached
-            std::optional<std::vector<ContainerDefinition>> positioned  {};
-
-            //Line
-            std::optional<std::vector<ContainerDefinition>> horizontal {};
-            std::optional<std::vector<ContainerDefinition>> vertical {};
-
-            //Tileset
-            std::optional<std::vector<ContainerDefinition>> horizontalTileset {};
-            std::optional<std::vector<ContainerDefinition>> verticalTileset {};
-        };
-    }
-
-    namespace layout2
     {
         enum class Align
         {
@@ -199,7 +160,6 @@ namespace dory::core::resources::scene::configuration
 
     struct Window
     {
-        layout::ContainerDefinition container {};
         std::string title {};
         std::string graphicalContext {};
     };
@@ -222,6 +182,5 @@ namespace dory::core::resources::scene::configuration
         std::vector<factory::Instance<services::ISceneDirector>> directors;
         std::unordered_map<std::string, GraphicalContext> graphicalContexts {};
         std::unordered_map<std::string, Window> windows {};
-        std::unordered_map<std::string, layout::ContainerDefinition> layouts {};
     };
 }

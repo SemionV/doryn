@@ -48,7 +48,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/scene/directors/assetLoader.cpp
         src/services/scene/directors/applicationDirector.cpp
         src/services/scene/directors/viewDirector.cpp
-        src/services/layoutService2.cpp
+        src/services/layoutService.cpp
         src/services/layoutSetupService.cpp
         src/controllers/windowSystemController.cpp
         src/controllers/viewController.cpp

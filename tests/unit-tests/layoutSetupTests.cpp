@@ -61,45 +61,45 @@ void assertNode(const objects::layout::NodeItemSetup& itemSetup, const Name& nam
 
 void assertColumnNode(const objects::layout::NodeItemSetup& itemSetup, const objects::layout::Axes2D& axes)
 {
-    assertAxis(itemSetup.stretching.axs[axes[objects::layout::Axes::y]], objects::layout::Upstream::parent);
+    assertAxis(itemSetup.stretching.axes[axes[objects::layout::Axes::y]], objects::layout::Upstream::parent);
 
-    EXPECT_FALSE(itemSetup.alignment2.floating);
-    EXPECT_FALSE(itemSetup.alignment2.lineWrap);
-    EXPECT_FALSE(itemSetup.alignment2.fixedPosition);
-    EXPECT_EQ(itemSetup.alignment2.axes[objects::layout::Axes::x], axes[objects::layout::Axes::x]);
-    EXPECT_EQ(itemSetup.alignment2.axes[objects::layout::Axes::y], axes[objects::layout::Axes::y]);
+    EXPECT_FALSE(itemSetup.alignment.floating);
+    EXPECT_FALSE(itemSetup.alignment.lineWrap);
+    EXPECT_FALSE(itemSetup.alignment.fixedPosition);
+    EXPECT_EQ(itemSetup.alignment.axes[objects::layout::Axes::x], axes[objects::layout::Axes::x]);
+    EXPECT_EQ(itemSetup.alignment.axes[objects::layout::Axes::y], axes[objects::layout::Axes::y]);
 }
 
 template<typename T>
 void assertColumnNode(const objects::layout::NodeItemSetup& itemSetup, const objects::layout::Axes2D& axes, const T& width)
 {
     assertColumnNode(itemSetup, axes);
-    assertAxis(itemSetup.stretching.axs[axes[objects::layout::Axes::x]], width);
+    assertAxis(itemSetup.stretching.axes[axes[objects::layout::Axes::x]], width);
 }
 
 template<typename T, typename U>
 void assertTileNode(const objects::layout::NodeItemSetup& itemSetup, const objects::layout::Axes2D& axes, const T& width, const U& height)
 {
-    assertAxis(itemSetup.stretching.axs[axes[objects::layout::Axes::x]], width);
-    assertAxis(itemSetup.stretching.axs[axes[objects::layout::Axes::y]], height);
+    assertAxis(itemSetup.stretching.axes[axes[objects::layout::Axes::x]], width);
+    assertAxis(itemSetup.stretching.axes[axes[objects::layout::Axes::y]], height);
 
-    EXPECT_FALSE(itemSetup.alignment2.floating);
-    EXPECT_TRUE(itemSetup.alignment2.lineWrap);
-    EXPECT_FALSE(itemSetup.alignment2.fixedPosition);
-    EXPECT_EQ(itemSetup.alignment2.axes[objects::layout::Axes::x], axes[objects::layout::Axes::x]);
-    EXPECT_EQ(itemSetup.alignment2.axes[objects::layout::Axes::y], axes[objects::layout::Axes::y]);
+    EXPECT_FALSE(itemSetup.alignment.floating);
+    EXPECT_TRUE(itemSetup.alignment.lineWrap);
+    EXPECT_FALSE(itemSetup.alignment.fixedPosition);
+    EXPECT_EQ(itemSetup.alignment.axes[objects::layout::Axes::x], axes[objects::layout::Axes::x]);
+    EXPECT_EQ(itemSetup.alignment.axes[objects::layout::Axes::y], axes[objects::layout::Axes::y]);
 }
 
 template<typename Tx, typename Ty, typename Tw, typename Th>
 void assertFloatingNode(const objects::layout::NodeItemSetup& itemSetup, const objects::layout::Axes2D& axes, const Tx& x, const Ty& y, const Tw& width, const Th& height)
 {
-    const auto& alignment = itemSetup.alignment2;
+    const auto& alignment = itemSetup.alignment;
     ASSERT_TRUE(alignment.fixedPosition);
     auto positionValues = alignment.fixedPosition.value();
     assertAxis(positionValues[axes[objects::layout::Axes::x]], x);
     assertAxis(positionValues[axes[objects::layout::Axes::y]], y);
-    assertAxis(itemSetup.stretching.axs[axes[objects::layout::Axes::x]], width);
-    assertAxis(itemSetup.stretching.axs[axes[objects::layout::Axes::y]], height);
+    assertAxis(itemSetup.stretching.axes[axes[objects::layout::Axes::x]], width);
+    assertAxis(itemSetup.stretching.axes[axes[objects::layout::Axes::y]], height);
 
     EXPECT_TRUE(alignment.floating);
     EXPECT_FALSE(alignment.lineWrap);
@@ -109,11 +109,11 @@ void assertFloatingNode(const objects::layout::NodeItemSetup& itemSetup, const o
 
 TEST(LayoutSetupTests, screenSetup)
 {
-    layout2::ContainerDefinition rootDefinition {};
+    layout::ContainerDefinition rootDefinition {};
     constexpr int width = 1024;
     constexpr int height = 768;
-    rootDefinition.width = layout2::DimensionSegment{ { width } };
-    rootDefinition.height = layout2::DimensionSegment{ { height } };
+    rootDefinition.width = layout::DimensionSegment{ { width } };
+    rootDefinition.height = layout::DimensionSegment{ { height } };
     rootDefinition.name = "screen";
 
     services::LayoutSetupService setupService {};
@@ -122,27 +122,27 @@ TEST(LayoutSetupTests, screenSetup)
     EXPECT_EQ(nodes.size(), 1);
     const objects::layout::NodeItemSetup& itemSetup = nodes[0];
     assertNode(itemSetup, rootDefinition.name, 0);
-    assertAxis(itemSetup.stretching.axs[objects::layout::Axes::x], width);
-    assertAxis(itemSetup.stretching.axs[objects::layout::Axes::y], height);
+    assertAxis(itemSetup.stretching.axes[objects::layout::Axes::x], width);
+    assertAxis(itemSetup.stretching.axes[objects::layout::Axes::y], height);
 }
 
-void columnSetupTest(const layout2::ContainerDefinition& rootDefinition, std::vector<layout2::ContainerDefinition>& columns, const objects::layout::Axes2D& axes)
+void columnSetupTest(const layout::ContainerDefinition& rootDefinition, std::vector<layout::ContainerDefinition>& columns, const objects::layout::Axes2D& axes)
 {
     columns.reserve(4);
 
-    layout2::ContainerDefinition& column = columns.emplace_back();
+    layout::ContainerDefinition& column = columns.emplace_back();
     column.name = "column1";
     column.getSize(axes[objects::layout::Axes::x]).pixels = 100;
 
-    layout2::ContainerDefinition& column2 = columns.emplace_back();
+    layout::ContainerDefinition& column2 = columns.emplace_back();
     column2.name = "column2";
     column2.getSize(axes[objects::layout::Axes::x]).percents = 50.f;
 
-    layout2::ContainerDefinition& column3 = columns.emplace_back();
+    layout::ContainerDefinition& column3 = columns.emplace_back();
     column3.name = "column3";
-    column3.getSize(axes[objects::layout::Axes::x]).upstream = layout2::Upstream::fill;
+    column3.getSize(axes[objects::layout::Axes::x]).upstream = layout::Upstream::fill;
 
-    layout2::ContainerDefinition& column4 = columns.emplace_back();
+    layout::ContainerDefinition& column4 = columns.emplace_back();
     column4.name = "column4";
     column4.getSize(axes[objects::layout::Axes::x]).variable = "grid.columnWidth";
 
@@ -174,29 +174,29 @@ void columnSetupTest(const layout2::ContainerDefinition& rootDefinition, std::ve
 
 TEST(LayoutSetupTests, columnsSetup)
 {
-    layout2::ContainerDefinition rootDefinition {};
+    layout::ContainerDefinition rootDefinition {};
     columnSetupTest(rootDefinition, rootDefinition.columns, objects::layout::Axes::xy);
 }
 
 TEST(LayoutSetupTests, rowsSetup)
 {
-    layout2::ContainerDefinition rootDefinition {};
+    layout::ContainerDefinition rootDefinition {};
     columnSetupTest(rootDefinition, rootDefinition.rows, objects::layout::Axes::yx);
 }
 
-void tileRowSetupTest(const layout2::ContainerDefinition& rootDefinition, std::vector<layout2::ContainerDefinition>& tiles, const objects::layout::Axes2D& axes)
+void tileRowSetupTest(const layout::ContainerDefinition& rootDefinition, std::vector<layout::ContainerDefinition>& tiles, const objects::layout::Axes2D& axes)
 {
     tiles.reserve(2);
 
-    layout2::ContainerDefinition& tile = tiles.emplace_back();
+    layout::ContainerDefinition& tile = tiles.emplace_back();
     tile.name = "tile1";
     tile.getSize(axes[objects::layout::Axes::x]).pixels = 10;
     tile.getSize(axes[objects::layout::Axes::y]).pixels = 10;
 
-    layout2::ContainerDefinition& tile2 = tiles.emplace_back();
+    layout::ContainerDefinition& tile2 = tiles.emplace_back();
     tile2.name = "tile2";
-    tile.getSize(axes[objects::layout::Axes::x]).upstream = layout2::Upstream::children;
-    tile.getSize(axes[objects::layout::Axes::y]).upstream = layout2::Upstream::children;
+    tile.getSize(axes[objects::layout::Axes::x]).upstream = layout::Upstream::children;
+    tile.getSize(axes[objects::layout::Axes::y]).upstream = layout::Upstream::children;
 
     services::LayoutSetupService setupService {};
     const auto [nodes] = setupService.buildSetupList(rootDefinition);
@@ -214,36 +214,36 @@ void tileRowSetupTest(const layout2::ContainerDefinition& rootDefinition, std::v
 
 TEST(LayoutSetupTests, rowTilesSetup)
 {
-    layout2::ContainerDefinition rootDefinition {};
+    layout::ContainerDefinition rootDefinition {};
     tileRowSetupTest(rootDefinition, rootDefinition.tileRow, objects::layout::Axes::xy);
 }
 
 TEST(LayoutSetupTests, columnTilesSetup)
 {
-    layout2::ContainerDefinition rootDefinition {};
+    layout::ContainerDefinition rootDefinition {};
     tileRowSetupTest(rootDefinition, rootDefinition.tileColumn, objects::layout::Axes::yx);
 }
 
 TEST(LayoutSetupTests, floatingSetup)
 {
-    layout2::ContainerDefinition rootDefinition {};
+    layout::ContainerDefinition rootDefinition {};
 
     auto& floatings = rootDefinition.floating;
     floatings.reserve(2);
 
-    layout2::ContainerDefinition& floating = floatings.emplace_back();
+    layout::ContainerDefinition& floating = floatings.emplace_back();
     floating.name = "floating1";
     floating.x.pixels = 100;
     floating.y.pixels = 100;
     floating.width.pixels = 10;
     floating.height.pixels = 10;
 
-    layout2::ContainerDefinition& floating2 = floatings.emplace_back();
+    layout::ContainerDefinition& floating2 = floatings.emplace_back();
     floating2.name = "floating2";
     floating2.x.percents = 10.f;
-    floating2.y.align = layout2::Align::center;
-    floating2.width.upstream = layout2::Upstream::children;
-    floating2.height.upstream = layout2::Upstream::children;
+    floating2.y.align = layout::Align::center;
+    floating2.width.upstream = layout::Upstream::children;
+    floating2.height.upstream = layout::Upstream::children;
 
     services::LayoutSetupService setupService {};
     const auto [nodes] = setupService.buildSetupList(rootDefinition);
