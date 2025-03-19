@@ -6,6 +6,7 @@ namespace dory::core::services
     using namespace resources;
     using namespace resources::scene;
     using namespace resources::scene::configuration;
+    using namespace resources::entities::layout;
 
     int getValue(const objects::layout::DimensionValue& value, const int parentSize, const objects::layout::Variables& variables)
     {
@@ -205,7 +206,7 @@ namespace dory::core::services
         }
     }
 
-    void setupContainer(const objects::layout::NodeItemSetup& nodeSetup, const objects::layout::NodeItemState& nodeState, objects::layout::Container& container)
+    void setupContainer(const objects::layout::NodeItemSetup& nodeSetup, const objects::layout::NodeItemState& nodeState, Container& container)
     {
         container.children.resize(nodeSetup.children.size());
         container.name = nodeSetup.name;
@@ -215,17 +216,17 @@ namespace dory::core::services
         container.size.height = nodeState.dim[objects::layout::Axes::y];
     }
 
-    std::unique_ptr<objects::layout::Container> buildContainer(const objects::layout::NodeSetupList& setupList, const objects::layout::NodeStateList& stateList)
+    std::unique_ptr<Container> buildContainer(const objects::layout::NodeSetupList& setupList, const objects::layout::NodeStateList& stateList)
     {
-        std::unique_ptr<objects::layout::Container> rootContainer {};
-        std::vector<objects::layout::Container*> lookupTable(stateList.nodes.size());
+        std::unique_ptr<Container> rootContainer {};
+        std::vector<Container*> lookupTable(stateList.nodes.size());
 
         for(std::size_t i = 0; i < stateList.nodes.size(); ++i)
         {
             const auto& nodeState = stateList.nodes[i];
             const auto& nodeSetup = setupList.nodes[i];
 
-            objects::layout::Container* container {};
+            Container* container {};
 
             if(nodeSetup.parent != i)
             {
@@ -243,7 +244,7 @@ namespace dory::core::services
             else
             {
                 //root node
-                rootContainer = std::make_unique<objects::layout::Container>();
+                rootContainer = std::make_unique<Container>();
                 lookupTable[i] = container = rootContainer.get();
             }
 
@@ -256,7 +257,7 @@ namespace dory::core::services
         return rootContainer;
     }
 
-    std::unique_ptr<objects::layout::Container> LayoutService::calculate(const objects::layout::NodeSetupList& setupList, const objects::layout::Variables& variables)
+    std::unique_ptr<Container> LayoutService::calculate(const objects::layout::NodeSetupList& setupList, const objects::layout::Variables& variables)
     {
         objects::layout::NodeStateList stateList = buildNodeList(setupList);
         calculateSizes(setupList, stateList, variables);

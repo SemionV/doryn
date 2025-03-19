@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace dory::core::resources
 {
     //TODO: use digital hash instead of std::string for fast search

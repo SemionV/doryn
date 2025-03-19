@@ -10,8 +10,9 @@ using namespace dory::core;
 using namespace dory::core::resources;
 using namespace dory::core::resources::scene;
 using namespace dory::core::resources::scene::configuration;
+using namespace dory::core::resources::entities::layout;
 
-void assertContainer(const objects::layout::Container& container, const Name& name, const int x, const int y,
+void assertContainer(const Container& container, const Name& name, const int x, const int y,
     const int width, const int height)
 {
     EXPECT_EQ(container.name, name);
@@ -21,7 +22,7 @@ void assertContainer(const objects::layout::Container& container, const Name& na
     EXPECT_EQ(container.position.y, y);
 }
 
-void assertContainer(const objects::layout::Container& container, const Name& name, const int x, const int y,
+void assertContainer(const Container& container, const Name& name, const int x, const int y,
     const int width, const int height, const std::size_t childrenCount)
 {
     assertContainer(container, name, x, y, width, height);

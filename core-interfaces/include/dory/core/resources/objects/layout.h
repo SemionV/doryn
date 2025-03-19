@@ -1,29 +1,12 @@
 #pragma once
 
 #include "../name.h"
+#include <array>
+#include <optional>
+#include <vector>
 
 namespace dory::core::resources::objects::layout
 {
-    struct Position
-    {
-        int x{};
-        int y{};
-    };
-
-    struct Size
-    {
-        int width{};
-        int height{};
-    };
-
-    struct Container
-    {
-        Name name {};
-        Position position {};
-        Size size {};
-        std::vector<Container> children {};
-    };
-
     using Vector2i = std::array<int, 2>;
     using Axes2D = std::array<std::size_t, 2>;
 
