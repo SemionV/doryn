@@ -12,5 +12,8 @@ namespace dory::core::services
     public:
         virtual std::unique_ptr<resources::entities::layout::Container> calculate(const resources::objects::layout::NodeSetupList& setupList,
             const resources::objects::layout::Variables& variables) = 0;
+
+        virtual void buildLayout(const resources::objects::layout::NodeSetupList& setupList,
+            const resources::objects::layout::Variables& variables, resources::entities::layout::Layout& layout) = 0;
     };
 }

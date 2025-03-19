@@ -257,6 +257,21 @@ namespace dory::core::services
         return rootContainer;
     }
 
+    objects::layout::NodeStateList calculateLayout(const objects::layout::NodeSetupList& setupList, const objects::layout::Variables& variables)
+    {
+        objects::layout::NodeStateList stateList = buildNodeList(setupList);
+        calculateSizes(setupList, stateList, variables);
+        calculatePositions(setupList, stateList, variables);
+
+        return stateList;
+    }
+
+    void buildContainers(const objects::layout::NodeSetupList& setupList, const objects::layout::NodeStateList& stateList, Layout& layout)
+    {
+        layout.containers.clear();
+        layout.containers.resize(setupList.nodes.size());
+    }
+
     std::unique_ptr<Container> LayoutService::calculate(const objects::layout::NodeSetupList& setupList, const objects::layout::Variables& variables)
     {
         objects::layout::NodeStateList stateList = buildNodeList(setupList);
@@ -265,5 +280,11 @@ namespace dory::core::services
 
         //TODO: make the container's tree a flat list
         return buildContainer(setupList, stateList);
+    }
+
+    void LayoutService::buildLayout(const objects::layout::NodeSetupList& setupList, const objects::layout::Variables& variables, Layout& layout)
+    {
+        const auto stateList = calculateLayout(setupList, variables);
+        buildContainers(setupList, stateList, layout);
     }
 }

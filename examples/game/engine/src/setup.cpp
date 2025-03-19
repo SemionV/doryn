@@ -38,6 +38,7 @@
 #include <dory/core/repositories/bindings/materialBindingRepository.h>
 #include <dory/core/repositories/enttSceneRepository.h>
 #include <dory/core/repositories/sceneConfigurationRepository.h>
+#include <dory/core/repositories/layoutRepository.h>
 
 #include <dory/core/services/fileService.h>
 #include <dory/core/services/libraryService.h>
@@ -123,6 +124,7 @@ namespace dory::game
         registry.set<core::repositories::bindings::IShaderBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::ShaderBindingRepository>());
         registry.set<core::repositories::bindings::IMaterialBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::MaterialBindingRepository>());
         registry.set<core::repositories::ISceneConfigurationRepository>(libraryHandle, std::make_shared<core::repositories::SceneConfigurationRepository>());
+        registry.set<core::repositories::ILayoutRepository>(libraryHandle, std::make_shared<core::repositories::LayoutRepository>());
 
         registry.set<core::repositories::IShaderRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::ShaderRepository>());
         registry.set<core::repositories::IShaderProgramRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::ShaderProgramRepository>());

@@ -4,6 +4,10 @@
 #include <dory/core/resources/objects/layout.h>
 #include <dory/core/services/layoutService.h>
 #include <dory/core/services/layoutSetupService.h>
+#include <dory/core/repositories/iLayoutRepository.h>
+#include <dory/core/registry.h>
+
+#include "mocks/entityRepository.h"
 
 using namespace dory;
 using namespace dory::core;
@@ -11,6 +15,9 @@ using namespace dory::core::resources;
 using namespace dory::core::resources::scene;
 using namespace dory::core::resources::scene::configuration;
 using namespace dory::core::resources::entities::layout;
+
+class LayoutRepository: public EntityRepositoryMock<repositories::ILayoutRepository>
+{};
 
 void assertContainer(const Container& container, const Name& name, const int x, const int y,
     const int width, const int height)

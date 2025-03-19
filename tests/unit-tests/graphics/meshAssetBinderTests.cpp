@@ -8,6 +8,7 @@
 #include <dory/core/repositories/bindings/iBufferBindingRepository.h>
 
 #include "mocks/gpuDevice.h"
+#include "mocks/entityRepository.h"
 
 using namespace dory;
 using namespace dory::core;
@@ -23,25 +24,6 @@ using namespace dory::core::resources::assets;
 using namespace dory::core::resources::entities;
 using namespace dory::core::resources::objects;
 using namespace testing;
-
-template<typename TInterface, typename TEntity = TInterface::EntityType>
-class EntityRepositoryMock: public TInterface
-{
-protected:
-    MOCK_METHOD(IdType , getNewId, ());
-
-public:
-    MOCK_METHOD(std::size_t, count, ());
-    MOCK_METHOD(TEntity*, get, (typename TEntity::IdType id));
-    MOCK_METHOD(TEntity*, create, ());
-    MOCK_METHOD(TEntity*, insert, (TEntity&& entity));
-    MOCK_METHOD(TEntity*, insert, (const TEntity& entity));
-    MOCK_METHOD(void, remove, (typename TEntity::IdType id));
-    MOCK_METHOD(TEntity*, scan, (std::function<bool(TEntity& entity)> predicate));
-    MOCK_METHOD(void, each, (std::function<void(TEntity& entity)> predicate));
-    MOCK_METHOD(void, setName, (typename TEntity::IdType id, std::string name));
-    MOCK_METHOD(typename TEntity::IdType, getId, (std::string name));
-};
 
 class MeshRepository: public EntityRepositoryMock<IMeshRepository>
 {};
