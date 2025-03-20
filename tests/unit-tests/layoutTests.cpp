@@ -19,24 +19,7 @@ using namespace dory::core::resources::entities::layout;
 class LayoutRepository: public EntityRepositoryMock<repositories::ILayoutRepository>
 {};
 
-void assertContainer(const Container& container, const Name& name, const int x, const int y,
-    const int width, const int height)
-{
-    EXPECT_EQ(container.name, name);
-    EXPECT_EQ(container.size.width, width);
-    EXPECT_EQ(container.size.height, height);
-    EXPECT_EQ(container.position.x, x);
-    EXPECT_EQ(container.position.y, y);
-}
-
-void assertContainer(const Container& container, const Name& name, const int x, const int y,
-    const int width, const int height, const std::size_t childrenCount)
-{
-    assertContainer(container, name, x, y, width, height);
-    EXPECT_EQ(container.children.size(), childrenCount);
-}
-
-void assertContainerFlat(const Container& container, const Name& name, const std::size_t parentIndex, const int x, const int y,
+void assertContainer(const Container& container, const Name& name, const std::size_t parentIndex, const int x, const int y,
     const int width, const int height)
 {
     EXPECT_EQ(container.name, name);
@@ -47,17 +30,17 @@ void assertContainerFlat(const Container& container, const Name& name, const std
     EXPECT_EQ(container.position.y, y);
 }
 
-void assertContainerFlat(const Container& container, const Name& name, const std::size_t parentIndex, const int x, const int y,
+void assertContainer(const Container& container, const Name& name, const std::size_t parentIndex, const int x, const int y,
     const int width, const int height, const std::size_t childrenCount)
 {
-    assertContainerFlat(container, name, parentIndex, x, y, width, height);
+    assertContainer(container, name, parentIndex, x, y, width, height);
     EXPECT_EQ(container.children.size(), childrenCount);
 }
 
-void assertContainerFlat(const Container& container, const std::size_t indexOffset, const Name& name, const std::size_t parentIndex, const Position& position,
+void assertContainer(const Container& container, const std::size_t indexOffset, const Name& name, const std::size_t parentIndex, const Position& position,
     const Size& size, const std::vector<std::size_t>& children)
 {
-    assertContainerFlat(container, name, parentIndex + indexOffset, position.x, position.y, size.width, size.height);
+    assertContainer(container, name, parentIndex + indexOffset, position.x, position.y, size.width, size.height);
     ASSERT_EQ(container.children.size(), children.size());
     for(std::size_t i = 0; i < children.size(); ++i)
     {
@@ -76,8 +59,20 @@ void assertContainerTree(const Layout& layout, const std::size_t index, const st
         const auto& [name, position, size, parent, children] = expected[i];
         const auto& container = containers[index + i];
 
-        assertContainerFlat(container, index, name, parent, position, size, children);
+        assertContainer(container, index, name, parent, position, size, children);
     }
+}
+
+void testLayout(const layout::ContainerDefinition& definition, const std::vector<Container>& expected)
+{
+    services::LayoutSetupService setupService {};
+    const auto setupList = setupService.buildSetupList(definition);
+
+    Layout layout {};
+    services::LayoutService layoutService;
+    layoutService.buildLayout(setupList, objects::layout::Variables{}, layout);
+
+    assertContainerTree(layout, 0, expected);
 }
 
 void testWindow(const int screenWidth, const int screenHeight, const int x, const int y, const int width, const int height,
@@ -90,14 +85,7 @@ void testWindow(const int screenWidth, const int screenHeight, const int x, cons
 
     screenDefinition.floating.emplace_back(definition);
 
-    services::LayoutSetupService setupService {};
-    const auto setupList = setupService.buildSetupList(screenDefinition);
-
-    Layout layout {};
-    services::LayoutService layoutService;
-    layoutService.buildLayout(setupList, objects::layout::Variables{}, layout);
-
-    assertContainerTree(layout, 0, {
+    testLayout(screenDefinition, {
         Container { screenDefinition.name, Position { 0, 0 }, Size { screenWidth, screenHeight }, 0, { 1 } },
         Container { definition.name, Position { x, y }, Size { width, height }, 0, {} }
     });
@@ -192,17 +180,39 @@ TEST(LayoutTests, rowOfTwoColumns)
     column2Definition.name = "column2";
     column2Definition.width.upstream = layout::Upstream::fill;
 
-    services::LayoutSetupService setupService {};
-    const auto setupList = setupService.buildSetupList(definition);
-
-    Layout layout {};
-    services::LayoutService layoutService;
-    layoutService.buildLayout(setupList, objects::layout::Variables{}, layout);
-
-    assertContainerTree(layout, 0, {
+    testLayout(definition, {
         Container { definition.name, Position { 0, 0 }, Size { windowWidth, windowHeight }, 0, { 1, 2 } },
         Container { column1Definition.name, Position { 0, 0 }, Size { column1Width, windowHeight }, 0, {} },
         Container { column2Definition.name, Position { column1Width, 0 }, Size { windowWidth - column1Width, windowHeight }, 0, {} }
+    });
+}
+
+TEST(LayoutTests, rowOfTwoColumnsWithFlexibleFirst)
+{
+    constexpr int windowWidth = 1024;
+    constexpr int windowHeight = 768;
+    constexpr int column1Width = 124;
+
+    layout::ContainerDefinition definition;
+    definition.name = "window";
+    definition.width.pixels = windowWidth;
+    definition.height.pixels = windowHeight;
+
+    auto& columns = definition.columns;
+    columns.resize(2);
+
+    auto& column2Definition = columns[0];
+    column2Definition.name = "column2";
+    column2Definition.width.upstream = layout::Upstream::fill;
+
+    auto& column1Definition = columns[1];
+    column1Definition.name = "column1";
+    column1Definition.width.pixels = column1Width;
+
+    testLayout(definition, {
+        Container { definition.name, Position { 0, 0 }, Size { windowWidth, windowHeight }, 0, { 1, 2 } },
+        Container { column2Definition.name, Position { 0, 0 }, Size { windowWidth - column1Width, windowHeight }, 0, {} },
+        Container { column1Definition.name, Position { windowWidth - column1Width, 0 }, Size { column1Width, windowHeight }, 0, {} }
     });
 }
 
@@ -228,14 +238,7 @@ TEST(LayoutTests, columnOfTwoRows)
     row2Definition.name = "row2";
     row2Definition.height.upstream = layout::Upstream::fill;
 
-    services::LayoutSetupService setupService {};
-    const auto setupList = setupService.buildSetupList(definition);
-
-    Layout layout {};
-    services::LayoutService layoutService;
-    layoutService.buildLayout(setupList, objects::layout::Variables{}, layout);
-
-    assertContainerTree(layout, 0, {
+    testLayout(definition, {
         Container { definition.name, Position { 0, 0 }, Size { windowWidth, windowHeight }, 0, { 1, 2 } },
         Container { row1Definition.name, Position { 0, 0 }, Size { windowWidth, row1Height }, 0, {} },
         Container { row2Definition.name, Position { 0, row1Height }, Size { windowWidth, windowHeight - row1Height }, 0, {} }
@@ -274,18 +277,11 @@ TEST(LayoutTests, windowWidthStretchedByContent)
     column2Definition.name = "column2";
     column2Definition.width.pixels = column2Width;
 
-    services::LayoutSetupService setupService {};
-    const auto setupList = setupService.buildSetupList(screenDefinition);
-
-    Layout layout {};
-    services::LayoutService layoutService;
-    layoutService.buildLayout(setupList, objects::layout::Variables{}, layout);
-
     constexpr int expectedWindowWidth = column1Width + column2Width;
     const int expectedWindowX = static_cast<int>(std::round(static_cast<float>(screenWidth - expectedWindowWidth) / 2.f));
     const int expectedWindowY = static_cast<int>(std::round(static_cast<float>(screenHeight - windowHeight) / 2.f));
 
-    assertContainerTree(layout, 0, {
+    testLayout(screenDefinition, {
         Container { screenDefinition.name, Position { 0, 0 }, Size { screenWidth, screenHeight }, 0, { 1 } },
         Container { windowDefinition.name, Position { expectedWindowX, expectedWindowY }, Size { expectedWindowWidth, windowHeight }, 0, { 2, 3 } },
         Container { column1Definition.name, Position { 0, 0 }, Size { column1Width, windowHeight }, 1, {} },
@@ -325,18 +321,11 @@ TEST(LayoutTests, windowHeightStretchedByContent)
     row2Definition.name = "row2";
     row2Definition.height.pixels = row2Height;
 
-    services::LayoutSetupService setupService {};
-    const auto setupList = setupService.buildSetupList(screenDefinition);
-
-    Layout layout {};
-    services::LayoutService layoutService;
-    layoutService.buildLayout(setupList, objects::layout::Variables{}, layout);
-
     constexpr int expectedWindowHeight = row1Height + row2Height;
     const int expectedWindowX = static_cast<int>(std::round(static_cast<float>(screenWidth - windowWidth) / 2.f));
     const int expectedWindowY = static_cast<int>(std::round(static_cast<float>(screenHeight - expectedWindowHeight) / 2.f));
 
-    assertContainerTree(layout, 0, {
+    testLayout(screenDefinition, {
         Container { screenDefinition.name, Position { 0, 0 }, Size { screenWidth, screenHeight }, 0, { 1 } },
         Container { windowDefinition.name, Position { expectedWindowX, expectedWindowY }, Size { windowWidth, expectedWindowHeight }, 0, { 2, 3 } },
         Container { row1Definition.name, Position { 0, 0 }, Size { windowWidth, row1Height }, 1, {} },
@@ -371,14 +360,7 @@ TEST(LayoutTests, rowOfThreeColumns)
     column3Definition.name = "column3";
     column3Definition.width.pixels = column3Width;
 
-    services::LayoutSetupService setupService {};
-    const auto setupList = setupService.buildSetupList(definition);
-
-    Layout layout {};
-    services::LayoutService layoutService;
-    layoutService.buildLayout(setupList, objects::layout::Variables{}, layout);
-
-    assertContainerTree(layout, 0, {
+    testLayout(definition, {
         Container { definition.name, Position { 0, 0 }, Size { windowWidth, windowHeight }, 0, { 1, 2, 3 } },
         Container { column1Definition.name, Position { 0, 0 }, Size { column1Width, windowHeight }, 0, {} },
         Container { column2Definition.name, Position { column1Width, 0 }, Size { windowWidth - column1Width - column3Width, windowHeight }, 0, {} },
@@ -413,14 +395,7 @@ TEST(LayoutTests, columnOfThreeRows)
     row3Definition.name = "row3";
     row3Definition.height.pixels = row3Height;
 
-    services::LayoutSetupService setupService {};
-    const auto setupList = setupService.buildSetupList(definition);
-
-    Layout layout {};
-    services::LayoutService layoutService;
-    layoutService.buildLayout(setupList, objects::layout::Variables{}, layout);
-
-    assertContainerTree(layout, 0, {
+    testLayout(definition, {
         Container { definition.name, Position { 0, 0 }, Size { windowWidth, windowHeight }, 0, { 1, 2, 3 } },
         Container { row1Definition.name, Position { 0, 0 }, Size { windowWidth, row1Height }, 0, {} },
         Container { row2Definition.name, Position { 0, row1Height }, Size { windowWidth, windowHeight - row1Height - row3Height }, 0, {} },
@@ -472,16 +447,9 @@ TEST(LayoutTests, combinedThreeColumnAndRowsGridLayout2)
     column3Definition.name = "column3";
     column3Definition.width.pixels = column3Width;
 
-    services::LayoutSetupService setupService {};
-    const auto setupList = setupService.buildSetupList(definition);
-
-    Layout layout {};
-    services::LayoutService layoutService;
-    layoutService.buildLayout(setupList, objects::layout::Variables{}, layout);
-
     constexpr int expectedColumn2Width = windowWidth - column1Width - column3Width;
 
-    assertContainerTree(layout, 0, {
+    testLayout(definition, {
         Container { definition.name, Position { 0, 0 }, Size { windowWidth, windowHeight }, 0, { 1, 2, 6 } },
             Container { column1Definition.name, Position { 0, 0 }, Size { column1Width, windowHeight }, 0, {} },
             Container { column2Definition.name, Position { column1Width, 0 }, Size { expectedColumn2Width, windowHeight }, 0, {3, 4, 5} },
@@ -510,14 +478,7 @@ TEST(LayoutTests, scrollableContent)
     slideDefinition.width.upstream = layout::Upstream::parent;
     slideDefinition.height.pixels = contentHeight;
 
-    services::LayoutSetupService setupService {};
-    const auto setupList = setupService.buildSetupList(windowDefinition);
-
-    Layout layout {};
-    services::LayoutService layoutService;
-    layoutService.buildLayout(setupList, objects::layout::Variables{}, layout);
-
-    assertContainerTree(layout, 0, {
+    testLayout(windowDefinition, {
         Container { windowDefinition.name, Position { 0, 0 }, Size { windowWidth, windowHeight }, 0, { 1 } },
         Container { slideDefinition.name, Position { 0, 0 }, Size { windowWidth, contentHeight }, 0, {} }
     });
@@ -544,14 +505,7 @@ TEST(LayoutTests, horizontalTiles2)
         tileDefinition.height.pixels = 100;
     }
 
-    services::LayoutSetupService setupService {};
-    const auto setupList = setupService.buildSetupList(windowDefinition);
-
-    Layout layout {};
-    services::LayoutService layoutService;
-    layoutService.buildLayout(setupList, objects::layout::Variables{}, layout);
-
-    assertContainerTree(layout, 0, {
+    testLayout(windowDefinition, {
         Container { windowDefinition.name, Position { 0, 0 }, Size { windowWidth, tileHeight * 2 }, 0, { 1, 2, 3, 4, 5 } },
         Container { "", Position { 0, 0 }, Size { tileWidth, tileHeight }, 0, {} },
         Container { "", Position { 100, 0 }, Size { tileWidth, tileHeight }, 0, {} },
@@ -582,14 +536,7 @@ TEST(LayoutTests, verticalTiles2)
         tileDefinition.height.pixels = 100;
     }
 
-    services::LayoutSetupService setupService {};
-    const auto setupList = setupService.buildSetupList(windowDefinition);
-
-    Layout layout {};
-    services::LayoutService layoutService;
-    layoutService.buildLayout(setupList, objects::layout::Variables{}, layout);
-
-    assertContainerTree(layout, 0, {
+    testLayout(windowDefinition, {
         Container { windowDefinition.name, Position { 0, 0 }, Size { tileWidth * 2, windowHeight }, 0, { 1, 2, 3, 4, 5 } },
         Container { "", Position { 0, 0 }, Size { tileWidth, tileHeight }, 0, {} },
         Container { "", Position { 0, 100 }, Size { tileWidth, tileHeight }, 0, {} },
