@@ -206,57 +206,6 @@ namespace dory::core::services
         }
     }
 
-    void setupContainer(const objects::layout::NodeItemSetup& nodeSetup, const objects::layout::NodeItemState& nodeState, Container& container)
-    {
-        container.children.resize(nodeSetup.children.size());
-        container.name = nodeSetup.name;
-        container.position.x = nodeState.pos[objects::layout::Axes::x];
-        container.position.y = nodeState.pos[objects::layout::Axes::y];
-        container.size.width = nodeState.dim[objects::layout::Axes::x];
-        container.size.height = nodeState.dim[objects::layout::Axes::y];
-    }
-
-    std::unique_ptr<Container> buildContainer(const objects::layout::NodeSetupList& setupList, const objects::layout::NodeStateList& stateList)
-    {
-        std::unique_ptr<Container> rootContainer {};
-        std::vector<Container*> lookupTable(stateList.nodes.size());
-
-        for(std::size_t i = 0; i < stateList.nodes.size(); ++i)
-        {
-            const auto& nodeState = stateList.nodes[i];
-            const auto& nodeSetup = setupList.nodes[i];
-
-            Container* container {};
-
-            if(nodeSetup.parent != i)
-            {
-                auto parentNodeSetup = setupList.nodes[nodeSetup.parent];
-                for(std::size_t j = 0; j < parentNodeSetup.children.size(); ++j)
-                {
-                    if(parentNodeSetup.children[j] == i)
-                    {
-                        const auto parentContainer = lookupTable[nodeSetup.parent];
-                        container = lookupTable[i] = &parentContainer->children[j];
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                //root node
-                rootContainer = std::make_unique<Container>();
-                lookupTable[i] = container = rootContainer.get();
-            }
-
-            if(container)
-            {
-                setupContainer(nodeSetup, nodeState, *container);
-            }
-        }
-
-        return rootContainer;
-    }
-
     objects::layout::NodeStateList calculateLayout(const objects::layout::NodeSetupList& setupList, const objects::layout::Variables& variables)
     {
         objects::layout::NodeStateList stateList = buildNodeList(setupList);
@@ -270,7 +219,7 @@ namespace dory::core::services
     void buildContainers(const objects::layout::NodeSetupList& setupList, const objects::layout::NodeStateList& stateList, Layout& layout)
     {
         layout.containers.clear();
-        layout.containers.reserve(setupList.nodes.size());
+        layout.containers.resize(setupList.nodes.size());
 
         if(!setupList.nodes.empty())
         {
@@ -281,7 +230,7 @@ namespace dory::core::services
             std::size_t j {};
 
             stack.emplace(0, 0);
-            while(stack.empty())
+            while(!stack.empty())
             {
                 auto [i, parentIndex] = stack.top();
                 stack.pop();
@@ -296,31 +245,23 @@ namespace dory::core::services
                 container.position.y = nodeState.pos[objects::layout::Axes::y];
                 container.size.width = nodeState.dim[objects::layout::Axes::x];
                 container.size.height = nodeState.dim[objects::layout::Axes::y];
-                container.childIndices.reserve(nodeSetup.children.size());
+                container.children.reserve(nodeSetup.children.size());
                 container.parent = lookupTable[nodeSetup.parent];
 
                 if(container.parent != j)
                 {
                     Container& parentContainer = layout.containers[container.parent];
-                    parentContainer.childIndices.emplace_back(j);
+                    parentContainer.children.emplace_back(j);
                 }
 
                 for(std::size_t k = nodeSetup.children.size(); k > 0; --k)
                 {
-                    stack.emplace(k - 1, i);
+                    stack.emplace(nodeSetup.children[k - 1], i);
                 }
+
+                ++j;
             }
         }
-    }
-
-    std::unique_ptr<Container> LayoutService::calculate(const objects::layout::NodeSetupList& setupList, const objects::layout::Variables& variables)
-    {
-        objects::layout::NodeStateList stateList = buildNodeList(setupList);
-        calculateSizes(setupList, stateList, variables);
-        calculatePositions(setupList, stateList, variables);
-
-        //TODO: make the container's tree a flat list
-        return buildContainer(setupList, stateList);
     }
 
     void LayoutService::buildLayout(const objects::layout::NodeSetupList& setupList, const objects::layout::Variables& variables, Layout& layout)

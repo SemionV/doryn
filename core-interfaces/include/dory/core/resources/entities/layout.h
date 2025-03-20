@@ -22,9 +22,8 @@ namespace dory::core::resources::entities::layout
         Name name {};
         Position position {};
         Size size {};
-        std::vector<Container> children {};
         std::size_t parent;
-        std::vector<std::size_t> childIndices {}; //TODO: rename to children
+        std::vector<std::size_t> children {};
     };
 
     struct Layout: Entity<>
