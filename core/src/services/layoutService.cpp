@@ -266,10 +266,51 @@ namespace dory::core::services
         return stateList;
     }
 
+    //Explanation: https://youtu.be/JZB5eRQNWOA
     void buildContainers(const objects::layout::NodeSetupList& setupList, const objects::layout::NodeStateList& stateList, Layout& layout)
     {
         layout.containers.clear();
-        layout.containers.resize(setupList.nodes.size());
+        layout.containers.reserve(setupList.nodes.size());
+
+        if(!setupList.nodes.empty())
+        {
+            std::stack<std::tuple<std::size_t, std::size_t>> stack {};
+            std::vector<std::size_t> lookupTable;
+            lookupTable.resize(setupList.nodes.size());
+
+            std::size_t j {};
+
+            stack.emplace(0, 0);
+            while(stack.empty())
+            {
+                auto [i, parentIndex] = stack.top();
+                stack.pop();
+
+                lookupTable[i] = j;
+
+                Container& container = layout.containers[j];
+                const objects::layout::NodeItemSetup& nodeSetup = setupList.nodes[i];
+                const objects::layout::NodeItemState& nodeState = stateList.nodes[i];
+                container.name = nodeSetup.name;
+                container.position.x = nodeState.pos[objects::layout::Axes::x];
+                container.position.y = nodeState.pos[objects::layout::Axes::y];
+                container.size.width = nodeState.dim[objects::layout::Axes::x];
+                container.size.height = nodeState.dim[objects::layout::Axes::y];
+                container.childIndices.reserve(nodeSetup.children.size());
+                container.parent = lookupTable[nodeSetup.parent];
+
+                if(container.parent != j)
+                {
+                    Container& parentContainer = layout.containers[container.parent];
+                    parentContainer.childIndices.emplace_back(j);
+                }
+
+                for(std::size_t k = nodeSetup.children.size(); k > 0; --k)
+                {
+                    stack.emplace(k - 1, i);
+                }
+            }
+        }
     }
 
     std::unique_ptr<Container> LayoutService::calculate(const objects::layout::NodeSetupList& setupList, const objects::layout::Variables& variables)
