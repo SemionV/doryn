@@ -40,7 +40,7 @@ void assertContainer(const Container& container, const Name& name, const std::si
 void assertContainer(const Container& container, const std::size_t indexOffset, const Name& name, const std::size_t parentIndex, const Position& position,
     const Size& size, const std::vector<std::size_t>& children)
 {
-    assertContainer(container, name, parentIndex + indexOffset, position.x, position.y, size.width, size.height);
+    assertContainer(container, name, parentIndex, position.x, position.y, size.width, size.height);
     ASSERT_EQ(container.children.size(), children.size());
     for(std::size_t i = 0; i < children.size(); ++i)
     {
@@ -59,11 +59,17 @@ void assertContainerTree(const Layout& layout, const std::size_t index, const st
         const auto& [name, position, size, parent, children] = expected[i];
         const auto& container = containers[index + i];
 
-        assertContainer(container, index, name, parent, position, size, children);
+        std::size_t parentIndex = parent;
+        if(i > 0)
+        {
+            parentIndex += index;
+        }
+
+        assertContainer(container, index, name, parentIndex, position, size, children);
     }
 }
 
-void testLayout(const layout::ContainerDefinition& definition, const std::vector<Container>& expected)
+void testLayout(const layout::ContainerDefinition& definition, const std::vector<Container>& expected, const std::size_t offsetIndex = 0)
 {
     services::LayoutSetupService setupService {};
     const auto setupList = setupService.buildSetupList(definition);
@@ -72,7 +78,7 @@ void testLayout(const layout::ContainerDefinition& definition, const std::vector
     services::LayoutService layoutService;
     layoutService.buildLayout(setupList, objects::layout::Variables{}, layout);
 
-    assertContainerTree(layout, 0, expected);
+    assertContainerTree(layout, offsetIndex, expected);
 }
 
 void testWindow(const int screenWidth, const int screenHeight, const int x, const int y, const int width, const int height,
@@ -546,9 +552,45 @@ TEST(LayoutTests, verticalTiles2)
     });
 }
 
+//3 column layout with a flexible column in the middle, which contains another three columns with a flexible column in the middle,
+//where one of the columns has width defined as a percent of the parents width
+TEST(LayoutTests, threeColumnsWithThreeColumns)
+{
+    constexpr int windowWidth = 1024;
+    constexpr int windowHeight = 768;
+    constexpr int column1Width = 124;
+    constexpr int column3Width = 50;
+    constexpr float column1_1Width = 50.f;
+    constexpr int column1_3Width = 100;
+
+    layout::ContainerDefinition definition;
+    {
+        using namespace layout::util;
+        definition = row("window", w(windowWidth), h(windowHeight), {
+            def("column1", w(column1Width), h() ),
+            row("column2", w(us::fill), h(), {
+                def("column1_1", w(column1_1Width), h()),
+                def("column1_2", w(us::fill), h()),
+                def("column1_3", w(column1_3Width), h())
+            }),
+            def("column3", w(column3Width), h())
+        });
+    }
+
+    constexpr int column2WidthExpected = windowWidth - column1Width - column3Width;
+    constexpr int column1_1WidthExpected = column2WidthExpected * 0.01f * column1_1Width;
+    constexpr int column1_2WidthExpected = column2WidthExpected - column1_1WidthExpected - column1_3Width;
+    
+    using namespace entities::layout::util;
+    testLayout(definition, {
+        con("column2", parent(), x(column1Width), y(), w(column2WidthExpected), h(windowHeight), kids({ 1, 2, 3})),
+            con("column1_1", parent(), x(), y(), w(column1_1WidthExpected), h(windowHeight)),
+            con("column1_2", parent(), x(column1_1WidthExpected), y(), w(column1_2WidthExpected), h(windowHeight)),
+            con("column1_3", parent(), x(column1_1WidthExpected + column1_2WidthExpected), y(), w(column1_3Width), h(windowHeight))
+    }, 2);
+}
+
 //TODO: unit test for layout like word-wrap text: letters make words(lines of nodes) and words can jump to next line
 //TODO: test three-column layout with a left column filled with tiles vertically and taking width from it's contents, then a flexible-width column and a fixed width column
 //TODO: make a test of a 0-size container filled with tiles, which have to make a column of tiles or a row of tiles accordingly if they are horizontal or vertical alignment
-
-//TODO: write a test for a 3 column layout with a flexible column in the middle, which contains another three columns with a flexible column in the middle,
-//where one of the columns has width defined as a percent of the parents width
+//TODO: unit test with a container which has columns and a floating children
