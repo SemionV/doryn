@@ -94,22 +94,22 @@ namespace dory::core::resources::entities::layout
             };
         }
 
-        inline auto x(const int value)
+        inline auto _x(const int value)
         {
             return setPosition(&Position::x, value);
         }
 
-        inline auto y(const int value)
+        inline auto _y(const int value)
         {
             return setPosition(&Position::y, value);
         }
 
-        inline auto w(const int value)
+        inline auto _w(const int value)
         {
             return setSize(&Size::width, value);
         }
 
-        inline auto h(const int value)
+        inline auto _h(const int value)
         {
             return setSize(&Size::height, value);
         }

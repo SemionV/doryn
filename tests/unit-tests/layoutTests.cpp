@@ -16,6 +16,9 @@ using namespace dory::core::resources::scene;
 using namespace dory::core::resources::scene::configuration;
 using namespace dory::core::resources::entities::layout;
 
+using namespace layout::util2;
+using namespace entities::layout::util2;
+
 class LayoutRepository: public EntityRepositoryMock<repositories::ILayoutRepository>
 {};
 
@@ -84,429 +87,256 @@ void testLayout(const layout::ContainerDefinition& definition, const std::vector
 void testWindow(const int screenWidth, const int screenHeight, const int x, const int y, const int width, const int height,
     const layout::ContainerDefinition& definition)
 {
-    layout::ContainerDefinition screenDefinition {};
-    screenDefinition.width.pixels = screenWidth;
-    screenDefinition.height.pixels = screenHeight;
-    screenDefinition.name = "screen";
-
-    screenDefinition.floating.emplace_back(definition);
+    const auto screenDefinition = def() | w(screenWidth) | h(screenHeight) | floating({
+        definition
+    });
 
     testLayout(screenDefinition, {
-        Container { screenDefinition.name, Position { 0, 0 }, Size { screenWidth, screenHeight }, 0, { 1 } },
-        Container { definition.name, Position { x, y }, Size { width, height }, 0, {} }
+        con(screenDefinition.name) | _w(screenWidth) | _h(screenHeight) | kids({ 1 }),
+        con(definition.name) | _x(x) | _y(y) | _w(width) | _h(height)
     });
 }
 
 TEST(LayoutTests, relativePosition)
 {
-    constexpr int _x = 30;
-    constexpr int _y = 10;
-    constexpr int width = 150;
-    constexpr int height = 100;
-
-    using namespace layout::util;
-    const auto definition = def("window", x(_x), y(_y), w(width), h(100));
-    testWindow(1024, 768, _x, _y, width, height, definition);
+    constexpr int _x = 30, _y = 10, width = 150, height = 100;
+    testWindow(1024, 768, _x, _y, width, height, def("window") | x(_x) | y(_y) | w(width) | h(100));
 }
 
 TEST(LayoutTests, centeredPosition)
 {
-    constexpr int width = 150;
-    constexpr int height = 100;
-
-    using namespace layout::util;
-    const auto definition = def("window", x(al::center), y(al::center), w(width), h(height));
-    testWindow(350, 400, 100, 150, width, height, definition);
+    constexpr int width = 150, height = 100;
+    testWindow(350, 400, 100, 150, width, height, def("window") | x(al::center) | y(al::center) | w(width) | h(height));
 }
 
 TEST(LayoutTests, originPosition)
 {
-    constexpr int width = 150;
-    constexpr int height = 100;
-
-    using namespace layout::util;
-    const auto definition = def("window", x(), y(), w(width), h(height));
-    testWindow(350, 400, 0, 0, width, height, definition);
+    constexpr int width = 150, height = 100;
+    testWindow(350, 400, 0, 0, width, height, def("window") | w(width) | h(height));
 }
 
 TEST(LayoutTests, fullScreen)
 {
-    using namespace layout::util;
-    const auto definition = def("window", x(), y(), w(us::parent), h(us::parent));
-    testWindow(1024, 768, 0, 0, 1024, 768, definition);
+    testWindow(1024, 768, 0, 0, 1024, 768, def("window") | w(us::parent) | h(us::parent));
 }
 
 TEST(LayoutTests, percentDimensions)
 {
-    using namespace layout::util;
-    const auto definition = def("window", x(10.f), y(20.f), w(30.f), h(10.f));
-    testWindow(1000, 1000, 100, 200, 300, 100, definition);
+    testWindow(1000, 1000, 100, 200, 300, 100, def("window") | x(10.f) | y(20.f) | w(30.f) | h(10.f));
 }
 
 TEST(LayoutTests, rowOfTwoColumns)
 {
-    constexpr int windowWidth = 1024;
-    constexpr int windowHeight = 768;
-    constexpr int column1Width = 124;
+    constexpr int windowWidth = 1024, windowHeight = 768, column1Width = 124;
 
-    layout::ContainerDefinition definition;
-    {
-        using namespace layout::util;
-        definition = row("window", w(windowWidth), h(windowHeight), {
-            def("column1", w(column1Width), h()),
-            def("column2", w(us::fill), h())
-        });
-    }
+    const auto definition = def("window") | w(windowWidth) | h(windowHeight) | columns({
+        def("column1") | w(column1Width),
+        def("column2") | w(us::fill)
+    });
 
-    using namespace entities::layout::util;
     testLayout(definition, {
-        con(definition.name, parent(), x(), y(), w(windowWidth), h(windowHeight), kids({ 1, 2 })),
-            con("column1", parent(), x(), y(), w(column1Width), h(windowHeight)),
-            con("column2", parent(), x(column1Width), y(), w(windowWidth - column1Width), h(windowHeight)),
+        con(definition.name) | _w(windowWidth) | _h(windowHeight) | kids({ 1, 2 }),
+        con("column1") | _x(0) | _w(column1Width) | _h(windowHeight),
+        con("column2") | _x(column1Width) | _w(windowWidth - column1Width) | _h(windowHeight)
     });
 }
 
 TEST(LayoutTests, rowOfTwoColumnsWithFlexibleFirst)
 {
-    constexpr int windowWidth = 1024;
-    constexpr int windowHeight = 768;
-    constexpr int column1Width = 124;
+    constexpr int windowWidth = 1024, windowHeight = 768, column1Width = 124;
 
-    layout::ContainerDefinition definition;
-    {
-        using namespace layout::util;
-        definition = row("window", w(windowWidth), h(windowHeight), {
-            def("column1", w(us::fill), h()),
-            def("column2", w(column1Width), h())
-        });
-    }
+    const auto definition = def("window") | w(windowWidth) | h(windowHeight) | columns({
+        def("column1") | w(us::fill),
+        def("column2") | w(column1Width)
+    });
 
-    using namespace entities::layout::util;
     testLayout(definition, {
-        con(definition.name, parent(), x(), y(), w(windowWidth), h(windowHeight), kids({ 1, 2 })),
-            con("column1", parent(), x(), y(), w(windowWidth - column1Width), h(windowHeight)),
-            con("column2", parent(), x(windowWidth - column1Width), y(), w(column1Width), h(windowHeight)),
+        con(definition.name) | _w(windowWidth) | _h(windowHeight) | kids({ 1, 2 }),
+        con("column1") | _x(0) | _w(windowWidth - column1Width) | _h(windowHeight),
+        con("column2") | _x(windowWidth - column1Width) | _w(column1Width) | _h(windowHeight)
     });
 }
 
 TEST(LayoutTests, columnOfTwoRows)
 {
-    constexpr int windowWidth = 1024;
-    constexpr int windowHeight = 768;
-    constexpr int row1Height = 168;
+    constexpr int windowWidth = 1024, windowHeight = 768, row1Height = 168;
 
-    layout::ContainerDefinition definition;
-    {
-        using namespace layout::util;
-        definition = column("window", w(windowWidth), h(windowHeight), {
-            def("column1", w(), h(row1Height)),
-            def("column2", w(), h(us::fill))
-        });
-    }
+    const auto definition = def("window") | w(windowWidth) | h(windowHeight) | rows({
+        def("column1") | h(row1Height),
+        def("column2") | h(us::fill)
+    });
 
-    using namespace entities::layout::util;
     testLayout(definition, {
-        con(definition.name, parent(), x(), y(), w(windowWidth), h(windowHeight), kids({ 1, 2 })),
-            con("column1", parent(), x(), y(), w(windowWidth), h(row1Height)),
-            con("column2", parent(), x(), y(row1Height), w(windowWidth), h(windowHeight - row1Height)),
+        con(definition.name) | _w(windowWidth) | _h(windowHeight) | kids({ 1, 2 }),
+        con("column1") | _y(0) | _w(windowWidth) | _h(row1Height),
+        con("column2") | _y(row1Height) | _w(windowWidth) | _h(windowHeight - row1Height)
     });
 }
 
 TEST(LayoutTests, windowWidthStretchedByContent)
 {
-    constexpr int screenWidth = 1024;
-    constexpr int screenHeight = 768;
-    constexpr int windowHeight = 400;
-    constexpr int column1Width = 100;
-    constexpr int column2Width = 200;
+    constexpr int screenWidth = 1024, screenHeight = 768, windowHeight = 400, column1Width = 100, column2Width = 200;
 
     constexpr int expectedWindowWidth = column1Width + column2Width;
     const int expectedWindowX = static_cast<int>(std::round(static_cast<float>(screenWidth - expectedWindowWidth) / 2.f));
     const int expectedWindowY = static_cast<int>(std::round(static_cast<float>(screenHeight - windowHeight) / 2.f));
 
-    layout::ContainerDefinition definition;
-    {
-        using namespace layout::util2;
-
-        definition = def("screen") | w(screenWidth) | h(screenHeight) | floating({
-            def("window") | x(al::center) | y(al::center) | w(us::children) | h(windowHeight) | columns({
-                def("column1") | w(column1Width),
-                def("column2") | w(column2Width)
-            })
-        });
-    }
-
-    using namespace entities::layout::util2;
-
-    testLayout(definition, {
-        con("screen") | w(screenWidth) | h(screenHeight) | kids({ 1 }),
-        con("window") | x(expectedWindowX) | y(expectedWindowY) | w(expectedWindowWidth) | h(windowHeight) | kids({ 2, 3 }),
-        con("column1") | x(0) | w(column1Width) | h(windowHeight) | parent(1),
-        con("column2") | x(column1Width) | w(column2Width) | h(windowHeight) | parent(1)
+    const auto definition = def("screen") | w(screenWidth) | h(screenHeight) | floating({
+        def("window") | x(al::center) | y(al::center) | w(us::children) | h(windowHeight) | columns({
+            def("column1") | w(column1Width),
+            def("column2") | w(column2Width)
+        })
     });
 
     testLayout(definition, {
-        Container { "screen", Position { 0, 0 }, Size { screenWidth, screenHeight }, 0, { 1 } },
-        Container { "window", Position { expectedWindowX, expectedWindowY }, Size { expectedWindowWidth, windowHeight }, 0, { 2, 3 } },
-        Container { "column1", Position { 0, 0 }, Size { column1Width, windowHeight }, 1, {} },
-        Container { "column2", Position { column1Width, 0 }, Size { column2Width, windowHeight }, 1, {} }
+        con("screen") | _w(screenWidth) | _h(screenHeight) | kids({ 1 }),
+        con("window") | _x(expectedWindowX) | _y(expectedWindowY) | _w(expectedWindowWidth) | _h(windowHeight) | kids({ 2, 3 }),
+        con("column1") | _x(0) | _w(column1Width) | _h(windowHeight) | parent(1),
+        con("column2") | _x(column1Width) | _w(column2Width) | _h(windowHeight) | parent(1)
     });
 }
 
 TEST(LayoutTests, windowHeightStretchedByContent)
 {
-    constexpr int screenWidth = 1024;
-    constexpr int screenHeight = 768;
-    constexpr int windowWidth = 400;
-    constexpr int row1Height = 100;
-    constexpr int row2Height = 200;
+    constexpr int screenWidth = 1024, screenHeight = 768, windowWidth = 400, row1Height = 100, row2Height = 200;
 
-    layout::ContainerDefinition screenDefinition {};
-    screenDefinition.width.pixels = screenWidth;
-    screenDefinition.height.pixels = screenHeight;
-    screenDefinition.name = "screen";
-    screenDefinition.floating.resize(1);
-
-    layout::ContainerDefinition& windowDefinition = screenDefinition.floating[0];
-    windowDefinition.name = "window";
-    windowDefinition.x.align = layout::Align::center;
-    windowDefinition.y.align = layout::Align::center;
-    windowDefinition.width.pixels = windowWidth;
-    windowDefinition.height.upstream = layout::Upstream::children;
-
-    auto& rows = windowDefinition.rows;
-    rows.resize(2);
-
-    auto& row1Definition = rows[0];
-    row1Definition.name = "row1";
-    row1Definition.height.pixels = row1Height;
-
-    auto& row2Definition = rows[1];
-    row2Definition.name = "row2";
-    row2Definition.height.pixels = row2Height;
+    const auto definition = def("screen") | w(screenWidth) | h(screenHeight) | floating({
+        def("window") | x(al::center) | y(al::center) | w(windowWidth) | h(us::children) | rows({
+            def("row1") | h(row1Height),
+            def("row2") | h(row2Height)
+        })
+    });
 
     constexpr int expectedWindowHeight = row1Height + row2Height;
     const int expectedWindowX = static_cast<int>(std::round(static_cast<float>(screenWidth - windowWidth) / 2.f));
     const int expectedWindowY = static_cast<int>(std::round(static_cast<float>(screenHeight - expectedWindowHeight) / 2.f));
 
-    testLayout(screenDefinition, {
-        Container { screenDefinition.name, Position { 0, 0 }, Size { screenWidth, screenHeight }, 0, { 1 } },
-        Container { windowDefinition.name, Position { expectedWindowX, expectedWindowY }, Size { windowWidth, expectedWindowHeight }, 0, { 2, 3 } },
-        Container { row1Definition.name, Position { 0, 0 }, Size { windowWidth, row1Height }, 1, {} },
-        Container { row2Definition.name, Position { 0, row1Height }, Size { windowWidth, row2Height }, 1, {} }
+    testLayout(definition, {
+        con("screen") | _w(screenWidth) | _h(screenHeight) | kids({ 1 }),
+        con("window") | _x(expectedWindowX) | _y(expectedWindowY) | _w(windowWidth) | _h(expectedWindowHeight) | kids({ 2, 3 }),
+        con("row1") | _y(0) | _w(windowWidth) | _h(row1Height) | parent(1),
+        con("row2") | _y(row1Height) | _w(windowWidth) | _h(row2Height) | parent(1)
     });
 }
 
 TEST(LayoutTests, rowOfThreeColumns)
 {
-    constexpr int windowWidth = 1024;
-    constexpr int windowHeight = 768;
-    constexpr int column1Width = 124;
-    constexpr int column3Width = 50;
+    constexpr int windowWidth = 1024, windowHeight = 768, column1Width = 124, column3Width = 50;
 
-    layout::ContainerDefinition definition;
-    definition.name = "window";
-    definition.width.pixels = windowWidth;
-    definition.height.pixels = windowHeight;
-
-    auto& columns = definition.columns;
-    columns.resize(3);
-
-    auto& column1Definition = columns[0];
-    column1Definition.name = "column1";
-    column1Definition.width.pixels = column1Width;
-
-    auto& column2Definition = columns[1];
-    column2Definition.name = "column2";
-    column2Definition.width.upstream = layout::Upstream::fill;
-
-    auto& column3Definition = columns[2];
-    column3Definition.name = "column3";
-    column3Definition.width.pixels = column3Width;
+    const auto definition = def("window") | w(windowWidth) | h(windowHeight) | columns({
+        def("column1") | w(column1Width),
+        def("column2") | w(us::fill),
+        def("column3") | w(column3Width)
+    });
 
     testLayout(definition, {
-        Container { definition.name, Position { 0, 0 }, Size { windowWidth, windowHeight }, 0, { 1, 2, 3 } },
-        Container { column1Definition.name, Position { 0, 0 }, Size { column1Width, windowHeight }, 0, {} },
-        Container { column2Definition.name, Position { column1Width, 0 }, Size { windowWidth - column1Width - column3Width, windowHeight }, 0, {} },
-        Container { column3Definition.name, Position { windowWidth - column3Width, 0 }, Size { column3Width, windowHeight }, 0, {} }
+        con("window") | _w(windowWidth) | _h(windowHeight) | kids({1, 2, 3}),
+        con("column1") | _x(0) | _w(column1Width) | _h(windowHeight),
+        con("column2") | _x(column1Width) | _w(windowWidth - column1Width - column3Width) | _h(windowHeight),
+        con("column3") | _x(windowWidth - column3Width) | _w(column3Width) | _h(windowHeight),
     });
 }
 
 TEST(LayoutTests, columnOfThreeRows)
 {
-    constexpr int windowWidth = 1024;
-    constexpr int windowHeight = 768;
-    constexpr int row1Height = 168;
-    constexpr int row3Height = 50;
+    constexpr int windowWidth = 1024, windowHeight = 768, row1Height = 168, row3Height = 50;
 
-    layout::ContainerDefinition definition;
-    definition.name = "window";
-    definition.width.pixels = windowWidth;
-    definition.height.pixels = windowHeight;
-
-    auto& rows = definition.rows;
-    rows.resize(3);
-
-    auto& row1Definition = rows[0];
-    row1Definition.name = "row1";
-    row1Definition.height.pixels = row1Height;
-
-    auto& row2Definition = rows[1];
-    row2Definition.name = "row2";
-    row2Definition.height.upstream = layout::Upstream::fill;
-
-    auto& row3Definition = rows[2];
-    row3Definition.name = "row3";
-    row3Definition.height.pixels = row3Height;
+    const auto definition = def("window") | w(windowWidth) | h(windowHeight) | rows({
+        def("row1") | h(row1Height),
+        def("row2") | h(us::fill),
+        def("row3") | h(row3Height)
+    });
 
     testLayout(definition, {
-        Container { definition.name, Position { 0, 0 }, Size { windowWidth, windowHeight }, 0, { 1, 2, 3 } },
-        Container { row1Definition.name, Position { 0, 0 }, Size { windowWidth, row1Height }, 0, {} },
-        Container { row2Definition.name, Position { 0, row1Height }, Size { windowWidth, windowHeight - row1Height - row3Height }, 0, {} },
-        Container { row3Definition.name, Position { 0, windowHeight - row3Height }, Size { windowWidth, row3Height }, 0, {} }
+        con("window") | _w(windowWidth) | _h(windowHeight) | kids({1, 2, 3}),
+        con("row1") | _y(0) | _w(windowWidth) | _h(row1Height),
+        con("row2") | _y(row1Height) | _w(windowWidth) | _h(windowHeight - row1Height - row3Height),
+        con("row3") | _y(windowHeight - row3Height) | _w(windowWidth) | _h(row3Height),
     });
 }
 
-TEST(LayoutTests, combinedThreeColumnAndRowsGridLayout2)
+TEST(LayoutTests, combinedThreeColumnAndRowsGridLayout)
 {
-    constexpr int windowWidth = 1024;
-    constexpr int windowHeight = 768;
-    constexpr int column1Width = 124;
-    constexpr int column3Width = 50;
-    constexpr int row1Height = 168;
-    constexpr int row3Height = 50;
+    constexpr int windowWidth = 1024, windowHeight = 768, column1Width = 124, column3Width = 50, row1Height = 168, row3Height = 50;
 
-    layout::ContainerDefinition definition;
-    definition.name = "window";
-    definition.width.pixels = windowWidth;
-    definition.height.pixels = windowHeight;
-
-    auto& columns = definition.columns;
-    columns.resize(3);
-
-    auto& column1Definition = columns[0];
-    column1Definition.name = "column1";
-    column1Definition.width.pixels = column1Width;
-
-    auto& column2Definition = columns[1];
-    column2Definition.name = "column2";
-    column2Definition.width.upstream = layout::Upstream::fill;
-
-    auto& rows = column2Definition.rows;
-    rows.resize(3);
-
-    auto& row1Definition = rows[0];
-    row1Definition.name = "row1";
-    row1Definition.height.pixels = row1Height;
-
-    auto& row2Definition = rows[1];
-    row2Definition.name = "row2";
-    row2Definition.height.upstream = layout::Upstream::fill;
-
-    auto& row3Definition = rows[2];
-    row3Definition.name = "row3";
-    row3Definition.height.pixels = row3Height;
-
-    auto& column3Definition = columns[2];
-    column3Definition.name = "column3";
-    column3Definition.width.pixels = column3Width;
+    const auto definition = def("window") | w(windowWidth) | h(windowHeight) | columns({
+        def("column1") | w(column1Width),
+        def("column2") | w(us::fill) | rows({
+            def("row1") | h(row1Height),
+            def("row2") | h(us::fill),
+            def("row3") | h(row3Height)
+        }),
+        def("column3") | w(column3Width)
+    });
 
     constexpr int expectedColumn2Width = windowWidth - column1Width - column3Width;
 
     testLayout(definition, {
-        Container { definition.name, Position { 0, 0 }, Size { windowWidth, windowHeight }, 0, { 1, 2, 6 } },
-            Container { column1Definition.name, Position { 0, 0 }, Size { column1Width, windowHeight }, 0, {} },
-            Container { column2Definition.name, Position { column1Width, 0 }, Size { expectedColumn2Width, windowHeight }, 0, {3, 4, 5} },
-                Container { row1Definition.name, Position { 0, 0 }, Size { expectedColumn2Width, row1Height }, 2, {} },
-                Container { row2Definition.name, Position { 0, row1Height }, Size { expectedColumn2Width, windowHeight - row1Height - row3Height }, 2, {} },
-                Container { row3Definition.name, Position { 0, windowHeight - row3Height }, Size { expectedColumn2Width, row3Height }, 2, {} },
-            Container { column3Definition.name, Position { windowWidth - column3Width, 0 }, Size { column3Width, windowHeight }, 0, {} }
+        con("window") | _w(windowWidth) | _h(windowHeight) | kids({1, 2, 6}),
+        con("column1") | _x(0) | _w(column1Width) | _h(windowHeight),
+        con("column2") | _x(column1Width) | _w(windowWidth - column1Width - column3Width) | _h(windowHeight) | kids({ 3, 4, 5 }),
+        con("row1") | _y(0) | _w(expectedColumn2Width) | _h(row1Height) | parent(2),
+        con("row2") | _y(row1Height) | _w(expectedColumn2Width) | _h(windowHeight - row1Height - row3Height) | parent(2),
+        con("row3") | _y(windowHeight - row3Height) | _w(expectedColumn2Width) | _h(row3Height) | parent(2),
+        con("column3") | _x(windowWidth - column3Width) | _w(column3Width) | _h(windowHeight)
     });
 }
 
 TEST(LayoutTests, scrollableContent)
 {
-    constexpr int windowWidth = 400;
-    constexpr int windowHeight = 400;
-    constexpr int contentHeight = 3000;
+    constexpr int windowWidth = 400, windowHeight = 400, contentHeight = 3000;
 
-    layout::ContainerDefinition windowDefinition;
-    windowDefinition.name = "window";
-    windowDefinition.width.pixels = windowWidth;
-    windowDefinition.height.pixels = windowHeight;
+    const auto definition = def("window") | w(windowWidth) | h(windowHeight) | slides({
+        def("slide") | w(us::parent) | h(contentHeight)
+    });
 
-    windowDefinition.slides.resize(1);
-
-    layout::ContainerDefinition& slideDefinition = windowDefinition.slides[0];
-    slideDefinition.name = "slide";
-    slideDefinition.width.upstream = layout::Upstream::parent;
-    slideDefinition.height.pixels = contentHeight;
-
-    testLayout(windowDefinition, {
-        Container { windowDefinition.name, Position { 0, 0 }, Size { windowWidth, windowHeight }, 0, { 1 } },
-        Container { slideDefinition.name, Position { 0, 0 }, Size { windowWidth, contentHeight }, 0, {} }
+    testLayout(definition, {
+        con("window") | _w(windowWidth) | _h(windowHeight) | kids({1}),
+        con("slide") | _w(windowWidth) | _h(contentHeight)
     });
 }
 
 TEST(LayoutTests, horizontalTiles2)
 {
-    constexpr int windowWidth = 350;
-    constexpr int tileWidth = 100;
-    constexpr int tileHeight = 100;
+    constexpr int windowWidth = 350, tileWidth = 100, tileHeight = 100;
 
-    layout::ContainerDefinition windowDefinition;
-    windowDefinition.name = "window";
-    windowDefinition.width.pixels = windowWidth;
-    windowDefinition.height.upstream = layout::Upstream::children;
+    const auto definition = def("window") | w(windowWidth) | h(us::children) | rowTiles({
+        def() | w(tileWidth) | h(tileHeight),
+        def() | w(tileWidth) | h(tileHeight),
+        def() | w(tileWidth) | h(tileHeight),
+        def() | w(tileWidth) | h(tileHeight),
+        def() | w(tileWidth) | h(tileHeight)
+    });
 
-    auto& tilesRow = windowDefinition.tileRow;
-    tilesRow.resize(5);
-
-    for(std::size_t i = 0; i < 5; ++i)
-    {
-        layout::ContainerDefinition& tileDefinition = tilesRow[i];
-        tileDefinition.width.pixels = 100;
-        tileDefinition.height.pixels = 100;
-    }
-
-    testLayout(windowDefinition, {
-        Container { windowDefinition.name, Position { 0, 0 }, Size { windowWidth, tileHeight * 2 }, 0, { 1, 2, 3, 4, 5 } },
-        Container { "", Position { 0, 0 }, Size { tileWidth, tileHeight }, 0, {} },
-        Container { "", Position { 100, 0 }, Size { tileWidth, tileHeight }, 0, {} },
-        Container { "", Position { 200, 0 }, Size { tileWidth, tileHeight }, 0, {} },
-        Container { "", Position { 0, 100 }, Size { tileWidth, tileHeight }, 0, {} },
-        Container { "", Position { 100, 100 }, Size { tileWidth, tileHeight }, 0, {} }
+    testLayout(definition, {
+        con("window") | _w(windowWidth) | _h(tileHeight * 2) | kids({1, 2, 3, 4, 5}),
+        con() | _x(0) | _y(0) | _w(tileWidth) | _h(tileHeight),
+        con() | _x(100) | _y(0) | _w(tileWidth) | _h(tileHeight),
+        con() | _x(200) | _y(0) | _w(tileWidth) | _h(tileHeight),
+        con() | _x(0) | _y(100) | _w(tileWidth) | _h(tileHeight),
+        con() | _x(100) | _y(100) | _w(tileWidth) | _h(tileHeight)
     });
 }
 
 TEST(LayoutTests, verticalTiles2)
 {
-    constexpr int windowHeight = 350;
-    constexpr int tileWidth = 100;
-    constexpr int tileHeight = 100;
+    constexpr int windowHeight = 350, tileWidth = 100, tileHeight = 100;
 
-    layout::ContainerDefinition windowDefinition;
-    windowDefinition.name = "window";
-    windowDefinition.height.pixels = windowHeight;
-    windowDefinition.width.upstream = layout::Upstream::children;
+    const auto definition = def("window") | w(us::children) | h(windowHeight) | columnTiles({
+        def() | w(tileWidth) | h(tileHeight),
+        def() | w(tileWidth) | h(tileHeight),
+        def() | w(tileWidth) | h(tileHeight),
+        def() | w(tileWidth) | h(tileHeight),
+        def() | w(tileWidth) | h(tileHeight)
+    });
 
-    auto& tilesColumn = windowDefinition.tileColumn;
-    tilesColumn.resize(5);
-
-    for(std::size_t i = 0; i < 5; ++i)
-    {
-        layout::ContainerDefinition& tileDefinition = tilesColumn[i];
-        tileDefinition.width.pixels = 100;
-        tileDefinition.height.pixels = 100;
-    }
-
-    testLayout(windowDefinition, {
-        Container { windowDefinition.name, Position { 0, 0 }, Size { tileWidth * 2, windowHeight }, 0, { 1, 2, 3, 4, 5 } },
-        Container { "", Position { 0, 0 }, Size { tileWidth, tileHeight }, 0, {} },
-        Container { "", Position { 0, 100 }, Size { tileWidth, tileHeight }, 0, {} },
-        Container { "", Position { 0, 200 }, Size { tileWidth, tileHeight }, 0, {} },
-        Container { "", Position { 100, 0 }, Size { tileWidth, tileHeight }, 0, {} },
-        Container { "", Position { 100, 100 }, Size { tileWidth, tileHeight }, 0, {} }
+    testLayout(definition, {
+        con("window") | _w(tileWidth * 2) | _h(windowHeight) | kids({1, 2, 3, 4, 5}),
+        con() | _x(0) | _y(0) | _w(tileWidth) | _h(tileHeight),
+        con() | _x(0) | _y(100) | _w(tileWidth) | _h(tileHeight),
+        con() | _x(0) | _y(200) | _w(tileWidth) | _h(tileHeight),
+        con() | _x(100) | _y(0) | _w(tileWidth) | _h(tileHeight),
+        con() | _x(100) | _y(100) | _w(tileWidth) | _h(tileHeight)
     });
 }
 
@@ -514,37 +344,28 @@ TEST(LayoutTests, verticalTiles2)
 //where one of the columns has width defined as a percent of the parents width
 TEST(LayoutTests, threeColumnsWithThreeColumns)
 {
-    constexpr int windowWidth = 1024;
-    constexpr int windowHeight = 768;
-    constexpr int column1Width = 124;
-    constexpr int column3Width = 50;
+    constexpr int windowWidth = 1024, windowHeight = 768, column1Width = 124, column3Width = 50, column1_3Width = 100;
     constexpr float column1_1Width = 50.f;
-    constexpr int column1_3Width = 100;
 
-    layout::ContainerDefinition definition;
-    {
-        using namespace layout::util;
-        definition = row("window", w(windowWidth), h(windowHeight), {
-            def("column1", w(column1Width), h() ),
-            row("column2", w(us::fill), h(), {
-                def("column1_1", w(column1_1Width), h()),
-                def("column1_2", w(us::fill), h()),
-                def("column1_3", w(column1_3Width), h())
-            }),
-            def("column3", w(column3Width), h())
-        });
-    }
+    const auto definition = def("window") | w(windowWidth) | h(windowHeight) | columns({
+        def("column1") | w(column1Width),
+        def("column2") | w(us::fill) | columns({
+            def("column1_1") | w(column1_1Width),
+            def("column1_2") | w(us::fill),
+            def("column1_3") | w(column1_3Width)
+        }),
+        def("column3") | w(column3Width)
+    });
 
     constexpr int column2WidthExpected = windowWidth - column1Width - column3Width;
     constexpr int column1_1WidthExpected = column2WidthExpected * 0.01f * column1_1Width;
     constexpr int column1_2WidthExpected = column2WidthExpected - column1_1WidthExpected - column1_3Width;
 
-    using namespace entities::layout::util;
     testLayout(definition, {
-        con("column2", parent(), x(column1Width), y(), w(column2WidthExpected), h(windowHeight), kids({ 1, 2, 3})),
-            con("column1_1", parent(), x(), y(), w(column1_1WidthExpected), h(windowHeight)),
-            con("column1_2", parent(), x(column1_1WidthExpected), y(), w(column1_2WidthExpected), h(windowHeight)),
-            con("column1_3", parent(), x(column1_1WidthExpected + column1_2WidthExpected), y(), w(column1_3Width), h(windowHeight))
+        con("column2") | _x(column1Width) | _w(column2WidthExpected) | _h(windowHeight) | kids({ 1, 2, 3}),
+            con("column1_1") | _x(0) | _w(column1_1WidthExpected) | _h(windowHeight),
+            con("column1_2") | _x(column1_1WidthExpected) | _w(column1_2WidthExpected) | _h(windowHeight),
+            con("column1_3") | _x(column1_1WidthExpected + column1_2WidthExpected) | _w(column1_3Width) | _h(windowHeight),
     }, 2);
 }
 
