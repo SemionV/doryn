@@ -164,9 +164,145 @@ namespace dory::core::resources::scene::configuration
         using DimensionSegmentProperty = DimensionSegment ContainerDefinition::*;
         using DimensionPointProperty = DimensionSegment ContainerDefinition::*;
 
+        namespace util2
+        {
+            using us = Upstream;
+            using al = Align;
+
+            inline ContainerDefinition def(const Name& name)
+            {
+                ContainerDefinition result;
+                result.name = name;
+                return result;
+            }
+
+            inline ContainerDefinition def()
+            {
+                return ContainerDefinition {};
+            }
+
+            template <typename Func>
+            ContainerDefinition operator|(ContainerDefinition container, Func func)
+            {
+                return func(container);
+            }
+
+            inline void setValue(Dimension& dim, const int value)
+            {
+                dim.pixels = value;
+            }
+
+            inline void setValue(Dimension& dim, const float value)
+            {
+                dim.percents = value;
+            }
+
+            inline void setValue(Dimension& dim, const Name& value)
+            {
+                dim.variable = value;
+            }
+
+            template<typename T>
+            void setPoint(DimensionPoint& dim, const T& value)
+            {
+                setValue(dim, value);
+            }
+
+            inline void setPoint(DimensionPoint& dim, const Align value)
+            {
+                dim.align = value;
+            }
+
+            template<typename T>
+            void setSize(DimensionSegment& dim, const T& value)
+            {
+                setValue(dim, value);
+            }
+
+            inline void setSize(DimensionSegment& dim, const Upstream value)
+            {
+                dim.upstream = value;
+            }
+
+            template<typename T>
+            auto x(const T& value) {
+                return [value](ContainerDefinition& container) -> ContainerDefinition& {
+                    setPoint(container.x, value);
+                    return container;
+                };
+            }
+
+            template<typename T>
+            auto y(const T& value) {
+                return [value](ContainerDefinition& container) -> ContainerDefinition& {
+                    setPoint(container.y, value);
+                    return container;
+                };
+            }
+
+            template<typename T>
+            auto w(const T& value) {
+                return [value](ContainerDefinition& container) -> ContainerDefinition& {
+                    setSize(container.width, value);
+                    return container;
+                };
+            }
+
+            template<typename T>
+            auto h(const T& value) {
+                return [value](ContainerDefinition& container) -> ContainerDefinition& {
+                    setSize(container.height, value);
+                    return container;
+                };
+            }
+
+            inline auto columns(const std::vector<ContainerDefinition>& items) {
+                return [items](ContainerDefinition& container) -> ContainerDefinition& {
+                    container.columns = items;
+                    return container;
+                };
+            }
+
+            inline auto rows(const std::vector<ContainerDefinition>& items) {
+                return [items](ContainerDefinition& container) -> ContainerDefinition& {
+                    container.rows = items;
+                    return container;
+                };
+            }
+
+            inline auto rowTiles(const std::vector<ContainerDefinition>& items) {
+                return [items](ContainerDefinition& container) -> ContainerDefinition& {
+                    container.tileRow = items;
+                    return container;
+                };
+            }
+
+            inline auto columnTiles(const std::vector<ContainerDefinition>& items) {
+                return [items](ContainerDefinition& container) -> ContainerDefinition& {
+                    container.tileColumn = items;
+                    return container;
+                };
+            }
+
+            inline auto slides(const std::vector<ContainerDefinition>& items) {
+                return [items](ContainerDefinition& container) -> ContainerDefinition& {
+                    container.slides = items;
+                    return container;
+                };
+            }
+
+            inline auto floating(const std::vector<ContainerDefinition>& items) {
+                return [items](ContainerDefinition& container) -> ContainerDefinition& {
+                    container.floating = items;
+                    return container;
+                };
+            }
+        }
+
         namespace util
         {
             using us = Upstream;
+            using al = Align;
 
             inline DimensionSegment segment(const int pixels)
             {
@@ -260,6 +396,30 @@ namespace dory::core::resources::scene::configuration
                 return result;
             }
 
+            inline ContainerDefinition defineTilesRow(const std::string& name, const DimensionSegment& width, const DimensionSegment& height, const std::vector<ContainerDefinition>& tiles)
+            {
+                ContainerDefinition result {name, {}, {}, width, height};
+                result.tileRow = tiles;
+
+                return result;
+            }
+
+            inline ContainerDefinition defineTilesColumn(const std::string& name, const DimensionSegment& width, const DimensionSegment& height, const std::vector<ContainerDefinition>& tiles)
+            {
+                ContainerDefinition result {name, {}, {}, width, height};
+                result.tileColumn = tiles;
+
+                return result;
+            }
+
+            inline ContainerDefinition defineSlides(const std::string& name, const DimensionSegment& width, const DimensionSegment& height, const std::vector<ContainerDefinition>& slides)
+            {
+                ContainerDefinition result {name, {}, {}, width, height};
+                result.slides = slides;
+
+                return result;
+            }
+
             template<typename... T>
             ContainerDefinition def(const T& ...value)
             {
@@ -280,6 +440,21 @@ namespace dory::core::resources::scene::configuration
             ContainerDefinition column(const T& ...value, std::initializer_list<ContainerDefinition> children = {})
             {
                 return defineColumn(value..., children);
+            }
+
+            inline ContainerDefinition tilesRow(const std::string& name, const DimensionSegment& width, const DimensionSegment& height, const std::vector<ContainerDefinition>& tiles)
+            {
+                return defineTilesRow(name, width, height, tiles);
+            }
+
+            inline ContainerDefinition tilesColumn(const std::string& name, const DimensionSegment& width, const DimensionSegment& height, const std::vector<ContainerDefinition>& tiles)
+            {
+                return defineTilesColumn(name, width, height, tiles);
+            }
+
+            inline ContainerDefinition slides(const std::string& name, const DimensionSegment& width, const DimensionSegment& height, const std::vector<ContainerDefinition>& slides)
+            {
+                return defineSlides(name, width, height, slides);
             }
 
             template<typename... T>

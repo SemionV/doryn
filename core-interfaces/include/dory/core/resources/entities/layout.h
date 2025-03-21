@@ -38,9 +38,7 @@ namespace dory::core::resources::entities::layout
         inline int y(const int value) { return value; }
         inline int y() { return 0; }
         inline int w(const int value) { return value; }
-        inline int w() { return 0; }
         inline int h(const int value) { return value; }
-        inline int h() { return 0; }
         inline std::size_t parent(const std::size_t value) { return value; }
         inline std::size_t parent() { return 0; }
         inline const std::vector<std::size_t>& kids(const std::vector<std::size_t>& value) { return value; }
@@ -54,6 +52,81 @@ namespace dory::core::resources::entities::layout
         constexpr Container con(const Name& name, const std::size_t parent, const int x, const int y, const int width, const int height)
         {
             return Container(name, Position { x, y }, Size { width, height }, parent, {});
+        }
+    }
+
+    namespace util2
+    {
+        inline Container con()
+        {
+            return Container{};
+        }
+
+        inline Container con(const Name& name)
+        {
+            Container result {};
+            result.name = name;
+            return result;
+        }
+
+        template <typename Func>
+        Container operator|(Container container, Func func)
+        {
+            return func(container);
+        }
+
+        inline void setValue(int& dim, const int value)
+        {
+            dim = value;
+        }
+
+        inline auto setPosition(int Position::*dim, const int value) {
+            return [dim, value](Container& container) -> Container& {
+                setValue(container.position.*dim, value);
+                return container;
+            };
+        }
+
+        inline auto setSize(int Size::*dim, const int value) {
+            return [dim, value](Container& container) -> Container& {
+                setValue(container.size.*dim, value);
+                return container;
+            };
+        }
+
+        inline auto x(const int value)
+        {
+            return setPosition(&Position::x, value);
+        }
+
+        inline auto y(const int value)
+        {
+            return setPosition(&Position::y, value);
+        }
+
+        inline auto w(const int value)
+        {
+            return setSize(&Size::width, value);
+        }
+
+        inline auto h(const int value)
+        {
+            return setSize(&Size::height, value);
+        }
+
+        inline auto kids(const std::vector<std::size_t>& items) {
+            return [&items](Container& container) -> Container& {
+                container.children = items;
+                return container;
+            };
+        }
+
+        inline auto parent(const std::size_t value)
+        {
+            return [value](Container& container) -> Container& {
+                container.parent = value;
+                return container;
+            };
         }
     }
 }
