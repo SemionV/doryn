@@ -436,5 +436,45 @@ TEST(LayoutTests, tilesLine)
     });
 }
 
-//TODO: unit test for layout like word-wrap text: letters make words(lines of nodes) and words can jump to next line
+//layout like line-wrap text: letters make words(lines of nodes) and words can jump to next line
+TEST(LayoutTests, textLayout)
+{
+    constexpr int windowWidth = 20, wordHeight = 10, letterWidth = 5, wordWidth = letterWidth * 2;
+
+    const auto letters = std::vector{ def() | w(letterWidth), def() | w(letterWidth) };
+
+    const auto definition = def("window") | w(windowWidth) | h(us::children) | rowTiles({
+        def("word1") | w(us::children) | h(wordHeight) | columns({ letters }),
+        def("word2") | w(us::children) | h(wordHeight) | columns({ letters }),
+        def("word3") | w(us::children) | h(wordHeight) | columns({ letters }),
+        def("word4") | w(us::children) | h(wordHeight) | columns({ letters }),
+        def("word5") | w(us::children) | h(wordHeight) | columns({ letters })
+    });
+
+    testLayout(definition, {
+        con("window") | _w(windowWidth) | _h(wordHeight * 3) | kids({1, 4, 7, 10, 13}),
+
+            con("word1") | _x(0) | _y(0) | _w(wordWidth) | _h(wordHeight) | kids({2,3}),
+                con() | _x(0) | _w(letterWidth) | _h(wordHeight) | parent(1),
+                con() | _x(letterWidth) | _w(letterWidth) | _h(wordHeight) | parent(1),
+
+            con("word2") | _x(wordWidth) | _y(0) | _w(wordWidth) | _h(wordHeight) | kids({5,6}),
+                con() | _x(0) | _w(letterWidth) | _h(wordHeight) | parent(4),
+                con() | _x(letterWidth) | _w(letterWidth) | _h(wordHeight) | parent(4),
+
+            con("word3") | _x(0) | _y(wordHeight) | _w(wordWidth) | _h(wordHeight) | kids({8,9}),
+                con() | _x(0) | _w(letterWidth) | _h(wordHeight) | parent(7),
+                con() | _x(letterWidth) | _w(letterWidth) | _h(wordHeight) | parent(7),
+
+            con("word4") | _x(wordWidth) | _y(wordHeight) | _w(wordWidth) | _h(wordHeight) | kids({11,12}),
+                con() | _x(0) | _w(letterWidth) | _h(wordHeight) | parent(10),
+                con() | _x(letterWidth) | _w(letterWidth) | _h(wordHeight) | parent(10),
+
+            con("word5") | _x(0) | _y(wordHeight*2) | _w(wordWidth) | _h(wordHeight) | kids({14,15}),
+                con() | _x(0) | _w(letterWidth) | _h(wordHeight) | parent(13),
+                con() | _x(letterWidth) | _w(letterWidth) | _h(wordHeight) | parent(13),
+    });
+}
+
 //TODO: test three-column layout with a left column filled with tiles vertically and taking width from it's contents, then a flexible-width column and a fixed width column
+//TODO: integrated complex layout test

@@ -91,21 +91,6 @@ namespace dory::core::services
         toOrigin(cursor.br);
     }
 
-    void updateSizeToCursor(const objects::layout::LineCursor& cursor, const objects::layout::NodeItemSetup& nodeSetup, objects::layout::NodeItemState& nodeState)
-    {
-        for(std::size_t i = 0; i < nodeSetup.stretching.axes.size(); ++i)
-        {
-            const auto& upstream = nodeSetup.stretching.axes[i].upstream;
-            if(upstream && *upstream == objects::layout::Upstream::children)
-            {
-                if(cursor.br[i] > nodeState.dim[i])
-                {
-                    nodeState.dim[i] = cursor.br[i];
-                }
-            }
-        }
-    }
-
     void align(const objects::layout::Alignment& strategy, const objects::layout::NodeItemState& parentNodeState,
         objects::layout::NodeItemState& nodeState, objects::layout::LineCursor& cursor, const objects::layout::Variables& variables)
     {
@@ -136,12 +121,12 @@ namespace dory::core::services
                 cursor.ul[y] = cursor.br[y];
             }
 
-            objects::layout::Vector2i alignmentPosition = { cursor.br[x], cursor.ul[y] };
+            objects::layout::Vector2i alignmentPosition{};
             alignmentPosition[x] = cursor.br[x];
             alignmentPosition[y] = cursor.ul[y];
             toPosition(alignmentPosition, nodeState.pos);
 
-            cursor.br[x] += nodeState.dim[x];
+            cursor.br[x] = nodeState.pos[x] + nodeState.dim[x];
             const int height = cursor.ul[y] + nodeState.dim[y];
             if(height > cursor.br[y])
             {
@@ -150,28 +135,60 @@ namespace dory::core::services
         }
     }
 
-    void updateBranch(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList,
-        std::size_t nodeIndex, std::size_t parentIndex, const objects::layout::Variables& variables)
+    void updateSizeToCursor(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList, const std::size_t nodeIndex)
     {
+        auto& nodeSetup = setupList.nodes[nodeIndex];
+        auto& nodeState = stateList.nodes[nodeIndex];
+        auto& parentNodeState = stateList.nodes[nodeSetup.parent];
+
+        objects::layout::LineCursor& cursor = nodeState.cursor;
+
+        if(nodeIndex != nodeSetup.parent && !nodeSetup.alignment.floating)
+        {
+            const auto x = nodeSetup.alignment.axes[objects::layout::Axes::x];
+            objects::layout::LineCursor& parentCursor = parentNodeState.cursor;
+            parentCursor.br[x] -= nodeState.dim[x];
+        }
+
+        for(std::size_t i = 0; i < nodeSetup.stretching.axes.size(); ++i)
+        {
+            const auto& upstream = nodeSetup.stretching.axes[i].upstream;
+            if(upstream && *upstream == objects::layout::Upstream::children)
+            {
+                if(cursor.br[i] > nodeState.dim[i])
+                {
+                    nodeState.dim[i] = cursor.br[i];
+                }
+            }
+        }
+    }
+
+    void updateBranch(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList,
+        const std::size_t nodeIndex, const std::size_t parentIndex, const objects::layout::Variables& variables)
+    {
+        std::size_t currentIndex = nodeIndex;
+        std::size_t currentParentIndex = parentIndex;
+
         do
         {
-            auto& nodeSetup = setupList.nodes[nodeIndex];
-            auto& nodeState = stateList.nodes[nodeIndex];
+            auto& nodeSetup = setupList.nodes[currentIndex];
+            auto& nodeState = stateList.nodes[currentIndex];
             auto& parentNodeSetup = setupList.nodes[nodeSetup.parent];
             auto& parentNodeState = stateList.nodes[nodeSetup.parent];
             const auto& alignment = nodeSetup.alignment;
             objects::layout::LineCursor& cursor = parentNodeState.cursor;
 
-            if(!alignment.floating && nodeIndex != parentIndex)
+            if(!alignment.floating && currentIndex != currentParentIndex)
             {
                 align(alignment, parentNodeState, nodeState, cursor, variables);
             }
 
-            updateSizeToCursor(cursor, parentNodeSetup, parentNodeState);
-            nodeIndex = parentIndex;
-            parentIndex = parentNodeSetup.parent;
+            updateSizeToCursor(setupList, stateList, currentParentIndex);
+
+            currentIndex = currentParentIndex;
+            currentParentIndex = parentNodeSetup.parent;
         }
-        while(nodeIndex != parentIndex);
+        while(currentIndex != currentParentIndex);
     }
 
     void calculateSizes(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList, const objects::layout::Variables& variables)
