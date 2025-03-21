@@ -390,6 +390,51 @@ TEST(LayoutTests, stratchedContainerWithPopup)
     });
 }
 
+//Fill a 0-sized container with tiles and expect to get a column of tiles one below another
+TEST(LayoutTests, tilesStack)
+{
+    constexpr int tileWidth = 100, tileHeight = 100;
+
+    const auto definition = def("window") | w(us::children) | h(us::children) | rowTiles({
+        def() | w(tileWidth) | h(tileHeight),
+        def() | w(tileWidth) | h(tileHeight),
+        def() | w(tileWidth) | h(tileHeight),
+        def() | w(tileWidth) | h(tileHeight),
+        def() | w(tileWidth) | h(tileHeight)
+    });
+
+    testLayout(definition, {
+        con("window") | _w(tileWidth) | _h(tileHeight * 5) | kids({1, 2, 3, 4, 5}),
+        con() | _x(0) | _y(0) | _w(tileWidth) | _h(tileHeight),
+        con() | _x(0) | _y(100) | _w(tileWidth) | _h(tileHeight),
+        con() | _x(0) | _y(200) | _w(tileWidth) | _h(tileHeight),
+        con() | _x(0) | _y(300) | _w(tileWidth) | _h(tileHeight),
+        con() | _x(0) | _y(400) | _w(tileWidth) | _h(tileHeight)
+    });
+}
+
+//Fill a 0-sized container with tiles and expect to get a line of tiles one after another
+TEST(LayoutTests, tilesLine)
+{
+    constexpr int tileWidth = 100, tileHeight = 100;
+
+    const auto definition = def("window") | w(us::children) | h(us::children) | columnTiles({
+        def() | w(tileWidth) | h(tileHeight),
+        def() | w(tileWidth) | h(tileHeight),
+        def() | w(tileWidth) | h(tileHeight),
+        def() | w(tileWidth) | h(tileHeight),
+        def() | w(tileWidth) | h(tileHeight)
+    });
+
+    testLayout(definition, {
+        con("window") | _w(tileWidth * 5) | _h(tileHeight) | kids({1, 2, 3, 4, 5}),
+        con() | _x(0) | _y(0) | _w(tileWidth) | _h(tileHeight),
+        con() | _x(100) | _y(0) | _w(tileWidth) | _h(tileHeight),
+        con() | _x(200) | _y(0) | _w(tileWidth) | _h(tileHeight),
+        con() | _x(300) | _y(0) | _w(tileWidth) | _h(tileHeight),
+        con() | _x(400) | _y(0) | _w(tileWidth) | _h(tileHeight)
+    });
+}
+
 //TODO: unit test for layout like word-wrap text: letters make words(lines of nodes) and words can jump to next line
 //TODO: test three-column layout with a left column filled with tiles vertically and taking width from it's contents, then a flexible-width column and a fixed width column
-//TODO: make a test of a 0-size container filled with tiles, which have to make a column of tiles or a row of tiles accordingly if they are horizontal or vertical alignment
