@@ -102,7 +102,7 @@ namespace dory::core::services
             {
                 nodeState.pos[i] = getAlignmentValue(positionValues[i], nodeState.dim[i], parentNodeState.dim[i], variables);
 
-                if(!strategy.floating && cursor.br[i] < nodeState.dim[i])
+                if(!strategy.floating && nodeState.dim[i] > cursor.br[i])
                 {
                     cursor.br[i] = nodeState.dim[i];
                 }
@@ -135,13 +135,11 @@ namespace dory::core::services
         }
     }
 
-    void updateSizeToCursor(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList, const std::size_t nodeIndex)
+    void moveCursorBack(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList, const std::size_t nodeIndex)
     {
         auto& nodeSetup = setupList.nodes[nodeIndex];
         auto& nodeState = stateList.nodes[nodeIndex];
         auto& parentNodeState = stateList.nodes[nodeSetup.parent];
-
-        objects::layout::LineCursor& cursor = nodeState.cursor;
 
         if(nodeIndex != nodeSetup.parent && !nodeSetup.alignment.floating)
         {
@@ -149,6 +147,14 @@ namespace dory::core::services
             objects::layout::LineCursor& parentCursor = parentNodeState.cursor;
             parentCursor.br[x] -= nodeState.dim[x];
         }
+    }
+
+    void updateSizeToCursor(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList, const std::size_t nodeIndex)
+    {
+        auto& nodeSetup = setupList.nodes[nodeIndex];
+        auto& nodeState = stateList.nodes[nodeIndex];
+
+        objects::layout::LineCursor& cursor = nodeState.cursor;
 
         for(std::size_t i = 0; i < nodeSetup.stretching.axes.size(); ++i)
         {
@@ -183,6 +189,7 @@ namespace dory::core::services
                 align(alignment, parentNodeState, nodeState, cursor, variables);
             }
 
+            moveCursorBack(setupList, stateList, currentParentIndex);
             updateSizeToCursor(setupList, stateList, currentParentIndex);
 
             currentIndex = currentParentIndex;
