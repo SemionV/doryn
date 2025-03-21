@@ -369,7 +369,27 @@ TEST(LayoutTests, threeColumnsWithThreeColumns)
     }, 2);
 }
 
+//Checks that root container gets its size calculated from its child with defined size and that a popup is positioned correctly after this
+TEST(LayoutTests, stratchedContainerWithPopup)
+{
+    constexpr int slideWidth = 1024, slideHeight = 768, popupWidth = 100, popupHeight = 100;
+
+    const auto definition = def("window") | w(us::children) | h(us::children) | slides({
+        def("slide") | w(slideWidth) | h(slideHeight)
+    }) | floating({
+        def("popup") | x(al::center) | y(al::center) | w(popupWidth) | h(popupHeight)
+    });
+
+    const int expectedPopupX = static_cast<int>(std::round(static_cast<float>(slideWidth - popupWidth) / 2.f));
+    const int expectedPopupY = static_cast<int>(std::round(static_cast<float>(slideHeight - popupHeight) / 2.f));
+
+    testLayout(definition, {
+        con("window") | _w(slideWidth) | _h(slideHeight) | kids({1, 2}),
+        con("slide") | _w(slideWidth) | _h(slideHeight),
+        con("popup") | _x(expectedPopupX) | _y(expectedPopupY) | _w(popupWidth) | _h(popupHeight),
+    });
+}
+
 //TODO: unit test for layout like word-wrap text: letters make words(lines of nodes) and words can jump to next line
 //TODO: test three-column layout with a left column filled with tiles vertically and taking width from it's contents, then a flexible-width column and a fixed width column
 //TODO: make a test of a 0-size container filled with tiles, which have to make a column of tiles or a row of tiles accordingly if they are horizontal or vertical alignment
-//TODO: unit test with a container which has columns and a floating children

@@ -115,15 +115,16 @@ namespace dory::core::services
         const layout::ContainerDefinition* definition {};
         std::size_t parentIndex {};
         std::size_t index {};
-        objects::layout::Alignment alignment2 {};
+        objects::layout::Alignment alignment {};
         objects::layout::Stretching stretching {};
     };
 
-    void addChildDefinitions(std::vector<StackNodeEntry>& children, std::size_t parentIndex,
+    void addChildDefinitions(std::vector<StackNodeEntry>& children, const std::size_t parentIndex,
         const std::vector<layout::ContainerDefinition>& definitions, const auto& getAlignment, const auto& getStretching)
     {
         std::vector<StackNodeEntry> flexibleChildren {};
 
+        const std::size_t offset = children.size();
         for(std::size_t i = 0; i < definitions.size(); ++i)
         {
             const auto& definition = definitions[i];
@@ -134,7 +135,7 @@ namespace dory::core::services
             }
             else
             {
-                children.emplace_back(&definition, parentIndex, i, getAlignment(definition), getStretching(definition));
+                children.emplace_back(&definition, parentIndex, i + offset, getAlignment(definition), getStretching(definition));
             }
         }
 

@@ -116,6 +116,11 @@ namespace dory::core::services
             for(std::size_t i = 0; i < strategy.axes.size(); ++i)
             {
                 nodeState.pos[i] = getAlignmentValue(positionValues[i], nodeState.dim[i], parentNodeState.dim[i], variables);
+
+                if(!strategy.floating && cursor.br[i] < nodeState.dim[i])
+                {
+                    cursor.br[i] = nodeState.dim[i];
+                }
             }
         }
         else
@@ -157,7 +162,7 @@ namespace dory::core::services
             const auto& alignment = nodeSetup.alignment;
             objects::layout::LineCursor& cursor = parentNodeState.cursor;
 
-            if(!alignment.floating)
+            if(!alignment.floating && nodeIndex != parentIndex)
             {
                 align(alignment, parentNodeState, nodeState, cursor, variables);
             }
