@@ -91,7 +91,7 @@ namespace dory::core::services
         toOrigin(cursor.br);
     }
 
-    void align(const objects::layout::Alignment& strategy, const objects::layout::NodeItemState& parentNodeState,
+    void alignNode(const objects::layout::Alignment& strategy, const objects::layout::NodeItemState& parentNodeState,
         objects::layout::NodeItemState& nodeState, objects::layout::LineCursor& cursor, const objects::layout::Variables& variables)
     {
         if(strategy.fixedPosition)
@@ -135,20 +135,6 @@ namespace dory::core::services
         }
     }
 
-    void moveCursorBack(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList, const std::size_t nodeIndex)
-    {
-        auto& nodeSetup = setupList.nodes[nodeIndex];
-        auto& nodeState = stateList.nodes[nodeIndex];
-        auto& parentNodeState = stateList.nodes[nodeSetup.parent];
-
-        if(nodeIndex != nodeSetup.parent && !nodeSetup.alignment.floating)
-        {
-            const auto x = nodeSetup.alignment.axes[objects::layout::Axes::x];
-            objects::layout::LineCursor& parentCursor = parentNodeState.cursor;
-            parentCursor.br[x] -= nodeState.dim[x];
-        }
-    }
-
     void updateSizeToCursor(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList, const std::size_t nodeIndex)
     {
         auto& nodeSetup = setupList.nodes[nodeIndex];
@@ -169,49 +155,51 @@ namespace dory::core::services
         }
     }
 
-    void updateBranch(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList,
-        const std::size_t nodeIndex, const std::size_t parentIndex, const objects::layout::Variables& variables)
+    void completeNodeAlignment(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList, const std::size_t nodeIndex, const objects::layout::Variables& variables)
     {
-        std::size_t currentIndex = nodeIndex;
-        std::size_t currentParentIndex = parentIndex;
+        auto& nodeSetup = setupList.nodes[nodeIndex];
+        auto& nodeState = stateList.nodes[nodeIndex];
+        auto& parentNodeState = stateList.nodes[nodeSetup.parent];
 
-        do
-        {
-            auto& nodeSetup = setupList.nodes[currentIndex];
-            auto& nodeState = stateList.nodes[currentIndex];
-            auto& parentNodeSetup = setupList.nodes[nodeSetup.parent];
-            auto& parentNodeState = stateList.nodes[nodeSetup.parent];
-            const auto& alignment = nodeSetup.alignment;
-            objects::layout::LineCursor& cursor = parentNodeState.cursor;
-
-            if(!alignment.floating && currentIndex != currentParentIndex)
-            {
-                align(alignment, parentNodeState, nodeState, cursor, variables);
-            }
-
-            moveCursorBack(setupList, stateList, currentParentIndex);
-            updateSizeToCursor(setupList, stateList, currentParentIndex);
-
-            currentIndex = currentParentIndex;
-            currentParentIndex = parentNodeSetup.parent;
-        }
-        while(currentIndex != currentParentIndex);
+        updateSizeToCursor(setupList, stateList, nodeIndex);
+        alignNode(nodeSetup.alignment, parentNodeState, nodeState, parentNodeState.cursor, variables);
     }
 
     void calculateSizes(const objects::layout::NodeSetupList& setupList, objects::layout::NodeStateList& stateList, const objects::layout::Variables& variables)
     {
-        for(std::size_t i = 0; i < setupList.nodes.size(); ++i)
+        if(!setupList.nodes.empty())
         {
-            auto& nodeSetup = setupList.nodes[i];
-            auto& nodeState = stateList.nodes[i];
-            auto& parentNodeState = stateList.nodes[nodeSetup.parent];
+            std::stack<std::size_t> stack;
+            std::size_t i = 0;
 
-            for(std::size_t a = 0; a < nodeState.dim.size(); ++a)
+            stack.emplace(i);
+            while(!stack.empty())
             {
-                nodeState.dim[a] = getSizeValue(nodeSetup.stretching.axes[a], a, parentNodeState, variables);
-            }
+                const std::size_t currentIndex = stack.top();
 
-            updateBranch(setupList, stateList, i, nodeSetup.parent, variables);
+                if(i < setupList.nodes.size())
+                {
+                    auto& nodeSetup = setupList.nodes[i];
+                    if(nodeSetup.parent == currentIndex)
+                    {
+                        stack.push(i);
+
+                        auto& nodeState = stateList.nodes[i];
+                        auto& parentNodeState = stateList.nodes[nodeSetup.parent];
+
+                        for(std::size_t a = 0; a < nodeState.dim.size(); ++a)
+                        {
+                            nodeState.dim[a] = getSizeValue(nodeSetup.stretching.axes[a], a, parentNodeState, variables);
+                        }
+
+                        ++i;
+                        continue;
+                    }
+                }
+
+                stack.pop();
+                completeNodeAlignment(setupList, stateList, currentIndex, variables);
+            }
         }
     }
 
@@ -230,7 +218,7 @@ namespace dory::core::services
                 auto& childNodeSetup = setupList.nodes[j];
                 auto& childNodeState = stateList.nodes[j];
 
-                align(childNodeSetup.alignment, nodeState, childNodeState, nodeState.cursor, variables);
+                alignNode(childNodeSetup.alignment, nodeState, childNodeState, nodeState.cursor, variables);
             }
         }
     }
