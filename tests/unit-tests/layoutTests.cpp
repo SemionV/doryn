@@ -6,6 +6,7 @@
 #include <dory/core/services/layoutSetupService.h>
 #include <dory/core/repositories/iLayoutRepository.h>
 #include <dory/core/registry.h>
+#include <spdlog/fmt/fmt.h>
 
 #include "mocks/entityRepository.h"
 
@@ -439,41 +440,51 @@ TEST(LayoutTests, tilesLine)
 //layout like line-wrap text: letters make words(lines of nodes) and words can jump to next line
 TEST(LayoutTests, textLayout)
 {
-    constexpr int windowWidth = 20, wordHeight = 10, letterWidth = 5, wordWidth = letterWidth * 2;
+    constexpr std::size_t wordsCount = 5, lettersPerWord = 2;
+    constexpr int windowWidth = 20, wordHeight = 10, letterWidth = 5, wordWidth = letterWidth * lettersPerWord;
+    const  int wordsPerLine = std::floor(windowWidth / wordWidth);
+    const int linesCount = std::ceil(static_cast<float>(wordsCount) / static_cast<float>(wordsPerLine));
 
     const auto letters = std::vector{ def() | w(letterWidth), def() | w(letterWidth) };
 
-    const auto definition = def("window") | w(windowWidth) | h(us::children) | rowTiles({
-        def("word1") | w(us::children) | h(wordHeight) | columns({ letters }),
-        def("word2") | w(us::children) | h(wordHeight) | columns({ letters }),
-        def("word3") | w(us::children) | h(wordHeight) | columns({ letters }),
-        def("word4") | w(us::children) | h(wordHeight) | columns({ letters }),
-        def("word5") | w(us::children) | h(wordHeight) | columns({ letters })
-    });
+    auto definition = def("window") | w(windowWidth) | h(us::children);
 
-    testLayout(definition, {
-        con("window") | _w(windowWidth) | _h(wordHeight * 3) | kids({1, 4, 7, 10, 13}),
+    std::vector<layout::ContainerDefinition> wordDefinitions;
+    wordDefinitions.reserve(wordsCount);
+    for(std::size_t i = 0; i < wordsCount; ++i)
+    {
+        auto& wordDefinition = wordDefinitions.emplace_back(def(fmt::format("word-{}", i + 1)) | w(us::children) | h(wordHeight));
+        std::vector<layout::ContainerDefinition> letterDefinitions;
+        letterDefinitions.reserve(lettersPerWord);
+        for(std::size_t j = 0; j < lettersPerWord; ++j)
+        {
+            letterDefinitions.emplace_back(def(fmt::format("letter-{}-{}", i + 1, j + 1)) | w(letterWidth));
+        }
+        wordDefinition.columns = letterDefinitions;
+    }
+    definition.tileRow = wordDefinitions;
 
-            con("word1") | _x(0) | _y(0) | _w(wordWidth) | _h(wordHeight) | kids({2,3}),
-                con() | _x(0) | _w(letterWidth) | _h(wordHeight) | parent(1),
-                con() | _x(letterWidth) | _w(letterWidth) | _h(wordHeight) | parent(1),
+    std::vector<Container> containers;
+    containers.reserve(1 + wordsCount + wordsCount * lettersPerWord);
+    auto& windowContainer = containers.emplace_back(con("window") | _w(windowWidth) | _h(linesCount * wordHeight));
+    for(std::size_t i = 0; i < wordsCount; ++i)
+    {
+        std::size_t wordIndex = 1 + i * (lettersPerWord + 1);//arithmetic progression
+        const int lineNumber = std::floor(i / wordsPerLine);
+        const int expectedWordX = static_cast<int>(i % wordsPerLine) * wordWidth;
+        auto& wordContainer = containers.emplace_back(con(fmt::format("word-{}", i + 1)) | _x(expectedWordX) | _y(lineNumber * wordHeight) | _w(wordWidth) | _h(wordHeight));
+        for(std::size_t j = 0; j < lettersPerWord; ++j)
+        {
+            std::size_t letterIndex = j + 1;
+            const int expectedLetterX = static_cast<int>(j) * letterWidth;
+            containers.emplace_back(con(fmt::format("letter-{}-{}", i + 1, letterIndex)) | _x(expectedLetterX) | _w(letterWidth) | _h(wordHeight) | parent(wordIndex));
+            wordContainer.children.emplace_back(wordIndex + letterIndex);
+        }
 
-            con("word2") | _x(wordWidth) | _y(0) | _w(wordWidth) | _h(wordHeight) | kids({5,6}),
-                con() | _x(0) | _w(letterWidth) | _h(wordHeight) | parent(4),
-                con() | _x(letterWidth) | _w(letterWidth) | _h(wordHeight) | parent(4),
+        windowContainer.children.emplace_back(wordIndex);
+    }
 
-            con("word3") | _x(0) | _y(wordHeight) | _w(wordWidth) | _h(wordHeight) | kids({8,9}),
-                con() | _x(0) | _w(letterWidth) | _h(wordHeight) | parent(7),
-                con() | _x(letterWidth) | _w(letterWidth) | _h(wordHeight) | parent(7),
-
-            con("word4") | _x(wordWidth) | _y(wordHeight) | _w(wordWidth) | _h(wordHeight) | kids({11,12}),
-                con() | _x(0) | _w(letterWidth) | _h(wordHeight) | parent(10),
-                con() | _x(letterWidth) | _w(letterWidth) | _h(wordHeight) | parent(10),
-
-            con("word5") | _x(0) | _y(wordHeight*2) | _w(wordWidth) | _h(wordHeight) | kids({14,15}),
-                con() | _x(0) | _w(letterWidth) | _h(wordHeight) | parent(13),
-                con() | _x(letterWidth) | _w(letterWidth) | _h(wordHeight) | parent(13),
-    });
+    testLayout(definition, containers);
 }
 
 //TODO: test three-column layout with a left column filled with tiles vertically and taking width from it's contents, then a flexible-width column and a fixed width column
