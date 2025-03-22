@@ -442,7 +442,7 @@ TEST(LayoutTests, textLayout)
 {
     constexpr std::size_t wordsCount = 5, lettersPerWord = 2;
     constexpr int windowWidth = 20, wordHeight = 10, letterWidth = 5, wordWidth = letterWidth * lettersPerWord;
-    const  int wordsPerLine = std::floor(windowWidth / wordWidth);
+    const int wordsPerLine = std::floor(windowWidth / wordWidth);
     const int linesCount = std::ceil(static_cast<float>(wordsCount) / static_cast<float>(wordsPerLine));
 
     const auto letters = std::vector{ def() | w(letterWidth), def() | w(letterWidth) };
@@ -487,5 +487,31 @@ TEST(LayoutTests, textLayout)
     testLayout(definition, containers);
 }
 
-//TODO: test three-column layout with a left column filled with tiles vertically and taking width from it's contents, then a flexible-width column and a fixed width column
+//three-column layout with a left column filled with tiles vertically and taking width from its contents, then a flexible-width column and a fixed width column
+TEST(LayoutTests, expandedColumTest)
+{
+    constexpr int windowWidth = 1024, windowHeight = 768, tileWidth = 100, tileHeight = 300, column3Width = 50;
+
+    const auto definition = def("window") | w(windowWidth) | h(windowHeight) | columns({
+        def("column1") | w(us::children) | columnTiles({
+            def() | w(tileWidth) | h(tileHeight),
+            def() | w(tileWidth) | h(tileHeight),
+            def() | w(tileWidth) | h(tileHeight)
+        }),
+        def("column2") | w(us::fill),
+        def("column3") | w(column3Width)
+    });
+
+    constexpr int column1WidthExpected = tileWidth * 2;
+    testLayout(definition, {
+        con("window") | _w(windowWidth) | _h(windowHeight) | kids({1, 5, 6}),
+        con("column1") | _x(0) | _w(column1WidthExpected) | _h(windowHeight) | kids({2,3,4}),
+            con() | _x(0) | _y(0) | _w(tileWidth) | _h(tileHeight) | parent(1),
+            con() | _x(0) | _y(tileHeight) | _w(tileWidth) | _h(tileHeight) | parent(1),
+            con() | _x(tileWidth) | _y(0) | _w(tileWidth) | _h(tileHeight) | parent(1),
+        con("column2") | _x(column1WidthExpected) | _w(windowWidth - column1WidthExpected - column3Width) | _h(windowHeight),
+        con("column3") | _x(windowWidth - column3Width) | _w(column3Width) | _h(windowHeight),
+    });
+}
+
 //TODO: integrated complex layout test
