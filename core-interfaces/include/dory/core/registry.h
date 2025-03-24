@@ -152,6 +152,7 @@ namespace dory::core
             generic::registry::ServiceEntry<services::ISceneConfigurationService>,
             generic::registry::ServiceEntry<services::ILayoutService>,
             generic::registry::ServiceEntry<services::ILayoutSetupService>,
+            generic::registry::ServiceEntry<services::IDisplayService>,
             generic::registry::ServiceEntry<services::IObjectFactory<ITrigger>, resources::Name>,
             generic::registry::ServiceEntry<services::IObjectFactory<IController>, resources::Name>,
             generic::registry::ServiceEntry<services::IObjectFactory<devices::IDevice>, resources::Name>,

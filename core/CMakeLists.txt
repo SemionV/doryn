@@ -50,6 +50,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/services/scene/directors/viewDirector.cpp
         src/services/layoutService.cpp
         src/services/layoutSetupService.cpp
+        src/services/displayService.cpp
         src/controllers/windowSystemController.cpp
         src/controllers/viewController.cpp
         src/controllers/movementController.cpp
