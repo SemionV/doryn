@@ -17,8 +17,8 @@ using namespace dory::core::resources::scene;
 using namespace dory::core::resources::scene::configuration;
 using namespace dory::core::resources::entities::layout;
 
-using namespace layout::util2;
-using namespace entities::layout::util2;
+using namespace layout::util;
+using namespace entities::layout::util;
 
 class LayoutRepository: public EntityRepositoryMock<repositories::ILayoutRepository>
 {};
@@ -27,11 +27,11 @@ void assertContainer(const Container& container, const Name& name, const std::si
     const int width, const int height)
 {
     EXPECT_EQ(container.name, name);
-    EXPECT_EQ(container.parent, parentIndex);
-    EXPECT_EQ(container.size.width, width);
-    EXPECT_EQ(container.size.height, height);
-    EXPECT_EQ(container.position.x, x);
-    EXPECT_EQ(container.position.y, y);
+    EXPECT_EQ(container.parent, parentIndex) << name;
+    EXPECT_EQ(container.size.width, width) << name;
+    EXPECT_EQ(container.size.height, height) << name;
+    EXPECT_EQ(container.position.x, x) << name;
+    EXPECT_EQ(container.position.y, y) << name;
 }
 
 void assertContainer(const Container& container, const Name& name, const std::size_t parentIndex, const int x, const int y,
@@ -488,7 +488,7 @@ TEST(LayoutTests, textLayout)
 }
 
 //three-column layout with a left column filled with tiles vertically and taking width from its contents, then a flexible-width column and a fixed width column
-TEST(LayoutTests, expandedColumTest)
+TEST(LayoutTests, expandedColumnWithContent)
 {
     constexpr int windowWidth = 1024, windowHeight = 768, tileWidth = 100, tileHeight = 300, column3Width = 50;
 
@@ -510,8 +510,80 @@ TEST(LayoutTests, expandedColumTest)
             con() | _x(0) | _y(tileHeight) | _w(tileWidth) | _h(tileHeight) | parent(1),
             con() | _x(tileWidth) | _y(0) | _w(tileWidth) | _h(tileHeight) | parent(1),
         con("column2") | _x(column1WidthExpected) | _w(windowWidth - column1WidthExpected - column3Width) | _h(windowHeight),
-        con("column3") | _x(windowWidth - column3Width) | _w(column3Width) | _h(windowHeight),
+        con("column3") | _x(windowWidth - column3Width) | _w(column3Width) | _h(windowHeight)
     });
 }
 
-//TODO: integrated complex layout test
+//layout with complex hierarchy(see https://miro.com/app/board/uXjVMhToss4=/?moveToWidget=3458764618857736489&cot=14)
+TEST(LayoutTests, completeLayout)
+{
+    constexpr int windowWidth = 1024, windowHeight = 768, column3Width = 50, column1_1Width = 100, view1Width = 100, view1Height = 100;
+    constexpr int tileWidth = 50, tileHeight = 50;
+    constexpr int popup1Width = 10, popup1Height = 10;
+    constexpr int row2_1Height = 100;
+    constexpr float column3_1Width = 50.f;
+
+    constexpr int column1WidthExpected = column1_1Width + view1Width;
+    constexpr int column2WidthExpected = windowWidth - column1WidthExpected - column3Width;
+    const int tile2Width = static_cast<int>(std::floor(static_cast<float>(column2WidthExpected) / 2)), tile2Height = 10;
+    constexpr int row2_3HeightExpected = tile2Height * 2;
+    constexpr int row2_2HeightExpected = windowHeight - row2_1Height - row2_3HeightExpected;
+    const int popup1XExpected = static_cast<int>(std::round((column3Width - popup1Width) / 2));
+    const int popup1YExpected = static_cast<int>(std::round((windowHeight - popup1Height) / 2));
+    const int column3_1WidthExpected = static_cast<int>(std::round(popup1Width * 0.01f * column3_1Width));
+    const int column3_2WidthExpected = popup1Width - column3_1WidthExpected;
+
+    const auto definition = def("window") | w(windowWidth) | h(windowHeight) | columns({
+        def("column1") | w(us::children) | columns({
+            def("column1_1") | w(column1_1Width) | rowTiles({
+                def("tile_1_1_1") | w(tileWidth) | h(tileHeight),
+                def("tile_1_1_2") | w(tileWidth) | h(tileHeight),
+                def("tile_1_1_3") | w(tileWidth) | h(tileHeight),
+                def("tile_1_1_4") | w(tileWidth) | h(tileHeight),
+                def("tile_1_1_5") | w(tileWidth) | h(tileHeight)
+            }),
+            def("column1_2") | w(us::children) | slides({
+                def("view1") | w(view1Width) | h(view1Height)
+            })
+        }),
+        def("column2") | w(us::fill) | rows({
+            def("row2_1") | h(row2_1Height),
+            def("row2_2") | h(us::fill),
+            def("row2_3") | h(us::children) | rowTiles({
+                def("tile_2_1_1") | w(tile2Width) | h(tile2Height),
+                def("tile_2_1_2") | w(tile2Width) | h(tile2Height),
+                def("tile_2_1_3") | w(tile2Width) | h(tile2Height)
+            })
+        }),
+        def("column3") | w(column3Width) | floating({
+            def("popup1") | x(al::center) | y(al::center) | w(popup1Width) | h(popup1Height) | columns({
+                def("column3_1") | w(50.f),
+                def("column3_2") | w(us::fill)
+            })
+        })
+    });
+
+    testLayout(definition, {
+        con("window") | _w(windowWidth) | _h(windowHeight) | kids({1, 10, 17}),                                                                                 //0
+            con("column1") | _w(column1WidthExpected) | _h(windowHeight) | kids({2,8}),                                                                         //1
+                con("column1_1") | _w(column1_1Width) | _h(windowHeight) | kids({3, 4, 5, 6, 7}) | parent(1),                                                   //2
+                    con("tile_1_1_1") | _x(0) | _y(0) | _w(tileWidth) | _h(tileHeight) | parent(2),                                                             //3
+                    con("tile_1_1_2") | _x(tileWidth) | _y(0) | _w(tileWidth) | _h(tileHeight) | parent(2),                                                     //4
+                    con("tile_1_1_3") | _x(0) | _y(tileHeight) | _w(tileWidth) | _h(tileHeight) | parent(2),                                                    //5
+                    con("tile_1_1_4") | _x(tileWidth) | _y(tileHeight) | _w(tileWidth) | _h(tileHeight) | parent(2),                                            //6
+                    con("tile_1_1_5") | _x(0) | _y(tileHeight * 2) | _w(tileWidth) | _h(tileHeight) | parent(2),                                                //7
+                con("column1_2") | _x(column1_1Width) | _w(view1Width) | _h(windowHeight) | kids({9}) | parent(1),                                              //8
+                    con("view1") | _w(view1Width) | _h(view1Height) | parent(8),                                                                                //9
+            con("column2") | _x(column1WidthExpected) | _w(column2WidthExpected) | _h(windowHeight) | kids({11,12,13}),                                         //10
+                con("row2_1") | _y(0) | _w(column2WidthExpected) | _h(row2_1Height) | parent(10),                                                               //11
+                con("row2_2") | _y(row2_1Height) | _w(column2WidthExpected) | _h(row2_2HeightExpected) | parent(10),                                            //12
+                con("row2_3") | _y(windowHeight - row2_3HeightExpected) | _w(column2WidthExpected) | _h(row2_3HeightExpected) | kids({14,15,16}) | parent(10),  //13
+                    con("tile_2_1_1") | _x(0) | _y(0) | _w(tile2Width) | _h(tile2Height) | parent(13),                                                          //14
+                    con("tile_2_1_2") | _x(tile2Width) | _y(0) | _w(tile2Width) | _h(tile2Height) | parent(13),                                                 //15
+                    con("tile_2_1_3") | _x(0) | _y(tile2Height) | _w(tile2Width) | _h(tile2Height) | parent(13),                                                //16
+            con("column3") | _x(windowWidth - column3Width) | _w(column3Width) | _h(windowHeight) | kids({18}),                                                 //17
+                con("popup1") | _x(popup1XExpected) | _y(popup1YExpected) | _w(popup1Width) | _h(popup1Height) | kids({19,20}) | parent(17),                    //18
+                    con("column3_1") | _x(0) | _w(column3_1WidthExpected) | _h(popup1Height) | parent(18),                                                      //19
+                    con("column3_2") | _x(column3_1WidthExpected) | _w(column3_2WidthExpected) | _h(popup1Height) | parent(18)                                  //20
+    });
+}
