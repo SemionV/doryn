@@ -4,8 +4,7 @@
 namespace dory::core::services
 {
     using namespace resources;
-    using namespace resources::scene;
-    using namespace resources::scene::configuration;
+    using namespace resources::objects;
 
     void getDimensionValue(const layout::Dimension& valueDefinition, objects::layout::DimensionValue& result)
     {

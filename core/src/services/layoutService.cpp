@@ -1,11 +1,10 @@
 #include <dory/core/services/layoutService.h>
 #include <cmath>
+#include <stack>
 
 namespace dory::core::services
 {
     using namespace resources;
-    using namespace resources::scene;
-    using namespace resources::scene::configuration;
     using namespace resources::entities::layout;
 
     int getValue(const objects::layout::DimensionValue& value, const int parentSize, const objects::layout::Variables& variables)

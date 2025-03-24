@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <dory/core/resources/scene/configuration.h>
 #include <dory/core/resources/objects/layout.h>
 #include <dory/core/services/layoutService.h>
 #include <dory/core/services/layoutSetupService.h>
@@ -13,11 +12,9 @@
 using namespace dory;
 using namespace dory::core;
 using namespace dory::core::resources;
-using namespace dory::core::resources::scene;
-using namespace dory::core::resources::scene::configuration;
 using namespace dory::core::resources::entities::layout;
 
-using namespace layout::util;
+using namespace objects::layout::util;
 using namespace entities::layout::util;
 
 class LayoutRepository: public EntityRepositoryMock<repositories::ILayoutRepository>
@@ -73,7 +70,7 @@ void assertContainerTree(const Layout& layout, const std::size_t index, const st
     }
 }
 
-void testLayout(const layout::ContainerDefinition& definition, const std::vector<Container>& expected, const std::size_t offsetIndex = 0)
+void testLayout(const objects::layout::ContainerDefinition& definition, const std::vector<Container>& expected, const std::size_t offsetIndex = 0)
 {
     services::LayoutSetupService setupService {};
     const auto setupList = setupService.buildSetupList(definition);
@@ -86,7 +83,7 @@ void testLayout(const layout::ContainerDefinition& definition, const std::vector
 }
 
 void testWindow(const int screenWidth, const int screenHeight, const int x, const int y, const int width, const int height,
-    const layout::ContainerDefinition& definition)
+    const objects::layout::ContainerDefinition& definition)
 {
     const auto screenDefinition = def() | w(screenWidth) | h(screenHeight) | floating({
         definition
@@ -449,12 +446,12 @@ TEST(LayoutTests, textLayout)
 
     auto definition = def("window") | w(windowWidth) | h(us::children);
 
-    std::vector<layout::ContainerDefinition> wordDefinitions;
+    std::vector<objects::layout::ContainerDefinition> wordDefinitions;
     wordDefinitions.reserve(wordsCount);
     for(std::size_t i = 0; i < wordsCount; ++i)
     {
         auto& wordDefinition = wordDefinitions.emplace_back(def(fmt::format("word-{}", i + 1)) | w(us::children) | h(wordHeight));
-        std::vector<layout::ContainerDefinition> letterDefinitions;
+        std::vector<objects::layout::ContainerDefinition> letterDefinitions;
         letterDefinitions.reserve(lettersPerWord);
         for(std::size_t j = 0; j < lettersPerWord; ++j)
         {

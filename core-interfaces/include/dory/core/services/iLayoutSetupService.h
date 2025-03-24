@@ -9,6 +9,6 @@ namespace dory::core::services
     class ILayoutSetupService: public generic::Interface
     {
     public:
-        virtual resources::objects::layout::NodeSetupList buildSetupList(const resources::scene::configuration::layout::ContainerDefinition& containerDefinition) = 0;
+        virtual resources::objects::layout::NodeSetupList buildSetupList(const resources::objects::layout::ContainerDefinition& containerDefinition) = 0;
     };
 }

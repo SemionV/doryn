@@ -2,7 +2,6 @@
 
 #include <dory/generic/baseTypes.h>
 #include <dory/core/resources/objects/layout.h>
-#include <dory/core/resources/scene/configuration.h>
 #include <dory/core/resources/entities/layout.h>
 
 namespace dory::core::services

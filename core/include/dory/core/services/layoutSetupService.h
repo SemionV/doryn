@@ -7,6 +7,6 @@ namespace dory::core::services
     class LayoutSetupService: public ILayoutSetupService
     {
     public:
-        resources::objects::layout::NodeSetupList buildSetupList(const resources::scene::configuration::layout::ContainerDefinition& containerDefinition) final;
+        resources::objects::layout::NodeSetupList buildSetupList(const resources::objects::layout::ContainerDefinition& containerDefinition) final;
     };
 }

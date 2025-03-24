@@ -2,6 +2,7 @@
 
 #include "../name.h"
 #include <vector>
+#include "../entity.h"
 
 namespace dory::core::resources::entities::layout
 {

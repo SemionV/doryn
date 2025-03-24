@@ -1,14 +1,12 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <dory/core/resources/scene/configuration.h>
 #include <dory/core/resources/objects/layout.h>
 #include <dory/core/services/layoutSetupService.h>
 
 using namespace dory;
 using namespace dory::core;
 using namespace dory::core::resources;
-using namespace dory::core::resources::scene;
-using namespace dory::core::resources::scene::configuration;
+using namespace dory::core::resources::objects;
 
 void assertAxis(const objects::layout::DimensionValue& value, const int size)
 {
