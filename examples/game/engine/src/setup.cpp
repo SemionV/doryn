@@ -39,6 +39,7 @@
 #include <dory/core/repositories/enttSceneRepository.h>
 #include <dory/core/repositories/sceneConfigurationRepository.h>
 #include <dory/core/repositories/layoutRepository.h>
+#include <dory/core/repositories/displayRepository.h>
 
 #include <dory/core/services/fileService.h>
 #include <dory/core/services/libraryService.h>
@@ -70,6 +71,8 @@
 #include <dory/core/services/scene/directors/assetLoader.h>
 #include <dory/core/services/scene/directors/applicationDirector.h>
 #include <dory/core/services/scene/directors/viewDirector.h>
+#include <dory/core/services/layoutSetupService.h>
+#include <dory/core/services/layoutService.h>
 
 namespace dory::game
 {
@@ -125,6 +128,7 @@ namespace dory::game
         registry.set<core::repositories::bindings::IMaterialBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::MaterialBindingRepository>());
         registry.set<core::repositories::ISceneConfigurationRepository>(libraryHandle, std::make_shared<core::repositories::SceneConfigurationRepository>());
         registry.set<core::repositories::ILayoutRepository>(libraryHandle, std::make_shared<core::repositories::LayoutRepository>());
+        registry.set<core::repositories::IDisplayRepository>(libraryHandle, std::make_shared<core::repositories::DisplayRepository>());
 
         registry.set<core::repositories::IShaderRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::ShaderRepository>());
         registry.set<core::repositories::IShaderProgramRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::ShaderProgramRepository>());
@@ -178,6 +182,9 @@ namespace dory::game
 
         registry.set<core::services::ISceneConfigurationService>(libraryHandle, std::make_shared<core::services::SceneConfigurationService>(registry));
         registry.set<core::services::ISceneBuilder>(libraryHandle, std::make_shared<core::services::SceneBuilder>(registry));
+
+        registry.set<core::services::ILayoutSetupService>(libraryHandle, std::make_shared<core::services::LayoutSetupService>());
+        registry.set<core::services::ILayoutService>(libraryHandle, std::make_shared<core::services::LayoutService>());
 
         registerObjectFactory<core::ITrigger, core::triggers::TimeFrameTrigger>("TimeFrameTrigger", libraryHandle, registry);
 

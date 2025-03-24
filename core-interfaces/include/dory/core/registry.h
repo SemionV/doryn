@@ -36,6 +36,7 @@
 #include <dory/core/repositories/iPipelineRepository.h>
 #include <dory/core/repositories/iSceneConfigurationRepository.h>
 #include <dory/core/repositories/iLayoutRepository.h>
+#include <dory/core/repositories/iDisplayRepository.h>
 
 #include <dory/core/services/iSerializer.h>
 #include <dory/core/services/iDataFormatResolver.h>
@@ -66,6 +67,7 @@
 #include <dory/core/services/iSceneDirector.h>
 #include <dory/core/services/iLayoutService.h>
 #include <dory/core/services/iLayoutSetupService.h>
+#include <dory/core/services/iDisplayService.h>
 
 namespace dory::core
 {
@@ -118,6 +120,7 @@ namespace dory::core
             generic::registry::ServiceEntry<repositories::bindings::IMaterialBindingRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::ISceneConfigurationRepository>,
             generic::registry::ServiceEntry<repositories::ILayoutRepository>,
+            generic::registry::ServiceEntry<repositories::IDisplayRepository>,
             /*Services*/
             generic::registry::ServiceEntry<services::ILibraryService>,
             generic::registry::ServiceEntry<services::IFileService>,
@@ -148,6 +151,7 @@ namespace dory::core
             generic::registry::ServiceEntry<services::ISceneBuilder>,
             generic::registry::ServiceEntry<services::ISceneConfigurationService>,
             generic::registry::ServiceEntry<services::ILayoutService>,
+            generic::registry::ServiceEntry<services::ILayoutSetupService>,
             generic::registry::ServiceEntry<services::IObjectFactory<ITrigger>, resources::Name>,
             generic::registry::ServiceEntry<services::IObjectFactory<IController>, resources::Name>,
             generic::registry::ServiceEntry<services::IObjectFactory<devices::IDevice>, resources::Name>,
