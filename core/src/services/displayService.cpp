@@ -7,7 +7,7 @@ namespace dory::core::services
 
     bool DisplayService::initializeDisplays()
     {
-        
+
         return true;
     }
 }

@@ -120,7 +120,7 @@ namespace dory::core
             generic::registry::ServiceEntry<repositories::bindings::IMaterialBindingRepository, resources::GraphicalSystem>,
             generic::registry::ServiceEntry<repositories::ISceneConfigurationRepository>,
             generic::registry::ServiceEntry<repositories::ILayoutRepository>,
-            generic::registry::ServiceEntry<repositories::IDisplayRepository>,
+            generic::registry::ServiceEntry<repositories::IDisplayRepository, resources::DisplaySystem>,
             /*Services*/
             generic::registry::ServiceEntry<services::ILibraryService>,
             generic::registry::ServiceEntry<services::IFileService>,

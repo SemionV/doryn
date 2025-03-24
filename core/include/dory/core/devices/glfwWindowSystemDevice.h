@@ -37,5 +37,6 @@ namespace dory::core::devices
         void closeWindow(const resources::entities::Window& window) override;
         void setCurrentWindow(const resources::entities::Window& window) override;
         void swapWindowBuffers(const resources::entities::Window& window) override;
+        void loadDisplays() final;
     };
 }

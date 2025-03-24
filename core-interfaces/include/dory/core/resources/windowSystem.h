@@ -9,4 +9,9 @@ namespace dory::core::resources
         x,
         wayland
     };
+
+    enum class DisplaySystem
+    {
+        glfw
+    };
 }
