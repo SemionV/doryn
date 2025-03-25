@@ -7,6 +7,9 @@ namespace dory::core::devices
 {
     class GlfwDisplaySystemDevice: public IDisplaySystemDevice, public DependencyResolver
     {
+    private:
+        void updateDisplays() const;
+
     public:
         explicit GlfwDisplaySystemDevice(Registry& registry);
 

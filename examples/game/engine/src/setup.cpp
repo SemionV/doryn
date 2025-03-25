@@ -17,6 +17,7 @@
 #include <dory/core/controllers/viewController.h>
 #include <dory/core/devices/terminalDevice.h>
 #include <dory/core/devices/glfwWindowSystemDevice.h>
+#include <dory/core/devices/glfwDisplaySystemDevice.h>
 #include <dory/core/devices/openglGpuDevice.h>
 #include <dory/core/devices/fileWatcherDevice.h>
 #include <dory/core/devices/imageStreamDevice.h>
@@ -83,6 +84,7 @@ namespace dory::game
         registerEventBufferBundle<core::events::io::Bundle>(libraryHandle, registry);
         registerEventBundle<core::events::script::Bundle>(libraryHandle, registry);
         registerEventBufferBundle<core::events::window::Bundle>(libraryHandle, registry);
+        registerEventBufferBundle<core::events::display::Bundle>(libraryHandle, registry);
         registerEventBufferBundle<core::events::filesystem::Bundle>(libraryHandle, registry);
         registerEventBufferBundle<core::events::scene::Bundle>(libraryHandle, registry);
 
@@ -94,6 +96,9 @@ namespace dory::game
 
         registry.set<core::devices::IWindowSystemDevice, core::resources::WindowSystem::glfw>(libraryHandle, std::make_shared<core::devices::GlfwWindowSystemDevice>(registry));
         registerSingletonObjectFactory<core::devices::IDevice, core::devices::IWindowSystemDevice, core::resources::WindowSystem::glfw>("GlfwWindowSystemDevice", libraryHandle, registry);
+
+        registry.set<core::devices::IDisplaySystemDevice, core::resources::DisplaySystem::glfw>(libraryHandle, std::make_shared<core::devices::GlfwDisplaySystemDevice>(registry));
+        registerSingletonObjectFactory<core::devices::IDevice, core::devices::IDisplaySystemDevice, core::resources::DisplaySystem::glfw>("GlfwDisplaySystemDevice", libraryHandle, registry);
 
         registry.set<core::devices::IFileWatcherDevice>(libraryHandle, std::make_shared<core::devices::FileWatcherDevice>(registry));
         registerSingletonObjectFactory<core::devices::IDevice, core::devices::IFileWatcherDevice>("FileWatcherDevice", libraryHandle, registry);

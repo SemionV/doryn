@@ -107,6 +107,25 @@ namespace dory::core::events
         using Bundle = EventBufferBundle<Close, Resize, KeyboardEvent>;
     }
 
+    namespace display
+    {
+        struct DisplayEvent
+        {
+            resources::IdType displayId;
+        };
+
+        struct DisplayConnected: DisplayEvent
+        {};
+
+        struct DisplayChanged: DisplayEvent
+        {};
+
+        struct DisplayDisconnected: DisplayEvent
+        {};
+
+        using Bundle = EventBufferBundle<DisplayConnected, DisplayChanged, DisplayDisconnected>;
+    }
+
     namespace filesystem
     {
         struct FileEvent

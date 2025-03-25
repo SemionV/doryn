@@ -14,5 +14,6 @@ namespace dory::core::resources::entities
         layout::Size size {};
         int refreshRate {};
         bool isPrimary{};
+        IdType layoutId {};
     };
 }

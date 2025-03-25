@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 #include <dory/core/repositories/iWindowRepository.h>
 #include <dory/core/resources/glfwWindow.h>
-#include <dory/core/resources/glfwDisplay.h>
 #include <dory/core/resources/profiling.h>
 #include <spdlog/fmt/fmt.h>
 
@@ -258,55 +257,5 @@ namespace dory::core::devices
         auto& glfwWindow = (resources::entities::GlfwWindow&)window;
 
         glfwSwapBuffers(glfwWindow.handler);
-    }
-
-    void GlfwWindowSystemDevice::loadDisplays()
-    {
-        if(auto displayRepository = _registry.get<repositories::IDisplayRepository, resources::DisplaySystem::glfw>())
-        {
-            int monitorCount;
-            GLFWmonitor** monitors = glfwGetMonitors(&monitorCount);
-            const GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
-
-            for (int i = 0; i < monitorCount; i++)
-            {
-                const auto glfwMonitor = monitors[i];
-
-                auto* glfwDisplay = displayRepository->scan([glfwMonitor](auto& display)
-                {
-                    if(display.displaySystem == resources::DisplaySystem::glfw)
-                    {
-                        const auto& glfwDisplay = static_cast<resources::entities::GlfwDisplay&>(display);
-                        if(glfwDisplay.glfwMonitor == glfwMonitor)
-                        {
-                            return true;
-                        }
-                    }
-                    return false;
-                });
-
-                if(!glfwDisplay)
-                {
-                    glfwDisplay = displayRepository->create();
-                }
-                else
-                {
-                    //TODO: check if display's resolution has changed
-                }
-
-                const char* name = glfwGetMonitorName(glfwMonitor);
-                const GLFWvidmode* mode = glfwGetVideoMode(glfwMonitor);
-
-                glfwDisplay->name = name;
-                if(mode)
-                {
-                    glfwDisplay->size.width = mode->width;
-                    glfwDisplay->size.height = mode->height;
-                    glfwDisplay->refreshRate = mode->refreshRate;
-                }
-
-                glfwDisplay->isPrimary = glfwMonitor == primaryMonitor;
-            }
-        }
     }
 }

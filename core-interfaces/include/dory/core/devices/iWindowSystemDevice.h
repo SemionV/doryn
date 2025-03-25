@@ -16,6 +16,5 @@ namespace dory::core::devices
         virtual void closeWindow(const resources::entities::Window& window) = 0;
         virtual void setCurrentWindow(const resources::entities::Window& window) = 0;
         virtual void swapWindowBuffers(const resources::entities::Window& window) = 0;
-        virtual void loadDisplays() = 0;
     };
 }
