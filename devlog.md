@@ -6,6 +6,8 @@
 * Update parent to parent size from their children, until hit a floating container or the one whose size upstream is not children
 
 Tasks:
+* Remove DisplayService
+
 * Scene
   * Serialization of scene state
   * Load scene 

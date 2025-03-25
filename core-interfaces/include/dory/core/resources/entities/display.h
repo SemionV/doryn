@@ -2,7 +2,7 @@
 
 #include "../entity.h"
 #include "../name.h"
-#include "..//windowSystem.h"
+#include <dory/core/resources/systemTypes.h>
 #include "layout.h"
 
 namespace dory::core::resources::entities

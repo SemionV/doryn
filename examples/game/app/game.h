@@ -3,7 +3,7 @@
 #include <dory/core/registry.h>
 #include <dory/core/resources/scene/components.h>
 #include <dory/core/resources/scene/enttScene.h>
-#include <dory/core/resources/assetType.h>
+#include <dory/core/resources/systemTypes.h>
 #include <dory/game/logic/mainSceneKeyboardHandler.h>
 
 namespace dory::game

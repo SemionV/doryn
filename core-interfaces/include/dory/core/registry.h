@@ -5,16 +5,15 @@
 #include <dory/core/resources/dataFormat.h>
 #include <dory/core/resources/logger.h>
 #include <dory/core/resources/entities/camera.h>
-#include <dory/core/resources/graphicalSystem.h>
+#include <dory/core/resources/systemTypes.h>
 #include <dory/generic/extension/registryResourceScope.h>
-#include <dory/core/resources/windowSystem.h>
-#include <dory/core/resources/assetType.h>
 
 #include <dory/core/devices/iStandardIODevice.h>
 #include <dory/core/devices/iTerminalDevice.h>
 #include "dory/core/devices/iGpuDevice.h"
 #include <dory/core/devices/iFileWatcherDevice.h>
 #include <dory/core/devices/iWindowSystemDevice.h>
+#include <dory/core/devices/iDisplaySystemDevice.h>
 #include <dory/core/devices/iBlockQueueStreamDevice.h>
 
 #include <dory/core/repositories/iViewRepository.h>

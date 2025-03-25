@@ -7,7 +7,7 @@
 #include <dory/core/resources/assets/material.h>
 #include <dory/core/resources/scene/components.h>
 #include <dory/core/resources/factory.h>
-#include <dory/core/resources/graphicalSystem.h>
+#include <dory/core/resources/systemTypes.h>
 #include <dory/core/iController.h>
 #include <dory/core/devices/iDevice.h>
 #include <dory/core/services/iSceneDirector.h>

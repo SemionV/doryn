@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "graphicalSystem.h"
+#include "systemTypes.h"
 
 namespace dory::core::resources
 {

@@ -2,8 +2,7 @@
 #include <GLFW/glfw3.h>
 
 #include "dory/game/setup.h"
-#include "dory/core/resources/ecsType.h"
-#include <dory/core/resources/assetType.h>
+#include <dory/core/resources/systemTypes.h>
 #include <dory/core/resources/localizationRefl.h>
 #include <dory/core/resources/scene/componentsRefl.h>
 #include <dory/core/resources/scene/configurationRefl.h>

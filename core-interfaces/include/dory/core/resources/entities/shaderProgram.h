@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../entity.h"
-#include <dory/core/resources/graphicalSystem.h>
+#include <dory/core/resources/systemTypes.h>
 #include <string>
 
 namespace dory::core::resources::entities

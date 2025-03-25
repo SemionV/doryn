@@ -3,7 +3,7 @@
 #include <filesystem>
 #include "../entity.h"
 #include "../assets/image.h"
-#include <dory/core/resources/assetType.h>
+#include <dory/core/resources/systemTypes.h>
 #include <dory/generic/stream.h>
 
 namespace dory::core::resources::entities

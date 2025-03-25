@@ -13,6 +13,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/resources/imageStreamQueue.cpp
         src/devices/terminalDevice.cpp
         src/devices/glfwWindowSystemDevice.cpp
+        src/devices/glfwDisplaySystemDevice.cpp
         src/devices/fileWatcherDevice.cpp
         src/devices/openglGpuDevice.cpp
         src/devices/imageStreamDevice.cpp

@@ -1,7 +1,7 @@
 #include <dory/core/registry.h>
 #include <dory/core/controllers/windowSystemController.h>
 #include <dory/core/devices/iWindowSystemDevice.h>
-#include <dory/core/resources/windowSystem.h>
+#include <dory/core/resources/systemTypes.h>
 
 namespace dory::core::controllers
 {

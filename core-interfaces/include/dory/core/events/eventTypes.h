@@ -5,9 +5,7 @@
 #include <string>
 #include "interface.h"
 #include <dory/core/resources/id.h>
-#include <dory/core/resources/windowSystem.h>
-#include <dory/core/resources/scene/components.h>
-#include <dory/core/resources/ecsType.h>
+#include <dory/core/resources/systemTypes.h>
 
 namespace dory::core::events
 {

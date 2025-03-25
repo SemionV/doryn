@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../entity.h"
-#include "../ecsType.h"
+#include <dory/core/resources/systemTypes.h>
 #include <atomic>
 #include <glm/glm.hpp>
 
