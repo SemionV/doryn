@@ -214,7 +214,7 @@ namespace dory::core::events
         template<typename TDispatcher>
         void submitCases(TDispatcher& eventDispatcher, TDataContext& dataContext)
         {
-            std::lock_guard lock{mutex};
+            std::lock_guard lock{mutex}; //TODO: use lock free approach, this is abusing main thread with a system call currently
 
             std::shared_ptr<std::vector<TEventData>> temp = eventCases;
             eventCases = eventCasesBackBuffer;

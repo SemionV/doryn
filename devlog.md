@@ -6,7 +6,8 @@
 * Update parent to parent size from their children, until hit a floating container or the one whose size upstream is not children
 
 Tasks:
-* Remove DisplayService
+* Create GLFW initialization device and connect it before GlfwDisplaySystemDevice and GlfwWindowSystemDevice
+* * Try to move fireAll method from IDispatcher to a more generic interface, so that I can register event buffers in a list to flush events automatically 
 
 * Scene
   * Serialization of scene state

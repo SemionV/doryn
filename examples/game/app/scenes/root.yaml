@@ -40,6 +40,11 @@ pipeline:
     pump-window-events:
       controller: WindowSystemController
 directors:
-  - type: ApplicationDirector
+  - type: ApplicationDirector #attach controlling event logic(control display layout creating, resizing and deletion)
+  - type: FlushEventBuffers #process device events(here display layouts will be created)
   - type: ViewDirector
   - type: AssetLoader
+  - type: LoadScene #load the window layout scene and attach its layout to the available display layouts
+    filename: $windowLayoutScene
+
+
