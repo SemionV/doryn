@@ -146,7 +146,7 @@ public:
             std::rethrow_exception(std::move(*promise.exception));
         }
 
-        return std::move(*promise.result);
+        return std::move(promise.result);
     }
 
     T result()
@@ -194,6 +194,14 @@ Task<> job()
     std::cout << "Job Step 2" << std::endl;
 }
 
+Task<> nestedTask()
+{
+    std::cout << "Task Step 1" << std::endl;
+    const int result = co_await action(5);
+    std::cout << "Task Step 2" << std::endl;
+    std::cout << "Nested Task Result: " << result << std::endl;
+}
+
 TEST(CoroutineTests, AsyncTask)
 {
     std::cout << "Step 1" << std::endl;
@@ -206,4 +214,8 @@ TEST(CoroutineTests, AsyncTask)
     auto task2 = job();
     while(task2.resume()) {}
     std::cout << "Step 3" << std::endl;
+
+    auto task3 = nestedTask();
+    task3.resume();
+    std::cout << "Step 4" << std::endl;
 }
