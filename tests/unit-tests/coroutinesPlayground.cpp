@@ -1,7 +1,9 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <coroutine>
+#include <future>
 
+template<typename TPromise>
 struct ContinuationAwaitable
 {
     bool await_ready() noexcept
@@ -9,9 +11,15 @@ struct ContinuationAwaitable
         return false;
     }
 
-    auto await_suspend(auto handle) noexcept
+    std::coroutine_handle<> await_suspend(std::coroutine_handle<TPromise> handle) noexcept
     {
-        return handle.promise().continuation.value();
+        auto& continuation = handle.promise().continuation;
+        if(continuation)
+        {
+            return *continuation;
+        }
+
+        return std::noop_coroutine();
     }
 
     void await_resume() noexcept {}
@@ -36,12 +44,7 @@ public:
 
     auto final_suspend() noexcept
     {
-        /*if(continuation)
-        {
-            return ContinuationAwaitable{};
-        }*/
-
-        return std::suspend_always{};
+        return ContinuationAwaitable<TImplementation>{};
     }
 
     void unhandled_exception() noexcept
@@ -54,7 +57,7 @@ template<typename TResult, template<class> class TTask>
 class AsyncPromise: public Promise<TTask<TResult>, AsyncPromise<TResult, TTask>>
 {
 public:
-    TResult result;
+    TResult result{};
 
     void return_value(TResult value)
     {
@@ -70,29 +73,24 @@ public:
     {}
 };
 
-template<typename T>
-class Task
+template<typename T, template<class> class TImplementation>
+class AwaitableTask
 {
-private:
-    using PromiseType = AsyncPromise<T, Task>;
+protected:
+    using PromiseType = AsyncPromise<T, TImplementation>;
 
-    std::coroutine_handle<AsyncPromise<T, Task>> _handle;
+    std::coroutine_handle<AsyncPromise<T, TImplementation>> _handle;
 
-    explicit Task(PromiseType& promise) noexcept: _handle(std::coroutine_handle<PromiseType>::from_promise(promise))
+    explicit AwaitableTask(PromiseType& promise) noexcept: _handle(std::coroutine_handle<PromiseType>::from_promise(promise))
     {}
 
 public:
     using promise_type = PromiseType;
 
-    static Task create(PromiseType& promise)
-    {
-        return Task{ promise };
-    }
-
-    Task(Task&& other) noexcept: _handle(std::exchange(other._handle, {}))
+    AwaitableTask(AwaitableTask&& other) noexcept: _handle(std::exchange(other._handle, {}))
     {}
 
-    ~Task()
+    ~AwaitableTask()
     {
         if(_handle)
         {
@@ -111,23 +109,6 @@ public:
         return _handle;
     }
 
-    //TODO: handle the T=void case
-    T await_resume() noexcept
-    {
-        auto& promise = _handle.promise();
-        if(promise.result)
-        {
-            return std::move(*promise.result);
-        }
-
-        if(promise.exception)
-        {
-            std::rethrow_exception(std::move(*promise.exception));
-        }
-
-        return T{};
-    }
-
     bool resume()
     {
         if(!_handle.done())
@@ -136,6 +117,68 @@ public:
         }
 
         return !_handle.done();
+    }
+};
+
+template<typename T = void>
+class Task: public AwaitableTask<T, Task>
+{
+private:
+    using PromiseType = AsyncPromise<T, Task>;
+
+    explicit Task(PromiseType& promise) noexcept: AwaitableTask<T, Task>(promise)
+    {}
+
+public:
+    static Task create(PromiseType& promise)
+    {
+        return Task{ promise };
+    }
+
+    Task(Task&& other) noexcept: AwaitableTask<T, Task>(std::move(other))
+    {}
+
+    T await_resume() noexcept
+    {
+        auto& promise = this->_handle.promise();
+        if(promise.exception)
+        {
+            std::rethrow_exception(std::move(*promise.exception));
+        }
+
+        return std::move(*promise.result);
+    }
+
+    T result()
+    {
+        auto& promise = this->_handle.promise();
+        return std::move(promise.result);
+    }
+};
+
+template<>
+class Task<void>: public AwaitableTask<void, Task>
+{
+private:
+    explicit Task(PromiseType& promise) noexcept: AwaitableTask(promise)
+    {}
+
+public:
+    static Task create(PromiseType& promise)
+    {
+        return Task{ promise };
+    }
+
+    Task(Task&& other) noexcept: AwaitableTask(std::move(other))
+    {}
+
+    void await_resume() noexcept
+    {
+        auto& promise = this->_handle.promise();
+        if(promise.exception)
+        {
+            std::rethrow_exception(std::move(*promise.exception));
+        }
     }
 };
 
@@ -144,104 +187,23 @@ Task<int> action(const int base)
     co_return base + 1;
 }
 
+Task<> job()
+{
+    std::cout << "Job Step 1" << std::endl;
+    co_await std::suspend_always{};
+    std::cout << "Job Step 2" << std::endl;
+}
+
 TEST(CoroutineTests, AsyncTask)
 {
     std::cout << "Step 1" << std::endl;
-    auto task = action(2);
-    task.resume();
+    auto task = action(3);
+    std::cout << "Result: " << task.result() << std::endl;
+    while(task.resume()) {}
     std::cout << "Step 2" << std::endl;
-}
+    std::cout << "Result: " << task.result() << std::endl;
 
-/*template<typename T>
-struct TaskPromise<Task<void>>: public Promise<Task<void>>
-{
-    void unhandled_exception()
-    {
-        std::terminate();
-    }
-
-    void return_void()
-    {}
-};
-
-template<typename TValue>
-class TaskPromise<Task<TValue>>: public Promise<TValue>
-{
-private:
-    std::variant<std::monostate, TValue, std::exception_ptr> _result;
-    std::coroutine_handle<> _continuation;
-
-public:
-    TValue return_value()
-    {
-        return value;
-    }
-
-    void unhandled_exception()
-    {
-        std::terminate();
-    }
-};
-
-
-template<typename TResult = void>
-class Task
-{
-private:
-    using PromiseType = TaskPromise<Task>;
-
-    std::coroutine_handle<PromiseType> _handle;
-
-    explicit Task(std::coroutine_handle<PromiseType> handle): _handle(handle)
-    {}
-
-public:
-    using promise_type = PromiseType;
-
-    static Task create(PromiseType& promise)
-    {
-        using Handle = std::coroutine_handle<PromiseType>;
-        return Task{ Handle::from_promise(promise) };
-    }
-
-    Task(Task&& other) noexcept: _handle(std::exchange(other._handle, {}))
-    {}
-
-    ~Task()
-    {
-        if(_handle)
-        {
-            _handle.destroy();
-        }
-    }
-
-    bool resume()
-    {
-        if(!_handle.done())
-        {
-            _handle.resume();
-        }
-
-        return !_handle.done();
-    }
-};
-
-Task<> action()
-{
-    std::cout << "Step 2" << std::endl;
-    co_await std::suspend_always{};
-
-    std::cout << "Step 4" << std::endl;
-}
-
-TEST(CoroutineTests, SimpleTask)
-{
-    std::cout << "Step 1" << std::endl;
-    auto task = action();
-    task.resume();
-
+    auto task2 = job();
+    while(task2.resume()) {}
     std::cout << "Step 3" << std::endl;
-    task.resume();
-
-    std::cout << "Step 5" << std::endl;
-}*/
+}
