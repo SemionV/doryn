@@ -10,7 +10,8 @@ add_executable(${PROJECT_NAME}
         pipelineServiceTests.cpp
         serialization.cpp
         layoutTests.cpp
-        layoutSetupTests.cpp)
+        layoutSetupTests.cpp
+        coroutinesPlayground.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-core)
