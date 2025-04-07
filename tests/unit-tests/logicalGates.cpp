@@ -271,7 +271,3 @@ TEST(LogicalGates, fullAdderGate)
     EXPECT_TRUE(output[3]);
     EXPECT_FALSE(carryOut);
 }
-TEST(MemoryTests, sizes)
-{
-    std::cout << "long int: " << sizeof(long int) << std::endl;
-}
