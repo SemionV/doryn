@@ -3,6 +3,23 @@
 #include <coroutine>
 #include <future>
 
+template<typename T>
+class Task;
+
+class ITaskScheduler
+{
+public:
+    virtual ~ITaskScheduler() = default;
+    virtual void schedule(const void* task) = 0;
+};
+
+class TaskScheduler: public ITaskScheduler
+{
+public:
+    void schedule(const void* task) final
+    {}
+};
+
 template<typename TPromise>
 struct ContinuationAwaitable
 {
@@ -28,9 +45,17 @@ struct ContinuationAwaitable
 template<typename TTask, typename TImplementation>
 class Promise
 {
+private:
+    std::shared_ptr<ITaskScheduler> _scheduler;
+
 public:
     std::optional<std::coroutine_handle<>> continuation;
     std::optional<std::exception_ptr> exception;
+
+    template<typename... Ts>
+    explicit Promise(std::shared_ptr<ITaskScheduler> scheduler, Ts&& ...params) noexcept:
+        _scheduler(std::move(scheduler))
+    {}
 
     TTask get_return_object()
     {
@@ -59,6 +84,11 @@ class AsyncPromise: public Promise<TTask<TResult>, AsyncPromise<TResult, TTask>>
 public:
     TResult result{};
 
+    template<typename... Ts>
+    explicit AsyncPromise(std::shared_ptr<ITaskScheduler> scheduler, Ts&& ...params) noexcept:
+        Promise<TTask<TResult>, AsyncPromise>(std::move(scheduler))
+    {}
+
     void return_value(TResult value)
     {
         result = std::move(value);
@@ -69,6 +99,11 @@ template<template<class> class TTask>
 class AsyncPromise<void, TTask>: public Promise<TTask<void>, AsyncPromise<void, TTask>>
 {
 public:
+    template<typename... Ts>
+    explicit AsyncPromise(std::shared_ptr<ITaskScheduler> scheduler, Ts&& ...params) noexcept:
+        Promise<TTask<void>, AsyncPromise>(std::move(scheduler))
+    {}
+
     void return_void()
     {}
 };
@@ -182,40 +217,42 @@ public:
     }
 };
 
-Task<int> action(const int base)
+Task<int> action(std::shared_ptr<ITaskScheduler> scheduler, const int base)
 {
     co_return base + 1;
 }
 
-Task<> job()
+Task<> job(std::shared_ptr<ITaskScheduler> scheduler)
 {
     std::cout << "Job Step 1" << std::endl;
     co_await std::suspend_always{};
     std::cout << "Job Step 2" << std::endl;
 }
 
-Task<> nestedTask()
+Task<> nestedTask(std::shared_ptr<ITaskScheduler> scheduler)
 {
     std::cout << "Task Step 1" << std::endl;
-    const int result = co_await action(5);
+    const int result = co_await action(scheduler, 5);
     std::cout << "Task Step 2" << std::endl;
     std::cout << "Nested Task Result: " << result << std::endl;
 }
 
 TEST(CoroutineTests, AsyncTask)
 {
-    std::cout << "Step 1" << std::endl;
-    auto task = action(3);
+    auto scheduler = std::make_shared<TaskScheduler>();
+
+    /*std::cout << "Step 1" << std::endl;
+    auto task = action(scheduler, 3);
     std::cout << "Result: " << task.result() << std::endl;
     while(task.resume()) {}
     std::cout << "Step 2" << std::endl;
     std::cout << "Result: " << task.result() << std::endl;
 
-    auto task2 = job();
+    auto task2 = job(scheduler);
     while(task2.resume()) {}
-    std::cout << "Step 3" << std::endl;
+    std::cout << "Step 3" << std::endl;*/
 
-    auto task3 = nestedTask();
+    auto task3 = nestedTask(scheduler);
     task3.resume();
     std::cout << "Step 4" << std::endl;
 }

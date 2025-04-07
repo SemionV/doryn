@@ -11,7 +11,8 @@ add_executable(${PROJECT_NAME}
         serialization.cpp
         layoutTests.cpp
         layoutSetupTests.cpp
-        coroutinesPlayground.cpp)
+        coroutinesPlayground.cpp
+        logicalGates.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-core)
