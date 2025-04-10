@@ -71,6 +71,7 @@ target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/extern
 target_link_libraries(${DORY_MODULE_NAME} PUBLIC
         dory-core-generic
         dory-serialization
+        dory-memory
         Boost::dll
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
         opengl-glad

@@ -56,7 +56,7 @@ TEST(MemoriaTests, fillMemory)
     void* ptr = std::aligned_alloc(alignof(__m128i), page_size);
 
 
-    setbytes((char*)ptr, 1);
+    setbytes((char*)ptr, 0);
 
     const char* cptr = (char*)ptr;
 
@@ -66,4 +66,32 @@ TEST(MemoriaTests, fillMemory)
     }
 
     std::cout << std::endl;
+}
+
+struct alignas(64) TestType
+{
+    int id{};
+    int count {};
+    std::size_t fill[7];
+};
+
+TestType* makeTestType() {
+    return new TestType{};
+}
+
+TEST(MemoriaTests, typeSizes)
+{
+    std::cout << fmt::format("int size: {}, alignment: {}", sizeof(int), alignof(int)) << std::endl;
+    std::cout << fmt::format("std::size_t size: {}, alignment: {}", sizeof(std::size_t), alignof(std::size_t)) << std::endl;
+    std::cout << fmt::format("double size: {}, alignment: {}", sizeof(double), alignof(double)) << std::endl;
+    std::cout << fmt::format("long double size: {}, alignment: {}", sizeof(long double), alignof(long double)) << std::endl;
+    std::cout << fmt::format("TestType size: {}, alignment: {}", sizeof(TestType), alignof(TestType)) << std::endl;
+
+    void* ptr = std::aligned_alloc(alignof(TestType), sizeof(TestType));
+    EXPECT_EQ(reinterpret_cast<std::uintptr_t>(ptr) % alignof(TestType), 0);
+    std::free(ptr);
+
+    void* ptr2 = std::malloc(sizeof(TestType));
+    EXPECT_EQ(reinterpret_cast<std::uintptr_t>(ptr2) % alignof(TestType), 0);
+    std::free(ptr2);
 }

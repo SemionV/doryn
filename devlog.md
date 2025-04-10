@@ -6,8 +6,15 @@
 * Update parent to parent size from their children, until hit a floating container or the one whose size upstream is not children
 
 Tasks:
+* No Exceptions(disable them explicitly)
+* Debug-time, InHouse-Release and Release build assertions
+* No syscalls in the main game loop
+* Memory management
+* Custom containers
+* Multitasking
+
 * Create GLFW initialization device and connect it before GlfwDisplaySystemDevice and GlfwWindowSystemDevice
-* * Try to move fireAll method from IDispatcher to a more generic interface, so that I can register event buffers in a list to flush events automatically 
+* Try to move fireAll method from IDispatcher to a more generic interface, so that I can register event buffers in a list to flush events automatically 
 
 * Scene
   * Serialization of scene state
