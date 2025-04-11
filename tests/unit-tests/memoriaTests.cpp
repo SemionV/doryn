@@ -98,4 +98,14 @@ TEST(MemoriaTests, typeSizes)
     std::free(ptr2);
 }
 
+dory::assert::TAssert<true>::AssertFailureHandlerType dory::assert::TAssert<true>::assertFailureHandler = nullptr;
+
+TEST(MemoriaTests, alignAddress)
+{
+    dory::assert::DebugAssert::setHandler([](const char * msg) {
+        std::cout << msg << std::endl;
+    });
+    dory::memory::alignAddress(12, 9);
+}
+
 #endif

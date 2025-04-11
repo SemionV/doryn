@@ -28,8 +28,12 @@ elseif (LINUX)
     add_definitions(-DDORY_PLATFORM_LINUX)
 endif()
 
-add_definitions(-DASSERT_ENABLED)
+add_definitions(-DASSERT_ENABLED=1)
 
-if(Debug)
-    add_definitions(-DDEBUG_ASSERT_ENABLED)
+if (CMAKE_BUILD_TYPE STREQUAL Debug)
+    add_definitions(-DDEBUG_ASSERT_ENABLED=1)
+endif()
+
+if(InHouseRelease)
+    add_definitions(-DIN_HOUSE_ASSERT_ENABLED=1)
 endif()
