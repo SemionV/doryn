@@ -24,6 +24,14 @@
 
 void reportAssertionFailure(const char* expressionString, const char* fileName, const int lineNumber) noexcept;
 
+namespace dory::assert
+{
+}
+
+using AssertHandlerFn = void(*)(const char* expr, const char* file, int line, const char* msg);
+
+extern AssertHandlerFn g_AssertHandler;
+
 #define doryAssert(expr) \
   do { \
     if (!(expr)) { \

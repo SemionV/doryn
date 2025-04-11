@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+#include <dory/macros/assert.h>
 
 namespace dory::memory
 {

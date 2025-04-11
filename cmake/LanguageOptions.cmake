@@ -27,3 +27,9 @@ if(WIN32)
 elseif (LINUX)
     add_definitions(-DDORY_PLATFORM_LINUX)
 endif()
+
+add_definitions(-DASSERT_ENABLED)
+
+if(Debug)
+    add_definitions(-DDEBUG_ASSERT_ENABLED)
+endif()

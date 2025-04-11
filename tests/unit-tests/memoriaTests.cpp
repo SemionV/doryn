@@ -1,7 +1,9 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <spdlog/fmt/fmt.h>
+#include <dory/memory/allocation.h>
 
+#if DORY_PLATFORM_LINUX
 #include <sys/mman.h>
 #include <emmintrin.h>
 
@@ -95,3 +97,5 @@ TEST(MemoriaTests, typeSizes)
     EXPECT_EQ(reinterpret_cast<std::uintptr_t>(ptr2) % alignof(TestType), 0);
     std::free(ptr2);
 }
+
+#endif
