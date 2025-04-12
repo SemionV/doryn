@@ -98,13 +98,23 @@ TEST(MemoriaTests, typeSizes)
     std::free(ptr2);
 }
 
-dory::assert::TAssert<true>::AssertFailureHandlerType dory::assert::TAssert<true>::assertFailureHandler = nullptr;
-
 TEST(MemoriaTests, alignAddress)
 {
-    dory::assert::DebugAssert::setHandler([](const char * msg) {
-        std::cout << msg << std::endl;
-    });
+    dory::assert::Assert::assertFailureHandler = [](const char * msg) {
+        std::cerr << msg << std::endl;
+    };
+
+    dory::assert::InHouseAssert::assertFailureHandler = [](const char * msg) {
+        std::cerr << msg << std::endl;
+        doryDebugBreak();
+    };
+
+    dory::assert::DebugAssert::assertFailureHandler = [](const char * msg) {
+        std::cerr << msg << std::endl;
+        doryDebugBreak();
+        std::exit(EXIT_FAILURE);
+    };
+
     dory::memory::alignAddress(12, 9);
 }
 

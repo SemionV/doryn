@@ -30,10 +30,11 @@ endif()
 
 add_definitions(-DASSERT_ENABLED=1)
 
-if (CMAKE_BUILD_TYPE STREQUAL Debug)
-    add_definitions(-DDEBUG_ASSERT_ENABLED=1)
+if(InHouseRelease)
+    add_definitions(-DIN_HOUSE_ASSERT_ENABLED=1)
 endif()
 
-if(InHouseRelease)
+if (CMAKE_BUILD_TYPE STREQUAL Debug)
+    add_definitions(-DDEBUG_ASSERT_ENABLED=1)
     add_definitions(-DIN_HOUSE_ASSERT_ENABLED=1)
 endif()

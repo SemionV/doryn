@@ -91,3 +91,10 @@ FetchContent_Declare(
         GIT_REPOSITORY    https://github.com/Neargye/magic_enum.git
 )
 FetchContent_MakeAvailable(magic_enum)
+
+FetchContent_Declare(backward
+        GIT_REPOSITORY https://github.com/bombela/backward-cpp
+        GIT_TAG master
+        SYSTEM          # optional, the Backward include directory will be treated as system directory
+)
+FetchContent_MakeAvailable(backward)

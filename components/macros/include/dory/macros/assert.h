@@ -8,20 +8,64 @@
 #include <functional>
 #include <sstream>
 
-//Cause break into debugger with interruption code 3
-#if defined(_MSC_VER)
-    #define debugBreak() __debugbreak()
-#elif defined(__clang__) || defined(__GNUC__)
-    #if defined(__i386__) || defined(__x86_64__)
-        #define debugBreak() __asm__ volatile("int $0x03")
-    #elif defined(__aarch64__) || defined(__arm__)
-        #define debugBreak() __builtin_trap()
+#if defined(DORY_PLATFORM_LINUX) || defined(DORY_PLATFORM_APPLE)
+    #include <sys/types.h>
+    #include <unistd.h>
+    #include <sys/ptrace.h>
+
+    inline bool doryIsDebuggerAttached()
+    {
+    #if defined(__APPLE__)
+        // macOS specific implementation
+        int mib[4];
+        struct kinfo_proc info;
+        size_t size = sizeof(info);
+        mib[0] = CTL_KERN;
+        mib[1] = KERN_PROC;
+        mib[2] = KERN_PROC_PID;
+        mib[3] = getpid();
+        sysctl(mib, 4, &info, &size, NULL, 0);
+        return (info.kp_proc.p_flag & P_TRACED) != 0;
     #else
-        #define debugBreak() __builtin_trap()
+        // Linux implementation
+        static bool checked = false;
+        static bool attached = false;
+
+        if (!checked)
+        {
+            checked = true;
+            attached = (ptrace(PTRACE_TRACEME, 0, nullptr, 0) == -1);
+            if (!attached) ptrace(PTRACE_DETACH, 0, nullptr, 0);
+        }
+        return attached;
     #endif
-#else
-    #define debugBreak() ((void)0)
+    }
+#elif defined(DORY_PLATFORM_WIN32)
+#include <windows.h>
+
+    inline bool isDebuggerAttached()
+    {
+        return ::IsDebuggerPresent();
+    }
 #endif
+
+inline void dorySafeDebugBreak()
+{
+    if (doryIsDebuggerAttached())
+    {
+    #if defined(_MSC_VER)
+        __debugbreak();
+    #elif defined(__clang__) || defined(__GNUC__)
+        #if defined(__i386__) || defined(__x86_64__)
+            __asm__ volatile("int $0x03");
+        #else
+            __builtin_trap();
+        #endif
+    #endif
+    }
+}
+
+#define doryDebugBreak() dorySafeDebugBreak()
 
 #ifndef ASSERT_ENABLED
 #define ASSERT_ENABLED 0
@@ -37,73 +81,81 @@
 
 namespace dory::assert
 {
-    template<bool>
-    struct TAssert
+    struct AssertBase
     {
-        TAssert() = delete;
+        using AssertFailureHandlerType = std::function<void(const char*)>;
+    };
+
+    template<bool, typename = void, typename = void>
+    struct AssertLayer: public AssertBase
+    {
+        AssertLayer() = delete;
+
+        static void handleAssert(const bool, const char*, bool&)
+        {}
 
         static void check(const bool, const char*)
         {}
 
-        static void check(const bool condition, const char* expr, const char* file, const int line)
+        static void check(const bool, const char*, const char*, const int)
         {}
     };
 
-    template<>
-    struct TAssert<true>
+    template<typename TImplementation, typename TUpperLevelAssert>
+    struct AssertLayer<true, TImplementation, TUpperLevelAssert>: public AssertBase
     {
-        TAssert() = delete;
+        AssertLayer() = delete;
 
-        using AssertFailureHandlerType = std::function<void(const char*)>;
-        static AssertFailureHandlerType assertFailureHandler;
-
-        static void setHandler(AssertFailureHandlerType handler)
+        static void handleAssert(const bool condition, const char* msg, bool& isHandled)
         {
-            assertFailureHandler = std::move(handler);
+            if(!condition)
+            {
+                if(TImplementation::assertFailureHandler)
+                {
+                    TImplementation::assertFailureHandler(msg);
+                }
+            }
+
+            isHandled = true;
         }
 
         static void check(const bool condition, const char* msg)
         {
-            if(!condition)
+            bool handled = false;
+            TUpperLevelAssert::handleAssert(condition, msg, handled);
+            if(!handled)
             {
-                if(assertFailureHandler)
-                {
-                    assertFailureHandler(msg);
-                }
-
-                debugBreak();
+                handleAssert(condition, msg, handled);
             }
         }
 
         static void check(const bool condition, const char* expr, const char* file, const int line)
         {
-            if(!condition)
-            {
-                if(assertFailureHandler)
-                {
-                    std::ostringstream oss;
-                    oss << "Assertion failed: " << expr << ", file: " << file << ", line: " << line;
-                    assertFailureHandler(oss.str().c_str());
-                }
-
-                debugBreak();
-            }
+            std::ostringstream oss;
+            oss << "Assertion failed: " << expr << ", file: " << file << ", line: " << line;
+            check(condition, oss.str().c_str());
         }
     };
 
-    struct Assert: public TAssert<ASSERT_ENABLED>
+    struct DebugAssert: public AssertLayer<DEBUG_ASSERT_ENABLED, DebugAssert, AssertLayer<false>>
     {
-        Assert() = delete;
+        static AssertBase::AssertFailureHandlerType assertFailureHandler;
+
+        DebugAssert() = delete;
     };
 
-    struct InHouseAssert: public TAssert<IN_HOUSE_ASSERT_ENABLED>
+    struct InHouseAssert: public AssertLayer<IN_HOUSE_ASSERT_ENABLED, InHouseAssert, DebugAssert>
     {
+        static AssertBase::AssertFailureHandlerType assertFailureHandler;
+
         InHouseAssert() = delete;
     };
 
-    struct DebugAssert: public TAssert<DEBUG_ASSERT_ENABLED>
+    struct Assert: public AssertLayer<ASSERT_ENABLED, Assert, InHouseAssert>
     {
-        DebugAssert() = delete;
+        static AssertBase::AssertFailureHandlerType assertFailureHandler;
+
+        Assert() = delete;
     };
 
     inline void debug(const bool condition, const char* msg)
