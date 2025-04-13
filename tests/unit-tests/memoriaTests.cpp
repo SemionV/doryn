@@ -143,6 +143,10 @@ TEST(MemoriaTests, alignAddress)
     };
 
     dory::memory::alignAddress(12, 8);
+
+    std::allocator<std::size_t> allocator {};
+    std::size_t* data = allocator.allocate(4);
+    std::vector<std::size_t> v {allocator};
 }
 
 #endif
