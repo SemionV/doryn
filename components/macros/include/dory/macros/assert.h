@@ -96,9 +96,6 @@ namespace dory::assert
 
         static void check(const bool, const char*)
         {}
-
-        static void check(const bool, const char*, const char*, const int)
-        {}
     };
 
     template<typename TImplementation, typename TUpperLevelAssert>
@@ -127,13 +124,6 @@ namespace dory::assert
             {
                 handleAssert(condition, msg, handled);
             }
-        }
-
-        static void check(const bool condition, const char* expr, const char* file, const int line)
-        {
-            std::ostringstream oss;
-            oss << "Assertion failed: " << expr << ", file: " << file << ", line: " << line;
-            check(condition, oss.str().c_str());
         }
     };
 
@@ -173,12 +163,3 @@ namespace dory::assert
         Assert::check(condition, msg);
     }
 }
-
-#define DORY_ASSERT(cond, msg) \
-    ::dory::assert::Assert::check((cond), msg, __FILE__, __LINE__)
-
-#define DORY_IN_HOUSE_ASSERT(cond, msg) \
-    ::dory::assert::InHouseAssert::check((cond), msg, __FILE__, __LINE__)
-
-#define DORY_DEBUG_ASSERT(cond, msg) \
-    ::dory::assert::DebugAssert::check((cond), msg, __FILE__, __LINE__)

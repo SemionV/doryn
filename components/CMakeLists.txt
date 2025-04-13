@@ -1,5 +1,6 @@
 add_subdirectory(macros)
 add_subdirectory(generic)
+add_subdirectory(containers)
 add_subdirectory(serialization)
 add_subdirectory(concurrency)
 add_subdirectory(math)

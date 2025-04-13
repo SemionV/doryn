@@ -2,6 +2,7 @@
 #include <gmock/gmock.h>
 #include <spdlog/fmt/fmt.h>
 #include <dory/memory/allocation.h>
+#include <backward.hpp>
 
 #if DORY_PLATFORM_LINUX
 #include <sys/mman.h>
@@ -98,6 +99,31 @@ TEST(MemoriaTests, typeSizes)
     std::free(ptr2);
 }
 
+void printStack()
+{
+    namespace bw = backward;
+
+    bw::StackTrace st;
+    st.load_here(64);  // capture up to 64 frames
+
+    bw::TraceResolver resolver;
+    resolver.load_stacktrace(st);
+
+    for (int i = static_cast<int>(st.size()) - 1; i >= 0; --i)
+    {
+        const bw::ResolvedTrace trace = resolver.resolve(st[i]);
+        std::cout << "#" << i << " ";
+
+        if (!trace.source.filename.empty())
+        {
+            std::cout << trace.source.filename << ":"
+                      << trace.source.line << " - ";
+        }
+
+        std::cout << trace.object_function << std::endl;
+    }
+}
+
 TEST(MemoriaTests, alignAddress)
 {
     dory::assert::Assert::assertFailureHandler = [](const char * msg) {
@@ -111,11 +137,12 @@ TEST(MemoriaTests, alignAddress)
 
     dory::assert::DebugAssert::assertFailureHandler = [](const char * msg) {
         std::cerr << msg << std::endl;
+        printStack();
         doryDebugBreak();
         std::exit(EXIT_FAILURE);
     };
 
-    dory::memory::alignAddress(12, 9);
+    dory::memory::alignAddress(12, 8);
 }
 
 #endif
