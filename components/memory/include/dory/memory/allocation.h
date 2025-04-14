@@ -9,6 +9,12 @@
 
 namespace dory::memory
 {
+    enum class ErrorCode
+    {
+        Success,
+        OutOfMemory
+    };
+
     inline std::uintptr_t alignAddress(const std::uintptr_t address, const std::size_t align)
     {
         const std::size_t mask = align - 1;
@@ -25,7 +31,7 @@ namespace dory::memory
     }
 
     std::size_t getSystemMemoryPageSize();
-    void* reserveMemoryPages(std::size_t pagesCount);
+    void* reserveMemoryPages(std::size_t pageSize, std::size_t pagesCount);
     void releaseMemoryPages(void* ptr, std::size_t pageSize, std::size_t pagesCount);
     void commitPages(void* ptr, std::size_t pageSize, std::size_t pagesCount);
 

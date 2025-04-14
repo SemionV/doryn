@@ -5,13 +5,6 @@
 
 namespace dory::memory
 {
-    enum class ErrorCode
-    {
-        Success,
-        InsufficientSystemMemory,
-        OutOfMemory
-    };
-
     class StackAllocator
     {
     private:
@@ -22,7 +15,7 @@ namespace dory::memory
         void* _currentPosition {};
 
     public:
-        explicit StackAllocator(std::size_t estimatedMemoryUsage);
+        explicit StackAllocator(std::size_t estimatedMemoryUsage) noexcept;
 
         ErrorCode initialize() noexcept;
         void destroy() noexcept;

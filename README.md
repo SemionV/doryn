@@ -30,3 +30,8 @@ To setup project localy:
 
 **To use static analysis tool:**
 * sudo apt-get install cppcheck
+
+**Build-time definitions:**
+* ASSERT_ENABLED : on/off the asserts for production builds 
+* DEBUG_ASSERT_ENABLED : on/off the asserts for in-house release builds
+* IN_HOUSE_ASSERT_ENABLED : on/off the asserts for debug builds

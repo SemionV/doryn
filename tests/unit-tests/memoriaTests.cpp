@@ -149,4 +149,16 @@ TEST(MemoriaTests, alignAddress)
     std::vector<std::size_t> v {allocator};
 }
 
+struct TestStruct
+{
+    std::size_t size {};
+    char symbol {};
+};
+
+TEST(MemoriaTests, paddingStructure)
+{
+    std::cout << sizeof(TestStruct) << std::endl;
+    std::cout << alignof(TestStruct) << std::endl;
+}
+
 #endif

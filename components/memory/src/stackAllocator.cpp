@@ -2,7 +2,7 @@
 
 namespace dory::memory
 {
-    StackAllocator::StackAllocator(const std::size_t estimatedMemoryUsage)
+    StackAllocator::StackAllocator(const std::size_t estimatedMemoryUsage) noexcept
     {
         _pageSize = getSystemMemoryPageSize();
         assert::inhouse(_pageSize > 0, "Page size cannot be zero or negative");
@@ -11,15 +11,15 @@ namespace dory::memory
         _totalSize = _pageSize * _pagesCount;
     }
 
-    ErrorCode StackAllocator::initialize()
+    ErrorCode StackAllocator::initialize() noexcept
     {
         assert::debug(!_blockPointer, "Repeated initialization attempt");
         assert::debug(!_currentPosition, "Repeated initialization attempt");
 
-        void* ptr = reserveMemoryPages(_pagesCount);
+        void* ptr = reserveMemoryPages(_pageSize, _pagesCount);
         if(!ptr)
         {
-            return ErrorCode::InsufficientSystemMemory;
+            return ErrorCode::OutOfMemory;
         }
 
         _blockPointer = ptr;
@@ -30,7 +30,7 @@ namespace dory::memory
         return ErrorCode::Success;
     }
 
-    void StackAllocator::destroy()
+    void StackAllocator::destroy() noexcept
     {
         assert::debug(_blockPointer, "Destroying uninitialized allocator");
         assert::debug(_currentPosition, "Destroying uninitialized allocator");
