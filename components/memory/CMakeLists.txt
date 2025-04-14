@@ -2,6 +2,7 @@ set(DORY_MODULE_NAME ${PROJECT_NAME}-memory)
 
 add_library(${DORY_MODULE_NAME} STATIC
         src/allocation.cpp
+        src/allocators/blockAllocator.cpp
         src/dynamicAllocator.cpp
         src/memoryBlockAllocator.cpp
         src/stackAllocator.cpp)
