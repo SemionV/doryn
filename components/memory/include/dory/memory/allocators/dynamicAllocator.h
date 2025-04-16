@@ -3,6 +3,7 @@
 #include <atomic>
 #include <dory/memory/resources/memoryBlock.h>
 #include <dory/memory/resources/resourceHandle.h>
+#include "poolAllocator.h"
 
 namespace dory::memory
 {
