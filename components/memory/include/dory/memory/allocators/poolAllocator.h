@@ -45,6 +45,12 @@ namespace dory::memory
             return nullptr;
         }
 
+        T& get(std::size_t index) const
+        {
+            assert::debug(index >= _memoryPool.itemsCount, "Invalid item index");
+            return _memoryPool.pointer[index];
+        }
+
         void reset()
         {
             _freeList.clearAll();

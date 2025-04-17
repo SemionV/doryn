@@ -2,7 +2,7 @@
 
 namespace dory::memory
 {
-    DynamicAllocator::DynamicAllocator(const MemoryBlock& memoryBlock) noexcept:
-        _memory(memoryBlock)
+    DynamicAllocator::DynamicAllocator(const MemoryBlock& memoryBlock, const AddressList addressHandles) noexcept:
+        _memory(memoryBlock), _addressHandles(addressHandles)
     {}
 }

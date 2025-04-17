@@ -4,7 +4,6 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/allocation.cpp
         src/allocators/blockAllocator.cpp
         src/allocators/dynamicAllocator.cpp
-        src/dynamicAllocator.cpp
         src/memoryBlockAllocator.cpp
         src/stackAllocator.cpp)
 target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
