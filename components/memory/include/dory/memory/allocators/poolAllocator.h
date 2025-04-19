@@ -19,36 +19,24 @@ namespace dory::memory
             _freeList(freeList)
         {}
 
-        std::size_t allocate()
+        T* allocate()
         {
             const std::size_t index = _freeList.getLeastUnsetBitIndex();
             if(index != BitArray<std::uint64_t>::npos)
             {
                 _freeList.set(index);
-            }
-
-            return index;
-        }
-
-        void deallocate(const std::size_t index)
-        {
-            _freeList.clear(index);
-        }
-
-        T* getAddress(std::size_t index) const
-        {
-            if(index < _memoryPool.itemsCount)
-            {
                 return &_memoryPool.pointer[index];
             }
-            assert::debug(false, "Invalid item index");
+
             return nullptr;
         }
 
-        T& get(std::size_t index) const
+        void deallocate(const T* ptr)
         {
-            assert::debug(index >= _memoryPool.itemsCount, "Invalid item index");
-            return _memoryPool.pointer[index];
+            assert::debug(ptr, "Invalid pointer");
+            const std::ptrdiff_t diff = ptr - _memoryPool.pointer;
+            const std::size_t index = diff / sizeof(T);
+            _freeList.clear(index);
         }
 
         void reset()

@@ -19,6 +19,7 @@ namespace dory::memory
             return ErrorCode::OutOfMemory;
         }
 
+        //TODO: let the user commit the pages manually, this might be needed in pool allocators
         commitMemoryPages(pointer, _pageSize, pagesCount);
 
         memoryBlock.ptr = pointer;

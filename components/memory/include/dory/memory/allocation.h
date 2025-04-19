@@ -65,6 +65,6 @@ namespace dory::memory
         }
     }
 #elif DORY_PLATFORM_WIN32
-    //TODO: implement memery management functions for WIN32
+    //TODO: implement memory management functions for WIN32
 #endif
 }

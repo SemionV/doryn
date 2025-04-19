@@ -45,7 +45,7 @@ namespace dory::memory
         std::size_t _id {};
 
     public:
-        explicit ResourceHandle(std::size_t id) noexcept:
+        explicit ResourceHandle(const std::size_t id) noexcept:
             _id(id)
         {}
 
