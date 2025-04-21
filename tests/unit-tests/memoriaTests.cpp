@@ -4,6 +4,8 @@
 #include <dory/memory/allocation.h>
 #include <backward.hpp>
 
+#include <dory/memory/allocators/dynamicAllocator2.h>
+
 #if DORY_PLATFORM_LINUX
 #include <sys/mman.h>
 #include <emmintrin.h>

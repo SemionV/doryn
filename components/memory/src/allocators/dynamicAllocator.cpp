@@ -3,18 +3,16 @@
 namespace dory::memory
 {
     DynamicAllocator::DynamicAllocator(const MemoryBlock& memoryBlock,
-        PoolAllocator<BlockDescriptor>& descriptorsAllocator, PoolAllocator<AddressHandle>& handlesAllocator) noexcept:
+        PoolAllocator<DynamicBlock>& descriptorsAllocator, PoolAllocator<AddressHandle>& handlesAllocator) noexcept:
         _memory(memoryBlock),
-        _descriptorsAllocator(descriptorsAllocator),
+        _blocksAllocator(descriptorsAllocator),
         _handlesAllocator(handlesAllocator)
     {
-        _headDescriptor = _descriptorsAllocator.allocate();
-        assert::debug(_headDescriptor, "Cannot allocate the head block descriptor");
-        _headDescriptor->offset = 0;
-        _headDescriptor->size = 0;
+        _headBlock = _blocksAllocator.allocate();
+        assert::debug(_headBlock, "Cannot allocate the head block descriptor");
 
-        _headDescriptor->nextDescriptor = _descriptorsAllocator.allocate();
-        _headDescriptor->nextDescriptor->offset = 0;
-        _headDescriptor->nextDescriptor->size = _memory.size;
+        _headBlock->offset = 0;
+        _headBlock->size = _memory.size;
+        _headBlock->state = DynamicBlockState::free;
     }
 }

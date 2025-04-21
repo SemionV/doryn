@@ -8,26 +8,26 @@
 
 namespace dory::memory
 {
-    enum class BlockDescriptorState
+    enum class DynamicBlockState
     {
         free,
         locked,
         allocated
     };
 
-    struct BlockDescriptor
+    struct DynamicBlock
     {
         std::size_t offset {};
         std::size_t size {};
-        BlockDescriptor* prevDescriptor {};
-        BlockDescriptor* nextDescriptor {};
+        DynamicBlock* nextBlock {};
+        std::atomic<DynamicBlockState> state;
 
-        bool allocated {};
+        bool allocated {}; //TODO: redundant, remove
     };
 
     struct AddressHandle
     {
-        BlockDescriptor* descriptor {};
+        DynamicBlock* descriptor {};
         std::atomic<bool> locked {};
     };
 
@@ -40,48 +40,41 @@ namespace dory::memory
     {
     private:
         MemoryBlock _memory;
-        PoolAllocator<BlockDescriptor>& _descriptorsAllocator;
+        PoolAllocator<DynamicBlock>& _blocksAllocator;
         PoolAllocator<AddressHandle>& _handlesAllocator;
-        BlockDescriptor* _headDescriptor {};
+        DynamicBlock* _headBlock {};
 
-        std::size_t allocate(const std::size_t alignedAddress, const std::size_t size, BlockDescriptor* freeBlock, BlockDescriptor* prevBlock)
+        std::size_t allocate(const std::size_t alignedAddress, const std::size_t size, DynamicBlock* freeBlock, DynamicBlock* prevBlock)
         {
-            BlockDescriptor* allocatedBlock = _descriptorsAllocator.allocate();
+            DynamicBlock* allocatedBlock = _blocksAllocator.allocate();
             allocatedBlock->size = size;
             allocatedBlock->offset = alignedAddress;
             allocatedBlock->allocated = true;
 
-            BlockDescriptor* leftBlock = allocatedBlock;
+            DynamicBlock* leftBlock = allocatedBlock;
 
             //If there is a gap because of address alignment, create an empty block for the gap
             if(const std::size_t gapSize = alignedAddress - freeBlock->offset)
             {
-                BlockDescriptor* gapBlock = leftBlock = _descriptorsAllocator.allocate();
+                DynamicBlock* gapBlock = leftBlock = _blocksAllocator.allocate();
                 gapBlock->offset = freeBlock->offset;
                 gapBlock->size = gapSize;
-                gapBlock->prevDescriptor = freeBlock->prevDescriptor;
-                gapBlock->nextDescriptor = allocatedBlock;
-                allocatedBlock->prevDescriptor = gapBlock;
-            }
-            else
-            {
-                allocatedBlock->prevDescriptor = freeBlock->prevDescriptor;
+                gapBlock->nextBlock = allocatedBlock;
             }
 
             const std::size_t effectiveSize = alignedAddress + size - freeBlock->offset;
 
             if(const std::size_t leftoverSize = freeBlock->size - effectiveSize)
             {
-                BlockDescriptor* leftoverBlock = _descriptorsAllocator.allocate();
+                DynamicBlock* leftoverBlock = _blocksAllocator.allocate();
                 leftoverBlock->offset = freeBlock->offset + effectiveSize;
                 leftoverBlock->size = leftoverSize;
-                leftoverBlock->prevDescriptor = allocatedBlock;
-                leftoverBlock->nextDescriptor = freeBlock->nextDescriptor;
-                allocatedBlock->nextDescriptor = leftoverBlock;
+                leftoverBlock->nextBlock = freeBlock->nextBlock;
+                allocatedBlock->nextBlock = leftoverBlock;
             }
             else
             {
-                allocatedBlock->nextDescriptor = freeBlock->nextDescriptor;
+                allocatedBlock->nextBlock = freeBlock->nextBlock;
             }
 
             {
@@ -89,44 +82,48 @@ namespace dory::memory
                 //TODO: deallocate allocatedBlock, gapBlock and leftoverBlock if allocation has to be restarted
 
                 //TODO: use atomic CAS operation
-                prevBlock->nextDescriptor = leftBlock;
+                prevBlock->nextBlock = leftBlock;
 
-                _descriptorsAllocator.deallocate(freeBlock);
+                _blocksAllocator.deallocate(freeBlock);
             }
         }
 
+        std::size_t allocateLikeABoss(const std::size_t alignedAddress, const std::size_t size, DynamicBlock* freeBlock)
+        {
+
+        }
+
     public:
-        template<typename T> friend class ResourceHandle<T>;
 
         explicit DynamicAllocator(const MemoryBlock& memoryBlock,
-            PoolAllocator<BlockDescriptor>& descriptorsAllocator,
+            PoolAllocator<DynamicBlock>& descriptorsAllocator,
             PoolAllocator<AddressHandle>& handlesAllocator) noexcept;
 
         template<typename T>
         ResourceHandle<T> allocate() noexcept
         {
-            assert::debug(_headDescriptor, "Head block descriptor is not allocated");
+            assert::debug(_headBlock, "Head block descriptor is not allocated");
 
             //aligned size(usually should be pre-calculated by the compiler)
             const std::size_t align = alignof(T);
             const std::size_t size = alignAddress(sizeof(T), align);
 
-            BlockDescriptor* prevBlock = _headDescriptor;
-            BlockDescriptor* descriptor = _headDescriptor->nextDescriptor;
-            while(descriptor)
+            DynamicBlock* block = _headBlock;
+            while(block)
             {
-                if(!descriptor->allocated)
+                if(block->state.load(std::memory_order_acquire) == DynamicBlockState::free)
+
+                if(!block->allocated) //TODO: use atomic read operation of the flag
                 {
-                    const std::size_t alignedAddress = alignAddress(descriptor->offset, align);
-                    if(alignedAddress + size < descriptor->offset + descriptor->size)
+                    const std::size_t alignedAddress = alignAddress(block->offset, align);
+                    if(alignedAddress + size < block->offset + block->size)
                     {
-                        return ResourceHandle<T>{ allocate(alignedAddress, size, descriptor, prevBlock) };
+                        return ResourceHandle<T>{ allocateLikeABoss(alignedAddress, size, block) };
                     }
                 }
 
-                prevBlock = descriptor;
                 //TODO: use atomic read operation
-                descriptor = descriptor->nextDescriptor;
+                block = block->nextBlock;
             }
 
             return ResourceHandle<T>{ {} };
