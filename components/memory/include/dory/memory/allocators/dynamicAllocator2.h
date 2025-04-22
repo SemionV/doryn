@@ -13,7 +13,7 @@ namespace dory::memory
         std::size_t offset {};
         std::size_t size {};
         DynamicBlock* nextBlock {};
-        std::atomic<std::size_t> lock {};
+        std::atomic<std::size_t> state {};
     };
 
     struct DynamicBlockState
@@ -65,32 +65,60 @@ namespace dory::memory
         {
             assert::debug(_headBlock, "Head block descriptor is not allocated");
 
-            //aligned size(usually should be pre-calculated by the compiler)
             const std::size_t align = alignof(T);
             const std::size_t size = sizeof(T);
-            const std::size_t sizeWithAlignment = size + align - 1;
 
             DynamicBlock* block = _headBlock;
             while(block)
             {
-                std::size_t lockValue = DynamicBlockState::free;
-                if(block->lock.compare_exchange_strong(lockValue, sizeWithAlignment))
+                DynamicBlock* resultBlock = tryAcquireBlock(size, align, block);
+
+                block = block->nextBlock;
+            }
+
+            return ResourceHandle<T>{ {} };
+        }
+
+    private:
+        std::size_t getAlignedOffset(const std::size_t align, const DynamicBlock& block)
+        {
+            const std::uintptr_t address = reinterpret_cast<std::uintptr_t>(_memory.ptr) + block.offset;
+            const std::uintptr_t alignedAddress = alignAddress(address, align);
+            return alignedAddress - address - block.offset;
+        }
+
+        DynamicBlock* tryAcquireBlock(const std::size_t size, const std::size_t align, DynamicBlock* block)
+        {
+            DynamicBlock* result = block;
+            std::size_t sizeWithAlignment = size + align - 1;
+            std::size_t stateValue = DynamicBlockState::free;
+
+            if(block->state.compare_exchange_strong(stateValue, sizeWithAlignment))
+            {
+                const std::uintptr_t alignedOffset = getAlignedOffset(align, block);
+                if(alignedOffset < block->size)
                 {
-                    const std::uintptr_t alignedOffset = getAlignedOffset(align, block);
                     std::size_t acquiredSize = block->size - alignedOffset;
                     DynamicBlock* currentBlock = block->nextBlock;
-                    //try to acquire blocks for requested size
+
                     while(acquiredSize < size)
                     {
                         if(currentBlock)
                         {
-                            lockValue = DynamicBlockState::free;
-                            if(currentBlock->lock.compare_exchange_strong(lockValue, size - acquiredSize))
+                            stateValue = DynamicBlockState::free;
+                            if(currentBlock->state.compare_exchange_strong(stateValue, size - acquiredSize))
                             {
                                 acquiredSize += currentBlock->size;
                             }
+                            else if(DynamicBlockState::isLocked(stateValue))
+                            {
+                                //TODO: if currentBlock is locked for potential allocation,
+                                //TODO: we can wait until the block changes the state to free or
+                                //TODO: allocated in order to not waste an opportunity if the block will be released by the other thread
+                            }
                             else
                             {
+                                //the block is allocated
                                 break;
                             }
 
@@ -111,26 +139,38 @@ namespace dory::memory
                     }
                     else
                     {
-                        //TODO: release acquired blocks
+                        //release acquired blocks
+
+                        result = currentBlock;
+                        bool released = block->state.compare_exchange_strong(sizeWithAlignment, DynamicBlockState::free);
+                        assert::debug(released, "Block is not released");
+
+                        std::size_t releasedSize = block->size - alignedOffset;
+                        currentBlock = block->nextBlock;
+                        std::size_t expectedState = size - releasedSize;
+                        while(releasedSize < acquiredSize)
+                        {
+                            released = currentBlock->state.compare_exchange_strong(expectedState, DynamicBlockState::free);
+                            assert::debug(released, "Block is not released");
+                            releasedSize += currentBlock->size;
+                            expectedState = size - releasedSize;
+
+                            currentBlock = currentBlock->nextBlock;
+                        }
                     }
                 }
-                else if(DynamicBlockState::isLocked(lockValue))
+                else
                 {
-
+                    const bool released = block->state.compare_exchange_strong(sizeWithAlignment, DynamicBlockState::free);
+                    assert::debug(released, "Block is not released");
                 }
+            }
+            else if(DynamicBlockState::isLocked(stateValue))
+            {
 
-                block = block->nextBlock;
             }
 
-            return ResourceHandle<T>{ {} };
-        }
-
-    private:
-        std::size_t getAlignedOffset(const std::size_t align, const DynamicBlock& block)
-        {
-            const std::uintptr_t address = reinterpret_cast<std::uintptr_t>(_memory.ptr) + block.offset;
-            const std::uintptr_t alignedAddress = alignAddress(address, align);
-            return alignedAddress - address - block.offset;
+            return result;
         }
     };
 }
