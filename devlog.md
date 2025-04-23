@@ -6,6 +6,9 @@
 * Update parent to parent size from their children, until hit a floating container or the one whose size upstream is not children
 
 Tasks:
+* Use per-block spin-locks to read/write block data atomically
+* Use a counter in a block for the threads who are entering the sub-chains and blocking the blocks in the sub-chain from deletion 
+
 * No Exceptions(disable them explicitly)
 * Debug-time, InHouse-Release and Release build assertions
 * No syscalls in the main game loop

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <thread>
 #include <dory/macros/assert.h>
 #include <dory/macros/constants.h>
 #include <dory/memory/resources/memoryBlock.h>
@@ -10,10 +11,13 @@ namespace dory::memory
 {
     struct alignas(constants::cacheLineSize) DynamicBlock //alignas: avoid fake sharing and cache ping-pong between CPU cores
     {
-        std::size_t offset {};
+        void* ptr {};
         std::size_t size {};
         DynamicBlock* nextBlock {};
-        std::atomic<std::size_t> state {};
+        std::size_t state {};
+        std::uint8_t alignPower {};
+        std::uint8_t refCount {}; //count of threads entered the chain after the block, needed for garbage collector
+        std::atomic_flag lockFlag {};
     };
 
     struct DynamicBlockState
@@ -71,7 +75,7 @@ namespace dory::memory
             DynamicBlock* block = _headBlock;
             while(block)
             {
-                DynamicBlock* resultBlock = tryAcquireBlock(size, align, block);
+                DynamicBlock* resultBlock = tryAcquireBlock(size, getAlignPower(align), block);
 
                 block = block->nextBlock;
             }
@@ -80,95 +84,130 @@ namespace dory::memory
         }
 
     private:
-        std::size_t getAlignedOffset(const std::size_t align, const DynamicBlock& block)
+        int static getAlignPower(std::uint16_t align)
         {
-            const std::uintptr_t address = reinterpret_cast<std::uintptr_t>(_memory.ptr) + block.offset;
-            const std::uintptr_t alignedAddress = alignAddress(address, align);
-            return alignedAddress - address - block.offset;
+            assert::debug(align, "Alignment cannot be 0");
+            assert::debug((align & align - 1) == 0, "Alignment must be a power of 2");
+
+            int position = 0;
+            while (align >>= 1)
+            {
+                ++position;
+            }
+            return position;
         }
 
-        DynamicBlock* tryAcquireBlock(const std::size_t size, const std::size_t align, DynamicBlock* block)
+        static std::size_t getAlignedOffset(const std::uint8_t alignPower, const DynamicBlock& block)
         {
-            DynamicBlock* result = block;
-            std::size_t sizeWithAlignment = size + align - 1;
-            std::size_t stateValue = DynamicBlockState::free;
+            const auto address = reinterpret_cast<std::uintptr_t>(block.ptr);
+            const std::uintptr_t alignedAddress = alignAddress(address, 1 << alignPower);
+            return alignedAddress - address;
+        }
 
-            if(block->state.compare_exchange_strong(stateValue, sizeWithAlignment))
+        static void acquireLock(DynamicBlock* block)
+        {
+            while(block->lockFlag.test_and_set(std::memory_order_acquire))
             {
-                const std::uintptr_t alignedOffset = getAlignedOffset(align, block);
+                block->lockFlag.wait(true, std::memory_order_relaxed);
+            }
+        }
+
+        static void releaseLock(DynamicBlock* block)
+        {
+            block->lockFlag.clear(std::memory_order_release);
+            block->lockFlag.notify_one();
+        }
+
+        static std::pair<DynamicBlock*, std::size_t> tryAcquireBlock(const std::size_t size, const std::uint8_t alignPower, DynamicBlock* block)
+        {
+            std::pair<DynamicBlock*, std::size_t> result { block, 0 };
+
+            acquireLock(block); //TODO: use RAII
+
+            if(DynamicBlockState::isFree(block->state))
+            {
+                const std::size_t alignedOffset = getAlignedOffset(alignPower, block);
                 if(alignedOffset < block->size)
                 {
-                    std::size_t acquiredSize = block->size - alignedOffset;
-                    DynamicBlock* currentBlock = block->nextBlock;
+                    const std::size_t sizeWithAlignment = size + alignedOffset;
+                    block->state = sizeWithAlignment;
+                    block->alignPower = alignPower;
 
-                    while(acquiredSize < size)
+                    if(sizeWithAlignment > block->size)
                     {
-                        if(currentBlock)
-                        {
-                            stateValue = DynamicBlockState::free;
-                            if(currentBlock->state.compare_exchange_strong(stateValue, size - acquiredSize))
-                            {
-                                acquiredSize += currentBlock->size;
-                            }
-                            else if(DynamicBlockState::isLocked(stateValue))
-                            {
-                                //TODO: if currentBlock is locked for potential allocation,
-                                //TODO: we can wait until the block changes the state to free or
-                                //TODO: allocated in order to not waste an opportunity if the block will be released by the other thread
-                            }
-                            else
-                            {
-                                //the block is allocated
-                                break;
-                            }
-
-                            currentBlock = currentBlock->nextBlock;
-                        }
-                        else
-                        {
-                            break;
-                        }
+                        result.first = block->nextBlock;
+                        result.second = block->size - alignedOffset;
                     }
+                }
+            }
+            else if(DynamicBlockState::isLocked(block->state))
+            {
+                //TODO: traverse the chain to find next block beyond the lock
 
-                    //blocks are successfully acquired
-                    if(acquiredSize >= size)
-                    {
-                        //TODO: create a free block for the alignment gap in the beginning of the first segment
-                        //TODO: merge all allocated blocks
-                        //TODO: create a free block for the rest at the last segment
-                    }
-                    else
-                    {
-                        //release acquired blocks
+                std::size_t lockedSize = block->state;
+                std::size_t lockedOffset = getAlignedOffset(block->alignPower, block);
+                std::size_t accumulatedSize = block->size - lockedOffset;
 
-                        result = currentBlock;
-                        bool released = block->state.compare_exchange_strong(sizeWithAlignment, DynamicBlockState::free);
-                        assert::debug(released, "Block is not released");
-
-                        std::size_t releasedSize = block->size - alignedOffset;
-                        currentBlock = block->nextBlock;
-                        std::size_t expectedState = size - releasedSize;
-                        while(releasedSize < acquiredSize)
-                        {
-                            released = currentBlock->state.compare_exchange_strong(expectedState, DynamicBlockState::free);
-                            assert::debug(released, "Block is not released");
-                            releasedSize += currentBlock->size;
-                            expectedState = size - releasedSize;
-
-                            currentBlock = currentBlock->nextBlock;
-                        }
-                    }
+                if(accumulatedSize >= lockedSize)
+                {
+                    //TODO: wait until the block changes its state to allocated and put the next block to the result
                 }
                 else
                 {
-                    const bool released = block->state.compare_exchange_strong(sizeWithAlignment, DynamicBlockState::free);
-                    assert::debug(released, "Block is not released");
+                    DynamicBlock* currentBlock = block->nextBlock;
+                    DynamicBlock* firstBlock = currentBlock;
+                    if(firstBlock)
+                    {
+                        acquireLock(firstBlock); //TODO: use RAII!
+                        firstBlock->refCount++;
+                        releaseLock(firstBlock);
+                    }
+
+                    while(currentBlock)
+                    {
+                        acquireLock(currentBlock); //TODO: use RAII!
+
+                        if(DynamicBlockState::isFree(block->state))
+                        {
+                            accumulatedSize += currentBlock->size;
+                            if(accumulatedSize >= lockedSize)
+                            {
+                                result.first = currentBlock->nextBlock;
+
+                                acquireLock(firstBlock); //TODO: use RAII!
+                                firstBlock->refCount--;
+                                releaseLock(firstBlock);
+
+                                releaseLock(currentBlock);
+                                break;
+                            }
+                        }
+                        else if(DynamicBlockState::isLocked(block->state))
+                        {
+                            //TODO: restart traverse(recursive)
+                        }
+                        else //block is allocated
+                        {
+                            result.first = currentBlock->nextBlock;
+
+                            acquireLock(firstBlock); //TODO: use RAII!
+                            firstBlock->refCount--;
+                            releaseLock(firstBlock);
+
+                            releaseLock(currentBlock);
+                            break;
+                        }
+
+                        releaseLock(currentBlock);
+                    }
                 }
             }
-            else if(DynamicBlockState::isLocked(stateValue))
+            else //block is allocated
             {
-
+                result.first = block->nextBlock;
             }
+
+            releaseLock(block);
 
             return result;
         }
