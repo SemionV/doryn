@@ -163,4 +163,20 @@ TEST(MemoriaTests, paddingStructure)
     std::cout << alignof(TestStruct) << std::endl;
 }
 
+TEST(MemoriaTests, dynamicAllocator)
+{
+    dory::memory::MemoryPool<dory::memory::DynamicBlock> memoryPool {100, nullptr};
+    dory::memory::BitArray<std::size_t> freeList {100, nullptr};
+    dory::memory::PoolAllocator<dory::memory::DynamicBlock> blockAllocator {memoryPool, freeList};
+
+    dory::memory::MemoryPool<dory::memory::AddressHandle> handlesMemoryPool;
+    dory::memory::BitArray<std::size_t> handlesFreeList {100, nullptr};
+    dory::memory::PoolAllocator<dory::memory::AddressHandle> handleAllocator {handlesMemoryPool, handlesFreeList};
+
+    dory::memory::MemoryBlock memoryBlock;
+    dory::memory::DynamicAllocator2<void> allocator {memoryBlock, blockAllocator, handleAllocator};
+
+    auto handle = allocator.allocate<std::size_t>();
+}
+
 #endif

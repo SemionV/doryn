@@ -5,6 +5,7 @@
 #include <dory/macros/constants.h>
 #include <dory/memory/resources/memoryBlock.h>
 #include <dory/memory/resources/resourceHandle.h>
+#include <dory/concurrency/spinLock.h>
 #include "poolAllocator.h"
 
 namespace dory::memory
@@ -75,7 +76,7 @@ namespace dory::memory
             DynamicBlock* block = _headBlock;
             while(block)
             {
-                DynamicBlock* resultBlock = tryAcquireBlock(size, getAlignPower(align), block);
+                std::pair<DynamicBlock*, std::size_t> result = tryAcquireBlock(size, getAlignPower(align), block);
 
                 block = block->nextBlock;
             }
@@ -126,7 +127,7 @@ namespace dory::memory
 
             if(DynamicBlockState::isFree(block->state))
             {
-                const std::size_t alignedOffset = getAlignedOffset(alignPower, block);
+                const std::size_t alignedOffset = getAlignedOffset(alignPower, *block);
                 if(alignedOffset < block->size)
                 {
                     const std::size_t sizeWithAlignment = size + alignedOffset;
@@ -142,10 +143,20 @@ namespace dory::memory
             }
             else if(DynamicBlockState::isLocked(block->state))
             {
+                if(DynamicBlock* freeBlock = fastForwardLockedChain(block))
+                {
+                    //TODO: handle the case
+                    result.first = freeBlock;
+                }
+                else
+                {
+                    //TODO: handle nullptr case
+                }
+
                 //TODO: traverse the chain to find next block beyond the lock
 
                 std::size_t lockedSize = block->state;
-                std::size_t lockedOffset = getAlignedOffset(block->alignPower, block);
+                std::size_t lockedOffset = getAlignedOffset(block->alignPower, *block);
                 std::size_t accumulatedSize = block->size - lockedOffset;
 
                 if(accumulatedSize >= lockedSize)
@@ -210,6 +221,43 @@ namespace dory::memory
             releaseLock(block);
 
             return result;
+        }
+
+        static DynamicBlock* fastForwardLockedChain(DynamicBlock* lockedBlock)
+        {
+            DynamicBlock* freeBlock = nullptr;
+
+            lockedBlock->refCount++; //TODO: use RAII
+
+            while(lockedBlock)
+            {
+                const std::size_t lockedSize = lockedBlock->state;
+                const std::size_t lockedOffset = getAlignedOffset(lockedBlock->alignPower, *lockedBlock);
+                std::size_t accumulatedSize = lockedBlock->size - lockedOffset;
+
+                DynamicBlock* currentBlock = lockedBlock->nextBlock;
+                DynamicBlock* prevBlock = lockedBlock;
+
+                while(accumulatedSize < lockedSize)
+                {
+                    if(currentBlock)
+                    {
+                        acquireLock(currentBlock);
+
+
+
+                        releaseLock(currentBlock);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+
+            lockedBlock->refCount--;
+
+            return freeBlock;
         }
     };
 }
