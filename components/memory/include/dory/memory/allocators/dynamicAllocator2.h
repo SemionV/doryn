@@ -12,13 +12,15 @@ namespace dory::memory
 {
     struct alignas(constants::cacheLineSize) DynamicBlock //alignas: avoid fake sharing and cache ping-pong between CPU cores
     {
+        using MutexType = concurrency::SpinLockMutex;
+
         void* ptr {};
         std::size_t size {};
         DynamicBlock* nextBlock {};
         std::size_t state {};
         std::uint8_t alignPower {};
-        std::uint8_t refCount {}; //count of threads entered the chain after the block, needed for garbage collector
-        std::atomic_flag lockFlag {};
+        std::atomic<std::uint8_t> refCount {}; //count of threads entered the chain after the block, needed for garbage collector
+        MutexType mutex;
     };
 
     struct DynamicBlockState
@@ -85,7 +87,7 @@ namespace dory::memory
         }
 
     private:
-        int static getAlignPower(std::uint16_t align)
+        int static getAlignPower(std::uint16_t align) noexcept
         {
             assert::debug(align, "Alignment cannot be 0");
             assert::debug((align & align - 1) == 0, "Alignment must be a power of 2");
@@ -98,32 +100,18 @@ namespace dory::memory
             return position;
         }
 
-        static std::size_t getAlignedOffset(const std::uint8_t alignPower, const DynamicBlock& block)
+        static std::size_t getAlignedOffset(const std::uint8_t alignPower, const DynamicBlock& block) noexcept
         {
             const auto address = reinterpret_cast<std::uintptr_t>(block.ptr);
             const std::uintptr_t alignedAddress = alignAddress(address, 1 << alignPower);
             return alignedAddress - address;
         }
 
-        static void acquireLock(DynamicBlock* block)
-        {
-            while(block->lockFlag.test_and_set(std::memory_order_acquire))
-            {
-                block->lockFlag.wait(true, std::memory_order_relaxed);
-            }
-        }
-
-        static void releaseLock(DynamicBlock* block)
-        {
-            block->lockFlag.clear(std::memory_order_release);
-            block->lockFlag.notify_one();
-        }
-
-        static std::pair<DynamicBlock*, std::size_t> tryAcquireBlock(const std::size_t size, const std::uint8_t alignPower, DynamicBlock* block)
+        static std::pair<DynamicBlock*, std::size_t> tryAcquireBlock(const std::size_t size, const std::uint8_t alignPower, DynamicBlock* block) noexcept
         {
             std::pair<DynamicBlock*, std::size_t> result { block, 0 };
 
-            acquireLock(block); //TODO: use RAII
+            std::lock_guard lock {block->mutex};
 
             if(DynamicBlockState::isFree(block->state))
             {
@@ -143,91 +131,19 @@ namespace dory::memory
             }
             else if(DynamicBlockState::isLocked(block->state))
             {
-                if(DynamicBlock* freeBlock = fastForwardLockedChain(block))
-                {
-                    //TODO: handle the case
-                    result.first = freeBlock;
-                }
-                else
-                {
-                    //TODO: handle nullptr case
-                }
-
-                //TODO: traverse the chain to find next block beyond the lock
-
-                std::size_t lockedSize = block->state;
-                std::size_t lockedOffset = getAlignedOffset(block->alignPower, *block);
-                std::size_t accumulatedSize = block->size - lockedOffset;
-
-                if(accumulatedSize >= lockedSize)
-                {
-                    //TODO: wait until the block changes its state to allocated and put the next block to the result
-                }
-                else
-                {
-                    DynamicBlock* currentBlock = block->nextBlock;
-                    DynamicBlock* firstBlock = currentBlock;
-                    if(firstBlock)
-                    {
-                        acquireLock(firstBlock); //TODO: use RAII!
-                        firstBlock->refCount++;
-                        releaseLock(firstBlock);
-                    }
-
-                    while(currentBlock)
-                    {
-                        acquireLock(currentBlock); //TODO: use RAII!
-
-                        if(DynamicBlockState::isFree(block->state))
-                        {
-                            accumulatedSize += currentBlock->size;
-                            if(accumulatedSize >= lockedSize)
-                            {
-                                result.first = currentBlock->nextBlock;
-
-                                acquireLock(firstBlock); //TODO: use RAII!
-                                firstBlock->refCount--;
-                                releaseLock(firstBlock);
-
-                                releaseLock(currentBlock);
-                                break;
-                            }
-                        }
-                        else if(DynamicBlockState::isLocked(block->state))
-                        {
-                            //TODO: restart traverse(recursive)
-                        }
-                        else //block is allocated
-                        {
-                            result.first = currentBlock->nextBlock;
-
-                            acquireLock(firstBlock); //TODO: use RAII!
-                            firstBlock->refCount--;
-                            releaseLock(firstBlock);
-
-                            releaseLock(currentBlock);
-                            break;
-                        }
-
-                        releaseLock(currentBlock);
-                    }
-                }
+                result.first = fastForwardLockedChain(block);
             }
             else //block is allocated
             {
                 result.first = block->nextBlock;
             }
 
-            releaseLock(block);
-
             return result;
         }
 
-        static DynamicBlock* fastForwardLockedChain(DynamicBlock* lockedBlock)
+        static DynamicBlock* fastForwardLockedChain(DynamicBlock* lockedBlock) noexcept
         {
             DynamicBlock* freeBlock = nullptr;
-
-            lockedBlock->refCount++; //TODO: use RAII
 
             while(lockedBlock)
             {
@@ -236,26 +152,51 @@ namespace dory::memory
                 std::size_t accumulatedSize = lockedBlock->size - lockedOffset;
 
                 DynamicBlock* currentBlock = lockedBlock->nextBlock;
-                DynamicBlock* prevBlock = lockedBlock;
+                DynamicBlock* beginBlock = currentBlock;
+                if(beginBlock)
+                {
+
+                }
+
+                lockedBlock->mutex.unlock();
 
                 while(accumulatedSize < lockedSize)
                 {
                     if(currentBlock)
                     {
-                        acquireLock(currentBlock);
+                        std::lock_guard lock {currentBlock->mutex};
 
-
-
-                        releaseLock(currentBlock);
+                        if(DynamicBlockState::isFree(currentBlock->state))
+                        {
+                            accumulatedSize += currentBlock->size;
+                            currentBlock = currentBlock->nextBlock;
+                            if(accumulatedSize >= lockedSize)
+                            {
+                                freeBlock = currentBlock;
+                                lockedBlock = nullptr;
+                                break;
+                            }
+                        }
+                        else if(DynamicBlockState::isLocked(currentBlock->state))
+                        {
+                            //restart search for a free block from the current locked block
+                            lockedBlock = currentBlock;
+                            break;
+                        }
+                        else
+                        {
+                            freeBlock = currentBlock->nextBlock;
+                            break;
+                        }
                     }
                     else
                     {
                         break;
                     }
                 }
-            }
 
-            lockedBlock->refCount--;
+                beginBlock->refCount.fetch_sub(1);
+            }
 
             return freeBlock;
         }

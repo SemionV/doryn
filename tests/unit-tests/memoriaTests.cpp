@@ -5,6 +5,7 @@
 #include <backward.hpp>
 
 #include <dory/memory/allocators/dynamicAllocator2.h>
+#include <dory/memory/allocators/dynamicAllocator3.h>
 
 #if DORY_PLATFORM_LINUX
 #include <sys/mman.h>
