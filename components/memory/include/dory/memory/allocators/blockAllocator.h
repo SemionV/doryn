@@ -14,7 +14,7 @@ namespace dory::memory
     public:
         explicit BlockAllocator(std::size_t pageSize) noexcept;
 
-        ErrorCode allocate(std::size_t size, MemoryBlock& memoryBlock) const noexcept;
+        ErrorCode allocate(std::size_t pagesCount, MemoryBlock& memoryBlock) const noexcept;
         void deallocate(const MemoryBlock& memoryBlock) const noexcept;
     };
 }

@@ -8,22 +8,20 @@ namespace dory::memory
         assert::debug(pageSize, "Page size cannot be zero");
     }
 
-    ErrorCode BlockAllocator::allocate(const std::size_t size, MemoryBlock& memoryBlock) const noexcept
+    ErrorCode BlockAllocator::allocate(const std::size_t pagesCount, MemoryBlock& memoryBlock) const noexcept
     {
-        assert::debug(!memoryBlock.ptr, "Using an existing memory< block for an allocation");
+        assert::debug(!memoryBlock.ptr, "Using an existing memory block for allocation");
 
-        const auto pagesCount = (size + _pageSize - 1) / _pageSize;
         void* pointer = reserveMemoryPages(_pageSize, pagesCount);
         if(!pointer)
         {
             return ErrorCode::OutOfMemory;
         }
 
-        //TODO: let the user commit the pages manually, this might be needed in pool allocators
-        commitMemoryPages(pointer, _pageSize, pagesCount);
-
         memoryBlock.ptr = pointer;
-        memoryBlock.size = size;
+        memoryBlock.pagesCount = pagesCount;
+        memoryBlock.pageSize = _pageSize;
+        memoryBlock.commitedPagesCount = 0;
 
         return ErrorCode::Success;
     }
@@ -32,7 +30,6 @@ namespace dory::memory
     {
         assert::debug(memoryBlock.ptr, "Trying to deallocate an invalid memory block");
 
-        const auto pagesCount = (memoryBlock.size + _pageSize - 1) / _pageSize;
-        releaseMemoryPages(memoryBlock.ptr, _pageSize, pagesCount);
+        releaseMemoryPages(memoryBlock.ptr, _pageSize, memoryBlock.pagesCount);
     }
 }
