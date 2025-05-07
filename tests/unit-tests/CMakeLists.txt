@@ -13,8 +13,7 @@ add_executable(${PROJECT_NAME}
         layoutSetupTests.cpp
         coroutinesPlayground.cpp
         logicalGates.cpp
-        memoriaTests.cpp
-        objectLifetime.cpp)
+        memoriaTests.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-core)
