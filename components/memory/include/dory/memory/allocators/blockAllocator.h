@@ -16,5 +16,6 @@ namespace dory::memory
 
         ErrorCode allocate(std::size_t pagesCount, MemoryBlock& memoryBlock) const noexcept;
         void deallocate(const MemoryBlock& memoryBlock) const noexcept;
+        static void commitPages(const MemoryBlock& memoryBlock, std::size_t pagesCount);
     };
 }

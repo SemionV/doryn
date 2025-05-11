@@ -64,6 +64,11 @@ namespace dory::memory
             bytes[i * pageSize] = 0;
         }
     }
+
+    inline void copy(void* fromPtr, void* toPtr, std::size_t size)
+    {
+
+    }
 #elif DORY_PLATFORM_WIN32
     //TODO: implement memory management functions for WIN32
 #endif
