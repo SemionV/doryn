@@ -5,6 +5,9 @@
 #if DORY_PLATFORM_LINUX
 #include <sys/mman.h>
 #elif DORY_PLATFORM_WIN32
+#include <windows.h>
+#include <cassert>
+#include <limits>
 #endif
 
 namespace dory::memory
@@ -67,9 +70,39 @@ namespace dory::memory
 
     inline void copy(void* fromPtr, void* toPtr, std::size_t size)
     {
-
+        std::memcpy(toPtr, fromPtr, size);
     }
 #elif DORY_PLATFORM_WIN32
-    //TODO: implement memory management functions for WIN32
+    inline std::size_t getSystemMemoryPageSize()
+    {
+        SYSTEM_INFO systemInfo;
+        GetSystemInfo(&systemInfo);
+        return static_cast<std::size_t>(systemInfo.dwPageSize);
+    }
+
+    inline void* reserveMemoryPages(const std::size_t pageSize, const std::size_t pagesCount)
+    {
+        assert::debug((std::numeric_limits<std::size_t>::max() / pageSize) > pagesCount, "Memory block size cannot be greater than max number of bytes in the system");
+        void* ptr = VirtualAlloc(nullptr, pageSize * pagesCount, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+        return ptr;
+    }
+
+    inline void releaseMemoryPages(void* ptr, const std::size_t pageSize, const std::size_t pagesCount)
+    {
+        (void)pageSize; // unused on Windows
+        (void)pagesCount;
+        VirtualFree(ptr, 0, MEM_RELEASE);
+    }
+
+    inline void commitMemoryPages(void* ptr, const std::size_t pageSize, const std::size_t pagesCount)
+    {
+        void* committed = VirtualAlloc(ptr, pageSize * pagesCount, MEM_COMMIT, PAGE_READWRITE);
+        assert::debug(committed != nullptr, "Failed to commit memory pages");
+    }
+
+    inline void copy(void* fromPtr, void* toPtr, std::size_t size)
+    {
+        std::memcpy(toPtr, fromPtr, size);
+    }
 #endif
 }

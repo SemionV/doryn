@@ -1,4 +1,4 @@
-#include <dory/memory/allocators/dynamicAllocator.h>pagesCount
+#include <dory/memory/allocators/dynamicAllocator.h>
 
 namespace dory::memory
 {

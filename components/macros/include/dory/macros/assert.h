@@ -43,7 +43,7 @@
 #elif defined(DORY_PLATFORM_WIN32)
 #include <windows.h>
 
-    inline bool isDebuggerAttached()
+    inline bool doryIsDebuggerAttached()
     {
         return ::IsDebuggerPresent();
     }
