@@ -1,5 +1,14 @@
 # Development log
 
+* Camera moving in the Scene
+  * Window and views layouts
+* Scenes(Application Layer loaders)
+* Task system(Job system)
+* Memory management
+* Concurrent data structures
+* Bitwise arithmetic
+* Digital technic architecture
+
 * Pass a container definition instead of availableSpace, which is defining screen and its layout
 * Reduce size of cells(columns and rows) just to one field: size
 * Remember in the list entries the upstream for their size: children, parent, self
