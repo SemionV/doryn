@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <dory/containers/waitfree/queue.h>
+#include <dory/containers/lockfree/queue.h>
 #include <spdlog/fmt/fmt.h>
 
-using namespace dory::containers::waitfree;
+using namespace dory::containers::lockfree;
 
 template<typename T, std::size_t MAX>
 void printStatus(CircularBuffer<T, MAX> queue)
@@ -38,13 +38,13 @@ TEST(ConcurrencyTests, CircularBufferBoundaries)
 
     for(std::size_t i = 0; i < MAX + 1; ++i)
     {
-        queue.add(i + 1);
-        printStatus(queue);
+        queue.add((int)i + 1);
+        //printStatus(queue);
     }
 
     for(std::size_t i = 0; i < MAX + 1; ++i)
     {
         queue.remove();
-        printStatus(queue);
+        //printStatus(queue);
     }
 }
