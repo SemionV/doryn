@@ -70,7 +70,7 @@ namespace dory::memory
 
     inline void copy(void* fromPtr, void* toPtr, std::size_t size)
     {
-        std::memcpy(toPtr, fromPtr, size);
+        //std::memcpy(toPtr, fromPtr, size);
     }
 #elif DORY_PLATFORM_WIN32
     inline std::size_t getSystemMemoryPageSize()

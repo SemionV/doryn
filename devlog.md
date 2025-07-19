@@ -1,5 +1,6 @@
 # Development log
 
+Unwinding problems:
 * Camera moving in the Scene
   * Window and views layouts
 * Scenes(Application Layer loaders)
@@ -7,6 +8,8 @@
 * Memory management
 * Concurrent data structures
 * Bitwise arithmetic
+
+Problems solved:
 * Digital technic architecture
 
 * Pass a container definition instead of availableSpace, which is defining screen and its layout

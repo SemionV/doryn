@@ -70,6 +70,7 @@ target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/extern
 
 target_link_libraries(${DORY_MODULE_NAME} PUBLIC
         dory-core-generic
+        dory-containers
         dory-serialization
         dory-memory
         Boost::dll

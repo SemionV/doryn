@@ -1,67 +1,50 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <dory/containers/waitfree/queue.h>
+#include <spdlog/fmt/fmt.h>
 
-template<typename T>
-struct CircularBuffer
+using namespace dory::containers::waitfree;
+
+template<typename T, std::size_t MAX>
+void printStatus(CircularBuffer<T, MAX> queue)
 {
-    constexpr static std::size_t MAX = 16;
-    constexpr static std::size_t MODULUS = MAX * 2;
-
-    T buffer[MAX] {};
-    std::size_t head = 0;
-    std::size_t tail = 0;
-
-    bool add(const T& value)
+    std::size_t count = queue.count();
+    std::cout << fmt::format("Count: {}, Items: ", count);
+    const T* data = queue.data();
+    for(std::size_t i = 0; i < count; ++i)
     {
-        if((tail - head + MODULUS) % MODULUS == MAX)
+        if(i > 0)
         {
-            return false;
+            std::cout << ",";
         }
 
-        buffer[tail % MAX] = value;
-        tail = (tail + 1) % MODULUS;
-
-        return true;
+        std::cout << data[i];
     }
 
-    std::optional<T> remove()
-    {
-        if((tail - head + MODULUS) % MODULUS == 0)
-        {
-            return {};
-        }
+    std::cout << ";" << std::endl;
+}
 
-        auto value = buffer[head % MAX];
-        head = (head + 1) % MODULUS;
-
-        return value;
-    }
-};
-
-TEST(ConcurrencyTests, CircularBuffer)
+TEST(ConcurrencyTests, BitwiseModulo)
 {
-    CircularBuffer<int> buffer;
+    constexpr std::size_t value = 12;
+    std::cout << (value >> 3) << std::endl;
+}
 
-    buffer.add(1);
-    buffer.add(2);
-    buffer.add(3);
-    buffer.add(4);
-    buffer.add(5);
-    buffer.add(6);
-    buffer.add(7);
-    buffer.add(8);
-    buffer.add(9);
-    buffer.add(10);
-    buffer.add(11);
-    buffer.add(12);
-    buffer.add(13);
-    buffer.add(14);
-    buffer.add(15);
-    buffer.add(16);
-    buffer.add(17);
+TEST(ConcurrencyTests, CircularBufferBoundaries)
+{
+    constexpr std::size_t MAX = 4;
 
-    buffer.remove();
-    buffer.remove();
-    buffer.remove();
-    buffer.remove();
+    CircularBuffer<int, MAX> queue;
+
+    for(std::size_t i = 0; i < MAX + 1; ++i)
+    {
+        queue.add(i + 1);
+        printStatus(queue);
+    }
+
+    for(std::size_t i = 0; i < MAX + 1; ++i)
+    {
+        queue.remove();
+        printStatus(queue);
+    }
 }
