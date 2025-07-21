@@ -2,5 +2,5 @@
 
 namespace dory::constants
 {
-    constexpr std::size_t cacheLineSize = 64;
+    constexpr std::size_t CACHELINE_SIZE = 64;
 }

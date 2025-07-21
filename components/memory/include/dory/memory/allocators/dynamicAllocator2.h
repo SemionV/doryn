@@ -10,7 +10,7 @@
 
 namespace dory::memory
 {
-    struct alignas(constants::cacheLineSize) DynamicBlock //alignas: avoid fake sharing and cache ping-pong between CPU cores
+    struct alignas(constants::CACHELINE_SIZE) DynamicBlock //alignas: avoid fake sharing and cache ping-pong between CPU cores
     {
         using MutexType = concurrency::SpinLockMutex;
 
