@@ -83,7 +83,6 @@ namespace dory::containers::lockfree
                 }
 
                 auto value = slot.value;
-
                 slot.ready.store(false, std::memory_order::release); //make slot free for a data write
 
                 return value;

@@ -14,7 +14,8 @@ add_executable(${PROJECT_NAME}
         coroutinesPlayground.cpp
         logicalGates.cpp
         memoriaTests.cpp
-        src/concurrency.cpp)
+        src/concurrency.cpp
+        src/memory.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-core)
