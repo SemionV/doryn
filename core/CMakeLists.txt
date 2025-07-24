@@ -73,6 +73,7 @@ target_link_libraries(${DORY_MODULE_NAME} PUBLIC
         dory-containers
         dory-serialization
         dory-memory
+        dory-sysinfo
         Boost::dll
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
         opengl-glad
