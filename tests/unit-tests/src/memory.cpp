@@ -2,6 +2,9 @@
 #include <gmock/gmock.h>
 #include <dory/memory/allocators/blockAllocator.h>
 
+#include <emmintrin.h> // For _mm_clflush
+#include <sys/resource.h>
+
 using namespace dory::memory;
 
 void profile_residency(void* addr, size_t length) {
@@ -16,22 +19,56 @@ void profile_residency(void* addr, size_t length) {
     }
 }
 
-TEST(BlockAllocatorTests, allocateOnePageOfMemory)
+TEST(BlockAllocatorTests, pageResidency)
 {
+    using namespace std::chrono;
+
     constexpr std::size_t PAGE_SIZE = 4096;
+    constexpr std::size_t PAGE_COUNT = 262144; //1Gb
+    constexpr std::size_t INTS_IN_PAGE_COUNT = 4096 / sizeof(int);
 
     auto allocator = BlockAllocator(PAGE_SIZE);
 
     MemoryBlock block {};
-    allocator.allocate(4, block); //1Gb
+    allocator.allocate(PAGE_COUNT, block);
 
     EXPECT_FALSE(block.ptr == nullptr);
 
-    profile_residency(block.ptr, block.pagesCount * block.pageSize);
+    auto start = high_resolution_clock::now();
 
+    for(std::size_t i = 0; i < PAGE_COUNT; ++i)
+    {
+        //write to the beginning of each page
+        *((int*)block.ptr + INTS_IN_PAGE_COUNT * i) = -1;
+    }
+
+    auto end = high_resolution_clock::now();
+    auto duration = duration_cast<milliseconds>(end - start);
+    std::cout << "Time taken: " << duration.count() << " ms" << std::endl;
+
+    allocator.deallocate(block);
+    allocator.allocate(PAGE_COUNT, block);
+    BlockAllocator::commitPages(block, PAGE_COUNT);
+
+    //flush CPU caches
+    for (size_t i = 0; i < PAGE_COUNT; ++i)
+    {
+        _mm_clflush((int*)block.ptr + INTS_IN_PAGE_COUNT * i);
+    }
+
+    start = high_resolution_clock::now();
+
+    for(std::size_t i = 0; i < PAGE_COUNT; ++i)
+    {
+        //write to the beginning of each page
+        *((int*)block.ptr + INTS_IN_PAGE_COUNT * i) = -1;
+    }
+
+    end = high_resolution_clock::now();
+    duration = duration_cast<milliseconds>(end - start);
+    std::cout << "Time taken: " << duration.count() << " ms" << std::endl;
+
+    /*profile_residency(block.ptr, block.pagesCount * block.pageSize);
     BlockAllocator::commitPages(block, 1);
-    profile_residency(block.ptr, block.pagesCount * block.pageSize);
-
-    BlockAllocator::commitPages(block, 2);
-    profile_residency(block.ptr, block.pagesCount * block.pageSize);
+    profile_residency(block.ptr, block.pagesCount * block.pageSize);*/
 }
