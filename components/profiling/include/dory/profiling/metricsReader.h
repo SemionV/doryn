@@ -1,8 +1,8 @@
 #pragma once
 
-#include <dory/sysinfo/metrics.h>
+#include "metrics.h"
 
-namespace dory::sysinfo
+namespace dory::profiling
 {
     class MetricsReader
     {

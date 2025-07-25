@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <dory/memory/allocators/blockAllocator.h>
-#include <dory/sysinfo/metricsReader.h>
+#include <dory/profiling/metricsReader.h>
 
 #include <emmintrin.h> // For _mm_clflush
 #include <sys/resource.h>
@@ -28,10 +28,10 @@ TEST(BlockAllocatorTests, pageResidency)
     constexpr std::size_t PAGE_COUNT = 262144; //1Gb
     constexpr std::size_t INTS_IN_PAGE_COUNT = 4096 / sizeof(int);
 
-    dory::sysinfo::ProcessMetrics processMetricsBefore;
-    dory::sysinfo::ProcessMetrics processMetricsAfter;
+    dory::profiling::ProcessMetrics processMetricsBefore;
+    dory::profiling::ProcessMetrics processMetricsAfter;
 
-    dory::sysinfo::MetricsReader::getProcessMetrics(processMetricsBefore);
+    dory::profiling::MetricsReader::getProcessMetrics(processMetricsBefore);
 
     auto allocator = BlockAllocator(PAGE_SIZE);
 
@@ -52,7 +52,7 @@ TEST(BlockAllocatorTests, pageResidency)
     auto duration = duration_cast<milliseconds>(end - start);
     std::cout << "Time taken: " << duration.count() << " ms" << std::endl;
 
-    dory::sysinfo::MetricsReader::getProcessMetrics(processMetricsAfter);
+    dory::profiling::MetricsReader::getProcessMetrics(processMetricsAfter);
 
     allocator.deallocate(block);
     allocator.allocate(PAGE_COUNT, block);

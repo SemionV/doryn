@@ -1,4 +1,4 @@
-set(DORY_MODULE_NAME ${PROJECT_NAME}-sysinfo)
+set(DORY_MODULE_NAME ${PROJECT_NAME}-profiling)
 
 add_library(${DORY_MODULE_NAME} STATIC
         src/metricsReader.cpp)

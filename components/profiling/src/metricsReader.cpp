@@ -1,5 +1,5 @@
 #include <fstream>
-#include <dory/sysinfo/metricsReader.h>
+#include <dory/profiling/metricsReader.h>
 
 #if DORY_PLATFORM_LINUX
 #include <sys/resource.h>
@@ -8,10 +8,10 @@
 #include <unistd.h>
 #include <asm/unistd_64.h>
 
-void readProcSelfStatus(dory::sysinfo::ProcessMetrics& processMetrics) {
+void readProcSelfStatus(dory::profiling::ProcessMetrics& processMetrics) {
     std::ifstream f("/proc/self/status");
     std::string line;
-    dory::sysinfo::ProcessMemoryState& ms = processMetrics.memoryState;
+    dory::profiling::ProcessMemoryState& ms = processMetrics.memoryState;
     while (std::getline(f, line))
     {
         if (sscanf(line.c_str(), "VmSize: %zu kB", &ms.virtualMemorySize)==1) ms.virtualMemorySize *= 1024;
@@ -22,7 +22,7 @@ void readProcSelfStatus(dory::sysinfo::ProcessMetrics& processMetrics) {
     }
 }
 
-void readProcSelfSmaps(dory::sysinfo::ProcessMemoryState &ms)
+void readProcSelfSmaps(dory::profiling::ProcessMemoryState &ms)
 {
     std::ifstream f("/proc/self/smaps");
     std::string line; size_t private_kb=0, shared_kb=0, dirty_kb=0, mapCount=0;
@@ -38,7 +38,7 @@ void readProcSelfSmaps(dory::sysinfo::ProcessMemoryState &ms)
     ms.memoryMapCount = mapCount;
 }
 
-void readRusage(dory::sysinfo::MemoryEventCounters &ev)
+void readRusage(dory::profiling::MemoryEventCounters &ev)
 {
     rusage ru{};
     getrusage(RUSAGE_SELF, &ru);
@@ -63,7 +63,7 @@ size_t readPerfCounter(int fd)
     return count;
 }
 
-void readPerfTLB(dory::sysinfo::MemoryEventCounters &ev)
+void readPerfTLB(dory::profiling::MemoryEventCounters &ev)
 {
     int fd = openPerfTLB();
     ioctl(fd, PERF_EVENT_IOC_RESET, 0);
