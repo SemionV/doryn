@@ -38,13 +38,13 @@ void readProcSelfSmaps(dory::profiling::ProcessMemoryState &ms)
     ms.memoryMapCount = mapCount;
 }
 
-void readRusage(dory::profiling::MemoryEventCounters &ev)
+void readRusageForProcess(dory::profiling::MemoryEventCounters& memoryEvents)
 {
     rusage ru{};
     getrusage(RUSAGE_SELF, &ru);
-    ev.minorPageFaults = ru.ru_minflt;
-    ev.majorPageFaults = ru.ru_majflt;
-    ev.pageSwapCount = ru.ru_majflt;
+    memoryEvents.minorPageFaults = ru.ru_minflt;
+    memoryEvents.majorPageFaults = ru.ru_majflt;
+    memoryEvents.pageSwapCount = ru.ru_majflt;
 }
 
 int openPerfTLB()
@@ -63,14 +63,15 @@ size_t readPerfCounter(int fd)
     return count;
 }
 
-void startPerfTLB(dory::profiling::MemoryEventCounters &ev)
+//TODO: generalize the function for more events, but be careful, because CPUs have very limited number of counters which can be used simultaneously(just a few events in real time)
+void startPerfTLB(dory::profiling::MemoryEventCounters &ev, dory::profiling::ExecutionMetrics& executionMetrics)
 {
     const int fd = ev._tlbMissesFD = openPerfTLB();
     ioctl(fd, PERF_EVENT_IOC_RESET, 0);
     ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
 }
 
-void completePerfTLB(dory::profiling::MemoryEventCounters &ev)
+void completePerfTLB(dory::profiling::MemoryEventCounters &ev, dory::profiling::ExecutionMetrics& executionMetrics)
 {
     const int fd = ev._tlbMissesFD;
     if(fd >= 0)
@@ -82,15 +83,25 @@ void completePerfTLB(dory::profiling::MemoryEventCounters &ev)
 
 void startMetricsRecordingPlatform(dory::profiling::ProcessMetrics& metrics)
 {
-    startPerfTLB(metrics.memoryEvents);
+    startPerfTLB(metrics.memoryEvents, metrics.executionMetrics);
 }
 
 void completeMetricsRecordingPlatform(dory::profiling::ProcessMetrics& metrics)
 {
     readProcSelfStatus(metrics);
     readProcSelfSmaps(metrics.memoryState);
-    readRusage(metrics.memoryEvents);
-    completePerfTLB(metrics.memoryEvents);
+    readRusageForProcess(metrics.memoryEvents);
+    completePerfTLB(metrics.memoryEvents, metrics.executionMetrics);
+}
+
+void startMetricsRecordingPlatform(dory::profiling::TaskMetrics& metrics)
+{
+    startPerfTLB(metrics.memoryEvents, metrics.executionMetrics);
+}
+
+void completeMetricsRecordingPlatform(dory::profiling::TaskMetrics& metrics)
+{
+
 }
 #elif DORY_PLATFORM_WIN32
 #endif
@@ -99,10 +110,22 @@ namespace dory::profiling
 {
     void MetricsReader::startMetricsRecording(ProcessMetrics& metrics)
     {
+        //TODO: split snapshot metrics from counters(like overall memory used versus page faults count)
         startMetricsRecordingPlatform(metrics);
     }
 
     void MetricsReader::completeMetricsRecording(ProcessMetrics& metrics)
+    {
+        //TODO: do not close the performance counters, just read the current values and introduce a separate method to close the counters
+        completeMetricsRecordingPlatform(metrics);
+    }
+
+    void MetricsReader::startMetricsRecording(TaskMetrics& metrics)
+    {
+        startMetricsRecordingPlatform(metrics);
+    }
+
+    void MetricsReader::completeMetricsRecording(TaskMetrics& metrics)
     {
         completeMetricsRecordingPlatform(metrics);
     }

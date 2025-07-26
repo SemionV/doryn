@@ -35,10 +35,24 @@ namespace dory::profiling
 #endif
     };
 
+    struct ExecutionMetrics
+    {
+        std::size_t wallTime {}; //Wall time of process/task execution(total time) - nanoseconds
+        std::size_t cpuTimeKernel {}; //CPU execution time spent in kernel space - nanoseconds
+        std::size_t cpuTimeUser {}; //CPU execution time spent in user space - nanoseconds
+    };
+
     struct ProcessMetrics
     {
         std::uint16_t threadCount {};
+        ExecutionMetrics executionMetrics;
         ProcessMemoryState memoryState;
+        MemoryEventCounters memoryEvents;
+    };
+
+    struct TaskMetrics
+    {
+        ExecutionMetrics executionMetrics;
         MemoryEventCounters memoryEvents;
     };
 }

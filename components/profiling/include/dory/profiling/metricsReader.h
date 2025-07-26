@@ -9,5 +9,7 @@ namespace dory::profiling
     public:
         static void startMetricsRecording(ProcessMetrics& metrics);
         static void completeMetricsRecording(ProcessMetrics& metrics);
+        static void startMetricsRecording(TaskMetrics& metrics);
+        static void completeMetricsRecording(TaskMetrics& metrics);
     };
 }
