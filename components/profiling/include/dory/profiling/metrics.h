@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <chrono>
 
 namespace dory::profiling
 {
@@ -28,19 +29,24 @@ namespace dory::profiling
         std::size_t memoryDeallocations {}; //Heap Memory deallocations(free)
         std::size_t tlbMisses {}; //Misses in Translation Lookaside Buffer (MMU cache)
         std::size_t pageSwapCount {}; //Pages swapped from/to disk
-
-#if DORY_PLATFORM_LINUX
-        int _tlbMissesFD {-1};
-#elif DORY_PLATFORM_WIN32
-#endif
     };
 
     struct ExecutionMetrics
     {
-        std::size_t wallTime {}; //Wall time of process/task execution(total time) - nanoseconds
+        std::chrono::time_point<std::chrono::high_resolution_clock> wallClockStart {};
+        std::chrono::time_point<std::chrono::high_resolution_clock> wallClockEnd {};
         std::size_t cpuTimeKernel {}; //CPU execution time spent in kernel space - nanoseconds
         std::size_t cpuTimeUser {}; //CPU execution time spent in user space - nanoseconds
     };
+
+#if DORY_PLATFORM_LINUX
+    //File Descriptor of perf  events
+    struct EventFileDescriptors
+    {
+        int tlbMisses {-1};
+    };
+#elif DORY_PLATFORM_WIN32
+#endif
 
     struct ProcessMetrics
     {
@@ -48,11 +54,30 @@ namespace dory::profiling
         ExecutionMetrics executionMetrics;
         ProcessMemoryState memoryState;
         MemoryEventCounters memoryEvents;
+#if DORY_PLATFORM_LINUX
+        EventFileDescriptors eventFileDescriptors;
+#elif DORY_PLATFORM_WIN32
+#endif
     };
 
     struct TaskMetrics
     {
         ExecutionMetrics executionMetrics;
         MemoryEventCounters memoryEvents;
+
+#if DORY_PLATFORM_LINUX
+        EventFileDescriptors eventFileDescriptors;
+#elif DORY_PLATFORM_WIN32
+#endif
+    };
+
+    struct PerformanceMetricsSettings
+    {
+        bool tlbMisses{};
+        bool wallClock{};
+        bool cpuTimeKernel{};
+        bool cpuTimeUser{};
+        bool minorPageFaults{};
+        bool majorPageFaults{};
     };
 }
