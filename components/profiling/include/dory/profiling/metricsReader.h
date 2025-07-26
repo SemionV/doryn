@@ -7,6 +7,7 @@ namespace dory::profiling
     class MetricsReader
     {
     public:
-        static void getProcessMetrics(ProcessMetrics& metrics);
+        static void startMetricsRecording(ProcessMetrics& metrics);
+        static void completeMetricsRecording(ProcessMetrics& metrics);
     };
 }

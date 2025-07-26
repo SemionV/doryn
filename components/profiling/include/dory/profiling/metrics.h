@@ -28,6 +28,11 @@ namespace dory::profiling
         std::size_t memoryDeallocations {}; //Heap Memory deallocations(free)
         std::size_t tlbMisses {}; //Misses in Translation Lookaside Buffer (MMU cache)
         std::size_t pageSwapCount {}; //Pages swapped from/to disk
+
+#if DORY_PLATFORM_LINUX
+        int _tlbMissesFD {-1};
+#elif DORY_PLATFORM_WIN32
+#endif
     };
 
     struct ProcessMetrics

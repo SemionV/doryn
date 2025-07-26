@@ -31,7 +31,8 @@ TEST(BlockAllocatorTests, pageResidency)
     dory::profiling::ProcessMetrics processMetricsBefore;
     dory::profiling::ProcessMetrics processMetricsAfter;
 
-    dory::profiling::MetricsReader::getProcessMetrics(processMetricsBefore);
+    dory::profiling::MetricsReader::startMetricsRecording(processMetricsBefore);
+    dory::profiling::MetricsReader::completeMetricsRecording(processMetricsBefore);
 
     auto allocator = BlockAllocator(PAGE_SIZE);
 
@@ -42,17 +43,19 @@ TEST(BlockAllocatorTests, pageResidency)
 
     auto start = high_resolution_clock::now();
 
+    dory::profiling::MetricsReader::startMetricsRecording(processMetricsAfter);
+
     for(std::size_t i = 0; i < PAGE_COUNT; ++i)
     {
         //write to the beginning of each page
         *((int*)block.ptr + INTS_IN_PAGE_COUNT * i) = -1;
     }
 
+    dory::profiling::MetricsReader::completeMetricsRecording(processMetricsAfter);
+
     auto end = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(end - start);
     std::cout << "Time taken: " << duration.count() << " ms" << std::endl;
-
-    dory::profiling::MetricsReader::getProcessMetrics(processMetricsAfter);
 
     allocator.deallocate(block);
     allocator.allocate(PAGE_COUNT, block);

@@ -63,25 +63,47 @@ size_t readPerfCounter(int fd)
     return count;
 }
 
-void readPerfTLB(dory::profiling::MemoryEventCounters &ev)
+void startPerfTLB(dory::profiling::MemoryEventCounters &ev)
 {
-    int fd = openPerfTLB();
+    const int fd = ev._tlbMissesFD = openPerfTLB();
     ioctl(fd, PERF_EVENT_IOC_RESET, 0);
     ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
-    // wait a small time or around workload
-    ioctl(fd, PERF_EVENT_IOC_DISABLE, 0);
-    ev.tlbMisses = readPerfCounter(fd);
+}
+
+void completePerfTLB(dory::profiling::MemoryEventCounters &ev)
+{
+    const int fd = ev._tlbMissesFD;
+    if(fd >= 0)
+    {
+        ioctl(fd, PERF_EVENT_IOC_DISABLE, 0);
+        ev.tlbMisses = readPerfCounter(fd);
+    }
+}
+
+void startMetricsRecordingPlatform(dory::profiling::ProcessMetrics& metrics)
+{
+    startPerfTLB(metrics.memoryEvents);
+}
+
+void completeMetricsRecordingPlatform(dory::profiling::ProcessMetrics& metrics)
+{
+    readProcSelfStatus(metrics);
+    readProcSelfSmaps(metrics.memoryState);
+    readRusage(metrics.memoryEvents);
+    completePerfTLB(metrics.memoryEvents);
 }
 #elif DORY_PLATFORM_WIN32
 #endif
 
-namespace dory::sysinfo
+namespace dory::profiling
 {
-    void MetricsReader::getProcessMetrics(ProcessMetrics& metrics)
+    void MetricsReader::startMetricsRecording(ProcessMetrics& metrics)
     {
-        readProcSelfStatus(metrics);
-        readProcSelfSmaps(metrics.memoryState);
-        readRusage(metrics.memoryEvents);
-        readPerfTLB(metrics.memoryEvents);
+        startMetricsRecordingPlatform(metrics);
+    }
+
+    void MetricsReader::completeMetricsRecording(ProcessMetrics& metrics)
+    {
+        completeMetricsRecordingPlatform(metrics);
     }
 }
