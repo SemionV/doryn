@@ -38,3 +38,11 @@ if (CMAKE_BUILD_TYPE STREQUAL Debug)
     add_definitions(-DDEBUG_ASSERT_ENABLED=1)
     add_definitions(-DIN_HOUSE_ASSERT_ENABLED=1)
 endif()
+
+if (DORY_PROFILING)
+    add_definitions(-DTRACY_ENABLE)
+    if(WIN32)
+        add_definitions(-DTRACY_IMPORTS)
+    endif()
+    # Or other Tracy-related setup
+endif()

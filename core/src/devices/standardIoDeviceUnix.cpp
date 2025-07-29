@@ -1,4 +1,5 @@
 #include <dory/core/devices/standardIoDeviceUnix.h>
+#include <dory/profiling/profiler.h>
 
 namespace dory::core::devices
 {
@@ -68,6 +69,8 @@ namespace dory::core::devices
 
             pollingThread = std::jthread([this, &context](const std::stop_token& stoken, void* pipe)
             {
+                profiling::setThreadName("std_io");
+
                 //see more about this thread unblocking technic here: https://stackoverflow.com/questions/11513593/cancelling-getchar
                 int readPipe = *(int*)pipe;
                 fd_set rfds;

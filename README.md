@@ -31,7 +31,22 @@ To setup project localy:
 **To use static analysis tool:**
 * sudo apt-get install cppcheck
 
+**To profile with Tracy
+* Build the engine and the game with -DDORY_PROFILING definition
+* Clone tracy to a separate git repository
+* Build and run tracy server:
+  * Go to tracy folder
+  * Use cmake to build and install the server:
+    * cmake -B profiler/build -S profiler -DCMAKE_BUILD_TYPE=Release -Wno-dev
+    * cmake --build profiler/build --config Release --parallel
+    * cmake --install profiler/build --prefix profiler
+    * cd profiler/bin
+    * ./tracy-profiler
+  * Run the game application
+  * Connect tracy server to the game
+
 **Build-time definitions:**
 * ASSERT_ENABLED : on/off the asserts for production builds 
 * DEBUG_ASSERT_ENABLED : on/off the asserts for in-house release builds
 * IN_HOUSE_ASSERT_ENABLED : on/off the asserts for debug builds
+* DORY_PROFILING : use embedded profiler client

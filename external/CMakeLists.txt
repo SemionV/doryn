@@ -98,3 +98,11 @@ FetchContent_Declare(backward
         SYSTEM          # optional, the Backward include directory will be treated as system directory
 )
 FetchContent_MakeAvailable(backward)
+
+FetchContent_Declare (
+        tracy
+        GIT_REPOSITORY https://github.com/wolfpld/tracy.git
+        GIT_TAG master
+        GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(tracy)

@@ -2,7 +2,7 @@
 #include <dory/core/services/loopService.h>
 #include <dory/core/services/iPipelineService.h>
 #include <chrono>
-#include <spdlog/fmt/fmt.h>
+#include <dory/profiling/profiler.h>
 
 namespace dory::core::services
 {
@@ -28,6 +28,9 @@ namespace dory::core::services
 
         isStop = false;
         high_resolution_clock::time_point lastTimestamp = high_resolution_clock::now();
+
+        static const char* name = "main_loop";
+        dory::profiling::setThreadName(name);
 
         while(!isStop)
         {

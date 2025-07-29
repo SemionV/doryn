@@ -18,7 +18,8 @@ add_executable(${PROJECT_NAME}
         src/memory.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-        dory-core)
+        dory-core
+        dory-profiling)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 AddGoogleTests(${PROJECT_NAME})

@@ -8,6 +8,8 @@ Unwinding problems:
 * Memory management
 * Concurrent data structures
 * Bitwise arithmetic
+* Profiling(Tracy)
+  * Link Tracy as DLL?
 
 Problems solved:
 * Digital technic architecture

@@ -5,7 +5,9 @@ set(DORY_CMAKE_SCRIPTS_PATH "${CMAKE_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH ${DORY_CMAKE_SCRIPTS_PATH})
 
 option(DORY_TEST_COVERAGE "Enable test coverage report" OFF)
-enable_testing()
+option(DORY_PROFILING "Enable profiling" OFF)
+
+enable_testing() #TODO: Make testing optional?
 
 include(NoInSourceBuilds)
 include(LanguageOptions)

@@ -9,3 +9,10 @@ add_subdirectory(app)
 add_subdirectory(engine)
 add_subdirectory(extensions/renderer-opengl)
 add_subdirectory(extensions/test-extension)
+
+if(DORY_PROFILING)
+    install(TARGETS dory-profiling
+            DESTINATION ${DORY_INSTALL_PREFIX}
+            ARCHIVE DESTINATION ${DORY_INSTALL_PREFIX}/dev
+            COMPONENT ${DORY_COMPONENT})
+endif()
