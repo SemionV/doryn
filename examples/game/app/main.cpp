@@ -12,6 +12,37 @@
 #include <dory/game/bootstrap.h>
 #include "game.h"
 
+#include <iostream>
+#include <dory/profiling/profiler.h>
+
+void* operator new(const std::size_t size)
+{
+    void* ptr = std::malloc(size);
+    dory::profiling::traceAllocation(ptr, size);
+    if (!ptr) throw std::bad_alloc();
+    return ptr;
+}
+
+void operator delete(void* ptr) noexcept
+{
+    dory::profiling::traceDeallocation(ptr);
+    std::free(ptr);
+}
+
+void* operator new[](const std::size_t size)
+{
+    void* ptr = std::malloc(size);
+    dory::profiling::traceAllocation(ptr, size);
+    if (!ptr) throw std::bad_alloc();
+    return ptr;
+}
+
+void operator delete[](void* ptr) noexcept
+{
+    dory::profiling::traceDeallocation(ptr);
+    std::free(ptr);
+}
+
 #ifdef DORY_MAIN_FUNCTION_UNIX
 int main()
 #endif

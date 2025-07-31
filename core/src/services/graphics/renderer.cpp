@@ -23,6 +23,15 @@ namespace dory::core::services::graphics
     using namespace math;
     using namespace repositories;
     using namespace repositories::bindings;
+    using namespace dory::profiling;
+
+    struct RendererTracer {};
+
+    template<std::size_t Line>
+    auto zone(const char* name)
+    {
+        return dory::profiling::zone<RendererTracer, Line>(name);
+    }
 
     glm::mat4x4 getTransformMatrix(const objects::Transform& transform)
     {
@@ -43,8 +52,9 @@ namespace dory::core::services::graphics
                         const GraphicalContext& graphicalContext,
                         profiling::Profiling& profiling)
     {
+        auto zoneRoot = zone<ln()>("Renderer::draw - root");
+
         resources::profiling::pushTimeSlice(profiling, "Renderer::draw");
-        DORY_ZONE("DrawView");
 
         auto& view = viewState.view;
 
@@ -60,73 +70,71 @@ namespace dory::core::services::graphics
             frame.clearColor = Vector4f{ 0.01f, 0.08f, 0.01f, 1.f };
             frame.viewProjectionTransform = view.projection;
 
+            auto zoneBindObjects = zone<ln()>("Renderer::draw - Bind Objects");
+
+            for(const auto& [objectId, object] : viewState.current.objects)
             {
-                DORY_ZONE("TransformObjects");
-
-                for(const auto& [objectId, object] : viewState.current.objects)
+                auto zoneBindObject = zone<ln()>("Renderer::draw - BindObject");
+                if(graphicalContext.meshBindings.contains(object.meshId))
                 {
-                    DORY_ZONE("BindObjectDataAndTransform");
-                    if(graphicalContext.meshBindings.contains(object.meshId))
+                    IdType bindingId = graphicalContext.meshBindings.at(object.meshId);
+                    if(auto* meshBinding = meshBindingRepository->get(bindingId))
                     {
-                        IdType bindingId = graphicalContext.meshBindings.at(object.meshId);
-                        if(auto* meshBinding = meshBindingRepository->get(bindingId))
+                        MaterialBinding* material = nullptr;
+
+                        if(auto matIt = graphicalContext.materialBindings.find(object.materialId); matIt != graphicalContext.materialBindings.end())
                         {
-                            MaterialBinding* material = nullptr;
+                            material = materialBindingRepository->get(matIt->second);
+                        }
 
-                            if(auto matIt = graphicalContext.materialBindings.find(object.materialId); matIt != graphicalContext.materialBindings.end())
+                        if(material)
+                        {
+                            if(!frame.meshMap.contains(material))
                             {
-                                material = materialBindingRepository->get(matIt->second);
+                                frame.meshMap[material] = {};
                             }
 
-                            if(material)
+                            objects::Transform transform {};
+
+                            auto prevObjectIt = viewState.previous.objects.find(objectId);
+                            if(prevObjectIt != viewState.previous.objects.end())
                             {
-                                if(!frame.meshMap.contains(material))
-                                {
-                                    frame.meshMap[material] = {};
-                                }
+                                auto& prevTransform = prevObjectIt->second.transform;
 
-                                objects::Transform transform {};
-
-                                auto prevObjectIt = viewState.previous.objects.find(objectId);
-                                if(prevObjectIt != viewState.previous.objects.end())
-                                {
-                                    auto& prevTransform = prevObjectIt->second.transform;
-
-                                    transform.scale = glm::mix(prevTransform.scale, object.transform.scale, alpha);
-                                    transform.rotation = glm::slerp(prevTransform.rotation, object.transform.rotation, alpha);
-                                    transform.position = glm::mix(prevTransform.position, object.transform.position, alpha);
-                                }
-                                else
-                                {
-                                    transform.scale = object.transform.scale;
-                                    transform.rotation = object.transform.rotation;
-                                    transform.position = object.transform.position;
-                                }
-
-                                frame.meshMap[material].emplace_back(MeshItem{ meshBinding, getTransformMatrix(transform) });
+                                transform.scale = glm::mix(prevTransform.scale, object.transform.scale, alpha);
+                                transform.rotation = glm::slerp(prevTransform.rotation, object.transform.rotation, alpha);
+                                transform.position = glm::mix(prevTransform.position, object.transform.position, alpha);
                             }
-                            else if(logger)
+                            else
                             {
-                                logger->error(fmt::format("Material {} is not found for mesh {}", object.materialId, object.meshId));
+                                transform.scale = object.transform.scale;
+                                transform.rotation = object.transform.rotation;
+                                transform.position = object.transform.position;
                             }
+
+                            frame.meshMap[material].emplace_back(MeshItem{ meshBinding, getTransformMatrix(transform) });
+                        }
+                        else if(logger)
+                        {
+                            logger->error(fmt::format("Material {} is not found for mesh {}", object.materialId, object.meshId));
                         }
                     }
                 }
             }
 
-            {
-                DORY_ZONE("SetCurrentWindow");
-                resources::profiling::pushTimeSlice(profiling, "Renderer::draw - set window context");
-                windowService->setCurrentWindow(window);
-                resources::profiling::popTimeSlice(profiling); //Renderer::draw - set window context
-            }
+            zoneBindObjects.end();
 
-            {
-                DORY_ZONE("DrawFrame");
-                resources::profiling::pushTimeSlice(profiling, "Renderer::draw - draw");
-                gpuDevice->drawFrame(frame, profiling);
-                resources::profiling::popTimeSlice(profiling); //"Renderer::draw - draw"
-            }
+            auto zoneSetCurrentWindow = zone<ln()>("Renderer::draw - SetCurrentWindow");
+            resources::profiling::pushTimeSlice(profiling, "Renderer::draw - set window context");
+            windowService->setCurrentWindow(window);
+            resources::profiling::popTimeSlice(profiling); //Renderer::draw - set window context
+            zoneSetCurrentWindow.end();
+
+            auto zoneDrawFrame = zone<ln()>("Renderer::draw - DrawFrame");
+            resources::profiling::pushTimeSlice(profiling, "Renderer::draw - draw");
+            gpuDevice->drawFrame(frame, profiling);
+            resources::profiling::popTimeSlice(profiling); //"Renderer::draw - draw"
+            zoneDrawFrame.end();
 
             /*auto imageStreamService = _registry.get<services::IImageStreamService>();
             auto* currentFrame = profiling::getCurrentFrame(profiling);
@@ -154,19 +162,17 @@ namespace dory::core::services::graphics
                 }
             }*/
 
-            {
-                DORY_ZONE("SwapBuffers");
-                resources::profiling::pushTimeSlice(profiling, "Renderer::draw - swap buffers");
-                windowService->swapBuffers(window);
-                resources::profiling::popTimeSlice(profiling); //"Renderer::draw - swap buffers"
-            }
+            auto zoneSwapBuffers = zone<ln()>("Renderer::draw - SwapBuffers");
+            resources::profiling::pushTimeSlice(profiling, "Renderer::draw - swap buffers");
+            windowService->swapBuffers(window);
+            resources::profiling::popTimeSlice(profiling); //"Renderer::draw - swap buffers"
+            zoneSwapBuffers.end();
 
-            {
-                DORY_ZONE("CompleteFrame");
-                gpuDevice->completeFrame(frame, profiling);
-            }
+            auto zoneCompleteFrame = zone<ln()>("Renderer::draw - CompleteFrame");
+            gpuDevice->completeFrame(frame, profiling);
+            zoneCompleteFrame.end();
 
-            dory::profiling::frameMark();
+            dory::profiling::traceFrameMark();
 
             resources::profiling::popTimeSlice(profiling); //"Renderer::draw"
         }
