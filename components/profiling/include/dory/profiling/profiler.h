@@ -145,8 +145,8 @@ namespace dory::profiling
     }
 
     template<typename TTranslationUnit, std::size_t Line>
-    auto zone(const char* name)
+    auto zone(const char* name, const std::source_location& location = std::source_location::current())
     {
-        return TraceZone::get<TTranslationUnit, Line>(name);
+        return TraceZone::get<TTranslationUnit, Line>(name, location);
     }
 }

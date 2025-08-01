@@ -28,9 +28,9 @@ namespace dory::core::services::graphics
     struct RendererTracer {};
 
     template<std::size_t Line>
-    auto zone(const char* name)
+    auto zone(const char* name, const std::source_location& location = std::source_location::current())
     {
-        return dory::profiling::zone<RendererTracer, Line>(name);
+        return dory::profiling::zone<RendererTracer, Line>(name, location);
     }
 
     glm::mat4x4 getTransformMatrix(const objects::Transform& transform)
