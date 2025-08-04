@@ -15,31 +15,33 @@
 #include <iostream>
 #include <dory/profiling/profiler.h>
 
+static auto systemMemPoolName = "System";
+
 void* operator new(const std::size_t size)
 {
     void* ptr = std::malloc(size);
-    dory::profiling::traceAllocation(ptr, size);
+    dory::profiling::traceAllocation(ptr, size, systemMemPoolName);
     if (!ptr) throw std::bad_alloc();
     return ptr;
 }
 
 void operator delete(void* ptr) noexcept
 {
-    dory::profiling::traceDeallocation(ptr);
+    dory::profiling::traceDeallocation(ptr, systemMemPoolName);
     std::free(ptr);
 }
 
 void* operator new[](const std::size_t size)
 {
     void* ptr = std::malloc(size);
-    dory::profiling::traceAllocation(ptr, size);
+    dory::profiling::traceAllocation(ptr, size, systemMemPoolName);
     if (!ptr) throw std::bad_alloc();
     return ptr;
 }
 
 void operator delete[](void* ptr) noexcept
 {
-    dory::profiling::traceDeallocation(ptr);
+    dory::profiling::traceDeallocation(ptr, systemMemPoolName);
     std::free(ptr);
 }
 
