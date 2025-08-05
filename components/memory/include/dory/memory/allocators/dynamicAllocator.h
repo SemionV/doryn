@@ -86,11 +86,13 @@ namespace dory::memory
 
                 _blocksAllocator.deallocate(freeBlock);
             }
+
+            return 0;
         }
 
         std::size_t allocateLikeABoss(const std::size_t alignedAddress, const std::size_t size, DynamicBlock* freeBlock)
         {
-
+            return 0;
         }
 
     public:

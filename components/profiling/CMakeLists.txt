@@ -1,4 +1,13 @@
 set(DORY_MODULE_NAME ${PROJECT_NAME}-profiling)
+set(DORY_MODULE_INTERFACE_NAME ${DORY_MODULE_NAME}-interface)
+
+add_definitions(-DDORY_PROFILING_ON)
+
+set(TRACY_ENABLE ON)
+add_definitions(-DTRACY_ENABLE)
+if(WIN32)
+    add_definitions(-DTRACY_IMPORTS)
+endif()
 
 add_library(${DORY_MODULE_NAME} SHARED
         src/metricsReader.cpp
@@ -6,6 +15,10 @@ add_library(${DORY_MODULE_NAME} SHARED
 target_include_directories(${DORY_MODULE_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_definitions(${DORY_MODULE_NAME} PRIVATE -DDORY_DLL_EXPORTS)
+
+add_library(${DORY_MODULE_INTERFACE_NAME} INTERFACE include/dory/profiling/profiler.h)
+target_include_directories(${DORY_MODULE_INTERFACE_NAME} INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if(TRACY_ENABLE)
     get_target_property(TRACY_INCLUDE_DIR Tracy::TracyClient INTERFACE_INCLUDE_DIRECTORIES)

@@ -2,32 +2,28 @@
 
 #include <source_location>
 #include "dory/macros/build.h"
+#include "dory/macros/utility.h"
 
-#ifdef TRACY_ENABLE
+#ifdef DORY_PROFILING_ON
 #include <tracy/Tracy.hpp>
 #include <tracy/TracyC.h>
 #endif
 
 namespace dory::profiling
 {
+#ifdef DORY_PROFILING_ON
     DORY_DLLEXPORT void setThreadName(const char* name);
     DORY_DLLEXPORT void traceFrameMark();
-    DORY_DLLEXPORT void traceAllocation(const void* ptr, const std::size_t size, const char* poolName);
+    DORY_DLLEXPORT void traceAllocation(const void* ptr, std::size_t size, const char* poolName);
     DORY_DLLEXPORT void traceDeallocation(const void* ptr, const char* poolName);
+    DORY_DLLEXPORT void shutdown();
+#endif
 
+#ifdef DORY_PROFILING_ON
     struct TraceZone
     {
-#ifdef TRACY_ENABLE
-        explicit TraceZone(const ___tracy_source_location_data* srcLoc, const bool active = true);
-#else
-        TraceZone() = default;
-#endif
-
-#ifdef TRACY_ENABLE
+        explicit TraceZone(const ___tracy_source_location_data* srcLoc, bool active = true);
         ~TraceZone();
-#else
-        ~TraceZone() = default;
-#endif
 
         TraceZone(const TraceZone&) = delete;
         TraceZone& operator=(const TraceZone&) = delete;
@@ -37,39 +33,44 @@ namespace dory::profiling
 
         void end();
 
-#ifdef TRACY_ENABLE
-        template<typename TTranslationUnit, std::size_t LineNumber>
-        static TraceZone get(const char* name, const std::source_location& loc = std::source_location::current())
-        {
-            static const ___tracy_source_location_data tracyLocation {name, loc.function_name(), loc.file_name(), loc.line(), 0};
-            TraceZone zone {&tracyLocation};
-
-            return zone;
-        }
-#else
-        template<typename TTranslationUnit, std::size_t LineNumber>
-        static TraceZone get(const char* name, const std::source_location& loc = std::source_location::current())
-        {
-            return TraceZone{};
-        }
-#endif
-
     private:
-#ifdef TRACY_ENABLE
         TracyCZoneCtx _ctx;
         bool _finished {};
-#endif
     };
-
-    consteval std::size_t ln(const std::source_location& location = std::source_location::current())
-    {
-        return location.line();
-    }
-
-    template<typename TTranslationUnit, std::size_t Line>
-    auto zone(const char* name, const std::source_location& location = std::source_location::current())
-    {
-        //In case when profiling is disabled, the TraceZone object will be optimized and should not make any pressure on the caller function stack
-        return TraceZone::get<TTranslationUnit, Line>(name, location);
-    }
+#endif
 }
+
+#ifdef DORY_PROFILING_ON
+
+#define DORY_TRACE_ZONE(name) \
+static const ___tracy_source_location_data DORY_CONCAT(_tracyLoc_, __LINE__) = { \
+name, __FUNCTION__, __FILE__, __LINE__, 0 \
+}; \
+TraceZone DORY_CONCAT(_traceZone_, __LINE__) { &DORY_CONCAT(_tracyLoc_, __LINE__) }
+
+#define DORY_TRACE_ZONE_NAMED(varName, name) \
+static const ___tracy_source_location_data DORY_CONCAT(_tracyLoc_, __LINE__) = { \
+name, __FUNCTION__, __FILE__, __LINE__, 0 \
+}; \
+::dory::profiling::TraceZone varName { &DORY_CONCAT(_tracyLoc_, __LINE__) }
+
+#define DORY_TRACE_ZONE_END(varName) varName.end();
+
+#define DORY_TRACE_FRAME_MARK dory::profiling::traceFrameMark();
+#define DORY_TRACE_THREAD_NAME(name) dory::profiling::setThreadName(name);
+#define DORY_TRACE_ALLOC(ptr, size, poolName) dory::profiling::traceAllocation(ptr, size, poolName);
+#define DORY_TRACE_FREE(ptr, poolName) dory::profiling::traceDeallocation(ptr, poolName);
+#define DORY_TRACE_SHUTDOWN() dory::profiling::shutdown();
+
+#else
+
+#define DORY_TRACE_ZONE(name) DORY_NOOP
+#define DORY_TRACE_ZONE_NAMED(varName, name) DORY_NOOP
+#define DORY_TRACE_ZONE_END(varName) DORY_NOOP
+#define DORY_TRACE_FRAME_MARK DORY_NOOP
+#define DORY_TRACE_THREAD_NAME(name) DORY_NOOP;
+#define DORY_TRACE_ALLOC(ptr, size, poolName) DORY_NOOP;
+#define DORY_TRACE_FREE(ptr, poolName) DORY_NOOP;
+#define DORY_TRACE_SHUTDOWN() DORY_NOOP;
+
+#endif

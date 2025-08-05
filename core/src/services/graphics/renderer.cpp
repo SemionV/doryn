@@ -25,14 +25,6 @@ namespace dory::core::services::graphics
     using namespace repositories::bindings;
     using namespace dory::profiling;
 
-    struct RendererTracer {};
-
-    template<std::size_t Line>
-    auto zone(const char* name, const std::source_location& location = std::source_location::current())
-    {
-        return dory::profiling::zone<RendererTracer, Line>(name, location);
-    }
-
     glm::mat4x4 getTransformMatrix(const objects::Transform& transform)
     {
         auto matrix = glm::mat4x4{ 1 };
@@ -52,7 +44,7 @@ namespace dory::core::services::graphics
                         const GraphicalContext& graphicalContext,
                         profiling::Profiling& profiling)
     {
-        auto zoneRoot = zone<ln()>("Renderer::draw - root");
+        DORY_TRACE_ZONE("Renderer::draw - root");
 
         resources::profiling::pushTimeSlice(profiling, "Renderer::draw");
 
@@ -70,11 +62,11 @@ namespace dory::core::services::graphics
             frame.clearColor = Vector4f{ 0.01f, 0.08f, 0.01f, 1.f };
             frame.viewProjectionTransform = view.projection;
 
-            auto zoneBindObjects = zone<ln()>("Renderer::draw - Bind Objects");
+            DORY_TRACE_ZONE_NAMED(zoneBindObjects, "Renderer::draw - Bind Objects");
 
             for(const auto& [objectId, object] : viewState.current.objects)
             {
-                auto zoneBindObject = zone<ln()>("Renderer::draw - BindObject");
+                DORY_TRACE_ZONE("Renderer::draw - BindObject");
                 if(graphicalContext.meshBindings.contains(object.meshId))
                 {
                     IdType bindingId = graphicalContext.meshBindings.at(object.meshId);
@@ -122,19 +114,19 @@ namespace dory::core::services::graphics
                 }
             }
 
-            zoneBindObjects.end();
+            DORY_TRACE_ZONE_END(zoneBindObjects);
 
-            auto zoneSetCurrentWindow = zone<ln()>("Renderer::draw - SetCurrentWindow");
+            DORY_TRACE_ZONE_NAMED(zoneSetCurrentWindow, "Renderer::draw - SetCurrentWindow");
             resources::profiling::pushTimeSlice(profiling, "Renderer::draw - set window context");
             windowService->setCurrentWindow(window);
             resources::profiling::popTimeSlice(profiling); //Renderer::draw - set window context
-            zoneSetCurrentWindow.end();
+            DORY_TRACE_ZONE_END(zoneSetCurrentWindow);
 
-            auto zoneDrawFrame = zone<ln()>("Renderer::draw - DrawFrame");
+            DORY_TRACE_ZONE_NAMED(zoneDrawFrame, "Renderer::draw - DrawFrame");
             resources::profiling::pushTimeSlice(profiling, "Renderer::draw - draw");
             gpuDevice->drawFrame(frame, profiling);
             resources::profiling::popTimeSlice(profiling); //"Renderer::draw - draw"
-            zoneDrawFrame.end();
+            DORY_TRACE_ZONE_END(zoneDrawFrame);
 
             /*auto imageStreamService = _registry.get<services::IImageStreamService>();
             auto* currentFrame = profiling::getCurrentFrame(profiling);
@@ -162,17 +154,17 @@ namespace dory::core::services::graphics
                 }
             }*/
 
-            auto zoneSwapBuffers = zone<ln()>("Renderer::draw - SwapBuffers");
+            DORY_TRACE_ZONE_NAMED(zoneSwapBuffers, "Renderer::draw - SwapBuffers");
             resources::profiling::pushTimeSlice(profiling, "Renderer::draw - swap buffers");
             windowService->swapBuffers(window);
             resources::profiling::popTimeSlice(profiling); //"Renderer::draw - swap buffers"
-            zoneSwapBuffers.end();
+            DORY_TRACE_ZONE_END(zoneSwapBuffers);
 
-            auto zoneCompleteFrame = zone<ln()>("Renderer::draw - CompleteFrame");
+            DORY_TRACE_ZONE_NAMED(zoneCompleteFrame, "Renderer::draw - CompleteFrame");
             gpuDevice->completeFrame(frame, profiling);
-            zoneCompleteFrame.end();
+            DORY_TRACE_ZONE_END(zoneCompleteFrame);
 
-            dory::profiling::traceFrameMark();
+            DORY_TRACE_FRAME_MARK;
 
             resources::profiling::popTimeSlice(profiling); //"Renderer::draw"
         }

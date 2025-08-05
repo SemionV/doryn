@@ -69,11 +69,10 @@ target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR
 target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/external/stb)
 
 target_link_libraries(${DORY_MODULE_NAME} PUBLIC
-        dory-core-generic
-        dory-containers
-        dory-serialization
-        dory-memory
-        dory-profiling
+        ${PROJECT_NAME}-core-generic
+        ${PROJECT_NAME}-containers
+        ${PROJECT_NAME}-serialization
+        ${PROJECT_NAME}-memory
         Boost::dll
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
         opengl-glad
@@ -82,9 +81,15 @@ target_link_libraries(${DORY_MODULE_NAME} PUBLIC
         EnTT
         Backward::Interface)
 
+if (DORY_PROFILING)
+    target_link_libraries(${DORY_MODULE_NAME} PUBLIC ${PROJECT_NAME}-profiling)
+else()
+    target_link_libraries(${DORY_MODULE_NAME} PUBLIC ${PROJECT_NAME}-profiling-interface)
+endif()
+
 set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""
         IMPORT_PREFIX ""
-        OUTPUT_NAME "dory-core")
+        OUTPUT_NAME "${PROJECT_NAME}-core")
 
 if(LINUX)
     target_compile_options(${DORY_MODULE_NAME} PRIVATE -fPIC)

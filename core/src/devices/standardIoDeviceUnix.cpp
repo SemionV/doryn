@@ -69,7 +69,7 @@ namespace dory::core::devices
 
             pollingThread = std::jthread([this, &context](const std::stop_token& stoken, void* pipe)
             {
-                profiling::setThreadName("std_io");
+                DORY_TRACE_THREAD_NAME("std_io");
 
                 //see more about this thread unblocking technic here: https://stackoverflow.com/questions/11513593/cancelling-getchar
                 int readPipe = *(int*)pipe;

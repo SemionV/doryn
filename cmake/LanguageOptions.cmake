@@ -40,10 +40,6 @@ if (CMAKE_BUILD_TYPE STREQUAL Debug)
 endif()
 
 if (DORY_PROFILING)
-    set(TRACY_ENABLE ON)
+    add_definitions(-DDORY_PROFILING_ON)
     add_definitions(-DTRACY_ENABLE)
-    if(WIN32)
-        add_definitions(-DTRACY_IMPORTS)
-    endif()
-    # Or other Tracy-related setup
 endif()

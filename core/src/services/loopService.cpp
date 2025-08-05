@@ -29,8 +29,7 @@ namespace dory::core::services
         isStop = false;
         high_resolution_clock::time_point lastTimestamp = high_resolution_clock::now();
 
-        static const char* name = "main_loop";
-        dory::profiling::setThreadName(name);
+        DORY_TRACE_THREAD_NAME("main_loop");
 
         while(!isStop)
         {
