@@ -20,28 +20,28 @@ static auto systemMemPoolName = "System";
 void* operator new(const std::size_t size)
 {
     void* ptr = std::malloc(size);
-    DORY_TRACE_ALLOC(ptr, size, systemMemPoolName);
+    DORY_TRACE_MEM_ALLOC(ptr, size, systemMemPoolName);
     if (!ptr) throw std::bad_alloc();
     return ptr;
 }
 
 void operator delete(void* ptr) noexcept
 {
-    DORY_TRACE_FREE(ptr, systemMemPoolName);
+    DORY_TRACE_MEM_FREE(ptr, systemMemPoolName);
     std::free(ptr);
 }
 
 void* operator new[](const std::size_t size)
 {
     void* ptr = std::malloc(size);
-    DORY_TRACE_ALLOC(ptr, size, systemMemPoolName);
+    DORY_TRACE_MEM_ALLOC(ptr, size, systemMemPoolName);
     if (!ptr) throw std::bad_alloc();
     return ptr;
 }
 
 void operator delete[](void* ptr) noexcept
 {
-    DORY_TRACE_FREE(ptr, systemMemPoolName);
+    DORY_TRACE_MEM_FREE(ptr, systemMemPoolName);
     std::free(ptr);
 }
 
@@ -53,6 +53,8 @@ int main()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 #endif
 {
+    DORY_TRACE_START();
+
     dory::game::Setup setup;
     dory::generic::extension::LibraryHandle staticLibraryHandle {};
     auto registry = dory::core::Registry{};

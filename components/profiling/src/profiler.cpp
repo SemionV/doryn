@@ -3,6 +3,16 @@
 
 namespace dory::profiling
 {
+    void startProfiler()
+    {
+        tracy::StartupProfiler();
+    }
+
+    void stopProfiler()
+    {
+        tracy::ShutdownProfiler();
+    }
+
     void setThreadName(const char* name)
     {
         tracy::SetThreadName(name);

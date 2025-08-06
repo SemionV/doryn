@@ -12,6 +12,9 @@
 namespace dory::profiling
 {
 #ifdef DORY_PROFILING_ON
+    DORY_DLLEXPORT void startProfiler();
+    DORY_DLLEXPORT void stopProfiler();
+
     DORY_DLLEXPORT void setThreadName(const char* name);
     DORY_DLLEXPORT void traceFrameMark();
     DORY_DLLEXPORT void traceAllocation(const void* ptr, std::size_t size, const char* poolName);
@@ -58,9 +61,10 @@ name, __FUNCTION__, __FILE__, __LINE__, 0 \
 
 #define DORY_TRACE_FRAME_MARK dory::profiling::traceFrameMark();
 #define DORY_TRACE_THREAD_NAME(name) dory::profiling::setThreadName(name);
-#define DORY_TRACE_ALLOC(ptr, size, poolName) dory::profiling::traceAllocation(ptr, size, poolName);
-#define DORY_TRACE_FREE(ptr, poolName) dory::profiling::traceDeallocation(ptr, poolName);
-#define DORY_TRACE_SHUTDOWN() dory::profiling::shutdown();
+#define DORY_TRACE_MEM_ALLOC(ptr, size, poolName) dory::profiling::traceAllocation(ptr, size, poolName);
+#define DORY_TRACE_MEM_FREE(ptr, poolName) dory::profiling::traceDeallocation(ptr, poolName);
+#define DORY_TRACE_START() dory::profiling::startProfiler();
+#define DORY_TRACE_SHUTDOWN() dory::profiling::stopProfiler();
 
 #else
 
@@ -69,8 +73,9 @@ name, __FUNCTION__, __FILE__, __LINE__, 0 \
 #define DORY_TRACE_ZONE_END(varName) DORY_NOOP
 #define DORY_TRACE_FRAME_MARK DORY_NOOP
 #define DORY_TRACE_THREAD_NAME(name) DORY_NOOP;
-#define DORY_TRACE_ALLOC(ptr, size, poolName) DORY_NOOP;
-#define DORY_TRACE_FREE(ptr, poolName) DORY_NOOP;
+#define DORY_TRACE_MEM_ALLOC(ptr, size, poolName) DORY_NOOP;
+#define DORY_TRACE_MEM_FREE(ptr, poolName) DORY_NOOP;
+#define DORY_TRACE_START() DORY_NOOP;
 #define DORY_TRACE_SHUTDOWN() DORY_NOOP;
 
 #endif
