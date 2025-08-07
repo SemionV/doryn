@@ -21,6 +21,7 @@ endif()
 set(TRACY_SRC ${TRACY_PUBLIC_DIR}/TracyClient.cpp)
 
 add_library(${DORY_MODULE_NAME} SHARED
+        src/dllmain.cpp
         src/metricsReader.cpp
         src/profiler.cpp
         ${TRACY_SRC})

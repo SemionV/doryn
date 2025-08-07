@@ -1,6 +1,7 @@
 set(DORY_MODULE_NAME ${PROJECT_NAME}-engine)
 
 add_library(${DORY_MODULE_NAME} SHARED
+        src/dllmain.cpp
         src/setup.cpp
         src/bootstrap.cpp)
 
