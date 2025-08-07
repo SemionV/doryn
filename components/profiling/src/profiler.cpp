@@ -23,6 +23,16 @@ namespace dory::profiling
         tracy::Profiler::SendFrameMark(nullptr);
     }
 
+    void traceFrameStart(const char* name)
+    {
+        FrameMarkStart(name);
+    }
+
+    void traceFrameEnd(const char* name)
+    {
+        FrameMarkStart(name);
+    }
+
     void traceAllocation(const void* ptr, const std::size_t size, const char* poolName)
     {
         //tracy::Profiler::MemAllocCallstack(ptr, size, 10, false);

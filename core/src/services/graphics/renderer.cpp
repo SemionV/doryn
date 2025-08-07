@@ -164,8 +164,6 @@ namespace dory::core::services::graphics
             gpuDevice->completeFrame(frame, profiling);
             DORY_TRACE_ZONE_END(zoneCompleteFrame);
 
-            DORY_TRACE_FRAME_MARK;
-
             resources::profiling::popTimeSlice(profiling); //"Renderer::draw"
         }
     }

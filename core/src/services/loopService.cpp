@@ -31,8 +31,11 @@ namespace dory::core::services
 
         DORY_TRACE_THREAD_NAME("main_loop");
 
+        static const char* loopName = "MainLoop";
+
         while(!isStop)
         {
+            DORY_TRACE_FRAME_START(loopName);
             profiling::pushTimeSlice(context.profiling, std::string{ profiling::Profiling::frameRootTimeSlice });
 
             auto currentTimestamp = high_resolution_clock::now();
@@ -52,6 +55,7 @@ namespace dory::core::services
             }
 
             profiling::popTimeSlice(context.profiling);
+            DORY_TRACE_FRAME_END(loopName);
         }
 
         pipelineService = _registry.get<IPipelineService>();

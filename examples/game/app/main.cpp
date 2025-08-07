@@ -68,6 +68,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 {
     std::cout << "Begin Start Profiler" << std::endl;
     DORY_TRACE_START();
+    traceOn = true;
     std::cout << "End Start Profiler" << std::endl;
 
     {
@@ -120,6 +121,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     }
 
     std::cout << "Begin Shutdown Profiler" << std::endl;
+    traceOn = false;
     DORY_TRACE_SHUTDOWN();
     std::cout << "End Shutdown Profiler" << std::endl;
 
