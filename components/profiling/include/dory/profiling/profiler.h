@@ -22,6 +22,7 @@ namespace dory::profiling
     DORY_DLLEXPORT void traceAllocation(const void* ptr, std::size_t size, const char* poolName);
     DORY_DLLEXPORT void traceDeallocation(const void* ptr, const char* poolName);
     DORY_DLLEXPORT void shutdown();
+    DORY_DLLEXPORT void registerOpenGLContext(const char* contextName, std::size_t nameSize);
 #endif
 
 #ifdef DORY_PROFILING_ON
@@ -69,6 +70,7 @@ name, __FUNCTION__, __FILE__, __LINE__, 0 \
 #define DORY_TRACE_MEM_FREE(ptr, poolName) dory::profiling::traceDeallocation(ptr, poolName);
 #define DORY_TRACE_START() dory::profiling::startProfiler();
 #define DORY_TRACE_SHUTDOWN() dory::profiling::stopProfiler();
+#define DORY_TRACE_GPU_CONTEXT(name, size) dory::profiling::registerOpenGLContext(name, size);
 
 #else
 
@@ -83,5 +85,6 @@ name, __FUNCTION__, __FILE__, __LINE__, 0 \
 #define DORY_TRACE_MEM_FREE(ptr, poolName) DORY_NOOP;
 #define DORY_TRACE_START() DORY_NOOP;
 #define DORY_TRACE_SHUTDOWN() DORY_NOOP;
+#define DORY_TRACE_GPU_CONTEXT(name, size) DORY_NOOP;
 
 #endif

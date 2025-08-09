@@ -4,6 +4,7 @@
 #include <dory/core/repositories/iWindowRepository.h>
 #include <dory/core/resources/glfwWindow.h>
 #include <dory/core/resources/profiling.h>
+#include <dory/profiling/profiler.h>
 #include <spdlog/fmt/fmt.h>
 
 namespace dory::core::devices
@@ -227,6 +228,8 @@ namespace dory::core::devices
         glfwWindow.handler = glfwWindowHandler;
 
         glfwMakeContextCurrent(glfwWindowHandler);
+
+        DORY_TRACE_GPU_CONTEXT(parameters.title.c_str(), parameters.title.size());
 
         glfwSwapInterval(parameters.vSync ? 1 : 0);
         glfwSetWindowUserPointer(glfwWindow.handler, &_registry);

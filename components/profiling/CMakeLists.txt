@@ -49,6 +49,8 @@ endif()
 
 target_link_libraries(${DORY_MODULE_NAME} PRIVATE
         dory-macros
+        opengl-glad
+        glfw
         $<$<BOOL:${TRACY_ENABLE}>:Tracy::TracyClient>)
 
 set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""

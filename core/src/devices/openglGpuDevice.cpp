@@ -373,7 +373,7 @@ namespace dory::core::devices
     void OpenglGpuDevice::disconnect(DataContext& context)
     {}
 
-    bool OpenglGpuDevice::checkForError(const std::string& location)
+    bool OpenglGpuDevice::checkForError(const std::string& location) const
     {
         auto errorMessage = getCurrentGlError(location);
         if(errorMessage)

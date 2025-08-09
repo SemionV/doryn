@@ -18,7 +18,7 @@ namespace dory::core::devices
     private:
         OpenglProperties openglProperties;
 
-        bool checkForError(const std::string& location);
+        bool checkForError(const std::string& location) const;
         template<typename TUniform>
         void bindUniformLocations(resources::bindings::OpenglMaterialBinding* materialBinding, resources::bindings::UniformBinding& uniforms);
         void bindUniforms(resources::bindings::OpenglMaterialBinding* materialBinding);
