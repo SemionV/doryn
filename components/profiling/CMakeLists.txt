@@ -2,6 +2,7 @@ set(DORY_MODULE_NAME ${PROJECT_NAME}-profiling)
 set(DORY_MODULE_INTERFACE_NAME ${DORY_MODULE_NAME}-interface)
 
 add_definitions(-DDORY_PROFILING_ON)
+add_definitions(-DDORY_GPU_PROFILING_ON)
 
 set(TRACY_ENABLE ON)
 if(WIN32)

@@ -6,6 +6,7 @@ list(APPEND CMAKE_MODULE_PATH ${DORY_CMAKE_SCRIPTS_PATH})
 
 option(DORY_TEST_COVERAGE "Enable test coverage report" OFF)
 option(DORY_PROFILING "Enable profiling" OFF)
+option(DORY_GPU_PROFILING "Enable GPU profiling - extend general profiling" OFF)
 
 enable_testing() #TODO: Make testing optional?
 
