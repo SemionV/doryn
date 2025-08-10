@@ -122,11 +122,13 @@ namespace dory::core::services::graphics
             resources::profiling::popTimeSlice(profiling); //Renderer::draw - set window context
             DORY_TRACE_ZONE_END(zoneSetCurrentWindow);
 
-            DORY_TRACE_ZONE_NAMED(zoneDrawFrame, "Renderer::draw - DrawFrame");
-            resources::profiling::pushTimeSlice(profiling, "Renderer::draw - draw");
-            gpuDevice->drawFrame(frame, profiling);
-            resources::profiling::popTimeSlice(profiling); //"Renderer::draw - draw"
-            DORY_TRACE_ZONE_END(zoneDrawFrame);
+            {
+                DORY_TRACE_ZONE("Renderer::draw - DrawFrame");
+                DORY_TRACE_GPU_ZONE("DrawFrame");
+                resources::profiling::pushTimeSlice(profiling, "Renderer::draw - draw");
+                gpuDevice->drawFrame(frame, profiling);
+                resources::profiling::popTimeSlice(profiling); //"Renderer::draw - draw"
+            }
 
             /*auto imageStreamService = _registry.get<services::IImageStreamService>();
             auto* currentFrame = profiling::getCurrentFrame(profiling);
@@ -158,6 +160,7 @@ namespace dory::core::services::graphics
             resources::profiling::pushTimeSlice(profiling, "Renderer::draw - swap buffers");
             windowService->swapBuffers(window);
             resources::profiling::popTimeSlice(profiling); //"Renderer::draw - swap buffers"
+            DORY_TRACE_GPU_COLLECT();
             DORY_TRACE_ZONE_END(zoneSwapBuffers);
 
             DORY_TRACE_ZONE_NAMED(zoneCompleteFrame, "Renderer::draw - CompleteFrame");

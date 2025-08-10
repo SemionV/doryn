@@ -31,13 +31,13 @@ BOOL APIENTRY DllMain(HMODULE, DWORD reason, LPVOID)
 
 // GCC/Clang: constructor runs on .so load, destructor runs on unload
 __attribute__((constructor))
-static void profiler_init()
+static void module_init()
 {
     logModuleLoad();
 }
 
 __attribute__((destructor))
-static void profiler_shutdown()
+static void module_shutdown()
 {
     logModuleUnload();
 }

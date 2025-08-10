@@ -1,4 +1,7 @@
+#ifndef DORY_OPENGL_INCLUDED
 #include <glad/gl.h>
+#define DORY_OPENGL_INCLUDED
+#endif
 #include <dory/core/repositories/shaderProgramRepository.h>
 
 namespace dory::core::repositories

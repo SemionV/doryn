@@ -1,6 +1,9 @@
 #include <dory/core/registry.h>
 #include <shaderService.h>
+#ifndef DORY_OPENGL_INCLUDED
 #include <glad/gl.h>
+#define DORY_OPENGL_INCLUDED
+#endif
 #include <dory/core/resources/entities/openglShader.h>
 #include <dory/core/resources/entities/openglShaderProgram.h>
 

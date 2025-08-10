@@ -1,4 +1,7 @@
+#ifndef DORY_OPENGL_INCLUDED
 #include <glad/gl.h>
+#define DORY_OPENGL_INCLUDED
+#endif
 #include <GLFW/glfw3.h>
 #include <extension.h>
 #include <shaderService.h>

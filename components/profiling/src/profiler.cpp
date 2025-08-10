@@ -1,6 +1,3 @@
-#include <glad/gl.h>
-#include <GLFW/glfw3.h>
-#include <tracy/TracyOpenGL.hpp>
 #include <dory/profiling/profiler.h>
 #include <dory/macros/build.h>
 
@@ -55,7 +52,13 @@ namespace dory::profiling
 
     void registerOpenGLContext(const char* contextName, const std::size_t nameSize)
     {
+        TracyGpuContext;
         TracyGpuContextName(contextName, nameSize);
+    }
+
+    void collectGpuTraces()
+    {
+        TracyGpuCollect;
     }
 
     TraceZone::TraceZone(const ___tracy_source_location_data* srcLoc, const bool active):

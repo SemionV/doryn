@@ -1,6 +1,9 @@
 #include "dory/core/registry.h"
 #include "dory/core/devices/openglGpuDevice.h"
+#ifndef DORY_OPENGL_INCLUDED
 #include <glad/gl.h>
+#define DORY_OPENGL_INCLUDED
+#endif
 #include <GLFW/glfw3.h>
 #include "spdlog/fmt/fmt.h"
 #include "dory/serialization/reflection.h"

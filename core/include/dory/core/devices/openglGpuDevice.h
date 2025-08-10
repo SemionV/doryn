@@ -1,6 +1,9 @@
 #pragma once
 
+#ifndef DORY_OPENGL_INCLUDED
 #include <glad/gl.h>
+#define DORY_OPENGL_INCLUDED
+#endif
 #include "dory/core/dependencyResolver.h"
 #include "dory/core/devices/iGpuDevice.h"
 #include "dory/core/resources/bindings/openglMaterialBinding.h"

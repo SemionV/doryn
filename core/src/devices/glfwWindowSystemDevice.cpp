@@ -1,10 +1,10 @@
+#include <dory/profiling/profiler.h>
 #include <dory/core/registry.h>
 #include <dory/core/devices/glfwWindowSystemDevice.h>
 #include <GLFW/glfw3.h>
 #include <dory/core/repositories/iWindowRepository.h>
 #include <dory/core/resources/glfwWindow.h>
 #include <dory/core/resources/profiling.h>
-#include <dory/profiling/profiler.h>
 #include <spdlog/fmt/fmt.h>
 
 namespace dory::core::devices
