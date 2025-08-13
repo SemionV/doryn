@@ -3,6 +3,8 @@
 #include <thread>
 #include <dory/core/resources/imageStreamQueue.h>
 
+#include "dory/profiling/profiler.h"
+
 namespace dory::core::devices
 {
     void deleteOldImages(const std::filesystem::path& directory, const std::size_t maxImagesCount)
@@ -57,6 +59,8 @@ namespace dory::core::devices
 
     void ImageStreamDevice::workingThread()
     {
+        DORY_TRACE_THREAD_NAME("dory::image_stream");
+
         while(!stop)
         {
             auto imageStreamRepo = _registry.get<repositories::IImageStreamRepository>();

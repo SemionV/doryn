@@ -1,16 +1,6 @@
 
 #include <iostream>
 
-void logModuleLoad()
-{
-    std::cout << "Load Profiler Module" << std::endl;
-}
-
-void logModuleUnload()
-{
-    std::cout << "Unload Profiler Module" << std::endl;
-}
-
 #if defined(_WIN32)
 #include <Windows.h>
 
@@ -34,13 +24,13 @@ BOOL APIENTRY DllMain(HMODULE, DWORD reason, LPVOID)
 __attribute__((constructor))
 static void profiler_init()
 {
-    logModuleLoad();
+    std::cout << "Load Profiler Module" << std::endl;
 }
 
 __attribute__((destructor))
 static void profiler_shutdown()
 {
-    logModuleUnload();
+    std::cout << "Unload Profiler Module" << std::endl;
 }
 
 #endif

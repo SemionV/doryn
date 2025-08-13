@@ -1,8 +1,25 @@
 #include <dory/profiling/profiler.h>
-#include <dory/macros/build.h>
+#include <atomic>
 
 namespace dory::profiling
 {
+    static std::atomic<bool> profilerIsReady { false };
+
+    void setProfilerReady()
+    {
+        profilerIsReady.store(true, std::memory_order_release);
+    }
+
+    void setProfilerNotReady()
+    {
+        profilerIsReady.store(false, std::memory_order_release);
+    }
+
+    bool isProfilerReady()
+    {
+        return profilerIsReady.load(std::memory_order_acquire);
+    }
+
     void startProfiler()
     {
         tracy::StartupProfiler();
@@ -43,6 +60,11 @@ namespace dory::profiling
     {
         //tracy::Profiler::MemFreeCallstack(ptr, 10, false);
         tracy::Profiler::MemFreeCallstackNamed(ptr, 10, false, poolName);
+    }
+
+    void traceMessageStack(const char* message, const std::size_t messageSize, const std::size_t stackDepth)
+    {
+        TracyMessageS(message, messageSize, stackDepth);
     }
 
     void shutdown()

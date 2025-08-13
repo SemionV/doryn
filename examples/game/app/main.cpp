@@ -8,12 +8,11 @@
 #include <dory/profiling/profiler.h>
 
 static auto systemMemPoolName = "System";
-static bool traceOn = false;
 
 void* operator new(const std::size_t size)
 {
     void* ptr = std::malloc(size);
-    if(traceOn)
+    if(DORY_TRACE_IS_PROFILER_READY)
     {
         DORY_TRACE_MEM_ALLOC(ptr, size, systemMemPoolName);
     }
@@ -23,7 +22,7 @@ void* operator new(const std::size_t size)
 
 void operator delete(void* ptr) noexcept
 {
-    if(traceOn)
+    if(DORY_TRACE_IS_PROFILER_READY)
     {
         DORY_TRACE_MEM_FREE(ptr, systemMemPoolName);
     }
@@ -33,7 +32,7 @@ void operator delete(void* ptr) noexcept
 void* operator new[](const std::size_t size)
 {
     void* ptr = std::malloc(size);
-    if(traceOn)
+    if(DORY_TRACE_IS_PROFILER_READY)
     {
         DORY_TRACE_MEM_ALLOC(ptr, size, systemMemPoolName);
     }
@@ -43,7 +42,7 @@ void* operator new[](const std::size_t size)
 
 void operator delete[](void* ptr) noexcept
 {
-    if(traceOn)
+    if(DORY_TRACE_IS_PROFILER_READY)
     {
         DORY_TRACE_MEM_FREE(ptr, systemMemPoolName);
     }
@@ -60,7 +59,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 {
     std::cout << "Begin Start Profiler" << std::endl;
     DORY_TRACE_START();
-    traceOn = true;
+    DORY_TRACE_THREAD_NAME("dory::main");
+    DORY_TRACE_SET_PROFILER_READY();
     std::cout << "End Start Profiler" << std::endl;
 
     {
@@ -113,8 +113,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
     }
 
     std::cout << "Begin Shutdown Profiler" << std::endl;
-    traceOn = false;
     DORY_TRACE_SHUTDOWN();
+    DORY_TRACE_SET_PROFILER_NOT_READY();
     std::cout << "End Shutdown Profiler" << std::endl;
 
     return 0;

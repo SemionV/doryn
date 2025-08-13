@@ -48,11 +48,12 @@ if(TRACY_ENABLE)
     target_include_directories(${DORY_MODULE_NAME} PUBLIC ${TRACY_INCLUDE_DIR})
 endif()
 
-target_link_libraries(${DORY_MODULE_NAME} PRIVATE
+target_link_libraries(${DORY_MODULE_NAME} PRIVATE  $<$<BOOL:${TRACY_ENABLE}>:Tracy::TracyClient>)
+
+target_link_libraries(${DORY_MODULE_NAME} PUBLIC
         dory-macros
         opengl-glad
-        glfw
-        $<$<BOOL:${TRACY_ENABLE}>:Tracy::TracyClient>)
+        glfw)
 
 set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""
         IMPORT_PREFIX ""

@@ -1,15 +1,5 @@
 #include <iostream>
 
-void logModuleLoad()
-{
-    std::cout << "Load Engine Module" << std::endl;
-}
-
-void logModuleUnload()
-{
-    std::cout << "Unload Engine Module" << std::endl;
-}
-
 #if defined(_WIN32)
 #include <Windows.h>
 
@@ -33,13 +23,13 @@ BOOL APIENTRY DllMain(HMODULE, DWORD reason, LPVOID)
 __attribute__((constructor))
 static void module_init()
 {
-    logModuleLoad();
+    std::cout << "Load Engine Module" << std::endl;
 }
 
 __attribute__((destructor))
 static void module_shutdown()
 {
-    logModuleUnload();
+    std::cout << "Unload Engine Module" << std::endl;
 }
 
 #endif

@@ -1,6 +1,8 @@
 #include <dory/core/registry.h>
 #include <dory/core/devices/standardIoDeviceWin32.h>
 
+#include "dory/profiling/profiler.h"
+
 namespace dory::core::devices
 {
     StandardIODevice::StandardIODevice(Registry& registry):
@@ -103,6 +105,8 @@ namespace dory::core::devices
 
             pollingThread = std::jthread([this, &context, hStdin, oldMode](const std::stop_token& stoken)
             {
+                DORY_TRACE_THREAD_NAME("dory::console_io");
+
                 INPUT_RECORD inputRecord;
                 long unsigned int recordsRead = 0;
 

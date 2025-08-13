@@ -29,7 +29,11 @@ namespace dory::profiling
     DORY_DLLEXPORT void traceFrameEnd(const char* name);
     DORY_DLLEXPORT void traceAllocation(const void* ptr, std::size_t size, const char* poolName);
     DORY_DLLEXPORT void traceDeallocation(const void* ptr, const char* poolName);
+    DORY_DLLEXPORT void traceMessageStack(const char* message, std::size_t messageSize, std::size_t stackDepth = 10);
     DORY_DLLEXPORT void shutdown();
+    DORY_DLLEXPORT void setProfilerReady();
+    DORY_DLLEXPORT void setProfilerNotReady();
+    DORY_DLLEXPORT bool isProfilerReady();
 #endif
 
 #ifdef DORY_GPU_PROFILING_ON
@@ -80,8 +84,12 @@ name, __FUNCTION__, __FILE__, __LINE__, 0 \
 #define DORY_TRACE_THREAD_NAME(name) dory::profiling::setThreadName(name);
 #define DORY_TRACE_MEM_ALLOC(ptr, size, poolName) dory::profiling::traceAllocation(ptr, size, poolName);
 #define DORY_TRACE_MEM_FREE(ptr, poolName) dory::profiling::traceDeallocation(ptr, poolName);
+#define DORY_TRACE_MESSAGE_STACK(message, messageSize, stackDepth) dory::profiling::traceMessageStack(message, messageSize, stackDepth);
 #define DORY_TRACE_START() dory::profiling::startProfiler();
 #define DORY_TRACE_SHUTDOWN() dory::profiling::stopProfiler();
+#define DORY_TRACE_SET_PROFILER_READY() dory::profiling::setProfilerReady();
+#define DORY_TRACE_SET_PROFILER_NOT_READY() dory::profiling::setProfilerNotReady();
+#define DORY_TRACE_IS_PROFILER_READY dory::profiling::isProfilerReady()
 
 #else
 
@@ -94,8 +102,12 @@ name, __FUNCTION__, __FILE__, __LINE__, 0 \
 #define DORY_TRACE_THREAD_NAME(name) DORY_NOOP;
 #define DORY_TRACE_MEM_ALLOC(ptr, size, poolName) DORY_NOOP;
 #define DORY_TRACE_MEM_FREE(ptr, poolName) DORY_NOOP;
+#define DORY_TRACE_MESSAGE_STACK(message, messageSize, stackDepth) DORY_NOOP;
 #define DORY_TRACE_START() DORY_NOOP;
 #define DORY_TRACE_SHUTDOWN() DORY_NOOP;
+#define DORY_TRACE_SET_PROFILER_READY() DORY_NOOP;
+#define DORY_TRACE_SET_PROFILER_NOT_READY() DORY_NOOP;
+#define DORY_TRACE_IS_PROFILER_READY false
 
 #endif
 

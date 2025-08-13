@@ -7,6 +7,7 @@ set(DORY_COMPONENT Game)
 
 add_subdirectory(app)
 add_subdirectory(engine)
+add_subdirectory(thread_hook)
 add_subdirectory(extensions/renderer-opengl)
 add_subdirectory(extensions/test-extension)
 

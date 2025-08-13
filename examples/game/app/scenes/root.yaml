@@ -4,9 +4,9 @@ devices:
   - type: TerminalDevice
   - type: GlfwDisplaySystemDevice
   - type: GlfwWindowSystemDevice
-  - type: FileWatcherDevice
+  #- type: FileWatcherDevice
   - type: OpenglGpuDevice
-  - type: ImageStreamDevice
+  #- type: ImageStreamDevice
 pipeline:
   nodes:
     events:
