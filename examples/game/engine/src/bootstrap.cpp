@@ -4,6 +4,8 @@
 #include <thread>
 #include <spdlog/fmt/fmt.h>
 
+#include "dory/macros/utility.h"
+
 namespace dory::game
 {
     using namespace core;
@@ -16,13 +18,6 @@ namespace dory::game
     using namespace generic::extension;
     using namespace generic::registry;
 
-    std::string threadIdToString(const std::thread::id& id)
-    {
-        std::stringstream ss;
-        ss << id;
-        return ss.str();
-    }
-
     Bootstrap::Bootstrap(Registry &registry):
         _registry(registry)
     {}
@@ -34,7 +29,8 @@ namespace dory::game
 
         if(auto logger = _registry.get<ILogService, Logger::Config>())
         {
-            logger->information(fmt::format("main threadId: {}", threadIdToString(std::this_thread::get_id())));
+            auto currentThreadId = DORY_CURRENT_THREAD_ID();
+            logger->information(fmt::format("main threadId: {}", currentThreadId));
         }
 
         return true;

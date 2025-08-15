@@ -2,8 +2,8 @@ name: root
 devices:
   - type: StandardIODevice
   - type: TerminalDevice
-  - type: GlfwDisplaySystemDevice
-  - type: GlfwWindowSystemDevice
+  #- type: GlfwDisplaySystemDevice
+  #- type: GlfwWindowSystemDevice
   #- type: FileWatcherDevice
   - type: OpenglGpuDevice
   #- type: ImageStreamDevice

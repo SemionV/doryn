@@ -55,6 +55,9 @@ target_link_libraries(${DORY_MODULE_NAME} PUBLIC
         opengl-glad
         glfw)
 
+target_link_libraries(${DORY_MODULE_INTERFACE_NAME} INTERFACE
+        dory-macros)
+
 set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""
         IMPORT_PREFIX ""
         OUTPUT_NAME ${DORY_MODULE_NAME})

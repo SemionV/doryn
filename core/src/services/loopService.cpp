@@ -3,6 +3,7 @@
 #include <dory/core/services/iPipelineService.h>
 #include <chrono>
 #include <dory/profiling/profiler.h>
+#include <spdlog/fmt/fmt.h>
 
 namespace dory::core::services
 {
@@ -30,6 +31,12 @@ namespace dory::core::services
         high_resolution_clock::time_point lastTimestamp = high_resolution_clock::now();
 
         static const char* loopName = "MainLoop";
+
+        if(auto logger = _registry.get<ILogService, Logger::Config>())
+        {
+            auto currentThreadId = DORY_CURRENT_THREAD_ID();
+            logger->information(fmt::format("main loop threadId: {}", currentThreadId));
+        }
 
         while(!isStop)
         {

@@ -1,3 +1,5 @@
+#if defined(DORY_PLATFORM_LINUX) || defined(DORY_PLATFORM_APPLE)
+
 #include <pthread.h>
 #include <dlfcn.h>
 #include <atomic>
@@ -105,3 +107,7 @@ extern "C"
     }
 
 } // extern "C"
+
+#elif defined(DORY_PLATFORM_WIN32)
+
+#endif

@@ -59,7 +59,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 {
     std::cout << "Begin Start Profiler" << std::endl;
     DORY_TRACE_START();
-    DORY_TRACE_THREAD_NAME("dory::main");
     DORY_TRACE_SET_PROFILER_READY();
     std::cout << "End Start Profiler" << std::endl;
 
