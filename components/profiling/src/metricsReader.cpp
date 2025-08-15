@@ -115,30 +115,40 @@ namespace dory::profiling
 {
     void MetricsReader::startMetricsRecording(ProcessMetrics& metrics)
     {
+#if DORY_PLATFORM_LINUX
         //TODO: split snapshot metrics from counters(like overall memory used versus page faults count)
-        startMetricsRecordingPlatform(metrics);
+        startMetricsRecrdingPlatform(metrics);
+#endif
     }
 
     void MetricsReader::completeMetricsRecording(ProcessMetrics& metrics)
     {
+#if DORY_PLATFORM_LINUX
         //TODO: do not close the performance counters, just read the current values and introduce a separate method to close the counters
         completeMetricsRecordingPlatform(metrics);
+#endif
     }
 
     void MetricsReader::startMetricsRecording(TaskMetrics& metrics)
     {
+#if DORY_PLATFORM_LINUX
         metrics.executionMetrics.wallClockStart = std::chrono::high_resolution_clock::now();
         startMetricsRecordingPlatform(metrics);
+#endif
     }
 
     void MetricsReader::readMetrics(TaskMetrics& metrics)
     {
+#if DORY_PLATFORM_LINUX
         metrics.executionMetrics.wallClockEnd = std::chrono::high_resolution_clock::now();
         completeMetricsRecordingPlatform(metrics);
+#endif
     }
 
     void MetricsReader::stopMetricsRecording(TaskMetrics& metrics)
     {
+#if DORY_PLATFORM_LINUX
         completeMetricsRecordingPlatform(metrics);
+#endif
     }
 }

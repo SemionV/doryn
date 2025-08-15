@@ -5,9 +5,9 @@ add_definitions(-DDORY_PROFILING_ON)
 add_definitions(-DDORY_GPU_PROFILING_ON)
 
 set(TRACY_ENABLE ON)
-if(WIN32)
-    add_definitions(-DTRACY_IMPORTS)
-endif()
+#if(WIN32)
+#    add_definitions(-DTRACY_IMPORTS)
+#endif()
 
 if(TRACY_ENABLE)
     get_target_property(TRACY_INCLUDE_DIR Tracy::TracyClient INTERFACE_INCLUDE_DIRECTORIES)

@@ -9,10 +9,10 @@ BOOL APIENTRY DllMain(HMODULE, DWORD reason, LPVOID)
     switch (reason)
     {
     case DLL_PROCESS_ATTACH:
-        logModuleLoad();
+        std::cout << "Load Profiler Module" << std::endl;
         break;
     case DLL_PROCESS_DETACH:
-        logModuleUnload();
+        std::cout << "Unload Profiler Module" << std::endl;
         break;
     }
     return TRUE;

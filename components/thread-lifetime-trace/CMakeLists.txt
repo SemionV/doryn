@@ -3,7 +3,11 @@ set(DORY_MODULE_NAME ${PROJECT_NAME}-thread-lifetime-trace)
 add_library(${DORY_MODULE_NAME} SHARED
         src/hook.cpp)
 
-target_link_libraries(${DORY_MODULE_NAME} PRIVATE dl spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
+if(LINUX)
+    target_link_libraries(${DORY_MODULE_NAME} PRIVATE dl)
+endif()
+
+target_link_libraries(${DORY_MODULE_NAME} PRIVATE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
 
 if (DORY_PROFILING)
     target_link_libraries(${DORY_MODULE_NAME} PUBLIC dory-profiling)

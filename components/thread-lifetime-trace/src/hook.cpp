@@ -110,4 +110,7 @@ extern "C"
 
 #elif defined(DORY_PLATFORM_WIN32)
 
+//Need to exportat least one symbol to trigger .lib file generation on windows
+extern "C" __declspec(dllexport) void dory_thread_lifetime_trace_touch() {}
+
 #endif

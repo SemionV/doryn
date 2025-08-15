@@ -1,3 +1,4 @@
+#if DORY_PLATFORM_LINUX
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <dory/memory/allocators/blockAllocator.h>
@@ -83,3 +84,4 @@ TEST(BlockAllocatorTests, pageResidency)
     BlockAllocator::commitPages(block, 1);
     profile_residency(block.ptr, block.pagesCount * block.pageSize);*/
 }
+#endif

@@ -8,10 +8,10 @@ BOOL APIENTRY DllMain(HMODULE, DWORD reason, LPVOID)
     switch (reason)
     {
     case DLL_PROCESS_ATTACH:
-        logModuleLoad();
+        std::cout << "Load Engine Module" << std::endl;
         break;
     case DLL_PROCESS_DETACH:
-        logModuleUnload();
+        std::cout << "Unload Engine Module" << std::endl;
         break;
     }
     return TRUE;
