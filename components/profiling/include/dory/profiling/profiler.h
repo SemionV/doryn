@@ -42,7 +42,7 @@ namespace dory::profiling
 #endif
 
 #ifdef DORY_PROFILING_ON
-    struct TraceZone
+    struct DORY_DLLEXPORT TraceZone
     {
         explicit TraceZone(const ___tracy_source_location_data* srcLoc, bool active = true);
         ~TraceZone();
