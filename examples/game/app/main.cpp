@@ -7,16 +7,23 @@
 #include <iostream>
 #include <dory/profiling/profiler.h>
 
-static auto systemMemPoolName = "System";
+//static auto systemMemPoolName = "System";
 
-void* operator new(const std::size_t size)
+//#include <dory/game/custom_new_delete.h>
+//#include <dory/game/custom_alloc_free.h>
+
+/*void* operator new(const std::size_t size)
 {
     void* ptr = std::malloc(size);
     if(DORY_TRACE_IS_PROFILER_READY)
     {
+        std::cout << "mem-alloc: " << ptr << std::endl;
         DORY_TRACE_MEM_ALLOC(ptr, size, systemMemPoolName);
     }
-    if (!ptr) throw std::bad_alloc();
+    if (!ptr)
+    {
+        throw std::bad_alloc();
+    }
     return ptr;
 }
 
@@ -24,6 +31,7 @@ void operator delete(void* ptr) noexcept
 {
     if(DORY_TRACE_IS_PROFILER_READY)
     {
+        std::cout << "mem-free: " << ptr << std::endl;
         DORY_TRACE_MEM_FREE(ptr, systemMemPoolName);
     }
     std::free(ptr);
@@ -47,7 +55,7 @@ void operator delete[](void* ptr) noexcept
         DORY_TRACE_MEM_FREE(ptr, systemMemPoolName);
     }
     std::free(ptr);
-}
+}*/
 
 #ifdef DORY_MAIN_FUNCTION_UNIX
 int main()

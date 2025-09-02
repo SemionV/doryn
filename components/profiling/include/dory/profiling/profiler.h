@@ -20,29 +20,29 @@
 namespace dory::profiling
 {
 #ifdef DORY_PROFILING_ON
-    DORY_DLLEXPORT void startProfiler();
-    DORY_DLLEXPORT void stopProfiler();
+    DORY_DLL_API void startProfiler();
+    DORY_DLL_API void stopProfiler();
 
-    DORY_DLLEXPORT void setThreadName(const char* name);
-    DORY_DLLEXPORT void traceFrameMark();
-    DORY_DLLEXPORT void traceFrameStart(const char* name);
-    DORY_DLLEXPORT void traceFrameEnd(const char* name);
-    DORY_DLLEXPORT void traceAllocation(const void* ptr, std::size_t size, const char* poolName);
-    DORY_DLLEXPORT void traceDeallocation(const void* ptr, const char* poolName);
-    DORY_DLLEXPORT void traceMessageStack(const char* message, std::size_t messageSize, std::size_t stackDepth = 10);
-    DORY_DLLEXPORT void shutdown();
-    DORY_DLLEXPORT void setProfilerReady();
-    DORY_DLLEXPORT void setProfilerNotReady();
-    DORY_DLLEXPORT bool isProfilerReady();
+    DORY_DLL_API void setThreadName(const char* name);
+    DORY_DLL_API void traceFrameMark();
+    DORY_DLL_API void traceFrameStart(const char* name);
+    DORY_DLL_API void traceFrameEnd(const char* name);
+    DORY_DLL_API void traceAllocation(const void* ptr, std::size_t size, const char* poolName);
+    DORY_DLL_API void traceDeallocation(const void* ptr, const char* poolName);
+    DORY_DLL_API void traceMessageStack(const char* message, std::size_t messageSize, std::size_t stackDepth = 10);
+    DORY_DLL_API void shutdown();
+    DORY_DLL_API void setProfilerReady();
+    DORY_DLL_API void setProfilerNotReady();
+    DORY_DLL_API bool isProfilerReady();
 #endif
 
 #ifdef DORY_GPU_PROFILING_ON
-    DORY_DLLEXPORT void registerOpenGLContext(const char* contextName, std::size_t nameSize);
-    DORY_DLLEXPORT void collectGpuTraces();
+    DORY_DLL_API void registerOpenGLContext(const char* contextName, std::size_t nameSize);
+    DORY_DLL_API void collectGpuTraces();
 #endif
 
 #ifdef DORY_PROFILING_ON
-    struct DORY_DLLEXPORT TraceZone
+    struct DORY_DLL_API TraceZone
     {
         explicit TraceZone(const ___tracy_source_location_data* srcLoc, bool active = true);
         ~TraceZone();

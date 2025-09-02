@@ -13,7 +13,7 @@ namespace dory::core
 
 namespace dory::game
 {
-    class DORY_DLLEXPORT Bootstrap: public core::IBootstrap
+    class DORY_DLL_API Bootstrap: public core::IBootstrap
     {
     private:
         core::Registry& _registry;

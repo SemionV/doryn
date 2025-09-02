@@ -21,6 +21,12 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_options(${DORY_MODULE_NAME} PRIVATE /bigobj)
 endif()
 
+if (DORY_PROFILING)
+    target_link_libraries(${DORY_MODULE_NAME} PRIVATE ${PROJECT_NAME}-profiling ${PROJECT_NAME}-alloc-forceinclude ${PROJECT_NAME}-custom-new-delete)
+else()
+    target_link_libraries(${DORY_MODULE_NAME} PRIVATE ${PROJECT_NAME}-profiling-interface)
+endif()
+
 install(TARGETS ${DORY_MODULE_NAME}
         DESTINATION ${DORY_INSTALL_PREFIX}
         ARCHIVE DESTINATION ${DORY_INSTALL_PREFIX}/dev

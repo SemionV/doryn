@@ -8,7 +8,7 @@
 
 namespace dory::game
 {
-    class DORY_DLLEXPORT Setup: public core::ISetup
+    class DORY_DLL_API Setup: public core::ISetup
     {
     private:
         template<typename TEventBundle>

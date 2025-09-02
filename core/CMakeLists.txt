@@ -82,9 +82,9 @@ target_link_libraries(${DORY_MODULE_NAME} PUBLIC
         Backward::Interface)
 
 if (DORY_PROFILING)
-    target_link_libraries(${DORY_MODULE_NAME} PUBLIC ${PROJECT_NAME}-profiling)
+    target_link_libraries(${DORY_MODULE_NAME} PRIVATE ${PROJECT_NAME}-profiling ${PROJECT_NAME}-alloc-forceinclude ${PROJECT_NAME}-custom-new-delete)
 else()
-    target_link_libraries(${DORY_MODULE_NAME} PUBLIC ${PROJECT_NAME}-profiling-interface)
+    target_link_libraries(${DORY_MODULE_NAME} PRIVATE ${PROJECT_NAME}-profiling-interface)
 endif()
 
 set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""
