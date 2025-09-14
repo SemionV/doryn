@@ -1,9 +1,14 @@
 #include <dory/profiling/allocationTrack.h>
 #include <mutex>
 #include "dory/macros/assert.h"
+#include <iostream>
+#include <dory/profiling/profiler.h>
+
+static auto systemMemPoolName = "System";
 
 namespace dory::profiling::memory
 {
+#ifdef DORY_PROFILING_MEMORY_JOURNAL
     struct JournalEntry
     {
         void* ptr = nullptr;
@@ -14,9 +19,11 @@ namespace dory::profiling::memory
     static JournalEntry journal[CAP] = {};
     static std::size_t journalCounter = 0;
     static std::mutex mutex;
+#endif
 
     bool isActiveAlloc(void* ptr)
     {
+#ifdef DORY_PROFILING_MEMORY_JOURNAL
         bool isActive = false;
 
         for(std::size_t i = 0; i <= journalCounter; ++i)
@@ -29,31 +36,52 @@ namespace dory::profiling::memory
         }
 
         return isActive;
+#else
+        return false;
+#endif
     }
 
-    void logAlloc(void* ptr)
+    void logAlloc(void* ptr, std::size_t size)
     {
-        std::lock_guard<std::mutex> lock {mutex};
-
-        if(isActiveAlloc(ptr))
+#ifdef DORY_PROFILING_MEMORY_JOURNAL
         {
-            dorySafeDebugBreak();
-        }
+            std::lock_guard lock { mutex };
 
-        journal[journalCounter] = JournalEntry { ptr, true };
-        ++journalCounter;
+            if(isActiveAlloc(ptr))
+            {
+                dorySafeDebugBreak();
+            }
+
+            journal[journalCounter] = JournalEntry { ptr, true };
+            ++journalCounter;
+        }
+#endif
+
+        if(DORY_TRACE_IS_PROFILER_READY)
+        {
+            DORY_TRACE_MEM_ALLOC(ptr, size, systemMemPoolName);
+        }
     }
 
     void logFree(void* ptr)
     {
-        std::lock_guard<std::mutex> lock {mutex};
-
-        if(!isActiveAlloc(ptr))
+#ifdef DORY_PROFILING_MEMORY_JOURNAL
         {
-            dorySafeDebugBreak();
-        }
+            std::lock_guard lock { mutex };
 
-        journal[journalCounter] = JournalEntry { ptr, false };
-        ++journalCounter;
+            if(!isActiveAlloc(ptr))
+            {
+                dorySafeDebugBreak();
+            }
+
+            journal[journalCounter] = JournalEntry { ptr, false };
+            ++journalCounter;
+        }
+#endif
+
+        if(DORY_TRACE_IS_PROFILER_READY)
+        {
+            DORY_TRACE_MEM_FREE(ptr, systemMemPoolName);
+        }
     }
 }

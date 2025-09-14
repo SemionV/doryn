@@ -9,6 +9,10 @@ if(WIN32)
     add_definitions(-DTRACY_EXPORTS)
 endif()
 
+if(DORY_PROFILING_MEMORY_JOURNAL)
+    add_definitions(-DDORY_PROFILING_MEMORY_JOURNAL)
+endif()
+
 if(TRACY_ENABLE)
     get_target_property(TRACY_INCLUDE_DIR Tracy::TracyClient INTERFACE_INCLUDE_DIRECTORIES)
     get_target_property(TRACY_INCLUDE_DIR Tracy::TracyClient INTERFACE_INCLUDE_DIRECTORIES)
@@ -93,7 +97,7 @@ target_compile_options(${DORY_ALLOC_DECL_MODULE_NAME} INTERFACE
         $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-include ${DORY_ALLOC_FORCE_HEADER}>
         >)
 
-#A static lib, ehich is implementing custom new/delete overrides
+#A static lib, which is implementing custom new/delete overrides
 set(DORY_CUSTOM_NEW_DELETE_MODULE_NAME ${PROJECT_NAME}-custom-new-delete)
 
 add_library(${DORY_CUSTOM_NEW_DELETE_MODULE_NAME} STATIC

@@ -5,7 +5,7 @@ void* operator new(std::size_t sz)
 {
     if (void* ptr = std::malloc(sz))
     {
-        dory::profiling::memory::logAlloc(ptr);
+        dory::profiling::memory::logAlloc(ptr, sz);
         return ptr;
     }
     throw std::bad_alloc();
@@ -17,7 +17,7 @@ void* operator new(std::size_t sz, const std::nothrow_t&) noexcept
 
     if(ptr)
     {
-        dory::profiling::memory::logAlloc(ptr);
+        dory::profiling::memory::logAlloc(ptr, sz);
     }
 
     return ptr;
@@ -27,7 +27,7 @@ void* operator new[](std::size_t sz)
 {
     if (void* ptr = std::malloc(sz))
     {
-        dory::profiling::memory::logAlloc(ptr);
+        dory::profiling::memory::logAlloc(ptr, sz);
         return ptr;
     }
     throw std::bad_alloc();
@@ -36,7 +36,7 @@ void* operator new[](std::size_t sz)
 void* operator new[](std::size_t sz, const std::nothrow_t&) noexcept
 {
     void* ptr = std::malloc(sz);
-    dory::profiling::memory::logAlloc(ptr);
+    dory::profiling::memory::logAlloc(ptr, sz);
     return ptr;
 }
 
@@ -46,7 +46,7 @@ void* operator new(std::size_t sz, std::align_val_t al)
 #if defined(DORY_PLATFORM_WIN32)
     if (void* ptr = _aligned_malloc(sz, a))
     {
-        dory::profiling::memory::logAlloc(ptr);
+        dory::profiling::memory::logAlloc(ptr, sz);
         return ptr;
     }
 #else
@@ -69,7 +69,7 @@ void* operator new(std::size_t sz, std::align_val_t al, const std::nothrow_t&) n
     void* ptr = nullptr;
     (void)posix_memalign(&ptr, a, sz);
 #endif
-    dory::profiling::memory::logAlloc(ptr);
+    dory::profiling::memory::logAlloc(ptr, sz);
     return ptr;
 }
 
@@ -79,14 +79,14 @@ void* operator new[](std::size_t sz, std::align_val_t al)
 #if defined(DORY_PLATFORM_WIN32)
     if (void* ptr = _aligned_malloc(sz, a))
     {
-        dory::profiling::memory::logAlloc(ptr);
+        dory::profiling::memory::logAlloc(ptr, sz);
         return ptr;
     }
 #else
     void* ptr = nullptr;
     if (posix_memalign(&ptr, a, sz) == 0)
     {
-        dory::profiling::custom_new_delete::logAlloc(ptr);
+        dory::profiling::custom_new_delete::logAlloc(ptr, sz);
         return ptr;
     }
 #endif
@@ -102,7 +102,7 @@ void* operator new[](std::size_t sz, std::align_val_t al, const std::nothrow_t&)
     void* ptr = nullptr;
     (void)posix_memalign(&ptr, a, sz);
 #endif
-    dory::profiling::memory::logAlloc(ptr);
+    dory::profiling::memory::logAlloc(ptr, sz);
     return ptr;
 }
 
