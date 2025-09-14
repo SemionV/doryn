@@ -17,9 +17,9 @@ target_link_libraries(${DORY_MODULE_NAME} PRIVATE ${PROJECT_NAME}-engine dory-th
 target_include_directories(${DORY_MODULE_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if (DORY_PROFILING)
-    target_link_libraries(${DORY_MODULE_NAME} PRIVATE ${PROJECT_NAME}-profiling ${PROJECT_NAME}-alloc-forceinclude ${PROJECT_NAME}-custom-new-delete)
+    target_link_libraries(${DORY_MODULE_NAME} PRIVATE dory-profiling dory-alloc-forceinclude dory-custom-new-delete)
 else()
-    target_link_libraries(${DORY_MODULE_NAME} PRIVATE ${PROJECT_NAME}-profiling-interface)
+    target_link_libraries(${DORY_MODULE_NAME} PRIVATE dory-profiling-interface)
 endif()
 
 include(BuildInfoSettings)

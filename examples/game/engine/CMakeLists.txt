@@ -22,9 +22,9 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
 
 if (DORY_PROFILING)
-    target_link_libraries(${DORY_MODULE_NAME} PRIVATE ${PROJECT_NAME}-profiling ${PROJECT_NAME}-alloc-forceinclude ${PROJECT_NAME}-custom-new-delete)
+    target_link_libraries(${DORY_MODULE_NAME} PRIVATE dory-profiling dory-alloc-forceinclude dory-custom-new-delete)
 else()
-    target_link_libraries(${DORY_MODULE_NAME} PRIVATE ${PROJECT_NAME}-profiling-interface)
+    target_link_libraries(${DORY_MODULE_NAME} PRIVATE dory-profiling-interface)
 endif()
 
 install(TARGETS ${DORY_MODULE_NAME}
