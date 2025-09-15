@@ -15,23 +15,23 @@ endif()
 
 if(TRACY_ENABLE)
     get_target_property(TRACY_INCLUDE_DIR Tracy::TracyClient INTERFACE_INCLUDE_DIRECTORIES)
-    get_target_property(TRACY_INCLUDE_DIR Tracy::TracyClient INTERFACE_INCLUDE_DIRECTORIES)
+    get_target_property(TRACY_PUBLIC_DIR Tracy::TracyClient INTERFACE_INCLUDE_DIRECTORIES)
+
+    message("Tracy include dir: ${TRACY_INCLUDE_DIR}")
+    message("Tracy public dir: ${TRACY_PUBLIC_DIR}")
+
     # Extract the first path (BUILD_INTERFACE)
     list(GET TRACY_INCLUDE_DIR 0 TRACY_PUBLIC_DIR)
     string(REPLACE "$<BUILD_INTERFACE:" "" TRACY_PUBLIC_DIR "${TRACY_PUBLIC_DIR}")
     string(REPLACE ">" "" TRACY_PUBLIC_DIR "${TRACY_PUBLIC_DIR}")
     message(STATUS "Resolved Tracy public dir: ${TRACY_PUBLIC_DIR}")
 
-    get_target_property(TRACY_INCLUDE_DIR Tracy::TracyClient INTERFACE_INCLUDE_DIRECTORIES)
-    get_target_property(TRACY_PUBLIC_DIR Tracy::TracyClient INTERFACE_INCLUDE_DIRECTORIES)
-    message("Tracy include dir: ${TRACY_INCLUDE_DIR}")
-
     target_compile_definitions(TracyClient PRIVATE
             TRACY_MANUAL_LIFETIME
             TRACY_DELAYED_INIT
     )
     if(WIN32)
-        target_compile_definitions(TracyClient PRIVATE TRACY_NO_RPMALLOC)
+        target_compile_definitions(TracyClient PRIVATE TRACY_NO_RPMALLOC TRACY_EXPORTS)
     endif()
 endif()
 
