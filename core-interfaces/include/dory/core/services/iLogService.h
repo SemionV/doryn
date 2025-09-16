@@ -44,6 +44,7 @@ namespace dory::core
         {
         public:
             virtual void initialize(const resources::configuration::Logger& loggerConfiguration, Registry& registry) = 0;
+            virtual void cleanup() = 0;
         };
     }
 }

@@ -6,6 +6,7 @@
 #include <dory/core/resources/configuration.h>
 #include <memory>
 #include <ranges>
+#include <spdlog/mdc.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -135,6 +136,11 @@ namespace dory::core::services
 
             std::array<std::shared_ptr<spdlog::sinks::sink>, 2> sinks = { consoleSink, rotationFileSink };
             buildLogger(loggerConfiguration.name, sinks);
+        }
+
+        void cleanup() final
+        {
+            spdlog::mdc::clear();
         }
     };
 

@@ -51,6 +51,14 @@ namespace dory::game
         {
             libraryService->unloadAll();
         }
+
+        _registry.get<IMultiSinkLogService>(Logger::Config, [this, &context](IMultiSinkLogService* logger){
+           logger->cleanup();
+       });
+
+        _registry.get<IMultiSinkLogService, Logger::App>([this, &context](IMultiSinkLogService* logger){
+            logger->cleanup();
+        });
     }
 
     void Bootstrap::loadConfiguration(const LibraryHandle& libraryHandle, DataContext& context) const
