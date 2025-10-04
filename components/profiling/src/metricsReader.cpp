@@ -117,7 +117,7 @@ namespace dory::profiling
     {
 #if DORY_PLATFORM_LINUX
         //TODO: split snapshot metrics from counters(like overall memory used versus page faults count)
-        startMetricsRecrdingPlatform(metrics);
+        startMetricsRecordingPlatform(metrics);
 #endif
     }
 

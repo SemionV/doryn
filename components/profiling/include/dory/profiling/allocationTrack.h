@@ -2,10 +2,20 @@
 
 #include <cstddef>
 
-#if defined(DORY_ALLOC_BUILD)
+#ifdef  DORY_PLATFORM_WIN32
+    #ifdef  DORY_ALLOC_BUILD
+    /*Enabled as "export" while compiling the dll project*/
     #define DORY_ALLOC_API __declspec(dllexport)
-#else
+    #else
+    /*Enabled as "import" in the Client side for using already created dll file*/
     #define DORY_ALLOC_API __declspec(dllimport)
+    #endif
+#else
+    #if defined(DORY_ALLOC_BUILD)
+        #define DORY_ALLOC_API __attribute__((visibility("default")))
+    #else
+        #define DORY_ALLOC_API
+    #endif
 #endif
 
 namespace dory::profiling::memory

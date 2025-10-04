@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <dory/profiling/overrideNewDelete.h>
 #include <dory/profiling/allocationTrack.h>
 
@@ -50,10 +51,10 @@ void* operator new(std::size_t sz, std::align_val_t al)
         return ptr;
     }
 #else
-    void* p = nullptr;
+    void* ptr = nullptr;
     if (posix_memalign(&ptr, a, sz) == 0)
     {
-        dory::profiling::custom_new_delete::logAlloc(ptr);
+        dory::profiling::memory::logAlloc(ptr, sz);
         return ptr;
     }
 #endif
@@ -86,7 +87,7 @@ void* operator new[](std::size_t sz, std::align_val_t al)
     void* ptr = nullptr;
     if (posix_memalign(&ptr, a, sz) == 0)
     {
-        dory::profiling::custom_new_delete::logAlloc(ptr, sz);
+        dory::profiling::memory::logAlloc(ptr, sz);
         return ptr;
     }
 #endif
@@ -188,7 +189,7 @@ void operator delete[](void* ptr, std::size_t, std::align_val_t) noexcept
 #if defined(DORY_PLATFORM_WIN32)
     _aligned_free(ptr);
 #else
-    std::free(p);
+    std::free(ptr);
 #endif
 }
 

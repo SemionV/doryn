@@ -10,8 +10,8 @@
     #endif
 #else
     #if defined(DORY_DLL_EXPORTS)
-        #define DORY_DLLEXPORT __attribute__((visibility("default")))
+        #define DORY_DLL_API __attribute__((visibility("default")))
     #else
-        #define DORY_DLLEXPORT
+        #define DORY_DLL_API
     #endif
 #endif

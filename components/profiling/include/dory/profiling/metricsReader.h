@@ -1,10 +1,11 @@
 #pragma once
 
 #include "metrics.h"
+#include <dory/macros/build.h>
 
 namespace dory::profiling
 {
-    class MetricsReader
+    class DORY_DLL_API MetricsReader
     {
     public:
         static void startMetricsRecording(ProcessMetrics& metrics);
