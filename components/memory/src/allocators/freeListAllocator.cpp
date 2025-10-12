@@ -8,6 +8,7 @@ namespace dory::memory
         _blockAllocator(blockAllocator)
     {
         assert::debug(cellSize > 0, "CellSize must be greater than zero");
+        assert::debug(cellSize > sizeof(void*), "CellSize must be at least as big as size of a pointer");
         assert::debug(cellsPerChunkCount > 0, "CellsPerChunkCount must be greater than zero");
         //TODO: write assert: cellsPerChunkCount must be multiple of cellsPerPageCount
         assert::debug(_blockAllocator.getPageSize() >= cellSize, "CellSize must fit into a memory page");
@@ -27,6 +28,24 @@ namespace dory::memory
 
     void* FreeListAllocator::allocate(const std::size_t size) noexcept
     {
+        assert::debug(size <= _cellSize, "Requested memory allocation is larger than a memory cell");
+
+        while(true)
+        {
+            void* headPointer = _freeListHead.load(std::memory_order::relaxed);
+
+            if(headPointer ==nullptr) [[unlikely]]
+            {
+                assert::release(false, "Out of memory");
+                return nullptr;
+            }
+
+            void* nextCellPointer = *static_cast<void* const*>(headPointer);
+            if(_freeListHead.compare_exchange_weak(headPointer, nextCellPointer, std::memory_order::acquire, std::memory_order::relaxed))
+            {
+                return headPointer;
+            }
+        }
     }
 
     void FreeListAllocator::deallocate(void* ptr) noexcept
