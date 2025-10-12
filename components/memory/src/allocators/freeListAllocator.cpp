@@ -13,6 +13,16 @@ namespace dory::memory
         assert::debug(_blockAllocator.getPageSize() >= cellSize, "CellSize must fit into a memory page");
         const std::size_t mask = cellSize - 1;
         assert::debug((cellSize & mask) == 0, "CellSize must be a power of 2");
+
+        allocateChunk();
+    }
+
+    FreeListAllocator::~FreeListAllocator()
+    {
+        if(_memoryBlock.ptr != nullptr)
+        {
+            _blockAllocator.deallocate(_memoryBlock);
+        }
     }
 
     void* FreeListAllocator::allocate(const std::size_t size) noexcept
@@ -23,8 +33,32 @@ namespace dory::memory
     {
     }
 
-    void* FreeListAllocator::allocateNewChunk()
+    void FreeListAllocator::allocateChunk()
     {
+        const std::size_t cellsPerPageCount = _blockAllocator.getPageSize() / _cellSize;
+        const std::size_t pagesCount = _cellsPerChunkCount / cellsPerPageCount;
 
+        const ErrorCode errorCode = _blockAllocator.allocate(pagesCount, _memoryBlock);
+        if(errorCode != ErrorCode::Success)
+        {
+            assert::release(false, "Cannot allocate memory block");
+        }
+
+        for(std::size_t i = 0; i < _cellsPerChunkCount; ++i)
+        {
+            const std::uintptr_t cellAddress = reinterpret_cast<std::uintptr_t>(_memoryBlock.ptr) + _cellSize * i;
+
+            if(i != _cellsPerChunkCount - 1)
+            {
+                const std::uintptr_t nextCellAddress = reinterpret_cast<std::uintptr_t>(_memoryBlock.ptr) + _cellSize * (i + 1);
+                *reinterpret_cast<std::uintptr_t*>(cellAddress) = nextCellAddress;
+            }
+            else
+            {
+                *reinterpret_cast<void**>(cellAddress) = nullptr;
+            }
+        }
+
+        _freeListHead = _memoryBlock.ptr;
     }
 }
