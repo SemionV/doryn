@@ -33,6 +33,11 @@ namespace dory::memory
         releaseMemoryPages(memoryBlock.ptr, _pageSize, memoryBlock.pagesCount);
     }
 
+    std::size_t BlockAllocator::getPageSize() const noexcept
+    {
+        return _pageSize;
+    }
+
     void BlockAllocator::commitPages(const MemoryBlock& memoryBlock, const std::size_t pagesCount)
     {
         assert::debug(memoryBlock.commitedPagesCount + pagesCount <= memoryBlock.pagesCount, "Invalid pages count");
