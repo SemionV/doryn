@@ -6,13 +6,13 @@
 
 namespace dory::memory
 {
-    class BlockAllocator
+    class PageAllocator
     {
     private:
         const std::size_t _pageSize {};
 
     public:
-        explicit BlockAllocator(std::size_t pageSize) noexcept;
+        explicit PageAllocator(std::size_t pageSize) noexcept;
 
         ErrorCode allocate(std::size_t pagesCount, MemoryBlock& memoryBlock) const noexcept;
         void deallocate(const MemoryBlock& memoryBlock) const noexcept;

@@ -2,7 +2,7 @@
 
 namespace dory::memory
 {
-    SegregationAllocator::SegregationAllocator(BlockAllocator& blockAllocator, BlockAllocator& hugeBlockAllocator) noexcept
+    SegregationAllocator::SegregationAllocator(PageAllocator& blockAllocator, PageAllocator& hugeBlockAllocator) noexcept
         :_blockAllocator(blockAllocator),
         _hugeBlockAllocator(hugeBlockAllocator)
     {}

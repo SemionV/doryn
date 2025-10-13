@@ -1,34 +1,34 @@
 #pragma once
 #include <atomic>
 #include <cstddef>
-#include "blockAllocator.h"
+#include "pageAllocator.h"
 
 namespace dory::memory
 {
-    template<typename TBlockAllocator>
+    template<typename TPageAllocator>
     class FreeListAllocator
     {
     private:
-        const std::size_t _cellSize;
-        const std::size_t _cellsPerChunkCount;
-        TBlockAllocator& _blockAllocator;
+        const std::size_t _slotSize;
+        const std::size_t _slotsPerChunkCount;
+        TPageAllocator& _pageAllocator;
         std::atomic<void*> _freeListHead = nullptr;
         MemoryBlock _memoryBlock;
 
     public:
-        FreeListAllocator(const std::size_t cellSize, const std::size_t cellsPerChunkCount, TBlockAllocator& blockAllocator) noexcept:
-        _cellSize(cellSize),
-        _cellsPerChunkCount(cellsPerChunkCount),
-        _blockAllocator(blockAllocator)
+        FreeListAllocator(const std::size_t slotSize, const std::size_t slotsPerChunkCount, TPageAllocator& pageAllocator) noexcept:
+        _slotSize(slotSize),
+        _slotsPerChunkCount(slotsPerChunkCount),
+        _pageAllocator(pageAllocator)
         {
-            assert::debug(cellSize > 0, "CellSize must be greater than zero");
-            assert::debug(cellSize > sizeof(void*), "CellSize must be at least as big as size of a pointer");
-            assert::debug(cellsPerChunkCount > 0, "CellsPerChunkCount must be greater than zero");
-            const std::size_t cellsPerPageCount = _blockAllocator.getPageSize() / _cellSize;
-            assert::debug(cellsPerChunkCount % cellsPerPageCount == 0, "Cell per chunk must be a multiple of cells per page");
-            assert::debug(_blockAllocator.getPageSize() >= cellSize, "CellSize must fit into a memory page");
-            const std::size_t mask = cellSize - 1;
-            assert::debug((cellSize & mask) == 0, "CellSize must be a power of 2");
+            assert::debug(slotSize > 0, "SlotSize must be greater than zero");
+            assert::debug(slotSize > sizeof(void*), "SlotSize must be at least as big as size of a pointer");
+            assert::debug(slotsPerChunkCount > 0, "SlotsPerChunkCount must be greater than zero");
+            const std::size_t slotsPerPageCount = _pageAllocator.getPageSize() / _slotSize;
+            assert::debug(slotsPerChunkCount % slotsPerPageCount == 0, "Slot per chunk must be a multiple of slots per page");
+            assert::debug(_pageAllocator.getPageSize() >= slotSize, "SlotSize must fit into a memory page");
+            const std::size_t mask = slotSize - 1;
+            assert::debug((slotSize & mask) == 0, "SlotSize must be a power of 2");
 
             allocateChunk();
         }
@@ -37,22 +37,20 @@ namespace dory::memory
         {
             if(_memoryBlock.ptr != nullptr)
             {
-                _blockAllocator.deallocate(_memoryBlock);
+                _pageAllocator.deallocate(_memoryBlock);
             }
         }
 
-        void* allocate(const std::size_t size) noexcept
+        void* allocateSlot() noexcept
         {
-            assert::debug(size <= _cellSize, "Requested memory allocation is larger than a memory cell");
-
             while(true)
             {
                 void* headPointer = _freeListHead.load(std::memory_order::relaxed);
 
                 if(headPointer != nullptr)
                 {
-                    void* nextCellPointer = *static_cast<void* const*>(headPointer);
-                    if(_freeListHead.compare_exchange_weak(headPointer, nextCellPointer, std::memory_order::acquire, std::memory_order::relaxed))
+                    void* nextSlotPointer = *static_cast<void* const*>(headPointer);
+                    if(_freeListHead.compare_exchange_weak(headPointer, nextSlotPointer, std::memory_order::acquire, std::memory_order::relaxed))
                     {
                         return headPointer;
                     }
@@ -65,7 +63,7 @@ namespace dory::memory
             }
         }
 
-        void deallocate(void* ptr) noexcept
+        void deallocateSlot(void* ptr) noexcept
         {
             const auto chunkStartAddress = reinterpret_cast<uintptr_t>(_memoryBlock.ptr);
             const std::uintptr_t chunkEndAddress = chunkStartAddress + _memoryBlock.pageSize * _memoryBlock.pagesCount;
@@ -88,27 +86,27 @@ namespace dory::memory
     private:
         void allocateChunk()
         {
-            const std::size_t cellsPerPageCount = _blockAllocator.getPageSize() / _cellSize;
-            const std::size_t pagesCount = _cellsPerChunkCount / cellsPerPageCount;
+            const std::size_t slotsPerPageCount = _pageAllocator.getPageSize() / _slotSize;
+            const std::size_t pagesCount = _slotsPerChunkCount / slotsPerPageCount;
 
-            const ErrorCode errorCode = _blockAllocator.allocate(pagesCount, _memoryBlock);
+            const ErrorCode errorCode = _pageAllocator.allocate(pagesCount, _memoryBlock);
             if(errorCode != ErrorCode::Success)
             {
                 assert::release(false, "Cannot allocate memory block");
             }
 
-            for(std::size_t i = 0; i < _cellsPerChunkCount; ++i)
+            for(std::size_t i = 0; i < _slotsPerChunkCount; ++i)
             {
-                const std::uintptr_t cellAddress = reinterpret_cast<std::uintptr_t>(_memoryBlock.ptr) + _cellSize * i;
+                const std::uintptr_t slotAddress = reinterpret_cast<std::uintptr_t>(_memoryBlock.ptr) + _slotSize * i;
 
-                if(i != _cellsPerChunkCount - 1)
+                if(i != _slotsPerChunkCount - 1)
                 {
-                    const std::uintptr_t nextCellAddress = reinterpret_cast<std::uintptr_t>(_memoryBlock.ptr) + _cellSize * (i + 1);
-                    *reinterpret_cast<std::uintptr_t*>(cellAddress) = nextCellAddress;
+                    const std::uintptr_t nextSlotAddress = reinterpret_cast<std::uintptr_t>(_memoryBlock.ptr) + _slotSize * (i + 1);
+                    *reinterpret_cast<std::uintptr_t*>(slotAddress) = nextSlotAddress;
                 }
                 else
                 {
-                    *reinterpret_cast<void**>(cellAddress) = nullptr;
+                    *reinterpret_cast<void**>(slotAddress) = nullptr;
                 }
             }
 

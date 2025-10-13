@@ -1,14 +1,14 @@
-#include <dory/memory/allocators/blockAllocator.h>
+#include <dory/memory/allocators/pageAllocator.h>
 
 namespace dory::memory
 {
-    BlockAllocator::BlockAllocator(std::size_t pageSize) noexcept:
+    PageAllocator::PageAllocator(std::size_t pageSize) noexcept:
         _pageSize(pageSize)
     {
         assert::debug(pageSize, "Page size cannot be zero");
     }
 
-    ErrorCode BlockAllocator::allocate(const std::size_t pagesCount, MemoryBlock& memoryBlock) const noexcept
+    ErrorCode PageAllocator::allocate(const std::size_t pagesCount, MemoryBlock& memoryBlock) const noexcept
     {
         assert::debug(!memoryBlock.ptr, "Using an existing memory block for allocation");
 
@@ -26,19 +26,19 @@ namespace dory::memory
         return ErrorCode::Success;
     }
 
-    void BlockAllocator::deallocate(const MemoryBlock& memoryBlock) const noexcept
+    void PageAllocator::deallocate(const MemoryBlock& memoryBlock) const noexcept
     {
         assert::debug(memoryBlock.ptr, "Trying to deallocate an invalid memory block");
 
         releaseMemoryPages(memoryBlock.ptr, _pageSize, memoryBlock.pagesCount);
     }
 
-    std::size_t BlockAllocator::getPageSize() const noexcept
+    std::size_t PageAllocator::getPageSize() const noexcept
     {
         return _pageSize;
     }
 
-    void BlockAllocator::commitPages(const MemoryBlock& memoryBlock, const std::size_t pagesCount)
+    void PageAllocator::commitPages(const MemoryBlock& memoryBlock, const std::size_t pagesCount)
     {
         assert::debug(memoryBlock.commitedPagesCount + pagesCount <= memoryBlock.pagesCount, "Invalid pages count");
         commitMemoryPages(memoryBlock.ptr, memoryBlock.pageSize, pagesCount);

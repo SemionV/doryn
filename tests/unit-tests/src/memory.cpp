@@ -1,13 +1,15 @@
-#if DORY_PLATFORM_LINUX
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <dory/memory/allocators/blockAllocator.h>
+#include <dory/memory/allocators/pageAllocator.h>
+#include <dory/memory/allocators/freeListAllocator.h>
+
+using namespace dory::memory;
+
+#if DORY_PLATFORM_LINUX
 #include <dory/profiling/metricsReader.h>
 
 #include <emmintrin.h> // For _mm_clflush
 #include <sys/resource.h>
-
-using namespace dory::memory;
 
 void profile_residency(void* addr, size_t length) {
     long page_size = sysconf(_SC_PAGESIZE);
@@ -35,7 +37,7 @@ TEST(BlockAllocatorTests, pageResidency)
     dory::profiling::MetricsReader::startMetricsRecording(processMetricsBefore);
     dory::profiling::MetricsReader::completeMetricsRecording(processMetricsBefore);
 
-    auto allocator = BlockAllocator(PAGE_SIZE);
+    auto allocator = PageAllocator(PAGE_SIZE);
 
     MemoryBlock block {};
     allocator.allocate(PAGE_COUNT, block);
@@ -60,7 +62,7 @@ TEST(BlockAllocatorTests, pageResidency)
 
     allocator.deallocate(block);
     allocator.allocate(PAGE_COUNT, block);
-    BlockAllocator::commitPages(block, PAGE_COUNT);
+    PageAllocator::commitPages(block, PAGE_COUNT);
 
     //flush CPU caches
     for (size_t i = 0; i < PAGE_COUNT; ++i)
@@ -85,3 +87,18 @@ TEST(BlockAllocatorTests, pageResidency)
     profile_residency(block.ptr, block.pagesCount * block.pageSize);*/
 }
 #endif
+
+TEST(FreeListAllocatorTests, simpleAllocation)
+{
+    constexpr std::size_t PAGE_SIZE = 4096;
+    constexpr std::size_t SLOT_SIZE = 8;
+    PageAllocator blockAllocator {PAGE_SIZE};
+    FreeListAllocator freeListAllocator { SLOT_SIZE, (PAGE_SIZE / SLOT_SIZE) * 2, blockAllocator};
+
+    void* ptr = freeListAllocator.allocateSlot();
+    void* ptr2 = freeListAllocator.allocateSlot();
+
+    freeListAllocator.deallocateSlot(ptr);
+
+    ptr = freeListAllocator.allocateSlot();
+}
