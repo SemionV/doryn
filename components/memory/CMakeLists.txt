@@ -4,6 +4,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/allocation.cpp
         src/allocators/pageAllocator.cpp
         include/dory/memory/allocators/freeListAllocator.h
+        include/dory/memory/allocators/kernelDynamicAllocator.h
         src/allocators/bumpAllocator.cpp
         src/allocators/dynamicAllocator.cpp
         src/allocators/segregationAllocator.cpp

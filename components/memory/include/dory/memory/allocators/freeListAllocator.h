@@ -5,21 +5,33 @@
 
 namespace dory::memory
 {
-    template<typename TPageAllocator>
+    struct MemoryBlockNode
+    {
+        MemoryBlock memoryBlock;
+        MemoryBlockNode* previousNode = nullptr;
+    };
+
+    template<typename T, typename TPageAllocator, template<typename> class TMemoryBlockNodeAllocator>
     class FreeListAllocator
     {
     private:
         const std::size_t _slotSize;
         const std::size_t _slotsPerChunkCount;
         TPageAllocator& _pageAllocator;
-        std::atomic<void*> _freeListHead = nullptr;
-        MemoryBlock _memoryBlock;
+        TMemoryBlockNodeAllocator<MemoryBlockNode>& _memoryBlockNodeAllocator;
+        std::atomic<T*> _freeListHead = nullptr;
+        std::atomic<MemoryBlockNode*> _memoryBlockHead = nullptr;
+        std::atomic<MemoryBlockNode*> _memoryBlockInitialization = nullptr;
+        std::atomic<std::size_t> _currentSlotInitialization = 0;
 
     public:
-        FreeListAllocator(const std::size_t slotSize, const std::size_t slotsPerChunkCount, TPageAllocator& pageAllocator) noexcept:
+        FreeListAllocator(const std::size_t slotSize, const std::size_t slotsPerChunkCount,
+            TPageAllocator& pageAllocator,
+            TMemoryBlockNodeAllocator<MemoryBlockNode>& memoryBlockNodeAllocator) noexcept:
         _slotSize(slotSize),
         _slotsPerChunkCount(slotsPerChunkCount),
-        _pageAllocator(pageAllocator)
+        _pageAllocator(pageAllocator),
+        _memoryBlockNodeAllocator(memoryBlockNodeAllocator)
         {
             assert::debug(slotSize > 0, "SlotSize must be greater than zero");
             assert::debug(slotSize > sizeof(void*), "SlotSize must be at least as big as size of a pointer");
@@ -35,46 +47,60 @@ namespace dory::memory
 
         ~FreeListAllocator()
         {
-            if(_memoryBlock.ptr != nullptr)
+            /*if(_memoryBlock.ptr != nullptr)
             {
                 _pageAllocator.deallocate(_memoryBlock);
-            }
+            }*/
         }
 
-        void* allocateSlot() noexcept
+        T* allocate() noexcept
         {
-            while(true)
+            T* headPointer = _freeListHead.load(std::memory_order::relaxed);
+            if(headPointer == nullptr)
             {
-                void* headPointer = _freeListHead.load(std::memory_order::relaxed);
+                allocateChunk();
 
-                if(headPointer != nullptr)
+                headPointer = _freeListHead.load(std::memory_order::relaxed);
+                if(headPointer == nullptr)
                 {
-                    void* nextSlotPointer = *static_cast<void* const*>(headPointer);
-                    if(_freeListHead.compare_exchange_weak(headPointer, nextSlotPointer, std::memory_order::acquire, std::memory_order::relaxed))
-                    {
-                        return headPointer;
-                    }
+                    assert::release(false, "Out of memory");
+                    return nullptr;
+                }
+            }
 
-                    continue;
+            T* nextSlotPointer = *static_cast<T* const*>(headPointer);
+            while(!_freeListHead.compare_exchange_weak(headPointer, nextSlotPointer, std::memory_order::acquire, std::memory_order::relaxed))
+            {
+                if(headPointer == nullptr)
+                {
+                    allocateChunk();
+
+                    headPointer = _freeListHead.load(std::memory_order::relaxed);
+                    if(headPointer == nullptr)
+                    {
+                        assert::release(false, "Out of memory");
+                        return nullptr;
+                    }
                 }
 
-                assert::release(false, "Out of memory");
-                return nullptr;
+                nextSlotPointer = *static_cast<T* const*>(headPointer);
             }
+
+            return headPointer;
         }
 
-        void deallocateSlot(void* ptr) noexcept
+        void deallocate(T* ptr) noexcept
         {
-            const auto chunkStartAddress = reinterpret_cast<uintptr_t>(_memoryBlock.ptr);
+            /*const auto chunkStartAddress = reinterpret_cast<uintptr_t>(_memoryBlock.ptr);
             const std::uintptr_t chunkEndAddress = chunkStartAddress + _memoryBlock.pageSize * _memoryBlock.pagesCount;
             const auto address = reinterpret_cast<uintptr_t>(ptr);
-            assert::inhouse(address >= chunkStartAddress && address <= chunkEndAddress - sizeof(void*), "Pointer does not belong to the managed memory block");
+            assert::inhouse(address >= chunkStartAddress && address <= chunkEndAddress - sizeof(void*), "Pointer does not belong to the managed memory block");*/
 
             while(true)
             {
                 void* headPointer = _freeListHead.load(std::memory_order::relaxed);
 
-                *static_cast<void**>(ptr) = headPointer;
+                *static_cast<T**>(ptr) = headPointer;
 
                 if(_freeListHead.compare_exchange_weak(headPointer, ptr, std::memory_order::release, std::memory_order::relaxed)) [[likely]]
                 {
@@ -86,31 +112,85 @@ namespace dory::memory
     private:
         void allocateChunk()
         {
-            const std::size_t slotsPerPageCount = _pageAllocator.getPageSize() / _slotSize;
-            const std::size_t pagesCount = _slotsPerChunkCount / slotsPerPageCount;
-
-            const ErrorCode errorCode = _pageAllocator.allocate(pagesCount, _memoryBlock);
-            if(errorCode != ErrorCode::Success)
+            //Allocate a new MemoryBlockNode as well as a MemoryBlock
+            MemoryBlockNode* memoryBlockInitialization = _memoryBlockInitialization.load();
+            if(memoryBlockInitialization == nullptr)
             {
-                assert::release(false, "Cannot allocate memory block");
+                MemoryBlockNode* memoryBlockNode = _memoryBlockNodeAllocator.allocate();
+
+                if(memoryBlockNode == nullptr)
+                {
+                    assert::release(false, "Cannot allocate memory block node");
+                    return;
+                }
+
+                const std::size_t slotsPerPageCount = _pageAllocator.getPageSize() / _slotSize;
+                const std::size_t pagesCount = _slotsPerChunkCount / slotsPerPageCount;
+
+                const ErrorCode errorCode = _pageAllocator.allocate(pagesCount, memoryBlockNode->memoryBlock);
+                if(errorCode != ErrorCode::Success)
+                {
+                    assert::release(false, "Cannot allocate memory block");
+                    return;
+                }
+
+                if(_memoryBlockInitialization.compare_exchange_strong(memoryBlockInitialization, memoryBlockNode, std::memory_order::acq_rel, std::memory_order::relaxed))
+                {
+                    memoryBlockInitialization = memoryBlockNode;
+                }
+                else
+                {
+                    _pageAllocator.deallocate(memoryBlockNode->memoryBlock);
+                    _memoryBlockNodeAllocator.deallocate(memoryBlockNode);
+                }
             }
 
-            for(std::size_t i = 0; i < _slotsPerChunkCount; ++i)
+            //Initialize linked list in the memory block
+            MemoryBlock& memoryBlock = memoryBlockInitialization->memoryBlock;
+            std::size_t currentSlot = _currentSlotInitialization.load();
+            while(currentSlot < _slotsPerChunkCount)
             {
-                const std::uintptr_t slotAddress = reinterpret_cast<std::uintptr_t>(_memoryBlock.ptr) + _slotSize * i;
-
-                if(i != _slotsPerChunkCount - 1)
+                std::size_t nextSlot = currentSlot + 1;
+                if(!_currentSlotInitialization.compare_exchange_strong(currentSlot, nextSlot, std::memory_order::acq_rel, std::memory_order::relaxed))
                 {
-                    const std::uintptr_t nextSlotAddress = reinterpret_cast<std::uintptr_t>(_memoryBlock.ptr) + _slotSize * (i + 1);
+                    continue;
+                }
+
+                const std::uintptr_t slotAddress = reinterpret_cast<std::uintptr_t>(memoryBlock.ptr) + _slotSize * currentSlot;
+
+                if(currentSlot != _slotsPerChunkCount - 1)
+                {
+                    const std::uintptr_t nextSlotAddress = reinterpret_cast<std::uintptr_t>(memoryBlock.ptr) + _slotSize * (currentSlot + 1);
                     *reinterpret_cast<std::uintptr_t*>(slotAddress) = nextSlotAddress;
                 }
                 else
                 {
                     *reinterpret_cast<void**>(slotAddress) = nullptr;
                 }
+
+                currentSlot = _currentSlotInitialization.load();
             }
 
-            _freeListHead = _memoryBlock.ptr;
+            //Update bookkeeping references
+            _currentSlotInitialization.compare_exchange_strong(currentSlot, 0, std::memory_order::acq_rel, std::memory_order::release);
+
+            if(_memoryBlockInitialization.compare_exchange_strong(memoryBlockInitialization, nullptr, std::memory_order::acq_rel, std::memory_order::release))
+            {
+                MemoryBlockNode* headNode = _memoryBlockHead.load();
+                memoryBlockInitialization->previousNode = headNode;
+                while(!_memoryBlockHead.compare_exchange_weak(headNode, memoryBlockInitialization, std::memory_order::acq_rel, std::memory_order::relaxed))
+                {
+                    memoryBlockInitialization->previousNode = headNode;
+                }
+
+                T* freeListHead = _freeListHead.load();
+                const std::uintptr_t slotAddress = reinterpret_cast<std::uintptr_t>(memoryBlock.ptr) + _slotSize * (_slotsPerChunkCount - 1);
+                *reinterpret_cast<void**>(slotAddress) = freeListHead;
+                while(!_freeListHead.compare_exchange_weak(freeListHead, memoryBlock.ptr, std::memory_order::acq_rel, std::memory_order::relaxed))
+                {
+                    *reinterpret_cast<void**>(slotAddress) = freeListHead;
+                }
+            }
         }
     };
 }
