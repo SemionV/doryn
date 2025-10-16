@@ -11,18 +11,23 @@ namespace dory::memory
         MemoryBlockNode* previousNode = nullptr;
     };
 
+    /*
+     * Lock-free implementation of a FreeList allocator.
+     * It allocates a contiguous chunk of memory, divides it into slots and makes a linked list of the free slots.
+     * If all slots in a chunk are used, it allocates next chunk and links the chunk descriptors in a chain(do deallocate them properly on destruction).
+     */
     template<typename T, typename TPageAllocator, template<typename> class TMemoryBlockNodeAllocator>
     class FreeListAllocator
     {
     private:
         const std::size_t _slotSize;
         const std::size_t _slotsPerChunkCount;
-        TPageAllocator& _pageAllocator;
-        TMemoryBlockNodeAllocator<MemoryBlockNode>& _memoryBlockNodeAllocator;
-        alignas(64) std::atomic<T*> _freeListHead;
-        alignas(64) std::atomic<MemoryBlockNode*> _memoryBlockHead;
-        alignas(64) std::atomic<MemoryBlockNode*> _pendingBlock;
-        alignas(64) std::atomic<std::size_t> _currentSlotInitialization;
+        TPageAllocator& _pageAllocator; //Allocator of memory chunks
+        TMemoryBlockNodeAllocator<MemoryBlockNode>& _memoryBlockNodeAllocator; //Allocator of MemoryBlock descriptors, wrapped in a Node structure, to make a linked list of all allocated chunks
+        alignas(64) std::atomic<T*> _freeListHead; //Pointer to the first node in the free list
+        alignas(64) std::atomic<MemoryBlockNode*> _memoryBlockHead; //Pointer to the last node of allocated memory chunks
+        alignas(64) std::atomic<MemoryBlockNode*> _pendingBlock; //A newly allocated memory chunk, which is in progress of initialization, ech thread, which is seeing it can help to initialize it
+        alignas(64) std::atomic<std::size_t> _currentSlotInitialization; //Index of a slot in _pendingBlock, which currently on initialization, each thread can peek one
 
     public:
         FreeListAllocator(const std::size_t slotSize, const std::size_t slotsPerChunkCount,
@@ -42,7 +47,7 @@ namespace dory::memory
             const std::size_t mask = slotSize - 1;
             assert::debug((slotSize & mask) == 0, "SlotSize must be a power of 2");
 
-            allocateChunk();
+            allocateChunk(); //Allocate the initial memory chunk
         }
 
         ~FreeListAllocator()
@@ -67,7 +72,7 @@ namespace dory::memory
             T* headPointer = _freeListHead.load(std::memory_order::relaxed);
             if(headPointer == nullptr)
             {
-                allocateChunk();
+                allocateChunk(); //Allocate an extra chunk of memory
 
                 headPointer = _freeListHead.load(std::memory_order::relaxed);
                 if(headPointer == nullptr)
@@ -77,6 +82,7 @@ namespace dory::memory
                 }
             }
 
+            //Read pointer to the next free slot, replace head pointer with the next slot pointer and return the current head pointer to the consumer
             T* nextSlotPointer = *static_cast<T* const*>(headPointer);
             while(!_freeListHead.compare_exchange_weak(headPointer, nextSlotPointer, std::memory_order::acquire, std::memory_order::relaxed))
             {
@@ -103,6 +109,7 @@ namespace dory::memory
             MemoryBlockNode* node = _memoryBlockHead;
             bool isInRange = false;
 
+            //Check that pointer is within one of the allocated memory chunks
             while(node != nullptr)
             {
                 MemoryBlock& memoryBlock = node->memoryBlock;
@@ -122,18 +129,17 @@ namespace dory::memory
                 node = node->previousNode;
             }
 
-            assert::inhouse(isInRange, "Pointer does not belong to the managed memory of the allocator");
-
-            while(true)
+            if(!isInRange)
             {
-                void* headPointer = _freeListHead.load(std::memory_order::relaxed);
+                assert::inhouse(isInRange, "Pointer does not belong to the managed memory of the allocator");
+            }
 
+            //Write current head pointer value to the deallocated slot and write address of the deallocated slot to the head pointer
+            void* headPointer = _freeListHead.load(std::memory_order::relaxed);
+            *static_cast<T**>(ptr) = headPointer;
+            while(!_freeListHead.compare_exchange_weak(headPointer, ptr, std::memory_order::release, std::memory_order::relaxed))
+            {
                 *static_cast<T**>(ptr) = headPointer;
-
-                if(_freeListHead.compare_exchange_weak(headPointer, ptr, std::memory_order::release, std::memory_order::relaxed)) [[likely]]
-                {
-                    break;
-                }
             }
         }
 
@@ -141,12 +147,12 @@ namespace dory::memory
         void allocateChunk()
         {
             //Allocate a new MemoryBlockNode as well as a MemoryBlock
-            MemoryBlockNode* memoryBlockInitialization = _pendingBlock.load(std::memory_order::acquire);
-            if(memoryBlockInitialization == nullptr)
+            MemoryBlockNode* pendingBlock = _pendingBlock.load(std::memory_order::acquire);
+            if(pendingBlock == nullptr)
             {
-                MemoryBlockNode* memoryBlockNode = _memoryBlockNodeAllocator.allocate();
+                MemoryBlockNode* newBlock = _memoryBlockNodeAllocator.allocate();
 
-                if(memoryBlockNode == nullptr)
+                if(newBlock == nullptr)
                 {
                     assert::release(false, "Cannot allocate memory block node");
                     return;
@@ -155,26 +161,26 @@ namespace dory::memory
                 const std::size_t slotsPerPageCount = _pageAllocator.getPageSize() / _slotSize;
                 const std::size_t pagesCount = _slotsPerChunkCount / slotsPerPageCount;
 
-                const ErrorCode errorCode = _pageAllocator.allocate(pagesCount, memoryBlockNode->memoryBlock);
+                const ErrorCode errorCode = _pageAllocator.allocate(pagesCount, newBlock->memoryBlock);
                 if(errorCode != ErrorCode::Success)
                 {
                     assert::release(false, "Cannot allocate memory block");
                     return;
                 }
 
-                if(_pendingBlock.compare_exchange_strong(memoryBlockInitialization, memoryBlockNode, std::memory_order::release, std::memory_order::acquire))
+                if(_pendingBlock.compare_exchange_strong(pendingBlock, newBlock, std::memory_order::release, std::memory_order::acquire))
                 {
-                    memoryBlockInitialization = memoryBlockNode;
+                    pendingBlock = newBlock;
                 }
                 else
                 {
-                    _pageAllocator.deallocate(memoryBlockNode->memoryBlock);
-                    _memoryBlockNodeAllocator.deallocate(memoryBlockNode);
+                    _pageAllocator.deallocate(newBlock->memoryBlock);
+                    _memoryBlockNodeAllocator.deallocate(newBlock);
                 }
             }
 
             //Initialize linked list in the memory block
-            MemoryBlock& memoryBlock = memoryBlockInitialization->memoryBlock;
+            MemoryBlock& memoryBlock = pendingBlock->memoryBlock;
             std::size_t currentSlot = _currentSlotInitialization.load(std::memory_order::relaxed);
             while(currentSlot < _slotsPerChunkCount)
             {
@@ -202,13 +208,13 @@ namespace dory::memory
             //Update bookkeeping references
             _currentSlotInitialization.compare_exchange_strong(currentSlot, 0, std::memory_order::relaxed, std::memory_order::relaxed);
 
-            if(_pendingBlock.compare_exchange_strong(memoryBlockInitialization, nullptr, std::memory_order::release, std::memory_order::acquire))
+            if(_pendingBlock.compare_exchange_strong(pendingBlock, nullptr, std::memory_order::release, std::memory_order::acquire))
             {
                 MemoryBlockNode* headNode = _memoryBlockHead.load(std::memory_order::relaxed);
-                memoryBlockInitialization->previousNode = headNode;
-                while(!_memoryBlockHead.compare_exchange_weak(headNode, memoryBlockInitialization, std::memory_order::release, std::memory_order::relaxed))
+                pendingBlock->previousNode = headNode;
+                while(!_memoryBlockHead.compare_exchange_weak(headNode, pendingBlock, std::memory_order::release, std::memory_order::relaxed))
                 {
-                    memoryBlockInitialization->previousNode = headNode;
+                    pendingBlock->previousNode = headNode;
                 }
 
                 T* freeListHead = _freeListHead.load(std::memory_order::relaxed);
