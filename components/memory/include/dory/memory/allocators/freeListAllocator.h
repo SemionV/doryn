@@ -5,12 +5,6 @@
 
 namespace dory::memory
 {
-    struct MemoryBlockNode
-    {
-        MemoryBlock memoryBlock;
-        MemoryBlockNode* previousNode = nullptr;
-    };
-
     /*
      * Lock-free implementation of a FreeList allocator.
      * It allocates a contiguous chunk of memory, divides it into slots and makes a linked list of the free slots.

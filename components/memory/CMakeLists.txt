@@ -5,9 +5,9 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/allocators/pageAllocator.cpp
         include/dory/memory/allocators/freeListAllocator.h
         include/dory/memory/allocators/kernelDynamicAllocator.h
+        include/dory/memory/allocators/segregationAllocator.h
         src/allocators/bumpAllocator.cpp
         src/allocators/dynamicAllocator.cpp
-        src/allocators/segregationAllocator.cpp
         src/memoryBlockAllocator.cpp
         src/stackAllocator.cpp)
 target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
