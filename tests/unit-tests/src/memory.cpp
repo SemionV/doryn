@@ -95,7 +95,7 @@ TEST(FreeListAllocatorTests, simpleAllocation)
     constexpr std::size_t SLOT_SIZE = 8;
     PageAllocator blockAllocator {PAGE_SIZE};
     KernelDynamicAllocator<MemoryBlockNode> dynamicAllocator;
-    FreeListAllocator<void, PageAllocator, KernelDynamicAllocator> freeListAllocator { SLOT_SIZE, (PAGE_SIZE / SLOT_SIZE) * 2, blockAllocator, dynamicAllocator};
+    FreeListAllocator freeListAllocator { SLOT_SIZE, (PAGE_SIZE / SLOT_SIZE) * 2, blockAllocator, dynamicAllocator};
 
     void* ptr = freeListAllocator.allocate();
     void* ptr2 = freeListAllocator.allocate();

@@ -16,7 +16,7 @@ namespace dory::memory
      * It allocates a contiguous chunk of memory, divides it into slots and makes a linked list of the free slots.
      * If all slots in a chunk are used, it allocates next chunk and links the chunk descriptors in a chain(do deallocate them properly on destruction).
      */
-    template<typename T, typename TPageAllocator, template<typename> class TMemoryBlockNodeAllocator>
+    template<typename TPageAllocator, template<typename> class TMemoryBlockNodeAllocator>
     class FreeListAllocator
     {
     private:
@@ -24,7 +24,7 @@ namespace dory::memory
         const std::size_t _slotsPerChunkCount;
         TPageAllocator& _pageAllocator; //Allocator of memory chunks
         TMemoryBlockNodeAllocator<MemoryBlockNode>& _memoryBlockNodeAllocator; //Allocator of MemoryBlock descriptors, wrapped in a Node structure, to make a linked list of all allocated chunks
-        alignas(64) std::atomic<T*> _freeListHead; //Pointer to the first node in the free list
+        alignas(64) std::atomic<void*> _freeListHead; //Pointer to the first node in the free list
         alignas(64) std::atomic<MemoryBlockNode*> _memoryBlockHead; //Pointer to the last node of allocated memory chunks
         alignas(64) std::atomic<MemoryBlockNode*> _pendingBlock; //A newly allocated memory chunk, which is in progress of initialization, ech thread, which is seeing it can help to initialize it
         alignas(64) std::atomic<std::size_t> _currentSlotInitialization; //Index of a slot in _pendingBlock, which currently on initialization, each thread can peek one
@@ -67,9 +67,9 @@ namespace dory::memory
             }
         }
 
-        T* allocate() noexcept
+        void* allocate() noexcept
         {
-            T* headPointer = _freeListHead.load(std::memory_order::relaxed);
+            void* headPointer = _freeListHead.load(std::memory_order::relaxed);
             if(headPointer == nullptr)
             {
                 allocateChunk(); //Allocate an extra chunk of memory
@@ -83,7 +83,7 @@ namespace dory::memory
             }
 
             //Read pointer to the next free slot, replace head pointer with the next slot pointer and return the current head pointer to the consumer
-            T* nextSlotPointer = *static_cast<T* const*>(headPointer);
+            void* nextSlotPointer = *static_cast<void* const*>(headPointer);
             while(!_freeListHead.compare_exchange_weak(headPointer, nextSlotPointer, std::memory_order::acquire, std::memory_order::relaxed))
             {
                 if(headPointer == nullptr)
@@ -98,13 +98,13 @@ namespace dory::memory
                     }
                 }
 
-                nextSlotPointer = *static_cast<T* const*>(headPointer);
+                nextSlotPointer = *static_cast<void* const*>(headPointer);
             }
 
             return headPointer;
         }
 
-        void deallocate(T* ptr) noexcept
+        void deallocate(void* ptr) noexcept
         {
             MemoryBlockNode* node = _memoryBlockHead;
             bool isInRange = false;
@@ -136,10 +136,10 @@ namespace dory::memory
 
             //Write current head pointer value to the deallocated slot and write address of the deallocated slot to the head pointer
             void* headPointer = _freeListHead.load(std::memory_order::relaxed);
-            *static_cast<T**>(ptr) = headPointer;
+            *static_cast<void**>(ptr) = headPointer;
             while(!_freeListHead.compare_exchange_weak(headPointer, ptr, std::memory_order::release, std::memory_order::relaxed))
             {
-                *static_cast<T**>(ptr) = headPointer;
+                *static_cast<void**>(ptr) = headPointer;
             }
         }
 
@@ -217,7 +217,7 @@ namespace dory::memory
                     pendingBlock->previousNode = headNode;
                 }
 
-                T* freeListHead = _freeListHead.load(std::memory_order::relaxed);
+                void* freeListHead = _freeListHead.load(std::memory_order::relaxed);
                 const std::uintptr_t slotAddress = reinterpret_cast<std::uintptr_t>(memoryBlock.ptr) + _slotSize * (_slotsPerChunkCount - 1);
                 *reinterpret_cast<void**>(slotAddress) = freeListHead;
                 while(!_freeListHead.compare_exchange_weak(freeListHead, memoryBlock.ptr, std::memory_order::release, std::memory_order::relaxed))
