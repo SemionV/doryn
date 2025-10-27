@@ -100,6 +100,19 @@ namespace dory::memory
 
         void deallocate(void* ptr) noexcept
         {
+            assert::inhouse(isInRange(), "Pointer does not belong to the managed memory of the allocator");
+
+            //Write current head pointer value to the deallocated slot and write address of the deallocated slot to the head pointer
+            void* headPointer = _freeListHead.load(std::memory_order::relaxed);
+            *static_cast<void**>(ptr) = headPointer;
+            while(!_freeListHead.compare_exchange_weak(headPointer, ptr, std::memory_order::release, std::memory_order::relaxed))
+            {
+                *static_cast<void**>(ptr) = headPointer;
+            }
+        }
+
+        bool isInRange(void* ptr) const
+        {
             MemoryBlockNode* node = _memoryBlockHead;
             bool isInRange = false;
 
@@ -113,28 +126,17 @@ namespace dory::memory
                     const auto chunkStartAddress = reinterpret_cast<uintptr_t>(memoryBlock.ptr);
                     const std::uintptr_t chunkEndAddress = chunkStartAddress + memoryBlock.pageSize * memoryBlock.pagesCount;
                     const auto address = reinterpret_cast<uintptr_t>(ptr);
-                   if(address >= chunkStartAddress && address <= chunkEndAddress - sizeof(void*))
-                   {
-                       isInRange = true;
-                       break;
-                   }
+                    if(address >= chunkStartAddress && address <= chunkEndAddress - sizeof(void*))
+                    {
+                        isInRange = true;
+                        break;
+                    }
                 }
 
                 node = node->previousNode;
             }
 
-            if(!isInRange)
-            {
-                assert::inhouse(isInRange, "Pointer does not belong to the managed memory of the allocator");
-            }
-
-            //Write current head pointer value to the deallocated slot and write address of the deallocated slot to the head pointer
-            void* headPointer = _freeListHead.load(std::memory_order::relaxed);
-            *static_cast<void**>(ptr) = headPointer;
-            while(!_freeListHead.compare_exchange_weak(headPointer, ptr, std::memory_order::release, std::memory_order::relaxed))
-            {
-                *static_cast<void**>(ptr) = headPointer;
-            }
+            return isInRange;
         }
 
     private:
