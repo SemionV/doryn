@@ -2,7 +2,7 @@
 #include <gmock/gmock.h>
 #include <dory/memory/allocators/pageAllocator.h>
 #include <dory/memory/allocators/freeListAllocator.h>
-#include <dory/memory/allocators/kernelDynamicAllocator.h>
+#include <dory/memory/allocators/systemAllocator.h>
 
 using namespace dory::memory;
 
@@ -94,8 +94,8 @@ TEST(FreeListAllocatorTests, simpleAllocation)
     constexpr std::size_t PAGE_SIZE = 4096;
     constexpr std::size_t SLOT_SIZE = 8;
     PageAllocator blockAllocator {PAGE_SIZE};
-    KernelDynamicAllocator<MemoryBlockNode> dynamicAllocator;
-    FreeListAllocator freeListAllocator { SLOT_SIZE, (PAGE_SIZE / SLOT_SIZE) * 2, blockAllocator, dynamicAllocator};
+    SystemAllocator systemAllocator;
+    FreeListAllocator freeListAllocator { SLOT_SIZE, (PAGE_SIZE / SLOT_SIZE) * 2, blockAllocator, systemAllocator };
 
     void* ptr = freeListAllocator.allocate();
     void* ptr2 = freeListAllocator.allocate();

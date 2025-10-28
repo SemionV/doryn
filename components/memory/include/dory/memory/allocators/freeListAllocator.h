@@ -10,14 +10,14 @@ namespace dory::memory
      * It allocates a contiguous chunk of memory, divides it into slots and makes a linked list of the free slots.
      * If all slots in a chunk are used, it allocates next chunk and links the chunk descriptors in a chain(do deallocate them properly on destruction).
      */
-    template<typename TPageAllocator, template<typename> class TMemoryBlockNodeAllocator>
+    template<typename TPageAllocator, typename TMemoryBlockNodeAllocator>
     class FreeListAllocator
     {
     private:
         const std::size_t _slotSize;
         const std::size_t _slotsPerChunkCount;
         TPageAllocator& _pageAllocator; //Allocator of memory chunks
-        TMemoryBlockNodeAllocator<MemoryBlockNode>& _memoryBlockNodeAllocator; //Allocator of MemoryBlock descriptors, wrapped in a Node structure, to make a linked list of all allocated chunks
+        TMemoryBlockNodeAllocator& _memoryBlockNodeAllocator; //Allocator of MemoryBlock descriptors, wrapped in a Node structure, to make a linked list of all allocated chunks
         alignas(64) std::atomic<void*> _freeListHead; //Pointer to the first node in the free list
         alignas(64) std::atomic<MemoryBlockNode*> _memoryBlockHead; //Pointer to the last node of allocated memory chunks
         alignas(64) std::atomic<MemoryBlockNode*> _pendingBlock; //A newly allocated memory chunk, which is in progress of initialization, ech thread, which is seeing it can help to initialize it
@@ -26,7 +26,7 @@ namespace dory::memory
     public:
         FreeListAllocator(const std::size_t slotSize, const std::size_t slotsPerChunkCount,
             TPageAllocator& pageAllocator,
-            TMemoryBlockNodeAllocator<MemoryBlockNode>& memoryBlockNodeAllocator) noexcept:
+            TMemoryBlockNodeAllocator& memoryBlockNodeAllocator) noexcept:
         _slotSize(slotSize),
         _slotsPerChunkCount(slotsPerChunkCount),
         _pageAllocator(pageAllocator),
@@ -100,7 +100,7 @@ namespace dory::memory
 
         void deallocate(void* ptr) noexcept
         {
-            assert::inhouse(isInRange(), "Pointer does not belong to the managed memory of the allocator");
+            assert::inhouse(isInRange(ptr), "Pointer does not belong to the managed memory of the allocator");
 
             //Write current head pointer value to the deallocated slot and write address of the deallocated slot to the head pointer
             void* headPointer = _freeListHead.load(std::memory_order::relaxed);
@@ -146,7 +146,7 @@ namespace dory::memory
             MemoryBlockNode* pendingBlock = _pendingBlock.load(std::memory_order::acquire);
             if(pendingBlock == nullptr)
             {
-                MemoryBlockNode* newBlock = _memoryBlockNodeAllocator.allocate();
+                auto newBlock = static_cast<MemoryBlockNode*>(_memoryBlockNodeAllocator.allocate(sizeof(MemoryBlockNode)));
 
                 if(newBlock == nullptr)
                 {

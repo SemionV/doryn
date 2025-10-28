@@ -11,19 +11,21 @@ namespace dory::memory
         std::size_t slotsPerChunk;
     };
 
-    template<std::size_t SizeClassCount, typename TPageAllocator, typename THugePageAllocator, template<typename> class TMemoryBlockNodeAllocator>
+    template<std::size_t SizeClassCount, typename TPageAllocator, typename TLargeObjectAllocator, typename TMemoryBlockNodeAllocator>
     class SegregationAllocator
     {
     private:
         std::size_t _minClass = 0;
 
+        TLargeObjectAllocator& _largeObjectAllocator;
         std::array<FreeListAllocator<TPageAllocator, TMemoryBlockNodeAllocator>, SizeClassCount> _sizeClassAllocators;
 
     public:
         explicit SegregationAllocator(TPageAllocator& blockAllocator,
-            THugePageAllocator& hugeBlockAllocator,
-            TMemoryBlockNodeAllocator<MemoryBlockNode>& memoryBlockNodeAllocator,
-            std::array<MemorySizeClass, SizeClassCount>& sizeClasses) noexcept
+            TLargeObjectAllocator& largeObjectAllocator,
+            TMemoryBlockNodeAllocator& memoryBlockNodeAllocator,
+            std::array<MemorySizeClass, SizeClassCount>& sizeClasses) noexcept:
+        _largeObjectAllocator(largeObjectAllocator)
         {
             std::size_t minSize = std::numeric_limits<std::size_t>::max();
 
@@ -50,7 +52,7 @@ namespace dory::memory
             }
         }
 
-        void* allocate(std::size_t size) noexcept
+        void* allocate(const std::size_t size)
         {
             const std::size_t classIndex = getSizeClassIndex(size);
             if(classIndex < SizeClassCount)
@@ -58,11 +60,10 @@ namespace dory::memory
                 return _sizeClassAllocators[classIndex].allocate();
             }
 
-            //TODO: handle huge object allocation
-            return nullptr;
+            return _largeObjectAllocator.allocate(size);
         }
 
-        void deallocate(void* ptr) noexcept
+        void deallocate(void* ptr)
         {
             for(size_t i = 0; i < SizeClassCount; ++i)
             {
@@ -74,7 +75,12 @@ namespace dory::memory
                 }
             }
 
-            //TODO: handle huge object deallocation
+            if(_largeObjectAllocator.isInRange(ptr))
+            {
+                 _largeObjectAllocator.deallocate(ptr);
+            }
+
+            assert::inhouse(false, "Pointer is not in managed memory of allocator");
         }
 
     private:
