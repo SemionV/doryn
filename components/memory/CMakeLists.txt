@@ -6,6 +6,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         include/dory/memory/allocators/freeListAllocator.h
         include/dory/memory/allocators/segregationAllocator.h
         include/dory/memory/allocators/systemAllocator.h
+        include/dory/memory/allocators/standardAllocator.h
         src/allocators/bumpAllocator.cpp
         src/allocators/dynamicAllocator.cpp
         src/memoryBlockAllocator.cpp
