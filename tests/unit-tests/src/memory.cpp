@@ -3,6 +3,7 @@
 #include <dory/memory/allocators/pageAllocator.h>
 #include <dory/memory/allocators/freeListAllocator.h>
 #include <dory/memory/allocators/systemAllocator.h>
+#include <dory/memory/allocators/segregationAllocator.h>
 
 using namespace dory::memory;
 
@@ -103,4 +104,29 @@ TEST(FreeListAllocatorTests, simpleAllocation)
     freeListAllocator.deallocate(ptr2);
 
     void* ptr3 = freeListAllocator.allocate();
+}
+
+TEST(SegregationAllocatorTests, simpleAllocation)
+{
+    constexpr std::size_t PAGE_SIZE = 4096;
+    PageAllocator blockAllocator {PAGE_SIZE};
+    SystemAllocator systemAllocator;
+
+    std::array<MemorySizeClass, 10> sizeClasses {
+        MemorySizeClass{ 8, 1024 },
+        MemorySizeClass{ 16, 1024 },
+        MemorySizeClass{ 32, 1024 },
+        MemorySizeClass{ 64, 1024 },
+        MemorySizeClass{ 128, 1024 },
+        MemorySizeClass{ 256, 1024 },
+        MemorySizeClass{ 512, 1024 },
+        MemorySizeClass{ 1024, 1024 },
+        MemorySizeClass{ 2048, 1024 },
+        MemorySizeClass{ 4096, 1024 }
+    };
+
+    SegregationAllocator<10, PageAllocator, SystemAllocator, SystemAllocator> segregationAllocator { blockAllocator, systemAllocator, systemAllocator, sizeClasses };
+
+    void* ptr1 = segregationAllocator.allocate(8);
+    void* ptr2 = segregationAllocator.allocate(200);
 }

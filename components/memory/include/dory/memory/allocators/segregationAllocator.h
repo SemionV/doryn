@@ -15,10 +15,18 @@ namespace dory::memory
     class SegregationAllocator
     {
     private:
+        using FreeListAllocatorType = FreeListAllocator<TPageAllocator, TMemoryBlockNodeAllocator>;
+
         std::size_t _minClass = 0;
 
         TLargeObjectAllocator& _largeObjectAllocator;
-        std::array<FreeListAllocator<TPageAllocator, TMemoryBlockNodeAllocator>, SizeClassCount> _sizeClassAllocators;
+
+        alignas(FreeListAllocatorType) std::byte _sizeClassStorage[SizeClassCount * sizeof(FreeListAllocatorType)];
+
+        FreeListAllocatorType* sizeClassAllocators() noexcept
+        {
+            return reinterpret_cast<FreeListAllocatorType*>(_sizeClassStorage);
+        }
 
     public:
         explicit SegregationAllocator(TPageAllocator& blockAllocator,
@@ -28,17 +36,16 @@ namespace dory::memory
         _largeObjectAllocator(largeObjectAllocator)
         {
             std::size_t minSize = std::numeric_limits<std::size_t>::max();
+            auto allocators = sizeClassAllocators();
 
             for(size_t i = 0; i < SizeClassCount; ++i)
             {
                 std::size_t size = sizeClasses[i].size;
 
-                if(size < minSize)
-                {
-                    minSize = size;
-                }
+                const auto& cls = sizeClasses[i];
+                minSize = std::min(minSize, size);
 
-                new (&_sizeClassAllocators[i]) FreeListAllocator<TPageAllocator, TMemoryBlockNodeAllocator>(
+                new (&allocators[i]) FreeListAllocatorType(
                     size,
                     sizeClasses[i].slotsPerChunk,
                     blockAllocator,
@@ -57,7 +64,7 @@ namespace dory::memory
             const std::size_t classIndex = getSizeClassIndex(size);
             if(classIndex < SizeClassCount)
             {
-                return _sizeClassAllocators[classIndex].allocate();
+                return sizeClassAllocators()[classIndex].allocate();
             }
 
             return _largeObjectAllocator.allocate(size);
@@ -67,7 +74,7 @@ namespace dory::memory
         {
             for(size_t i = 0; i < SizeClassCount; ++i)
             {
-                auto& allocator = _sizeClassAllocators[i];
+                auto& allocator = sizeClassAllocators()[i];
                 if(allocator.isInRange(ptr))
                 {
                     allocator.deallocate(ptr);
