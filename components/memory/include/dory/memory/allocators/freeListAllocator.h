@@ -139,6 +139,11 @@ namespace dory::memory
             return isInRange;
         }
 
+        [[nodiscard]] std::size_t getSlotSize() const noexcept
+        {
+            return _slotSize;
+        }
+
     private:
         void allocateChunk()
         {

@@ -11,14 +11,16 @@ namespace dory::memory
         std::size_t slotsPerChunk;
     };
 
-    template<std::size_t SizeClassCount, typename TPageAllocator, typename TLargeObjectAllocator, typename TMemoryBlockNodeAllocator>
+    template<std::size_t SizeClassCount, typename TPageAllocator, typename TLargeObjectAllocator, typename TMemoryBlockNodeAllocator, typename TProfiler>
     class SegregationAllocator
     {
     private:
         using FreeListAllocatorType = FreeListAllocator<TPageAllocator, TMemoryBlockNodeAllocator>;
 
         std::size_t _minClass = 0;
+        const char* _allocatorName;
 
+        TProfiler& _profiler;
         TLargeObjectAllocator& _largeObjectAllocator;
 
         alignas(FreeListAllocatorType) std::byte _sizeClassStorage[SizeClassCount * sizeof(FreeListAllocatorType)];
@@ -29,11 +31,15 @@ namespace dory::memory
         }
 
     public:
-        explicit SegregationAllocator(TPageAllocator& blockAllocator,
+        explicit SegregationAllocator(const char * allocatorName,
+            TPageAllocator& blockAllocator,
             TLargeObjectAllocator& largeObjectAllocator,
             TMemoryBlockNodeAllocator& memoryBlockNodeAllocator,
+            TProfiler& profiler,
             std::array<MemorySizeClass, SizeClassCount>& sizeClasses) noexcept:
-        _largeObjectAllocator(largeObjectAllocator)
+        _largeObjectAllocator(largeObjectAllocator),
+        _allocatorName(allocatorName),
+        _profiler(profiler)
         {
             std::size_t minSize = std::numeric_limits<std::size_t>::max();
             auto allocators = sizeClassAllocators();
@@ -64,10 +70,17 @@ namespace dory::memory
             const std::size_t classIndex = getSizeClassIndex(size);
             if(classIndex < SizeClassCount)
             {
-                return sizeClassAllocators()[classIndex].allocate();
+                auto& allocator = sizeClassAllocators()[classIndex];
+                void* ptr = allocator.allocate();
+
+                _profiler.traceSlotAlloc(ptr, size, allocator.getSlotSize(), classIndex);
+
+                return ptr;
             }
 
-            return _largeObjectAllocator.allocate(size);
+            void* ptr = _largeObjectAllocator.allocate(size);
+            _profiler.traceLargeAlloc(ptr, size);
+            return ptr;
         }
 
         void deallocate(void* ptr)
@@ -78,6 +91,8 @@ namespace dory::memory
                 if(allocator.isInRange(ptr))
                 {
                     allocator.deallocate(ptr);
+                    _profiler.traceSlotFree(ptr, allocator.getSlotSize(), i);
+
                     return;
                 }
             }
@@ -85,9 +100,12 @@ namespace dory::memory
             if(_largeObjectAllocator.isInRange(ptr))
             {
                  _largeObjectAllocator.deallocate(ptr);
+                _profiler.traceLargeFree(ptr);
             }
-
-            assert::inhouse(false, "Pointer is not in managed memory of allocator");
+            else
+            {
+                assert::inhouse(false, "Pointer is not in managed memory of allocator");
+            }
         }
 
     private:

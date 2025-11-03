@@ -5,6 +5,8 @@
 #include <dory/memory/allocators/systemAllocator.h>
 #include <dory/memory/allocators/segregationAllocator.h>
 #include <dory/memory/allocators/standardAllocator.h>
+#include <spdlog/fwd.h>
+#include <spdlog/fmt/bundled/format.h>
 
 using namespace dory::memory;
 
@@ -107,7 +109,31 @@ TEST(FreeListAllocatorTests, simpleAllocation)
     void* ptr3 = freeListAllocator.allocate();
 }
 
-using SegregationAllocatorType = SegregationAllocator<10, PageAllocator, SystemAllocator, SystemAllocator>;
+class AllocProfiler
+{
+public:
+    void traceSlotAlloc(void* ptr, std::size_t size, std::size_t slotSize, std::size_t classIndex)
+    {
+       std::cout << fmt::format("Slot allocated: size [{0}], slot[{1}], class[{2}], ptr[{3}]", size, slotSize, classIndex, ptr) << std::endl;
+    }
+
+    void traceSlotFree(void* ptr, std::size_t slotSize, std::size_t classIndex)
+    {
+        std::cout << fmt::format("Slot deallocated: slot[{0}], class[{1}], ptr[{2}]", slotSize, classIndex, ptr) << std::endl;
+    }
+
+    void traceLargeAlloc(void* ptr, std::size_t size)
+    {
+        std::cout << fmt::format("Large object allocated: size [{0}], ptr[{1}]", size, ptr) << std::endl;
+    }
+
+    void traceLargeFree(void* ptr)
+    {
+        std::cout << fmt::format("Large object deallocated: ptr[{0}]", ptr) << std::endl;
+    }
+};
+
+using SegregationAllocatorType = SegregationAllocator<10, PageAllocator, SystemAllocator, SystemAllocator, AllocProfiler>;
 
 template<typename T>
 using StandardAllocatorType = StandardAllocator<T, SegregationAllocatorType>;
@@ -118,7 +144,7 @@ TEST(SegregationAllocatorTests, simpleAllocation)
     PageAllocator blockAllocator {PAGE_SIZE};
     SystemAllocator systemAllocator;
 
-    std::array<MemorySizeClass, 10> sizeClasses {
+    std::array sizeClasses {
         MemorySizeClass{ 8, 1024 },
         MemorySizeClass{ 16, 1024 },
         MemorySizeClass{ 32, 1024 },
@@ -131,12 +157,17 @@ TEST(SegregationAllocatorTests, simpleAllocation)
         MemorySizeClass{ 4096, 1024 }
     };
 
-    SegregationAllocatorType segregationAllocator { blockAllocator, systemAllocator, systemAllocator, sizeClasses };
+    AllocProfiler profiler;
+    SegregationAllocatorType segregationAllocator { "testSegAlloc", blockAllocator, systemAllocator, systemAllocator, profiler, sizeClasses };
 
     void* ptr1 = segregationAllocator.allocate(8);
     void* ptr2 = segregationAllocator.allocate(200);
 
+    segregationAllocator.deallocate(ptr1);
+    segregationAllocator.deallocate(ptr2);
+
     StandardAllocatorType<int> standardAllocator { segregationAllocator };
 
     auto sptr1 = std::allocate_shared<int>(standardAllocator);
+    auto sptr2 = std::allocate_shared<std::byte[8000]>(standardAllocator);
 }
