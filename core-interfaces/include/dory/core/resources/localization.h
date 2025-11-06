@@ -3,13 +3,12 @@
 #include <string>
 #include <memory>
 #include <dory/generic/parameterizedString.h>
-#include <dory/generic/baseTypes.h>
 
 namespace dory::core::resources
 {
     struct Localization
     {
-    protected:
+    public:
         class IGoodByeTemplate: public generic::IParameterizedString
         {
         public:
@@ -24,7 +23,7 @@ namespace dory::core::resources
 
     public:
         std::string hello;
-        std::unique_ptr<IGoodByeTemplate> goodBye;
-        std::unique_ptr<IBirthDateTemplate> birthDate;
+        IGoodByeTemplate* goodBye;
+        IBirthDateTemplate* birthDate;
     };
 }

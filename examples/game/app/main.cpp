@@ -6,56 +6,35 @@
 
 #include <iostream>
 #include <dory/profiling/profiler.h>
+#include <dory/memory/allocators/segregationAllocator.h>
+#include "dory/memory/allocators/standardAllocator.h"
+#include "dory/memory/allocators/systemAllocator.h"
 
-//static auto systemMemPoolName = "System";
-
-//#include <dory/game/custom_new_delete.h>
-//#include <dory/game/custom_alloc_free.h>
-
-/*void* operator new(const std::size_t size)
+class AllocProfiler
 {
-    void* ptr = std::malloc(size);
-    if(DORY_TRACE_IS_PROFILER_READY)
+public:
+    void traceSlotAlloc(void* ptr, std::size_t size, std::size_t slotSize, std::size_t classIndex)
     {
-        std::cout << "mem-alloc: " << ptr << std::endl;
-        DORY_TRACE_MEM_ALLOC(ptr, size, systemMemPoolName);
+        std::cout << fmt::format("Slot allocated: size [{0}], slot[{1}], class[{2}], ptr[{3}]", size, slotSize, classIndex, ptr) << std::endl;
     }
-    if (!ptr)
-    {
-        throw std::bad_alloc();
-    }
-    return ptr;
-}
 
-void operator delete(void* ptr) noexcept
-{
-    if(DORY_TRACE_IS_PROFILER_READY)
+    void traceSlotFree(void* ptr, std::size_t slotSize, std::size_t classIndex)
     {
-        std::cout << "mem-free: " << ptr << std::endl;
-        DORY_TRACE_MEM_FREE(ptr, systemMemPoolName);
+        std::cout << fmt::format("Slot deallocated: slot[{0}], class[{1}], ptr[{2}]", slotSize, classIndex, ptr) << std::endl;
     }
-    std::free(ptr);
-}
 
-void* operator new[](const std::size_t size)
-{
-    void* ptr = std::malloc(size);
-    if(DORY_TRACE_IS_PROFILER_READY)
+    void traceLargeAlloc(void* ptr, std::size_t size)
     {
-        DORY_TRACE_MEM_ALLOC(ptr, size, systemMemPoolName);
+        std::cout << fmt::format("Large object allocated: size [{0}], ptr[{1}]", size, ptr) << std::endl;
     }
-    if (!ptr) throw std::bad_alloc();
-    return ptr;
-}
 
-void operator delete[](void* ptr) noexcept
-{
-    if(DORY_TRACE_IS_PROFILER_READY)
+    void traceLargeFree(void* ptr)
     {
-        DORY_TRACE_MEM_FREE(ptr, systemMemPoolName);
+        std::cout << fmt::format("Large object deallocated: ptr[{0}]", ptr) << std::endl;
     }
-    std::free(ptr);
-}*/
+};
+
+using SegregationAllocatorType = dory::memory::SegregationAllocator<10, dory::memory::PageAllocator, dory::memory::SystemAllocator, dory::memory::SystemAllocator, AllocProfiler>;
 
 #ifdef DORY_MAIN_FUNCTION_UNIX
 int main()
@@ -65,6 +44,26 @@ int main()
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 #endif
 {
+    constexpr std::size_t PAGE_SIZE = 4096;
+    dory::memory::PageAllocator blockAllocator {PAGE_SIZE};
+    dory::memory::SystemAllocator systemAllocator;
+
+    std::array sizeClasses {
+        dory::memory::MemorySizeClass{ 8, 1024 },
+        dory::memory::MemorySizeClass{ 16, 1024 },
+        dory::memory::MemorySizeClass{ 32, 1024 },
+        dory::memory::MemorySizeClass{ 64, 1024 },
+        dory::memory::MemorySizeClass{ 128, 1024 },
+        dory::memory::MemorySizeClass{ 256, 1024 },
+        dory::memory::MemorySizeClass{ 512, 1024 },
+        dory::memory::MemorySizeClass{ 1024, 1024 },
+        dory::memory::MemorySizeClass{ 2048, 1024 },
+        dory::memory::MemorySizeClass{ 4096, 1024 }
+    };
+
+    AllocProfiler profiler;
+    SegregationAllocatorType segregationAllocator { "testSegAlloc", blockAllocator, systemAllocator, systemAllocator, profiler, sizeClasses };
+
     std::cout << "Begin Start Profiler" << std::endl;
     DORY_TRACE_START();
     DORY_TRACE_SET_PROFILER_READY();
@@ -76,7 +75,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
         dory::generic::extension::LibraryHandle staticLibraryHandle {};
         auto registry = dory::core::Registry{};
         auto configuration = dory::core::resources::configuration::Configuration{};
-        auto localization = dory::core::resources::LocalizationImpl{};
+        auto localization = dory::core::resources::LocalizationImpl{ segregationAllocator };
         auto context = dory::core::resources::DataContext{ configuration, localization };
         DORY_TRACE_ZONE_END(zoneBuildCoreObject);
 

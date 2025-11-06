@@ -79,6 +79,14 @@ namespace dory::core::services::serialization
             TPolicies::ValuePolicy::process(object->getTemplate(), context);
             object->updateTemplate();
         }
+
+        template<typename T, typename TContext>
+        requires(std::is_base_of_v<generic::IParameterizedString, std::decay_t<T>>)
+        static void visit(T* object, TContext& context)
+        {
+            TPolicies::ValuePolicy::process(object->getTemplate(), context);
+            object->updateTemplate();
+        }
     };
 
     //ClassInstanceFactory extensions to the base ObjectVisitor

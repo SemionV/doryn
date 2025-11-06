@@ -53,7 +53,7 @@ namespace dory::profiling
     void traceAllocation(const void* ptr, const std::size_t size, const char* poolName)
     {
         //tracy::Profiler::MemAllocCallstack(ptr, size, 10, false);
-        tracy::Profiler::MemAllocCallstackNamed(ptr, size, 20, false, poolName);
+        tracy::Profiler::MemAllocCallstackNamed(ptr, size, 50, false, poolName);
     }
 
     void traceDeallocation(const void* ptr, const char* poolName)

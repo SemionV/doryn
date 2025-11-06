@@ -21,6 +21,12 @@ namespace dory::serialization::yaml
             node = toRymlCStr(value);
         }
 
+        template<typename TContextPolicies>
+        static void writeValue(std::string& value, ryml::NodeRef& node, YamlContext<TContextPolicies>& context)
+        {
+            node = toRymlCStr(value);
+        }
+
     public:
         template<typename T, typename TContextPolicies>
         static void process(T& value, YamlContext<TContextPolicies>& context)

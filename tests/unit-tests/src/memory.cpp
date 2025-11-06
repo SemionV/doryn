@@ -170,4 +170,6 @@ TEST(SegregationAllocatorTests, simpleAllocation)
 
     auto sptr1 = std::allocate_shared<int>(standardAllocator);
     auto sptr2 = std::allocate_shared<std::byte[8000]>(standardAllocator);
+
+    *sptr1 = 10;
 }
