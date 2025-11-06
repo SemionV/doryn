@@ -83,11 +83,11 @@ namespace dory::memory
             return ptr;
         }
 
-        template<typename T>
-        T* allocate()
+        template<typename T, typename... TArgs>
+        T* allocate(TArgs&&... args)
         {
             void* mem = allocate(sizeof(T));
-            return new (mem) T();
+            return new (mem) T(std::forward<TArgs>(args)...);
         }
 
         void deallocate(void* ptr)

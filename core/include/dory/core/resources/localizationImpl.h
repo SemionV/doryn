@@ -3,6 +3,7 @@
 #include <dory/core/resources/localization.h>
 #include "parameterizedString.h"
 #include <dory/core/allocators.h>
+#include <dory/memory/allocationResource.h>
 
 namespace dory::core::resources
 {
@@ -10,8 +11,6 @@ namespace dory::core::resources
     struct LocalizationImpl: public Localization
     {
     private:
-        TAllocator& _allocator;
-
         class GoodByeTemplate: public ParameterizedString<IGoodByeTemplate> {
         public:
             std::string get(const std::string& name) final {
@@ -26,18 +25,16 @@ namespace dory::core::resources
             }
         };
 
+        memory::AllocationResource<GoodByeTemplate, TAllocator> _goodByeTemplate;
+        memory::AllocationResource<BirthDateTemplate, TAllocator> _birthDateTemplate;
+
     public:
         explicit LocalizationImpl(TAllocator& allocator):
-        _allocator(allocator)
+        _goodByeTemplate(allocator),
+        _birthDateTemplate(allocator)
         {
-            goodBye = _allocator.template allocate<GoodByeTemplate>();
-            birthDate = _allocator.template allocate<BirthDateTemplate>();
-        }
-
-        ~LocalizationImpl()
-        {
-            _allocator.template deallocateType<IGoodByeTemplate>(goodBye);
-            _allocator.template deallocateType<IBirthDateTemplate>(birthDate);
+            goodBye = _goodByeTemplate.get();
+            birthDate = _birthDateTemplate.get();
         }
     };
 }
