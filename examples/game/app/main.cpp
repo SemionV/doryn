@@ -7,34 +7,7 @@
 #include <iostream>
 #include <dory/profiling/profiler.h>
 #include <dory/memory/allocators/segregationAllocator.h>
-#include "dory/memory/allocators/standardAllocator.h"
 #include "dory/memory/allocators/systemAllocator.h"
-
-class AllocProfiler
-{
-public:
-    void traceSlotAlloc(void* ptr, std::size_t size, std::size_t slotSize, std::size_t classIndex)
-    {
-        std::cout << fmt::format("Slot allocated: size [{0}], slot[{1}], class[{2}], ptr[{3}]", size, slotSize, classIndex, ptr) << std::endl;
-    }
-
-    void traceSlotFree(void* ptr, std::size_t slotSize, std::size_t classIndex)
-    {
-        std::cout << fmt::format("Slot deallocated: slot[{0}], class[{1}], ptr[{2}]", slotSize, classIndex, ptr) << std::endl;
-    }
-
-    void traceLargeAlloc(void* ptr, std::size_t size)
-    {
-        std::cout << fmt::format("Large object allocated: size [{0}], ptr[{1}]", size, ptr) << std::endl;
-    }
-
-    void traceLargeFree(void* ptr)
-    {
-        std::cout << fmt::format("Large object deallocated: ptr[{0}]", ptr) << std::endl;
-    }
-};
-
-using SegregationAllocatorType = dory::memory::SegregationAllocator<10, dory::memory::PageAllocator, dory::memory::SystemAllocator, dory::memory::SystemAllocator, AllocProfiler>;
 
 #ifdef DORY_MAIN_FUNCTION_UNIX
 int main()
@@ -61,8 +34,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
         dory::memory::MemorySizeClass{ 4096, 1024 }
     };
 
-    AllocProfiler profiler;
-    SegregationAllocatorType segregationAllocator { "testSegAlloc", blockAllocator, systemAllocator, systemAllocator, profiler, sizeClasses };
+    dory::core::AllocProfiler profiler;
+    dory::core::GlobalAllocatorType segregationAllocator { "testSegAlloc", blockAllocator, systemAllocator, systemAllocator, profiler, sizeClasses };
 
     std::cout << "Begin Start Profiler" << std::endl;
     DORY_TRACE_START();

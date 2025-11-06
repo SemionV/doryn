@@ -30,14 +30,14 @@ namespace dory::core::resources
         explicit LocalizationImpl(TAllocator& allocator):
         _allocator(allocator)
         {
-            goodBye = static_cast<IGoodByeTemplate*>(_allocator.allocate(sizeof(GoodByeTemplate)));
-            birthDate = static_cast<IBirthDateTemplate*>(_allocator.allocate(sizeof(BirthDateTemplate)));
+            goodBye = _allocator.template allocate<GoodByeTemplate>();
+            birthDate = _allocator.template allocate<BirthDateTemplate>();
         }
 
         ~LocalizationImpl()
         {
-            _allocator.deallocate(goodBye);
-            _allocator.deallocate(birthDate);
+            _allocator.template deallocateType<IGoodByeTemplate>(goodBye);
+            _allocator.template deallocateType<IBirthDateTemplate>(birthDate);
         }
     };
 }

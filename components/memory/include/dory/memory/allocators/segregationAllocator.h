@@ -83,6 +83,13 @@ namespace dory::memory
             return ptr;
         }
 
+        template<typename T>
+        T* allocate()
+        {
+            void* mem = allocate(sizeof(T));
+            return new (mem) T();
+        }
+
         void deallocate(void* ptr)
         {
             for(size_t i = 0; i < SizeClassCount; ++i)
@@ -106,6 +113,17 @@ namespace dory::memory
             {
                 assert::inhouse(false, "Pointer is not in managed memory of allocator");
             }
+        }
+
+        template<typename T>
+        void deallocateType(T* ptr)
+        {
+            if(ptr)
+            {
+                ptr->~T();
+            }
+
+            deallocate(ptr);
         }
 
     private:
