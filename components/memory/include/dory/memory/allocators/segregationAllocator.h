@@ -92,26 +92,29 @@ namespace dory::memory
 
         void deallocate(void* ptr)
         {
-            for(size_t i = 0; i < SizeClassCount; ++i)
+            if(ptr != nullptr)
             {
-                auto& allocator = sizeClassAllocators()[i];
-                if(allocator.isInRange(ptr))
+                for(size_t i = 0; i < SizeClassCount; ++i)
                 {
-                    allocator.deallocate(ptr);
-                    _profiler.traceSlotFree(ptr, allocator.getSlotSize(), i);
+                    auto& allocator = sizeClassAllocators()[i];
+                    if(allocator.isInRange(ptr))
+                    {
+                        allocator.deallocate(ptr);
+                        _profiler.traceSlotFree(ptr, allocator.getSlotSize(), i);
 
-                    return;
+                        return;
+                    }
                 }
-            }
 
-            if(_largeObjectAllocator.isInRange(ptr))
-            {
-                 _largeObjectAllocator.deallocate(ptr);
-                _profiler.traceLargeFree(ptr);
-            }
-            else
-            {
-                assert::inhouse(false, "Pointer is not in managed memory of allocator");
+                if(_largeObjectAllocator.isInRange(ptr))
+                {
+                    _largeObjectAllocator.deallocate(ptr);
+                    _profiler.traceLargeFree(ptr);
+                }
+                else
+                {
+                    assert::inhouse(false, "Pointer is not in managed memory of allocator");
+                }
             }
         }
 
