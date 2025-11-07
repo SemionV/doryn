@@ -97,7 +97,7 @@ namespace dory::containers
 
         ~BasicString()
         {
-            _allocator.deallocate(_data);
+            _allocator.deallocate(_data, _capacity);
         }
 
         // === Element access ===

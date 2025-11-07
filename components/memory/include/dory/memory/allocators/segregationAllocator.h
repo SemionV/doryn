@@ -118,6 +118,29 @@ namespace dory::memory
             }
         }
 
+        void deallocate(void* ptr, const std::size_t size)
+        {
+            const std::size_t classIndex = getSizeClassIndex(size);
+            if(classIndex < SizeClassCount)
+            {
+                auto& allocator = sizeClassAllocators()[classIndex];
+                allocator.deallocate(ptr);
+
+                _profiler.traceSlotFree(ptr, allocator.getSlotSize(), classIndex);
+                return;
+            }
+
+            if(_largeObjectAllocator.isInRange(ptr))
+            {
+                _largeObjectAllocator.deallocate(ptr);
+                _profiler.traceLargeFree(ptr);
+            }
+            else
+            {
+                assert::inhouse(false, "Pointer is not in managed memory of allocator");
+            }
+        }
+
         template<typename T>
         void deallocateType(T* ptr)
         {
@@ -126,7 +149,7 @@ namespace dory::memory
                 ptr->~T();
             }
 
-            deallocate(ptr);
+            deallocate(ptr, sizeof(T));
         }
 
     private:
