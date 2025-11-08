@@ -193,6 +193,11 @@ namespace dory::containers
             _data[_size] = TChar('\0');
         }
 
+        void append(const TChar* str)
+        {
+            append(str, TCharTraits::length(str));
+        }
+
         void append(const BasicString& other)
         {
             append(other.data(), other.length());
