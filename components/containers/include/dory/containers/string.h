@@ -198,20 +198,98 @@ namespace dory::containers
             append(other.data(), other.length());
         }
 
-        void push_back(TChar c);
-        void pop_back();
-        void assign(const TChar* str, size_type len);
-        void shrink_to_fit();
+        void push_back(TChar c)
+        {
+            const size_type missingCapacity = 2 - _capacity + _size;
+            if(missingCapacity > 0)
+                grow(_capacity + missingCapacity);
+
+            _data[_size] = c;
+            ++_size;
+            _data[_size] = TChar('\0');
+        }
+
+        void pop_back()
+        {
+            if(_size > 0)
+            {
+                --_size;
+                _data[_size] = TChar('\0');
+            }
+        }
+
+        void assign(const TChar* str, size_type len)
+        {
+            assert::inhouse(str, "String pointer must be valid");
+
+            if(len + 1 > _capacity)
+                grow(len + 1);
+
+            TCharTraits::copy(_data, str, len);
+            _size = len;
+            _data[_size] = TChar('\0');
+        }
+
+        void shrink_to_fit()
+        {
+            if(_size + 1 < _capacity) // +1 for null terminator
+            {
+                auto* newData = static_cast<TChar*>(_allocator.allocate((_size + 1) * sizeof(TChar)));
+                TCharTraits::copy(newData, _data, _size);
+                newData[_size] = TChar('\0');
+
+                _allocator.deallocate(_data, _capacity);
+                _data = newData;
+                _capacity = _size + 1;
+            }
+        }
 
         // === Comparison ===
-        bool operator==(const BasicString& rhs) const noexcept;
-        bool operator!=(const BasicString& rhs) const noexcept;
-        bool operator<(const BasicString& rhs) const noexcept;
+        bool operator==(const BasicString& rhs) const noexcept
+        {
+            if(_size != rhs._size)
+                return false;
+
+            for(size_type i = 0; i < _size; ++i)
+            {
+                if(_data[i] != rhs._data[i])
+                    return false;
+            }
+            return true;
+        }
+
+        bool operator!=(const BasicString& rhs) const noexcept
+        {
+            return !(*this == rhs);
+        }
+
+        bool operator<(const BasicString& rhs) const noexcept
+        {
+            const size_type minSize = _size < rhs._size ? _size : rhs._size;
+
+            for(size_type i = 0; i < minSize; ++i)
+            {
+                if(_data[i] < rhs._data[i]) return true;
+                if(_data[i] > rhs._data[i]) return false;
+            }
+            return _size < rhs._size;
+        }
 
         // === Conversions ===
-        std::basic_string_view<TChar> view() const noexcept;
-        const TChar* c_str() noexcept;
-        operator std::basic_string_view<TChar>() const noexcept;
+        std::basic_string_view<TChar> view() const noexcept
+        {
+            return std::basic_string_view<TChar>(_data, _size);
+        }
+
+        const TChar* c_str() noexcept
+        {
+            return _data ? _data : "";
+        }
+
+        explicit operator std::basic_string_view<TChar>() const noexcept
+        {
+            return view();
+        }
 
         // === Allocator access ===
         allocator_type& getAllocator() noexcept
@@ -237,4 +315,16 @@ namespace dory::containers
             _capacity = newCap;
         }
     };
+
+    template<typename TChar, typename TCharTraits, typename TAllocator>
+    BasicString<TChar, TCharTraits, TAllocator> operator+(
+        const BasicString<TChar, TCharTraits, TAllocator>& lhs,
+        const BasicString<TChar, TCharTraits, TAllocator>& rhs)
+    {
+        BasicString result(lhs.getAllocator());
+        result.reserve(lhs.size() + rhs.size() + 1);
+        result.append(lhs);
+        result.append(rhs);
+        return result;
+    }
 }
