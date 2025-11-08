@@ -101,28 +101,103 @@ namespace dory::containers
         }
 
         // === Element access ===
-        const TChar* c_str() const noexcept;
-        const TChar* data() const noexcept;
-        TChar* data() noexcept;
-        TChar& operator[](size_type i) noexcept;
-        const TChar& operator[](size_type i) const noexcept;
-        TChar& front() noexcept;
-        TChar& back() noexcept;
-        const TChar& front() const noexcept;
-        const TChar& back() const noexcept;
+        const TChar* c_str() const noexcept
+        {
+            return _data;
+        }
+
+        const TChar* data() const noexcept
+        {
+            return _data;
+        }
+
+        TChar* data() noexcept
+        {
+            return _data;
+        }
+
+        TChar& operator[](size_type i) noexcept
+        {
+            assert::inhouse(i < _capacity, "Invalid index");
+            return _data[i];
+        }
+
+        const TChar& operator[](size_type i) const noexcept
+        {
+            assert::inhouse(i < _capacity, "Invalid index");
+            return _data[i];
+        }
 
         // === Capacity ===
-        size_type size() const noexcept;
-        size_type length() const noexcept;
-        size_type capacity() const noexcept;
-        bool empty() const noexcept;
-        void reserve(size_type newCap);
-        void clear() noexcept;
-        void resize(size_type newSize);
+        [[nodiscard]] size_type size() const noexcept
+        {
+            return _size;
+        }
+
+        [[nodiscard]] size_type length() const noexcept
+        {
+            return _size;
+        }
+
+        [[nodiscard]] size_type capacity() const noexcept
+        {
+            return _capacity;
+        }
+
+        [[nodiscard]] bool empty() const noexcept
+        {
+            return _size == 0;
+        }
+
+        void reserve(const size_type newCap)
+        {
+            if(newCap > _capacity)
+                grow(newCap);
+        }
+
+        void clear() noexcept
+        {
+            if (_data)
+                _data[0] = TChar('\0');
+            _size = 0;
+        }
+
+        void resize(const size_type newSize)
+        {
+            if (newSize + 1 > _capacity)
+            {
+                grow(newSize + 1);
+            }
+
+            if (newSize > _size)
+            {
+                // Zero-fill newly added characters
+                TCharTraits::assign(_data + _size, newSize - _size, TChar('\0'));
+            }
+
+            _size = newSize;
+            _data[_size] = TChar('\0');
+        }
 
         // === Modifiers ===
-        void append(const TChar* str, size_type len);
-        void append(const BasicString& other);
+        void append(const TChar* str, size_type len)
+        {
+            assert::inhouse(str, "String pointer must be valid");
+
+            const size_type missingCapacity = len - _capacity + _size + 1;
+            if(missingCapacity > 0)
+                grow(_capacity + missingCapacity);
+
+            TCharTraits::copy(_data + _size, str, len);
+            _size += len;
+            _data[_size] = TChar('\0');
+        }
+
+        void append(const BasicString& other)
+        {
+            append(other.data(), other.length());
+        }
+
         void push_back(TChar c);
         void pop_back();
         void assign(const TChar* str, size_type len);
@@ -139,9 +214,27 @@ namespace dory::containers
         operator std::basic_string_view<TChar>() const noexcept;
 
         // === Allocator access ===
-        allocator_type& getAllocator() noexcept { return _allocator; }
+        allocator_type& getAllocator() noexcept
+        {
+            return _allocator;
+        }
 
     private:
-        void grow(size_type newCap);
+        void grow(const size_type newCap)
+        {
+            assert::inhouse(newCap > _capacity, "New capacity must be larger than current capacity");
+
+            auto* newData = static_cast<TChar*>(_allocator.allocate(newCap * sizeof(TChar)));
+
+            if (_data)
+            {
+                TCharTraits::copy(newData, _data, _size);
+                newData[_size] = TChar('\0');
+                _allocator.deallocate(_data);
+            }
+
+            _data = newData;
+            _capacity = newCap;
+        }
     };
 }
