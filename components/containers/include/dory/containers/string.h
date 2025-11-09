@@ -14,7 +14,8 @@ namespace dory::containers
         using allocator_type = TAllocator;
 
     private:
-        static constexpr size_type SSO_THRESHOLD = 23;
+        static constexpr size_type STORAGE_SIZE = 24;
+        static constexpr size_type SSO_THRESHOLD = (STORAGE_SIZE / sizeof(TChar)) - 1;
 
         allocator_type& _allocator;
 
@@ -26,12 +27,65 @@ namespace dory::containers
                 size_type capacity = 0;
                 size_type size = 0;
             } _heapData;
-            TChar _ssoData[SSO_THRESHOLD + 1];
+
+            struct
+            {
+                TChar data[SSO_THRESHOLD];
+                TChar size = 0;
+            } _localData;
         };
 
-        /*TChar* _data = nullptr;
-        size_type _size = 0;
-        size_type _capacity = 0;*/
+        bool isHeapStorage() noexcept
+        {
+            return (_localData.size & 1) == 1;
+        }
+
+        bool isLocalStorage() noexcept
+        {
+            return !isHeapStorage();
+        }
+
+        void setHeapMode() noexcept
+        {
+            _localData.size = _localData.size | 1;
+        }
+
+        void setLocalMode() noexcept
+        {
+            _localData.size = _localData.size & ~1;
+        }
+
+        size_type getSize()
+        {
+            if(isHeapStorage())
+                return static_cast<size_type>(_heapData.size >> 1);
+            return SSO_THRESHOLD - (static_cast<size_type>(_localData.size) >> 1);
+        }
+
+        size_type getCapacity()
+        {
+            if(isHeapStorage())
+                return _heapData.capacity;
+            return SSO_THRESHOLD;
+        }
+
+        void setCapacity(const size_type cap)
+        {
+            assert::debug(isHeapStorage(), "Storage must be in heap mode");
+
+            _heapData.capacity = cap;
+        }
+
+        void setLocalSize(const size_type len) noexcept
+        {
+            assert::debug(len <= SSO_THRESHOLD, "Invalid storage mode");
+            _localData.size = static_cast<TChar>((SSO_THRESHOLD - len) << 1); // LSB = 0
+        }
+
+        void setHeapSize(const size_type len) noexcept
+        {
+            _heapData.size = (len << 1) | 1; // LSB = 1
+        }
 
     public:
         explicit BasicString(allocator_type& allocator) noexcept:
@@ -91,7 +145,7 @@ namespace dory::containers
 
                 if (_heapData.data)
                 {
-                    _allocator.deallocate(_heapData.data);
+                    _allocator.deallocate(_heapData.data, _heapData.capacity * sizeof(TChar));
                     _heapData.data = nullptr;
                 }
 
@@ -109,7 +163,7 @@ namespace dory::containers
 
         ~BasicString()
         {
-            _allocator.deallocate(_heapData.data, _heapData.capacity);
+            _allocator.deallocate(_heapData.data, _heapData.capacity * sizeof(TChar));
         }
 
         // === Element access ===
@@ -255,7 +309,7 @@ namespace dory::containers
                 TCharTraits::copy(newData, _heapData.data, _heapData.size);
                 newData[_heapData.size] = TChar('\0');
 
-                _allocator.deallocate(_heapData.data, _heapData.capacity);
+                _allocator.deallocate(_heapData.data, _heapData.capacity * sizeof(TChar));
                 _heapData.data = newData;
                 _heapData.capacity = _heapData.size + 1;
             }
@@ -325,24 +379,11 @@ namespace dory::containers
             {
                 TCharTraits::copy(newData, _heapData.data, _heapData.size);
                 newData[_heapData.size] = TChar('\0');
-                _allocator.deallocate(_heapData.data);
+                _allocator.deallocate(_heapData.data, _heapData.capacity * sizeof(TChar));
             }
 
             _heapData.data = newData;
             _heapData.capacity = newCap;
-        }
-
-        bool isSSO() noexcept
-        {
-            return _heapData.size >> 63 == 1;
-        }
-
-        void setSSO(const bool isSSO) noexcept
-        {
-            /*size_type mask = isSSO;
-            mask = mask << 63;
-
-            _heapData*/
         }
     };
 
