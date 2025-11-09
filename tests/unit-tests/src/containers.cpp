@@ -63,4 +63,7 @@ TEST(BasicStringTests, simpleTest)
     str.append(" World!");
 
     std::cout << str.data() << std::endl;
+
+    std::cout << "std::string size: " << sizeof(std::string) << std::endl;
+    std::cout << "dory::containers::BasicString size: " << sizeof(dory::containers::BasicString<char, std::char_traits<char>, SegregationAllocatorType>) << std::endl;
 }
