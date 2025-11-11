@@ -87,10 +87,18 @@ namespace dory::containers
             _heapData.size = (len << 1) | 1; // LSB = 1
         }
 
+        TChar* getData()
+        {
+            return isHeapStorage() ? _heapData.data : _localData.data;
+        }
+
     public:
         explicit BasicString(allocator_type& allocator) noexcept:
             _allocator(allocator)
-        {}
+        {
+            setLocalMode();
+            setLocalSize(0);
+        }
 
         BasicString(const TChar* cstr, allocator_type& allocator) noexcept(false):
             _allocator(allocator)
@@ -98,16 +106,37 @@ namespace dory::containers
             assert::inhouse(cstr != _heapData.data, "Cannot construct string from its own data");
             assert::inhouse(cstr, "Pointer to a char string must be a valid pointer");
 
-            _heapData.size = 0;
-            while(cstr[_heapData.size] != '\0')
-                ++_heapData.size;
+            if (!cstr)
+            {
+                setLocalMode();
+                setLocalSize(0);
+                _localData.data[0] = TChar('\0');
+                return;
+            }
 
-            _heapData.capacity = _heapData.size + 1;
+            size_type size = 0;
+            while(cstr[size] != '\0')
+                ++size;
 
-            _heapData.data = static_cast<TChar*>(_allocator.allocate(_heapData.capacity * sizeof(TChar)));
+            const size_type capacity = size + 1;
 
-            TCharTraits::copy(_heapData.data, cstr, _heapData.size);
-            _heapData.data[_heapData.size] = TChar('\0');
+            if(capacity > SSO_THRESHOLD)
+            {
+                setHeapMode();
+                setHeapSize(size);
+
+                _heapData.capacity = capacity;
+                _heapData.data = static_cast<TChar*>(_allocator.allocate(capacity * sizeof(TChar)));
+                TCharTraits::copy(_heapData.data, cstr, size);
+                _heapData.data[size] = TChar('\0');
+            }
+            else
+            {
+                setLocalMode();
+                setLocalSize(size);
+                TCharTraits::copy(_localData.data, cstr, size);
+                _localData.data[size] = TChar('\0');
+            }
         }
 
         BasicString(const TChar* data, const size_type length, allocator_type& allocator):
@@ -371,19 +400,35 @@ namespace dory::containers
     private:
         void grow(const size_type newCap)
         {
-            assert::inhouse(newCap > _heapData.capacity, "New capacity must be larger than current capacity");
+            if (isHeapStorage())
+                assert::inhouse(newCap > _heapData.capacity, "New capacity must be larger than current capacity");
+            else
+                assert::inhouse(newCap > SSO_THRESHOLD, "New capacity must exceed SSO threshold");
 
-            auto* newData = static_cast<TChar*>(_allocator.allocate(newCap * sizeof(TChar)));
-
-            if (_heapData.data)
+            if(newCap > SSO_THRESHOLD)
             {
-                TCharTraits::copy(newData, _heapData.data, _heapData.size);
-                newData[_heapData.size] = TChar('\0');
-                _allocator.deallocate(_heapData.data, _heapData.capacity * sizeof(TChar));
-            }
+                auto* newData = static_cast<TChar*>(_allocator.allocate(newCap * sizeof(TChar)));
 
-            _heapData.data = newData;
-            _heapData.capacity = newCap;
+                size_type size = getSize();
+                if (isHeapStorage())
+                {
+                    if(_heapData.data)
+                    {
+                        TCharTraits::copy(newData, _heapData.data, size);
+                        _allocator.deallocate(_heapData.data, _heapData.capacity * sizeof(TChar));
+                    }
+                }
+                else
+                {
+                    TCharTraits::copy(newData, _localData.data, size);
+                }
+
+                newData[size] = TChar('\0');
+                _heapData.data = newData;
+                _heapData.capacity = newCap;
+                setHeapMode();
+                setHeapSize(size);
+            }
         }
     };
 
