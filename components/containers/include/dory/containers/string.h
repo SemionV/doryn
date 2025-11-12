@@ -35,12 +35,12 @@ namespace dory::containers
             } _localData;
         };
 
-        bool isHeapStorage() noexcept
+        [[nodiscard]] bool isHeapStorage() const noexcept
         {
             return (_localData.size & 1) == 1;
         }
 
-        bool isLocalStorage() noexcept
+        [[nodiscard]] bool isLocalStorage() const noexcept
         {
             return !isHeapStorage();
         }
@@ -55,12 +55,12 @@ namespace dory::containers
             _localData.size = _localData.size & ~1;
         }
 
-        size_type getHeapSize()
+        [[nodiscard]] size_type getHeapSize() const
         {
             return static_cast<size_type>(_heapData.size >> 1);
         }
 
-        size_type getLocalSize()
+        [[nodiscard]] size_type getLocalSize() const
         {
             return SSO_THRESHOLD - (static_cast<size_type>(_localData.size) >> 1);
         }
@@ -76,12 +76,24 @@ namespace dory::containers
             _heapData.size = (len << 1) | 1; // LSB = 1
         }
 
+        void setSize(const size_type size)
+        {
+            if(isHeapStorage())
+            {
+                setHeapSize(size);
+            }
+            else
+            {
+                setLocalSize(size);
+            }
+        }
+
         TChar* getData()
         {
             return isHeapStorage() ? _heapData.data : _localData.data;
         }
 
-        TChar* getData() const
+        const TChar* getData() const noexcept
         {
             return isHeapStorage() ? _heapData.data : _localData.data;
         }
@@ -100,7 +112,7 @@ namespace dory::containers
         {
             const size_type capacity = length + 1;
 
-            if(capacity > SSO_THRESHOLD)
+            if (length >= SSO_THRESHOLD)
             {
                 setHeapMode();
                 setHeapSize(length);
@@ -322,13 +334,20 @@ namespace dory::containers
         {
             assert::inhouse(str, "String pointer must be valid");
 
-            const size_type missingCapacity = len - _heapData.capacity + _heapData.size + 1;
-            if(missingCapacity > 0)
-                grow(_heapData.capacity + missingCapacity);
+            const size_type capacity = getCapacity();
+            size_type size = getSize();
 
-            TCharTraits::copy(_heapData.data + _heapData.size, str, len);
-            _heapData.size += len;
-            _heapData.data[_heapData.size] = TChar('\0');
+            const size_type missingCapacity = len - capacity + size + 1;
+            if(missingCapacity > 0)
+                grow(capacity + missingCapacity);
+
+            TChar* data = getData();
+
+            TCharTraits::copy(data + size, str, len);
+
+            size += len;
+            setSize(size);
+            data[size] = TChar('\0');
         }
 
         void append(const TChar* str)
@@ -343,21 +362,31 @@ namespace dory::containers
 
         void push_back(TChar c)
         {
-            const size_type missingCapacity = 2 - _heapData.capacity + _heapData.size;
-            if(missingCapacity > 0)
-                grow(_heapData.capacity + missingCapacity);
+            const size_type capacity = getCapacity();
+            size_type size = getSize();
 
-            _heapData.data[_heapData.size] = c;
-            ++_heapData.size;
-            _heapData.data[_heapData.size] = TChar('\0');
+            const size_type missingCapacity = 2 - capacity + size;
+            if(missingCapacity > 0)
+                grow(capacity + missingCapacity);
+
+            TChar* data = getData();
+
+            data[size] = c;
+            ++size;
+            setSize(size);
+            data[size] = TChar('\0');
         }
 
         void pop_back()
         {
-            if(_heapData.size > 0)
+            size_type size = getSize();
+
+            if(size > 0)
             {
-                --_heapData.size;
-                _heapData.data[_heapData.size] = TChar('\0');
+                --size;
+                TChar* data = getData();
+                data[size] = TChar('\0');
+                setSize(size);
             }
         }
 
@@ -365,37 +394,51 @@ namespace dory::containers
         {
             assert::inhouse(str, "String pointer must be valid");
 
-            if(len + 1 > _heapData.capacity)
+            const size_type capacity = getCapacity();
+
+            if(len + 1 > capacity)
                 grow(len + 1);
 
-            TCharTraits::copy(_heapData.data, str, len);
-            _heapData.size = len;
-            _heapData.data[_heapData.size] = TChar('\0');
+            TChar* data = getData();
+
+            TCharTraits::copy(data, str, len);
+            setSize(len);
+            data[len] = TChar('\0');
         }
 
         void shrink_to_fit()
         {
-            if(_heapData.size + 1 < _heapData.capacity) // +1 for null terminator
+            if(isHeapStorage())
             {
-                auto* newData = static_cast<TChar*>(_allocator.allocate((_heapData.size + 1) * sizeof(TChar)));
-                TCharTraits::copy(newData, _heapData.data, _heapData.size);
-                newData[_heapData.size] = TChar('\0');
+                const size_type size = getHeapSize();
+                if(size + 1 < _heapData.capacity) // +1 for null terminator
+                {
+                    auto* newData = static_cast<TChar*>(_allocator.allocate((size + 1) * sizeof(TChar)));
+                    TCharTraits::copy(newData, _heapData.data, size);
+                    newData[size] = TChar('\0');
 
-                _allocator.deallocate(_heapData.data, _heapData.capacity * sizeof(TChar));
-                _heapData.data = newData;
-                _heapData.capacity = _heapData.size + 1;
+                    _allocator.deallocate(_heapData.data, _heapData.capacity * sizeof(TChar));
+                    _heapData.data = newData;
+                    _heapData.capacity = size + 1;
+                }
             }
         }
 
         // === Comparison ===
         bool operator==(const BasicString& rhs) const noexcept
         {
-            if(_heapData.size != rhs._heapData.size)
+            const size_type size = getSize();
+            const size_type rhsSize = rhs.getSize();
+
+            if(size != rhsSize)
                 return false;
 
-            for(size_type i = 0; i < _heapData.size; ++i)
+            const TChar* data = getData();
+            const TChar* rhsData = rhs.getData();
+
+            for(size_type i = 0; i < size; ++i)
             {
-                if(_heapData.data[i] != rhs._heapData.data[i])
+                if(data[i] != rhsData[i])
                     return false;
             }
             return true;
@@ -408,25 +451,27 @@ namespace dory::containers
 
         bool operator<(const BasicString& rhs) const noexcept
         {
-            const size_type minSize = _heapData.size < rhs._heapData.size ? _heapData.size : rhs._heapData.size;
+            const size_type size = getSize();
+            const size_type rhsSize = rhs.getSize();
+            const TChar* data = getData();
+            const TChar* rhsData = rhs.getData();
+
+            const size_type minSize = size < rhsSize ? size : rhsSize;
 
             for(size_type i = 0; i < minSize; ++i)
             {
-                if(_heapData.data[i] < rhs._heapData.data[i]) return true;
-                if(_heapData.data[i] > rhs._heapData.data[i]) return false;
+                if(data[i] < rhsData[i]) return true;
+                if(data[i] > rhsData[i]) return false;
             }
-            return _heapData.size < rhs._heapData.size;
+            return size < rhsSize;
         }
 
         // === Conversions ===
         std::basic_string_view<TChar> view() const noexcept
         {
-            return std::basic_string_view<TChar>(_heapData.data, _heapData.size);
-        }
-
-        const TChar* c_str() noexcept
-        {
-            return _heapData.data ? _heapData.data : "";
+            const size_type size = getSize();
+            const TChar* data = getData();
+            return std::basic_string_view<TChar>(data, size);
         }
 
         explicit operator std::basic_string_view<TChar>() const noexcept
@@ -468,6 +513,7 @@ namespace dory::containers
                     TCharTraits::copy(newData, _localData.data, size);
                 }
 
+                if (!newData) return; // allocation failure should throw or assert
                 newData[size] = TChar('\0');
                 _heapData.data = newData;
                 _heapData.capacity = newCap;
