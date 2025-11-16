@@ -23,15 +23,15 @@ namespace dory::containers
         {
             struct
             {
+                size_type size = 0;
                 TChar* data;
                 size_type capacity = 0;
-                size_type size = 0;
             } _heapData;
 
             struct
             {
-                TChar data[SSO_THRESHOLD];
                 TChar size = 0;
+                TChar data[SSO_THRESHOLD];
             } _localData;
         };
 
@@ -114,8 +114,8 @@ namespace dory::containers
 
             if (length >= SSO_THRESHOLD)
             {
-                setHeapMode();
                 setHeapSize(length);
+                setHeapMode();
 
                 _heapData.capacity = capacity;
                 _heapData.data = static_cast<TChar*>(_allocator.allocate(capacity * sizeof(TChar)));
