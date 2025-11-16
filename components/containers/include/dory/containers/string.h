@@ -14,25 +14,30 @@ namespace dory::containers
         using allocator_type = TAllocator;
 
     private:
-        static constexpr size_type STORAGE_SIZE = 24;
+        struct HeapStringData
+        {
+            size_type size = 0;
+            TChar* data = nullptr;
+            size_type capacity = 0;
+        };
+
+        template<std::size_t SSO_THRESHOLD>
+        struct LocalStringData
+        {
+            TChar size = 0;
+            TChar data[SSO_THRESHOLD];
+        };
+
+
+        static constexpr size_type STORAGE_SIZE = sizeof(HeapStringData);
         static constexpr size_type SSO_THRESHOLD = (STORAGE_SIZE / sizeof(TChar)) - 1;
 
         allocator_type& _allocator;
 
         union
         {
-            struct
-            {
-                size_type size = 0;
-                TChar* data;
-                size_type capacity = 0;
-            } _heapData;
-
-            struct
-            {
-                TChar size = 0;
-                TChar data[SSO_THRESHOLD];
-            } _localData;
+            HeapStringData _heapData;
+            LocalStringData<SSO_THRESHOLD> _localData;
         };
 
         [[nodiscard]] bool isHeapStorage() const noexcept
