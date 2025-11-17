@@ -62,14 +62,19 @@ TEST(BasicStringTests, simpleTest)
 
     DoryString str { "Hello", segregationAllocator };
 
+    const dory::containers::CRC32Table table = dory::containers::CRC32::generateTable();
+
     str.append(" World!");
     std::cout << str.length() << ": " << str.data() << std::endl;
+    std::cout << "CRC32: " << str.crc32(table) << std::endl;
 
     DoryString  str2 {"Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.", segregationAllocator};
     std::cout << str2.length() << ": " << str2.data() << std::endl;
+    std::cout << "CRC32: " << str2.crc32(table) << std::endl;
 
     str2.append(" At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.");
     std::cout << str2.length() << ": " << str2.data() << std::endl;
+    std::cout << "CRC32: " << str2.crc32(table) << std::endl;
 
     std::cout << "std::string size: " << sizeof(std::string) << std::endl;
     std::cout << "dory::containers::BasicString size: " << sizeof(dory::containers::BasicString<char, std::char_traits<char>, SegregationAllocatorType>) << std::endl;

@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <dory/macros/assert.h>
+#include "crc32.h"
 
 namespace dory::containers
 {
@@ -488,6 +489,11 @@ namespace dory::containers
         allocator_type& getAllocator() noexcept
         {
             return _allocator;
+        }
+
+        [[nodiscard]] uint32_t crc32(const CRC32Table& table) const noexcept
+        {
+            return dory::containers::CRC32::compute(getData(), getSize(), table);
         }
 
     private:
