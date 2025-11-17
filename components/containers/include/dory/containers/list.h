@@ -108,9 +108,57 @@ namespace dory::containers
     // ----------------------------------------------------------
 
         // Performs raw memory reallocation + moves/copies elements
-        void reallocate(size_type newCap);
+        void reallocate(const size_type newCap)
+        {
+            assert::inhouse(newCap > _capacity, "New capacity must be larger than current capacity");
 
-        void destroy_range(size_type begin, size_type end) noexcept;
+            const size_type oldSize = _size;
+
+            // Allocate new block
+            T* newData = static_cast<T*>(_allocator.allocate(newCap * sizeof(T)));
+
+            // Move or copy elements
+            if constexpr (std::is_nothrow_move_constructible_v<T>)
+            {
+                // Best path: no-throw move
+                for (size_type i = 0; i < oldSize; ++i)
+                {
+                    new (&newData[i]) T(std::move(_data[i]));
+                }
+            }
+            else if constexpr (std::is_copy_constructible_v<T>)
+            {
+                // Fallback: copy if move potentially throws
+                for (size_type i = 0; i < oldSize; ++i)
+                {
+                    new (&newData[i]) T(_data[i]);
+                }
+            }
+            else
+            {
+                static_assert(std::is_move_constructible_v<T>, "BasicList<T> requires T to be move-constructible or copy-constructible.");
+            }
+
+            // Deallocate old memory
+            if (_data)
+            {
+                destroy_range(0, oldSize);
+                _allocator.deallocate(_data, _capacity * sizeof(T));
+            }
+
+            // Install new block
+            _data = newData;
+            _capacity = newCap;
+        }
+
+        void destroy_range(const size_type begin, const size_type end) noexcept
+        {
+            if constexpr (!std::is_trivially_destructible_v<T>)
+            {
+                for (size_type i = begin; i < end; ++i)
+                    _data[i].~T();
+            }
+        }
 
         // Construction helpers
         void construct_at(size_type index, const T& value);
