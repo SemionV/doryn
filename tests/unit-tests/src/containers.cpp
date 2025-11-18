@@ -6,6 +6,7 @@
 #include "dory/memory/allocators/standardAllocator.h"
 #include "dory/memory/allocators/systemAllocator.h"
 #include <dory/containers/string.h>
+#include <dory/containers/list.h>
 
 class AllocProfiler
 {

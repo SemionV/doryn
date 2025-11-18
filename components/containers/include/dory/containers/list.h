@@ -69,9 +69,9 @@ namespace dory::containers
             other._data = nullptr;
         }
 
-        BasicList& operator=(BasicList&& other) noexcept:
-            _allocator(other._allocator)
+        BasicList& operator=(BasicList&& other) noexcept
         {
+
             _data = other._data;
             _size = other._size;
             _capacity = other._capacity;
@@ -93,54 +93,258 @@ namespace dory::containers
     // Element access
     // ----------------------------------------------------------
 
-        reference operator[](size_type index) noexcept;
-        const_reference operator[](size_type index) const noexcept;
+        reference operator[](size_type index) noexcept
+        {
+            return _data[index];
+        }
+        const_reference operator[](size_type index) const noexcept
+        {
+            return _data[index];
+        }
 
-        reference at(size_type index);
-        const_reference at(size_type index) const;
+        reference at(size_type index)
+        {
+            assert::inhouse(index < _size, "Index is out of range");
+            return _data[index];
+        }
+        const_reference at(size_type index) const
+        {
+            assert::inhouse(index < _size, "Index is out of range");
+            return _data[index];
+        }
 
-        reference front() noexcept;
-        const_reference front() const noexcept;
+        reference front() noexcept
+        {
+            assert::inhouse(_size > 0, "Get front element in an empty list");
+            return _data[0];
+        }
 
-        reference back() noexcept;
-        const_reference back() const noexcept;
+        const_reference front() const noexcept
+        {
+            assert::inhouse(_size > 0, "Get front element in an empty list");
+            return _data[0];
+        }
 
-        pointer data() noexcept;
-        const_pointer data() const noexcept;
+        reference back() noexcept
+        {
+            assert::inhouse(_size > 0, "Get back element in an empty list");
+            return _data[_size - 1];
+        }
+        const_reference back() const noexcept
+        {
+            assert::inhouse(_size > 0, "Get back element in an empty list");
+            return _data[_size - 1];
+        }
+
+        pointer data() noexcept
+        {
+            return _data;
+        }
+
+        const_pointer data() const noexcept
+        {
+            return _data;
+        }
 
 
     // ----------------------------------------------------------
     // Capacity
     // ----------------------------------------------------------
 
-        [[nodiscard]] size_type size() const noexcept;
-        [[nodiscard]] size_type capacity() const noexcept;
-        [[nodiscard]] bool empty() const noexcept;
+        [[nodiscard]] size_type size() const noexcept
+        {
+            return _size;
+        }
 
-        void reserve(size_type newCap);
-        void shrink_to_fit();
+        [[nodiscard]] size_type capacity() const noexcept
+        {
+            return _capacity;
+        }
+
+        [[nodiscard]] bool empty() const noexcept
+        {
+            return _size == 0;
+        }
+
+        void reserve(const size_type newCap)
+        {
+            if (newCap > _capacity)
+                reallocate(newCap);
+        }
+
+        void shrink_to_fit()
+        {
+            if (_size == 0)
+            {
+                // free everything
+                if (_data)
+                {
+                    _allocator.deallocate(_data, _capacity * sizeof(T));
+                }
+                _data = nullptr;
+                _capacity = 0;
+                return;
+            }
+
+            if (_capacity > _size)
+            {
+                reallocate(_size); // shrink to tight fit
+            }
+        }
 
 
     // ----------------------------------------------------------
     // Modifiers
     // ----------------------------------------------------------
 
-        void clear() noexcept;
+        void clear() noexcept
+        {
+            destroy_range(0, _size);
+        }
 
-        void push_back(const T& value);
-        void push_back(T&& value);
+        void push_back(const T& value)
+        {
+            if (_size == _capacity)
+            {
+                const size_type newCap = _capacity == 0 ? 1 : _capacity * 2;
+                reallocate(newCap);
+            }
+
+            construct_at(_size, value);
+
+            ++_size;
+        }
+
+        void push_back(T&& value)
+        {
+            if (_size == _capacity)
+            {
+                const size_type newCap = _capacity == 0 ? 1 : _capacity * 2;
+                reallocate(newCap);
+            }
+
+            construct_at(_size, value);
+
+            ++_size;
+        }
 
         template<typename... Args>
-        reference emplace_back(Args&&... args);
+        reference emplace_back(Args&&... args)
+        {
+            if (_size == _capacity)
+            {
+                size_type newCap = (_capacity == 0) ? 1 : (_capacity * 2);
+                reallocate(newCap);
+            }
 
-        void pop_back();
+            new (&_data[_size]) T(std::forward<Args>(args)...);
+            return _data[_size++];
+        }
 
-        void resize(size_type newSize);
-        void resize(size_type newSize, const T& defaultValue);
+        void pop_back()
+        {
+            assert::inhouse(_size > 0, "Pop back in an empty list");
 
-        void assign(size_type count, const T& value);
+            destroy_range(_size - 1, _size);
+            --_size;
+        }
 
-        void swap(BasicList& other) noexcept;
+        void resize(const size_type newSize, const T& defaultValue)
+        {
+            const size_type oldSize = _size;
+
+            // Case 1: shrink
+            if (newSize < oldSize)
+            {
+                destroy_range(newSize, oldSize);
+                _size = newSize;
+                return;
+            }
+
+            // Case 2: grow
+            if (newSize > _capacity)
+            {
+                // capacity strategy can be improved, but this works:
+                reallocate(newSize);
+            }
+
+            // Construct new objects
+            for (size_type i = oldSize; i < newSize; ++i)
+            {
+                construct_at(i, defaultValue);   // value-initialize
+            }
+
+            _size = newSize;
+        }
+
+        void resize(size_type newSize)
+        {
+            resize(newSize, T{});
+        }
+
+        void assign(size_type count, const T& value)
+        {
+            // Case 1: if count <= _size
+            // We can overwrite existing elements and destroy the rest.
+            if (count <= _size)
+            {
+                // Overwrite existing elements
+                for (size_type i = 0; i < count; ++i)
+                {
+                    _data[i] = value;  // assign, not reconstruct
+                }
+
+                // Destroy the tail if shrinking
+                destroy_range(count, _size);
+
+                _size = count;
+                return;
+            }
+
+            // Case 2: if count > _size and fits in capacity
+            // Overwrite old + construct new ones.
+            if (count <= _capacity)
+            {
+                // Overwrite existing elements
+                for (size_type i = 0; i < _size; ++i)
+                {
+                    _data[i] = value;
+                }
+
+                // Construct new elements
+                for (size_type i = _size; i < count; ++i)
+                {
+                    construct_at(i, value);
+                }
+
+                _size = count;
+                return;
+            }
+
+            // Case 3: need to grow
+            // Optimal to pick a growth policy (doubling), but count is required minimum.
+            size_type newCap = count;
+            reallocate(newCap);
+
+            // Now construct all elements fresh
+            for (size_type i = 0; i < count; ++i)
+            {
+                construct_at(i, value);
+            }
+
+            _size = count;
+        }
+
+        void swap(BasicList& other) noexcept
+        {
+            assert::inhouse(&_allocator == &other._allocator, "Swapping lists with different allocators is not allowed");
+
+            using std::swap;
+
+            swap(_data,     other._data);
+            swap(_size,     other._size);
+            swap(_capacity, other._capacity);
+        }
 
 
     private:
