@@ -37,7 +37,7 @@ using SegregationAllocatorType = dory::memory::SegregationAllocator<10, dory::me
 template<typename T>
 using StandardAllocatorType = dory::memory::StandardAllocator<T, SegregationAllocatorType>;
 
-TEST(BasicStringTests, simpleTest)
+std::shared_ptr<SegregationAllocatorType> buildAllocator()
 {
     constexpr std::size_t PAGE_SIZE = 4096;
     dory::memory::PageAllocator blockAllocator {PAGE_SIZE};
@@ -57,11 +57,17 @@ TEST(BasicStringTests, simpleTest)
     };
 
     AllocProfiler profiler;
-    SegregationAllocatorType segregationAllocator { "testSegAlloc", blockAllocator, systemAllocator, systemAllocator, profiler, sizeClasses };
+
+    return std::make_shared<SegregationAllocatorType>("testSegAlloc", blockAllocator, systemAllocator, systemAllocator, profiler, sizeClasses);
+}
+
+TEST(BasicStringTests, simpleTest)
+{
+    const auto allocator = buildAllocator();
 
     using DoryString = dory::containers::BasicString<char, std::char_traits<char>, SegregationAllocatorType>;
 
-    DoryString str { "Hello", segregationAllocator };
+    DoryString str { "Hello", *allocator };
 
     const dory::containers::CRC32Table table = dory::containers::CRC32::generateTable();
 
@@ -69,7 +75,7 @@ TEST(BasicStringTests, simpleTest)
     std::cout << str.length() << ": " << str.data() << std::endl;
     std::cout << "CRC32: " << str.crc32(table) << std::endl;
 
-    DoryString  str2 {"Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.", segregationAllocator};
+    DoryString  str2 {"Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.", *allocator};
     std::cout << str2.length() << ": " << str2.data() << std::endl;
     std::cout << "CRC32: " << str2.crc32(table) << std::endl;
 
@@ -79,4 +85,29 @@ TEST(BasicStringTests, simpleTest)
 
     std::cout << "std::string size: " << sizeof(std::string) << std::endl;
     std::cout << "dory::containers::BasicString size: " << sizeof(dory::containers::BasicString<char, std::char_traits<char>, SegregationAllocatorType>) << std::endl;
+}
+
+TEST(BasicListTests, simpleTest)
+{
+    const auto allocator = buildAllocator();
+
+    using DoryList = dory::containers::BasicList<int, SegregationAllocatorType>;
+
+    DoryList list {*allocator};
+
+    list.push_back(1);
+    list.push_back(2);
+    list.push_back(3);
+    list.push_back(4);
+    list.push_back(5);
+    list.push_back(6);
+    list.push_back(7);
+    list.push_back(8);
+    list.push_back(9);
+    list.push_back(10);
+
+    for(std::size_t i = 0; i < list.size(); ++i)
+    {
+        std::cout << "item " << i << ": " << list.at(i) << std::endl;
+    }
 }
