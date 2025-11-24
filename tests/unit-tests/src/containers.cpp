@@ -87,13 +87,35 @@ TEST(BasicStringTests, simpleTest)
     std::cout << "dory::containers::BasicString size: " << sizeof(dory::containers::BasicString<char, std::char_traits<char>, SegregationAllocatorType>) << std::endl;
 }
 
+template<typename T>
+using DoryList = dory::containers::BasicList<T, SegregationAllocatorType>;
+
+template<typename T>
+void printList(const DoryList<T>& list)
+{
+    for(std::size_t i = 0; i < list.size(); ++i)
+    {
+        std::cout << "item " << i << ": " << list.at(i) << std::endl;
+    }
+}
+
+template<typename T>
+void assertList(const DoryList<T>& list, std::initializer_list<T> expected)
+{
+    EXPECT_EQ(list.size(), expected.size());
+
+    std::size_t i = 0;
+    for (const auto& val : expected)
+    {
+        EXPECT_EQ(list.at(i), val);
+        ++i;
+    }
+}
+
 TEST(BasicListTests, simpleTest)
 {
     const auto allocator = buildAllocator();
-
-    using DoryList = dory::containers::BasicList<int, SegregationAllocatorType>;
-
-    DoryList list {*allocator};
+    DoryList<int> list {*allocator};
 
     list.push_back(1);
     list.push_back(2);
@@ -106,8 +128,15 @@ TEST(BasicListTests, simpleTest)
     list.push_back(9);
     list.push_back(10);
 
-    for(std::size_t i = 0; i < list.size(); ++i)
-    {
-        std::cout << "item " << i << ": " << list.at(i) << std::endl;
-    }
+    assertList(list, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    printList(list);
+
+    list.pop_back();
+    list.pop_back();
+    list.pop_back();
+    list.pop_back();
+    list.pop_back();
+
+    assertList(list, {1, 2, 3, 4, 5});
+    printList(list);
 }
