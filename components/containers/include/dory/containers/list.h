@@ -146,6 +146,21 @@ namespace dory::containers
             return _data;
         }
 
+    // ----------------------------------------------------------
+    // Standard Iterator support
+    // ----------------------------------------------------------
+
+        using iterator = T*;
+        using const_iterator = const T*;
+
+        iterator begin() noexcept { return _data; }
+        iterator end() noexcept { return _data + _size; }
+
+        const_iterator begin() const noexcept { return _data; }
+        const_iterator end() const noexcept { return _data + _size; }
+
+        const_iterator cbegin() const noexcept { return _data; }
+        const_iterator cend() const noexcept { return _data + _size; }
 
     // ----------------------------------------------------------
     // Capacity
@@ -282,7 +297,7 @@ namespace dory::containers
             resize(newSize, T{});
         }
 
-        void assign(size_type count, const T& value)
+        void assign(const size_type count, const T& value)
         {
             // Case 1: if count <= _size
             // We can overwrite existing elements and destroy the rest.

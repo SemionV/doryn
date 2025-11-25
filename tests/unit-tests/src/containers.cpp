@@ -93,9 +93,10 @@ using DoryList = dory::containers::BasicList<T, SegregationAllocatorType>;
 template<typename T>
 void printList(const DoryList<T>& list)
 {
-    for(std::size_t i = 0; i < list.size(); ++i)
+    std::size_t i = 0;
+    for(const auto& value : list)
     {
-        std::cout << "item " << i << ": " << list.at(i) << std::endl;
+        std::cout << "item " << i++ << ": " << value << std::endl;
     }
 }
 
