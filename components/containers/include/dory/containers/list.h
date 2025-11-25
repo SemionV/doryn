@@ -248,7 +248,7 @@ namespace dory::containers
         {
             if (_size == _capacity)
             {
-                size_type newCap = increaseCapacity(_capacity);
+                const size_type newCap = increaseCapacity(_capacity);
                 reallocate(newCap);
             }
 
