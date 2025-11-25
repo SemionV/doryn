@@ -138,6 +138,8 @@ TEST(BasicListTests, simpleTest)
     list.pop_back();
     list.pop_back();
 
-    assertList(list, {1, 2, 3, 4, 5});
+    list.emplace(list.begin() + 2, 11);
+
+    assertList(list, {1, 2, 11, 3, 4, 5});
     printList(list);
 }

@@ -221,7 +221,7 @@ namespace dory::containers
         {
             if (_size == _capacity)
             {
-                const size_type newCap = _capacity == 0 ? 1 : _capacity * 2;
+                const size_type newCap = increaseCapacity(_capacity);
                 reallocate(newCap);
             }
 
@@ -234,7 +234,7 @@ namespace dory::containers
         {
             if (_size == _capacity)
             {
-                const size_type newCap = _capacity == 0 ? 1 : _capacity * 2;
+                const size_type newCap = increaseCapacity(_capacity);
                 reallocate(newCap);
             }
 
@@ -248,12 +248,52 @@ namespace dory::containers
         {
             if (_size == _capacity)
             {
-                size_type newCap = (_capacity == 0) ? 1 : (_capacity * 2);
+                size_type newCap = increaseCapacity(_capacity);
                 reallocate(newCap);
             }
 
             new (&_data[_size]) T(std::forward<Args>(args)...);
             return _data[_size++];
+        }
+
+        template<typename... Args>
+        iterator emplace(const_iterator pos, Args&&... args)
+        {
+            size_type index = pos - cbegin();  // convert iterator to index
+            assert::inhouse(index <= _size, "Invalid insertion position");
+
+            // Grow if needed
+            if (_size == _capacity)
+                reallocate(increaseCapacity(_capacity));
+
+            // Shift elements to the right
+            if (index < _size)
+            {
+                if constexpr (std::is_nothrow_move_constructible_v<T>)
+                {
+                    // Move elements backward (from end to index)
+                    new (&_data[_size]) T(std::move(_data[_size - 1]));
+                    for (size_type i = _size - 1; i > index; --i)
+                    {
+                        _data[i] = std::move(_data[i - 1]);
+                    }
+                }
+                else
+                {
+                    // Copy fallback
+                    new (&_data[_size]) T(_data[_size - 1]);
+                    for (size_type i = _size - 1; i > index; --i)
+                    {
+                        _data[i] = _data[i - 1];
+                    }
+                }
+            }
+
+            // Construct element at position
+            new (&_data[index]) T(std::forward<Args>(args)...);
+
+            ++_size;
+            return _data + index;
         }
 
         void pop_back()
@@ -366,6 +406,11 @@ namespace dory::containers
     // ----------------------------------------------------------
     // Internal helpers
     // ----------------------------------------------------------
+
+        static size_type increaseCapacity(const size_type currentCapacity)
+        {
+            return currentCapacity == 0 ? 1 : currentCapacity * 2;
+        }
 
         // Performs raw memory reallocation + moves/copies elements
         void reallocate(const size_type newCap)
