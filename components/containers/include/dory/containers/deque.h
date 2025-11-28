@@ -208,6 +208,7 @@ namespace dory::containers
         using size_type       = std::size_t;
         using allocator_type  = TAllocator;
         using pointer         = T*;
+        using const_pointer         = T*;
         using reference       = T&;
         using const_reference = const T&;
 
@@ -218,6 +219,8 @@ namespace dory::containers
         size_type _mapCapacity = 0;
         size_type _mapStart    = 0;          // index of first block
         size_type _mapEnd      = 0;          // index one past last block
+        size_type _startOffset = 0;          // index of first element in _map[_mapStart]
+        size_type _endOffset = 0;            // index of last element in _map[_mapEnd]
 
         size_type _size        = 0;
 
@@ -265,8 +268,35 @@ namespace dory::containers
         }
 
         // === Element Access ===
-        reference at(size_type index);
-        const_reference at(size_type index) const;
+        reference at(size_type index)
+        {
+            assert::inhouse(index < _size, "at(): index out of range");
+
+            const size_type global = _startOffset + index;
+
+            const size_type blockIndex   = global / BlockSize;
+            const size_type elementIndex = global % BlockSize;
+
+            pointer block = _map[_mapStart + blockIndex];
+            assert::debug(block != nullptr, "Internal error: block pointer is null");
+
+            return block[elementIndex];
+        }
+
+        const_reference at(size_type index) const
+        {
+            assert::inhouse(index < _size, "at(): index out of range");
+
+            const size_type global = _startOffset + index;
+
+            const size_type blockIndex   = global / BlockSize;
+            const size_type elementIndex = global % BlockSize;
+
+            const_pointer block = _map[_mapStart + blockIndex];
+            assert::debug(block != nullptr, "Internal error: block pointer is null");
+
+            return block[elementIndex];
+        }
 
         reference operator[](size_type index);
         const_reference operator[](size_type index) const;
@@ -283,23 +313,51 @@ namespace dory::containers
 
         void push_back(const T& value)
         {
-            const size_type blockIndex = _size / BlockSize;
+            // If current block is full, move to next block
+            if (_endOffset == BlockSize) {
 
-            // Create new block if needed
-            reserve_map_back();
-            if (_mapStart + blockIndex == _mapEnd)
-            {
-                _map[_mapEnd++] = allocate_block();
+                reserve_map_back();
+
+                // Advance block index first
+                _mapEnd++;
+
+                // Allocate block if needed
+                if (_map[_mapEnd] == nullptr)
+                    _map[_mapEnd] = allocate_block();
+
+                _endOffset = 0;
             }
 
-            pointer block = _map[_mapStart + blockIndex];
+            // Now safe to construct element
+            new (&_map[_mapEnd][_endOffset]) T(value);
 
-            new (&block[_size % BlockSize]) T(value);
-
-            ++_size;
+            _endOffset++;
+            _size++;
         }
 
-        void push_back(T&& value);
+        void push_back(T&& value)
+        {
+            // If current block is full, move into a new block
+            if (_endOffset == BlockSize)
+            {
+                reserve_map_back();
+
+                // Move to next block
+                _mapEnd++;
+
+                // Allocate block if necessary
+                if (_map[_mapEnd] == nullptr)
+                    _map[_mapEnd] = allocate_block();
+
+                _endOffset = 0;
+            }
+
+            // Construct element in-place using move-constructor
+            new (&_map[_mapEnd][_endOffset]) T(std::move(value));
+
+            _endOffset++;
+            _size++;
+        }
 
         void push_front(const T& value);
         void push_front(T&& value);

@@ -238,7 +238,7 @@ namespace dory::containers
                 reallocate(newCap);
             }
 
-            construct_at(_size, value);
+            construct_at(_size, std::forward<T>(value));
 
             ++_size;
         }
