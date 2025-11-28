@@ -1,7 +1,205 @@
 #pragma once
 
+#include <iterator>
+
 namespace dory::containers
 {
+    template<typename T>
+    class DequeIterator
+    {
+    public:
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type        = T;
+        using pointer           = T*;
+        using reference         = T&;
+        using difference_type   = std::ptrdiff_t;
+
+        static constexpr std::size_t blockSize = 64; // example — match your deque
+
+    private:
+        T* cur;        // current element
+        T* first;      // begin of block
+        T* last;       // end of block
+        T** node;      // pointer to block in map
+
+    public:
+        DequeIterator() : cur(nullptr), first(nullptr), last(nullptr), node(nullptr) {}
+
+        DequeIterator(T** nodePtr, T* firstPtr, T* lastPtr, T* curPtr)
+            : cur(curPtr), first(firstPtr), last(lastPtr), node(nodePtr) {}
+
+        reference operator*() const noexcept { return *cur; }
+        pointer operator->() const noexcept { return cur; }
+
+        // -----------------------------
+        // Increment / Decrement
+        // -----------------------------
+
+        DequeIterator& operator++() noexcept
+        {
+            ++cur;
+            if (cur == last)
+                setNode(node + 1);
+            return *this;
+        }
+
+        DequeIterator operator++(int) noexcept
+        {
+            DequeIterator tmp = *this;
+            ++(*this);
+            return tmp;
+        }
+
+        DequeIterator& operator--() noexcept
+        {
+            if (cur == first)
+                setNode(node - 1);
+            --cur;
+            return *this;
+        }
+
+        DequeIterator operator--(int) noexcept
+        {
+            DequeIterator tmp = *this;
+            --(*this);
+            return tmp;
+        }
+
+        // -----------------------------
+        // Random access movement
+        // -----------------------------
+
+        DequeIterator& operator+=(difference_type n)
+        {
+            difference_type offset = n + (cur - first);
+
+            if (offset >= 0 && offset < static_cast<difference_type>(blockSize))
+            {
+                cur += n;
+                return *this;
+            }
+
+            difference_type nodeOffset =
+                offset > 0 ?
+                    offset / static_cast<difference_type>(blockSize)
+                  : -static_cast<difference_type>((-offset - 1) / blockSize) - 1;
+
+            setNode(node + nodeOffset);
+            cur = first + (offset - nodeOffset * static_cast<difference_type>(blockSize));
+            return *this;
+        }
+
+        DequeIterator operator+(difference_type n) const
+        {
+            DequeIterator tmp = *this;
+            return tmp += n;
+        }
+
+        DequeIterator& operator-=(difference_type n)
+        {
+            return *this += -n;
+        }
+
+        DequeIterator operator-(difference_type n) const
+        {
+            DequeIterator tmp = *this;
+            return tmp -= n;
+        }
+
+        difference_type operator-(const DequeIterator& rhs) const
+        {
+            const difference_type blockDiff = (node - rhs.node);
+            const difference_type curDiff   = (cur - first);
+            const difference_type rhsDiff   = (rhs.cur - rhs.first);
+
+            return blockDiff * static_cast<difference_type>(blockSize)
+                   + curDiff - rhsDiff;
+        }
+
+        // -----------------------------
+        // Comparisons
+        // -----------------------------
+
+        bool operator==(const DequeIterator& rhs) const noexcept
+        {
+            return cur == rhs.cur;
+        }
+
+        bool operator!=(const DequeIterator& rhs) const noexcept
+        {
+            return !(*this == rhs);
+        }
+
+        bool operator<(const DequeIterator& rhs) const noexcept
+        {
+            return (*this - rhs) < 0;
+        }
+
+        bool operator>(const DequeIterator& rhs) const noexcept
+        {
+            return rhs < *this;
+        }
+
+        bool operator<=(const DequeIterator& rhs) const noexcept
+        {
+            return !(*this > rhs);
+        }
+
+        bool operator>=(const DequeIterator& rhs) const noexcept
+        {
+            return !(*this < rhs);
+        }
+
+    private:
+        void setNode(T** newNode)
+        {
+            node = newNode;
+            first = *node;
+            last = first + blockSize;
+        }
+    };
+
+    template<typename T>
+    class ConstDequeIterator
+    {
+    public:
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type        = T;
+        using pointer           = const T*;
+        using reference         = const T&;
+        using difference_type   = std::ptrdiff_t;
+
+    private:
+        DequeIterator<T> _it;
+
+    public:
+        ConstDequeIterator() = default;
+        explicit ConstDequeIterator(const DequeIterator<T>& it) : _it(it) {}
+
+        reference operator*()  const noexcept { return *_it; }
+        pointer   operator->() const noexcept { return _it.operator->(); }
+
+        // All operations forward to underlying iterator
+        ConstDequeIterator& operator++() noexcept { ++_it; return *this; }
+        ConstDequeIterator operator++(int) noexcept { auto tmp=*this; ++_it; return tmp; }
+        ConstDequeIterator& operator--() noexcept { --_it; return *this; }
+        ConstDequeIterator operator--(int) noexcept { auto tmp=*this; --_it; return tmp; }
+
+        ConstDequeIterator& operator+=(difference_type n) { _it += n; return *this; }
+        ConstDequeIterator operator+(difference_type n) const { auto tmp=*this; return tmp+=n; }
+        ConstDequeIterator& operator-=(difference_type n) { _it -= n; return *this; }
+        ConstDequeIterator operator-(difference_type n) const { auto tmp=*this; return tmp-=n; }
+
+        difference_type operator-(const ConstDequeIterator& rhs) const { return _it - rhs._it; }
+
+        bool operator==(const ConstDequeIterator& rhs) const noexcept { return _it == rhs._it; }
+        bool operator!=(const ConstDequeIterator& rhs) const noexcept { return !(*this == rhs); }
+        bool operator<(const ConstDequeIterator& rhs) const noexcept { return _it < rhs._it; }
+        bool operator>(const ConstDequeIterator& rhs) const noexcept { return rhs < *this; }
+        bool operator<=(const ConstDequeIterator& rhs) const noexcept { return !(*this > rhs); }
+        bool operator>=(const ConstDequeIterator& rhs) const noexcept { return !(*this < rhs); }
+    };
+
     template<typename T, typename TAllocator, std::size_t BlockSize = 64>
     class BasicDeque
     {
@@ -39,7 +237,7 @@ namespace dory::containers
                 _map[i] = nullptr;
 
             // Start in the middle to allow growth both ways
-            _mapStart = _mapCapacity / 2;
+            _mapStart = _mapCapacity >> 1;
             _mapEnd   = _mapStart;
         }
 
@@ -109,6 +307,35 @@ namespace dory::containers
         void pop_back();
         void pop_front();
 
+        using iterator = DequeIterator<T>;
+        using const_iterator = ConstDequeIterator<T>;
+
+        iterator begin()
+        {
+            return iterator(
+                _map + _mapStart,
+                _map[_mapStart],
+                _map[_mapStart] + BlockSize,
+                _map[_mapStart] + _startOffset
+            );
+        }
+
+        iterator end()
+        {
+            return iterator(
+                _map + _mapEnd,
+                _map[_mapEnd],
+                _map[_mapEnd] + BlockSize,
+                _map[_mapEnd] + _endOffset
+            );
+        }
+
+        const_iterator begin() const { return const_iterator(const_cast<BasicDeque*>(this)->begin()); }
+        const_iterator end() const   { return const_iterator(const_cast<BasicDeque*>(this)->end()); }
+
+        const_iterator cbegin() const { return begin(); }
+        const_iterator cend() const   { return end(); }
+
     private:
         // === Internal helpers ===
 
@@ -130,13 +357,13 @@ namespace dory::containers
             if (_mapStart == 0)
             {
                 // Need to reallocate map
-                const size_type newCap = _mapCapacity * 2;
+                const size_type newCap = _mapCapacity << 1;
                 auto* newMap = static_cast<pointer*>(
                     _allocator.allocate(newCap * sizeof(pointer))
                 );
 
                 // Center existing blocks in new map
-                const size_type offset = (newCap - _mapCapacity) / 2;
+                const size_type offset = (newCap - _mapCapacity) >> 1;
 
                 for (size_type i = 0; i < newCap; ++i)
                     newMap[i] = nullptr;
@@ -157,12 +384,12 @@ namespace dory::containers
         {
             if (_mapEnd == _mapCapacity)
             {
-                const size_type newCap = _mapCapacity * 2;
+                const size_type newCap = _mapCapacity << 1;
                 auto* newMap = static_cast<pointer*>(
                     _allocator.allocate(newCap * sizeof(pointer))
                 );
 
-                const size_type offset = (newCap - _mapCapacity) / 2;
+                const size_type offset = (newCap - _mapCapacity) >> 1;
 
                 for(size_type i = 0; i < newCap; ++i)
                     newMap[i] = nullptr;

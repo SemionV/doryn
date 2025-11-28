@@ -7,6 +7,7 @@
 #include "dory/memory/allocators/systemAllocator.h"
 #include <dory/containers/string.h>
 #include <dory/containers/list.h>
+#include <dory/containers/deque.h>
 
 class AllocProfiler
 {
@@ -91,7 +92,10 @@ template<typename T>
 using DoryList = dory::containers::BasicList<T, SegregationAllocatorType>;
 
 template<typename T>
-void printList(const DoryList<T>& list)
+using DoryDeque = dory::containers::BasicDeque<T, SegregationAllocatorType>;
+
+template<typename TList>
+void printList(const TList& list)
 {
     std::size_t i = 0;
     for(const auto& value : list)
@@ -100,8 +104,8 @@ void printList(const DoryList<T>& list)
     }
 }
 
-template<typename T>
-void assertList(const DoryList<T>& list, std::initializer_list<T> expected)
+template<template<class> class TList, typename T>
+void assertList(const TList<T>& list, std::initializer_list<T> expected)
 {
     EXPECT_EQ(list.size(), expected.size());
 
@@ -129,7 +133,7 @@ TEST(BasicListTests, simpleTest)
     list.push_back(9);
     list.push_back(10);
 
-    assertList(list, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    assertList<DoryList>(list, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
     printList(list);
 
     list.pop_back();
@@ -140,6 +144,26 @@ TEST(BasicListTests, simpleTest)
 
     list.emplace(list.begin() + 2, 11);
 
-    assertList(list, {1, 2, 11, 3, 4, 5});
+    assertList<DoryList>(list, {1, 2, 11, 3, 4, 5});
+    printList(list);
+}
+
+TEST(BasicDequeTests, simpleTest)
+{
+    const auto allocator = buildAllocator();
+    DoryDeque<int> list {*allocator};
+
+    list.push_back(1);
+    list.push_back(2);
+    list.push_back(3);
+    list.push_back(4);
+    list.push_back(5);
+    list.push_back(6);
+    list.push_back(7);
+    list.push_back(8);
+    list.push_back(9);
+    list.push_back(10);
+
+    assertList<DoryDeque>(list, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
     printList(list);
 }
