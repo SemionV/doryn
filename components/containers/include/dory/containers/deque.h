@@ -268,41 +268,34 @@ namespace dory::containers
         }
 
         // === Element Access ===
-        reference at(size_type index)
+        reference at(const size_type index)
         {
-            assert::inhouse(index < _size, "at(): index out of range");
-
-            const size_type global = _startOffset + index;
-
-            const size_type blockIndex   = global / BlockSize;
-            const size_type elementIndex = global % BlockSize;
-
-            pointer block = _map[_mapStart + blockIndex];
-            assert::debug(block != nullptr, "Internal error: block pointer is null");
-
-            return block[elementIndex];
+            return operator[](index);
         }
 
-        const_reference at(size_type index) const
+        const_reference at(const size_type index) const
         {
-            assert::inhouse(index < _size, "at(): index out of range");
-
-            const size_type global = _startOffset + index;
-
-            const size_type blockIndex   = global / BlockSize;
-            const size_type elementIndex = global % BlockSize;
-
-            const_pointer block = _map[_mapStart + blockIndex];
-            assert::debug(block != nullptr, "Internal error: block pointer is null");
-
-            return block[elementIndex];
+            return operator[](index);
         }
 
-        reference operator[](size_type index);
-        const_reference operator[](size_type index) const;
+        reference operator[](const size_type index)
+        {
+            return access(*this, index);
+        }
 
-        reference front();
-        reference back();
+        const_reference operator[](const size_type index) const
+        {
+            return access(*this, index);
+        }
+
+        reference front()
+        {
+            return access(*this, 0);
+        }
+        reference back()
+        {
+            return access(*this, _size - 1);
+        }
 
         // === Capacity ===
         [[nodiscard]] size_type size() const noexcept { return _size; }
@@ -463,6 +456,30 @@ namespace dory::containers
         {
             // Construct element in-place using move-constructor
             new (ptr) T(std::move(value));
+        }
+
+        template <typename Self>
+        static auto access(Self& self, size_type index)
+           -> std::conditional_t<std::is_const_v<Self>, const_reference, reference>
+        {
+            assert::inhouse(index < self._size, "access: index out of range");
+
+            const size_type global = self._startOffset + index;
+
+            const size_type blockIndex   = global / BlockSize;
+            const size_type elementIndex = global % BlockSize;
+
+            using Pointer = std::conditional_t<
+                std::is_const_v<Self>,
+                const_pointer,
+                pointer
+            >;
+
+            Pointer block = self._map[self._mapStart + blockIndex];
+
+            assert::debug(block != nullptr, "Internal error: null block pointer");
+
+            return block[elementIndex];
         }
     };
 }
