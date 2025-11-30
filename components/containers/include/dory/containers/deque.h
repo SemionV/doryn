@@ -4,7 +4,7 @@
 
 namespace dory::containers
 {
-    template<typename T>
+    template<typename T, std::size_t BlockSize>
     class DequeIterator
     {
     public:
@@ -13,8 +13,6 @@ namespace dory::containers
         using pointer           = T*;
         using reference         = T&;
         using difference_type   = std::ptrdiff_t;
-
-        static constexpr std::size_t blockSize = 64; // example — match your deque
 
     private:
         T* cur;        // current element
@@ -73,7 +71,7 @@ namespace dory::containers
         {
             difference_type offset = n + (cur - first);
 
-            if (offset >= 0 && offset < static_cast<difference_type>(blockSize))
+            if (offset >= 0 && offset < static_cast<difference_type>(BlockSize))
             {
                 cur += n;
                 return *this;
@@ -81,11 +79,11 @@ namespace dory::containers
 
             difference_type nodeOffset =
                 offset > 0 ?
-                    offset / static_cast<difference_type>(blockSize)
-                  : -static_cast<difference_type>((-offset - 1) / blockSize) - 1;
+                    offset / static_cast<difference_type>(BlockSize)
+                  : -static_cast<difference_type>((-offset - 1) / BlockSize) - 1;
 
             setNode(node + nodeOffset);
-            cur = first + (offset - nodeOffset * static_cast<difference_type>(blockSize));
+            cur = first + (offset - nodeOffset * static_cast<difference_type>(BlockSize));
             return *this;
         }
 
@@ -112,7 +110,7 @@ namespace dory::containers
             const difference_type curDiff   = (cur - first);
             const difference_type rhsDiff   = (rhs.cur - rhs.first);
 
-            return blockDiff * static_cast<difference_type>(blockSize)
+            return blockDiff * static_cast<difference_type>(BlockSize)
                    + curDiff - rhsDiff;
         }
 
@@ -155,11 +153,11 @@ namespace dory::containers
         {
             node = newNode;
             first = *node;
-            last = first + blockSize;
+            last = first + BlockSize;
         }
     };
 
-    template<typename T>
+    template<typename T, std::size_t BlockSize>
     class ConstDequeIterator
     {
     public:
@@ -170,11 +168,11 @@ namespace dory::containers
         using difference_type   = std::ptrdiff_t;
 
     private:
-        DequeIterator<T> _it;
+        DequeIterator<T, BlockSize> _it;
 
     public:
         ConstDequeIterator() = default;
-        explicit ConstDequeIterator(const DequeIterator<T>& it) : _it(it) {}
+        explicit ConstDequeIterator(const DequeIterator<T, BlockSize>& it) : _it(it) {}
 
         reference operator*()  const noexcept { return *_it; }
         pointer   operator->() const noexcept { return _it.operator->(); }
@@ -328,7 +326,8 @@ namespace dory::containers
             _endOffset = 0;
         }
 
-        void push_back(T&& value)
+        template<typename U>
+        void push_back(U&& value)
         {
             // If current block is full, move into a new block
             if (_endOffset == BlockSize)
@@ -348,20 +347,42 @@ namespace dory::containers
             if (_map[_mapEnd] == nullptr)
                 _map[_mapEnd] = allocate_block();
 
-            storeValue(&_map[_mapEnd][_endOffset], std::forward<T>(value));
+            storeValue(&_map[_mapEnd][_endOffset], std::forward<U>(value));
 
             _endOffset++;
             _size++;
         }
 
-        void push_front(const T& value);
-        void push_front(T&& value);
+        template<typename U>
+        void push_front(U&& value)
+        {
+            if(_startOffset == 0)
+            {
+                reserve_map_front();
+
+                _mapStart--;
+
+                if (_map[_mapStart] == nullptr)
+                    _map[_mapStart] = allocate_block();
+
+                _startOffset = BlockSize;
+            }
+
+            if (_map[_mapStart] == nullptr)
+                _map[_mapStart] = allocate_block();
+
+            _startOffset--;
+
+            storeValue(&_map[_mapStart][_startOffset], std::forward<U>(value));
+
+            _size++;
+        }
 
         void pop_back();
         void pop_front();
 
-        using iterator = DequeIterator<T>;
-        using const_iterator = ConstDequeIterator<T>;
+        using iterator = DequeIterator<T, BlockSize>;
+        using const_iterator = ConstDequeIterator<T, BlockSize>;
 
         iterator begin()
         {
