@@ -311,30 +311,6 @@ namespace dory::containers
         // === Modifiers ===
         void clear();
 
-        void push_back(const T& value)
-        {
-            // If current block is full, move to next block
-            if (_endOffset == BlockSize) {
-
-                reserve_map_back();
-
-                // Advance block index first
-                _mapEnd++;
-
-                // Allocate block if needed
-                if (_map[_mapEnd] == nullptr)
-                    _map[_mapEnd] = allocate_block();
-
-                _endOffset = 0;
-            }
-
-            // Now safe to construct element
-            new (&_map[_mapEnd][_endOffset]) T(value);
-
-            _endOffset++;
-            _size++;
-        }
-
         void push_back(T&& value)
         {
             // If current block is full, move into a new block
@@ -352,8 +328,10 @@ namespace dory::containers
                 _endOffset = 0;
             }
 
-            // Construct element in-place using move-constructor
-            new (&_map[_mapEnd][_endOffset]) T(std::move(value));
+            if (_map[_mapEnd] == nullptr)
+                _map[_mapEnd] = allocate_block();
+
+            storeValue(&_map[_mapEnd][_endOffset], std::forward<T>(value));
 
             _endOffset++;
             _size++;
@@ -474,6 +452,17 @@ namespace dory::containers
         [[nodiscard]] static size_type block_offset(const size_type index)
         {
             return index % BlockSize;
+        }
+
+        void storeValue(T* ptr, const T& value)
+        {
+            new (&_map[_mapEnd][_endOffset]) T(value);
+        }
+
+        void storeValue(T* ptr, T&& value)
+        {
+            // Construct element in-place using move-constructor
+            new (ptr) T(std::move(value));
         }
     };
 }

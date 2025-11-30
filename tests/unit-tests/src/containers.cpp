@@ -91,8 +91,8 @@ TEST(BasicStringTests, simpleTest)
 template<typename T>
 using DoryList = dory::containers::BasicList<T, SegregationAllocatorType>;
 
-template<typename T>
-using DoryDeque = dory::containers::BasicDeque<T, SegregationAllocatorType>;
+template<typename T, std::size_t BlockSize = 64>
+using DoryDeque = dory::containers::BasicDeque<T, SegregationAllocatorType, BlockSize>;
 
 template<typename TList>
 void printList(const TList& list)
@@ -104,8 +104,8 @@ void printList(const TList& list)
     }
 }
 
-template<template<class> class TList, typename T>
-void assertList(const TList<T>& list, std::initializer_list<T> expected)
+template<typename TList, typename T>
+void assertList(const TList& list, std::initializer_list<T> expected)
 {
     EXPECT_EQ(list.size(), expected.size());
 
@@ -133,7 +133,7 @@ TEST(BasicListTests, simpleTest)
     list.push_back(9);
     list.push_back(10);
 
-    assertList<DoryList>(list, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    assertList(list, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
     printList(list);
 
     list.pop_back();
@@ -144,14 +144,14 @@ TEST(BasicListTests, simpleTest)
 
     list.emplace(list.begin() + 2, 11);
 
-    assertList<DoryList>(list, {1, 2, 11, 3, 4, 5});
+    assertList(list, {1, 2, 11, 3, 4, 5});
     printList(list);
 }
 
 TEST(BasicDequeTests, simpleTest)
 {
     const auto allocator = buildAllocator();
-    DoryDeque<int> list {*allocator};
+    DoryDeque<int, 4> list {*allocator};
 
     list.push_back(1);
     list.push_back(2);
@@ -164,6 +164,6 @@ TEST(BasicDequeTests, simpleTest)
     list.push_back(9);
     list.push_back(10);
 
-    assertList<DoryDeque>(list, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    assertList(list, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
     printList(list);
 }
