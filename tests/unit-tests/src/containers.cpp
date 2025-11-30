@@ -166,4 +166,9 @@ TEST(BasicDequeTests, simpleTest)
 
     assertList(list, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
     printList(list);
+
+    EXPECT_EQ(list[1], 2);
+
+    list.clear();
+    assertList<decltype(list), int>(list, {});
 }

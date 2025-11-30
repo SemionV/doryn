@@ -302,7 +302,31 @@ namespace dory::containers
         [[nodiscard]] bool empty() const noexcept { return _size == 0; }
 
         // === Modifiers ===
-        void clear();
+        void clear()
+        {
+            for(std::size_t i = _mapStart; i <= _mapEnd; ++i)
+            {
+                T* block = _map[i];
+                if(!block) continue;
+
+                const std::size_t start = i == _mapStart ? _startOffset : 0;
+                const std::size_t count = i == _mapEnd ? _endOffset + 1 : BlockSize;
+
+                if constexpr (!std::is_trivially_destructible_v<T>)
+                {
+                    for(std::size_t j = start; j < count; ++j)
+                    {
+                        block[j].~T();
+                    }
+                }
+            }
+
+            _mapStart = _mapCapacity / 2;
+            _mapEnd = _mapStart;
+            _size = 0;
+            _startOffset = 0;
+            _endOffset = 0;
+        }
 
         void push_back(T&& value)
         {
