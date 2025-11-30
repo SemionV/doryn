@@ -404,32 +404,37 @@ namespace dory::containers
             _allocator.deallocate(block, BlockSize * sizeof(T));
         }
 
+        void reserve_map()
+        {
+            // Need to reallocate map
+            const size_type newCap = _mapCapacity << 1;
+            auto* newMap = static_cast<pointer*>(
+                _allocator.allocate(newCap * sizeof(pointer))
+            );
+
+            // Center existing blocks in new map
+            const size_type offset = (newCap - _mapCapacity) >> 1;
+
+            for (size_type i = 0; i < newCap; ++i)
+                newMap[i] = nullptr;
+
+            for (size_type i = 0; i < _mapCapacity; ++i)
+                newMap[i + offset] = _map[i];
+
+            _allocator.deallocate(_map, _mapCapacity * sizeof(pointer));
+
+            _map = newMap;
+            _mapStart += offset;
+            _mapEnd   += offset;
+            _mapCapacity = newCap;
+        }
+
         // Ensure capacity in map for front/back expansion
         void reserve_map_front()
         {
             if (_mapStart == 0)
             {
-                // Need to reallocate map
-                const size_type newCap = _mapCapacity << 1;
-                auto* newMap = static_cast<pointer*>(
-                    _allocator.allocate(newCap * sizeof(pointer))
-                );
-
-                // Center existing blocks in new map
-                const size_type offset = (newCap - _mapCapacity) >> 1;
-
-                for (size_type i = 0; i < newCap; ++i)
-                    newMap[i] = nullptr;
-
-                for (size_type i = 0; i < _mapCapacity; ++i)
-                    newMap[i + offset] = _map[i];
-
-                _allocator.deallocate(_map, _mapCapacity * sizeof(pointer));
-
-                _map = newMap;
-                _mapStart += offset;
-                _mapEnd   += offset;
-                _mapCapacity = newCap;
+                reserve_map();
             }
         }
 
@@ -437,25 +442,7 @@ namespace dory::containers
         {
             if (_mapEnd == _mapCapacity)
             {
-                const size_type newCap = _mapCapacity << 1;
-                auto* newMap = static_cast<pointer*>(
-                    _allocator.allocate(newCap * sizeof(pointer))
-                );
-
-                const size_type offset = (newCap - _mapCapacity) >> 1;
-
-                for(size_type i = 0; i < newCap; ++i)
-                    newMap[i] = nullptr;
-
-                for(size_type i = 0; i < _mapCapacity; ++i)
-                    newMap[i + offset] = _map[i];
-
-                _allocator.deallocate(_map, _mapCapacity * sizeof(pointer));
-
-                _map = newMap;
-                _mapStart += offset;
-                _mapEnd   += offset;
-                _mapCapacity = newCap;
+                reserve_map();
             }
         }
 
