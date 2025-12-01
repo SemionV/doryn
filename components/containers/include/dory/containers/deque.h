@@ -5,7 +5,7 @@
 namespace dory::containers
 {
     template<typename T, std::size_t BlockSize>
-    class DequeIterator2
+    class DequeIterator
     {
     public:
         using iterator_category = std::random_access_iterator_tag;
@@ -20,9 +20,9 @@ namespace dory::containers
         std::size_t _blockIndex = 0;
 
     public:
-        DequeIterator2() = default;
+        DequeIterator() = default;
 
-        DequeIterator2(pointer* map, const std::size_t mapIndex, const std::size_t blockIndex):
+        DequeIterator(pointer* map, const std::size_t mapIndex, const std::size_t blockIndex):
             _map(map), _mapIndex(mapIndex), _blockIndex(blockIndex)
         {}
 
@@ -33,7 +33,7 @@ namespace dory::containers
         // Increment / Decrement
         // -----------------------------
 
-        DequeIterator2& operator++() noexcept
+        DequeIterator& operator++() noexcept
         {
             if(_blockIndex < BlockSize - 1)
             {
@@ -48,14 +48,14 @@ namespace dory::containers
             return *this;
         }
 
-        DequeIterator2 operator++(int) noexcept
+        DequeIterator operator++(int) noexcept
         {
-            DequeIterator2 tmp = *this;
+            DequeIterator tmp = *this;
             ++(*this);
             return tmp;
         }
 
-        DequeIterator2& operator--() noexcept
+        DequeIterator& operator--() noexcept
         {
             if(_blockIndex > 0)
             {
@@ -70,9 +70,9 @@ namespace dory::containers
             return *this;
         }
 
-        DequeIterator2 operator--(int) noexcept
+        DequeIterator operator--(int) noexcept
         {
-            DequeIterator2 tmp = *this;
+            DequeIterator tmp = *this;
             --(*this);
             return tmp;
         }
@@ -81,7 +81,7 @@ namespace dory::containers
         // Random access movement
         //
 
-        DequeIterator2& operator+=(difference_type n) noexcept
+        DequeIterator& operator+=(difference_type n) noexcept
         {
             const difference_type offset = _blockIndex + n;
 
@@ -95,117 +95,6 @@ namespace dory::containers
             _mapIndex += quot;
             _blockIndex = static_cast<std::size_t>(rem);
 
-            return *this;
-        }
-
-        DequeIterator2 operator+(difference_type n) const
-        {
-            DequeIterator2 tmp = *this;
-            return tmp += n;
-        }
-
-        DequeIterator2& operator-=(difference_type n)
-        {
-            return *this += -n;
-        }
-
-        DequeIterator2 operator-(difference_type n) const
-        {
-            DequeIterator2 tmp = *this;
-            return tmp -= n;
-        }
-
-        difference_type operator-(const DequeIterator2& rhs) const
-        {
-            const difference_type blockDiff = (node - rhs.node);
-            const difference_type curDiff   = (cur - first);
-            const difference_type rhsDiff   = (rhs.cur - rhs.first);
-
-            return blockDiff * static_cast<difference_type>(BlockSize)
-                   + curDiff - rhsDiff;
-        }
-    };
-
-    template<typename T, std::size_t BlockSize>
-    class DequeIterator
-    {
-    public:
-        using iterator_category = std::random_access_iterator_tag;
-        using value_type        = T;
-        using pointer           = T*;
-        using reference         = T&;
-        using difference_type   = std::ptrdiff_t;
-
-    private:
-        T* cur;        // current element
-        T* first;      // begin of block
-        T* last;       // end of block
-        T** node;      // pointer to block in map
-
-    public:
-        DequeIterator() : cur(nullptr), first(nullptr), last(nullptr), node(nullptr) {}
-
-        DequeIterator(T** nodePtr, T* firstPtr, T* lastPtr, T* curPtr)
-            : cur(curPtr), first(firstPtr), last(lastPtr), node(nodePtr) {}
-
-        reference operator*() const noexcept { return *cur; }
-        pointer operator->() const noexcept { return cur; }
-
-        // -----------------------------
-        // Increment / Decrement
-        // -----------------------------
-
-        DequeIterator& operator++() noexcept
-        {
-            ++cur;
-            if (cur == last)
-                setNode(node + 1);
-            return *this;
-        }
-
-        DequeIterator operator++(int) noexcept
-        {
-            DequeIterator tmp = *this;
-            ++(*this);
-            return tmp;
-        }
-
-        DequeIterator& operator--() noexcept
-        {
-            if (cur == first)
-                setNode(node - 1);
-            --cur;
-            return *this;
-        }
-
-        DequeIterator operator--(int) noexcept
-        {
-            DequeIterator tmp = *this;
-            --(*this);
-            return tmp;
-        }
-
-        // -----------------------------
-        // Random access movement
-        // -----------------------------
-
-        DequeIterator& operator+=(difference_type n)
-        {
-            difference_type offset = n + (cur - first);
-
-            if (offset >= 0 && offset < static_cast<difference_type>(BlockSize))
-            {
-                cur += n;
-                return *this;
-            }
-
-            difference_type nodeOffset =
-                offset > 0 ?
-                    offset / static_cast<difference_type>(BlockSize)
-                  : -static_cast<difference_type>((-offset - 1) / BlockSize) - 1;
-
-            setNode(node + nodeOffset);
-            cur = first + (offset - nodeOffset * static_cast<difference_type>(BlockSize));
             return *this;
         }
 
@@ -228,12 +117,15 @@ namespace dory::containers
 
         difference_type operator-(const DequeIterator& rhs) const
         {
-            const difference_type blockDiff = (node - rhs.node);
-            const difference_type curDiff   = (cur - first);
-            const difference_type rhsDiff   = (rhs.cur - rhs.first);
+            const difference_type globalIndex =
+                static_cast<difference_type>(_mapIndex) * static_cast<difference_type>(BlockSize)
+                + static_cast<difference_type>(_blockIndex);
 
-            return blockDiff * static_cast<difference_type>(BlockSize)
-                   + curDiff - rhsDiff;
+            const difference_type rhsGlobalIndex =
+                static_cast<difference_type>(rhs._mapIndex) * static_cast<difference_type>(BlockSize)
+                + static_cast<difference_type>(rhs._blockIndex);
+
+            return globalIndex - rhsGlobalIndex;
         }
 
         // -----------------------------
@@ -242,7 +134,9 @@ namespace dory::containers
 
         bool operator==(const DequeIterator& rhs) const noexcept
         {
-            return cur == rhs.cur;
+            return _map == rhs._map
+                && _mapIndex == rhs._mapIndex
+                && _blockIndex == rhs._blockIndex;
         }
 
         bool operator!=(const DequeIterator& rhs) const noexcept
@@ -268,14 +162,6 @@ namespace dory::containers
         bool operator>=(const DequeIterator& rhs) const noexcept
         {
             return !(*this < rhs);
-        }
-
-    private:
-        void setNode(T** newNode)
-        {
-            node = newNode;
-            first = *node;
-            last = first + BlockSize;
         }
     };
 
@@ -508,22 +394,12 @@ namespace dory::containers
 
         iterator begin()
         {
-            return iterator(
-                _map + _mapStart,
-                _map[_mapStart],
-                _map[_mapStart] + BlockSize,
-                _map[_mapStart] + _startOffset
-            );
+            return iterator(_map, _mapStart, _startOffset);
         }
 
         iterator end()
         {
-            return iterator(
-                _map + _mapEnd,
-                _map[_mapEnd],
-                _map[_mapEnd] + BlockSize,
-                _map[_mapEnd] + _endOffset
-            );
+            return iterator(_map, _mapEnd, _endOffset);
         }
 
         const_iterator begin() const { return const_iterator(const_cast<BasicDeque*>(this)->begin()); }
