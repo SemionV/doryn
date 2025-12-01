@@ -5,6 +5,128 @@
 namespace dory::containers
 {
     template<typename T, std::size_t BlockSize>
+    class DequeIterator2
+    {
+    public:
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type        = T;
+        using pointer           = T*;
+        using reference         = T&;
+        using difference_type   = std::ptrdiff_t;
+
+    private:
+        pointer* _map = nullptr;
+        std::size_t _mapIndex = 0;
+        std::size_t _blockIndex = 0;
+
+    public:
+        DequeIterator2() = default;
+
+        DequeIterator2(pointer* map, const std::size_t mapIndex, const std::size_t blockIndex):
+            _map(map), _mapIndex(mapIndex), _blockIndex(blockIndex)
+        {}
+
+        reference operator*() const noexcept { return _map[_mapIndex][_blockIndex]; }
+        pointer operator->() const noexcept { return &_map[_mapIndex][_blockIndex]; }
+
+        // -----------------------------
+        // Increment / Decrement
+        // -----------------------------
+
+        DequeIterator2& operator++() noexcept
+        {
+            if(_blockIndex < BlockSize - 1)
+            {
+                ++_blockIndex;
+            }
+            else
+            {
+                ++_mapIndex;
+                _blockIndex = 0;
+            }
+
+            return *this;
+        }
+
+        DequeIterator2 operator++(int) noexcept
+        {
+            DequeIterator2 tmp = *this;
+            ++(*this);
+            return tmp;
+        }
+
+        DequeIterator2& operator--() noexcept
+        {
+            if(_blockIndex > 0)
+            {
+                --_blockIndex;
+            }
+            else
+            {
+                --_mapIndex;
+                _blockIndex = BlockSize - 1;
+            }
+
+            return *this;
+        }
+
+        DequeIterator2 operator--(int) noexcept
+        {
+            DequeIterator2 tmp = *this;
+            --(*this);
+            return tmp;
+        }
+
+        // -----------------------------
+        // Random access movement
+        //
+
+        DequeIterator2& operator+=(difference_type n) noexcept
+        {
+            const difference_type offset = _blockIndex + n;
+
+            auto [quot, rem] = std::div(offset, (difference_type)BlockSize);
+
+            if (rem < 0) {
+                rem += BlockSize;
+                --quot;
+            }
+
+            _mapIndex += quot;
+            _blockIndex = static_cast<std::size_t>(rem);
+
+            return *this;
+        }
+
+        DequeIterator2 operator+(difference_type n) const
+        {
+            DequeIterator2 tmp = *this;
+            return tmp += n;
+        }
+
+        DequeIterator2& operator-=(difference_type n)
+        {
+            return *this += -n;
+        }
+
+        DequeIterator2 operator-(difference_type n) const
+        {
+            DequeIterator2 tmp = *this;
+            return tmp -= n;
+        }
+
+        difference_type operator-(const DequeIterator2& rhs) const
+        {
+            const difference_type blockDiff = (node - rhs.node);
+            const difference_type curDiff   = (cur - first);
+            const difference_type rhsDiff   = (rhs.cur - rhs.first);
+
+            return blockDiff * static_cast<difference_type>(BlockSize)
+                   + curDiff - rhsDiff;
+        }
+    };
+
+    template<typename T, std::size_t BlockSize>
     class DequeIterator
     {
     public:
