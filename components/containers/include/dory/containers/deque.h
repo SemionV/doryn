@@ -386,8 +386,28 @@ namespace dory::containers
             _size++;
         }
 
-        void pop_back();
-        void pop_front();
+        void pop_back()
+        {
+            if (_endOffset == 0) {
+                --_mapEnd;
+                _endOffset = BlockSize;
+            }
+
+            --_endOffset;
+            --_size;
+        }
+
+        void pop_front()
+        {
+            if (_startOffset == BlockSize)
+            {
+                ++_mapStart;
+                _startOffset = 0;
+            }
+
+            ++_startOffset;
+            --_size;
+        }
 
         using iterator = DequeIterator<T, BlockSize>;
         using const_iterator = ConstDequeIterator<T, BlockSize>;

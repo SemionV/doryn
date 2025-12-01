@@ -175,3 +175,39 @@ TEST(BasicDequeTests, simpleTest)
     list.clear();
     assertList<decltype(list), int>(list, {});
 }
+
+TEST(BasicDequeTests, popTest)
+{
+    const auto allocator = buildAllocator();
+    DoryDeque<int, 4> list {*allocator};
+
+    list.push_front(5);
+    list.push_front(4);
+    list.push_front(3);
+    list.push_front(2);
+    list.push_front(1);
+    list.push_back(6);
+    list.push_back(7);
+    list.push_back(8);
+    list.push_back(9);
+    list.push_back(10);
+
+    int val = 11;
+    list.push_back(val);
+
+    list.pop_back();
+    assertList(list, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    list.pop_front();
+    assertList(list, {2, 3, 4, 5, 6, 7, 8, 9, 10});
+
+    list.pop_front();
+    list.pop_front();
+    list.pop_front();
+    list.pop_front();
+    list.pop_front();
+    list.pop_front();
+    list.pop_front();
+    list.pop_front();
+    list.pop_front();
+    assertList<decltype(list), int>(list, {});
+}
