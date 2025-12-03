@@ -1,4 +1,5 @@
 add_subdirectory(macros)
+add_subdirectory(bitwise)
 add_subdirectory(generic)
 add_subdirectory(containers)
 add_subdirectory(serialization)

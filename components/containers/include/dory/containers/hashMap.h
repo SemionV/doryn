@@ -1,10 +1,12 @@
 #pragma once
 
+#include <dory/macros/assert.h>
+#include <dory/bitwise/numbers.h>
 #include <functional>
 #include <utility>
 #include <initializer_list>
 #include <iterator>
-#include <stdexcept>
+#include <cmath>
 
 namespace dory::containers
 {
@@ -42,7 +44,13 @@ namespace dory::containers
         using const_local_iterator  = const_iterator;
 
     private:
-        struct Node;
+        struct Node
+        {
+            size_type hash = 0;
+            Node* nextNode = nullptr;
+            value_type value;
+        };
+
         Node** _buckets;       // array of bucket heads
         size_type _bucketCount;
         size_type _size;
@@ -167,7 +175,32 @@ namespace dory::containers
         void max_load_factor(float ml);
 
         void rehash(size_type new_bucket_count);
-        void reserve(size_type count);
+
+        void reserve(const size_type count)
+        {
+            const float maxLoadFactor = max_load_factor();
+            assert::inhouse(maxLoadFactor > 0, "MAX load factor must be greater than zero");
+            const size_type bucketsCount = bitwise::nextPowerOfTwo(static_cast<size_type>(std::ceil(static_cast<float>(count) / maxLoadFactor)));
+
+            if(bucketsCount > _bucketCount)
+            {
+                Node** newBuckets = _allocator.allocate(bucketsCount * sizeof(T*));
+                assert::inhouse(newBuckets, "Cannot allocate memory for buckets list");
+
+                if(_buckets)
+                {
+                    for(size_type i = 0; i < _bucketCount; ++i)
+                    {
+                        newBuckets[i] = _buckets[i];
+                    }
+
+                    _allocator.deallocate(_buckets, _bucketCount * sizeof(T*));
+                }
+
+                _buckets = newBuckets;
+                _bucketCount = bucketsCount;
+            }
+        }
 
         // ------------------------------------------------------------
         // Observers
