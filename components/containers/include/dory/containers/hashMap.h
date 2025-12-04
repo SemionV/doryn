@@ -7,6 +7,7 @@
 #include <initializer_list>
 #include <iterator>
 #include <cmath>
+#include <cstring>
 
 namespace dory::containers
 {
@@ -174,7 +175,35 @@ namespace dory::containers
         float max_load_factor() const noexcept;
         void max_load_factor(float ml);
 
-        void rehash(size_type new_bucket_count);
+        void rehash(const size_type bucketsCount)
+        {
+            Node** newBuckets = _allocator.allocate(bucketsCount * sizeof(Node*));
+            assert::inhouse(newBuckets, "Cannot allocate memory for buckets list");
+
+            std::memset(newBuckets, 0, bucketsCount * sizeof(Node*));
+
+            if(_buckets)
+            {
+                for(size_type i = 0; i < _bucketCount; ++i)
+                {
+                    Node* node = _buckets[i];
+                    while(node)
+                    {
+                        Node* nextNode = node->nextNode;
+                        const size_type bucketId = getBucketId(node->hash, bucketsCount);
+                        node->nextNode = newBuckets[bucketId];
+                        newBuckets[bucketId] = node;
+
+                        node = nextNode;
+                    }
+                }
+
+                _allocator.deallocate(_buckets, _bucketCount * sizeof(Node*));
+            }
+
+            _buckets = newBuckets;
+            _bucketCount = bucketsCount;
+        }
 
         void reserve(const size_type count)
         {
@@ -212,5 +241,16 @@ namespace dory::containers
         // Helper functions you will implement
         void rehash_if_needed();
         void insert_unique_node(Node* node);
+
+        static size_type getBucketId(const size_type hash, const size_type bucketsCount)
+        {
+
+            //get modulo
+            // d - 1 works as a bit mask
+            // and returns the k lowest
+            // significant bits of n.
+            return hash & (bucketsCount - 1);
+        }
+
     };
 }
