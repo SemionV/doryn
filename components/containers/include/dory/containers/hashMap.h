@@ -213,21 +213,7 @@ namespace dory::containers
 
             if(bucketsCount > _bucketCount)
             {
-                Node** newBuckets = _allocator.allocate(bucketsCount * sizeof(T*));
-                assert::inhouse(newBuckets, "Cannot allocate memory for buckets list");
-
-                if(_buckets)
-                {
-                    for(size_type i = 0; i < _bucketCount; ++i)
-                    {
-                        newBuckets[i] = _buckets[i];
-                    }
-
-                    _allocator.deallocate(_buckets, _bucketCount * sizeof(T*));
-                }
-
-                _buckets = newBuckets;
-                _bucketCount = bucketsCount;
+                rehash(bucketsCount);
             }
         }
 
