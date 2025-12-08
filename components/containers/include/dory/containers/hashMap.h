@@ -242,35 +242,6 @@ namespace dory::containers::hashMap
             return _size;
         }
 
-        template<bool IsConst>
-        auto find(const key_type& key) -> std::conditional_t<IsConst, const_iterator, iterator>
-        {
-            using TIterator = std::conditional_t<IsConst, const_iterator, iterator>;
-            using NodePtr = std::conditional_t<IsConst, const Node*, Node*>;
-
-            const size_type hash = _hash(key);
-            const size_type bucketId = getBucketId(hash, _bucketCount);
-
-            assert::inhouse(bucketId < _bucketCount, "Invalid bucket index");
-
-            NodePtr node = _buckets[bucketId];
-            while(node)
-            {
-                if(node->hash == hash && _equal(node->value.first, key))
-                    break;
-
-                node = node->nextNode;
-            }
-
-            if(node)
-                return TIterator{ this, node, bucketId };
-
-            if constexpr (IsConst)
-                return cend();
-            else
-                return end();
-        }
-
         iterator find(const key_type& key)
         {
             return find<false>(key);
@@ -281,7 +252,24 @@ namespace dory::containers::hashMap
             return find<true>(key);
         }
 
-        bool contains(const key_type& key) const;
+        bool contains(const key_type& key) const
+        {
+            const size_type hash = _hash(key);
+            const size_type bucketId = getBucketId(hash, _bucketCount);
+
+            assert::inhouse(bucketId < _bucketCount, "Invalid bucket index");
+
+            Node* node = _buckets[bucketId];
+            while(node)
+            {
+                if(node->hash == hash && _equal(node->value.first, key))
+                    return true;
+
+                node = node->nextNode;
+            }
+
+            return false;
+        }
 
         // ------------------------------------------------------------
         // Bucket Interface
@@ -354,6 +342,35 @@ namespace dory::containers::hashMap
         key_equal key_eq() const;
 
     private:
+        template<bool IsConst>
+        auto find(const key_type& key) -> std::conditional_t<IsConst, const_iterator, iterator>
+        {
+            using TIterator = std::conditional_t<IsConst, const_iterator, iterator>;
+            using NodePtr = std::conditional_t<IsConst, const Node*, Node*>;
+
+            const size_type hash = _hash(key);
+            const size_type bucketId = getBucketId(hash, _bucketCount);
+
+            assert::inhouse(bucketId < _bucketCount, "Invalid bucket index");
+
+            NodePtr node = _buckets[bucketId];
+            while(node)
+            {
+                if(node->hash == hash && _equal(node->value.first, key))
+                    break;
+
+                node = node->nextNode;
+            }
+
+            if(node)
+                return TIterator{ this, node, bucketId };
+
+            if constexpr (IsConst)
+                return cend();
+            else
+                return end();
+        }
+
         // Helper functions you will implement
         void rehash_if_needed();
         void insert_unique_node(Node* node);
