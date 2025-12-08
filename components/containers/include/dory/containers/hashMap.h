@@ -9,8 +9,96 @@
 #include <cmath>
 #include <cstring>
 
-namespace dory::containers
+namespace dory::containers::hashMap
 {
+    template<
+        typename THashMap,
+        typename TNode,
+        typename TValue,
+        typename TSize,
+        typename TDiff,
+        bool IsConst
+    >
+    class HashMapIterator
+    {
+    private:
+        using NodePtr = std::conditional_t<IsConst, const TNode*, TNode*>;
+        using MapPtr  = std::conditional_t<IsConst, const THashMap*, THashMap*>;
+
+        NodePtr _node = nullptr;
+        MapPtr  _map = nullptr;
+        TSize   _bucketIndex = 0;
+
+    public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type        = TValue;
+        using difference_type   = TDiff;
+        using reference         = std::conditional_t<IsConst, const TValue&, TValue&>;
+        using pointer           = std::conditional_t<IsConst, const TValue*, TValue*>;
+
+        HashMapIterator() noexcept = default;
+
+        HashMapIterator(MapPtr map, NodePtr node, TSize bucket)
+            : _node(node), _map(map), _bucketIndex(bucket)
+        {}
+
+        // conversion: iterator → const_iterator
+        template<bool B = IsConst, typename = std::enable_if_t<B>>
+        explicit HashMapIterator(const HashMapIterator<THashMap, TNode, TValue, TSize, TDiff, false>& rhs)
+            : _node(rhs._node), _map(rhs._map), _bucketIndex(rhs._bucketIndex)
+        {}
+
+        reference operator*() const noexcept { return _node->value; }
+        pointer operator->() const noexcept { return &_node->value; }
+
+        HashMapIterator& operator++()
+        {
+            if (_node && _node->nextNode)
+            {
+                _node = _node->nextNode;
+            }
+            else
+            {
+                const TSize bucketCount = _map->_bucketCount;
+                TSize i = _bucketIndex + 1;
+
+                while (i < bucketCount && !_map->_buckets[i])
+                    ++i;
+
+                if (i < bucketCount)
+                {
+                    _node = _map->_buckets[i];
+                    _bucketIndex = i;
+                }
+                else
+                {
+                    _node = nullptr;
+                    _bucketIndex = bucketCount;
+                }
+            }
+            return *this;
+        }
+
+        HashMapIterator operator++(int)
+        {
+            HashMapIterator temp = *this;
+            ++(*this);
+            return temp;
+        }
+
+        friend bool operator==(const HashMapIterator& a, const HashMapIterator& b) noexcept
+        {
+            return a._node == b._node;
+        }
+
+        friend bool operator!=(const HashMapIterator& a, const HashMapIterator& b) noexcept
+        {
+            return a._node != b._node;
+        }
+
+        friend THashMap;
+    };
+
     //General purpose Hash Map, which is a replica of std::unordered_map from standard library
     //Main difference is awareness about the alocator
     template<
@@ -22,6 +110,9 @@ namespace dory::containers
     >
     class HashMap
     {
+    private:
+        struct Node;
+
     public:
         // ------------------------------------------------------------
         // Member types
@@ -36,13 +127,11 @@ namespace dory::containers
         using size_type       = std::size_t;
         using difference_type = std::ptrdiff_t;
 
-        // Node-based container → node handles store value_type
-        // Define later: struct Node;
-        class iterator;       // forward iterator
-        class const_iterator;
+        using iterator        = HashMapIterator<HashMap, Node, value_type, size_type, difference_type, false>;
+        using const_iterator  = HashMapIterator<HashMap, Node, value_type, size_type, difference_type, true>;
 
-        using local_iterator        = iterator;        // for bucket iteration
-        using const_local_iterator  = const_iterator;
+        using local_iterator        = HashMapIterator<HashMap, Node, value_type, size_type, difference_type, false>;
+        using const_local_iterator  = HashMapIterator<HashMap, Node, value_type, size_type, difference_type, true>;
 
     private:
         struct Node
@@ -60,6 +149,8 @@ namespace dory::containers
         hasher _hash;
         key_equal _equal;
         allocator_type& _allocator;
+
+    public:
 
         // ------------------------------------------------------------
         // Constructors / Destructor / Assignment
@@ -146,10 +237,49 @@ namespace dory::containers
         // ------------------------------------------------------------
         // Lookup
         // ------------------------------------------------------------
-        size_type count(const key_type& key) const;
+        size_type count(const key_type& key) const
+        {
+            return _size;
+        }
 
-        iterator find(const key_type& key);
-        const_iterator find(const key_type& key) const;
+        template<bool IsConst>
+        auto find(const key_type& key) -> std::conditional_t<IsConst, const_iterator, iterator>
+        {
+            using TIterator = std::conditional_t<IsConst, const_iterator, iterator>;
+            using NodePtr = std::conditional_t<IsConst, const Node*, Node*>;
+
+            const size_type hash = _hash(key);
+            const size_type bucketId = getBucketId(hash, _bucketCount);
+
+            assert::inhouse(bucketId < _bucketCount, "Invalid bucket index");
+
+            NodePtr node = _buckets[bucketId];
+            while(node)
+            {
+                if(node->hash == hash && _equal(node->value.first, key))
+                    break;
+
+                node = node->nextNode;
+            }
+
+            if(node)
+                return TIterator{ this, node, bucketId };
+
+            if constexpr (IsConst)
+                return cend();
+            else
+                return end();
+        }
+
+        iterator find(const key_type& key)
+        {
+            return find<false>(key);
+        }
+
+        const_iterator find(const key_type& key) const
+        {
+            return find<true>(key);
+        }
 
         bool contains(const key_type& key) const;
 
