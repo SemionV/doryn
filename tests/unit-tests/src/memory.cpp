@@ -5,8 +5,8 @@
 #include <dory/memory/allocators/systemAllocator.h>
 #include <dory/memory/allocators/segregationAllocator.h>
 #include <dory/memory/allocators/standardAllocator.h>
-#include <spdlog/fwd.h>
 #include <spdlog/fmt/bundled/format.h>
+#include <array>
 
 using namespace dory::memory;
 

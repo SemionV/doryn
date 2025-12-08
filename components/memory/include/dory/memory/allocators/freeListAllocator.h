@@ -20,7 +20,7 @@ namespace dory::memory
         TMemoryBlockNodeAllocator& _memoryBlockNodeAllocator; //Allocator of MemoryBlock descriptors, wrapped in a Node structure, to make a linked list of all allocated chunks
         alignas(64) std::atomic<void*> _freeListHead; //Pointer to the first node in the free list
         alignas(64) std::atomic<MemoryBlockNode*> _memoryBlockHead; //Pointer to the last node of allocated memory chunks
-        alignas(64) std::atomic<MemoryBlockNode*> _pendingBlock; //A newly allocated memory chunk, which is in progress of initialization, ech thread, which is seeing it can help to initialize it
+        alignas(64) std::atomic<MemoryBlockNode*> _pendingBlock; //A newly allocated memory chunk, which is in progress of initialization, each thread, which is seeing it can help to initialize it
         alignas(64) std::atomic<std::size_t> _currentSlotInitialization; //Index of a slot in _pendingBlock, which currently on initialization, each thread can peek one
 
     public:
@@ -55,9 +55,9 @@ namespace dory::memory
                     _pageAllocator.deallocate(node->memoryBlock);
                 }
 
+                MemoryBlockNode* prevNode = node->previousNode;
                 _memoryBlockNodeAllocator.deallocate(node);
-
-                node = node->previousNode;
+                node = prevNode;
             }
         }
 
