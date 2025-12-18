@@ -215,7 +215,40 @@ namespace dory::containers::hashMap
         void clear() noexcept;
 
         std::pair<iterator, bool> insert(const value_type& value);
-        std::pair<iterator, bool> insert(value_type&& value);
+
+        std::pair<iterator, bool> insert(value_type&& value)
+        {
+
+        }
+
+        template<typename U>
+        std::pair<iterator, bool> insert(U&& value)
+        {
+            iterator it = find(value.key);
+            if (it != end())
+            {
+                return { it, false }; // key exists → no insertion
+            }
+
+            // before allocating/hashing, ensure capacity
+            if (size + 1 > _bucketCount * _maxLoadFactor)
+                rehash(bitwise::nextPowerOfTwo(_bucketCount + 1));
+
+            // allocate node with allocator
+            Node* node = allocateNode(std::forward<U>(value));
+
+            // compute bucket
+            size_t bucketId = hash(node->key) & (bucketCount - 1);
+
+            // insert at head of bucket chain
+            node->next = buckets[bucketId];
+            buckets[bucketId] = node;
+
+            // update size
+            ++size;
+
+            return { iterator(node), true };
+        }
 
         template<class InputIt>
         void insert(InputIt first, InputIt last);
@@ -369,6 +402,13 @@ namespace dory::containers::hashMap
                 return cend();
             else
                 return end();
+        }
+
+        template<typename U>
+        Node* allocateNode(U&& value)
+        {
+            Node* node = _allocator.allocate(sizeof(Node));
+            node->hash =
         }
 
         // Helper functions you will implement
