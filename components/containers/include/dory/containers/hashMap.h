@@ -222,13 +222,57 @@ namespace dory::containers::hashMap
         // ------------------------------------------------------------
         // Iterators
         // ------------------------------------------------------------
-        iterator begin() noexcept;
-        const_iterator begin() const noexcept;
-        const_iterator cbegin() const noexcept;
+        iterator begin() noexcept
+        {
+            if (_buckets)
+            {
+                for (size_type i = 0; i < _bucketCount; ++i)
+                {
+                    if(Node* node = _buckets[i])
+                    {
+                        return iterator{ this, node, i };
+                    }
+                }
+            }
 
-        iterator end() noexcept;
-        const_iterator end() const noexcept;
-        const_iterator cend() const noexcept;
+            return iterator{ this, nullptr, _bucketCount };
+        }
+
+        const_iterator begin() const noexcept
+        {
+            if (_buckets)
+            {
+                for (size_type i = 0; i < _bucketCount; ++i)
+                {
+                    if(Node* node = _buckets[i])
+                    {
+                        return const_iterator{ this, node, i };
+                    }
+                }
+            }
+
+            return const_iterator{ this, nullptr, _bucketCount };
+        }
+
+        const_iterator cbegin() const noexcept
+        {
+            return begin();
+        }
+
+        iterator end() noexcept
+        {
+            return iterator{ this, nullptr, _bucketCount };
+        }
+
+        const_iterator end() const noexcept
+        {
+            return const_iterator{ this, nullptr, _bucketCount };
+        }
+
+        const_iterator cend() const noexcept
+        {
+            return end();
+        }
 
         // ------------------------------------------------------------
         // Capacity
@@ -418,7 +462,7 @@ namespace dory::containers::hashMap
         template<typename U>
         std::pair<iterator, bool> insertValue(U&& value)
         {
-            iterator it = find(value.key);
+            iterator it = find(value.first);
             if (it != end())
             {
                 return { it, false }; // key exists → no insertion
@@ -441,7 +485,7 @@ namespace dory::containers::hashMap
             // update size
             ++_size;
 
-            return { iterator(node), true };
+            return { iterator(this, node, bucketId), true };
         }
 
         Node* allocateNode(value_type&& v)

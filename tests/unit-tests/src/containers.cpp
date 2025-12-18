@@ -233,4 +233,12 @@ TEST(BasicHashMapTests, simpleTest)
 {
     const auto allocator = buildAllocator();
     DoryHashMap<DoryString, int> map { *allocator };
+
+    const auto key1 = DoryString{ "key1", *allocator };
+    map.insert({ key1, 1 });
+
+    const auto result = map.find(key1);
+    EXPECT_TRUE(result != map.end());
+    EXPECT_EQ(result->first, key1);
+    EXPECT_EQ(result->second, 1);
 }

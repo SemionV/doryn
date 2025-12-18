@@ -203,7 +203,11 @@ namespace dory::containers
             initFromCStr(data, length);
         }
 
-        BasicString(const BasicString& other) = delete;
+        BasicString(const BasicString& other):
+            _allocator(other._allocator)
+        {
+            initFromCStr(other.data(), other.size());
+        }
 
         BasicString(BasicString&& other) noexcept:
         _allocator(other._allocator)
