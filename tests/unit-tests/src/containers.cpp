@@ -8,6 +8,7 @@
 #include <dory/containers/string.h>
 #include <dory/containers/list.h>
 #include <dory/containers/deque.h>
+#include <dory/containers/hashMap.h>
 
 class AllocProfiler
 {
@@ -38,6 +39,30 @@ using SegregationAllocatorType = dory::memory::SegregationAllocator<10, dory::me
 template<typename T>
 using StandardAllocatorType = dory::memory::StandardAllocator<T, SegregationAllocatorType>;
 
+using DoryString = dory::containers::BasicString<char, std::char_traits<char>, SegregationAllocatorType>;
+
+template<typename T>
+using DoryList = dory::containers::BasicList<T, SegregationAllocatorType>;
+
+template<typename T, std::size_t BlockSize = 64>
+using DoryDeque = dory::containers::BasicDeque<T, SegregationAllocatorType, BlockSize>;
+
+namespace std
+{
+    template<class CharT, class Traits, class Alloc>
+    struct hash<dory::containers::BasicString<CharT, Traits, Alloc>>
+    {
+        size_t operator()(dory::containers::BasicString<CharT, Traits, Alloc> const& s) const noexcept
+        {
+            std::basic_string_view<CharT, Traits> sv{ s.data(), s.size() };
+            return std::hash<std::basic_string_view<CharT, Traits>>{}(sv);
+        }
+    };
+}
+
+template<typename TKey, typename TValue>
+using DoryHashMap = dory::containers::hashMap::HashMap<TKey, TValue, SegregationAllocatorType>;
+
 std::shared_ptr<SegregationAllocatorType> buildAllocator()
 {
     constexpr std::size_t PAGE_SIZE = 4096;
@@ -66,8 +91,6 @@ TEST(BasicStringTests, simpleTest)
 {
     const auto allocator = buildAllocator();
 
-    using DoryString = dory::containers::BasicString<char, std::char_traits<char>, SegregationAllocatorType>;
-
     DoryString str { "Hello", *allocator };
 
     const dory::containers::CRC32Table table = dory::containers::CRC32::generateTable();
@@ -87,12 +110,6 @@ TEST(BasicStringTests, simpleTest)
     std::cout << "std::string size: " << sizeof(std::string) << std::endl;
     std::cout << "dory::containers::BasicString size: " << sizeof(dory::containers::BasicString<char, std::char_traits<char>, SegregationAllocatorType>) << std::endl;
 }
-
-template<typename T>
-using DoryList = dory::containers::BasicList<T, SegregationAllocatorType>;
-
-template<typename T, std::size_t BlockSize = 64>
-using DoryDeque = dory::containers::BasicDeque<T, SegregationAllocatorType, BlockSize>;
 
 template<typename TList>
 void printList(const TList& list)
@@ -210,4 +227,10 @@ TEST(BasicDequeTests, popTest)
     list.pop_front();
     list.pop_front();
     assertList<decltype(list), int>(list, {});
+}
+
+TEST(BasicHashMapTests, simpleTest)
+{
+    const auto allocator = buildAllocator();
+    DoryHashMap<DoryString, int> map { *allocator };
 }

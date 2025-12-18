@@ -143,10 +143,10 @@ namespace dory::containers::hashMap
             value_type value;
         };
 
-        Node** _buckets;       // array of bucket heads
-        size_type _bucketCount;
-        size_type _size;
-        float _maxLoadFactor;
+        Node** _buckets;
+        size_type _bucketCount = 0;
+        size_type _size = 0;
+        float _maxLoadFactor = 1.0;
 
         hasher _hash;
         key_equal _equal;
@@ -159,11 +159,17 @@ namespace dory::containers::hashMap
         // ------------------------------------------------------------
         explicit HashMap(
             TAllocator& allocator,
-            size_type bucket_count = 16,
+            const size_type bucketCount = 16,
             const Hash& hash = Hash(),
-            const KeyEqual& equal = KeyEqual());
+            const KeyEqual& equal = KeyEqual()):
+        _hash(hash),
+        _equal(equal),
+        _allocator(allocator)
+        {
+            reserve(bucketCount);
+        }
 
-        template<class InputIt>
+        /*template<class InputIt>
         HashMap(
             TAllocator& allocator,
             InputIt first, InputIt last,
@@ -177,8 +183,28 @@ namespace dory::containers::hashMap
             const KeyEqual& equal = KeyEqual());
 
         HashMap(const HashMap& other);
-        HashMap(HashMap&& other) noexcept;
-        ~HashMap();
+        HashMap(HashMap&& other) noexcept;*/
+
+        ~HashMap()
+        {
+            if (_buckets)
+            {
+                for (size_type i = 0; i < _bucketCount; ++i)
+                {
+                    Node* node = _buckets[i];
+                    while (node)
+                    {
+                        Node* nextNode = node->nextNode;
+
+                        node->value.~value_type();
+                        _allocator.deallocate(node, sizeof(Node));
+                        node = nextNode;
+                    }
+                }
+
+                _allocator.deallocate(_buckets, _bucketCount * sizeof(Node*));
+            }
+        }
 
         HashMap& operator=(const HashMap& other);
         HashMap& operator=(HashMap&& other) noexcept;
@@ -216,40 +242,14 @@ namespace dory::containers::hashMap
         // ------------------------------------------------------------
         void clear() noexcept;
 
-        std::pair<iterator, bool> insert(const value_type& value);
+        std::pair<iterator, bool> insert(const value_type& value)
+        {
+            return insertValue(value);
+        }
 
         std::pair<iterator, bool> insert(value_type&& value)
         {
-
-        }
-
-        template<typename U>
-        std::pair<iterator, bool> insert(U&& value)
-        {
-            iterator it = find(value.key);
-            if (it != end())
-            {
-                return { it, false }; // key exists → no insertion
-            }
-
-            // before allocating/hashing, ensure capacity
-            if (_size + 1 > _bucketCount * _maxLoadFactor)
-                rehash(bitwise::nextPowerOfTwo(_bucketCount + 1));
-
-            // allocate node with allocator
-            Node* node = allocateNode(std::forward<U>(value));
-
-            // compute bucket
-            size_t bucketId = getBucketId(node->hash, _bucketCount);
-
-            // insert at head of bucket chain
-            node->nextNode = _buckets[bucketId];
-            _buckets[bucketId] = node;
-
-            // update size
-            ++_size;
-
-            return { iterator(node), true };
+            return insertValue(std::move(value));
         }
 
         template<class InputIt>
@@ -325,12 +325,21 @@ namespace dory::containers::hashMap
         // Hash Policy
         // ------------------------------------------------------------
         float load_factor() const noexcept;
-        float max_load_factor() const noexcept;
-        void max_load_factor(float ml);
+
+        [[nodiscard]] float max_load_factor() const noexcept
+        {
+            return _maxLoadFactor;
+        }
+
+        void max_load_factor(const float ml)
+        {
+            assert::inhouse(ml > 0.0f, "max_load_factor must be > 0");
+            _maxLoadFactor = ml;
+        }
 
         void rehash(const size_type bucketsCount)
         {
-            Node** newBuckets = _allocator.allocate(bucketsCount * sizeof(Node*));
+            Node** newBuckets = static_cast<Node**>(_allocator.allocate(bucketsCount * sizeof(Node*)));
             assert::inhouse(newBuckets, "Cannot allocate memory for buckets list");
 
             std::memset(newBuckets, 0, bucketsCount * sizeof(Node*));
@@ -406,6 +415,35 @@ namespace dory::containers::hashMap
                 return end();
         }
 
+        template<typename U>
+        std::pair<iterator, bool> insertValue(U&& value)
+        {
+            iterator it = find(value.key);
+            if (it != end())
+            {
+                return { it, false }; // key exists → no insertion
+            }
+
+            // before allocating/hashing, ensure capacity
+            if (_size + 1 > _bucketCount * _maxLoadFactor)
+                rehash(bitwise::nextPowerOfTwo(_bucketCount + 1));
+
+            // allocate node with allocator
+            Node* node = allocateNode(std::forward<U>(value));
+
+            // compute bucket
+            size_t bucketId = getBucketId(node->hash, _bucketCount);
+
+            // insert at head of bucket chain
+            node->nextNode = _buckets[bucketId];
+            _buckets[bucketId] = node;
+
+            // update size
+            ++_size;
+
+            return { iterator(node), true };
+        }
+
         Node* allocateNode(value_type&& v)
         {
             Node* node = static_cast<Node*>(_allocator.allocate(sizeof(Node)));
@@ -436,7 +474,6 @@ namespace dory::containers::hashMap
 
         static size_type getBucketId(const size_type hash, const size_type bucketsCount)
         {
-
             //get modulo
             // d - 1 works as a bit mask
             // and returns the k lowest
