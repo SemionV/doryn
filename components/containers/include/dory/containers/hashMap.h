@@ -9,6 +9,8 @@
 #include <cmath>
 #include <cstring>
 
+#include "string.h"
+
 namespace dory::containers::hashMap
 {
     template<
@@ -231,21 +233,21 @@ namespace dory::containers::hashMap
             }
 
             // before allocating/hashing, ensure capacity
-            if (size + 1 > _bucketCount * _maxLoadFactor)
+            if (_size + 1 > _bucketCount * _maxLoadFactor)
                 rehash(bitwise::nextPowerOfTwo(_bucketCount + 1));
 
             // allocate node with allocator
             Node* node = allocateNode(std::forward<U>(value));
 
             // compute bucket
-            size_t bucketId = hash(node->key) & (bucketCount - 1);
+            size_t bucketId = getBucketId(node->hash, _bucketCount);
 
             // insert at head of bucket chain
-            node->next = buckets[bucketId];
-            buckets[bucketId] = node;
+            node->nextNode = _buckets[bucketId];
+            _buckets[bucketId] = node;
 
             // update size
-            ++size;
+            ++_size;
 
             return { iterator(node), true };
         }
@@ -404,11 +406,28 @@ namespace dory::containers::hashMap
                 return end();
         }
 
-        template<typename U>
-        Node* allocateNode(U&& value)
+        Node* allocateNode(value_type&& v)
         {
-            Node* node = _allocator.allocate(sizeof(Node));
-            node->hash =
+            Node* node = static_cast<Node*>(_allocator.allocate(sizeof(Node)));
+            assert::inhouse(node, "HashMap Node was not allocated");
+
+            new (&node->value) value_type(std::move(v));      // placement-new
+            node->hash = _hash(node->value.first);
+            node->nextNode = nullptr;
+
+            return node;
+        }
+
+        Node* allocateNode(const value_type& v)
+        {
+            Node* node = static_cast<Node*>(_allocator.allocate(sizeof(Node)));
+            assert::inhouse(node, "HashMap Node was not allocated");
+
+            new (&node->value) value_type(v);                 // copy construct
+            node->hash = _hash(node->value.first);
+            node->nextNode = nullptr;
+
+            return node;
         }
 
         // Helper functions you will implement
