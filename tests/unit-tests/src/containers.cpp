@@ -255,3 +255,46 @@ TEST(BasicHashMapTests, simpleTest)
     EXPECT_EQ(result2->second, 2);
     EXPECT_EQ(map[key2], 2);
 }
+
+TEST(BasicHashMapTests, eraseTest)
+{
+    const auto allocator = buildAllocator();
+
+    const auto key1 = DoryString{ "key1", *allocator };
+    const auto key2 = DoryString{ "key2", *allocator };
+    DoryHashMap<DoryString, int> map { *allocator,
+    {
+            { key1, 1 },
+            { key2, 2 }
+    }};
+
+    EXPECT_EQ(map.size(), 2);
+
+    map.erase(key1);
+
+    EXPECT_EQ(map.size(), 1);
+
+    auto result = map.find(key1);
+    EXPECT_EQ(result, map.end());
+    result = map.find(key2);
+    EXPECT_NE(result, map.end());
+}
+
+TEST(BasicHashMapTests, clearTest)
+{
+    const auto allocator = buildAllocator();
+
+    const auto key1 = DoryString{ "key1", *allocator };
+    const auto key2 = DoryString{ "key2", *allocator };
+    DoryHashMap<DoryString, int> map { *allocator,
+    {
+                { key1, 1 },
+                { key2, 2 }
+    }};
+
+    EXPECT_EQ(map.size(), 2);
+
+    map.clear();
+
+    EXPECT_EQ(map.size(), 0);
+}
