@@ -9,8 +9,6 @@
 #include <cmath>
 #include <cstring>
 
-#include "string.h"
-
 namespace dory::containers::hashMap
 {
     template<
@@ -169,21 +167,85 @@ namespace dory::containers::hashMap
             reserve(bucketCount);
         }
 
-        /*template<class InputIt>
+        template<class InputIt>
         HashMap(
             TAllocator& allocator,
             InputIt first, InputIt last,
-            size_type bucket_count = 16,
+            const size_type bucket_count = 16,
             const Hash& hash = Hash(),
-            const KeyEqual& equal = KeyEqual());
+            const KeyEqual& equal = KeyEqual())
+            : _hash(hash)
+            , _equal(equal)
+            , _allocator(allocator)
+        {
+            _size = 0;
+            _maxLoadFactor = 1.0f;   // or whatever your default is
+            _buckets = nullptr;
+            _bucketCount = 0;
 
-        HashMap(std::initializer_list<value_type> init,
-            size_type bucket_count = 16,
+            allocate_buckets(bucket_count);
+
+            // Optional optimization: only for forward iterators and better
+            if constexpr (std::forward_iterator<InputIt>)
+            {
+                const auto n = static_cast<size_type>(std::distance(first, last));
+                reserve(n);
+            }
+
+            insert(first, last);
+        }
+
+        HashMap(TAllocator& allocator,
+            std::initializer_list<value_type> init,
+            const size_type bucket_count = 16,
             const Hash& hash = Hash(),
-            const KeyEqual& equal = KeyEqual());
+            const KeyEqual& equal = KeyEqual())
+        requires (std::is_copy_constructible_v<key_type> && std::is_copy_constructible_v<mapped_type>)
+        : _hash(hash), _equal(equal), _allocator(allocator)
+        {
+            _size = 0;
+            _maxLoadFactor = 1.0f;
+            _buckets = nullptr;
+            _bucketCount = 0;
 
-        HashMap(const HashMap& other);
-        HashMap(HashMap&& other) noexcept;*/
+            allocate_buckets(bucket_count);
+
+            reserve(init.size());
+            insert(init.begin(), init.end());
+        }
+
+        HashMap(const HashMap& other)
+        requires (std::is_copy_constructible_v<key_type> && std::is_copy_constructible_v<mapped_type>)
+        : _maxLoadFactor(other._maxLoadFactor),
+        _hash(other._hash),
+        _equal(other._equal),
+        _allocator(other._allocator)
+        {
+            _size = 0;
+            _buckets = nullptr;
+            _bucketCount = 0;
+
+            allocate_buckets(other._bucketCount);
+            reserve(other._size);
+
+            for (const auto& kv : other)
+                insert(kv); // copies
+        }
+
+        HashMap(HashMap&& other) noexcept:
+        _buckets(other._buckets),
+        _bucketCount(other._bucketCount),
+        _size(other._size),
+        _maxLoadFactor(other._maxLoadFactor),
+        _hash(std::move(other._hash)),
+        _equal(std::move(other._equal)),
+        _allocator(std::move(other._allocator))
+        {
+            other._buckets = nullptr;
+            other._bucketCount = 0;
+            other._size = 0;
+            other._maxLoadFactor = 1.0f; // optional reset
+        }
 
         ~HashMap()
         {
@@ -206,18 +268,81 @@ namespace dory::containers::hashMap
             }
         }
 
-        HashMap& operator=(const HashMap& other);
-        HashMap& operator=(HashMap&& other) noexcept;
-        HashMap& operator=(std::initializer_list<value_type> init);
+        HashMap& operator=(const HashMap& other)
+        requires (std::is_copy_constructible_v<key_type> && std::is_copy_constructible_v<mapped_type>)
+        {
+            if (this == &other) return *this;
+
+            clear();               // keep bucket array, just remove nodes
+            reserve(other.size()); // avoid rehash churn
+
+            for (const auto& kv : other)
+                insert(kv);        // must copy (kv is const)
+
+            return *this;
+        }
+
+        HashMap& operator=(HashMap&& other) noexcept
+        {
+            if (this == &other) return *this;
+
+            // Free current resources
+            clear();
+            if (_buckets)
+                _allocator.deallocate(_buckets, _bucketCount * sizeof(Node*));
+
+            // Steal other's internals
+            _buckets        = other._buckets;
+            _bucketCount    = other._bucketCount;
+            _size           = other._size;
+            _maxLoadFactor  = other._maxLoadFactor;
+            _hash           = std::move(other._hash);
+            _equal          = std::move(other._equal);
+            _allocator      = std::move(other._allocator); // IMPORTANT if allocator owns the memory
+
+            // Leave other valid
+            other._buckets = nullptr;
+            other._bucketCount = 0;
+            other._size = 0;
+
+            return *this;
+        }
+
+        HashMap& operator=(std::initializer_list<value_type> init)
+        requires (std::is_copy_constructible_v<key_type> && std::is_copy_constructible_v<mapped_type>)
+        {
+            clear();
+            reserve(_size + init.size()); // optional
+            insert(init.begin(), init.end());
+            return *this;
+        }
 
         // ------------------------------------------------------------
         // Element Access
         // ------------------------------------------------------------
-        mapped_type& at(const key_type& key);
-        const mapped_type& at(const key_type& key) const;
+        mapped_type& at(const key_type& key) noexcept
+        {
+            auto it = find(key);
+            assert::inhouse(it != end(), "HashMap::at: key not found");
+            return it->second;
+        }
 
-        mapped_type& operator[](const key_type& key);
-        mapped_type& operator[](key_type&& key);
+        const mapped_type& at(const key_type& key) const noexcept
+        {
+            auto it = find(key);
+            assert::inhouse(it != cend(), "HashMap::at: key not found");
+            return it->second;
+        }
+
+        mapped_type& operator[](const key_type& key) noexcept
+        {
+            return get_or_insert_default_noexcept(key);
+        }
+
+        mapped_type& operator[](key_type&& key) noexcept
+        {
+            return get_or_insert_default_noexcept(std::move(key));
+        }
 
         // ------------------------------------------------------------
         // Iterators
@@ -277,14 +402,45 @@ namespace dory::containers::hashMap
         // ------------------------------------------------------------
         // Capacity
         // ------------------------------------------------------------
-        bool empty() const noexcept;
-        size_type size() const noexcept;
-        size_type max_size() const noexcept;
+        [[nodiscard]] bool empty() const noexcept
+        {
+            return _size == 0;
+        }
+
+        [[nodiscard]] size_type size() const noexcept
+        {
+            return _size;
+        }
+
+        [[nodiscard]] static size_type max_size() noexcept
+        {
+            return std::numeric_limits<size_type>::max() / sizeof(Node);
+        }
 
         // ------------------------------------------------------------
         // Modifiers
         // ------------------------------------------------------------
-        void clear() noexcept;
+        void clear() noexcept
+        {
+            if (!_buckets) {
+                _size = 0;
+                return;
+            }
+
+            for (size_type i = 0; i < _bucketCount; ++i)
+            {
+                Node* node = _buckets[i];
+                while (node)
+                {
+                    Node* next = node->nextNode;
+                    destroyNode(node);
+                    node = next;
+                }
+                _buckets[i] = nullptr;
+            }
+
+            _size = 0;
+        }
 
         std::pair<iterator, bool> insert(const value_type& value)
         {
@@ -297,21 +453,139 @@ namespace dory::containers::hashMap
         }
 
         template<class InputIt>
-        void insert(InputIt first, InputIt last);
+        void insert(InputIt first, InputIt last)
+        {
+            while(first != last)
+            {
+                insert(*first);
+                ++first;
+            }
+        }
 
-        void insert(std::initializer_list<value_type> init);
+        void insert(std::initializer_list<value_type> init)
+        {
+            insert(init.begin(), init.end());
+        }
 
         template<class... Args>
-        std::pair<iterator, bool> emplace(Args&&... args);
+        std::pair<iterator, bool> emplace(Args&&... args)
+        {
+            value_type v(std::forward<Args>(args)...);
+            return insert(std::move(v));
+        }
 
         template<class... Args>
-        iterator emplace_hint(const_iterator hint, Args&&... args);
+        iterator emplace_hint(const_iterator /*hint*/, Args&&... args)
+        {
+            return emplace(std::forward<Args>(args)...).first;
+        }
 
-        iterator erase(const_iterator pos);
-        iterator erase(const_iterator first, const_iterator last);
-        size_type erase(const key_type& key);
+        iterator erase(const_iterator pos)
+        {
+            assert::inhouse(pos._map == this, "Iterator does not belong to this HashMap");
+            assert::inhouse(pos._node != nullptr, "Cannot erase end()");
 
-        void swap(HashMap& other) noexcept;
+            const size_type bucketId = pos._bucketIndex;
+            Node* target = const_cast<Node*>(pos._node);
+
+            // 1) Compute iterator to the next element (BEFORE erase)
+            iterator nextIt;
+            if (target->nextNode)
+            {
+                nextIt = iterator{ this, target->nextNode, bucketId };
+            }
+            else
+            {
+                size_type i = bucketId + 1;
+                while (i < _bucketCount && !_buckets[i])
+                    ++i;
+
+                if (i < _bucketCount)
+                    nextIt = iterator{ this, _buckets[i], i };
+                else
+                    nextIt = end();
+            }
+
+            // 2) Unlink from bucket chain
+            Node*& head = _buckets[bucketId];
+            if (head == target)
+            {
+                head = target->nextNode;
+            }
+            else
+            {
+                Node* prev = head;
+                while (prev->nextNode != target)
+                    prev = prev->nextNode;
+
+                prev->nextNode = target->nextNode;
+            }
+
+            // 3) Destroy node
+            destroyNode(target);
+            --_size;
+
+            // 4) Return next iterator
+            return nextIt;
+        }
+
+        iterator erase(const_iterator first, const_iterator last)
+        {
+            while (first != last)
+                first = erase(first);           // erase(pos) returns iterator, which converts to const_iterator
+
+            // Now first == last; return iterator at that position.
+            return iterator{ this, const_cast<Node*>(last._node), last._bucketIndex };
+        }
+
+        size_type erase(const key_type& key)
+        {
+            if (_bucketCount == 0 || !_buckets)
+                return 0;
+
+            const size_type hash = _hash(key);
+            const size_type bucketId = getBucketId(hash, _bucketCount);
+
+            Node* node = _buckets[bucketId];
+            Node* prev = nullptr;
+
+            while (node)
+            {
+                if (node->hash == hash && _equal(node->value.first, key))
+                {
+                    // unlink
+                    if (prev)
+                        prev->nextNode = node->nextNode;
+                    else
+                        _buckets[bucketId] = node->nextNode;
+
+                    destroyNode(node);
+                    --_size;
+                    return 1;
+                }
+
+                prev = node;
+                node = node->nextNode;
+            }
+
+            return 0;
+        }
+
+        void swap(HashMap& other) noexcept
+        {
+            using std::swap;
+
+            swap(_buckets, other._buckets);
+            swap(_bucketCount, other._bucketCount);
+            swap(_size, other._size);
+            swap(_maxLoadFactor, other._maxLoadFactor);
+
+            swap(_hash, other._hash);
+            swap(_equal, other._equal);
+
+            // Important for byte-allocator correctness:
+            swap(_allocator, other._allocator);
+        }
 
         // ------------------------------------------------------------
         // Lookup
@@ -368,7 +642,10 @@ namespace dory::containers::hashMap
         // ------------------------------------------------------------
         // Hash Policy
         // ------------------------------------------------------------
-        float load_factor() const noexcept;
+        [[nodiscard]] float load_factor() const noexcept
+        {
+            return static_cast<float>(_size) / _bucketCount;
+        }
 
         [[nodiscard]] float max_load_factor() const noexcept
         {
@@ -426,8 +703,15 @@ namespace dory::containers::hashMap
         // ------------------------------------------------------------
         // Observers
         // ------------------------------------------------------------
-        hasher hash_function() const;
-        key_equal key_eq() const;
+        hasher hash_function() const
+        {
+            return _hash;
+        }
+
+        key_equal key_eq() const
+        {
+            return _equal;
+        }
 
     private:
         template<bool IsConst>
@@ -457,6 +741,55 @@ namespace dory::containers::hashMap
                 return cend();
             else
                 return end();
+        }
+
+        template<class K>
+        mapped_type& get_or_insert_default_noexcept(K&& key) noexcept
+        {
+            static_assert(std::is_default_constructible_v<mapped_type>, "HashMap::operator[] requires default-constructible mapped_type");
+
+            const size_type h = _hash(key);
+            size_type bucketId = getBucketId(h, _bucketCount);
+
+            // find
+            for (Node* n = _buckets[bucketId]; n; n = n->nextNode)
+            {
+                if (n->hash == h && _equal(n->value.first, key))
+                    return n->value.second;
+            }
+
+            // grow if needed (your policy)
+            if ((_size + 1) > static_cast<size_type>(_bucketCount * max_load_factor()))
+                reserve(_size + 1); // or rehash_if_needed_for_insert()
+
+            bucketId = getBucketId(h, _bucketCount);
+
+            Node* node = static_cast<Node*>(_allocator.allocate(sizeof(Node)));
+            assert::inhouse(node, "HashMap Node was not allocated");
+
+#ifndef __cpp_exceptions
+            static_assert(
+                std::is_nothrow_constructible_v<value_type,
+                    decltype(std::piecewise_construct),
+                    std::tuple<K&&>,
+                    std::tuple<>
+                >,
+                "HashMap::operator[] requires noexcept construction when exceptions are disabled."
+            );
+#endif
+
+            new (&node->value) value_type(
+                std::piecewise_construct,
+                std::forward_as_tuple(std::forward<K>(key)),
+                std::forward_as_tuple() // default-construct mapped_type
+            );
+
+            node->hash = h;
+            node->nextNode = _buckets[bucketId];
+            _buckets[bucketId] = node;
+            ++_size;
+
+            return node->value.second;
         }
 
         template<typename U>
@@ -512,9 +845,37 @@ namespace dory::containers::hashMap
             return node;
         }
 
-        // Helper functions you will implement
-        void rehash_if_needed();
-        void insert_unique_node(Node* node);
+        void destroyNode(Node* node)
+        {
+            if (!node) return;
+
+            node->value.~value_type();
+
+#if defined(DEBUG) || defined(_DEBUG)
+            node->hash = 0;
+            node->nextNode = nullptr;
+#endif
+
+            _allocator.deallocate(node, sizeof(Node));
+        }
+
+        static size_type normalize_bucket_count(size_type n)
+        {
+            if (n < 1) n = 1;
+            return bitwise::nextPowerOfTwo(n);
+        }
+
+        void allocate_buckets(size_type bucket_count)
+        {
+            _bucketCount = normalize_bucket_count(bucket_count);
+
+            _buckets = static_cast<Node**>(_allocator.allocate(_bucketCount * sizeof(Node*)));
+            assert::inhouse(_buckets, "Cannot allocate buckets");
+
+            // zero-init bucket heads
+            for (size_type i = 0; i < _bucketCount; ++i)
+                _buckets[i] = nullptr;
+        }
 
         static size_type getBucketId(const size_type hash, const size_type bucketsCount)
         {

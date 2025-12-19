@@ -232,13 +232,26 @@ TEST(BasicDequeTests, popTest)
 TEST(BasicHashMapTests, simpleTest)
 {
     const auto allocator = buildAllocator();
-    DoryHashMap<DoryString, int> map { *allocator };
 
     const auto key1 = DoryString{ "key1", *allocator };
-    map.insert({ key1, 1 });
+    const auto key2 = DoryString{ "key2", *allocator };
+    DoryHashMap<DoryString, int> map { *allocator,
+    {
+        { key1, 1 },
+        { key2, 2 }
+    }};
+
+    EXPECT_EQ(map.size(), 2);
 
     const auto result = map.find(key1);
     EXPECT_TRUE(result != map.end());
     EXPECT_EQ(result->first, key1);
     EXPECT_EQ(result->second, 1);
+    EXPECT_EQ(map[key1], 1);
+
+    const auto result2 = map.find(key2);
+    EXPECT_TRUE(result2 != map.end());
+    EXPECT_EQ(result2->first, key2);
+    EXPECT_EQ(result2->second, 2);
+    EXPECT_EQ(map[key2], 2);
 }
