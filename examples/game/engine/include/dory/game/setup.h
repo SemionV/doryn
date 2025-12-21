@@ -5,11 +5,15 @@
 #include "dory/core/repository.h"
 #include "dory/core/events.h"
 #include "dory/core/services/objectFactory.h"
+#include <dory/core/allocators.h>
 
 namespace dory::game
 {
     class DORY_DLL_API Setup: public core::ISetup
     {
+    private:
+        core::GlobalAllocatorType& _globalAllocator;
+
     private:
         template<typename TEventBundle>
         void registerEventBundle(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
@@ -62,6 +66,10 @@ namespace dory::game
         }
 
     public:
+        explicit Setup(core::GlobalAllocatorType& globalAllocator):
+            _globalAllocator(globalAllocator)
+        {}
+
         void setupRegistry(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry,
                             const core::resources::configuration::Configuration& configuration) override;
     };

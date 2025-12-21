@@ -44,7 +44,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 
     {
         DORY_TRACE_ZONE_NAMED(zoneBuildCoreObject, "game::main - Build Core Objects");
-        dory::game::Setup setup;
+        dory::game::Setup setup { segregationAllocator };
         dory::generic::extension::LibraryHandle staticLibraryHandle {};
         auto registry = dory::core::Registry{};
         auto configuration = dory::core::resources::configuration::Configuration{};

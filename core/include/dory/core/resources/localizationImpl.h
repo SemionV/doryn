@@ -2,8 +2,7 @@
 
 #include <dory/core/resources/localization.h>
 #include "parameterizedString.h"
-#include <dory/core/allocators.h>
-#include <dory/memory/allocationResource.h>
+#include <dory/generic/allocationResource.h>
 
 namespace dory::core::resources
 {

@@ -264,8 +264,8 @@ TEST(BasicHashMapTests, eraseTest)
     const auto key2 = DoryString{ "key2", *allocator };
     DoryHashMap<DoryString, int> map { *allocator,
     {
-            { key1, 1 },
-            { key2, 2 }
+        { key1, 1 },
+        { key2, 2 }
     }};
 
     EXPECT_EQ(map.size(), 2);
@@ -288,8 +288,8 @@ TEST(BasicHashMapTests, clearTest)
     const auto key2 = DoryString{ "key2", *allocator };
     DoryHashMap<DoryString, int> map { *allocator,
     {
-                { key1, 1 },
-                { key2, 2 }
+        { key1, 1 },
+        { key2, 2 }
     }};
 
     EXPECT_EQ(map.size(), 2);
