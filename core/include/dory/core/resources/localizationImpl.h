@@ -12,7 +12,8 @@ namespace dory::core::resources
     private:
         class GoodByeTemplate: public ParameterizedString<IGoodByeTemplate> {
         public:
-            std::string get(const std::string& name) final {
+            std::string get(const std::string& name) final
+            {
                 return format(name);
             }
         };
@@ -24,8 +25,8 @@ namespace dory::core::resources
             }
         };
 
-        memory::AllocationResource<GoodByeTemplate, TAllocator> _goodByeTemplate;
-        memory::AllocationResource<BirthDateTemplate, TAllocator> _birthDateTemplate;
+        generic::memory::AllocationResource<GoodByeTemplate, TAllocator> _goodByeTemplate;
+        generic::memory::AllocationResource<BirthDateTemplate, TAllocator> _birthDateTemplate;
 
     public:
         explicit LocalizationImpl(TAllocator& allocator):

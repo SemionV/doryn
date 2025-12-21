@@ -1,6 +1,6 @@
 #pragma once
 
-namespace dory::memory
+namespace dory::generic::memory
 {
     template<typename TResource, typename TAllocator>
     class AllocationResource
