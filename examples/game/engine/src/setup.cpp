@@ -91,107 +91,107 @@ namespace dory::game
         registerEventBufferBundle<core::events::filesystem::Bundle>(libraryHandle, registry);
         registerEventBufferBundle<core::events::scene::Bundle>(libraryHandle, registry);
 
-        registry.set<core::devices::IStandardIODevice>(libraryHandle, std::make_shared<core::devices::StandardIODevice>(registry));
+        registerService<core::devices::IStandardIODevice, core::devices::StandardIODevice>(libraryHandle, registry, registry);
         registerSingletonObjectFactory<core::devices::IDevice, core::devices::IStandardIODevice>("StandardIODevice", libraryHandle, registry);
 
-        registry.set<core::devices::ITerminalDevice>(libraryHandle, std::make_shared<core::devices::TerminalDevice>(registry));
+        registerService<core::devices::ITerminalDevice, core::devices::TerminalDevice>(libraryHandle, registry, registry);
         registerSingletonObjectFactory<core::devices::IDevice, core::devices::ITerminalDevice>("TerminalDevice", libraryHandle, registry);
 
-        registry.set<core::devices::IWindowSystemDevice, core::resources::WindowSystem::glfw>(libraryHandle, std::make_shared<core::devices::GlfwWindowSystemDevice>(registry));
+        registerService<core::devices::IWindowSystemDevice, core::resources::WindowSystem::glfw, core::devices::GlfwWindowSystemDevice>(libraryHandle, registry, registry);
         registerSingletonObjectFactory<core::devices::IDevice, core::devices::IWindowSystemDevice, core::resources::WindowSystem::glfw>("GlfwWindowSystemDevice", libraryHandle, registry);
 
-        registry.set<core::devices::IDisplaySystemDevice, core::resources::DisplaySystem::glfw>(libraryHandle, std::make_shared<core::devices::GlfwDisplaySystemDevice>(registry));
+        registerService<core::devices::IDisplaySystemDevice, core::resources::DisplaySystem::glfw, core::devices::GlfwDisplaySystemDevice>(libraryHandle, registry, registry);
         registerSingletonObjectFactory<core::devices::IDevice, core::devices::IDisplaySystemDevice, core::resources::DisplaySystem::glfw>("GlfwDisplaySystemDevice", libraryHandle, registry);
 
-        registry.set<core::devices::IFileWatcherDevice>(libraryHandle, std::make_shared<core::devices::FileWatcherDevice>(registry));
+        registerService<core::devices::IFileWatcherDevice, core::devices::FileWatcherDevice>(libraryHandle, registry, registry);
         registerSingletonObjectFactory<core::devices::IDevice, core::devices::IFileWatcherDevice>("FileWatcherDevice", libraryHandle, registry);
 
-        registry.set<core::devices::IGpuDevice, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::devices::OpenglGpuDevice>(registry));
+        registerService<core::devices::IGpuDevice, core::resources::GraphicalSystem::opengl, core::devices::OpenglGpuDevice>(libraryHandle, registry, registry);
         registerSingletonObjectFactory<core::devices::IDevice, core::devices::IGpuDevice, core::resources::GraphicalSystem::opengl>("OpenglGpuDevice", libraryHandle, registry);
 
-        registry.set<core::devices::IImageStreamDevice>(libraryHandle, std::make_shared<core::devices::ImageStreamDevice>(registry));
+        registerService<core::devices::IImageStreamDevice, core::devices::ImageStreamDevice>(libraryHandle, registry, registry);
         registerSingletonObjectFactory<core::devices::IDevice, core::devices::IImageStreamDevice>("ImageStreamDevice", libraryHandle, registry);
 
-        registry.set<core::repositories::IImageStreamRepository>(libraryHandle, std::make_shared<core::repositories::ImageStreamRepository>());
-        registry.set<core::repositories::IViewRepository>(libraryHandle, std::make_shared<core::repositories::ViewRepository>());
-        registry.set<core::repositories::IPipelineRepository>(libraryHandle, std::make_shared<core::repositories::PipelineRepository>());
+        registerService<core::repositories::IImageStreamRepository, core::repositories::ImageStreamRepository>(libraryHandle, registry);
+        registerService<core::repositories::IViewRepository, core::repositories::ViewRepository>(libraryHandle, registry);
+        registerService<core::repositories::IPipelineRepository, core::repositories::PipelineRepository>(libraryHandle, registry);
         registerRepository<core::resources::entities::Camera>(libraryHandle, registry);
-        auto sceneRepository = std::make_shared<core::repositories::EnttSceneRepository>();
+        const auto sceneRepository = createInstance<core::repositories::EnttSceneRepository>();
         registry.set<core::repositories::ISceneRepository, core::resources::EcsType::entt>(libraryHandle, sceneRepository);
         registry.set<core::repositories::ISceneRepository>(libraryHandle, sceneRepository);
 
-        auto windowRepository = std::make_shared<core::repositories::WindowRepository>();
+        const auto windowRepository = createInstance<core::repositories::WindowRepository>();
         registry.set<core::repositories::IWindowRepository>(libraryHandle, windowRepository);
         registry.set<core::repositories::IWindowRepository, core::resources::WindowSystem::glfw>(libraryHandle, windowRepository);
         registry.set<core::repositories::IWindowRepository, core::resources::WindowSystem::glfw>(libraryHandle, windowRepository);
 
-        registry.set<core::repositories::IGraphicalContextRepository>(libraryHandle, std::make_shared<core::repositories::GraphicalContextRepository>());
-        registry.set<core::repositories::assets::IMeshRepository>(libraryHandle, std::make_shared<core::repositories::assets::MeshRepository>());
-        registry.set<core::repositories::assets::IMaterialRepository>(libraryHandle, std::make_shared<core::repositories::assets::MaterialRepository>());
-        registry.set<core::repositories::assets::IShaderRepository>(libraryHandle, std::make_shared<core::repositories::assets::ShaderRepository>());
-        registry.set<core::repositories::bindings::IMeshBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::MeshBindingRepository>());
-        registry.set<core::repositories::bindings::IBufferBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::BufferBindingRepository>());
-        registry.set<core::repositories::bindings::IShaderBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::ShaderBindingRepository>());
-        registry.set<core::repositories::bindings::IMaterialBindingRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::bindings::MaterialBindingRepository>());
-        registry.set<core::repositories::ISceneConfigurationRepository>(libraryHandle, std::make_shared<core::repositories::SceneConfigurationRepository>());
-        registry.set<core::repositories::ILayoutRepository>(libraryHandle, std::make_shared<core::repositories::LayoutRepository>());
-        registry.set<core::repositories::IDisplayRepository, core::resources::DisplaySystem::glfw>(libraryHandle, std::make_shared<core::repositories::DisplayRepository>());
+        registerService<core::repositories::IGraphicalContextRepository, core::repositories::GraphicalContextRepository>(libraryHandle, registry);
+        registerService<core::repositories::assets::IMeshRepository, core::repositories::assets::MeshRepository>(libraryHandle, registry);
+        registerService<core::repositories::assets::IMaterialRepository, core::repositories::assets::MaterialRepository>(libraryHandle, registry);
+        registerService<core::repositories::assets::IShaderRepository, core::repositories::assets::ShaderRepository>(libraryHandle, registry);
+        registerService<core::repositories::bindings::IMeshBindingRepository, core::resources::GraphicalSystem::opengl, core::repositories::bindings::MeshBindingRepository>(libraryHandle, registry);
+        registerService<core::repositories::bindings::IBufferBindingRepository, core::resources::GraphicalSystem::opengl, core::repositories::bindings::BufferBindingRepository>(libraryHandle, registry);
+        registerService<core::repositories::bindings::IShaderBindingRepository, core::resources::GraphicalSystem::opengl, core::repositories::bindings::ShaderBindingRepository>(libraryHandle, registry);
+        registerService<core::repositories::bindings::IMaterialBindingRepository, core::resources::GraphicalSystem::opengl, core::repositories::bindings::MaterialBindingRepository>(libraryHandle, registry);
+        registerService<core::repositories::ISceneConfigurationRepository, core::repositories::SceneConfigurationRepository>(libraryHandle, registry);
+        registerService<core::repositories::ILayoutRepository, core::repositories::LayoutRepository>(libraryHandle, registry);
+        registerService<core::repositories::IDisplayRepository, core::resources::DisplaySystem::glfw, core::repositories::DisplayRepository>(libraryHandle, registry);
 
-        registry.set<core::repositories::IShaderRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::ShaderRepository>());
-        registry.set<core::repositories::IShaderProgramRepository, core::resources::GraphicalSystem::opengl>(libraryHandle, std::make_shared<core::repositories::ShaderProgramRepository>());
+        registerService<core::repositories::IShaderRepository, core::resources::GraphicalSystem::opengl, core::repositories::ShaderRepository>(libraryHandle, registry);
+        registerService<core::repositories::IShaderProgramRepository, core::resources::GraphicalSystem::opengl, core::repositories::ShaderProgramRepository>(libraryHandle, registry);
 
-        registry.set<core::services::IFileService>(libraryHandle, std::make_shared<core::services::FileService>());
-        registry.set<core::services::ILibraryService>(libraryHandle, std::make_shared<core::services::LibraryService>(registry));
+        registerService<core::services::IFileService, core::services::FileService>(libraryHandle, registry);
+        registerService<core::services::ILibraryService, core::services::LibraryService>(libraryHandle, registry, registry);
 
-        std::shared_ptr<core::services::IMultiSinkLogService> appLogger = std::make_shared<core::services::LogService>();
+        const auto appLogger = createInstance<core::services::LogService>();
         registry.set<core::services::IMultiSinkLogService, core::resources::Logger::App>(libraryHandle, appLogger);
         registry.set<core::services::ILogService, core::resources::Logger::App>(libraryHandle, appLogger);
         registry.set<core::services::ILogService>(libraryHandle, appLogger);
 
-        std::shared_ptr<core::services::IMultiSinkLogService> configLogger = std::make_shared<core::services::LogService>();
+        const auto configLogger = createInstance<core::services::LogService>();
         registry.set<core::services::IMultiSinkLogService, core::resources::Logger::Config>(libraryHandle, configLogger);
         registry.set<core::services::ILogService, core::resources::Logger::Config>(libraryHandle, configLogger);
 
-        registry.set<core::services::serialization::ISerializer, core::resources::DataFormat::yaml>(libraryHandle, std::make_shared<core::services::serialization::YamlSerializer>());
-        registry.set<core::services::serialization::ISerializer, core::resources::DataFormat::json>(libraryHandle, std::make_shared<core::services::serialization::JsonSerializer>());
-        registry.set<core::services::IDataFormatResolver>(libraryHandle, std::make_shared<core::services::DataFormatResolver>());
+        registerService<core::services::serialization::ISerializer, core::resources::DataFormat::yaml, core::services::serialization::YamlSerializer>(libraryHandle, registry);
+        registerService<core::services::serialization::ISerializer, core::resources::DataFormat::json, core::services::serialization::JsonSerializer>(libraryHandle, registry);
+        registerService<core::services::IDataFormatResolver, core::services::DataFormatResolver>(libraryHandle, registry);
 
-        registry.set<core::services::IScriptService>(libraryHandle, std::make_shared<core::services::ScriptService>(registry));
-        registry.set<core::services::IConfigurationService>(libraryHandle, std::make_shared<core::services::ConfigurationService>(registry));
-        registry.set<core::services::ILocalizationService>(libraryHandle, std::make_shared<core::services::LocalizationService>(registry));
-        registry.set<core::services::IPipelineService>(libraryHandle, std::make_shared<core::services::PipelineService>(registry));
-        registry.set<core::services::ILoopService>(libraryHandle, std::make_shared<core::services::LoopService>(registry));
+        registerService<core::services::IScriptService, core::services::ScriptService>(libraryHandle, registry, registry);
+        registerService<core::services::IConfigurationService, core::services::ConfigurationService>(libraryHandle, registry, registry);
+        registerService<core::services::ILocalizationService, core::services::LocalizationService>(libraryHandle, registry, registry);
+        registerService<core::services::IPipelineService, core::services::PipelineService>(libraryHandle, registry, registry);
+        registerService<core::services::ILoopService, core::services::LoopService>(libraryHandle, registry, registry);
 
-        registry.set<core::services::IWindowService>(libraryHandle, std::make_shared<core::services::WindowService>(registry));
-        registry.set<core::services::IViewService>(libraryHandle, std::make_shared<core::services::ViewService>(registry));
+        registerService<core::services::IWindowService, core::services::WindowService>(libraryHandle, registry, registry);
+        registerService<core::services::IViewService, core::services::ViewService>(libraryHandle, registry, registry);
 
-        registry.set<core::services::graphics::IRenderer>(libraryHandle, std::make_shared<core::services::graphics::Renderer>(registry));
-        registry.set<core::services::graphics::IAssetBinder>(libraryHandle, std::make_shared<core::services::graphics::MeshAssetBinder>(registry), core::resources::Name{ core::resources::AssetTypeName::mesh });
-        registry.set<core::services::graphics::IAssetBinder>(libraryHandle, std::make_shared<core::services::graphics::MaterialAssetBinder>(registry), core::resources::Name{ core::resources::AssetTypeName::material });
-        registry.set<core::services::graphics::IAssetBinder>(libraryHandle, std::make_shared<core::services::graphics::ShaderAssetBinder>(registry), core::resources::Name{ core::resources::AssetTypeName::shader });
+        registerService<core::services::graphics::IRenderer, core::services::graphics::Renderer>(libraryHandle, registry, registry);
+        registerService<core::services::graphics::IAssetBinder, core::services::graphics::MeshAssetBinder>(core::resources::Name{ core::resources::AssetTypeName::mesh }, libraryHandle, registry, registry);
+        registerService<core::services::graphics::IAssetBinder, core::services::graphics::MaterialAssetBinder>(core::resources::Name{ core::resources::AssetTypeName::material }, libraryHandle, registry, registry);
+        registerService<core::services::graphics::IAssetBinder, core::services::graphics::ShaderAssetBinder>(core::resources::Name{ core::resources::AssetTypeName::shader }, libraryHandle, registry, registry);
 
-        registry.set<core::services::IAssetTypeResolver>(libraryHandle, std::make_shared<core::services::AssetTypeResolver>());
-        registry.set<core::services::IAssetReloadHandler>(libraryHandle, std::make_shared<core::services::loaders::ExtensionLoader>(registry), std::string{core::resources::AssetTypeName::extension});
-        registry.set<core::services::generators::IMeshGenerator>(libraryHandle, std::make_shared<core::services::generators::MeshGenerator>());
+        registerService<core::services::IAssetTypeResolver, core::services::AssetTypeResolver>(libraryHandle, registry);
+        registerService<core::services::IAssetReloadHandler, core::services::loaders::ExtensionLoader>(std::string{core::resources::AssetTypeName::extension}, libraryHandle, registry, registry);
+        registerService<core::services::generators::IMeshGenerator, core::services::generators::MeshGenerator>(libraryHandle, registry);
 
-        auto sceneService = std::make_shared<core::services::EnttSceneService>();
+        const auto sceneService = createInstance<core::services::EnttSceneService>();
         registry.set<core::services::ISceneService>(libraryHandle, sceneService);
         registry.set<core::services::ISceneService, core::resources::EcsType::entt>(libraryHandle, sceneService);
 
-        auto sceneQueryService = std::make_shared<core::services::EnttSceneQueryService>(registry);
+        const auto sceneQueryService = createInstance<core::services::EnttSceneQueryService>(registry);
         registry.set<core::services::ISceneQueryService, core::resources::EcsType::entt>(libraryHandle, sceneQueryService);
 
-        registry.set<core::services::IImageStreamService>(libraryHandle, std::make_shared<core::services::ImageStreamService>(registry));
-        registry.set<core::services::files::IImageFileService, core::resources::AssetFileFormat::bmp>(libraryHandle, std::make_shared<core::services::files::BmpImageFileService>());
-        registry.set<core::services::files::IImageFileService, core::resources::AssetFileFormat::png>(libraryHandle, std::make_shared<core::services::files::PngImageFileService>());
+        registerService<core::services::IImageStreamService, core::services::ImageStreamService>(libraryHandle, registry, registry);
+        registerService<core::services::files::IImageFileService, core::resources::AssetFileFormat::bmp, core::services::files::BmpImageFileService>(libraryHandle, registry);
+        registerService<core::services::files::IImageFileService, core::resources::AssetFileFormat::png, core::services::files::PngImageFileService>(libraryHandle, registry);
 
-        registry.set<core::services::IProfilingService>(libraryHandle, std::make_shared<core::services::ProfilingService>(registry));
+        registerService<core::services::IProfilingService, core::services::ProfilingService>(libraryHandle, registry, registry);
 
-        registry.set<core::services::ISceneConfigurationService>(libraryHandle, std::make_shared<core::services::SceneConfigurationService>(registry));
-        registry.set<core::services::ISceneBuilder>(libraryHandle, std::make_shared<core::services::SceneBuilder>(registry));
+        registerService<core::services::ISceneConfigurationService, core::services::SceneConfigurationService>(libraryHandle, registry, registry);
+        registerService<core::services::ISceneBuilder, core::services::SceneBuilder>(libraryHandle, registry, registry);
 
-        registry.set<core::services::ILayoutSetupService>(libraryHandle, std::make_shared<core::services::LayoutSetupService>());
-        registry.set<core::services::ILayoutService>(libraryHandle, std::make_shared<core::services::LayoutService>());
+        registerService<core::services::ILayoutSetupService, core::services::LayoutSetupService>(libraryHandle, registry);
+        registerService<core::services::ILayoutService, core::services::LayoutService>(libraryHandle, registry);
 
         registerObjectFactory<core::ITrigger, core::triggers::TimeFrameTrigger>("TimeFrameTrigger", libraryHandle, registry);
 

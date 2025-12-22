@@ -55,8 +55,7 @@ namespace dory::game
                     typename TEventBundle::IDispatcher,
                     typename TEventBundle::EventListType>;
 
-            std::pmr::polymorphic_allocator<DispatcherType> pa{ &_globalResource };
-            auto instance = std::allocate_shared<DispatcherType>(pa);
+            auto instance = createInstance<DispatcherType>();
 
             registry.set<typename TEventBundle::IDispatcher>(libraryHandle, instance);
             registry.set<typename TEventBundle::IListener>(libraryHandle, instance);
@@ -69,8 +68,7 @@ namespace dory::game
                     typename TEventBundle::IDispatcher,
                     typename TEventBundle::EventListType>;
 
-            std::pmr::polymorphic_allocator<DispatcherType> pa{ &_globalResource };
-            auto instance = std::allocate_shared<DispatcherType>(pa);
+            auto instance = createInstance<DispatcherType>();
 
             registry.set<typename TEventBundle::IDispatcher>(libraryHandle, instance);
             registry.set<typename TEventBundle::IListener>(libraryHandle, instance);
@@ -79,8 +77,7 @@ namespace dory::game
         template<typename TEntity>
         void registerRepository(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
         {
-            std::pmr::polymorphic_allocator<core::repositories::Repository<TEntity>> pa{ &_globalResource };
-            auto instance = std::allocate_shared<core::repositories::Repository<TEntity>>(pa);
+            auto instance = createInstance<core::repositories::Repository<TEntity>>();
 
             registry.set<core::repositories::IRepository<TEntity>>(libraryHandle, instance);
         }
@@ -88,8 +85,7 @@ namespace dory::game
         template<typename TInterface, typename TImplementation>
         void registerObjectFactory(const char* name, const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
         {
-            std::pmr::polymorphic_allocator<core::services::ObjectFactory<TInterface, TImplementation>> pa{ &_globalResource };
-            auto factory = std::allocate_shared<core::services::ObjectFactory<TInterface, TImplementation>>(pa, libraryHandle, registry);
+            auto factory = createInstance<core::services::ObjectFactory<TInterface, TImplementation>>(libraryHandle, registry);
 
             registry.set<core::services::IObjectFactory<TInterface>>(libraryHandle, factory, core::resources::Name{ name });
         }
@@ -97,8 +93,7 @@ namespace dory::game
         template<typename TInterface, typename TInstanceInterface>
         void registerSingletonObjectFactory(const char* name, const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
         {
-            std::pmr::polymorphic_allocator<core::services::SingletonObjectFactory<TInterface, TInstanceInterface>> pa{ &_globalResource };
-            auto factory = std::allocate_shared<core::services::SingletonObjectFactory<TInterface, TInstanceInterface>>(pa, registry);
+            auto factory = createInstance<core::services::SingletonObjectFactory<TInterface, TInstanceInterface>>(registry);
 
             registry.set<core::services::IObjectFactory<TInterface>>(libraryHandle, factory, core::resources::Name{ name });
         }
@@ -107,10 +102,37 @@ namespace dory::game
         void registerSingletonObjectFactory(const char* name, const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
         {
             using ObjectFactoryType = core::services::SingletonIdentifierObjectFactory<TInterface, TInstanceInterface, Identifier>;
-            std::pmr::polymorphic_allocator<ObjectFactoryType> pa{ &_globalResource };
-            auto factory = std::allocate_shared<ObjectFactoryType>(pa, registry);
+            auto factory = createInstance<ObjectFactoryType>(registry);
 
             registry.set<core::services::IObjectFactory<TInterface>>(libraryHandle, factory, core::resources::Name{ name });
+        }
+
+        template<typename TInterface, typename TImplementation, typename... TArgs>
+        void registerService(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry, TArgs&&... args)
+        {
+            auto instance = createInstance<TImplementation>(std::forward<TArgs>(args)...);
+            registry.set<TInterface>(libraryHandle, instance);
+        }
+
+        template<typename TInterface, auto Identifier, typename TImplementation, typename... TArgs>
+        void registerService(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry, TArgs&&... args)
+        {
+            auto instance = createInstance<TImplementation>(std::forward<TArgs>(args)...);
+            registry.set<TInterface, Identifier>(libraryHandle, instance);
+        }
+
+        template<typename TInterface, typename TImplementation, typename TIdentifier, typename... TArgs>
+        void registerService(TIdentifier identifier, const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry, TArgs&&... args)
+        {
+            auto instance = createInstance<TImplementation>(std::forward<TArgs>(args)...);
+            registry.set<TInterface>(libraryHandle, instance, identifier);
+        }
+
+        template<typename T, typename... TArgs>
+        std::shared_ptr<T> createInstance(TArgs&&... args)
+        {
+            std::pmr::polymorphic_allocator<T> pa{ &_globalResource };
+            return std::allocate_shared<T>(pa, std::forward<TArgs>(args)...);
         }
 
     public:
