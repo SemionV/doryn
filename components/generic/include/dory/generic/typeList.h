@@ -43,7 +43,18 @@ namespace dory::generic
 
     template<typename TValue, TValue... Values>
     struct ValueList
-    {};
+    {
+        using ValueType = TValue;
+    };
+
+    template <typename TList>
+    struct ValueListLength;
+
+    template <typename TValue, TValue... Values>
+    struct ValueListLength<ValueList<TValue, Values...>>
+    {
+        static constexpr std::size_t value = sizeof...(Values);
+    };
 
     template <std::size_t Index, typename TValue, TValue SearchValue, TValue... List>
     struct ValueIndexTraverse;
