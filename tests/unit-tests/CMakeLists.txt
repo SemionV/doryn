@@ -16,7 +16,8 @@ add_executable(${PROJECT_NAME}
         memoriaTests.cpp
         src/concurrency.cpp
         src/memory.cpp
-        src/containers.cpp)
+        src/containers.cpp
+        src/registry.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-core)

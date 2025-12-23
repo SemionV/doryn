@@ -3,7 +3,6 @@
 #include <filesystem>
 #include <dory/generic/typeList.h>
 #include <dory/core/resources/configuration.h>
-#include <dory/core/resources/configuration.h>
 
 namespace dory::core::services
 {
