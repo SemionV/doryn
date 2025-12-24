@@ -1,30 +1,32 @@
 #pragma once
 
+#include <utility>
+
 #include "iLibrary.h"
 #include "resourceRef.h"
 #include "libraryHandle.h"
 
 namespace dory::generic::extension
 {
-    template<typename TResource>
-    class ResourceHandle
+    template<typename TResource, template<class> class TImplementation>
+    class ResourceHandleRoot
     {
     protected:
         TResource _resource;
         LibraryHandle _library;
 
     public:
-        ResourceHandle() = default;
+        ResourceHandleRoot() = default;
 
-        explicit ResourceHandle(const LibraryHandle& library, TResource resource):
-                _library(library),
-                _resource(resource)
+        explicit ResourceHandleRoot(LibraryHandle  library, TResource resource):
+                _resource(resource),
+                _library(std::move(library))
         {}
 
         template<typename TResourceParentType>
-        ResourceHandle<TResourceParentType> clone()
+        TImplementation<TResourceParentType> clone()
         {
-            return ResourceHandle<TResourceParentType>{ _library, _resource };
+            return TImplementation<TResourceParentType>{ _library, _resource };
         }
 
         ResourceRef<TResource> lock() const
@@ -39,48 +41,42 @@ namespace dory::generic::extension
         }
     };
 
-    template<typename TInterface>
-    class ResourceHandle<std::shared_ptr<TInterface>>
+    template<typename TResource>
+    class ResourceHandle: public ResourceHandleRoot<TResource, ResourceHandle>
     {
-    private:
-        std::shared_ptr<TInterface> _resource;
-        LibraryHandle _library;
+    public:
+        ResourceHandle() = default;
 
+        explicit ResourceHandle(const LibraryHandle& library, TResource resource):
+        ResourceHandleRoot<TResource, ResourceHandle>(library, resource)
+        {}
+    };
+
+    template<typename TInterface>
+    class ResourceHandle<std::shared_ptr<TInterface>>: public ResourceHandleRoot<std::shared_ptr<TInterface>, ResourceHandle>
+    {
     public:
         ResourceHandle() = default;
 
         explicit ResourceHandle(const LibraryHandle& library, std::shared_ptr<TInterface> resource):
-                _library(library),
-                _resource(resource)
+                ResourceHandleRoot<std::shared_ptr<TInterface>, ResourceHandle>(library, resource)
         {}
-
-        template<typename TResourceParentType>
-        ResourceHandle<TResourceParentType> clone()
-        {
-            return ResourceHandle<TResourceParentType>{ _library, _resource };
-        }
 
         ResourceRef<std::shared_ptr<TInterface>> lock() const
         {
-            if(_library.isStatic())
-            {
-                return ResourceRef<std::shared_ptr<TInterface>>{{}, _resource};
-            }
-
-            auto library = _library.lock();
-            return ResourceRef<std::shared_ptr<TInterface>>{ library && library->isLoaded() ? library : nullptr, _resource };
+            return ResourceHandleRoot<std::shared_ptr<TInterface>, ResourceHandle>::lock();
         }
 
         template<typename TCast>
         ResourceRef<std::shared_ptr<TCast>> lock() const
         {
-            if(_library.isStatic())
+            if(this->_library.isStatic())
             {
-                return ResourceRef<std::shared_ptr<TCast>>{{}, std::static_pointer_cast<TCast>(_resource)};
+                return ResourceRef<std::shared_ptr<TCast>>{{}, std::static_pointer_cast<TCast>(this->_resource)};
             }
 
-            auto library = _library.lock();
-            return ResourceRef<std::shared_ptr<TCast>>{ library && library->isLoaded() ? library : nullptr, std::static_pointer_cast<TCast>(_resource) };
+            auto library = this->_library.lock();
+            return ResourceRef<std::shared_ptr<TCast>>{ library && library->isLoaded() ? library : nullptr, std::static_pointer_cast<TCast>(this->_resource) };
         }
     };
 

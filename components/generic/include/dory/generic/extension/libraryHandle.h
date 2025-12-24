@@ -30,6 +30,9 @@ namespace dory::generic::extension
             return !(bool)_libraryOption;
         }
 
+        template<typename U, template<class> class TT>
+        friend class ResourceHandleRoot;
+
         template<typename U>
         friend class ResourceHandle;
     };
