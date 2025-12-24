@@ -127,10 +127,10 @@ public:
         const auto index = getServiceEntryIndex<TServiceInterface>();
         if(auto entry = _services[index])
         {
-            return entry->lock();
+            return entry->template lock<TServiceInterface>();
         }
 
-        return dory::generic::extension::ResourceRef<ServicePointerType>{ {}, nullptr };
+        return dory::generic::extension::ResourceRef<std::shared_ptr<TServiceInterface>>{ {}, nullptr };
     }
 };
 
