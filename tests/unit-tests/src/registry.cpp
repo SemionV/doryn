@@ -93,8 +93,9 @@ class Registry
 {
 private:
     using BaseInterfaceType = void;
-    using ServicePointerType = std::shared_ptr<BaseInterfaceType>;
-    using ServiceHandleType = dory::generic::extension::ResourceHandle<ServicePointerType>;
+    template<typename TInterface>
+    using ServicePointerType = std::shared_ptr<TInterface>;
+    using ServiceHandleType = dory::generic::extension::ResourceHandle<ServicePointerType<BaseInterfaceType>>;
     using StorageEntryType = std::optional<ServiceHandleType>;
     std::array<StorageEntryType, ServiceCount<TServiceList>::value> _services;
 
@@ -115,7 +116,7 @@ public:
     }
 
     template<typename TServiceInterface>
-    void set(const dory::generic::extension::LibraryHandle& libraryHandle, const ServicePointerType& service)
+    void set(const dory::generic::extension::LibraryHandle& libraryHandle, const ServicePointerType<BaseInterfaceType>& service)
     {
         const auto index = getServiceEntryIndex<TServiceInterface>();
         _services[index] = dory::generic::extension::ResourceHandle{ libraryHandle, std::static_pointer_cast<BaseInterfaceType>(service) };
@@ -130,7 +131,7 @@ public:
             return entry->template lock<TServiceInterface>();
         }
 
-        return dory::generic::extension::ResourceRef<std::shared_ptr<TServiceInterface>>{ {}, nullptr };
+        return dory::generic::extension::ResourceRef<ServicePointerType<TServiceInterface>>{ {}, nullptr };
     }
 };
 
