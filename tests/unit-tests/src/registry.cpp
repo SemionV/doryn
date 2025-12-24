@@ -3,20 +3,22 @@
 #include <dory/generic/typeList.h>
 #include <array>
 #include <dory/generic/extension/resourceHandle.h>
+#include <dory/generic/extension/libraryHandle.h>
 
-class ServiceInterface
+class IRenderService
 {};
 
-class IRenderService: public ServiceInterface
+class RenderService: public IRenderService
+{
+};
+
+class IResourceService
 {};
 
-class IResourceService: public ServiceInterface
+class IAudioService
 {};
 
-class IAudioService: public ServiceInterface
-{};
-
-class IPhysicsService: public ServiceInterface
+class IPhysicsService
 {};
 
 enum class ServiceIdentifier
@@ -90,12 +92,45 @@ template<typename TServiceList>
 class Registry
 {
 private:
-    std::array<dory::generic::extension::ResourceHandle<std::shared_ptr<ServiceInterface>>, ServiceCount<TServiceList>::value> _services;
+    using BaseInterfaceType = void;
+    using ServicePointerType = std::shared_ptr<BaseInterfaceType>;
+    using ServiceHandleType = dory::generic::extension::ResourceHandle<ServicePointerType>;
+    using StorageEntryType = std::optional<ServiceHandleType>;
+    std::array<StorageEntryType, ServiceCount<TServiceList>::value> _services;
+
+private:
+    template<typename TServiceInterface>
+    constexpr int getServiceEntryIndex()
+    {
+        constexpr auto index = ServiceIndex<TServiceInterface, ServiceIdentifier::Default, TServiceList>::value;
+        static_assert(index >= 0 && index < dory::generic::Length<TServiceList>::value); //Index is out of range
+
+        return index;
+    }
 
 public:
     std::size_t getServiceSlotCount()
     {
         return _services.size();
+    }
+
+    template<typename TServiceInterface>
+    void set(const dory::generic::extension::LibraryHandle& libraryHandle, const ServicePointerType& service)
+    {
+        const auto index = getServiceEntryIndex<TServiceInterface>();
+        _services[index] = dory::generic::extension::ResourceHandle{ libraryHandle, std::static_pointer_cast<BaseInterfaceType>(service) };
+    }
+
+    template<typename TServiceInterface>
+    auto get()
+    {
+        const auto index = getServiceEntryIndex<TServiceInterface>();
+        if(auto entry = _services[index])
+        {
+            return entry->lock();
+        }
+
+        return dory::generic::extension::ResourceRef<ServicePointerType>{ {}, nullptr };
     }
 };
 
@@ -119,4 +154,10 @@ TEST(GenericTests, typeList)
 
     constexpr auto index3 = ServiceIndex<IRenderService, ServiceIdentifier::Default, ServiceListLocal>::value;
     EXPECT_EQ(index3, 0);
+
+    const auto renderService = std::make_shared<RenderService>();
+    registry.set<IRenderService>(dory::generic::extension::LibraryHandle{}, renderService);
+
+    auto renderServiceRef = registry.get<IRenderService>();
+    EXPECT_TRUE(renderServiceRef.operator bool());
 }
