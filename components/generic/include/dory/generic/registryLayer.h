@@ -3,7 +3,7 @@
 #include <memory>
 #include <map>
 #include <type_traits>
-    #include "extension/resourceHandle.h"
+#include "extension/resourceHandle.h"
 
 namespace dory::generic::registry
 {
