@@ -63,12 +63,55 @@ namespace dory::generic
     struct ValueIndexTraverse<Index, TValue, SearchValue, Value, List...>
     {
         static constexpr int value = SearchValue == Value ? Index : ValueIndexTraverse<Index + 1, TValue, SearchValue, List...>::value;
+
+        static int get(TValue searchValue)
+        {
+            if(searchValue == Value)
+            {
+                return Index;
+            }
+
+            return ValueIndexTraverse<Index + 1, TValue, SearchValue, List...>::get(searchValue);
+        }
     };
 
     template <std::size_t Index, typename TValue, TValue SearchValue>
     struct ValueIndexTraverse<Index, TValue, SearchValue>
     {
         static constexpr int value = -1;
+
+        static int get(TValue searchValue)
+        {
+            return -1;
+        }
+    };
+
+    template <std::size_t Index, typename TValue, TValue... List>
+    struct ValueIndexTraverseRuntime;
+
+    template <std::size_t Index, typename TValue, TValue Value, TValue... List>
+    struct ValueIndexTraverseRuntime<Index, TValue, Value, List...>
+    {
+        static int get(TValue searchValue)
+        {
+            if(searchValue == Value)
+            {
+                return Index;
+            }
+
+            return ValueIndexTraverseRuntime<Index + 1, TValue, List...>::get(searchValue);
+        }
+    };
+
+    template <std::size_t Index, typename TValue>
+    struct ValueIndexTraverseRuntime<Index, TValue>
+    {
+        static constexpr int value = -1;
+
+        static int get(TValue searchValue)
+        {
+            return -1;
+        }
     };
 
     template<auto SearchValue, typename TValueList>
@@ -78,5 +121,22 @@ namespace dory::generic
     struct ValueIndex<SearchValue, ValueList<TValue, Values...>>
     {
         static constexpr int value = ValueIndexTraverse<0, TValue, SearchValue, Values...>::value;
+
+        static int get(TValue searchValue)
+        {
+            return ValueIndexTraverse<0, TValue, SearchValue, Values...>::get(searchValue);
+        }
+    };
+
+    template<typename TValueList>
+    struct ValueIndexRuntime;
+
+    template<typename TValue, TValue... Values>
+    struct ValueIndexRuntime<ValueList<TValue, Values...>>
+    {
+        static int get(TValue searchValue)
+        {
+            return ValueIndexTraverseRuntime<0, TValue, Values...>::get(searchValue);
+        }
     };
 }

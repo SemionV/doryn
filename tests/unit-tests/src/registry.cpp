@@ -4,6 +4,7 @@
 #include <array>
 #include <dory/generic/extension/resourceHandle.h>
 #include <dory/generic/extension/libraryHandle.h>
+#include <dory/macros/assert.h>
 
 class IRenderService
 {};
@@ -92,6 +93,22 @@ struct ServiceIndex<TServiceInterface, Identifier, dory::generic::TypeList<TServ
     static_assert(value >= 0); // Service Interface is not registered
 };
 
+template<typename TServiceInterface, typename TServiceList>
+struct ServiceIndexRuntime;
+
+template<typename TServiceInterface, typename... TServices>
+struct ServiceIndexRuntime<TServiceInterface, dory::generic::TypeList<TServices...>>
+{
+    using IndexTraverseType = ServiceIndexTraverse<0, TServiceInterface, TServices...>;
+    static constexpr int value = IndexTraverseType::value;
+    static_assert(value >= 0); // Service Interface is not registered
+
+    static int get(IndexTraverseType::ServiceEntryType::IdentifierListType::ValueType searchValue)
+    {
+        return value + dory::generic::ValueIndexRuntime<typename IndexTraverseType::ServiceEntryType::IdentifierListType>::get(searchValue);
+    }
+};
+
 template<typename TServiceList>
 class Registry
 {
@@ -113,13 +130,22 @@ private:
         return index;
     }
 
-    void set(std::size_t index, const dory::generic::extension::LibraryHandle& libraryHandle, const ServicePointerType<BaseInterfaceType>& service)
+    template<typename TServiceInterface, typename TIdentifier>
+    constexpr int getServiceEntryIndex(TIdentifier identifier)
+    {
+        const auto index = ServiceIndexRuntime<TServiceInterface, TServiceList>::get(identifier);
+        dory::assert::debug(index >= 0 && index < dory::generic::Length<TServiceList>::value, "Index is out of range");
+
+        return index;
+    }
+
+    void set_internal(std::size_t index, const dory::generic::extension::LibraryHandle& libraryHandle, const ServicePointerType<BaseInterfaceType>& service)
     {
         _services[index] = dory::generic::extension::ResourceHandle{ libraryHandle, std::static_pointer_cast<BaseInterfaceType>(service) };
     }
 
     template<typename TServiceInterface>
-    auto get(std::size_t index)
+    auto get_internal(std::size_t index)
     {
         if(auto entry = _services[index])
         {
@@ -139,28 +165,35 @@ public:
     void set(const dory::generic::extension::LibraryHandle& libraryHandle, const ServicePointerType<BaseInterfaceType>& service)
     {
         const auto index = getServiceEntryIndex<TServiceInterface>();
-        set(index, libraryHandle, service);
+        set_internal(index, libraryHandle, service);
     }
 
     template<typename TServiceInterface, auto Identifier>
     void set(const dory::generic::extension::LibraryHandle& libraryHandle, const ServicePointerType<BaseInterfaceType>& service)
     {
         const auto index = getServiceEntryIndex<TServiceInterface, Identifier>();
-        set(index, libraryHandle, service);
+        set_internal(index, libraryHandle, service);
     }
 
     template<typename TServiceInterface>
     auto get()
     {
         const auto index = getServiceEntryIndex<TServiceInterface>();
-        return get<TServiceInterface>(index);
+        return get_internal<TServiceInterface>(index);
     }
 
     template<typename TServiceInterface, auto Identifier>
     auto get()
     {
         const auto index = getServiceEntryIndex<TServiceInterface, Identifier>();
-        return get<TServiceInterface>(index);
+        return get_internal<TServiceInterface>(index);
+    }
+
+    template<typename TServiceInterface, typename TIdentifier>
+    auto get(TIdentifier&& identifier)
+    {
+        const auto index = getServiceEntryIndex<TServiceInterface>(identifier);
+        return get_internal<TServiceInterface>(index);
     }
 };
 
@@ -196,4 +229,7 @@ TEST(GenericTests, typeList)
 
     auto resourceServiceRef = registry.get<IResourceService, 2>();
     EXPECT_TRUE(resourceServiceRef.operator bool());
+
+    auto resourceServiceRef2 = registry.get<IResourceService>(2);
+    EXPECT_TRUE(resourceServiceRef2.operator bool());
 }
