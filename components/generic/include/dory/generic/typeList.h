@@ -106,8 +106,6 @@ namespace dory::generic
     template <std::size_t Index, typename TValue>
     struct ValueIndexTraverseRuntime<Index, TValue>
     {
-        static constexpr int value = -1;
-
         static int get(TValue searchValue)
         {
             return -1;
@@ -137,6 +135,38 @@ namespace dory::generic
         static int get(TValue searchValue)
         {
             return ValueIndexTraverseRuntime<0, TValue, Values...>::get(searchValue);
+        }
+    };
+
+    /*template <std::size_t Index, typename TValue, TValue... List>
+    struct ValueArrayTraverse;
+
+    template <std::size_t Index, typename TValue, TValue Value, TValue... List>
+    struct ValueArrayTraverse<Index, TValue, Value, List...>
+    {
+        static constexpr void setValue(TValue* array)
+        {
+            array[Index] = Value;
+            return ValueArrayTraverse<Index + 1, TValue, List...>::setValue(array);
+        }
+    };
+
+    template <std::size_t Index, typename TValue>
+    struct ValueArrayTraverse<Index, TValue>
+    {
+        static constexpr void setValue(TValue* array)
+        {}
+    };*/
+
+    template<typename TValueList>
+    struct ValueArray;
+
+    template<typename TValue, TValue... Values>
+    struct ValueArray<ValueList<TValue, Values...>>
+    {
+        static constexpr auto get()
+        {
+            return std::array<TValue, ValueListLength<ValueList<TValue, Values...>>::value>{ Values... };
         }
     };
 }

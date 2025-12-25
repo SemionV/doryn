@@ -31,6 +31,13 @@ enum class ServiceIdentifier
     Default
 };
 
+template<typename TServiceInterface, auto Identifier>
+struct ServiceQuery
+{
+    using InterfaceType = TServiceInterface;
+    static constexpr decltype(Identifier) identifier = Identifier;
+};
+
 template<typename TServiceInterface, typename TIdentifierList = dory::generic::ValueList<ServiceIdentifier, ServiceIdentifier::Default>>
 struct ServiceListEntry
 {
@@ -155,6 +162,35 @@ private:
         return dory::generic::extension::ResourceRef<ServicePointerType<TServiceInterface>>{ {}, nullptr };
     }
 
+    void reset_internal(std::size_t index)
+    {
+        _services[index] = {};
+    }
+
+    auto& getHandle_internal(std::size_t index)
+    {
+        return _services[index];
+    }
+
+    template<typename A, typename TServiceInterface>
+    void invoke(const std::size_t index, const A& action)
+    {
+        auto service = get_internal<TServiceInterface>(index);
+        if(service.operator bool())
+        {
+            action((*service).get());
+        }
+    }
+
+    template<typename TAction, typename... TServiceInterface>
+    void invoke(TAction&& action, dory::generic::extension::ResourceRef<std::shared_ptr<TServiceInterface>>... serviceRefs)
+    {
+        if((serviceRefs && ...))
+        {
+            action((*serviceRefs).get()...);
+        }
+    }
+
 public:
     std::size_t getServiceSlotCount()
     {
@@ -175,6 +211,34 @@ public:
         set_internal(index, libraryHandle, service);
     }
 
+    template<typename TServiceInterface, typename TIdentifier>
+    void set(const dory::generic::extension::LibraryHandle& libraryHandle, const ServicePointerType<BaseInterfaceType>& service, TIdentifier&& identifier)
+    {
+        const auto index = getServiceEntryIndex<TServiceInterface>(std::forward<TIdentifier>(identifier));
+        set_internal(index, libraryHandle, service);
+    }
+
+    template<typename TServiceInterface>
+    void reset()
+    {
+        const auto index = getServiceEntryIndex<TServiceInterface>();
+        reset_internal(index);
+    }
+
+    template<typename TServiceInterface, auto Identifier>
+    void reset()
+    {
+        const auto index = getServiceEntryIndex<TServiceInterface, Identifier>();
+        reset_internal(index);
+    }
+
+    template<typename TServiceInterface, typename TIdentifier>
+    void reset(TIdentifier identifier)
+    {
+        const auto index = getServiceEntryIndex<TServiceInterface>(identifier);
+        reset_internal(index);
+    }
+
     template<typename TServiceInterface>
     auto get()
     {
@@ -192,8 +256,65 @@ public:
     template<typename TServiceInterface, typename TIdentifier>
     auto get(TIdentifier&& identifier)
     {
-        const auto index = getServiceEntryIndex<TServiceInterface>(identifier);
+        const auto index = getServiceEntryIndex<TServiceInterface>(std::forward<TIdentifier>(identifier));
         return get_internal<TServiceInterface>(index);
+    }
+
+    template<typename TServiceInterface, typename A>
+    requires(std::is_invocable_v<A, TServiceInterface*>)
+    void get(A&& action)
+    {
+        const auto index = getServiceEntryIndex<TServiceInterface>();
+        invoke<TServiceInterface>(index, std::forward<TServiceInterface>(action));
+    }
+
+    template<typename TServiceInterface, auto Identifier, typename A>
+    void get(A&& action)
+    {
+        const auto index = getServiceEntryIndex<TServiceInterface, Identifier>();
+        invoke<TServiceInterface>(index, std::forward<TServiceInterface>(action));
+    }
+
+    template<typename TServiceInterface, typename TIdentifier, typename A>
+    void get(TIdentifier identifier, A&& action)
+    {
+        const auto index = getServiceEntryIndex<TServiceInterface>(identifier);
+        invoke<TServiceInterface>(index, std::forward<TServiceInterface>(action));
+    }
+
+    template<typename... TServiceQuery, typename A>
+    requires(std::is_invocable_v<A, typename TServiceQuery::InterfaceType*...>)
+    void get(A&& action)
+    {
+        invoke(std::forward<A>(action), get<typename TServiceQuery::InterfaceType, std::decay_t<decltype(TServiceQuery::identifier)>>()...);
+    }
+
+    template<typename TServiceInterface, typename A>
+    void getAll(A&& action)
+    {
+        //auto values = dory::generic::ValueArray<>
+        //this->RegistrationEntry<TService, TIdentifier>::_getAll(std::forward<A>(action));
+    }
+
+    template<typename TServiceInterface>
+    auto getHandle()
+    {
+        const auto index = getServiceEntryIndex<TServiceInterface>();
+        return getHandle_internal(index);
+    }
+
+    template<typename TServiceInterface, auto Identifier>
+    auto getHandle()
+    {
+        const auto index = getServiceEntryIndex<TServiceInterface, Identifier>();
+        return getHandle_internal(index);
+    }
+
+    template<typename TServiceInterface, typename TIdentifier>
+    auto getHandle(TIdentifier&& identifier)
+    {
+        const auto index = getServiceEntryIndex<TServiceInterface>(std::forward<TIdentifier>(identifier));
+        return getHandle_internal(index);
     }
 };
 
