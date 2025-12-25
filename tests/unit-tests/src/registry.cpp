@@ -116,6 +116,19 @@ struct ServiceIndexRuntime<TServiceInterface, dory::generic::TypeList<TServices.
     }
 };
 
+template<typename TServiceInterface, typename TServiceList>
+struct ServiceIndexAnchor;
+
+template<typename TServiceInterface, typename... TServices>
+struct ServiceIndexAnchor<TServiceInterface, dory::generic::TypeList<TServices...>>
+{
+    using IndexTraverseType = ServiceIndexTraverse<0, TServiceInterface, TServices...>;
+    using ServiceEntryType = IndexTraverseType::ServiceEntryType;
+    using ServiceIdentifierType = ServiceEntryType::IdentifierListType::ValueType;
+    static constexpr int value = IndexTraverseType::value;
+    static_assert(value >= 0); // Service Interface is not registered
+};
+
 template<typename TServiceList>
 class Registry
 {
@@ -292,8 +305,14 @@ public:
     template<typename TServiceInterface, typename A>
     void getAll(A&& action)
     {
-        //auto values = dory::generic::ValueArray<>
-        //this->RegistrationEntry<TService, TIdentifier>::_getAll(std::forward<A>(action));
+        using ServiceAnchorType = ServiceIndexAnchor<TServiceInterface, TServiceList>;
+        constexpr auto identifiers = dory::generic::ValueArray<typename ServiceAnchorType::ServiceEntryType::IdentifierListType>::get();
+        for(auto identifier : identifiers)
+        {
+            auto serviceRef = get<TServiceInterface>(identifier);
+            TServiceInterface* service = (*serviceRef).get();
+            action(identifier, service);
+        }
     }
 
     template<typename TServiceInterface>
@@ -353,4 +372,9 @@ TEST(GenericTests, typeList)
 
     auto resourceServiceRef2 = registry.get<IResourceService>(2);
     EXPECT_TRUE(resourceServiceRef2.operator bool());
+
+    registry.getAll<IResourceService>([](const int identifier, IResourceService* service)
+    {
+        std::cout << "id: " << identifier << std::endl;
+    });
 }
