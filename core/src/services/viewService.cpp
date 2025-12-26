@@ -8,7 +8,7 @@ namespace dory::core::services
 
     void ViewService::updateViews(resources::scene::SceneViewStateSet& viewStates, float alpha, resources::profiling::Profiling& profiling)
     {
-        auto windowRepository = _registry.get<repositories::IWindowRepository>();
+        auto windowRepository = _registry.get<repositories::IWindowRepository, resources::WindowSystem::glfw>();
         auto graphicalContextRepository = _registry.get<repositories::IGraphicalContextRepository>();
         auto renderer = _registry.get<graphics::IRenderer>();
 
@@ -44,11 +44,11 @@ namespace dory::core::services
 
     void ViewService::destroyView(resources::IdType viewId)
     {
-        _registry.get<dory::core::repositories::IViewRepository>([&](dory::core::repositories::IViewRepository* viewRepository) {
+        _registry.get<repositories::IViewRepository>([&](repositories::IViewRepository* viewRepository) {
             auto view = viewRepository->get(viewId);
             if(view)
             {
-                auto windowRepository = _registry.get<repositories::IWindowRepository>();
+                auto windowRepository = _registry.get<repositories::IWindowRepository, resources::WindowSystem::glfw>();
                 if(windowRepository)
                 {
                     auto window = windowRepository->get(view->windowId);

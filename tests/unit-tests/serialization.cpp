@@ -19,7 +19,9 @@
 #include <dory/math/linearAlgebra.h>
 #include <spdlog/fmt/bundled/format.h>
 #include <dory/core/resources/objectFactoryRefl.h>
+#include <dory/containers/hashId.h>
 
+using dory::containers::hash::operator""_id;
 using namespace testing;
 
 class SomeController: public dory::core::IController
@@ -515,7 +517,7 @@ controller:
     auto someControllerHandle = dory::generic::extension::ResourceHandle<std::shared_ptr<dory::core::IController>> { libraryHandle, someController };
 
     const auto controllerFactory = std::make_shared<ObjectFactoryMock<dory::core::IController>>();
-    registry.set<dory::core::services::IObjectFactory<dory::core::IController>>(libraryHandle, controllerFactory, std::string { "SomeController" });
+    registry.set<dory::core::services::IObjectFactory<dory::core::IController>>(libraryHandle, controllerFactory, "SomeController"_id);
 
     using SerializationContextType = ObjectFactoryMock<dory::core::IController>::SerializationContextType;
     const auto serializationContextMatcher = Truly([&](SerializationContextType* serializationContext) {

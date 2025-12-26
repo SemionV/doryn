@@ -7,6 +7,7 @@
 #include <vector>
 #include <set>
 #include <spdlog/fmt/fmt.h>
+#include <dory/containers/hashId.h>
 
 namespace dory::core::services
 {
@@ -126,7 +127,7 @@ namespace dory::core::services
                     }
                     catch(const std::exception& e)
                     {
-                        if(auto logger = _registry.get<ILogService>())
+                        if(auto logger = _registry.get<ILogService, Logger::App>())
                         {
                             logger->error(fmt::format("Triggering node {}({}): {}", node.name, node.id, e.what()));
                         }
@@ -161,7 +162,7 @@ namespace dory::core::services
                     }
                     catch(const std::exception& e)
                     {
-                        if(auto logger = _registry.get<ILogService>())
+                        if(auto logger = _registry.get<ILogService, Logger::App>())
                         {
                             logger->error(fmt::format("Updating node {}({}): {}", node.name, node.id, e.what()));
                         }
@@ -199,7 +200,7 @@ namespace dory::core::services
 
     void PipelineService::buildPipeline(const scene::Scene& scene, scene::configuration::Pipeline& pipeline, DataContext& context)
     {
-        auto logger = _registry.get<ILogService>();
+        auto logger = _registry.get<ILogService, Logger::App>();
 
         if(auto pipelineRepo = _registry.get<IPipelineRepository>())
         {
@@ -211,7 +212,7 @@ namespace dory::core::services
                 auto parentId = nullId;
                 if(!rootNode.parent.empty())
                 {
-                    if(const auto node = pipelineRepo->getNode(Name{ rootNode.parent }))
+                    if(const auto node = pipelineRepo->getNode(containers::hash::hash(rootNode.parent)))
                     {
                         parentId = node->id;
                     }
@@ -229,7 +230,7 @@ namespace dory::core::services
                     stack.pop();
 
                     auto pipelineNode = entities::PipelineNode {};
-                    pipelineNode.name = *nodeName;
+                    pipelineNode.name = containers::hash::hash(*nodeName);
                     pipelineNode.sceneId = scene.id;
                     pipelineNode.parentNodeId = parentId;
 
@@ -244,7 +245,7 @@ namespace dory::core::services
                     }
                     else if(!node->controller.empty())
                     {
-                        if(auto factory = _registry.get<IObjectFactory<IController>>(Name{ node->controller }))
+                        if(auto factory = _registry.get<IObjectFactory<IController>>(containers::hash::hash(node->controller)))
                         {
                             pipelineNode.controller = factory->createObject(nullptr);
                         }

@@ -20,7 +20,7 @@ namespace dory::core::services
         {
             try
             {
-                if(auto logger = _registry.get<ILogService>())
+                if(auto logger = _registry.get<ILogService, Logger::App>())
                 {
                     logger->information(fmt::format("load scene from: {}", filename.string()));
                 }
@@ -35,7 +35,7 @@ namespace dory::core::services
             }
             catch(const std::exception& e)
             {
-                _registry.get<ILogService>([&e, &filename](ILogService* logger)
+                _registry.get<ILogService, Logger::App>([&e, &filename](ILogService* logger)
                 {
                     logger->warning(fmt::format("Cannot load scene configuration({}): {}", filename.string(), e.what()));
                 });
@@ -52,7 +52,7 @@ namespace dory::core::services
         {
             try
             {
-                if(auto logger = _registry.get<ILogService>())
+                if(auto logger = _registry.get<ILogService, Logger::App>())
                 {
                     logger->information(fmt::format("save scene to: {}", filename.string()));
                 }
@@ -67,7 +67,7 @@ namespace dory::core::services
             }
             catch(const std::exception& e)
             {
-                _registry.get<ILogService>([&e, &filename](ILogService* logger)
+                _registry.get<ILogService, Logger::App>([&e, &filename](ILogService* logger)
                 {
                     logger->warning(fmt::format("Cannot save scene configuration({}): {}", filename.string(), e.what()));
                 });

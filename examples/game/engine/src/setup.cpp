@@ -145,7 +145,6 @@ namespace dory::game
         const auto appLogger = createInstance<core::services::LogService>();
         registry.set<core::services::IMultiSinkLogService, core::resources::Logger::App>(libraryHandle, appLogger);
         registry.set<core::services::ILogService, core::resources::Logger::App>(libraryHandle, appLogger);
-        registry.set<core::services::ILogService>(libraryHandle, appLogger);
 
         const auto configLogger = createInstance<core::services::LogService>();
         registry.set<core::services::IMultiSinkLogService, core::resources::Logger::Config>(libraryHandle, configLogger);
@@ -165,12 +164,12 @@ namespace dory::game
         registerService<core::services::IViewService, core::services::ViewService>(libraryHandle, registry, registry);
 
         registerService<core::services::graphics::IRenderer, core::services::graphics::Renderer>(libraryHandle, registry, registry);
-        registerService<core::services::graphics::IAssetBinder, core::services::graphics::MeshAssetBinder>(containers::hash::hash(core::resources::AssetTypeName::mesh), libraryHandle, registry, registry);
-        registerService<core::services::graphics::IAssetBinder, core::services::graphics::MaterialAssetBinder>(containers::hash::hash(core::resources::AssetTypeName::material), libraryHandle, registry, registry);
-        registerService<core::services::graphics::IAssetBinder, core::services::graphics::ShaderAssetBinder>(containers::hash::hash(core::resources::AssetTypeName::shader), libraryHandle, registry, registry);
+        registerService<core::services::graphics::IAssetBinder, core::services::graphics::MeshAssetBinder>(core::resources::AssetTypeName::mesh, libraryHandle, registry, registry);
+        registerService<core::services::graphics::IAssetBinder, core::services::graphics::MaterialAssetBinder>(core::resources::AssetTypeName::material, libraryHandle, registry, registry);
+        registerService<core::services::graphics::IAssetBinder, core::services::graphics::ShaderAssetBinder>(core::resources::AssetTypeName::shader, libraryHandle, registry, registry);
 
         registerService<core::services::IAssetTypeResolver, core::services::AssetTypeResolver>(libraryHandle, registry);
-        registerService<core::services::IAssetReloadHandler, core::services::loaders::ExtensionLoader>(std::string{core::resources::AssetTypeName::extension}, libraryHandle, registry, registry);
+        registerService<core::services::IAssetReloadHandler, core::services::loaders::ExtensionLoader>(core::resources::AssetTypeName::extension, libraryHandle, registry, registry);
         registerService<core::services::generators::IMeshGenerator, core::services::generators::MeshGenerator>(libraryHandle, registry);
 
         const auto sceneService = createInstance<core::services::EnttSceneService>();

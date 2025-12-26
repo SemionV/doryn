@@ -1,6 +1,7 @@
 #include <dory/core/registry.h>
 #include <dory/core/services/scene/directors/applicationDirector.h>
 #include <spdlog/fmt/fmt.h>
+#include <dory/containers/hashId.h>
 
 namespace dory::core::services::scene::directors
 {
@@ -43,7 +44,7 @@ namespace dory::core::services::scene::directors
             terminalDevice->exitCommandMode();
         }
 
-        if(auto logger = _registry.get<ILogService>())
+        if(auto logger = _registry.get<ILogService, Logger::App>())
         {
             logger->information(std::string_view{ "Cleanup..." });
         }
@@ -77,7 +78,7 @@ namespace dory::core::services::scene::directors
         {
             if(const auto assetType = resolver->resolve(context, event.filePath))
             {
-                _registry.get<IAssetReloadHandler>(*assetType, [&context, &event](IAssetReloadHandler* assetLoader) {
+                _registry.get<IAssetReloadHandler>(containers::hash::hash(*assetType), [&context, &event](IAssetReloadHandler* assetLoader) {
                     assetLoader->reload(context, event.filePath);
                 });
             }

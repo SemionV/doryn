@@ -53,7 +53,7 @@ namespace dory::core::services
                 }
             }
 
-            if(auto logger = _registry.get<ILogService>())
+            if(auto logger = _registry.get<ILogService, Logger::App>())
             {
                 std::string message {};
 

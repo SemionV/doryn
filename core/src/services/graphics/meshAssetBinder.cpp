@@ -169,7 +169,7 @@ namespace dory::core::services::graphics
             }
             else
             {
-                _registry.get<ILogService>([mesh](ILogService* logger) {
+                _registry.get<ILogService, Logger::App>([mesh](ILogService* logger) {
                     logger->error(fmt::format("Cannot allocate buffer, meshId={0}", mesh->id));
                 });
             }

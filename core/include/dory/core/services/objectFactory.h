@@ -71,7 +71,7 @@ namespace dory::core::services
         {
             if(auto instanceHandle = _registry.getHandle<TInstanceInterface>())
             {
-                return (*instanceHandle).template clone<std::shared_ptr<TInterface>>();
+                return (*instanceHandle).clone();
             }
             return generic::extension::ResourceHandle<std::shared_ptr<TInterface>>{ generic::extension::LibraryHandle{}, nullptr };
         }

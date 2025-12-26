@@ -29,6 +29,11 @@ namespace dory::generic::extension
             return TImplementation<TResourceParentType>{ _library, _resource };
         }
 
+        auto clone()
+        {
+            return TImplementation<TResource>{ _library, _resource };
+        }
+
         ResourceRef<TResource> lock() const
         {
             if(_library.isStatic())

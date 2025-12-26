@@ -77,7 +77,7 @@ namespace dory::game
 
         bool initialize(const dory::generic::extension::LibraryHandle& libraryHandle, core::resources::DataContext& context)
         {
-            if(auto logger = _registry.get<core::services::ILogService>())
+            if(auto logger = _registry.get<core::services::ILogService, core::resources::Logger::App>())
             {
                 logger->information(fmt::format("Dory Game, {0}.{1}, {2}",
                                             context.configuration.buildInfo.version,
@@ -116,7 +116,7 @@ namespace dory::game
 
             _registry.get<core::events::window::Bundle::IListener>([this](core::events::window::Bundle::IListener* listener){
                 listener->attach([this](auto& context, const core::events::window::Resize& event){
-                    auto windowRepository = _registry.get<core::repositories::IWindowRepository>();
+                    auto windowRepository = _registry.get<core::repositories::IWindowRepository>(event.windowSystem);
                     auto viewRepository = _registry.get<core::repositories::IViewRepository>();
                     if(windowRepository && viewRepository)
                     {
@@ -325,8 +325,8 @@ namespace dory::game
         {
             auto meshRepo = _registry.get<core::repositories::assets::IMeshRepository>();
             auto materialRepo = _registry.get<core::repositories::assets::IMaterialRepository>();
-            auto sceneRepo = _registry.get<core::repositories::ISceneRepository>();
-            auto sceneService = _registry.get<core::services::ISceneService>();
+            auto sceneRepo = _registry.get<core::repositories::ISceneRepository>(view.sceneEcsType);
+            auto sceneService = _registry.get<core::services::ISceneService>(view.sceneEcsType);
 
             if(meshRepo && sceneRepo && sceneService)
             {
@@ -461,8 +461,8 @@ namespace dory::game
         {
             auto meshRepo = _registry.get<core::repositories::assets::IMeshRepository>();
             auto materialRepo = _registry.get<core::repositories::assets::IMaterialRepository>();
-            auto sceneRepo = _registry.get<core::repositories::ISceneRepository>();
-            auto sceneService = _registry.get<core::services::ISceneService>();
+            auto sceneRepo = _registry.get<core::repositories::ISceneRepository>(view.sceneEcsType);
+            auto sceneService = _registry.get<core::services::ISceneService>(view.sceneEcsType);
 
             if(meshRepo && sceneRepo && sceneService)
             {

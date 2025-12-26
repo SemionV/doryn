@@ -156,7 +156,7 @@ namespace dory::core::devices
         assert(window.windowSystem == resources::WindowSystem::glfw);
         auto& glfwWindow = (resources::entities::GlfwWindow&)window;
 
-        auto logger = _registry.get<services::ILogService>();
+        auto logger = _registry.get<services::ILogService, resources::Logger::App>();
 
         int monitorCount;
         GLFWmonitor** monitors = glfwGetMonitors(&monitorCount);

@@ -1,5 +1,6 @@
 #include <dory/core/services/layoutSetupService.h>
 #include <stack>
+#include <dory/containers/hashId.h>
 
 namespace dory::core::services
 {
@@ -167,7 +168,8 @@ namespace dory::core::services
             auto [definition, parentIndex, index, alignment, stretching] = stack.top();
             stack.pop();
 
-            objects::layout::NodeItemSetup& node = setupList.nodes.emplace_back(definition->name, parentIndex, std::vector<std::size_t>{}, alignment, stretching);
+            auto nameId = containers::hash::hash(definition->name);
+            objects::layout::NodeItemSetup& node = setupList.nodes.emplace_back(nameId, parentIndex, std::vector<std::size_t>{}, alignment, stretching);
             if(parentIndex != i)
             {
                 objects::layout::NodeItemSetup& parendNode = setupList.nodes[parentIndex];

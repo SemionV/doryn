@@ -21,10 +21,10 @@ namespace dory::core::controllers
     void EventDispatcher::update(resources::IdType nodeId, const generic::model::TimeSpan& timeStep, resources::DataContext& context)
     {
         _registry.get<
-                    Service<events::window::Bundle::IDispatcher>,
-                    Service<events::io::Bundle::IDispatcher>,
-                    Service<events::filesystem::Bundle::IDispatcher>,
-                    Service<events::scene::Bundle::IDispatcher>>(
+                    ServiceQuery<events::window::Bundle::IDispatcher>,
+                    ServiceQuery<events::io::Bundle::IDispatcher>,
+                    ServiceQuery<events::filesystem::Bundle::IDispatcher>,
+                    ServiceQuery<events::scene::Bundle::IDispatcher>>(
                 [&context](events::window::Bundle::IDispatcher* windowDispatcher,
                             events::io::Bundle::IDispatcher* ioDispatcher,
                             events::filesystem::Bundle::IDispatcher* fsDispatcher,

@@ -4,6 +4,7 @@
 #include <dory/core/services/pipelineService.h>
 #include <dory/core/repositories/iPipelineRepository.h>
 #include <dory/core/iController.h>
+#include <dory/containers/hashId.h>
 
 #include <utility>
 
@@ -89,7 +90,7 @@ public:
         PipelineNode node {};
         node.id = ++_idCounter;
         node.parentNodeId = parentId;
-        node.name = name;
+        node.name = containers::hash::hash(name.c_str());
 
         return FluentNodeFactoryInterface{ *this, node };
     }
@@ -169,7 +170,7 @@ void setupRegistry(Registry& registry, const generic::extension::LibraryHandle& 
     EXPECT_CALL(*pipelineRepo, getPipelineNodes()).WillOnce(Return(std::span { nodes }));
 
     const auto logService = std::make_shared<LogServiceMock>();
-    registry.set<ILogService>(libraryHandle, logService);
+    registry.set<ILogService, resources::Logger::App>(libraryHandle, logService);
     EXPECT_CALL(*logService, error(_)).Times(0);
 }
 

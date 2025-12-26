@@ -46,7 +46,7 @@ namespace dory::core::services::graphics
                 gpuDevice->bindMaterial(materialBinding, shaderBindings);
                 if(!materialBinding->linkingError.empty())
                 {
-                    _registry.get<core::services::ILogService>([&material, &materialBinding](core::services::ILogService* logger) {
+                    _registry.get<ILogService, Logger::App>([&material, &materialBinding](ILogService* logger) {
                         logger->error(fmt::format("Shader Program linking error({0}):\n{1}",
                                                   material->id,
                                                   materialBinding->linkingError));

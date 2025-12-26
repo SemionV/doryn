@@ -53,8 +53,8 @@ namespace dory::core::services::graphics
         auto gpuDevice = _registry.get<IGpuDevice>(graphicalContext.graphicalSystem);
         auto meshBindingRepository = _registry.get<IMeshBindingRepository>(graphicalContext.graphicalSystem);
         auto materialBindingRepository = _registry.get<IMaterialBindingRepository>(graphicalContext.graphicalSystem);
-        auto windowService = _registry.get<services::IWindowService>();
-        auto logger = _registry.get<ILogService>();
+        auto windowService = _registry.get<IWindowService>();
+        auto logger = _registry.get<ILogService, Logger::App>();
 
         if(gpuDevice && meshBindingRepository && materialBindingRepository && windowService)
         {

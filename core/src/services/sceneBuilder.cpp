@@ -15,10 +15,10 @@ namespace dory::core::services
 
     Scene* SceneBuilder::build(const scene::configuration::SceneConfiguration& configuration, DataContext& context)
     {
-        auto sceneRepo = _registry.get<ISceneRepository>();
+        auto sceneRepo = _registry.get<ISceneRepository, EcsType::entt>();
         auto sceneConfigRepo = _registry.get<ISceneConfigurationRepository>();
-        auto sceneService = _registry.get<ISceneService>();
-        auto logger = _registry.get<ILogService>();
+        auto sceneService = _registry.get<ISceneService, EcsType::entt>();
+        auto logger = _registry.get<ILogService, Logger::App>();
 
         if(sceneRepo && sceneConfigRepo && sceneService)
         {
@@ -84,7 +84,7 @@ namespace dory::core::services
     void destroyScene(Scene& scene, DataContext& context, Registry& registry)
     {
         auto sceneConfigRepo = registry.get<ISceneConfigurationRepository>();
-        auto sceneRepo = registry.get<ISceneRepository>();
+        auto sceneRepo = registry.get<ISceneRepository>(scene.ecsType);
 
         if(sceneConfigRepo && sceneRepo)
         {
@@ -128,7 +128,7 @@ namespace dory::core::services
 
     void SceneBuilder::destroy(Scene& scene, DataContext& context)
     {
-        if(auto sceneRepo = _registry.get<ISceneRepository>())
+        if(auto sceneRepo = _registry.get<ISceneRepository>(scene.ecsType))
         {
             std::stack<Scene*> hierarchy;
             std::stack<Scene*> stack;

@@ -362,7 +362,7 @@ namespace dory::core::devices
         int version = gladLoadGL(glfwGetProcAddress);
         if (version == 0)
         {
-            auto logger = _registry.get<ILogService>();
+            auto logger = _registry.get<ILogService, Logger::App>();
             if(logger)
             {
                 logger->error(std::string_view("Failed to initialize OpenGL"));
@@ -381,7 +381,7 @@ namespace dory::core::devices
         auto errorMessage = getCurrentGlError(location);
         if(errorMessage)
         {
-            _registry.get<ILogService>([&errorMessage](ILogService* logger) {
+            _registry.get<ILogService, Logger::App>([&errorMessage](ILogService* logger) {
                 logger->error(*errorMessage);
             });
 

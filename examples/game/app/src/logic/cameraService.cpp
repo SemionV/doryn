@@ -42,7 +42,7 @@ namespace dory::game::logic
     void CameraService::moveCamera(core::resources::DataContext& dataContext, MoveDirection directionValue, const core::resources::entities::View& view)
     {
         auto sceneRepo = _registry.get<core::repositories::ISceneRepository>(view.sceneEcsType);
-        auto sceneService = _registry.get<core::services::ISceneService>();
+        auto sceneService = _registry.get<core::services::ISceneService>(view.sceneEcsType);
         if(sceneRepo && sceneService)
         {
             auto* scene = sceneRepo->get(view.sceneId);

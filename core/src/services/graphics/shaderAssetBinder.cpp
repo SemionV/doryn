@@ -34,7 +34,7 @@ namespace dory::core::services::graphics
 
                 if(!shaderBinding->compilationError.empty())
                 {
-                    _registry.get<core::services::ILogService>([&shader, &shaderBinding](core::services::ILogService* logger) {
+                    _registry.get<ILogService, Logger::App>([&shader, &shaderBinding](core::services::ILogService* logger) {
                         logger->error(fmt::format("Shader compilation error({0}, {1}):\n{2}",
                                                   shader->id,
                                                   shader->filename.string(),
