@@ -22,7 +22,7 @@ namespace dory::core::resources::objects::layout
     struct Dimension
     {
         std::optional<int> pixels {};
-        std::optional<std::string> variable {};
+        std::optional<Name> variable {};
         std::optional<float> percents {};
     };
 

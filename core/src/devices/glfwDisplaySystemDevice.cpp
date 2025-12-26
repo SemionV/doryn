@@ -4,6 +4,7 @@
 #include <dory/core/resources/systemTypes.h>
 #include <dory/core/resources/glfwDisplay.h>
 #include "dory/core/registry.h"
+#include <dory/containers/hashId.h>
 
 namespace dory::core::devices
 {
@@ -41,7 +42,7 @@ namespace dory::core::devices
         const GLFWvidmode* mode = glfwGetVideoMode(glfwMonitor);
 
         display.glfwMonitor = glfwMonitor;
-        display.name = name;
+        display.name = containers::hash::hash(name);
         if(mode)
         {
             display.size.width = mode->width;

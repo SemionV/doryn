@@ -1,9 +1,13 @@
 #pragma once
 
 #include <string_view>
+#include <dory/core/resources/name.h>
+#include <dory/containers/hashId.h>
 
 namespace dory::core::resources
 {
+    using containers::hash::operator""_id;
+
     enum class WindowSystem
     {
         glfw,
@@ -32,10 +36,10 @@ namespace dory::core::resources
 
     struct AssetTypeName
     {
-        constexpr static std::string_view extension = "extension";
-        constexpr static std::string_view mesh = "mesh";
-        constexpr static std::string_view material = "material";
-        constexpr static std::string_view shader = "shader";
+        constexpr static Name extension = "extension"_id;
+        constexpr static Name mesh = "mesh"_id;
+        constexpr static Name material = "material"_id;
+        constexpr static Name shader = "shader"_id;
     };
 
     enum class AssetFileFormat

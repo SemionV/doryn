@@ -83,28 +83,28 @@ namespace dory::game
         }
 
         template<typename TInterface, typename TImplementation>
-        void registerObjectFactory(const char* name, const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
+        void registerObjectFactory(core::resources::Name name, const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
         {
             auto factory = createInstance<core::services::ObjectFactory<TInterface, TImplementation>>(libraryHandle, registry);
 
-            registry.set<core::services::IObjectFactory<TInterface>>(libraryHandle, factory, core::resources::Name{ name });
+            registry.set<core::services::IObjectFactory<TInterface>>(libraryHandle, factory, name);
         }
 
         template<typename TInterface, typename TInstanceInterface>
-        void registerSingletonObjectFactory(const char* name, const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
+        void registerSingletonObjectFactory(core::resources::Name name, const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
         {
             auto factory = createInstance<core::services::SingletonObjectFactory<TInterface, TInstanceInterface>>(registry);
 
-            registry.set<core::services::IObjectFactory<TInterface>>(libraryHandle, factory, core::resources::Name{ name });
+            registry.set<core::services::IObjectFactory<TInterface>>(libraryHandle, factory, name);
         }
 
         template<typename TInterface, typename TInstanceInterface, auto Identifier>
-        void registerSingletonObjectFactory(const char* name, const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
+        void registerSingletonObjectFactory(core::resources::Name name, const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
         {
             using ObjectFactoryType = core::services::SingletonIdentifierObjectFactory<TInterface, TInstanceInterface, Identifier>;
             auto factory = createInstance<ObjectFactoryType>(registry);
 
-            registry.set<core::services::IObjectFactory<TInterface>>(libraryHandle, factory, core::resources::Name{ name });
+            registry.set<core::services::IObjectFactory<TInterface>>(libraryHandle, factory, name);
         }
 
         template<typename TInterface, typename TImplementation, typename... TArgs>

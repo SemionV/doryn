@@ -7,7 +7,7 @@
 
 namespace dory::generic::registry
 {
-    enum class ServiceIdentifier
+    /*enum class ServiceIdentifier
     {
         Default
     };
@@ -259,5 +259,5 @@ namespace dory::generic::registry
         {
             this->RegistrationEntry<TService, TIdentifier>::_getAll(std::forward<A>(action));
         }
-    };
+    };*/
 }

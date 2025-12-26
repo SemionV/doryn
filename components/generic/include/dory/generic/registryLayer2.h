@@ -3,6 +3,7 @@
 #include <dory/generic/typeList.h>
 #include <dory/generic/extension/libraryHandle.h>
 #include <dory/generic/extension/resourceHandle.h>
+#include <dory/macros/assert.h>
 
 namespace dory::generic::registry
 {
@@ -258,28 +259,28 @@ namespace dory::generic::registry
         void get(A&& action)
         {
             const auto index = getServiceEntryIndex<TServiceInterface>();
-            invoke<TServiceInterface>(index, std::forward<TServiceInterface>(action));
+            invoke<A, TServiceInterface>(index, std::forward<A>(action));
         }
 
         template<typename TServiceInterface, auto Identifier, typename A>
         void get(A&& action)
         {
             const auto index = getServiceEntryIndex<TServiceInterface, Identifier>();
-            invoke<TServiceInterface>(index, std::forward<TServiceInterface>(action));
+            invoke<A, TServiceInterface>(index, std::forward<A>(action));
         }
 
         template<typename TServiceInterface, typename TIdentifier, typename A>
         void get(TIdentifier identifier, A&& action)
         {
             const auto index = getServiceEntryIndex<TServiceInterface>(identifier);
-            invoke<TServiceInterface>(index, std::forward<TServiceInterface>(action));
+            invoke<A, TServiceInterface>(index, std::forward<A>(action));
         }
 
         template<typename... TServiceQuery, typename A>
         requires(std::is_invocable_v<A, typename TServiceQuery::InterfaceType*...>)
         void get(A&& action)
         {
-            invoke(std::forward<A>(action), get<typename TServiceQuery::InterfaceType, std::decay_t<decltype(TServiceQuery::identifier)>>()...);
+            invoke<A, TServiceQuery::InterfaceType...>(std::forward<A>(action), get<typename TServiceQuery::InterfaceType, std::decay_t<decltype(TServiceQuery::identifier)>>()...);
         }
 
         template<typename TServiceInterface, typename A>

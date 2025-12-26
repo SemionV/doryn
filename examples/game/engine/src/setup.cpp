@@ -79,6 +79,8 @@
 
 namespace dory::game
 {
+    using containers::hash::operator""_id;
+
     void Setup::setupRegistry(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry,
                                 const core::resources::configuration::Configuration& configuration)
     {
@@ -92,25 +94,25 @@ namespace dory::game
         registerEventBufferBundle<core::events::scene::Bundle>(libraryHandle, registry);
 
         registerService<core::devices::IStandardIODevice, core::devices::StandardIODevice>(libraryHandle, registry, registry);
-        registerSingletonObjectFactory<core::devices::IDevice, core::devices::IStandardIODevice>("StandardIODevice", libraryHandle, registry);
+        registerSingletonObjectFactory<core::devices::IDevice, core::devices::IStandardIODevice>("StandardIODevice"_id, libraryHandle, registry);
 
         registerService<core::devices::ITerminalDevice, core::devices::TerminalDevice>(libraryHandle, registry, registry);
-        registerSingletonObjectFactory<core::devices::IDevice, core::devices::ITerminalDevice>("TerminalDevice", libraryHandle, registry);
+        registerSingletonObjectFactory<core::devices::IDevice, core::devices::ITerminalDevice>("TerminalDevice"_id, libraryHandle, registry);
 
         registerService<core::devices::IWindowSystemDevice, core::resources::WindowSystem::glfw, core::devices::GlfwWindowSystemDevice>(libraryHandle, registry, registry);
-        registerSingletonObjectFactory<core::devices::IDevice, core::devices::IWindowSystemDevice, core::resources::WindowSystem::glfw>("GlfwWindowSystemDevice", libraryHandle, registry);
+        registerSingletonObjectFactory<core::devices::IDevice, core::devices::IWindowSystemDevice, core::resources::WindowSystem::glfw>("GlfwWindowSystemDevice"_id, libraryHandle, registry);
 
         registerService<core::devices::IDisplaySystemDevice, core::resources::DisplaySystem::glfw, core::devices::GlfwDisplaySystemDevice>(libraryHandle, registry, registry);
-        registerSingletonObjectFactory<core::devices::IDevice, core::devices::IDisplaySystemDevice, core::resources::DisplaySystem::glfw>("GlfwDisplaySystemDevice", libraryHandle, registry);
+        registerSingletonObjectFactory<core::devices::IDevice, core::devices::IDisplaySystemDevice, core::resources::DisplaySystem::glfw>("GlfwDisplaySystemDevice"_id, libraryHandle, registry);
 
         registerService<core::devices::IFileWatcherDevice, core::devices::FileWatcherDevice>(libraryHandle, registry, registry);
-        registerSingletonObjectFactory<core::devices::IDevice, core::devices::IFileWatcherDevice>("FileWatcherDevice", libraryHandle, registry);
+        registerSingletonObjectFactory<core::devices::IDevice, core::devices::IFileWatcherDevice>("FileWatcherDevice"_id, libraryHandle, registry);
 
         registerService<core::devices::IGpuDevice, core::resources::GraphicalSystem::opengl, core::devices::OpenglGpuDevice>(libraryHandle, registry, registry);
-        registerSingletonObjectFactory<core::devices::IDevice, core::devices::IGpuDevice, core::resources::GraphicalSystem::opengl>("OpenglGpuDevice", libraryHandle, registry);
+        registerSingletonObjectFactory<core::devices::IDevice, core::devices::IGpuDevice, core::resources::GraphicalSystem::opengl>("OpenglGpuDevice"_id, libraryHandle, registry);
 
         registerService<core::devices::IImageStreamDevice, core::devices::ImageStreamDevice>(libraryHandle, registry, registry);
-        registerSingletonObjectFactory<core::devices::IDevice, core::devices::IImageStreamDevice>("ImageStreamDevice", libraryHandle, registry);
+        registerSingletonObjectFactory<core::devices::IDevice, core::devices::IImageStreamDevice>("ImageStreamDevice"_id, libraryHandle, registry);
 
         registerService<core::repositories::IImageStreamRepository, core::repositories::ImageStreamRepository>(libraryHandle, registry);
         registerService<core::repositories::IViewRepository, core::repositories::ViewRepository>(libraryHandle, registry);
@@ -118,11 +120,8 @@ namespace dory::game
         registerRepository<core::resources::entities::Camera>(libraryHandle, registry);
         const auto sceneRepository = createInstance<core::repositories::EnttSceneRepository>();
         registry.set<core::repositories::ISceneRepository, core::resources::EcsType::entt>(libraryHandle, sceneRepository);
-        registry.set<core::repositories::ISceneRepository>(libraryHandle, sceneRepository);
 
         const auto windowRepository = createInstance<core::repositories::WindowRepository>();
-        registry.set<core::repositories::IWindowRepository>(libraryHandle, windowRepository);
-        registry.set<core::repositories::IWindowRepository, core::resources::WindowSystem::glfw>(libraryHandle, windowRepository);
         registry.set<core::repositories::IWindowRepository, core::resources::WindowSystem::glfw>(libraryHandle, windowRepository);
 
         registerService<core::repositories::IGraphicalContextRepository, core::repositories::GraphicalContextRepository>(libraryHandle, registry);
@@ -166,9 +165,9 @@ namespace dory::game
         registerService<core::services::IViewService, core::services::ViewService>(libraryHandle, registry, registry);
 
         registerService<core::services::graphics::IRenderer, core::services::graphics::Renderer>(libraryHandle, registry, registry);
-        registerService<core::services::graphics::IAssetBinder, core::services::graphics::MeshAssetBinder>(core::resources::Name{ core::resources::AssetTypeName::mesh }, libraryHandle, registry, registry);
-        registerService<core::services::graphics::IAssetBinder, core::services::graphics::MaterialAssetBinder>(core::resources::Name{ core::resources::AssetTypeName::material }, libraryHandle, registry, registry);
-        registerService<core::services::graphics::IAssetBinder, core::services::graphics::ShaderAssetBinder>(core::resources::Name{ core::resources::AssetTypeName::shader }, libraryHandle, registry, registry);
+        registerService<core::services::graphics::IAssetBinder, core::services::graphics::MeshAssetBinder>(containers::hash::hash(core::resources::AssetTypeName::mesh), libraryHandle, registry, registry);
+        registerService<core::services::graphics::IAssetBinder, core::services::graphics::MaterialAssetBinder>(containers::hash::hash(core::resources::AssetTypeName::material), libraryHandle, registry, registry);
+        registerService<core::services::graphics::IAssetBinder, core::services::graphics::ShaderAssetBinder>(containers::hash::hash(core::resources::AssetTypeName::shader), libraryHandle, registry, registry);
 
         registerService<core::services::IAssetTypeResolver, core::services::AssetTypeResolver>(libraryHandle, registry);
         registerService<core::services::IAssetReloadHandler, core::services::loaders::ExtensionLoader>(std::string{core::resources::AssetTypeName::extension}, libraryHandle, registry, registry);
@@ -193,21 +192,21 @@ namespace dory::game
         registerService<core::services::ILayoutSetupService, core::services::LayoutSetupService>(libraryHandle, registry);
         registerService<core::services::ILayoutService, core::services::LayoutService>(libraryHandle, registry);
 
-        registerObjectFactory<core::ITrigger, core::triggers::TimeFrameTrigger>("TimeFrameTrigger", libraryHandle, registry);
+        registerObjectFactory<core::ITrigger, core::triggers::TimeFrameTrigger>("TimeFrameTrigger"_id, libraryHandle, registry);
 
-        registerObjectFactory<core::IController, core::controllers::ViewController>("ViewController", libraryHandle, registry);
-        registerObjectFactory<core::IController, core::controllers::FrameCounter>("FrameCounter", libraryHandle, registry);
-        registerObjectFactory<core::IController, core::controllers::Profiler>("Profiler", libraryHandle, registry);
-        registerObjectFactory<core::IController, core::controllers::EventDispatcher>("EventDispatcher", libraryHandle, registry);
-        registerObjectFactory<core::IController, core::controllers::StateUpdater>("StateUpdater", libraryHandle, registry);
-        registerObjectFactory<core::IController, core::controllers::AccelerationMovementController>("AccelerationMovementController", libraryHandle, registry);
-        registerObjectFactory<core::IController, core::controllers::MovementController>("MovementController", libraryHandle, registry);
-        registerObjectFactory<core::IController, core::controllers::TransformController>("TransformController", libraryHandle, registry);
-        registerObjectFactory<core::IController, core::controllers::ConsoleFlusher>("ConsoleFlusher", libraryHandle, registry);
-        registerObjectFactory<core::IController, core::controllers::WindowSystemController>("WindowSystemController", libraryHandle, registry);
+        registerObjectFactory<core::IController, core::controllers::ViewController>("ViewController"_id, libraryHandle, registry);
+        registerObjectFactory<core::IController, core::controllers::FrameCounter>("FrameCounter"_id, libraryHandle, registry);
+        registerObjectFactory<core::IController, core::controllers::Profiler>("Profiler"_id, libraryHandle, registry);
+        registerObjectFactory<core::IController, core::controllers::EventDispatcher>("EventDispatcher"_id, libraryHandle, registry);
+        registerObjectFactory<core::IController, core::controllers::StateUpdater>("StateUpdater"_id, libraryHandle, registry);
+        registerObjectFactory<core::IController, core::controllers::AccelerationMovementController>("AccelerationMovementController"_id, libraryHandle, registry);
+        registerObjectFactory<core::IController, core::controllers::MovementController>("MovementController"_id, libraryHandle, registry);
+        registerObjectFactory<core::IController, core::controllers::TransformController>("TransformController"_id, libraryHandle, registry);
+        registerObjectFactory<core::IController, core::controllers::ConsoleFlusher>("ConsoleFlusher"_id, libraryHandle, registry);
+        registerObjectFactory<core::IController, core::controllers::WindowSystemController>("WindowSystemController"_id, libraryHandle, registry);
 
-        registerObjectFactory<core::services::ISceneDirector, core::services::scene::directors::AssetLoader>("AssetLoader", libraryHandle, registry);
-        registerObjectFactory<core::services::ISceneDirector, core::services::scene::directors::ApplicationDirector>("ApplicationDirector", libraryHandle, registry);
-        registerObjectFactory<core::services::ISceneDirector, core::services::scene::directors::ViewDirector>("ViewDirector", libraryHandle, registry);
+        registerObjectFactory<core::services::ISceneDirector, core::services::scene::directors::AssetLoader>("AssetLoader"_id, libraryHandle, registry);
+        registerObjectFactory<core::services::ISceneDirector, core::services::scene::directors::ApplicationDirector>("ApplicationDirector"_id, libraryHandle, registry);
+        registerObjectFactory<core::services::ISceneDirector, core::services::scene::directors::ViewDirector>("ViewDirector"_id, libraryHandle, registry);
     }
 }
