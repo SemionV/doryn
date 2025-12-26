@@ -76,7 +76,7 @@ namespace dory::core::controllers
     {
         auto timeStepSeconds = std::chrono::duration_cast<std::chrono::duration<float>>(timeStep);
 
-        _registry.getAll<repositories::ISceneRepository, EcsType>([&](EcsType ecsType, repositories::ISceneRepository* repository) {
+        _registry.getAll<repositories::ISceneRepository>([&](EcsType ecsType, repositories::ISceneRepository* repository) {
             if(repository)
             {
                 repository->each([&](Scene& scene) {

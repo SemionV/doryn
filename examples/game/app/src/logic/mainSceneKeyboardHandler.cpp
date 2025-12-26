@@ -59,7 +59,7 @@ namespace dory::game::logic
 
     entities::View* MainSceneKeyboardHandler::getWindowView(IdType windowId, WindowSystem windowSystem)
     {
-        auto windowRepository = _registry.get<repositories::IWindowRepository>();
+        auto windowRepository = _registry.get<repositories::IWindowRepository>(windowSystem);
         auto viewRepository = _registry.get<repositories::IViewRepository>();
         if(windowRepository && viewRepository)
         {

@@ -8,6 +8,8 @@ using namespace dory::core;
 using namespace dory::core::resources;
 using namespace dory::core::resources::objects;
 
+using containers::hash::operator""_id;
+
 void assertAxis(const objects::layout::DimensionValue& value, const int size)
 {
     ASSERT_TRUE(value.pixels);
@@ -119,7 +121,7 @@ TEST(LayoutSetupTests, screenSetup)
 
     EXPECT_EQ(nodes.size(), 1);
     const objects::layout::NodeItemSetup& itemSetup = nodes[0];
-    assertNode(itemSetup, rootDefinition.name, 0);
+    assertNode(itemSetup, containers::hash::hash(rootDefinition.name), 0);
     assertAxis(itemSetup.stretching.axes[objects::layout::Axes::x], width);
     assertAxis(itemSetup.stretching.axes[objects::layout::Axes::y], height);
 }
@@ -142,23 +144,23 @@ void columnSetupTest(const layout::ContainerDefinition& rootDefinition, std::vec
 
     layout::ContainerDefinition& column4 = columns.emplace_back();
     column4.name = "column4";
-    column4.getSize(axes[objects::layout::Axes::x]).variable = "grid.columnWidth";
+    column4.getSize(axes[objects::layout::Axes::x]).variable = "grid.columnWidth"_id;
 
     services::LayoutSetupService setupService {};
     const auto [nodes] = setupService.buildSetupList(rootDefinition);
 
     EXPECT_EQ(nodes.size(), 5);
     const objects::layout::NodeItemSetup& column1Setup = nodes[1];
-    assertNode(column1Setup, column.name, 0);
+    assertNode(column1Setup, containers::hash::hash(column.name), 0);
     assertColumnNode(column1Setup, axes, 100);
     const objects::layout::NodeItemSetup& column2Setup = nodes[2];
-    assertNode(column2Setup, column2.name, 0);
+    assertNode(column2Setup, containers::hash::hash(column2.name), 0);
     assertColumnNode(column2Setup, axes, 50.f);
     const objects::layout::NodeItemSetup& column4Setup = nodes[3];
-    assertNode(column4Setup, column4.name, 0);
+    assertNode(column4Setup, containers::hash::hash(column4.name), 0);
     assertColumnNode(column4Setup, axes, "grid.columnWidth");
     const objects::layout::NodeItemSetup& column3Setup = nodes[4]; //flexible column must be las in the sequence of columns
-    assertNode(column3Setup, column3.name, 0);
+    assertNode(column3Setup, containers::hash::hash(column3.name), 0);
     assertColumnNode(column3Setup, axes, objects::layout::Upstream::fill);
 
     const auto& rootNode = nodes[0];
@@ -202,11 +204,11 @@ void tileRowSetupTest(const layout::ContainerDefinition& rootDefinition, std::ve
     EXPECT_EQ(nodes.size(), 3);
 
     const objects::layout::NodeItemSetup& tile1Setup = nodes[1];
-    assertNode(tile1Setup, tile.name, 0);
+    assertNode(tile1Setup, containers::hash::hash(tile.name), 0);
     assertTileNode(tile1Setup, axes, 10, 10);
 
     const objects::layout::NodeItemSetup& tile2Setup = nodes[2];
-    assertNode(tile2Setup, tile2.name, 0);
+    assertNode(tile2Setup, containers::hash::hash(tile2.name), 0);
     assertTileNode(tile1Setup, axes, objects::layout::Upstream::children, objects::layout::Upstream::children);
 }
 
@@ -249,11 +251,11 @@ TEST(LayoutSetupTests, floatingSetup)
     EXPECT_EQ(nodes.size(), 3);
 
     const objects::layout::NodeItemSetup& floating1Setup = nodes[1];
-    assertNode(floating1Setup, floating.name, 0);
+    assertNode(floating1Setup, containers::hash::hash(floating.name), 0);
     assertFloatingNode(floating1Setup, objects::layout::Axes::xy, 100, 100, 10, 10);
 
     const objects::layout::NodeItemSetup& floating2Setup = nodes[2];
-    assertNode(floating2Setup, floating2.name, 0);
+    assertNode(floating2Setup, containers::hash::hash(floating2.name), 0);
     assertFloatingNode(floating2Setup, objects::layout::Axes::xy, 10.f, objects::layout::AlignOrder::center,
         objects::layout::Upstream::children, objects::layout::Upstream::children);
 }

@@ -26,7 +26,7 @@ namespace dory::core::controllers
             timeAccumulator = timeAccumulator - fixedInterval;
 
             //TODO: instead of the hardcoded action an event with a signature(for instance, name of the counter) should be fired
-            if(auto logger = _registry.get<services::ILogService>())
+            if(auto logger = _registry.get<services::ILogService, resources::Logger::App>())
             {
                 logger->information(fmt::format("FPS: {}", frameCount));
                 if(auto* capture = getCurrentCapture(context.profiling))

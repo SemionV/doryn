@@ -16,7 +16,8 @@ namespace dory::generic::registry
     struct ServiceQuery
     {
         using InterfaceType = TServiceInterface;
-        static constexpr decltype(Identifier) identifier = Identifier;
+        using IdentifierType = decltype(Identifier);
+        static constexpr IdentifierType identifier = Identifier;
     };
 
     template<typename TServiceInterface, typename TIdentifierList = ValueList<ServiceIdentifier, ServiceIdentifier::Default>>
@@ -280,7 +281,7 @@ namespace dory::generic::registry
         requires(std::is_invocable_v<A, typename TServiceQuery::InterfaceType*...>)
         void get(A&& action)
         {
-            invoke<A, TServiceQuery::InterfaceType...>(std::forward<A>(action), get<typename TServiceQuery::InterfaceType, std::decay_t<decltype(TServiceQuery::identifier)>>()...);
+            invoke(std::forward<A>(action), get<typename TServiceQuery::InterfaceType, TServiceQuery::identifier>()...);
         }
 
         template<typename TServiceInterface, typename A>

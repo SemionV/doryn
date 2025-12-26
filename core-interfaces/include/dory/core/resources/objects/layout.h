@@ -174,6 +174,13 @@ namespace dory::core::resources::objects::layout
             return result;
         }
 
+        inline ContainerDefinition def(const char* name)
+        {
+            ContainerDefinition result;
+            result.name = containers::hash::hash(name);
+            return result;
+        }
+
         inline ContainerDefinition def()
         {
             return ContainerDefinition {};

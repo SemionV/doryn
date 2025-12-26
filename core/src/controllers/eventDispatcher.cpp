@@ -28,7 +28,7 @@ namespace dory::core::controllers
                 [&context](events::window::Bundle::IDispatcher* windowDispatcher,
                             events::io::Bundle::IDispatcher* ioDispatcher,
                             events::filesystem::Bundle::IDispatcher* fsDispatcher,
-                           events::scene::Bundle::IDispatcher* sceneDispatcher)
+                            events::scene::Bundle::IDispatcher* sceneDispatcher)
             {
                 windowDispatcher->fireAll(context);
                 ioDispatcher->fireAll(context);
