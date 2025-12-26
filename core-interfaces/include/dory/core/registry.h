@@ -75,6 +75,100 @@ namespace dory::core
         using ICameraRepository = IRepository<resources::entities::Camera>;
     }
 
+    using WindowSystemList = generic::ValueList<resources::WindowSystem, resources::WindowSystem::glfw, resources::WindowSystem::win32, resources::WindowSystem::x, resources::WindowSystem::wayland>;
+    using DisplaySystemList = generic::ValueList<resources::DisplaySystem, resources::DisplaySystem::glfw>;
+    using GraphicalSystemList = generic::ValueList<resources::GraphicalSystem, resources::GraphicalSystem::directx, resources::GraphicalSystem::opengl, resources::GraphicalSystem::vulkan>;
+    using EcsTypeList = generic::ValueList<resources::EcsType, resources::EcsType::entt, resources::EcsType::dory>;
+    using LoggerList = generic::ValueList<resources::Logger, resources::Logger::App, resources::Logger::Config>;
+    using DataFormatList = generic::ValueList<resources::DataFormat, resources::DataFormat::json, resources::DataFormat::json, resources::DataFormat::unknown>;
+    using AssetFileFormatList = generic::ValueList<resources::AssetFileFormat, resources::AssetFileFormat::bmp, resources::AssetFileFormat::png>;
+
+    using ServiceListType = generic::TypeList<
+        /*Events*/
+        generic::registry::ServiceEntry<events::pipeline::Bundle::IDispatcher>,
+        generic::registry::ServiceEntry<events::pipeline::Bundle::IListener>,
+        generic::registry::ServiceEntry<events::application::Bundle::IDispatcher>,
+        generic::registry::ServiceEntry<events::application::Bundle::IListener>,
+        generic::registry::ServiceEntry<events::io::Bundle::IDispatcher>,
+        generic::registry::ServiceEntry<events::io::Bundle::IListener>,
+        generic::registry::ServiceEntry<events::script::Bundle::IDispatcher>,
+        generic::registry::ServiceEntry<events::script::Bundle::IListener>,
+        generic::registry::ServiceEntry<events::window::Bundle::IDispatcher>,
+        generic::registry::ServiceEntry<events::window::Bundle::IListener>,
+        generic::registry::ServiceEntry<events::display::Bundle::IDispatcher>,
+        generic::registry::ServiceEntry<events::display::Bundle::IListener>,
+        generic::registry::ServiceEntry<events::filesystem::Bundle::IDispatcher>,
+        generic::registry::ServiceEntry<events::filesystem::Bundle::IListener>,
+        generic::registry::ServiceEntry<events::scene::Bundle::IDispatcher>,
+        generic::registry::ServiceEntry<events::scene::Bundle::IListener>,
+        /*Devices*/
+        generic::registry::ServiceEntry<devices::IStandardIODevice>,
+        generic::registry::ServiceEntry<devices::ITerminalDevice>,
+        generic::registry::ServiceEntry<devices::IWindowSystemDevice, WindowSystemList>,
+        generic::registry::ServiceEntry<devices::IDisplaySystemDevice, DisplaySystemList>,
+        generic::registry::ServiceEntry<devices::IFileWatcherDevice>,
+        generic::registry::ServiceEntry<devices::IGpuDevice, GraphicalSystemList>,
+        generic::registry::ServiceEntry<devices::IImageStreamDevice>,
+        /*Repositories*/
+        generic::registry::ServiceEntry<repositories::ICameraRepository>,
+        generic::registry::ServiceEntry<repositories::IViewRepository>,
+        generic::registry::ServiceEntry<repositories::IWindowRepository>,
+        generic::registry::ServiceEntry<repositories::IWindowRepository, WindowSystemList>,
+        generic::registry::ServiceEntry<repositories::IPipelineRepository>,
+        generic::registry::ServiceEntry<repositories::IImageStreamRepository>,
+        generic::registry::ServiceEntry<repositories::ISceneRepository>,
+        generic::registry::ServiceEntry<repositories::ISceneRepository, EcsTypeList>,
+        generic::registry::ServiceEntry<repositories::assets::IMeshRepository>,
+        generic::registry::ServiceEntry<repositories::assets::IMaterialRepository>,
+        generic::registry::ServiceEntry<repositories::assets::IShaderRepository>,
+        generic::registry::ServiceEntry<repositories::IGraphicalContextRepository>,
+        generic::registry::ServiceEntry<repositories::IShaderRepository, GraphicalSystemList>,
+        generic::registry::ServiceEntry<repositories::IShaderProgramRepository, GraphicalSystemList>,
+        generic::registry::ServiceEntry<repositories::bindings::IMeshBindingRepository, GraphicalSystemList>,
+        generic::registry::ServiceEntry<repositories::bindings::IBufferBindingRepository, GraphicalSystemList>,
+        generic::registry::ServiceEntry<repositories::bindings::IShaderBindingRepository, GraphicalSystemList>,
+        generic::registry::ServiceEntry<repositories::bindings::IMaterialBindingRepository, GraphicalSystemList>,
+        generic::registry::ServiceEntry<repositories::ISceneConfigurationRepository>,
+        generic::registry::ServiceEntry<repositories::ILayoutRepository>,
+        generic::registry::ServiceEntry<repositories::IDisplayRepository, DisplaySystemList>,
+        /*Services*/
+        generic::registry::ServiceEntry<services::ILibraryService>,
+        generic::registry::ServiceEntry<services::IFileService>,
+        generic::registry::ServiceEntry<services::IMultiSinkLogService, LoggerList>,
+        generic::registry::ServiceEntry<services::ILogService>,
+        generic::registry::ServiceEntry<services::ILogService, LoggerList>,
+        generic::registry::ServiceEntry<services::serialization::ISerializer, DataFormatList>,
+        generic::registry::ServiceEntry<services::IDataFormatResolver>,
+        generic::registry::ServiceEntry<services::IScriptService>,
+        generic::registry::ServiceEntry<services::IConfigurationService>,
+        generic::registry::ServiceEntry<services::ILocalizationService>,
+        generic::registry::ServiceEntry<services::IPipelineService>,
+        generic::registry::ServiceEntry<services::ILoopService>,
+        generic::registry::ServiceEntry<services::graphics::IRenderer>,
+        generic::registry::ServiceEntry<services::graphics::IShaderService, GraphicalSystemList>,
+        generic::registry::ServiceEntry<services::IViewService>,
+        generic::registry::ServiceEntry<services::IWindowService>,
+        generic::registry::ServiceEntry<services::IAssetTypeResolver>,
+        generic::registry::ServiceEntry<services::IAssetReloadHandler, resources::Name>,
+        generic::registry::ServiceEntry<services::ISceneService>,
+        generic::registry::ServiceEntry<services::ISceneService, EcsTypeList>,
+        generic::registry::ServiceEntry<services::ISceneQueryService, EcsTypeList>,
+        generic::registry::ServiceEntry<services::graphics::IAssetBinder, resources::Name>,
+        generic::registry::ServiceEntry<services::generators::IMeshGenerator>,
+        generic::registry::ServiceEntry<services::IImageStreamService>,
+        generic::registry::ServiceEntry<services::files::IImageFileService, AssetFileFormatList>,
+        generic::registry::ServiceEntry<services::IProfilingService>,
+        generic::registry::ServiceEntry<services::ISceneBuilder>,
+        generic::registry::ServiceEntry<services::ISceneConfigurationService>,
+        generic::registry::ServiceEntry<services::ILayoutService>,
+        generic::registry::ServiceEntry<services::ILayoutSetupService>,
+        generic::registry::ServiceEntry<services::IDisplayService>,
+        generic::registry::ServiceEntry<services::IObjectFactory<ITrigger>, resources::Name>,
+        generic::registry::ServiceEntry<services::IObjectFactory<IController>, resources::Name>,
+        generic::registry::ServiceEntry<services::IObjectFactory<devices::IDevice>, resources::Name>,
+        generic::registry::ServiceEntry<services::IObjectFactory<services::ISceneDirector>, resources::Name>
+    >;
+
     class Registry: public generic::registry::RegistryLayer<
             /*Events*/
             generic::registry::ServiceEntry<events::pipeline::Bundle::IDispatcher>,
