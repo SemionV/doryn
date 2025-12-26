@@ -4,7 +4,7 @@
 #include <dory/generic/extension/libraryHandle.h>
 #include <dory/generic/extension/resourceHandle.h>
 
-namespace dory::core
+namespace dory::generic::registry
 {
     enum class ServiceIdentifier
     {
@@ -19,7 +19,7 @@ namespace dory::core
     };
 
     template<typename TServiceInterface, typename TIdentifierList = generic::ValueList<ServiceIdentifier, ServiceIdentifier::Default>>
-    struct ServiceListEntry
+    struct ServiceEntry
     {
         using InterfaceType = TServiceInterface;
         using IdentifierListType = TIdentifierList;
@@ -63,7 +63,7 @@ namespace dory::core
     template<std::size_t Index, typename TServiceInterface>
     struct ServiceIndexTraverse<Index, TServiceInterface>
     {
-        using ServiceEntryType = ServiceListEntry<void>;
+        using ServiceEntryType = ServiceEntry<void>;
         static constexpr int value = -1;
     };
 

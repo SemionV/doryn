@@ -2,8 +2,7 @@ set(DORY_MODULE_NAME ${PROJECT_NAME}-core-interfaces)
 
 add_library(${DORY_MODULE_NAME} INTERFACE
         include/dory/core/services/iFileService.h
-        include/dory/core/registry.h
-        include/dory/core/registry2.h)
+        include/dory/core/registry.h)
 
 target_link_libraries(${DORY_MODULE_NAME} INTERFACE dory-generic dory-math dory-concurrency dory-containers)
 

@@ -3,7 +3,7 @@
 #include <dory/generic/typeList.h>
 #include <dory/generic/extension/libraryHandle.h>
 #include <dory/macros/assert.h>
-#include <dory/core/registry2.h>
+#include <dory/generic/registryLayer2.h>
 
 class IRenderService
 {};
@@ -25,14 +25,14 @@ class IAudioService
 class IPhysicsService
 {};
 
-using namespace dory::core;
+using namespace dory::generic::registry;
 
 TEST(GenericTests, typeList)
 {
     using ServiceListLocal = dory::generic::TypeList<
-            ServiceListEntry<IRenderService>,
-            ServiceListEntry<IResourceService, dory::generic::ValueList<int, 1, 2, 3>>,
-            ServiceListEntry<IAudioService, dory::generic::ValueList<int, 1, 2>>
+            ServiceEntry<IRenderService>,
+            ServiceEntry<IResourceService, dory::generic::ValueList<int, 1, 2, 3>>,
+            ServiceEntry<IAudioService, dory::generic::ValueList<int, 1, 2>>
         >;
 
     auto registry = RegistryLayer<ServiceListLocal>{};
