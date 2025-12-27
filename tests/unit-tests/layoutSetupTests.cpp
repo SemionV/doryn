@@ -158,7 +158,7 @@ void columnSetupTest(const layout::ContainerDefinition& rootDefinition, std::vec
     assertColumnNode(column2Setup, axes, 50.f);
     const objects::layout::NodeItemSetup& column4Setup = nodes[3];
     assertNode(column4Setup, containers::hash::hash(column4.name), 0);
-    assertColumnNode(column4Setup, axes, "grid.columnWidth");
+    assertColumnNode(column4Setup, axes, "grid.columnWidth"_id);
     const objects::layout::NodeItemSetup& column3Setup = nodes[4]; //flexible column must be las in the sequence of columns
     assertNode(column3Setup, containers::hash::hash(column3.name), 0);
     assertColumnNode(column3Setup, axes, objects::layout::Upstream::fill);

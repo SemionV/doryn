@@ -61,7 +61,7 @@ namespace dory::renderer::opengl
             std::string logString(len + 1, 0);
             glGetShaderInfoLog(openglShader.index, len, &len, logString.data());
 
-            _registry.get<core::services::ILogService>([&logString, &shader](core::services::ILogService* logger) {
+            _registry.get<core::services::ILogService, core::resources::Logger::App>([&logString, &shader](core::services::ILogService* logger) {
                 logger->error("Shader compilation error: " + shader.filePath.string() + "\n" + logString);
             });
 

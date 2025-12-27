@@ -87,8 +87,12 @@ namespace dory::core::services
 
         generic::extension::ResourceHandle<std::shared_ptr<TInterface>> createObject(generic::serialization::Context<SerializationContextPoliciesType>* context) final
         {
-            auto instanceHandle = _registry.getHandle<TInstanceInterface, Identifier>();
-            return instanceHandle.template clone<std::shared_ptr<TInterface>>();
+            if(auto instanceHandle = _registry.getHandle<TInstanceInterface, Identifier>())
+            {
+                return (*instanceHandle).clone();
+            }
+
+            return generic::extension::ResourceHandle<std::shared_ptr<TInterface>>{ generic::extension::LibraryHandle{}, nullptr };
         }
     };
 }

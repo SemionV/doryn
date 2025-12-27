@@ -1,6 +1,7 @@
 #pragma once
 
 #include <dory/generic/extension/resourceHandle.h>
+#include <dory/core/resources/name.h>
 
 namespace dory::core::resources::factory
 {

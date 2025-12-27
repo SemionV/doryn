@@ -46,6 +46,20 @@ namespace dory::core::resources::entities::layout
             return result;
         }
 
+        inline Container con(const char* name)
+        {
+            Container result {};
+            result.name = containers::hash::hash(name);
+            return result;
+        }
+
+        inline Container con(const std::string& name)
+        {
+            Container result {};
+            result.name = containers::hash::hash(name.c_str());
+            return result;
+        }
+
         template <typename Func>
         Container operator|(Container container, Func func)
         {

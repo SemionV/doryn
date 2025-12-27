@@ -4,6 +4,7 @@
 #include <array>
 #include <optional>
 #include <vector>
+#include <dory/containers/hashId.h>
 
 namespace dory::core::resources::objects::layout
 {
@@ -167,17 +168,17 @@ namespace dory::core::resources::objects::layout
         using us = Upstream;
         using al = Align;
 
-        inline ContainerDefinition def(const Name& name)
+        inline ContainerDefinition def(const char* name)
         {
             ContainerDefinition result;
             result.name = name;
             return result;
         }
 
-        inline ContainerDefinition def(const char* name)
+        inline ContainerDefinition def(const std::string& name)
         {
             ContainerDefinition result;
-            result.name = containers::hash::hash(name);
+            result.name = name;
             return result;
         }
 

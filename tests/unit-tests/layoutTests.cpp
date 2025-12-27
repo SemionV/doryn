@@ -98,44 +98,44 @@ void testWindow(const int screenWidth, const int screenHeight, const int x, cons
 TEST(LayoutTests, relativePosition)
 {
     constexpr int _x = 30, _y = 10, width = 150, height = 100;
-    testWindow(1024, 768, _x, _y, width, height, def("window"_id) | x(_x) | y(_y) | w(width) | h(100));
+    testWindow(1024, 768, _x, _y, width, height, def("window") | x(_x) | y(_y) | w(width) | h(100));
 }
 
 TEST(LayoutTests, centeredPosition)
 {
     constexpr int width = 150, height = 100;
-    testWindow(350, 400, 100, 150, width, height, def("window"_id) | x(al::center) | y(al::center) | w(width) | h(height));
+    testWindow(350, 400, 100, 150, width, height, def("window") | x(al::center) | y(al::center) | w(width) | h(height));
 }
 
 TEST(LayoutTests, originPosition)
 {
     constexpr int width = 150, height = 100;
-    testWindow(350, 400, 0, 0, width, height, def("window"_id) | w(width) | h(height));
+    testWindow(350, 400, 0, 0, width, height, def("window") | w(width) | h(height));
 }
 
 TEST(LayoutTests, fullScreen)
 {
-    testWindow(1024, 768, 0, 0, 1024, 768, def("window"_id) | w(us::parent) | h(us::parent));
+    testWindow(1024, 768, 0, 0, 1024, 768, def("window") | w(us::parent) | h(us::parent));
 }
 
 TEST(LayoutTests, percentDimensions)
 {
-    testWindow(1000, 1000, 100, 200, 300, 100, def("window"_id) | x(10.f) | y(20.f) | w(30.f) | h(10.f));
+    testWindow(1000, 1000, 100, 200, 300, 100, def("window") | x(10.f) | y(20.f) | w(30.f) | h(10.f));
 }
 
 TEST(LayoutTests, rowOfTwoColumns)
 {
     constexpr int windowWidth = 1024, windowHeight = 768, column1Width = 124;
 
-    const auto definition = def("window"_id) | w(windowWidth) | h(windowHeight) | columns({
-        def("column1"_id) | w(column1Width),
-        def("column2"_id) | w(us::fill)
+    const auto definition = def("window") | w(windowWidth) | h(windowHeight) | columns({
+        def("column1") | w(column1Width),
+        def("column2") | w(us::fill)
     });
 
     testLayout(definition, {
         con(containers::hash::hash(definition.name)) | _w(windowWidth) | _h(windowHeight) | kids({ 1, 2 }),
-        con("column1"_id) | _x(0) | _w(column1Width) | _h(windowHeight),
-        con("column2"_id) | _x(column1Width) | _w(windowWidth - column1Width) | _h(windowHeight)
+        con("column1") | _x(0) | _w(column1Width) | _h(windowHeight),
+        con("column2") | _x(column1Width) | _w(windowWidth - column1Width) | _h(windowHeight)
     });
 }
 
@@ -143,15 +143,15 @@ TEST(LayoutTests, rowOfTwoColumnsWithFlexibleFirst)
 {
     constexpr int windowWidth = 1024, windowHeight = 768, column1Width = 124;
 
-    const auto definition = def("window"_id) | w(windowWidth) | h(windowHeight) | columns({
-        def("column1"_id) | w(us::fill),
-        def("column2"_id) | w(column1Width)
+    const auto definition = def("window") | w(windowWidth) | h(windowHeight) | columns({
+        def("column1") | w(us::fill),
+        def("column2") | w(column1Width)
     });
 
     testLayout(definition, {
         con(containers::hash::hash(definition.name)) | _w(windowWidth) | _h(windowHeight) | kids({ 1, 2 }),
-        con("column1"_id) | _x(0) | _w(windowWidth - column1Width) | _h(windowHeight),
-        con("column2"_id) | _x(windowWidth - column1Width) | _w(column1Width) | _h(windowHeight)
+        con("column1") | _x(0) | _w(windowWidth - column1Width) | _h(windowHeight),
+        con("column2") | _x(windowWidth - column1Width) | _w(column1Width) | _h(windowHeight)
     });
 }
 
@@ -159,15 +159,15 @@ TEST(LayoutTests, columnOfTwoRows)
 {
     constexpr int windowWidth = 1024, windowHeight = 768, row1Height = 168;
 
-    const auto definition = def("window"_id) | w(windowWidth) | h(windowHeight) | rows({
-        def("column1"_id) | h(row1Height),
-        def("column2"_id) | h(us::fill)
+    const auto definition = def("window") | w(windowWidth) | h(windowHeight) | rows({
+        def("column1") | h(row1Height),
+        def("column2") | h(us::fill)
     });
 
     testLayout(definition, {
         con(containers::hash::hash(definition.name)) | _w(windowWidth) | _h(windowHeight) | kids({ 1, 2 }),
-        con("column1"_id) | _y(0) | _w(windowWidth) | _h(row1Height),
-        con("column2"_id) | _y(row1Height) | _w(windowWidth) | _h(windowHeight - row1Height)
+        con("column1") | _y(0) | _w(windowWidth) | _h(row1Height),
+        con("column2") | _y(row1Height) | _w(windowWidth) | _h(windowHeight - row1Height)
     });
 }
 
@@ -179,18 +179,18 @@ TEST(LayoutTests, windowWidthStretchedByContent)
     const int expectedWindowX = static_cast<int>(std::round(static_cast<float>(screenWidth - expectedWindowWidth) / 2.f));
     const int expectedWindowY = static_cast<int>(std::round(static_cast<float>(screenHeight - windowHeight) / 2.f));
 
-    const auto definition = def("screen"_id) | w(screenWidth) | h(screenHeight) | floating({
-        def("window"_id) | x(al::center) | y(al::center) | w(us::children) | h(windowHeight) | columns({
-            def("column1"_id) | w(column1Width),
-            def("column2"_id) | w(column2Width)
+    const auto definition = def("screen") | w(screenWidth) | h(screenHeight) | floating({
+        def("window") | x(al::center) | y(al::center) | w(us::children) | h(windowHeight) | columns({
+            def("column1") | w(column1Width),
+            def("column2") | w(column2Width)
         })
     });
 
     testLayout(definition, {
-        con("screen"_id) | _w(screenWidth) | _h(screenHeight) | kids({ 1 }),
-        con("window"_id) | _x(expectedWindowX) | _y(expectedWindowY) | _w(expectedWindowWidth) | _h(windowHeight) | kids({ 2, 3 }),
-        con("column1"_id) | _x(0) | _w(column1Width) | _h(windowHeight) | parent(1),
-        con("column2"_id) | _x(column1Width) | _w(column2Width) | _h(windowHeight) | parent(1)
+        con("screen") | _w(screenWidth) | _h(screenHeight) | kids({ 1 }),
+        con("window") | _x(expectedWindowX) | _y(expectedWindowY) | _w(expectedWindowWidth) | _h(windowHeight) | kids({ 2, 3 }),
+        con("column1") | _x(0) | _w(column1Width) | _h(windowHeight) | parent(1),
+        con("column2") | _x(column1Width) | _w(column2Width) | _h(windowHeight) | parent(1)
     });
 }
 
@@ -198,10 +198,10 @@ TEST(LayoutTests, windowHeightStretchedByContent)
 {
     constexpr int screenWidth = 1024, screenHeight = 768, windowWidth = 400, row1Height = 100, row2Height = 200;
 
-    const auto definition = def("screen"_id) | w(screenWidth) | h(screenHeight) | floating({
-        def("window"_id) | x(al::center) | y(al::center) | w(windowWidth) | h(us::children) | rows({
-            def("row1"_id) | h(row1Height),
-            def("row2"_id) | h(row2Height)
+    const auto definition = def("screen") | w(screenWidth) | h(screenHeight) | floating({
+        def("window") | x(al::center) | y(al::center) | w(windowWidth) | h(us::children) | rows({
+            def("row1") | h(row1Height),
+            def("row2") | h(row2Height)
         })
     });
 
@@ -210,10 +210,10 @@ TEST(LayoutTests, windowHeightStretchedByContent)
     const int expectedWindowY = static_cast<int>(std::round(static_cast<float>(screenHeight - expectedWindowHeight) / 2.f));
 
     testLayout(definition, {
-        con("screen"_id) | _w(screenWidth) | _h(screenHeight) | kids({ 1 }),
-        con("window"_id) | _x(expectedWindowX) | _y(expectedWindowY) | _w(windowWidth) | _h(expectedWindowHeight) | kids({ 2, 3 }),
-        con("row1"_id) | _y(0) | _w(windowWidth) | _h(row1Height) | parent(1),
-        con("row2"_id) | _y(row1Height) | _w(windowWidth) | _h(row2Height) | parent(1)
+        con("screen") | _w(screenWidth) | _h(screenHeight) | kids({ 1 }),
+        con("window") | _x(expectedWindowX) | _y(expectedWindowY) | _w(windowWidth) | _h(expectedWindowHeight) | kids({ 2, 3 }),
+        con("row1") | _y(0) | _w(windowWidth) | _h(row1Height) | parent(1),
+        con("row2") | _y(row1Height) | _w(windowWidth) | _h(row2Height) | parent(1)
     });
 }
 
@@ -221,17 +221,17 @@ TEST(LayoutTests, rowOfThreeColumns)
 {
     constexpr int windowWidth = 1024, windowHeight = 768, column1Width = 124, column3Width = 50;
 
-    const auto definition = def("window"_id) | w(windowWidth) | h(windowHeight) | columns({
-        def("column1"_id) | w(column1Width),
-        def("column2"_id) | w(us::fill),
-        def("column3"_id) | w(column3Width)
+    const auto definition = def("window") | w(windowWidth) | h(windowHeight) | columns({
+        def("column1") | w(column1Width),
+        def("column2") | w(us::fill),
+        def("column3") | w(column3Width)
     });
 
     testLayout(definition, {
-        con("window"_id) | _w(windowWidth) | _h(windowHeight) | kids({1, 2, 3}),
-        con("column1"_id) | _x(0) | _w(column1Width) | _h(windowHeight),
-        con("column2"_id) | _x(column1Width) | _w(windowWidth - column1Width - column3Width) | _h(windowHeight),
-        con("column3"_id) | _x(windowWidth - column3Width) | _w(column3Width) | _h(windowHeight),
+        con("window") | _w(windowWidth) | _h(windowHeight) | kids({1, 2, 3}),
+        con("column1") | _x(0) | _w(column1Width) | _h(windowHeight),
+        con("column2") | _x(column1Width) | _w(windowWidth - column1Width - column3Width) | _h(windowHeight),
+        con("column3") | _x(windowWidth - column3Width) | _w(column3Width) | _h(windowHeight),
     });
 }
 
@@ -239,17 +239,17 @@ TEST(LayoutTests, columnOfThreeRows)
 {
     constexpr int windowWidth = 1024, windowHeight = 768, row1Height = 168, row3Height = 50;
 
-    const auto definition = def("window"_id) | w(windowWidth) | h(windowHeight) | rows({
-        def("row1"_id) | h(row1Height),
-        def("row2"_id) | h(us::fill),
-        def("row3"_id) | h(row3Height)
+    const auto definition = def("window") | w(windowWidth) | h(windowHeight) | rows({
+        def("row1") | h(row1Height),
+        def("row2") | h(us::fill),
+        def("row3") | h(row3Height)
     });
 
     testLayout(definition, {
-        con("window"_id) | _w(windowWidth) | _h(windowHeight) | kids({1, 2, 3}),
-        con("row1"_id) | _y(0) | _w(windowWidth) | _h(row1Height),
-        con("row2"_id) | _y(row1Height) | _w(windowWidth) | _h(windowHeight - row1Height - row3Height),
-        con("row3"_id) | _y(windowHeight - row3Height) | _w(windowWidth) | _h(row3Height),
+        con("window") | _w(windowWidth) | _h(windowHeight) | kids({1, 2, 3}),
+        con("row1") | _y(0) | _w(windowWidth) | _h(row1Height),
+        con("row2") | _y(row1Height) | _w(windowWidth) | _h(windowHeight - row1Height - row3Height),
+        con("row3") | _y(windowHeight - row3Height) | _w(windowWidth) | _h(row3Height),
     });
 }
 
@@ -257,26 +257,26 @@ TEST(LayoutTests, combinedThreeColumnAndRowsGridLayout)
 {
     constexpr int windowWidth = 1024, windowHeight = 768, column1Width = 124, column3Width = 50, row1Height = 168, row3Height = 50;
 
-    const auto definition = def("window"_id) | w(windowWidth) | h(windowHeight) | columns({
-        def("column1"_id) | w(column1Width),
-        def("column2"_id) | w(us::fill) | rows({
-            def("row1"_id) | h(row1Height),
-            def("row2"_id) | h(us::fill),
-            def("row3"_id) | h(row3Height)
+    const auto definition = def("window") | w(windowWidth) | h(windowHeight) | columns({
+        def("column1") | w(column1Width),
+        def("column2") | w(us::fill) | rows({
+            def("row1") | h(row1Height),
+            def("row2") | h(us::fill),
+            def("row3") | h(row3Height)
         }),
-        def("column3"_id) | w(column3Width)
+        def("column3") | w(column3Width)
     });
 
     constexpr int expectedColumn2Width = windowWidth - column1Width - column3Width;
 
     testLayout(definition, {
-        con("window"_id) | _w(windowWidth) | _h(windowHeight) | kids({1, 2, 6}),
-        con("column1"_id) | _x(0) | _w(column1Width) | _h(windowHeight),
-        con("column2"_id) | _x(column1Width) | _w(windowWidth - column1Width - column3Width) | _h(windowHeight) | kids({ 3, 4, 5 }),
-        con("row1"_id) | _y(0) | _w(expectedColumn2Width) | _h(row1Height) | parent(2),
-        con("row2"_id) | _y(row1Height) | _w(expectedColumn2Width) | _h(windowHeight - row1Height - row3Height) | parent(2),
-        con("row3"_id) | _y(windowHeight - row3Height) | _w(expectedColumn2Width) | _h(row3Height) | parent(2),
-        con("column3"_id) | _x(windowWidth - column3Width) | _w(column3Width) | _h(windowHeight)
+        con("window") | _w(windowWidth) | _h(windowHeight) | kids({1, 2, 6}),
+        con("column1") | _x(0) | _w(column1Width) | _h(windowHeight),
+        con("column2") | _x(column1Width) | _w(windowWidth - column1Width - column3Width) | _h(windowHeight) | kids({ 3, 4, 5 }),
+        con("row1") | _y(0) | _w(expectedColumn2Width) | _h(row1Height) | parent(2),
+        con("row2") | _y(row1Height) | _w(expectedColumn2Width) | _h(windowHeight - row1Height - row3Height) | parent(2),
+        con("row3") | _y(windowHeight - row3Height) | _w(expectedColumn2Width) | _h(row3Height) | parent(2),
+        con("column3") | _x(windowWidth - column3Width) | _w(column3Width) | _h(windowHeight)
     });
 }
 
@@ -284,13 +284,13 @@ TEST(LayoutTests, scrollableContent)
 {
     constexpr int windowWidth = 400, windowHeight = 400, contentHeight = 3000;
 
-    const auto definition = def("window"_id) | w(windowWidth) | h(windowHeight) | slides({
-        def("slide"_id) | w(us::parent) | h(contentHeight)
+    const auto definition = def("window") | w(windowWidth) | h(windowHeight) | slides({
+        def("slide") | w(us::parent) | h(contentHeight)
     });
 
     testLayout(definition, {
-        con("window"_id) | _w(windowWidth) | _h(windowHeight) | kids({1}),
-        con("slide"_id) | _w(windowWidth) | _h(contentHeight)
+        con("window") | _w(windowWidth) | _h(windowHeight) | kids({1}),
+        con("slide") | _w(windowWidth) | _h(contentHeight)
     });
 }
 
@@ -298,7 +298,7 @@ TEST(LayoutTests, horizontalTiles2)
 {
     constexpr int windowWidth = 350, tileWidth = 100, tileHeight = 100;
 
-    const auto definition = def("window"_id) | w(windowWidth) | h(us::children) | rowTiles({
+    const auto definition = def("window") | w(windowWidth) | h(us::children) | rowTiles({
         def() | w(tileWidth) | h(tileHeight),
         def() | w(tileWidth) | h(tileHeight),
         def() | w(tileWidth) | h(tileHeight),
@@ -307,7 +307,7 @@ TEST(LayoutTests, horizontalTiles2)
     });
 
     testLayout(definition, {
-        con("window"_id) | _w(windowWidth) | _h(tileHeight * 2) | kids({1, 2, 3, 4, 5}),
+        con("window") | _w(windowWidth) | _h(tileHeight * 2) | kids({1, 2, 3, 4, 5}),
         con() | _x(0) | _y(0) | _w(tileWidth) | _h(tileHeight),
         con() | _x(100) | _y(0) | _w(tileWidth) | _h(tileHeight),
         con() | _x(200) | _y(0) | _w(tileWidth) | _h(tileHeight),
@@ -320,7 +320,7 @@ TEST(LayoutTests, verticalTiles2)
 {
     constexpr int windowHeight = 350, tileWidth = 100, tileHeight = 100;
 
-    const auto definition = def("window"_id) | w(us::children) | h(windowHeight) | columnTiles({
+    const auto definition = def("window") | w(us::children) | h(windowHeight) | columnTiles({
         def() | w(tileWidth) | h(tileHeight),
         def() | w(tileWidth) | h(tileHeight),
         def() | w(tileWidth) | h(tileHeight),
@@ -329,7 +329,7 @@ TEST(LayoutTests, verticalTiles2)
     });
 
     testLayout(definition, {
-        con("window"_id) | _w(tileWidth * 2) | _h(windowHeight) | kids({1, 2, 3, 4, 5}),
+        con("window") | _w(tileWidth * 2) | _h(windowHeight) | kids({1, 2, 3, 4, 5}),
         con() | _x(0) | _y(0) | _w(tileWidth) | _h(tileHeight),
         con() | _x(0) | _y(100) | _w(tileWidth) | _h(tileHeight),
         con() | _x(0) | _y(200) | _w(tileWidth) | _h(tileHeight),
@@ -345,9 +345,9 @@ TEST(LayoutTests, threeColumnsWithThreeColumns)
     constexpr int windowWidth = 1024, windowHeight = 768, column1Width = 124, column3Width = 50, column1_3Width = 100;
     constexpr float column1_1Width = 50.f;
 
-    const auto definition = def("window"_id) | w(windowWidth) | h(windowHeight) | columns({
-        def("column1"_id) | w(column1Width),
-        def("column2"_id) | w(us::fill) | columns({
+    const auto definition = def("window") | w(windowWidth) | h(windowHeight) | columns({
+        def("column1") | w(column1Width),
+        def("column2") | w(us::fill) | columns({
             def("column1_1") | w(column1_1Width),
             def("column1_2") | w(us::fill),
             def("column1_3") | w(column1_3Width)

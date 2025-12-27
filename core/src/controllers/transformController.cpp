@@ -28,69 +28,62 @@ namespace dory::core::controllers
 
     void TransformController::update(core::resources::IdType referenceId, const generic::model::TimeSpan& timeStep, core::resources::DataContext& context)
     {
-        _registry.getAll<repositories::ISceneRepository, EcsType>([&](const auto& repos) {
-            for(const auto& [key, value] : repos)
-            {
-                auto repoRef = value.lock();
-                if(repoRef)
+        _registry.getAll<repositories::ISceneRepository>([&](EcsType ecsType, repositories::ISceneRepository* repository) {
+            repository->each([&](Scene& scene) {
+                if(scene.ecsType == core::resources::EcsType::entt)
                 {
-                    repoRef->each([&](Scene& scene) {
-                        if(scene.ecsType == core::resources::EcsType::entt)
+                    auto& enttScene = (EnttScene&)scene;
+                    auto& registry = enttScene.registry;
+                    auto stack = std::stack<entt::entity>{};
+
+                    auto topLevelEntitiesView = registry.view<Object>(entt::exclude<Parent>);
+                    for(auto entity : topLevelEntitiesView)
+                    {
+                        stack.push(entity);
+
+                        auto& worldTransform = registry.get<WorldTransform>(entity);
+                        auto& scale = registry.get<Scale>(entity);
+                        auto& orientation = registry.get<Orientation>(entity);
+                        auto& position = registry.get<Position>(entity);
+
+                        worldTransform.scale = scale.value;
+                        worldTransform.orientation = orientation.value;
+                        worldTransform.position = position.value;
+                    }
+
+                    while(!stack.empty())
+                    {
+                        auto entity = stack.top();
+                        stack.pop();
+
+                        auto& children = registry.get<components::Children>(entity);
+                        for(const auto childEntity : children.entities)
                         {
-                            auto& enttScene = (EnttScene&)scene;
-                            auto& registry = enttScene.registry;
-                            auto stack = std::stack<entt::entity>{};
+                            stack.push(childEntity);
 
-                            auto topLevelEntitiesView = registry.view<Object>(entt::exclude<Parent>);
-                            for(auto entity : topLevelEntitiesView)
+                            auto& parentWorldTransform = registry.get<WorldTransform>(entity);
+                            auto& worldTransform = registry.get<WorldTransform>(childEntity);
+                            auto& scale = registry.get<Scale>(childEntity);
+                            auto& orientation = registry.get<Orientation>(childEntity);
+                            auto& position = registry.get<Position>(childEntity);
+
+                            worldTransform.scale = parentWorldTransform.scale * scale.value;
+                            glm::vec3 localPosition = position.value * parentWorldTransform.scale;
+                            if(glm::length(parentWorldTransform.orientation) > 0)
                             {
-                                stack.push(entity);
-
-                                auto& worldTransform = registry.get<WorldTransform>(entity);
-                                auto& scale = registry.get<Scale>(entity);
-                                auto& orientation = registry.get<Orientation>(entity);
-                                auto& position = registry.get<Position>(entity);
-
-                                worldTransform.scale = scale.value;
+                                worldTransform.orientation = parentWorldTransform.orientation * orientation.value;
+                                localPosition = parentWorldTransform.orientation * localPosition;
+                            }
+                            else
+                            {
                                 worldTransform.orientation = orientation.value;
-                                worldTransform.position = position.value;
                             }
 
-                            while(!stack.empty())
-                            {
-                                auto entity = stack.top();
-                                stack.pop();
-
-                                auto& children = registry.get<components::Children>(entity);
-                                for(const auto childEntity : children.entities)
-                                {
-                                    stack.push(childEntity);
-
-                                    auto& parentWorldTransform = registry.get<WorldTransform>(entity);
-                                    auto& worldTransform = registry.get<WorldTransform>(childEntity);
-                                    auto& scale = registry.get<Scale>(childEntity);
-                                    auto& orientation = registry.get<Orientation>(childEntity);
-                                    auto& position = registry.get<Position>(childEntity);
-
-                                    worldTransform.scale = parentWorldTransform.scale * scale.value;
-                                    glm::vec3 localPosition = position.value * parentWorldTransform.scale;
-                                    if(glm::length(parentWorldTransform.orientation) > 0)
-                                    {
-                                        worldTransform.orientation = parentWorldTransform.orientation * orientation.value;
-                                        localPosition = parentWorldTransform.orientation * localPosition;
-                                    }
-                                    else
-                                    {
-                                        worldTransform.orientation = orientation.value;
-                                    }
-
-                                    worldTransform.position = parentWorldTransform.position + localPosition;
-                                }
-                            }
+                            worldTransform.position = parentWorldTransform.position + localPosition;
                         }
-                    });
+                    }
                 }
-            }
+            });
         });
     }
 }

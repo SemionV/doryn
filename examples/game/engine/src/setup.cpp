@@ -172,9 +172,7 @@ namespace dory::game
         registerService<core::services::IAssetReloadHandler, core::services::loaders::ExtensionLoader>(core::resources::AssetTypeName::extension, libraryHandle, registry, registry);
         registerService<core::services::generators::IMeshGenerator, core::services::generators::MeshGenerator>(libraryHandle, registry);
 
-        const auto sceneService = createInstance<core::services::EnttSceneService>();
-        registry.set<core::services::ISceneService>(libraryHandle, sceneService);
-        registry.set<core::services::ISceneService, core::resources::EcsType::entt>(libraryHandle, sceneService);
+        registerService<core::services::ISceneService, core::resources::EcsType::entt, core::services::EnttSceneService>(libraryHandle, registry);
 
         const auto sceneQueryService = createInstance<core::services::EnttSceneQueryService>(registry);
         registry.set<core::services::ISceneQueryService, core::resources::EcsType::entt>(libraryHandle, sceneQueryService);

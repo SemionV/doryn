@@ -83,7 +83,7 @@ namespace dory::core
     using GraphicalSystemList = generic::ValueList<resources::GraphicalSystem, resources::GraphicalSystem::directx, resources::GraphicalSystem::opengl, resources::GraphicalSystem::vulkan>;
     using EcsTypeList = generic::ValueList<resources::EcsType, resources::EcsType::entt, resources::EcsType::dory>;
     using LoggerList = generic::ValueList<resources::Logger, resources::Logger::App, resources::Logger::Config>;
-    using DataFormatList = generic::ValueList<resources::DataFormat, resources::DataFormat::json, resources::DataFormat::json, resources::DataFormat::unknown>;
+    using DataFormatList = generic::ValueList<resources::DataFormat, resources::DataFormat::json, resources::DataFormat::yaml, resources::DataFormat::unknown>;
     using AssetFileFormatList = generic::ValueList<resources::AssetFileFormat, resources::AssetFileFormat::bmp, resources::AssetFileFormat::png>;
     using AssetReloadHandlerList = generic::ValueList<std::uint64_t, "extension"_id>;
     using AssetBinderList = generic::ValueList<std::uint64_t, "mesh"_id, "material"_id, "shader"_id>;

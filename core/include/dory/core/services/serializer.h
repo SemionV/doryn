@@ -7,6 +7,7 @@
 #include <dory/serialization/yamlDeserializer.h>
 #include <dory/serialization/jsonSerializer.h>
 #include <dory/serialization/jsonDeserializer.h>
+#include <dory/containers/hashId.h>
 
 namespace dory::core::services::serialization
 {
@@ -100,7 +101,8 @@ namespace dory::core::services::serialization
         {
             dory::serialization::ClassVisitor<TPolicies, VisitorType>::visit(factoryInstance, context);
 
-            if(auto factory = context.registry.template get<IObjectFactory<TInstance>>(factoryInstance.type))
+            auto type = containers::hash::hash(factoryInstance.type);
+            if(auto factory = context.registry.template get<IObjectFactory<TInstance>>(type))
             {
                 factoryInstance.instance = factory->createObject(&context);
             }
