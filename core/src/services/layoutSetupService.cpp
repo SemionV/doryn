@@ -168,8 +168,8 @@ namespace dory::core::services
             auto [definition, parentIndex, index, alignment, stretching] = stack.top();
             stack.pop();
 
-            auto nameId = containers::hash::hash(definition->name);
-            objects::layout::NodeItemSetup& node = setupList.nodes.emplace_back(nameId, parentIndex, std::vector<std::size_t>{}, alignment, stretching);
+            Name name = containers::hash::hash(definition->name);
+            objects::layout::NodeItemSetup& node = setupList.nodes.emplace_back(name, parentIndex, std::vector<std::size_t>{}, alignment, stretching);
             if(parentIndex != i)
             {
                 objects::layout::NodeItemSetup& parendNode = setupList.nodes[parentIndex];

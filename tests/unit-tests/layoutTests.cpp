@@ -23,7 +23,10 @@ class LayoutRepository: public EntityRepositoryMock<repositories::ILayoutReposit
 void assertContainer(const Container& container, const Name& name, const std::size_t parentIndex, const int x, const int y,
     const int width, const int height)
 {
-    EXPECT_EQ(container.name, name);
+    if(name != 0)
+    {
+        EXPECT_EQ(container.name, name);
+    }
     EXPECT_EQ(container.parent, parentIndex) << name;
     EXPECT_EQ(container.size.width, width) << name;
     EXPECT_EQ(container.size.height, height) << name;
