@@ -93,7 +93,7 @@ namespace dory::game
         template<typename TInterface, typename TInstanceInterface>
         void registerSingletonObjectFactory(core::resources::Name name, const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
         {
-            auto factory = createInstance<core::services::SingletonObjectFactory<void, TInstanceInterface>>(registry);
+            auto factory = createInstance<core::services::SingletonObjectFactory<TInterface, TInstanceInterface>>(registry);
 
             registry.set<core::services::IObjectFactory<TInterface>>(libraryHandle, factory, name);
         }
@@ -101,7 +101,7 @@ namespace dory::game
         template<typename TInterface, typename TInstanceInterface, auto Identifier>
         void registerSingletonObjectFactory(core::resources::Name name, const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry)
         {
-            using ObjectFactoryType = core::services::SingletonIdentifierObjectFactory<void, TInstanceInterface, Identifier>;
+            using ObjectFactoryType = core::services::SingletonIdentifierObjectFactory<TInterface, TInstanceInterface, Identifier>;
             auto factory = createInstance<ObjectFactoryType>(registry);
 
             registry.set<core::services::IObjectFactory<TInterface>>(libraryHandle, factory, name);

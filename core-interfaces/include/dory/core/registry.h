@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dory/generic/registryLayer2.h>
+#include <dory/generic/registryLayer.h>
 #include <dory/containers/hashId.h>
 #include "events/eventTypes.h"
 #include <dory/core/resources/dataFormat.h>

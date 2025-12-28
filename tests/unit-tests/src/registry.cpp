@@ -3,7 +3,7 @@
 #include <dory/generic/typeList.h>
 #include <dory/generic/extension/libraryHandle.h>
 #include <dory/macros/assert.h>
-#include <dory/generic/registryLayer2.h>
+#include <dory/generic/registryLayer.h>
 
 class IRenderService
 {};
@@ -67,4 +67,51 @@ TEST(GenericTests, typeList)
     {
         std::cout << "id: " << identifier << std::endl;
     });
+}
+
+class IListener
+{
+public:
+    virtual ~IListener() = default;
+
+    virtual void attach() = 0;
+};
+
+class IDispatcher
+{
+public:
+    virtual ~IDispatcher() = default;
+
+    virtual void fire() = 0;
+};
+
+class Dispatcher: public IDispatcher
+{
+public:
+    void fire() override
+    {
+        std::cout << "fire" << std::endl;
+    }
+};
+
+class Listener: public IListener, public Dispatcher
+{
+public:
+    void attach() override
+    {
+        std::cout << "attach" << std::endl;
+    }
+};
+
+TEST(TypeEarasure, test)
+{
+    auto ptr = std::make_shared<Listener>();
+
+    auto vptr = std::static_pointer_cast<void>(ptr);
+
+    auto listener = std::static_pointer_cast<IListener>(vptr);
+    listener->attach();
+
+    auto dispatcher = std::static_pointer_cast<IDispatcher>(vptr);
+    dispatcher->fire();
 }

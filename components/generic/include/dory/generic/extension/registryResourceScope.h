@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <dory/generic/registryLayer2.h>
+#include <dory/generic/registryLayer.h>
 
 namespace dory::generic::extension
 {

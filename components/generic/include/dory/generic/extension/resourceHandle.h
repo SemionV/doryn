@@ -63,8 +63,8 @@ namespace dory::generic::extension
     public:
         ResourceHandle() = default;
 
-        explicit ResourceHandle(const LibraryHandle& library, std::shared_ptr<TInterface> resource):
-                ResourceHandleRoot<std::shared_ptr<TInterface>, ResourceHandle>(library, resource)
+        explicit ResourceHandle(const LibraryHandle& library, const std::shared_ptr<void>& resource):
+                ResourceHandleRoot<std::shared_ptr<TInterface>, ResourceHandle>(library, std::static_pointer_cast<TInterface>(resource))
         {}
 
         ResourceRef<std::shared_ptr<TInterface>> lock() const
