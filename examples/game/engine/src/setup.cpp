@@ -105,7 +105,7 @@ namespace dory::game
         registerService<core::devices::IDisplaySystemDevice, core::resources::DisplaySystem::glfw, core::devices::GlfwDisplaySystemDevice>(libraryHandle, registry, registry);
         registerSingletonObjectFactory<core::devices::IDevice, core::devices::IDisplaySystemDevice, core::resources::DisplaySystem::glfw>("GlfwDisplaySystemDevice"_id, libraryHandle, registry);
 
-        registerService<core::devices::IFileWatcherDevice, core::devices::FileWatcherDevice>(libraryHandle, registry, registry);
+        registerService<core::devices::IFileWatcherDevice, core::devices::FileWatcherDevice>(libraryHandle, registry, registry, _globalAllocator);
         registerSingletonObjectFactory<core::devices::IDevice, core::devices::IFileWatcherDevice>("FileWatcherDevice"_id, libraryHandle, registry);
 
         registerService<core::devices::IGpuDevice, core::resources::GraphicalSystem::opengl, core::devices::OpenglGpuDevice>(libraryHandle, registry, registry);

@@ -6,15 +6,15 @@ namespace dory::generic::memory
     class AllocationResource
     {
     private:
-        TAllocator& _allocator;
+        TAllocator* _allocator;
         TResource* _resourcePtr = nullptr;
 
     public:
         template<typename... TArgs>
         explicit AllocationResource(TAllocator& allocator, TArgs&&... args):
-            _allocator(allocator)
+            _allocator(&allocator)
         {
-            _resourcePtr = _allocator.template allocate<TResource>(std::forward<TArgs>()...);
+            _resourcePtr = _allocator->template allocate<TResource>(std::forward<TArgs>(args)...);
         }
 
         ~AllocationResource()
@@ -23,7 +23,20 @@ namespace dory::generic::memory
         }
 
         AllocationResource(const AllocationResource&) = delete;
-        AllocationResource& operator=(const AllocationResource&) = delete;
+
+        AllocationResource& operator=(const AllocationResource& other)
+        {
+            if (this != &other)
+            {
+                reset();
+
+                _allocator = other._allocator;
+                _resourcePtr = other._resourcePtr;
+
+                other._resourcePtr = nullptr;
+            }
+            return *this;
+        }
 
         AllocationResource(AllocationResource&& other) noexcept
         : _allocator(other._allocator), _resourcePtr(other._resourcePtr)
@@ -56,7 +69,7 @@ namespace dory::generic::memory
         {
             if (_resourcePtr)
             {
-                _allocator.template deallocateType<TResource>(_resourcePtr);
+                _allocator->template deallocateType<TResource>(_resourcePtr);
             }
             _resourcePtr = newPtr;
         }

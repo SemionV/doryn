@@ -3,9 +3,10 @@
 
 namespace dory::core::devices
 {
-    FileWatcherDevice::FileWatcherDevice(Registry &registry):
+    FileWatcherDevice::FileWatcherDevice(Registry &registry, GlobalAllocatorType& allocator):
             _registry(registry),
-            _fileWatcher(std::make_unique<efsw::FileWatcher>(true))
+            _allocator(allocator),
+            _fileWatcher(_allocator, true)
     {}
 
     void FileWatcherDevice::handleFileAction(efsw::WatchID watchid, const std::string& dir,
@@ -36,7 +37,7 @@ namespace dory::core::devices
 
     void FileWatcherDevice::updateWatches(resources::DataContext& context)
     {
-        _fileWatcher = std::make_unique<efsw::FileWatcher>(true);
+        _fileWatcher = generic::memory::AllocationResource<efsw::FileWatcher, GlobalAllocatorType>{ _allocator, true };
 
         for(const auto& fsWatch : context.configuration.fileSystemWatches)
         {

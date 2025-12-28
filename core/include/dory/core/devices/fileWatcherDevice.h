@@ -2,6 +2,8 @@
 
 #include <dory/core/devices/iFileWatcherDevice.h>
 #include <efsw/efsw.hpp>
+#include <dory/core/allocators.h>
+#include <dory/generic/allocationResource.h>
 
 namespace dory::core
 {
@@ -14,10 +16,11 @@ namespace dory::core::devices
     {
     private:
         Registry& _registry;
-        std::unique_ptr<efsw::FileWatcher> _fileWatcher;
+        GlobalAllocatorType& _allocator;
+        generic::memory::AllocationResource<efsw::FileWatcher, GlobalAllocatorType> _fileWatcher;
 
     public:
-        explicit FileWatcherDevice(Registry& registry);
+        explicit FileWatcherDevice(Registry& registry, GlobalAllocatorType& allocator);
 
         void handleFileAction(efsw::WatchID watchid, const std::string& dir,
                                const std::string& filename, efsw::Action action,
