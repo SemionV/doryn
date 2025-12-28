@@ -6,6 +6,8 @@
 #include "implementation.h"
 #include <mutex>
 #include <functional>
+#include <dory/containers/list.h>
+#include <dory/core/allocators.h>
 
 namespace dory::core::events
 {
@@ -195,14 +197,16 @@ namespace dory::core::events
     class EventBuffer
     {
     private:
-        std::shared_ptr<std::vector<TEventData>> eventCases;
-        std::shared_ptr<std::vector<TEventData>> eventCasesBackBuffer;
+        std::vector<TEventData> eventCasesList;
+        std::vector<TEventData> eventCasesBackBufferList;
+        std::vector<TEventData>* eventCases = nullptr;
+        std::vector<TEventData>* eventCasesBackBuffer = nullptr;
         std::mutex mutex;
 
     public:
         EventBuffer():
-                eventCases(std::make_shared<std::vector<TEventData>>()),
-                eventCasesBackBuffer(std::make_shared<std::vector<TEventData>>())
+                eventCases(&eventCasesList),
+                eventCasesBackBuffer(&eventCasesBackBufferList)
         {}
 
         void addCase(const TEventData& eventData)
@@ -216,7 +220,7 @@ namespace dory::core::events
         {
             std::lock_guard lock{mutex}; //TODO: use lock free approach, this is abusing main thread with a system call currently
 
-            std::shared_ptr<std::vector<TEventData>> temp = eventCases;
+            std::vector<TEventData>* temp = eventCases;
             eventCases = eventCasesBackBuffer;
             eventCasesBackBuffer = temp;
 
