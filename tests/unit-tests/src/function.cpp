@@ -139,3 +139,18 @@ TEST(FunctionWrapperTests, wrapFreeFunction)
     const auto function = dory::data_structures::function::UniqueFunction<void(int)>{ &globalResource, &freeFunction };
     function(2);
 }
+
+TEST(FunctionWrapperTests, wrapLargeDelegate)
+{
+    const auto allocator = buildAllocatorFunction();
+    SegregationResource globalResource{ *allocator };
+
+    std::array<std::byte, 256> big{};
+
+    auto bigLambda = [big](const int param) {
+        std::cout << "LargeDelegate param: " << param << std::endl;
+    };
+
+    dory::data_structures::function::UniqueFunction<void(int)> function{ &globalResource, bigLambda }; // heap path
+    function(1);
+}
