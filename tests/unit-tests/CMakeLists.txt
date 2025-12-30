@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.30)
 project(unit-tests)
 
 add_executable(${PROJECT_NAME}
+        include/allocatorBuilder.h
         enttSceneService.cpp
         pipelineRepository.cpp
         graphics/meshAssetBinderTests.cpp

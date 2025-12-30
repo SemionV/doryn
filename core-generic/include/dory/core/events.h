@@ -6,7 +6,6 @@
 #include "implementation.h"
 #include <mutex>
 #include <functional>
-#include <dory/data-structures/containers/list.h>
 #include <dory/core/allocators.h>
 
 namespace dory::core::events

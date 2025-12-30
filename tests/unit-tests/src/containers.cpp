@@ -1,43 +1,15 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <spdlog/fmt/fmt.h>
+#include <allocatorBuilder.h>
 
 #include "dory/memory/allocators/segregationAllocator.h"
-#include "dory/memory/allocators/standardAllocator.h"
-#include "dory/memory/allocators/systemAllocator.h"
 #include <dory/data-structures/containers/string.h>
 #include <dory/data-structures/containers/list.h>
 #include <dory/data-structures/containers/deque.h>
 #include <dory/data-structures/containers/hashMap.h>
 
-class AllocProfiler
-{
-public:
-    void traceSlotAlloc(void* ptr, std::size_t size, std::size_t slotSize, std::size_t classIndex)
-    {
-        std::cout << fmt::format("Slot allocated: size [{0}], slot[{1}], class[{2}], ptr[{3}]", size, slotSize, classIndex, ptr) << std::endl;
-    }
-
-    void traceSlotFree(void* ptr, std::size_t slotSize, std::size_t classIndex)
-    {
-        std::cout << fmt::format("Slot deallocated: slot[{0}], class[{1}], ptr[{2}]", slotSize, classIndex, ptr) << std::endl;
-    }
-
-    void traceLargeAlloc(void* ptr, std::size_t size)
-    {
-        std::cout << fmt::format("Large object allocated: size [{0}], ptr[{1}]", size, ptr) << std::endl;
-    }
-
-    void traceLargeFree(void* ptr)
-    {
-        std::cout << fmt::format("Large object deallocated: ptr[{0}]", ptr) << std::endl;
-    }
-};
-
-using SegregationAllocatorType = dory::memory::SegregationAllocator<10, dory::memory::PageAllocator, dory::memory::SystemAllocator, dory::memory::SystemAllocator, AllocProfiler>;
-
-template<typename T>
-using StandardAllocatorType = dory::memory::StandardAllocator<T, SegregationAllocatorType>;
+using SegregationAllocatorType = dory::test_utilities::AllocatorBuilder<>::SegregationAllocatorType;
 
 using DoryString = dory::data_structures::containers::BasicString<char, std::char_traits<char>, SegregationAllocatorType>;
 
@@ -63,33 +35,11 @@ namespace std
 template<typename TKey, typename TValue>
 using DoryHashMap = dory::data_structures::containers::hashMap::HashMap<TKey, TValue, SegregationAllocatorType>;
 
-std::shared_ptr<SegregationAllocatorType> buildAllocator()
-{
-    constexpr std::size_t PAGE_SIZE = 4096;
-    dory::memory::PageAllocator blockAllocator {PAGE_SIZE};
-    dory::memory::SystemAllocator systemAllocator;
-
-    std::array sizeClasses {
-        dory::memory::MemorySizeClass{ 8, 1024 },
-        dory::memory::MemorySizeClass{ 16, 1024 },
-        dory::memory::MemorySizeClass{ 32, 1024 },
-        dory::memory::MemorySizeClass{ 64, 1024 },
-        dory::memory::MemorySizeClass{ 128, 1024 },
-        dory::memory::MemorySizeClass{ 256, 1024 },
-        dory::memory::MemorySizeClass{ 512, 1024 },
-        dory::memory::MemorySizeClass{ 1024, 1024 },
-        dory::memory::MemorySizeClass{ 2048, 1024 },
-        dory::memory::MemorySizeClass{ 4096, 1024 }
-    };
-
-    AllocProfiler profiler;
-
-    return std::make_shared<SegregationAllocatorType>("testSegAlloc", blockAllocator, systemAllocator, systemAllocator, profiler, sizeClasses);
-}
 
 TEST(BasicStringTests, simpleTest)
 {
-    const auto allocator = buildAllocator();
+    dory::test_utilities::AllocatorBuilder allocBuilder;
+    const auto allocator = allocBuilder.build();
 
     DoryString str { "Hello", *allocator };
 
@@ -136,7 +86,8 @@ void assertList(const TList& list, std::initializer_list<T> expected)
 
 TEST(BasicListTests, simpleTest)
 {
-    const auto allocator = buildAllocator();
+    dory::test_utilities::AllocatorBuilder allocBuilder;
+    const auto allocator = allocBuilder.build();
     DoryList<int> list {*allocator};
 
     list.push_back(1);
@@ -167,7 +118,8 @@ TEST(BasicListTests, simpleTest)
 
 TEST(BasicDequeTests, simpleTest)
 {
-    const auto allocator = buildAllocator();
+    dory::test_utilities::AllocatorBuilder allocBuilder;
+    const auto allocator = allocBuilder.build();
     DoryDeque<int, 4> list {*allocator};
 
     list.push_front(5);
@@ -195,7 +147,8 @@ TEST(BasicDequeTests, simpleTest)
 
 TEST(BasicDequeTests, popTest)
 {
-    const auto allocator = buildAllocator();
+    dory::test_utilities::AllocatorBuilder allocBuilder;
+    const auto allocator = allocBuilder.build();
     DoryDeque<int, 4> list {*allocator};
 
     list.push_front(5);
@@ -231,7 +184,8 @@ TEST(BasicDequeTests, popTest)
 
 TEST(BasicHashMapTests, simpleTest)
 {
-    const auto allocator = buildAllocator();
+    dory::test_utilities::AllocatorBuilder allocBuilder;
+    const auto allocator = allocBuilder.build();
 
     const auto key1 = DoryString{ "key1", *allocator };
     const auto key2 = DoryString{ "key2", *allocator };
@@ -258,7 +212,8 @@ TEST(BasicHashMapTests, simpleTest)
 
 TEST(BasicHashMapTests, eraseTest)
 {
-    const auto allocator = buildAllocator();
+    dory::test_utilities::AllocatorBuilder allocBuilder;
+    const auto allocator = allocBuilder.build();
 
     const auto key1 = DoryString{ "key1", *allocator };
     const auto key2 = DoryString{ "key2", *allocator };
@@ -282,7 +237,8 @@ TEST(BasicHashMapTests, eraseTest)
 
 TEST(BasicHashMapTests, clearTest)
 {
-    const auto allocator = buildAllocator();
+    dory::test_utilities::AllocatorBuilder allocBuilder;
+    const auto allocator = allocBuilder.build();
 
     const auto key1 = DoryString{ "key1", *allocator };
     const auto key2 = DoryString{ "key2", *allocator };
