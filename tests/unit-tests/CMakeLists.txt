@@ -17,7 +17,8 @@ add_executable(${PROJECT_NAME}
         src/concurrency.cpp
         src/memory.cpp
         src/containers.cpp
-        src/registry.cpp)
+        src/registry.cpp
+        src/function.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-core)
