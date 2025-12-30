@@ -1,7 +1,7 @@
 add_subdirectory(macros)
 add_subdirectory(bitwise)
 add_subdirectory(generic)
-add_subdirectory(containers)
+add_subdirectory(data-structures)
 add_subdirectory(serialization)
 add_subdirectory(concurrency)
 add_subdirectory(math)

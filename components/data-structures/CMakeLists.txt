@@ -1,4 +1,4 @@
-set(DORY_MODULE_NAME ${PROJECT_NAME}-containers)
+set(DORY_MODULE_NAME ${PROJECT_NAME}-data-structures)
 
 add_library(${DORY_MODULE_NAME} INTERFACE
         include/dory/containers/string.h

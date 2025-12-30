@@ -72,7 +72,7 @@ target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/extern
 
 target_link_libraries(${DORY_MODULE_NAME} PUBLIC
         ${PROJECT_NAME}-core-generic
-        ${PROJECT_NAME}-containers
+        ${PROJECT_NAME}-data-structures
         ${PROJECT_NAME}-serialization
         ${PROJECT_NAME}-memory
         Boost::dll

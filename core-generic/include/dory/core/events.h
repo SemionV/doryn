@@ -35,7 +35,7 @@ namespace dory::core::events
     class CallableFunction: public Callable<Ts...>
     {
     private:
-        std::function<void(Ts...)> function;
+        std::function<void(Ts...)> function; //TODO: can make a heap allocation, need a custom allocation-aware implementation
 
     public:
         explicit CallableFunction(std::function<void(Ts...)>&& function):
@@ -286,14 +286,14 @@ namespace dory::core::events
         template<typename TEvent>
         void fire(TDataContext& context, TEvent& eventData)
         {
-            auto dispatcher = this->template getDispatcher<TEvent>();
+            auto& dispatcher = this->template getDispatcher<TEvent>();
             dispatcher(context, eventData);
         }
 
         template<typename TEvent>
         void fire(TDataContext& context, const TEvent& eventData)
         {
-            auto dispatcher = this->template getDispatcher<const TEvent>();
+            auto& dispatcher = this->template getDispatcher<const TEvent>();
             dispatcher(context, eventData);
         }
     };
