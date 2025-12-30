@@ -3,15 +3,97 @@
 #include "dory/generic/typeList.h"
 #include <utility>
 
+/*
+
+ImplementationLevel<
+    TImplementationPolicy,
+    HierarchyState<TInterfaces,
+    ImplementationList<
+        TImplementation, TImplementations...>, TParameters, TCurrentParameter>>
+|
+TImplementationPolicy,
+HierarchyState<TInterfaces = (Interface1, Interface2),
+typename TImplementationPolicy::ImplementationTypes = (Implementation1, Implementation2),
+generic::TypeList<TParameters...> = [Param2, Param3],
+TParameter = Param1>
+|
+ImplementationLevel<
+    TImplementationPolicy,
+    HierarchyState<
+        TInterfaces = (Interface1, Interface2),
+        ImplementationList<>,
+        generic::TypeList<
+            TParameter = Param1,
+            TParameters... = [Param2, Param3]
+        >,
+        TCurrentParameter = void
+    >
+>
+
+|
+Implementation1
+|
+|
+TImplementationPolicy<
+    ImplementationTypes = (Implementation1, Implementation2),
+    HierarchyTopType = Class1
+>,
+HierarchyState<
+    TInterfaces = (Interface1, Interface2),
+    TImplementations = Implementation1, (Implementation2),
+    TParameters = (Param2, Param3),
+    TCurrentParameter = Param1
+>
+|
+ImplementationLevel ---------------------
+|
+|
+TImplementationPolicy<
+    ImplementationTypes = (Implementation1, Implementation2),
+    HierarchyTopType = Class1
+>,
+HierarchyState<
+    TInterfaces = (Interface1, Interface2),
+    TImplementations = Implementation1, (Implementation2),
+    TParameters = (Param2, Param3),
+    TCurrentParameter = Param1
+>
+|
+ImplementationLevel ---------------------
+|
+|
+TImplementationPolicy<
+    ImplementationTypes = (Implementation1, Implementation2),
+    HierarchyTopType = Class1
+>,
+HierarchyState<
+    TInterfaces = (Interface1, Interface2),
+    TImplementations = (),
+    TParameters = (Param1, Param2, Param3),
+    TCurrentParameter = void
+>
+|
+
+ */
+
 namespace dory::core::implementation
 {
+    /*
+     * List of Interface-unit implementations
+     */
     template<template<typename TParameter, typename TPolicy, typename TState> class... TImplementations>
     struct ImplementationList
     {};
 
+    /*
+     * Parent class of an implementation of an Interface-unit
+     */
     template<typename TImplementationPolicy, typename THierarchyState>
     struct ImplementationLevel;
 
+    /*
+     * Default top class of the Hierarchy
+     */
     template<typename TImplementationPolicy>
     struct HierarchyTop
     {
@@ -20,6 +102,9 @@ namespace dory::core::implementation
         {}
     };
 
+    /*
+     * Utility Container for the whole Hierarchy
+     */
     template<typename TImplementations, template<typename> class THierarchyTop = HierarchyTop>
     struct ImplementationPolicy
     {
@@ -29,10 +114,16 @@ namespace dory::core::implementation
         using HierarchyTopType = THierarchyTop<TPolicy>;
     };
 
+    /*
+     * Descriptor of a level of Hierarchy
+     */
     template<typename TInterfaces, typename TImplementations, typename TParameters, typename TCurrentParameter>
     struct HierarchyState
     {};
 
+    /*
+     * Middle level of Hierarchy
+     */
     template<typename TImplementationPolicy,
             typename TInterfaces,
             template<typename, typename, typename> class TImplementation,
@@ -48,6 +139,9 @@ namespace dory::core::implementation
         {}
     };
 
+    /*
+     * Lowest level of Hierarchy
+     */
     template<typename TImplementationPolicy,
             typename TInterfaces,
             typename TParameter,

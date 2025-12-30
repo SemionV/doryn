@@ -75,7 +75,7 @@ namespace dory::core::events
         using HandlerType = std::function<void(Ts...)>;
 
     private:
-        KeyType idCounter {};
+        KeyType idCounter {}; //TODO: must be thread-safe
 
     protected:
         std::map<KeyType, std::shared_ptr<Callable<Ts...>>> handlers;
