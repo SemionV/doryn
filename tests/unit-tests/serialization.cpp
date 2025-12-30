@@ -19,9 +19,9 @@
 #include <dory/math/linearAlgebra.h>
 #include <spdlog/fmt/bundled/format.h>
 #include <dory/core/resources/objectFactoryRefl.h>
-#include <dory/containers/hashId.h>
+#include <../../components/data-structures/include/dory/data-structures/hashId.h>
 
-using dory::containers::hash::operator""_id;
+using dory::data_structures::hash::operator""_id;
 using namespace testing;
 
 class SomeController: public dory::core::IController

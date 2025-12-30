@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <string_view>
 
-namespace dory::containers::hash
+namespace dory::data_structures::hash
 {
     constexpr std::uint64_t fnv_offset = 14695981039346656037ull;
     constexpr std::uint64_t fnv_prime  = 1099511628211ull;

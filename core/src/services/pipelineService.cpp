@@ -7,7 +7,7 @@
 #include <vector>
 #include <set>
 #include <spdlog/fmt/fmt.h>
-#include <dory/containers/hashId.h>
+#include <../../../components/data-structures/include/dory/data-structures/hashId.h>
 
 namespace dory::core::services
 {
@@ -212,7 +212,7 @@ namespace dory::core::services
                 auto parentId = nullId;
                 if(!rootNode.parent.empty())
                 {
-                    if(const auto node = pipelineRepo->getNode(containers::hash::hash(rootNode.parent)))
+                    if(const auto node = pipelineRepo->getNode(data_structures::hash::hash(rootNode.parent)))
                     {
                         parentId = node->id;
                     }
@@ -230,7 +230,7 @@ namespace dory::core::services
                     stack.pop();
 
                     auto pipelineNode = entities::PipelineNode {};
-                    pipelineNode.name = containers::hash::hash(*nodeName);
+                    pipelineNode.name = data_structures::hash::hash(*nodeName);
                     pipelineNode.sceneId = scene.id;
                     pipelineNode.parentNodeId = parentId;
 
@@ -245,7 +245,7 @@ namespace dory::core::services
                     }
                     else if(!node->controller.empty())
                     {
-                        if(auto factory = _registry.get<IObjectFactory<IController>>(containers::hash::hash(node->controller)))
+                        if(auto factory = _registry.get<IObjectFactory<IController>>(data_structures::hash::hash(node->controller)))
                         {
                             pipelineNode.controller = factory->createObject(nullptr);
                         }

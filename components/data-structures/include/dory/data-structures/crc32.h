@@ -2,7 +2,7 @@
 #include <array>
 #include <cstdint>
 
-namespace dory::containers
+namespace dory::data_structures::containers
 {
     using CRC32Table =  std::array<uint32_t, 256>;
 

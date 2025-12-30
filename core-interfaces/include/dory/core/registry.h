@@ -1,7 +1,7 @@
 #pragma once
 
 #include <dory/generic/registryLayer.h>
-#include <dory/containers/hashId.h>
+#include <../../../../components/data-structures/include/dory/data-structures/hashId.h>
 #include "events/eventTypes.h"
 #include <dory/core/resources/dataFormat.h>
 #include <dory/core/resources/logger.h>
@@ -76,7 +76,7 @@ namespace dory::core
         using ICameraRepository = IRepository<resources::entities::Camera>;
     }
 
-    using containers::hash::operator""_id;
+    using data_structures::hash::operator""_id;
 
     using WindowSystemList = generic::ValueList<resources::WindowSystem, resources::WindowSystem::glfw, resources::WindowSystem::win32, resources::WindowSystem::x, resources::WindowSystem::wayland>;
     using DisplaySystemList = generic::ValueList<resources::DisplaySystem, resources::DisplaySystem::glfw>;

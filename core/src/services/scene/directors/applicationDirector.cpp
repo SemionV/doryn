@@ -1,7 +1,7 @@
 #include <dory/core/registry.h>
 #include <dory/core/services/scene/directors/applicationDirector.h>
 #include <spdlog/fmt/fmt.h>
-#include <dory/containers/hashId.h>
+#include <../../../../../components/data-structures/include/dory/data-structures/hashId.h>
 
 namespace dory::core::services::scene::directors
 {
@@ -78,7 +78,7 @@ namespace dory::core::services::scene::directors
         {
             if(const auto assetType = resolver->resolve(context, event.filePath))
             {
-                _registry.get<IAssetReloadHandler>(containers::hash::hash(*assetType), [&context, &event](IAssetReloadHandler* assetLoader) {
+                _registry.get<IAssetReloadHandler>(data_structures::hash::hash(*assetType), [&context, &event](IAssetReloadHandler* assetLoader) {
                     assetLoader->reload(context, event.filePath);
                 });
             }

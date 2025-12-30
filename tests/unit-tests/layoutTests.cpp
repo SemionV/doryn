@@ -93,8 +93,8 @@ void testWindow(const int screenWidth, const int screenHeight, const int x, cons
     });
 
     testLayout(screenDefinition, {
-        con(containers::hash::hash(screenDefinition.name)) | _w(screenWidth) | _h(screenHeight) | kids({ 1 }),
-        con(containers::hash::hash(definition.name)) | _x(x) | _y(y) | _w(width) | _h(height)
+        con(data_structures::hash::hash(screenDefinition.name)) | _w(screenWidth) | _h(screenHeight) | kids({ 1 }),
+        con(data_structures::hash::hash(definition.name)) | _x(x) | _y(y) | _w(width) | _h(height)
     });
 }
 
@@ -136,7 +136,7 @@ TEST(LayoutTests, rowOfTwoColumns)
     });
 
     testLayout(definition, {
-        con(containers::hash::hash(definition.name)) | _w(windowWidth) | _h(windowHeight) | kids({ 1, 2 }),
+        con(data_structures::hash::hash(definition.name)) | _w(windowWidth) | _h(windowHeight) | kids({ 1, 2 }),
         con("column1") | _x(0) | _w(column1Width) | _h(windowHeight),
         con("column2") | _x(column1Width) | _w(windowWidth - column1Width) | _h(windowHeight)
     });
@@ -152,7 +152,7 @@ TEST(LayoutTests, rowOfTwoColumnsWithFlexibleFirst)
     });
 
     testLayout(definition, {
-        con(containers::hash::hash(definition.name)) | _w(windowWidth) | _h(windowHeight) | kids({ 1, 2 }),
+        con(data_structures::hash::hash(definition.name)) | _w(windowWidth) | _h(windowHeight) | kids({ 1, 2 }),
         con("column1") | _x(0) | _w(windowWidth - column1Width) | _h(windowHeight),
         con("column2") | _x(windowWidth - column1Width) | _w(column1Width) | _h(windowHeight)
     });
@@ -168,7 +168,7 @@ TEST(LayoutTests, columnOfTwoRows)
     });
 
     testLayout(definition, {
-        con(containers::hash::hash(definition.name)) | _w(windowWidth) | _h(windowHeight) | kids({ 1, 2 }),
+        con(data_structures::hash::hash(definition.name)) | _w(windowWidth) | _h(windowHeight) | kids({ 1, 2 }),
         con("column1") | _y(0) | _w(windowWidth) | _h(row1Height),
         con("column2") | _y(row1Height) | _w(windowWidth) | _h(windowHeight - row1Height)
     });

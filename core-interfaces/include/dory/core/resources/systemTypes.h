@@ -2,11 +2,11 @@
 
 #include <string_view>
 #include <dory/core/resources/name.h>
-#include <dory/containers/hashId.h>
+#include <../../../../../components/data-structures/include/dory/data-structures/hashId.h>
 
 namespace dory::core::resources
 {
-    using containers::hash::operator""_id;
+    using data_structures::hash::operator""_id;
 
     enum class WindowSystem
     {

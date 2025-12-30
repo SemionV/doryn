@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <dory/containers/lockfree/queue.h>
+#include <dory/data-structures/containers/lockfree/queue.h>
 #include <spdlog/fmt/fmt.h>
 
 using namespace dory::containers::lockfree;

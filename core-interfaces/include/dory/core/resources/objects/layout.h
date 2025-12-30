@@ -4,7 +4,7 @@
 #include <array>
 #include <optional>
 #include <vector>
-#include <dory/containers/hashId.h>
+#include <dory/data-structures/hashId.h>
 
 namespace dory::core::resources::objects::layout
 {

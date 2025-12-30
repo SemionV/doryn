@@ -1,6 +1,6 @@
 #include <dory/core/services/layoutSetupService.h>
 #include <stack>
-#include <dory/containers/hashId.h>
+#include <../../../components/data-structures/include/dory/data-structures/hashId.h>
 
 namespace dory::core::services
 {
@@ -168,7 +168,7 @@ namespace dory::core::services
             auto [definition, parentIndex, index, alignment, stretching] = stack.top();
             stack.pop();
 
-            Name name = containers::hash::hash(definition->name);
+            Name name = data_structures::hash::hash(definition->name);
             objects::layout::NodeItemSetup& node = setupList.nodes.emplace_back(name, parentIndex, std::vector<std::size_t>{}, alignment, stretching);
             if(parentIndex != i)
             {

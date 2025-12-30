@@ -79,7 +79,7 @@
 
 namespace dory::game
 {
-    using containers::hash::operator""_id;
+    using data_structures::hash::operator""_id;
 
     void Setup::setupRegistry(const generic::extension::LibraryHandle& libraryHandle, core::Registry& registry,
                                 const core::resources::configuration::Configuration& configuration)

@@ -5,7 +5,7 @@
 #include <dory/core/resources/scene/enttScene.h>
 #include <dory/core/resources/systemTypes.h>
 #include <dory/game/logic/mainSceneKeyboardHandler.h>
-#include <dory/containers/hashId.h>
+#include <../../../components/data-structures/include/dory/data-structures/hashId.h>
 
 namespace dory::game
 {

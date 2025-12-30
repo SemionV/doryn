@@ -5,7 +5,7 @@
 #include <type_traits>
 #include <dory/macros/assert.h>
 
-namespace dory::containers
+namespace dory::data_structures::containers
 {
     template <typename T, typename TAllocator>
     class BasicList

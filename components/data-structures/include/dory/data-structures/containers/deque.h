@@ -2,7 +2,7 @@
 
 #include <iterator>
 
-namespace dory::containers
+namespace dory::data_structures::containers
 {
     template<typename T, std::size_t BlockSize>
     class DequeIterator

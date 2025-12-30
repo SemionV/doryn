@@ -9,7 +9,7 @@
 #include <cmath>
 #include <cstring>
 
-namespace dory::containers::hashMap
+namespace dory::data_structures::containers::hashMap
 {
     template<
         typename THashMap,

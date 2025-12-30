@@ -5,10 +5,10 @@
 #include "dory/memory/allocators/segregationAllocator.h"
 #include "dory/memory/allocators/standardAllocator.h"
 #include "dory/memory/allocators/systemAllocator.h"
-#include <dory/containers/string.h>
-#include <dory/containers/list.h>
-#include <dory/containers/deque.h>
-#include <dory/containers/hashMap.h>
+#include <dory/data-structures/containers/string.h>
+#include <dory/data-structures/containers/list.h>
+#include <dory/data-structures/containers/deque.h>
+#include <dory/data-structures/containers/hashMap.h>
 
 class AllocProfiler
 {
@@ -39,20 +39,20 @@ using SegregationAllocatorType = dory::memory::SegregationAllocator<10, dory::me
 template<typename T>
 using StandardAllocatorType = dory::memory::StandardAllocator<T, SegregationAllocatorType>;
 
-using DoryString = dory::containers::BasicString<char, std::char_traits<char>, SegregationAllocatorType>;
+using DoryString = dory::data_structures::containers::BasicString<char, std::char_traits<char>, SegregationAllocatorType>;
 
 template<typename T>
-using DoryList = dory::containers::BasicList<T, SegregationAllocatorType>;
+using DoryList = dory::data_structures::containers::BasicList<T, SegregationAllocatorType>;
 
 template<typename T, std::size_t BlockSize = 64>
-using DoryDeque = dory::containers::BasicDeque<T, SegregationAllocatorType, BlockSize>;
+using DoryDeque = dory::data_structures::containers::BasicDeque<T, SegregationAllocatorType, BlockSize>;
 
 namespace std
 {
     template<class CharT, class Traits, class Alloc>
-    struct hash<dory::containers::BasicString<CharT, Traits, Alloc>>
+    struct hash<dory::data_structures::containers::BasicString<CharT, Traits, Alloc>>
     {
-        size_t operator()(dory::containers::BasicString<CharT, Traits, Alloc> const& s) const noexcept
+        size_t operator()(dory::data_structures::containers::BasicString<CharT, Traits, Alloc> const& s) const noexcept
         {
             std::basic_string_view<CharT, Traits> sv{ s.data(), s.size() };
             return std::hash<std::basic_string_view<CharT, Traits>>{}(sv);
@@ -61,7 +61,7 @@ namespace std
 }
 
 template<typename TKey, typename TValue>
-using DoryHashMap = dory::containers::hashMap::HashMap<TKey, TValue, SegregationAllocatorType>;
+using DoryHashMap = dory::data_structures::containers::hashMap::HashMap<TKey, TValue, SegregationAllocatorType>;
 
 std::shared_ptr<SegregationAllocatorType> buildAllocator()
 {
@@ -93,7 +93,7 @@ TEST(BasicStringTests, simpleTest)
 
     DoryString str { "Hello", *allocator };
 
-    const dory::containers::CRC32Table table = dory::containers::CRC32::generateTable();
+    const dory::data_structures::containers::CRC32Table table = dory::data_structures::containers::CRC32::generateTable();
 
     str.append(" World!");
     std::cout << str.length() << ": " << str.data() << std::endl;
@@ -108,7 +108,7 @@ TEST(BasicStringTests, simpleTest)
     std::cout << "CRC32: " << str2.crc32(table) << std::endl;
 
     std::cout << "std::string size: " << sizeof(std::string) << std::endl;
-    std::cout << "dory::containers::BasicString size: " << sizeof(dory::containers::BasicString<char, std::char_traits<char>, SegregationAllocatorType>) << std::endl;
+    std::cout << "dory::containers::BasicString size: " << sizeof(dory::data_structures::containers::BasicString<char, std::char_traits<char>, SegregationAllocatorType>) << std::endl;
 }
 
 template<typename TList>

@@ -4,7 +4,7 @@
 #include <dory/core/services/pipelineService.h>
 #include <dory/core/repositories/iPipelineRepository.h>
 #include <dory/core/iController.h>
-#include <dory/containers/hashId.h>
+#include <../../components/data-structures/include/dory/data-structures/hashId.h>
 
 #include <utility>
 
@@ -90,7 +90,7 @@ public:
         PipelineNode node {};
         node.id = ++_idCounter;
         node.parentNodeId = parentId;
-        node.name = containers::hash::hash(name.c_str());
+        node.name = data_structures::hash::hash(name.c_str());
 
         return FluentNodeFactoryInterface{ *this, node };
     }

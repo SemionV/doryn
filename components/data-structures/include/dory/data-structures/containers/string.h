@@ -2,9 +2,9 @@
 
 #include <cstring>
 #include <dory/macros/assert.h>
-#include "crc32.h"
+#include "../crc32.h"
 
-namespace dory::containers
+namespace dory::data_structures::containers
 {
     template<typename TChar, typename TCharTraits, typename TAllocator>
     class BasicString
@@ -497,7 +497,7 @@ namespace dory::containers
 
         [[nodiscard]] uint32_t crc32(const CRC32Table& table) const noexcept
         {
-            return dory::containers::CRC32::compute(getData(), getSize(), table);
+            return CRC32::compute(getData(), getSize(), table);
         }
 
     private:

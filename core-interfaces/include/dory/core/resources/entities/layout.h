@@ -49,14 +49,14 @@ namespace dory::core::resources::entities::layout
         inline Container con(const char* name)
         {
             Container result {};
-            result.name = containers::hash::hash(name);
+            result.name = data_structures::hash::hash(name);
             return result;
         }
 
         inline Container con(const std::string& name)
         {
             Container result {};
-            result.name = containers::hash::hash(name.c_str());
+            result.name = data_structures::hash::hash(name.c_str());
             return result;
         }
 
