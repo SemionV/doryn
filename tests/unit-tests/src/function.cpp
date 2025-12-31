@@ -5,6 +5,11 @@
 #include <dory/memory/allocators/segregationAllocator.h>
 #include <allocatorBuilder.h>
 
+void freeFunction(const int param)
+{
+    std::cout << "freeFunction param: " << param << std::endl;
+}
+
 TEST(FunctionWrapperTests, wrapDelegate)
 {
     dory::test_utilities::AllocatorBuilder allocBuilder;
@@ -19,10 +24,22 @@ TEST(FunctionWrapperTests, wrapDelegate)
         std::cout << "Delegate external variable: " << externalVariable << std::endl;
     };
 
-    const auto function = dory::data_structures::function::UniqueFunction<void(int)>{ &globalResource, delegate };
+    const auto function = dory::data_structures::function::Function<void(int)>{ &globalResource, delegate };
     function(2);
 
-    std::cout << "UniqueFunction size: " << sizeof(decltype(function)) << std::endl;
+    std::cout << "Function size: " << sizeof(decltype(function)) << std::endl;
+}
+
+TEST(FunctionWrapperTests, wrapFreeFunction)
+{
+    dory::test_utilities::AllocatorBuilder allocBuilder;
+    const auto allocator = allocBuilder.build();
+    dory::test_utilities::SegregationResource globalResource{ *allocator };
+
+    auto function = dory::data_structures::function::Function<void(int)>{ &globalResource, &freeFunction };
+    function(2);
+
+    std::cout << "Function size: " << sizeof(decltype(function)) << std::endl;
 }
 
 TEST(FunctionWrapperTests, wrapClassMember)
@@ -44,27 +61,10 @@ TEST(FunctionWrapperTests, wrapClassMember)
         }
     } handler;
 
-    const dory::data_structures::function::UniqueFunction<void(int)> function { &globalResource, dory::data_structures::function::bindMember(&handler, &Handler::foo) };
+    const dory::data_structures::function::Function<void(int)> function { &globalResource, dory::data_structures::function::bindMember(&handler, &Handler::foo) };
     function(2);
 
-    std::cout << "UniqueFunction size: " << sizeof(decltype(function)) << std::endl;
-}
-
-void freeFunction(const int param)
-{
-    std::cout << "freeFunction param: " << param << std::endl;
-}
-
-TEST(FunctionWrapperTests, wrapFreeFunction)
-{
-    dory::test_utilities::AllocatorBuilder allocBuilder;
-    const auto allocator = allocBuilder.build();
-    dory::test_utilities::SegregationResource globalResource{ *allocator };
-
-    auto function = dory::data_structures::function::UniqueFunction<void(int)>{ &globalResource, &freeFunction };
-    function(2);
-
-    std::cout << "UniqueFunction size: " << sizeof(decltype(function)) << std::endl;
+    std::cout << "Function size: " << sizeof(decltype(function)) << std::endl;
 }
 
 TEST(FunctionWrapperTests, wrapLargeDelegate)
@@ -79,9 +79,9 @@ TEST(FunctionWrapperTests, wrapLargeDelegate)
         std::cout << "LargeDelegate param: " << param << std::endl;
     };
 
-    dory::data_structures::function::UniqueFunction<void(int)> function{ &globalResource, bigLambda }; // heap path
+    dory::data_structures::function::Function<void(int)> function{ &globalResource, bigLambda }; // heap path
     function(1);
-    std::cout << "UniqueFunction size: " << sizeof(decltype(function)) << std::endl;
+    std::cout << "Function size: " << sizeof(decltype(function)) << std::endl;
 
     dory::data_structures::function::FunctionRef<void(int)> functionRef { bigLambda };
     functionRef(1);
