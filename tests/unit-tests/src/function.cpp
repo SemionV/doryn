@@ -25,27 +25,26 @@ TEST(FunctionWrapperTests, wrapDelegate)
     std::cout << "UniqueFunction size: " << sizeof(decltype(function)) << std::endl;
 }
 
-class Handler
-{
-private:
-    int _classVariable = 1;
-
-public:
-    void foo(const int param) const
-    {
-        std::cout << "Handler::foo param: " << param << std::endl;
-        std::cout << "Handler::foo internal variable: " << _classVariable << std::endl;
-    }
-};
-
 TEST(FunctionWrapperTests, wrapClassMember)
 {
     dory::test_utilities::AllocatorBuilder allocBuilder;
     const auto allocator = allocBuilder.build();
     dory::test_utilities::SegregationResource globalResource{ *allocator };
 
-    Handler h;
-    const dory::data_structures::function::UniqueFunction<void(int)> function { &globalResource, dory::data_structures::function::bindMember(&h, &Handler::foo) };
+    const class Handler
+    {
+    private:
+        int _classVariable = 1;
+
+    public:
+        void foo(const int param) const
+        {
+            std::cout << "Handler::foo param: " << param << std::endl;
+            std::cout << "Handler::foo internal variable: " << _classVariable << std::endl;
+        }
+    } handler;
+
+    const dory::data_structures::function::UniqueFunction<void(int)> function { &globalResource, dory::data_structures::function::bindMember(&handler, &Handler::foo) };
     function(2);
 
     std::cout << "UniqueFunction size: " << sizeof(decltype(function)) << std::endl;
@@ -62,7 +61,7 @@ TEST(FunctionWrapperTests, wrapFreeFunction)
     const auto allocator = allocBuilder.build();
     dory::test_utilities::SegregationResource globalResource{ *allocator };
 
-    const auto function = dory::data_structures::function::UniqueFunction<void(int)>{ &globalResource, &freeFunction };
+    auto function = dory::data_structures::function::UniqueFunction<void(int)>{ &globalResource, &freeFunction };
     function(2);
 
     std::cout << "UniqueFunction size: " << sizeof(decltype(function)) << std::endl;
@@ -82,6 +81,9 @@ TEST(FunctionWrapperTests, wrapLargeDelegate)
 
     dory::data_structures::function::UniqueFunction<void(int)> function{ &globalResource, bigLambda }; // heap path
     function(1);
-
     std::cout << "UniqueFunction size: " << sizeof(decltype(function)) << std::endl;
+
+    dory::data_structures::function::FunctionRef<void(int)> functionRef { bigLambda };
+    functionRef(1);
+    std::cout << "FunctionRef size: " << sizeof(decltype(functionRef)) << std::endl;
 }

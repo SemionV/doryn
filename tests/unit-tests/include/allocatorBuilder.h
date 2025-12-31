@@ -87,9 +87,12 @@ namespace dory::test_utilities
         template<typename T>
         using StandardAllocatorType = memory::StandardAllocator<T, SegregationAllocatorType>;
 
-        std::shared_ptr<SegregationAllocatorType> build()
+        std::shared_ptr<SegregationAllocatorType> build(const char* name = _defaultName.data())
         {
-            return std::make_shared<SegregationAllocatorType>("testSegAlloc", _blockAllocator, _systemAllocator, _systemAllocator, _profiler, _sizeClasses);
+            return std::make_shared<SegregationAllocatorType>(name, _blockAllocator, _systemAllocator, _systemAllocator, _profiler, _sizeClasses);
         }
+
+    private:
+        static constexpr std::string_view _defaultName = "testSegAlloc";
     };
 }

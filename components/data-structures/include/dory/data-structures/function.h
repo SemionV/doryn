@@ -23,6 +23,49 @@ namespace dory::data_structures::function
     }
 
     template<class>
+    class FunctionRef;
+
+    template<class R, class... Args>
+    class FunctionRef<R(Args...)>
+    {
+    public:
+        FunctionRef() noexcept = default;
+
+        // Construct from any callable lvalue (non-owning).
+        template<class F>
+        explicit FunctionRef(F& f) noexcept
+            requires (!std::is_same_v<std::remove_cvref_t<F>, FunctionRef>)
+                  && std::is_invocable_r_v<R, F&, Args...>
+        {
+            obj_ = static_cast<void*>(std::addressof(f));
+            call_ = [](void* o, Args... as) -> R {
+                return std::invoke(*static_cast<F*>(o), std::forward<Args>(as)...);
+            };
+        }
+
+        // Construct from function pointer.
+        explicit FunctionRef(R(*fp)(Args...)) noexcept
+        {
+            obj_ = reinterpret_cast<void*>(fp);
+            call_ = [](void* o, Args... as) -> R {
+                auto f = reinterpret_cast<R(*)(Args...)>(o);
+                return f(std::forward<Args>(as)...);
+            };
+        }
+
+        explicit operator bool() const noexcept { return call_ != nullptr; }
+
+        R operator()(Args... as) const
+        {
+            return call_(obj_, std::forward<Args>(as)...);
+        }
+
+    private:
+        void* obj_ = nullptr;
+        R (*call_)(void*, Args...) = nullptr;
+    };
+
+    template<class>
     class UniqueFunction;
 
     template<class R, class... Args>
@@ -151,18 +194,7 @@ namespace dory::data_structures::function
                 _heap.bytes = sizeof(Fn);
                 _heap.align = alignof(Fn);
                 _heap.ptr = _mr->allocate(_heap.bytes, _heap.align);
-                try
-                {
-                    ::new (_heap.ptr) Fn(std::forward<F>(f));
-                }
-                catch (...)
-                {
-                    _mr->deallocate(_heap.ptr, _heap.bytes, _heap.align);
-                    _heap = {};
-                    _storage_kind = storage_kind::empty;
-                    _mr = nullptr;
-                    throw;
-                }
+                ::new (_heap.ptr) Fn(std::forward<F>(f));
                 _vt = &heap_vtable<Fn>();
             }
         }
@@ -225,4 +257,14 @@ namespace dory::data_structures::function
             return vt;
         }
     };
+
+    template<typename F>
+    class Function;
+
+    template<typename TReturn, typename... TArgs>
+    class Function<TReturn(TArgs...)>
+    {
+
+    };
+
 }
