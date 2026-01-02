@@ -19,7 +19,8 @@ add_executable(${PROJECT_NAME}
         src/memory.cpp
         src/containers.cpp
         src/registry.cpp
-        src/function.cpp)
+        src/function.cpp
+        src/eventSystem.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-core)
