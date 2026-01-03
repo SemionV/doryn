@@ -71,7 +71,6 @@ namespace dory::data_structures::containers
 
         BasicList& operator=(BasicList&& other) noexcept
         {
-
             _data = other._data;
             _size = other._size;
             _capacity = other._capacity;
