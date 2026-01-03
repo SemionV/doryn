@@ -15,7 +15,7 @@ namespace dory::data_structures::containers::lockfree
         using size_type = std::size_t;
 
     private:
-        static constexpr size_type SEGMENT_SHIFT = std::countr_zero(SEGMENT_SIZE);;
+        static constexpr size_type SEGMENT_SHIFT = std::countr_zero(SEGMENT_SIZE);
 
         TAllocator& _allocator;
         std::atomic<T*> _segments[MAX_SEGMENTS];
@@ -27,7 +27,7 @@ namespace dory::data_structures::containers::lockfree
         {
             for(size_type i = 0; i < MAX_SEGMENTS; ++i)
             {
-                _segments = nullptr;
+                _segments[i].store(nullptr, std::memory_order_relaxed);
             }
         }
 
@@ -38,17 +38,13 @@ namespace dory::data_structures::containers::lockfree
 
         size_type append()
         {
-            size_type currentSize = _size.load(std::memory_order::relaxed);
-            size_type newSize = currentSize + 1;
-            while(!_size.compare_exchange_weak(currentSize, newSize, std::memory_order::release, std::memory_order::acquire))
-            {
-                newSize = currentSize + 1;
-            }
+            // Reserve an index (ticket dispenser)
+            const size_type index = _size.fetch_add(1, std::memory_order_relaxed);
 
-            size_type segmentIndex = getSegmentIndex(currentSize - 1);
+            const size_type segmentIndex = getSegmentIndex(index);
             allocateSegment(segmentIndex);
 
-            return newSize - 1;
+            return index;
         }
 
     private:
