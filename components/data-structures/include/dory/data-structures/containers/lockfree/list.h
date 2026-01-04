@@ -18,7 +18,7 @@ namespace dory::data_structures::containers::lockfree
     public:
         using size_type = std::size_t;
 
-    private:
+    protected:
         static constexpr size_type SEGMENT_SHIFT = std::countr_zero(SEGMENT_SIZE);
         static constexpr size_type CAPACITY = MAX_SEGMENTS * SEGMENT_SIZE;
 
