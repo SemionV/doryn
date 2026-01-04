@@ -40,11 +40,41 @@ namespace dory::data_structures::containers::lockfree
         {
             // Reserve an index (ticket dispenser)
             const size_type index = _size.fetch_add(1, std::memory_order_relaxed);
+            assert::inhouse(index < MAX_SEGMENTS * SEGMENT_SIZE, "SegmentedList full");
 
             const size_type segmentIndex = getSegmentIndex(index);
             allocateSegment(segmentIndex);
 
             return index;
+        }
+
+    protected:
+        template<bool IsConst>
+        auto getSlotPointer(const size_type index) -> std::conditional_t<IsConst, const T*, T*>
+        {
+            using pointer = std::conditional_t<IsConst, const T*, T*>;
+
+            const size_type size = _size.load(std::memory_order::relaxed);
+            assert::inhouse(index < size, "Invalid index");
+
+            const size_type segmentIndex = getSegmentIndex(index);
+            assert::inhouse(segmentIndex < MAX_SEGMENTS, "Invalid segment index");
+            const size_type offset = getOffset(index);
+
+            pointer segment = _segments[segmentIndex].load(std::memory_order::acquire);
+            assert::inhouse(segment, "Uninitialized segment of list");
+
+            return segment + offset;
+        }
+
+        T* getSlotPointer(const size_type index)
+        {
+            return getSlotPointer<false>(index);
+        }
+
+        const T* getSlotPointer(const size_type index) const
+        {
+            return getSlotPointer<true>(index);
         }
 
     private:
