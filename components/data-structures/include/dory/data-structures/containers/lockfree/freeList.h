@@ -35,7 +35,8 @@ namespace dory::data_structures::containers::lockfree::freelist
             SlotIndexType generation;
         };
     private:
-        std::atomic<SlotIndexType> _head = std::numeric_limits<SlotIndexType>::max();
+        static constexpr size_type UNDEFINED_HEAD_INDEX = std::numeric_limits<SlotIndexType>::max();
+        std::atomic<SlotIndexType> _head = UNDEFINED_HEAD_INDEX;
 
     public:
         template<typename... TSlotArgs>
@@ -57,11 +58,13 @@ namespace dory::data_structures::containers::lockfree::freelist
 
                 SlotIndexType currentHead = _head.load(std::memory_order::acquire);
 
-                slot->value.T(std::forward<TSlotArgs>(slotArgs)...);
+                slot->nextSlot = currentHead;
+                while(!_head.compare_exchange_weak(currentHead, slotIndex, std::memory_order::release, std::memory_order::acquire))
+                {
+                    slot->nextSlot = currentHead;
+                }
 
-                
-
-                slot->active = true;
+                slot->active.store(true, std::memory_order::release);
             }
         }
     };
