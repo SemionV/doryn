@@ -26,7 +26,7 @@ namespace dory::data_structures::containers::lockfree
         std::atomic<T*> _segments[MAX_SEGMENTS];
         std::atomic<size_type> _size = 0;
 
-    public:
+    protected:
         explicit SegmentedList(TAllocator& allocator):
             _allocator(allocator)
         {

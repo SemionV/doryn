@@ -1,5 +1,7 @@
 #pragma once
 
+#include <refl.hpp>
+
 #include "list.h"
 #include <dory/generic/concepts.h>
 #include <dory/macros/assert.h>
@@ -67,6 +69,37 @@ namespace dory::data_structures::containers::lockfree::freelist
             }
 
             _head.store(headIndex, std::memory_order::release);
+        }
+
+        template<typename U>
+        SlotIdentifier add(U&& value)
+        {
+            SlotType* slot = nullptr;
+            SlotIndexType index = UNDEFINED_HEAD_INDEX;
+
+            SlotIndexType headIndex = _head.load(std::memory_order::relaxed);
+            while(headIndex != UNDEFINED_HEAD_INDEX)
+            {
+                SlotType* headSlot = this->getSlot(headIndex);
+                const SlotIndexType newHeadIndex = slot->nextSlot;
+                if(_head.compare_exchange_weak(headIndex, newHeadIndex, std::memory_order::release, std::memory_order::relaxed))
+                {
+                    slot = headSlot;
+                    slot->generation.fetch_add(1, std::memory_order::relaxed);
+                    index = headIndex;
+                    break;
+                }
+            }
+
+            if(slot == nullptr)
+            {
+                index = this->append();
+                slot = this->getSlot(index);
+            }
+
+            assert::inhouse(slot, "Cannot allocate slot");
+
+            return { index, slot->generation };
         }
     };
 }
