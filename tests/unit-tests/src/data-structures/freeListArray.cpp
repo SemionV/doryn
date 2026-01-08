@@ -17,6 +17,9 @@ TEST(FreeListTests, basic)
 
     EXPECT_EQ(list.size(), 2);
 
+    EXPECT_EQ(list.get(id1), 1);
+    EXPECT_EQ(list.get(id2), 2);
+
     list.remove(id1);
     EXPECT_EQ(list.size(), 1);
 

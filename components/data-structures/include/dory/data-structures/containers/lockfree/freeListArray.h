@@ -11,10 +11,20 @@ namespace dory::data_structures::containers::lockfree::freelist
     template<typename TValue, typename TSlotIndexType>
     struct Slot
     {
-        std::byte storage[sizeof(TValue)] {};
+        alignas(TValue) std::byte storage[sizeof(TValue)];
         TSlotIndexType nextSlot = 0;
         std::atomic<TSlotIndexType> generation = 0;
         std::atomic<bool> active = false;
+
+        TValue* data() noexcept
+        {
+            return std::launder(reinterpret_cast<TValue*>(storage));
+        }
+        const TValue* data() const noexcept
+        {
+            return std::launder(reinterpret_cast<const TValue*>(storage));
+        }
+
     };
 
     template<typename T, typename TAllocator, std::uint32_t SEGMENT_SIZE = 8, std::size_t MAX_SEGMENTS = 1>
@@ -90,9 +100,23 @@ namespace dory::data_structures::containers::lockfree::freelist
                 currentHead,
                 id.index,
                 std::memory_order::release,
-                std::memory_order::relaxed));
+                std::memory_order::relaxed))
+            {}
 
             _size.fetch_sub(1, std::memory_order::relaxed);
+        }
+
+        /*
+         * Very dangerous and direct, but fastest access method, which can return reference to an uninitialized or inactive(removed) item
+         */
+        T& get(SlotIdentifier id)
+        {
+            assert::inhouse(id.index < this->capacity(), "Invalid identifier index");
+
+            SlotType* slot = this->getSlot(id.index);
+            assert::inhouse(slot, "Cannot get slot, very pity and strange, hm. Someone got some nasty debugging to do;)");
+
+            return *slot->data();
         }
 
     private:
