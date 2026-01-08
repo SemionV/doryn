@@ -20,11 +20,17 @@ namespace dory::data_structures::containers::lockfree
 
     protected:
         static constexpr size_type SEGMENT_SHIFT = std::countr_zero(SEGMENT_SIZE);
-        static constexpr size_type CAPACITY = MAX_SEGMENTS * SEGMENT_SIZE;
+        static constexpr size_type MAX_CAPACITY = MAX_SEGMENTS * SEGMENT_SIZE;
 
         TAllocator& _allocator;
         std::atomic<T*> _segments[MAX_SEGMENTS];
-        std::atomic<size_type> _size = 0;
+        std::atomic<size_type> _capacity = 0;
+
+    public:
+        [[nodiscard]] size_type capacity() const
+        {
+            return _capacity.load(std::memory_order::relaxed);
+        }
 
     protected:
         explicit SegmentedList(TAllocator& allocator):
@@ -36,11 +42,6 @@ namespace dory::data_structures::containers::lockfree
             }
         }
 
-        [[nodiscard]] size_type size() const
-        {
-            return _size.load(std::memory_order::relaxed);
-        }
-
         /*
          * Reserves a slot for an item and if needed allocates memory for the hosting segment
          * The consumer of this method supposed to initialize the slot properly(construct) after the append returns
@@ -48,8 +49,8 @@ namespace dory::data_structures::containers::lockfree
         size_type append()
         {
             // Reserve an index (ticket dispenser)
-            const size_type index = _size.fetch_add(1, std::memory_order_relaxed);
-            assert::inhouse(index < CAPACITY, "SegmentedList full");
+            const size_type index = _capacity.fetch_add(1, std::memory_order_relaxed);
+            assert::inhouse(index < MAX_CAPACITY, "SegmentedList full");
 
             const size_type segmentIndex = getSegmentIndex(index);
             allocateSegment(segmentIndex);
@@ -63,7 +64,7 @@ namespace dory::data_structures::containers::lockfree
          */
         void reserve(const size_type count)
         {
-            assert::inhouse(count <= CAPACITY, "reserve exceeds capacity");
+            assert::inhouse(count <= MAX_CAPACITY, "reserve exceeds capacity");
 
             const size_type segmentsCount = (count + SEGMENT_SIZE - 1) >> SEGMENT_SHIFT;
 
@@ -119,7 +120,7 @@ namespace dory::data_structures::containers::lockfree
         {
             using pointer = std::conditional_t<IsConst, const T*, T*>;
 
-            const size_type size = _size.load(std::memory_order::relaxed);
+            const size_type size = _capacity.load(std::memory_order::relaxed);
             assert::inhouse(index < size, "Invalid index");
 
             const size_type segmentIndex = getSegmentIndex(index);

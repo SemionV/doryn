@@ -21,8 +21,7 @@ add_executable(${PROJECT_NAME}
         src/registry.cpp
         src/function.cpp
         src/eventSystem.cpp
-        src/data-structures/freeListArray.cpp
-        src/data-structures/list.cpp)
+        src/data-structures/freeListArray.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-core)
