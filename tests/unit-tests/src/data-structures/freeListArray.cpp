@@ -35,7 +35,10 @@ TEST(FreeListTests, basic)
         std::cout << "Item: " << value << std::endl;
     });
 
+    const auto id4 = list.add(4);
+
     list.remove(id2);
     list.remove(id3);
+    list.remove(id4);
     EXPECT_EQ(list.size(), 0);
 }
