@@ -12,7 +12,7 @@ namespace dory::data_structures::containers::lockfree::freelist
     struct Slot
     {
         alignas(TValue) std::byte storage[sizeof(TValue)];
-        TSlotIndexType nextSlot = 0;
+        std::atomic<TSlotIndexType> nextSlot = 0;
         std::atomic<TSlotIndexType> generation = 0;
         std::atomic<bool> active = false;
 
@@ -36,6 +36,7 @@ namespace dory::data_structures::containers::lockfree::freelist
         using SlotType = Slot<T, SlotIndexType>;
         using ParentType = SegmentedList<SlotType, TAllocator, SEGMENT_SIZE, MAX_SEGMENTS>;
         using size_type = ParentType::size_type;
+        using value_type = T;
 
         struct SlotIdentifier
         {
@@ -48,6 +49,7 @@ namespace dory::data_structures::containers::lockfree::freelist
         static constexpr SlotIndexType UNDEFINED_HEAD_INDEX = std::numeric_limits<SlotIndexType>::max();
         std::atomic<SlotIndexType> _size = 0;
         std::atomic<SlotIndexType> _head = UNDEFINED_HEAD_INDEX;
+        std::atomic_flag _readerLockFlag;
 
     public:
         explicit FreeListArray(TAllocator& allocator):
@@ -74,6 +76,8 @@ namespace dory::data_structures::containers::lockfree::freelist
         void remove(SlotIdentifier id)
         {
             assert::inhouse(id.index < this->capacity(), "Invalid identifier index");
+
+            acquireReaderLock();
 
             SlotType* slot = this->getSlot(id.index);
             assert::inhouse(slot, "Cannot get slot, very pity and strange, hm. Someone got some nasty debugging to do;)");
@@ -104,6 +108,8 @@ namespace dory::data_structures::containers::lockfree::freelist
             {}
 
             _size.fetch_sub(1, std::memory_order::relaxed);
+
+            releaseReaderLock();
         }
 
         /*
@@ -119,6 +125,36 @@ namespace dory::data_structures::containers::lockfree::freelist
             return *slot->data();
         }
 
+        template<typename F>
+        void forEach(F&& f)
+        {
+            acquireReaderLock();
+
+            const SlotIndexType capacity = this->capacity();
+            for(SlotIndexType i = 0; i < capacity; ++i)
+            {
+                SlotType* slot = this->getSlot(i);
+                if(slot->active.load(std::memory_order::relaxed))
+                {
+                    f(*slot->data());
+                }
+            }
+
+            releaseReaderLock();
+        }
+
+    protected:
+        void acquireReaderLock()
+        {
+            while(!_readerLockFlag.test_and_set(std::memory_order::acquire))
+            {}
+        }
+
+        void releaseReaderLock()
+        {
+            _readerLockFlag.clear(std::memory_order::release);
+        }
+
     private:
         void initialize()
         {
@@ -126,18 +162,18 @@ namespace dory::data_structures::containers::lockfree::freelist
 
             const SlotIndexType headIndex = this->append();
             SlotType* headSlot = this->getSlot(headIndex);
-            headSlot->nextSlot = UNDEFINED_HEAD_INDEX;
+            headSlot->nextSlot.store(UNDEFINED_HEAD_INDEX, std::memory_order::relaxed);
             SlotIndexType prevIndex = headIndex;
             SlotIndexType i = prevIndex;
 
             while(i < SEGMENT_SIZE - 1)
             {
                 const size_type slotIndex = this->append();
-                SlotType* slot = this->getSlot(prevIndex);
-                slot->nextSlot = UNDEFINED_HEAD_INDEX;
+                SlotType* slot = this->getSlot(slotIndex);
+                slot->nextSlot.store(UNDEFINED_HEAD_INDEX, std::memory_order::relaxed);
 
                 SlotType* prevSlot = this->getSlot(prevIndex);
-                prevSlot->nextSlot = slotIndex;
+                prevSlot->nextSlot.store(slotIndex, std::memory_order::release);
                 prevIndex = slotIndex;
 
                 ++i;
@@ -156,7 +192,7 @@ namespace dory::data_structures::containers::lockfree::freelist
             while(headIndex != UNDEFINED_HEAD_INDEX)
             {
                 SlotType* headSlot = this->getSlot(headIndex);
-                const SlotIndexType newHeadIndex = headSlot->nextSlot;
+                const SlotIndexType newHeadIndex = headSlot->nextSlot.load(std::memory_order::acquire);
                 if(_head.compare_exchange_weak(headIndex, newHeadIndex, std::memory_order::release, std::memory_order::relaxed))
                 {
                     slot = headSlot;
