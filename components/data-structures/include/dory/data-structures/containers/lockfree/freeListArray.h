@@ -128,6 +128,7 @@ namespace dory::data_structures::containers::lockfree::freelist
             return *slot->data();
         }
 
+        //TODO: improve implementation, load segment by segment and iterate elements in the segments directly. Currently there are a lot of unnecessary atomic loads
         template<typename F>
         void forEach(F&& f)
         {
@@ -166,6 +167,8 @@ namespace dory::data_structures::containers::lockfree::freelist
         template<typename U>
         SlotIdentifier addGeneric(U&& value)
         {
+            auto lock = std::lock_guard{ _mutex };
+
             SlotType* slot = nullptr;
             SlotIndexType index = UNDEFINED_HEAD_INDEX;
 
