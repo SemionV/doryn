@@ -84,6 +84,32 @@ namespace dory::data_structures::containers::lockfree
             return getSlot<true>(index);
         }
 
+        template<typename F>
+        void forEach(F&& f)
+        {
+            size_type capacity = this->capacity();
+
+            size_type segmentIndex = 0;
+            while(capacity > 0)
+            {
+                const size_type count = capacity > SEGMENT_SIZE ? SEGMENT_SIZE : capacity;
+                T* segment = _segments[segmentIndex].load(std::memory_order::acquire);
+                assert::inhouse(segment, "Uninitialized segment of list");
+
+                for(size_type i = 0; i < count; ++i)
+                {
+                    T* slot = segment + i;
+                    if(slot->active.load(std::memory_order::acquire))
+                    {
+                        f(*slot->data());
+                    }
+                }
+
+                capacity -= count;
+                ++segmentIndex;
+            }
+        }
+
     private:
         /*
          * Allocates memory for segment. If memory is allocated already by another thread, deallocates the memory block and returns
