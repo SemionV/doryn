@@ -36,6 +36,7 @@ namespace dory::data_structures::containers::lockfree::freelist
         using SlotIndexType = std::uint32_t;
         using SlotType = Slot<T, SlotIndexType>;
         using ParentType = SegmentedList<SlotType, TAllocator, SEGMENT_SIZE, MAX_SEGMENTS>;
+        using RetiredListType = SegmentedList<SlotIndexType, TAllocator, SEGMENT_SIZE, MAX_SEGMENTS>;
         using size_type = ParentType::size_type;
         using value_type = T;
 
@@ -45,16 +46,18 @@ namespace dory::data_structures::containers::lockfree::freelist
             SlotIndexType generation;
         };
 
+        //TODO: fix the assert, mul of two numbers cannot be larger than max int value in any case
         static_assert(SEGMENT_SIZE * MAX_SEGMENTS < std::numeric_limits<SlotIndexType>::max()); //Overflow
     private:
         static constexpr SlotIndexType UNDEFINED_HEAD_INDEX = std::numeric_limits<SlotIndexType>::max();
         std::atomic<SlotIndexType> _size = 0;
         std::atomic<SlotIndexType> _head = UNDEFINED_HEAD_INDEX;
-        SpinLockMutex _mutex;
+        RetiredListType _retiredSlots;
 
     public:
         explicit FreeListArray(TAllocator& allocator):
-            ParentType(allocator)
+            ParentType(allocator),
+            _retiredSlots(allocator)
         {
             initialize();
         }
@@ -77,8 +80,6 @@ namespace dory::data_structures::containers::lockfree::freelist
         void remove(SlotIdentifier id)
         {
             assert::inhouse(id.index < this->capacity(), "Invalid identifier index");
-
-            auto lock = std::lock_guard{ _mutex };
 
             SlotType* slot = this->getSlot(id.index);
             assert::inhouse(slot, "Cannot get slot, very pity and strange, hm. Someone got some nasty debugging to do;)");
@@ -118,7 +119,7 @@ namespace dory::data_structures::containers::lockfree::freelist
         /*
          * Very dangerous and direct, but fastest access method, which can return reference to an uninitialized or inactive(removed) item
          */
-        T& get(SlotIdentifier id)
+        T& get(const SlotIdentifier& id)
         {
             assert::inhouse(id.index < this->capacity(), "Invalid identifier index");
 
@@ -127,13 +128,28 @@ namespace dory::data_structures::containers::lockfree::freelist
 
             return *slot->data();
         }
-        
+
         template<typename F>
         void forEach(F&& f)
         {
-            auto lock = std::lock_guard{ _mutex };
             ParentType::forEach(std::forward<F>(f));
         }
+
+        void retire(const SlotIdentifier& id)
+        {
+            assert::inhouse(id.index < this->capacity(), "Invalid identifier index");
+
+            SlotType* slot = this->getSlot(id.index);
+            assert::inhouse(slot, "Cannot get slot, very pity and strange, hm. Someone got some nasty debugging to do;)");
+
+            if(slot->generation.load(std::memory_order::acquire) == id.generation)
+            {
+                //TODO: append with the value directly
+                SlotIndexType i = _retiredSlots.append();
+            }
+        }
+
+        //TODO: implement reclamation of retired nodes
 
     private:
         void initialize()
@@ -157,8 +173,6 @@ namespace dory::data_structures::containers::lockfree::freelist
         template<typename U>
         SlotIdentifier addGeneric(U&& value)
         {
-            auto lock = std::lock_guard{ _mutex };
-
             SlotType* slot = nullptr;
             SlotIndexType index = UNDEFINED_HEAD_INDEX;
 
