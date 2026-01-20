@@ -34,17 +34,16 @@ namespace dory::data_structures::containers::lockfree::freelist
     {
     public:
         using SlotIndexType = std::uint32_t;
-        using SlotType = Slot<T, SlotIndexType>;
-        using ParentType = SegmentedList<SlotType, TAllocator, SEGMENT_SIZE, MAX_SEGMENTS>;
-        using RetiredListType = SegmentedList<SlotIndexType, TAllocator, SEGMENT_SIZE, MAX_SEGMENTS>;
-        using size_type = ParentType::size_type;
-        using value_type = T;
-
         struct SlotIdentifier
         {
             SlotIndexType index;
             SlotIndexType generation;
         };
+        using SlotType = Slot<T, SlotIndexType>;
+        using ParentType = SegmentedList<SlotType, TAllocator, SEGMENT_SIZE, MAX_SEGMENTS>;
+        using RetiredListType = SegmentedList<SlotIdentifier, TAllocator, SEGMENT_SIZE, MAX_SEGMENTS>;
+        using size_type = ParentType::size_type;
+        using value_type = T;
 
         //TODO: fix the assert, mul of two numbers cannot be larger than max int value in any case
         static_assert(SEGMENT_SIZE * MAX_SEGMENTS < std::numeric_limits<SlotIndexType>::max()); //Overflow
@@ -135,21 +134,23 @@ namespace dory::data_structures::containers::lockfree::freelist
             ParentType::forEach(std::forward<F>(f));
         }
 
+        /*
+         * Store id of a slot in retired list(wait until coalescent state to reclaim the memory of the slot)
+         */
         void retire(const SlotIdentifier& id)
         {
             assert::inhouse(id.index < this->capacity(), "Invalid identifier index");
-
-            SlotType* slot = this->getSlot(id.index);
-            assert::inhouse(slot, "Cannot get slot, very pity and strange, hm. Someone got some nasty debugging to do;)");
-
-            if(slot->generation.load(std::memory_order::acquire) == id.generation)
-            {
-                //TODO: append with the value directly
-                SlotIndexType i = _retiredSlots.append();
-            }
+            _retiredSlots.append(id);
         }
 
-        //TODO: implement reclamation of retired nodes
+        /*
+         * Reclaims the memory of retired slots and cleans up the list of retired slots
+         * reclaim should be called in a coalescent state, when no other thread is accessing the slot momory of the list
+         */
+        void reclaim()
+        {
+
+        }
 
     private:
         void initialize()

@@ -27,12 +27,6 @@ namespace dory::data_structures::containers::lockfree
         std::atomic<size_type> _capacity = 0;
 
     public:
-        [[nodiscard]] size_type capacity() const
-        {
-            return _capacity.load(std::memory_order::relaxed);
-        }
-
-    protected:
         explicit SegmentedList(TAllocator& allocator):
             _allocator(allocator)
         {
@@ -40,6 +34,11 @@ namespace dory::data_structures::containers::lockfree
             {
                 _segments[i].store(nullptr, std::memory_order_relaxed);
             }
+        }
+
+        [[nodiscard]] size_type capacity() const
+        {
+            return _capacity.load(std::memory_order::relaxed);
         }
 
         /*
@@ -54,6 +53,26 @@ namespace dory::data_structures::containers::lockfree
 
             const size_type segmentIndex = getSegmentIndex(index);
             allocateSegment(segmentIndex);
+
+            return index;
+        }
+
+        /*
+         * Reserves a slot for an item and if needed allocates memory for the hosting segment
+         * Copies value into the allocated slot
+         */
+        size_type append(const T& value)
+        {
+            // Reserve an index (ticket dispenser)
+            const size_type index = _capacity.fetch_add(1, std::memory_order_relaxed);
+            assert::inhouse(index < MAX_CAPACITY, "SegmentedList full");
+
+            const size_type segmentIndex = getSegmentIndex(index);
+            T* segment = allocateSegment(segmentIndex);
+
+            const size_type offset = getOffset(index);
+            T* slot = segment + offset;
+            *slot = value;
 
             return index;
         }
@@ -114,19 +133,20 @@ namespace dory::data_structures::containers::lockfree
         /*
          * Allocates memory for segment. If memory is allocated already by another thread, deallocates the memory block and returns
          */
-        void allocateSegment(const size_type index)
+        T* allocateSegment(const size_type index)
         {
             assert::inhouse(index < MAX_SEGMENTS, "Segment index out of range");
 
             constexpr size_type bytes = sizeof(T) * SEGMENT_SIZE;
 
             // optional fast-path
-            if (_segments[index].load(std::memory_order::acquire) != nullptr)
-                return;
+            T* segment = _segments[index].load(std::memory_order::acquire);
+            if (segment != nullptr)
+                return segment;
 
-            T* segment = static_cast<T*>(_allocator.allocate(bytes));
+            segment = static_cast<T*>(_allocator.allocate(bytes));
             assert::inhouse(segment, "Cannot allocate memory segment for list");
-            if (!segment) return;
+            if (!segment) return nullptr;
 
             T* expected = nullptr;
             if (!_segments[index].compare_exchange_strong(
@@ -135,7 +155,10 @@ namespace dory::data_structures::containers::lockfree
                     std::memory_order_relaxed))
             {
                 _allocator.deallocate(segment, bytes);
+                segment = expected;
             }
+
+            return segment;
         }
 
         /*

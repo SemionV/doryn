@@ -25,6 +25,8 @@ TEST(FreeListTests, basic)
         std::cout << "Item: " << value << std::endl;
     });
 
+    list.retire(id1);
+
     list.remove(id1);
     EXPECT_EQ(list.size(), 1);
 
