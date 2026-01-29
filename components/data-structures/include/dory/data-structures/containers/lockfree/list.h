@@ -24,7 +24,7 @@ namespace dory::data_structures::containers::lockfree
 
         TAllocator& _allocator;
         std::atomic<T*> _segments[MAX_SEGMENTS];
-        std::atomic<size_type> _capacity = 0;
+        std::atomic<size_type> _size = 0;
 
     public:
         explicit SegmentedList(TAllocator& allocator):
@@ -36,9 +36,9 @@ namespace dory::data_structures::containers::lockfree
             }
         }
 
-        [[nodiscard]] size_type capacity() const
+        [[nodiscard]] size_type size() const
         {
-            return _capacity.load(std::memory_order::relaxed);
+            return _size.load(std::memory_order::relaxed);
         }
 
         /*
@@ -48,7 +48,7 @@ namespace dory::data_structures::containers::lockfree
         size_type append()
         {
             // Reserve an index (ticket dispenser)
-            const size_type index = _capacity.fetch_add(1, std::memory_order_relaxed);
+            const size_type index = _size.fetch_add(1, std::memory_order_relaxed);
             assert::inhouse(index < MAX_CAPACITY, "SegmentedList full");
 
             const size_type segmentIndex = getSegmentIndex(index);
@@ -64,7 +64,7 @@ namespace dory::data_structures::containers::lockfree
         size_type append(const T& value)
         {
             // Reserve an index (ticket dispenser)
-            const size_type index = _capacity.fetch_add(1, std::memory_order_relaxed);
+            const size_type index = _size.fetch_add(1, std::memory_order_relaxed);
             assert::inhouse(index < MAX_CAPACITY, "SegmentedList full");
 
             const size_type segmentIndex = getSegmentIndex(index);
@@ -106,12 +106,12 @@ namespace dory::data_structures::containers::lockfree
         template<typename F>
         void forEach(F&& f)
         {
-            size_type capacity = this->capacity();
+            size_type size = this->size();
 
             size_type segmentIndex = 0;
-            while(capacity > 0)
+            while(size > 0)
             {
-                const size_type count = capacity > SEGMENT_SIZE ? SEGMENT_SIZE : capacity;
+                const size_type count = size > SEGMENT_SIZE ? SEGMENT_SIZE : size;
                 T* segment = _segments[segmentIndex].load(std::memory_order::acquire);
                 assert::inhouse(segment, "Uninitialized segment of list");
 
@@ -120,11 +120,11 @@ namespace dory::data_structures::containers::lockfree
                     T* slot = segment + i;
                     if(slot->active.load(std::memory_order::acquire))
                     {
-                        f(*slot->data());
+                        f(slot);
                     }
                 }
 
-                capacity -= count;
+                size -= count;
                 ++segmentIndex;
             }
         }
@@ -169,7 +169,7 @@ namespace dory::data_structures::containers::lockfree
         {
             using pointer = std::conditional_t<IsConst, const T*, T*>;
 
-            const size_type size = _capacity.load(std::memory_order::relaxed);
+            const size_type size = _size.load(std::memory_order::relaxed);
             assert::inhouse(index < size, "Invalid index");
 
             const size_type segmentIndex = getSegmentIndex(index);
