@@ -38,7 +38,12 @@ namespace dory::data_structures::containers::lockfree
 
         [[nodiscard]] size_type size() const
         {
-            return _size.load(std::memory_order::relaxed);
+            return _size.load(std::memory_order::acquire);
+        }
+
+        void clear()
+        {
+            _size.store(0, std::memory_order::release);
         }
 
         /*

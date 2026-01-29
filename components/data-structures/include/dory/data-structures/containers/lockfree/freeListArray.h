@@ -5,6 +5,8 @@
 #include "list.h"
 #include <dory/generic/concepts.h>
 #include <dory/macros/assert.h>
+
+#include "queue.h"
 #include "spinLock.h"
 
 namespace dory::data_structures::containers::lockfree::freelist
@@ -52,6 +54,7 @@ namespace dory::data_structures::containers::lockfree::freelist
         std::atomic<SlotIndexType> _size = 0;
         std::atomic<SlotIndexType> _head = UNDEFINED_HEAD_INDEX;
         RetiredListType _retiredSlots;
+        SpinLockMutex _mutex;
 
     public:
         explicit FreeListArray(TAllocator& allocator):
@@ -152,12 +155,32 @@ namespace dory::data_structures::containers::lockfree::freelist
          */
         void reclaim()
         {
+            std::lock_guard lock {_mutex};
+
             _retiredSlots.forEach([this](SlotIdentifier* id)
             {
-                //TODO: reclaim slot
+                //reclaim slot
+                SlotType* slot = this->getSlot(id->index);
+                if(slot->generation == id->generation)
+                {
+                    slot->active.store(false, std::memory_order_relaxed);
+                    slot->data()->~T();
+
+                    //Put slot on free list
+                    SlotIndexType currentHead = _head.load(std::memory_order::relaxed);
+                    slot->nextSlot.store(currentHead, std::memory_order::relaxed);
+                    while(!_head.compare_exchange_weak(
+                        currentHead,
+                        id->index,
+                        std::memory_order::release,
+                        std::memory_order::relaxed))
+                    {}
+
+                    _size.fetch_sub(1, std::memory_order::relaxed);
+                }
             });
 
-            //TODO: cleanup _retiredSlot list
+            _retiredSlots.clear();
         }
 
     private:
