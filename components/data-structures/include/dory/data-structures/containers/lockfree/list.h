@@ -123,10 +123,7 @@ namespace dory::data_structures::containers::lockfree
                 for(size_type i = 0; i < count; ++i)
                 {
                     T* slot = segment + i;
-                    if(slot->active.load(std::memory_order::acquire))
-                    {
-                        f(slot);
-                    }
+                    f(slot);
                 }
 
                 size -= count;

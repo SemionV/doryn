@@ -1,13 +1,14 @@
 #pragma once
 
 #include <refl.hpp>
+#include <shared_mutex>
 
 #include "list.h"
 #include <dory/generic/concepts.h>
 #include <dory/macros/assert.h>
 
 #include "queue.h"
-#include "spinLock.h"
+#include "sharedLock.h"
 
 namespace dory::data_structures::containers::lockfree::freelist
 {
@@ -54,7 +55,7 @@ namespace dory::data_structures::containers::lockfree::freelist
         std::atomic<SlotIndexType> _size = 0;
         std::atomic<SlotIndexType> _head = UNDEFINED_HEAD_INDEX;
         RetiredListType _retiredSlots;
-        SpinLockMutex _mutex;
+        SharedLock _mutex;
 
     public:
         explicit FreeListArray(TAllocator& allocator):
@@ -79,45 +80,6 @@ namespace dory::data_structures::containers::lockfree::freelist
             return addGeneric(std::forward<T>(value));
         }
 
-        void remove(SlotIdentifier id)
-        {
-            assert::inhouse(id.index < this->size(), "Invalid identifier index");
-
-            SlotType* slot = this->getSlot(id.index);
-            assert::inhouse(slot, "Cannot get slot, very pity and strange, hm. Someone got some nasty debugging to do;)");
-
-            //Check if slot was accidentally removed and reallocated prior to this call
-            bool isActive = slot->active.load(std::memory_order::acquire);
-            SlotIndexType generation = slot->generation.load(std::memory_order::relaxed);
-            if(!isActive || generation != id.generation)
-            {
-                //Slot was allocated or removed by another thread or the same thread prior to this call
-                return;
-            }
-
-            //Take ownership of the slot
-            if(!slot->active.compare_exchange_strong(isActive, false, std::memory_order::release, std::memory_order::relaxed))
-            {
-                //Slot was removed by another thread
-                return;
-            }
-
-            //Destruct data object
-            slot->data()->~T();
-
-            //Put slot on free list
-            SlotIndexType currentHead = _head.load(std::memory_order::relaxed);
-            slot->nextSlot.store(currentHead, std::memory_order::relaxed);
-            while(!_head.compare_exchange_weak(
-                currentHead,
-                id.index,
-                std::memory_order::release,
-                std::memory_order::relaxed))
-            {}
-
-            _size.fetch_sub(1, std::memory_order::relaxed);
-        }
-
         /*
          * Very dangerous and direct, but fastest access method, which can return reference to an uninitialized or inactive(removed) item
          */
@@ -136,7 +98,10 @@ namespace dory::data_structures::containers::lockfree::freelist
         {
             ParentType::forEach([&f](SlotType* slot)
             {
-                std::forward<F>(f)(*slot->data());
+                if(slot->active.load(std::memory_order::acquire))
+                {
+                    std::forward<F>(f)(*slot->data());
+                }
             });
         }
 
@@ -145,6 +110,8 @@ namespace dory::data_structures::containers::lockfree::freelist
          */
         void retire(const SlotIdentifier& id)
         {
+            std::shared_lock lock { _mutex };
+
             assert::inhouse(id.index < this->size(), "Invalid identifier index");
             _retiredSlots.append(id);
         }
@@ -155,13 +122,14 @@ namespace dory::data_structures::containers::lockfree::freelist
          */
         void reclaim()
         {
-            std::lock_guard lock {_mutex};
+            std::unique_lock lock { _mutex };
 
             _retiredSlots.forEach([this](SlotIdentifier* id)
             {
                 //reclaim slot
                 SlotType* slot = this->getSlot(id->index);
-                if(slot->generation == id->generation)
+                if(slot->generation.load(std::memory_order_acquire) == id->generation
+                    && slot->active.load(std::memory_order_relaxed))
                 {
                     slot->active.store(false, std::memory_order_relaxed);
                     slot->data()->~T();
@@ -205,6 +173,8 @@ namespace dory::data_structures::containers::lockfree::freelist
         template<typename U>
         SlotIdentifier addGeneric(U&& value)
         {
+            std::shared_lock lock { _mutex };
+
             SlotType* slot = nullptr;
             SlotIndexType index = UNDEFINED_HEAD_INDEX;
 
