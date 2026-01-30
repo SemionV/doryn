@@ -1,5 +1,6 @@
 #pragma once
 #include <atomic>
+#include "util.h"
 
 namespace dory::data_structures::containers::lockfree
 {
@@ -17,6 +18,8 @@ namespace dory::data_structures::containers::lockfree
                 // Note that even though wait guarantees it returns only after the value has
                 // changed, the lock is acquired after the next condition check.
                 _flag.wait(true, std::memory_order_relaxed)
+#else
+                cpu_relax()
 #endif
                     ;
         }
