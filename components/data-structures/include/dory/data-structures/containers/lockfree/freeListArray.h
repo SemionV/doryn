@@ -10,6 +10,8 @@
 #include "queue.h"
 #include "sharedLock.h"
 
+#include <spdlog/fmt/fmt.h>
+
 namespace dory::data_structures::containers::lockfree::freelist
 {
     template<typename TValue, typename TSlotIndexType>
@@ -96,7 +98,7 @@ namespace dory::data_structures::containers::lockfree::freelist
         template<typename F>
         void forEach(F&& f)
         {
-            ParentType::forEach([&f](SlotType* slot)
+            ParentType::forEach([&f](SlotType* slot, SlotIndexType i)
             {
                 if(slot->active.load(std::memory_order::acquire))
                 {
@@ -124,7 +126,7 @@ namespace dory::data_structures::containers::lockfree::freelist
         {
             std::unique_lock lock { _mutex };
 
-            _retiredSlots.forEach([this](SlotIdentifier* id)
+            _retiredSlots.forEach([this](SlotIdentifier* id, SlotIndexType i)
             {
                 //reclaim slot
                 SlotType* slot = this->getSlot(id->index);
@@ -149,6 +151,26 @@ namespace dory::data_structures::containers::lockfree::freelist
             });
 
             _retiredSlots.clear();
+        }
+
+        void print()
+        {
+            ParentType::forEach([](SlotType* slot, SlotIndexType i)
+            {
+                std::cout << fmt::format("{}: [a: {}, g: {}, d: {}]\n", i, slot->active.load(), slot->generation.load(), *slot->data());
+            });
+        }
+
+        void printFreeList()
+        {
+            SlotIndexType i = _head.load();
+            while(i != UNDEFINED_HEAD_INDEX)
+            {
+                SlotType* slot = this->getSlot(i);
+                std::cout << fmt::format("{}: [a: {}, g: {}, next: {}, d: {}]\n", i, slot->active.load(), slot->generation.load(), slot->nextSlot.load(), *slot->data());
+
+                i = slot->nextSlot.load();
+            }
         }
 
     private:
@@ -203,9 +225,9 @@ namespace dory::data_structures::containers::lockfree::freelist
             ::new (static_cast<void*>(slot->storage)) T(std::forward<U>(value));
             slot->active.store(true, std::memory_order::release);
 
-            auto generation = _size.fetch_add(1, std::memory_order::relaxed) + 1;
+            _size.fetch_add(1, std::memory_order::relaxed);
 
-            return { index, generation };
+            return { index, slot->generation };
         }
     };
 }

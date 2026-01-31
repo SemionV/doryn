@@ -112,6 +112,7 @@ namespace dory::data_structures::containers::lockfree
         void forEach(F&& f)
         {
             size_type size = this->size();
+            size_type index = 0;
 
             size_type segmentIndex = 0;
             while(size > 0)
@@ -123,7 +124,8 @@ namespace dory::data_structures::containers::lockfree
                 for(size_type i = 0; i < count; ++i)
                 {
                     T* slot = segment + i;
-                    f(slot);
+                    f(slot, index);
+                    ++index;
                 }
 
                 size -= count;
