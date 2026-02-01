@@ -5,7 +5,6 @@
 
 #include <dory/data-structures/containers/lockfree/freeListArray.h>
 
-//TODO: optimize method reclaim, taking in account that it will run isolated from other threads
 //TODO: implement method clear
 //TODO: implement a method to sort free list according to slot indexes(increase CPU cache efficiency by reducing random jumping in memory)
 

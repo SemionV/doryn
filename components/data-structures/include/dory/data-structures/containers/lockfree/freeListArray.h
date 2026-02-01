@@ -89,7 +89,7 @@ namespace dory::data_structures::containers::lockfree::freelist
          */
         T& get(const SlotIdentifier& id)
         {
-            assert::inhouse(id.index < this->size(), "Invalid identifier index");
+            assert::inhouse(id.index < ParentType::size(), "Invalid identifier index");
 
             SlotType* slot = this->getSlot(id.index);
             assert::inhouse(slot, "Cannot get slot, very pity and strange, hm. Someone got some nasty debugging to do;)");
@@ -100,11 +100,13 @@ namespace dory::data_structures::containers::lockfree::freelist
         template<typename F>
         void forEach(F&& f)
         {
-            ParentType::forEach([&f](SlotType* slot, SlotIndexType i)
+            std::shared_lock lock { _mutex };
+
+            ParentType::forEach([&](SlotType* slot, SlotIndexType i)
             {
                 if(slot->active.load(std::memory_order::acquire))
                 {
-                    std::forward<F>(f)(*slot->data());
+                    f(*slot->data());
                 }
             });
         }
@@ -116,7 +118,7 @@ namespace dory::data_structures::containers::lockfree::freelist
         {
             std::shared_lock lock { _mutex };
 
-            assert::inhouse(id.index < this->size(), "Invalid identifier index");
+            assert::inhouse(id.index < ParentType::size(), "Invalid identifier index");
             _retiredSlots.append(id);
         }
 
@@ -157,6 +159,8 @@ namespace dory::data_structures::containers::lockfree::freelist
 
         void print()
         {
+            std::shared_lock lock { _mutex };
+
             ParentType::forEach([](SlotType* slot, SlotIndexType i)
             {
                 std::cout << fmt::format("{}: [a: {}, g: {}, d: {}]\n", i, slot->active.load(), slot->generation.load(), *slot->data());
@@ -165,6 +169,8 @@ namespace dory::data_structures::containers::lockfree::freelist
 
         void printFreeList()
         {
+            std::shared_lock lock { _mutex };
+
             SlotIndexType i = _head.load();
             while(i != UNDEFINED_HEAD_INDEX)
             {
@@ -231,7 +237,7 @@ namespace dory::data_structures::containers::lockfree::freelist
 
             _size.fetch_add(1, std::memory_order::relaxed);
 
-            return { index, slot->generation };
+            return { index, slot->generation.load(std::memory_order_relaxed) };
         }
     };
 }
