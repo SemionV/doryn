@@ -5,8 +5,6 @@
 
 #include <dory/data-structures/containers/lockfree/freeListArray.h>
 
-//TODO: see why data value in the 0 slot is not initialized to 0
-//TODO: find out about dynamic memory allocation happening after the initial allocation - probably it is allocation in retired list
 //TODO: optimize method reclaim, taking in account that it will run isolated from other threads
 //TODO: implement method clear
 //TODO: implement a method to sort free list according to slot indexes(increase CPU cache efficiency by reducing random jumping in memory)

@@ -17,7 +17,9 @@ namespace dory::data_structures::containers::lockfree::freelist
     template<typename TValue, typename TSlotIndexType>
     struct Slot
     {
-        alignas(TValue) std::byte storage[sizeof(TValue)];
+        constexpr static std::size_t storageSize = sizeof(TValue);
+
+        alignas(TValue) std::byte storage[storageSize];
         std::atomic<TSlotIndexType> nextSlot = 0;
         std::atomic<TSlotIndexType> generation = 0;
         std::atomic<bool> active = false;
@@ -184,6 +186,8 @@ namespace dory::data_structures::containers::lockfree::freelist
                 SlotIndexType idx = this->append();
                 SlotType* slot = this->getSlot(prev);
                 slot->nextSlot.store(idx, std::memory_order_relaxed);
+                std::byte* storage = slot->storage;
+                std::fill_n(storage, SlotType::storageSize, std::byte{0});
                 prev = idx;
             }
 
