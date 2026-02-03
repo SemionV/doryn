@@ -148,13 +148,47 @@ namespace dory::data_structures::containers::lockfree::freelist
                         id->index,
                         std::memory_order::release,
                         std::memory_order::relaxed))
-                    {}
+                    {
+                        slot->nextSlot.store(currentHead, std::memory_order::relaxed);
+                    }
 
                     _size.fetch_sub(1, std::memory_order::relaxed);
                 }
             });
 
             _retiredSlots.clear();
+        }
+
+        /*
+         * Reclaims memory for all items in the list and put the slots on the free list
+         * This method should be called only during coalescing period
+         */
+        void clear()
+        {
+            std::unique_lock lock { _mutex };
+
+            ParentType::forEach([&](SlotType* slot, SlotIndexType i)
+            {
+                if(slot->active.load(std::memory_order::acquire))
+                {
+                    slot->active.store(false, std::memory_order_relaxed);
+                    slot->data()->~T();
+
+                    //Put slot on free list
+                    SlotIndexType currentHead = _head.load(std::memory_order::relaxed);
+                    slot->nextSlot.store(currentHead, std::memory_order::relaxed);
+                    while(!_head.compare_exchange_weak(
+                        currentHead,
+                        i,
+                        std::memory_order::release,
+                        std::memory_order::relaxed))
+                    {
+                        slot->nextSlot.store(currentHead, std::memory_order::relaxed);
+                    }
+
+                    _size.fetch_sub(1, std::memory_order::relaxed);
+                }
+            });
         }
 
         void print()
@@ -238,6 +272,59 @@ namespace dory::data_structures::containers::lockfree::freelist
             _size.fetch_add(1, std::memory_order::relaxed);
 
             return { index, slot->generation.load(std::memory_order_relaxed) };
+        }
+
+        /*
+         * Sorts items on the free list in increasing index order
+         * It is a measure for reducing random memory access and improving CPU-caching
+         */
+        void sortFreeList()
+        {
+            SlotIndexType currentIndex = _head.load(std::memory_order::acquire);
+            SlotType* prevSlot = nullptr;
+
+            while(currentIndex != UNDEFINED_HEAD_INDEX)
+            {
+                SlotType* currentSlot = this->getSlot(currentIndex);
+                SlotIndexType nextIndex = currentSlot->nextSlot.load(std::memory_order_relaxed);
+
+                relocateSort(currentSlot, currentIndex, prevSlot);
+
+                currentIndex = nextIndex;
+                prevSlot = currentSlot;
+            }
+        }
+
+        void relocateSort(SlotType* relocateSlot, const SlotIndexType relocateSlotIndex, SlotType* prevSlot)
+        {
+            SlotType* currentPrevSlot = nullptr;
+            SlotIndexType index = _head.load(std::memory_order_relaxed);
+            while(index != relocateSlotIndex)
+            {
+                SlotType* slot = this->getSlot(index);
+                if(relocateSlotIndex < index)
+                {
+                    if(prevSlot)
+                    {
+                        prevSlot->nextSlot.store(relocateSlot->nextSlot.load(std::memory_order_relaxed), std::memory_order_relaxed);
+                    }
+
+                    if(currentPrevSlot)
+                    {
+                        currentPrevSlot->nextSlot.store(relocateSlotIndex, std::memory_order_relaxed);
+                    }
+                    else
+                    {
+                        _head.store(relocateSlot, std::memory_order_relaxed);
+                    }
+
+                    relocateSlot->nextSlot.store(index, std::memory_order_release);
+                    break;
+                }
+
+                index = slot->nextSlot.load(std::memory_order_relaxed);
+                currentPrevSlot = slot;
+            }
         }
     };
 }
