@@ -381,9 +381,6 @@ namespace dory::core::devices
             }
         }
 
-        printf("GL_VERSION  = %s\n", glGetString(GL_VERSION));
-        printf("GLSL_VERSION= %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
-
         glfwDestroyWindow(hidden_window);
 
         glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &openglProperties.bufferAlignment);
