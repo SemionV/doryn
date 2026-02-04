@@ -363,6 +363,12 @@ namespace dory::core::devices
         glfwSetErrorCallback(glfwErrorCallback);
         glfwInit();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+#if defined(DORY_PLATFORM_APPLE)
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
         GLFWwindow* hidden_window = glfwCreateWindow(1, 1, "", NULL, NULL);
         glfwMakeContextCurrent(hidden_window);
         int version = gladLoadGL(glfwGetProcAddress);
@@ -374,6 +380,10 @@ namespace dory::core::devices
                 logger->error(std::string_view("Failed to initialize OpenGL"));
             }
         }
+
+        printf("GL_VERSION  = %s\n", glGetString(GL_VERSION));
+        printf("GLSL_VERSION= %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+
         glfwDestroyWindow(hidden_window);
 
         glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &openglProperties.bufferAlignment);
@@ -603,11 +613,11 @@ namespace dory::core::devices
     {
         auto bindingContext = UniformBindingContext
                 {
-                        *materialBinding,
-                        openglProperties,
-                        _registry,
-                        uniforms
-                };
+                    *materialBinding,
+                    openglProperties,
+                    _registry,
+                    uniforms
+            };
         services::graphics::UniformVisitor<UniformLocationBinder>::visit(TUniform{}, bindingContext);
 
         if(uniforms.blockBufferSize > 0)
