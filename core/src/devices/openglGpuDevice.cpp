@@ -213,6 +213,7 @@ namespace dory::core::devices
         const OpenglMaterialBinding& material;
         const OpenglProperties& openglProperties;
         const Registry& registry;
+        const dory::graphics::opengl::CompatibilityLayer& opengl;
         UniformBinding& uniforms;
 
         unsigned int uniformBlockCount {};
@@ -340,12 +341,12 @@ namespace dory::core::devices
             if(context.uniforms.blocks.contains(uniformId))
             {
                 auto block = context.uniforms.blocks[uniformId];
-                void* buffer = glMapNamedBuffer(context.uniforms.blockBufferId, GL_WRITE_ONLY);
+                void* buffer = context.opengl.mapNamedBuffer(GL_UNIFORM_BUFFER, context.uniforms.blockBufferId, GL_WRITE_ONLY);
 
                 auto blockContext = UniformBlockValueContext{ (char*)buffer + block.bufferOffset, block };
                 services::graphics::UniformVisitor<UniformBlockValueBinder>::visit(value, blockContext);
 
-                glUnmapNamedBuffer(context.uniforms.blockBufferId);
+                context.opengl.unmapNamedBuffer(GL_UNIFORM_BUFFER, context.uniforms.blockBufferId);
             }
         }
     };
@@ -409,9 +410,8 @@ namespace dory::core::devices
         auto glBuffer = (OpenglBufferBinding*)bufferBinding;
         assert(glBuffer->glId == 0);
 
-        glCreateBuffers(1, &glBuffer->glId);
-
-        glNamedBufferStorage(glBuffer->glId, (GLsizeiptr)size, nullptr, GL_DYNAMIC_STORAGE_BIT);
+        _opengl.createBuffer(&glBuffer->glId);
+        _opengl.namedBufferStorage(GL_ARRAY_BUFFER, glBuffer->glId, (GLsizeiptr)size, nullptr, GL_DYNAMIC_STORAGE_BIT);
 
         return !checkForError("allocateBuffer");
     }
@@ -432,44 +432,59 @@ namespace dory::core::devices
         auto glBuffer = (OpenglBufferBinding*)bufferBinding;
         assert(glBuffer->glId != 0);
 
-        glNamedBufferSubData(glBuffer->glId, (GLintptr)offset, (GLsizeiptr)size, data);
+        _opengl.namedBufferSubData(GL_ARRAY_BUFFER, glBuffer->glId, (GLintptr)offset, (GLsizeiptr)size, data);
         checkForError("writeData to buffer");
     }
 
-    void OpenglGpuDevice::bindMesh(MeshBinding* meshBinding, const BufferBinding* vertexBuffer, const BufferBinding* indexBuffer)
+    void OpenglGpuDevice::bindMesh(MeshBinding* meshBinding,
+                               const BufferBinding* vertexBuffer,
+                               const BufferBinding* indexBuffer)
     {
-        auto glMesh = (OpenglMeshBinding*)meshBinding;
+        auto* glMesh = static_cast<OpenglMeshBinding*>(meshBinding);
 
-        if(glMesh->glVertexArrayId == 0 && !glIsVertexArray(glMesh->glVertexArrayId))
+        if (glMesh->glVertexArrayId == 0 || !glIsVertexArray(glMesh->glVertexArrayId))
         {
-            glCreateVertexArrays(1, &glMesh->glVertexArrayId);
+            _opengl.createVertexArray(&glMesh->glVertexArrayId);
             checkForError("create vertex array");
         }
 
         assert(glIsVertexArray(glMesh->glVertexArrayId));
 
-        if(vertexBuffer)
+        if (vertexBuffer)
         {
-            auto glVertexBuffer = (OpenglBufferBinding*)vertexBuffer;
+            auto* glVertexBuffer = static_cast<const OpenglBufferBinding*>(vertexBuffer);
+
+            // You REALLY want a per-vertex stride here.
+            //const GLsizei vertexStride = static_cast<GLsizei>(glMesh->vertexStrideBytes);
 
             std::size_t i = 0;
-            for(const auto& attribute : glMesh->vertexAttributes)
+            for (const auto& attribute : glMesh->vertexAttributes)
             {
+                const GLint   comps   = static_cast<GLint>(attribute.componentsCount);
+                const GLenum  type    = getGlType(attribute.componentType);
+                const GLboolean norm  = attribute.normalized ? GL_TRUE : GL_FALSE;
+
                 std::size_t stride = attribute.componentsCount * getComponentSize(attribute.componentType);
-                glVertexArrayVertexBuffer(glMesh->glVertexArrayId, i, glVertexBuffer->glId,
-                        (GLintptr)(attribute.offset + glMesh->vertexBufferOffset), (GLsizei)stride);
-                glVertexArrayAttribFormat(glMesh->glVertexArrayId, i, (GLint)attribute.componentsCount,
-                        getGlType(attribute.componentType), attribute.normalized, 0);
-                glVertexArrayAttribBinding(glMesh->glVertexArrayId, i, i);
-                glEnableVertexArrayAttrib(glMesh->glVertexArrayId, i);
+
+                const GLintptr absOffset =
+                    static_cast<GLintptr>(attribute.offset + glMesh->vertexBufferOffset);
+
+                _opengl.vaoSetAttribPointerCompat(glMesh->glVertexArrayId,
+                                                 static_cast<GLuint>(i),
+                                                 glVertexBuffer->glId,
+                                                 comps, type, norm,
+                                                 //vertexStride,
+                                                 stride,
+                                                 absOffset);
+
                 ++i;
             }
         }
 
-        if(indexBuffer)
+        if (indexBuffer)
         {
-            auto glElementBuffer = (OpenglBufferBinding*)indexBuffer;
-            glVertexArrayElementBuffer(glMesh->glVertexArrayId, glElementBuffer->glId);
+            auto* glElementBuffer = static_cast<const OpenglBufferBinding*>(indexBuffer);
+            _opengl.vaoSetElementBuffer(glMesh->glVertexArrayId, glElementBuffer->glId);
         }
 
         checkForError("bindMesh");
@@ -613,6 +628,7 @@ namespace dory::core::devices
                     *materialBinding,
                     openglProperties,
                     _registry,
+                    _opengl,
                     uniforms
             };
         services::graphics::UniformVisitor<UniformLocationBinder>::visit(TUniform{}, bindingContext);
@@ -620,7 +636,7 @@ namespace dory::core::devices
         if(uniforms.blockBufferSize > 0)
         {
             _opengl.createBuffer(&uniforms.blockBufferId);
-            glNamedBufferStorage(uniforms.blockBufferId, (GLsizeiptr)uniforms.blockBufferSize, nullptr, GL_MAP_WRITE_BIT);
+            _opengl.namedBufferStorage(GL_UNIFORM_BUFFER, uniforms.blockBufferId, (GLsizeiptr)uniforms.blockBufferSize, nullptr, GL_DYNAMIC_STORAGE_BIT);
 
             for(const auto& blockBinding : uniforms.blocks | std::views::values)
             {
@@ -645,6 +661,7 @@ namespace dory::core::devices
                         *materialBinding,
                         openglProperties,
                         _registry,
+                        _opengl,
                         materialBinding->staticUniforms,
                 };
 
@@ -660,6 +677,7 @@ namespace dory::core::devices
                         *glMaterial,
                         openglProperties,
                         _registry,
+                        _opengl,
                         glMaterial->modelUniforms,
                 };
 
@@ -682,6 +700,7 @@ namespace dory::core::devices
                                 *glMaterial,
                                 openglProperties,
                                 _registry,
+                                _opengl,
                                 glMaterial->dynamicUniforms,
                         };
 
