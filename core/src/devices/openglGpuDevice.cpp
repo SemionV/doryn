@@ -619,7 +619,7 @@ namespace dory::core::devices
 
         if(uniforms.blockBufferSize > 0)
         {
-            glCreateBuffers(1, &uniforms.blockBufferId);
+            _opengl.createBuffer(&uniforms.blockBufferId);
             glNamedBufferStorage(uniforms.blockBufferId, (GLsizeiptr)uniforms.blockBufferSize, nullptr, GL_MAP_WRITE_BIT);
 
             for(const auto& blockBinding : uniforms.blocks | std::views::values)

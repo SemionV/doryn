@@ -8,6 +8,7 @@
 #include "dory/core/devices/iGpuDevice.h"
 #include "dory/core/resources/bindings/openglMaterialBinding.h"
 #include "dory/core/resources/bindings/uniforms.h"
+#include <dory/graphics/opengl/compatibilityLayer.h>
 
 namespace dory::core::devices
 {
@@ -20,6 +21,7 @@ namespace dory::core::devices
     {
     private:
         OpenglProperties openglProperties;
+        graphics::opengl::CompatibilityLayer _opengl;
 
         bool checkForError(const std::string& location) const;
         template<typename TUniform>

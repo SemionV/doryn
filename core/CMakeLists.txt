@@ -75,9 +75,9 @@ target_link_libraries(${DORY_MODULE_NAME} PUBLIC
         ${PROJECT_NAME}-data-structures
         ${PROJECT_NAME}-serialization
         ${PROJECT_NAME}-memory
+        ${PROJECT_NAME}-graphics-opengl
         Boost::dll
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
-        opengl-glad
         glfw
         efsw
         EnTT

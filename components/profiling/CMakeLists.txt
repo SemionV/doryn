@@ -86,7 +86,9 @@ set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""
 #A tiny INTERFACE library to force all TUs in other modules to include custom new/delete declarations
 set(DORY_ALLOC_DECL_MODULE_NAME ${PROJECT_NAME}-alloc-forceinclude)
 
-add_library(${DORY_ALLOC_DECL_MODULE_NAME} INTERFACE)
+add_library(${DORY_ALLOC_DECL_MODULE_NAME} INTERFACE
+        ../graphics/opengl/include/dory/graphics/opengl/compatibilityLayer.h
+        ../graphics/opengl/src/compatibilityLayer.cpp)
 target_include_directories(${DORY_ALLOC_DECL_MODULE_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(DORY_ALLOC_FORCE_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include/dory/profiling/overrideNewDelete.h")
