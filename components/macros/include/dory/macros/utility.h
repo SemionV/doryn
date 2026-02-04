@@ -30,6 +30,20 @@ inline pid_t linux_tid() {
 
 #define DORY_CURRENT_THREAD_ID() linux_tid();
 
+#elif defined(DORY_PLATFORM_APPLE)
+#include <pthread.h>
+#include <cstdint>
+
+inline std::uint64_t macos_tid()
+{
+    std::uint64_t tid = 0;
+    // First arg = pthread_t (0 means “current thread”)
+    pthread_threadid_np(nullptr, &tid);
+    return tid;
+}
+
+#define DORY_CURRENT_THREAD_ID() macos_tid()
+
 #elif defined(DORY_PLATFORM_WIN32)
 
 #define DORY_CURRENT_THREAD_ID() threadIdToString(std::this_thread::get_id()); //Standard C++ thread id, not equal to OS provided ID

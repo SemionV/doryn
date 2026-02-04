@@ -9,12 +9,18 @@
 
 namespace dory::core::devices
 {
+    static void glfwErrorCallback(int code, const char* desc)
+    {
+        fprintf(stderr, "GLFW error %d: %s\n", code, desc);
+    }
+
     GlfwWindowSystemDevice::GlfwWindowSystemDevice(Registry &registry):
         _registry(registry)
     {}
 
     void GlfwWindowSystemDevice::connect(resources::DataContext& context)
     {
+        glfwSetErrorCallback(glfwErrorCallback);
         glfwInit();
     }
 

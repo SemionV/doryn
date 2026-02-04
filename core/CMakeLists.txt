@@ -1,6 +1,6 @@
 set(DORY_MODULE_NAME ${PROJECT_NAME}-core)
 
-if(LINUX)
+if(LINUX OR APPLE)
     set(DORY_PLATFORM_MODULES ${DORY_PLATFORM_MODULES} src/devices/standardIoDeviceUnix.cpp)
 endif()
 

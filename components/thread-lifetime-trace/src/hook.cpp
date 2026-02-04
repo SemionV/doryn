@@ -7,6 +7,22 @@
 #include <dory/profiling/profiler.h>
 #include <spdlog/fmt/fmt.h>
 
+static inline long dory_os_tid()
+{
+#if defined(DORY_PLATFORM_LINUX)
+#if defined(SYS_gettid)
+    return (long)syscall(SYS_gettid);
+#else
+    return (long)gettid(); // if available
+#endif
+#elif defined(DORY_PLATFORM_APPLE)
+    // Apple extension: stable thread id for current thread
+    std::uint64_t tid = 0;
+    pthread_threadid_np(nullptr, &tid);
+    return (long)tid; // may truncate only if long is 32-bit; on macOS arm64 long is 64-bit
+#endif
+}
+
 extern "C"
 {
     using real_pthread_create_t = int(*)(pthread_t*, const pthread_attr_t*, void*(*)(void*), void*);
@@ -39,7 +55,7 @@ extern "C"
 
     static void cleanup_on_exit(void* /*unused*/)
     {
-        auto tid = (pid_t)syscall(SYS_gettid);
+        auto tid = dory_os_tid();
         if (DORY_TRACE_IS_PROFILER_READY)
         {
             const auto message = fmt::format("Thread Exit: {}", tid);
@@ -59,7 +75,7 @@ extern "C"
         auto [fn, arg] = *static_cast<Shim*>(p);
         free(p);
 
-        auto tid = (pid_t)syscall(SYS_gettid);
+        auto tid = dory_os_tid();
 
         char buf[64];
         const int n = snprintf(buf, sizeof(buf), "thread start tid=%d\n", tid);

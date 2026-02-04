@@ -13,6 +13,20 @@ else()
     target_compile_definitions(${DORY_MODULE_NAME} PRIVATE -DDORY_MAIN_FUNCTION_UNIX)
 endif()
 
+if(APPLE)
+    target_link_options(${DORY_MODULE_NAME} PRIVATE
+            "LINKER:-rpath,@executable_path"
+    )
+endif()
+
+if(DORY_PLATFORM_APPLE)
+    set_target_properties(${DORY_MODULE_NAME} PROPERTIES
+            MACOSX_RPATH ON
+            BUILD_RPATH "@executable_path"
+            INSTALL_RPATH "@executable_path"
+    )
+endif()
+
 target_link_libraries(${DORY_MODULE_NAME} PRIVATE ${PROJECT_NAME}-engine dory-thread-lifetime-trace dory-memory)
 target_include_directories(${DORY_MODULE_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 

@@ -353,8 +353,14 @@ namespace dory::core::devices
     OpenglGpuDevice::OpenglGpuDevice(Registry& registry) : DependencyResolver(registry)
     {}
 
+    static void glfwErrorCallback(int code, const char* desc)
+    {
+        fprintf(stderr, "GLFW error %d: %s\n", code, desc);
+    }
+
     void OpenglGpuDevice::connect(DataContext& context)
     {
+        glfwSetErrorCallback(glfwErrorCallback);
         glfwInit();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         GLFWwindow* hidden_window = glfwCreateWindow(1, 1, "", NULL, NULL);

@@ -13,8 +13,11 @@ namespace dory::generic::extension
 #ifdef DORY_PLATFORM_WIN32
         const constexpr static std::string_view systemSharedLibraryFileExtension = ".dll";
 #endif
-#ifdef DORY_PLATFORM_LINUX
+#if defined(DORY_PLATFORM_LINUX)
         const constexpr static std::string_view systemSharedLibraryFileExtension = ".so";
+#endif
+#if defined(DORY_PLATFORM_APPLE)
+        const constexpr static std::string_view systemSharedLibraryFileExtension = ".dylib";
 #endif
 
     public:
