@@ -63,7 +63,7 @@ extern "C"
         }
 
         char buf[64];
-        const int n = snprintf(buf, sizeof(buf), "thread exit tid=%d\n", tid);
+        const int n = snprintf(buf, sizeof(buf), "thread exit tid=%ld\n", tid);
         if (n > 0)
         {
             write(2, buf, n);
@@ -78,7 +78,7 @@ extern "C"
         auto tid = dory_os_tid();
 
         char buf[64];
-        const int n = snprintf(buf, sizeof(buf), "thread start tid=%d\n", tid);
+        const int n = snprintf(buf, sizeof(buf), "thread start tid=%ld\n", tid);
         if (n > 0)
         {
             write(2, buf, n);
