@@ -1,5 +1,6 @@
 #pragma once
 
+#include <bit>
 #include "pageAllocator.h"
 #include "freeListAllocator.h"
 

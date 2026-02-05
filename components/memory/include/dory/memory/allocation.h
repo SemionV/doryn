@@ -2,7 +2,7 @@
 #include <cstddef>
 #include <dory/macros/assert.h>
 
-#if DORY_PLATFORM_LINUX
+#if defined(DORY_PLATFORM_LINUX) || defined(DORY_PLATFORM_APPLE)
 #include <sys/mman.h>
 #elif DORY_PLATFORM_WIN32
 #include <windows.h>
@@ -39,7 +39,7 @@ namespace dory::memory
     void commitPages(void* ptr, std::size_t pageSize, std::size_t pagesCount);
 
 
-#if DORY_PLATFORM_LINUX
+#if defined(DORY_PLATFORM_LINUX) || defined(DORY_PLATFORM_APPLE)
     inline std::size_t getSystemMemoryPageSize()
     {
         return sysconf(_SC_PAGESIZE);

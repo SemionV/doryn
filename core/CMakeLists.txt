@@ -1,6 +1,6 @@
 set(DORY_MODULE_NAME ${PROJECT_NAME}-core)
 
-if(LINUX)
+if(LINUX OR APPLE)
     set(DORY_PLATFORM_MODULES ${DORY_PLATFORM_MODULES} src/devices/standardIoDeviceUnix.cpp)
 endif()
 
@@ -75,9 +75,9 @@ target_link_libraries(${DORY_MODULE_NAME} PUBLIC
         ${PROJECT_NAME}-data-structures
         ${PROJECT_NAME}-serialization
         ${PROJECT_NAME}-memory
+        ${PROJECT_NAME}-graphics-opengl
         Boost::dll
         spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>
-        opengl-glad
         glfw
         efsw
         EnTT

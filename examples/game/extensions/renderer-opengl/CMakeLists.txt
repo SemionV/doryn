@@ -11,6 +11,12 @@ set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""
         IMPORT_PREFIX ""
         OUTPUT_NAME "renderer-opengl")
 
+if(APPLE)
+    set_target_properties(${DORY_MODULE_NAME} PROPERTIES
+            SUFFIX ".dylib"
+    )
+endif()
+
 set(DORY_RENDERER_OPENGL_COMPONENT ${DORY_COMPONENT}-RendererOpenGL)
 
 include(CppCheck)

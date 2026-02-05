@@ -11,7 +11,7 @@
 #include <dory/core/resources/scene/configurationRefl.h>
 #include <dory/core/resources/objectFactoryRefl.h>
 
-#ifdef DORY_PLATFORM_LINUX
+#if defined(DORY_PLATFORM_LINUX) || defined(DORY_PLATFORM_APPLE)
 #include <dory/core/devices/standardIoDeviceUnix.h>
 #endif
 #ifdef DORY_PLATFORM_WIN32

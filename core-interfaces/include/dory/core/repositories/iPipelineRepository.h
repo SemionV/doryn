@@ -1,5 +1,6 @@
 #pragma once
 
+#include <span>
 #include <dory/core/iController.h>
 #include <dory/core/resources/entity.h>
 #include <dory/core/resources/entities/pipelineNode.h>

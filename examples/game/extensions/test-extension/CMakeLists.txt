@@ -9,6 +9,12 @@ set_target_properties(${DORY_MODULE_NAME} PROPERTIES PREFIX ""
         IMPORT_PREFIX ""
         OUTPUT_NAME "test-extension")
 
+if(APPLE)
+    set_target_properties(${DORY_MODULE_NAME} PROPERTIES
+            SUFFIX ".dylib"
+    )
+endif()
+
 set(DORY_GAME_EXTENSION_COMPONENT ${DORY_COMPONENT}-TestExtension)
 
 include(CppCheck)

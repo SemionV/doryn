@@ -11,7 +11,13 @@
 #if defined(DORY_PLATFORM_LINUX) || defined(DORY_PLATFORM_APPLE)
     #include <sys/types.h>
     #include <unistd.h>
+
+#if defined(__APPLE__)
+    #include <sys/sysctl.h>   // sysctl, CTL_KERN, KERN_PROC*, kinfo_proc
+    #include <sys/proc.h>     // P_TRACED (macOS)
+#else
     #include <sys/ptrace.h>
+#endif
 
     inline bool doryIsDebuggerAttached()
     {

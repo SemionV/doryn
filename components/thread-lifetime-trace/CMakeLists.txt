@@ -1,7 +1,11 @@
 set(DORY_MODULE_NAME ${PROJECT_NAME}-thread-lifetime-trace)
 
-add_library(${DORY_MODULE_NAME} SHARED
-        src/hook.cpp)
+# on macOS (or when AV is present), build it static
+if(APPLE)
+    add_library(${DORY_MODULE_NAME} STATIC src/hook.cpp)
+else()
+    add_library(${DORY_MODULE_NAME} SHARED src/hook.cpp)
+endif()
 
 if(LINUX)
     target_link_libraries(${DORY_MODULE_NAME} PRIVATE dl)
