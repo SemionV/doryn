@@ -191,6 +191,60 @@ namespace dory::data_structures::containers::lockfree::freelist
             });
         }
 
+        /*
+         * Sorts items on the free list in increasing index order
+         * It is a measure for reducing random memory access and improving CPU-caching
+         */
+        void sortFreeList()
+        {
+            std::unique_lock lock { _mutex };
+
+            SlotIndexType waveFrontIndex = _head.load(std::memory_order_relaxed);
+            if(waveFrontIndex == UNDEFINED_HEAD_INDEX)
+                return;
+
+            SlotIndexType index = waveFrontIndex;
+            SlotType* waveFrontSlot = this->getSlot(waveFrontIndex);
+
+            while(index != UNDEFINED_HEAD_INDEX)
+            {
+                if(index > waveFrontIndex)
+                {
+                    waveFrontIndex = index;
+                    waveFrontSlot = this->getSlot(waveFrontIndex);
+                }
+                else if(index < waveFrontIndex)
+                {
+                    SlotIndexType searchIndex = _head.load(std::memory_order_relaxed);
+                    SlotType* searchSlot = this->getSlot(searchIndex);
+                    SlotType* prevSlot = nullptr;
+                    SlotType* slot = this->getSlot(index);
+
+                    while(index > searchIndex)
+                    {
+                        searchIndex = searchSlot->nextSlot.load(std::memory_order_relaxed);
+                        prevSlot = searchSlot;
+                        searchSlot = this->getSlot(searchIndex);
+                    }
+
+                    if(prevSlot)
+                    {
+                        prevSlot->nextSlot.store(index, std::memory_order_relaxed);
+                    }
+                    else
+                    {
+                        _head.store(index, std::memory_order_relaxed);
+                    }
+
+                    SlotIndexType nextSlot = slot->nextSlot.load(std::memory_order_relaxed);
+                    slot->nextSlot.store(searchIndex, std::memory_order_relaxed);
+                    waveFrontSlot->nextSlot.store(nextSlot, std::memory_order_relaxed);
+                }
+
+                index = waveFrontSlot->nextSlot.load(std::memory_order_relaxed);
+            }
+        }
+
         void print()
         {
             std::shared_lock lock { _mutex };
@@ -272,59 +326,6 @@ namespace dory::data_structures::containers::lockfree::freelist
             _size.fetch_add(1, std::memory_order::relaxed);
 
             return { index, slot->generation.load(std::memory_order_relaxed) };
-        }
-
-        /*
-         * Sorts items on the free list in increasing index order
-         * It is a measure for reducing random memory access and improving CPU-caching
-         */
-        void sortFreeList()
-        {
-            SlotIndexType currentIndex = _head.load(std::memory_order::acquire);
-            SlotType* prevSlot = nullptr;
-
-            while(currentIndex != UNDEFINED_HEAD_INDEX)
-            {
-                SlotType* currentSlot = this->getSlot(currentIndex);
-                SlotIndexType nextIndex = currentSlot->nextSlot.load(std::memory_order_relaxed);
-
-                relocateSort(currentSlot, currentIndex, prevSlot);
-
-                currentIndex = nextIndex;
-                prevSlot = currentSlot;
-            }
-        }
-
-        void relocateSort(SlotType* relocateSlot, const SlotIndexType relocateSlotIndex, SlotType* prevSlot)
-        {
-            SlotType* currentPrevSlot = nullptr;
-            SlotIndexType index = _head.load(std::memory_order_relaxed);
-            while(index != relocateSlotIndex)
-            {
-                SlotType* slot = this->getSlot(index);
-                if(relocateSlotIndex < index)
-                {
-                    if(prevSlot)
-                    {
-                        prevSlot->nextSlot.store(relocateSlot->nextSlot.load(std::memory_order_relaxed), std::memory_order_relaxed);
-                    }
-
-                    if(currentPrevSlot)
-                    {
-                        currentPrevSlot->nextSlot.store(relocateSlotIndex, std::memory_order_relaxed);
-                    }
-                    else
-                    {
-                        _head.store(relocateSlot, std::memory_order_relaxed);
-                    }
-
-                    relocateSlot->nextSlot.store(index, std::memory_order_release);
-                    break;
-                }
-
-                index = slot->nextSlot.load(std::memory_order_relaxed);
-                currentPrevSlot = slot;
-            }
         }
     };
 }
