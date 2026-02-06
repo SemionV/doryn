@@ -14,6 +14,64 @@
 
 namespace dory::data_structures::containers::lockfree::freelist
 {
+    /*
+     * Sorts items on the free list in increasing index order
+     * It is a measure for reducing random memory access and improving CPU-caching
+     */
+    template<typename TFreeListState, typename TList>
+    void sort(TFreeListState& freeListState, TList& list)
+    {
+        using SlotIndexType = TFreeListState::IndexType;
+        using SlotType = TList::SlotType;
+        static const SlotIndexType UNDEFINED_HEAD_INDEX = TFreeListState::UNDEFINED_HEAD_INDEX;
+        auto& head = freeListState.head;
+
+        SlotIndexType waveFrontIndex = head.load(std::memory_order_relaxed);
+        if(waveFrontIndex == UNDEFINED_HEAD_INDEX)
+            return;
+
+        SlotIndexType index = waveFrontIndex;
+        SlotType* waveFrontSlot = list.getSlot(waveFrontIndex);
+
+        while(index != UNDEFINED_HEAD_INDEX)
+        {
+            if(index > waveFrontIndex)
+            {
+                waveFrontIndex = index;
+                waveFrontSlot = list.getSlot(waveFrontIndex);
+            }
+            else if(index < waveFrontIndex)
+            {
+                SlotIndexType searchIndex = head.load(std::memory_order_relaxed);
+                SlotType* searchSlot = list.getSlot(searchIndex);
+                SlotType* prevSlot = nullptr;
+                SlotType* slot = list.getSlot(index);
+
+                while(index > searchIndex)
+                {
+                    searchIndex = searchSlot->nextSlot.load(std::memory_order_relaxed);
+                    prevSlot = searchSlot;
+                    searchSlot = list.getSlot(searchIndex);
+                }
+
+                if(prevSlot)
+                {
+                    prevSlot->nextSlot.store(index, std::memory_order_relaxed);
+                }
+                else
+                {
+                    head.store(index, std::memory_order_relaxed);
+                }
+
+                SlotIndexType nextSlot = slot->nextSlot.load(std::memory_order_relaxed);
+                slot->nextSlot.store(searchIndex, std::memory_order_relaxed);
+                waveFrontSlot->nextSlot.store(nextSlot, std::memory_order_relaxed);
+            }
+
+            index = waveFrontSlot->nextSlot.load(std::memory_order_relaxed);
+        }
+    }
+
     template<typename TValue, typename TSlotIndexType>
     struct Slot
     {
@@ -33,6 +91,15 @@ namespace dory::data_structures::containers::lockfree::freelist
             return std::launder(reinterpret_cast<const TValue*>(storage));
         }
 
+    };
+
+    template<typename TIndex, TIndex UndefinedHeadIndex>
+    struct FreeListState
+    {
+        using IndexType = TIndex;
+        constexpr static TIndex UNDEFINED_HEAD_INDEX = UndefinedHeadIndex;
+
+        std::atomic<TIndex> head = UndefinedHeadIndex;
     };
 
     template<typename T, typename TAllocator, std::uint32_t SEGMENT_SIZE = 8, std::size_t MAX_SEGMENTS = 1>
@@ -57,7 +124,8 @@ namespace dory::data_structures::containers::lockfree::freelist
     private:
         static constexpr SlotIndexType UNDEFINED_HEAD_INDEX = std::numeric_limits<SlotIndexType>::max();
         std::atomic<SlotIndexType> _size = 0;
-        std::atomic<SlotIndexType> _head = UNDEFINED_HEAD_INDEX;
+        FreeListState<SlotIndexType, UNDEFINED_HEAD_INDEX> _freeListState;
+        //std::atomic<SlotIndexType> _head = UNDEFINED_HEAD_INDEX;
         RetiredListType _retiredSlots;
         SharedLock _mutex;
 
@@ -140,10 +208,12 @@ namespace dory::data_structures::containers::lockfree::freelist
                     slot->active.store(false, std::memory_order_relaxed);
                     slot->data()->~T();
 
+                    auto& head = _freeListState.head;
+
                     //Put slot on free list
-                    SlotIndexType currentHead = _head.load(std::memory_order::relaxed);
+                    SlotIndexType currentHead = head.load(std::memory_order::relaxed);
                     slot->nextSlot.store(currentHead, std::memory_order::relaxed);
-                    while(!_head.compare_exchange_weak(
+                    while(!head.compare_exchange_weak(
                         currentHead,
                         id->index,
                         std::memory_order::release,
@@ -174,10 +244,12 @@ namespace dory::data_structures::containers::lockfree::freelist
                     slot->active.store(false, std::memory_order_relaxed);
                     slot->data()->~T();
 
+                    auto& head = _freeListState.head;
+
                     //Put slot on free list
-                    SlotIndexType currentHead = _head.load(std::memory_order::relaxed);
+                    SlotIndexType currentHead = head.load(std::memory_order::relaxed);
                     slot->nextSlot.store(currentHead, std::memory_order::relaxed);
-                    while(!_head.compare_exchange_weak(
+                    while(!head.compare_exchange_weak(
                         currentHead,
                         i,
                         std::memory_order::release,
@@ -198,51 +270,7 @@ namespace dory::data_structures::containers::lockfree::freelist
         void sortFreeList()
         {
             std::unique_lock lock { _mutex };
-
-            SlotIndexType waveFrontIndex = _head.load(std::memory_order_relaxed);
-            if(waveFrontIndex == UNDEFINED_HEAD_INDEX)
-                return;
-
-            SlotIndexType index = waveFrontIndex;
-            SlotType* waveFrontSlot = this->getSlot(waveFrontIndex);
-
-            while(index != UNDEFINED_HEAD_INDEX)
-            {
-                if(index > waveFrontIndex)
-                {
-                    waveFrontIndex = index;
-                    waveFrontSlot = this->getSlot(waveFrontIndex);
-                }
-                else if(index < waveFrontIndex)
-                {
-                    SlotIndexType searchIndex = _head.load(std::memory_order_relaxed);
-                    SlotType* searchSlot = this->getSlot(searchIndex);
-                    SlotType* prevSlot = nullptr;
-                    SlotType* slot = this->getSlot(index);
-
-                    while(index > searchIndex)
-                    {
-                        searchIndex = searchSlot->nextSlot.load(std::memory_order_relaxed);
-                        prevSlot = searchSlot;
-                        searchSlot = this->getSlot(searchIndex);
-                    }
-
-                    if(prevSlot)
-                    {
-                        prevSlot->nextSlot.store(index, std::memory_order_relaxed);
-                    }
-                    else
-                    {
-                        _head.store(index, std::memory_order_relaxed);
-                    }
-
-                    SlotIndexType nextSlot = slot->nextSlot.load(std::memory_order_relaxed);
-                    slot->nextSlot.store(searchIndex, std::memory_order_relaxed);
-                    waveFrontSlot->nextSlot.store(nextSlot, std::memory_order_relaxed);
-                }
-
-                index = waveFrontSlot->nextSlot.load(std::memory_order_relaxed);
-            }
+            sort(_freeListState, *this);
         }
 
         void print()
@@ -259,7 +287,7 @@ namespace dory::data_structures::containers::lockfree::freelist
         {
             std::shared_lock lock { _mutex };
 
-            SlotIndexType i = _head.load();
+            SlotIndexType i = _freeListState.head.load();
             while(i != UNDEFINED_HEAD_INDEX)
             {
                 SlotType* slot = this->getSlot(i);
@@ -287,7 +315,7 @@ namespace dory::data_structures::containers::lockfree::freelist
 
             SlotType* slot = this->getSlot(prev);
             slot->nextSlot.store(UNDEFINED_HEAD_INDEX, std::memory_order_relaxed);
-            _head.store(first, std::memory_order_release);
+            _freeListState.head.store(first, std::memory_order_release);
         }
 
         template<typename U>
@@ -298,12 +326,14 @@ namespace dory::data_structures::containers::lockfree::freelist
             SlotType* slot = nullptr;
             SlotIndexType index = UNDEFINED_HEAD_INDEX;
 
-            SlotIndexType headIndex = _head.load(std::memory_order::relaxed);
+            auto& head = _freeListState.head;
+
+            SlotIndexType headIndex = head.load(std::memory_order::relaxed);
             while(headIndex != UNDEFINED_HEAD_INDEX)
             {
                 SlotType* headSlot = this->getSlot(headIndex);
                 const SlotIndexType newHeadIndex = headSlot->nextSlot.load(std::memory_order::relaxed);
-                if(_head.compare_exchange_weak(headIndex, newHeadIndex, std::memory_order::acquire, std::memory_order::relaxed))
+                if(head.compare_exchange_weak(headIndex, newHeadIndex, std::memory_order::acquire, std::memory_order::relaxed))
                 {
                     slot = headSlot;
                     slot->generation.fetch_add(1, std::memory_order::relaxed);

@@ -62,6 +62,7 @@ TEST(FreeListTests, basic)
     std::cout << "Delete items 2, 3, 4" << std::endl;
     list.print();
     std::cout << "Free list" << std::endl;
+    list.sortFreeList();
     list.printFreeList();
     EXPECT_EQ(list.size(), 0);
 }
