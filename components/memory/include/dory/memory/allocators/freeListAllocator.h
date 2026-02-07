@@ -17,6 +17,9 @@ namespace dory::memory
     private:
         const std::size_t _slotSize;
         const std::size_t _slotsPerChunkCount;
+        const std::size_t _chunkSize;
+        const std::size_t _pageSize;
+        const std::size_t _pageCount;
         TPageAllocator& _pageAllocator; //Allocator of memory chunks
         TMemoryBlockNodeAllocator& _memoryBlockNodeAllocator; //Allocator of MemoryBlock descriptors, wrapped in a Node structure, to make a linked list of all allocated chunks
         alignas(64) std::atomic<void*> _freeListHead; //Pointer to the first node in the free list
@@ -30,15 +33,28 @@ namespace dory::memory
             TMemoryBlockNodeAllocator& memoryBlockNodeAllocator) noexcept:
         _slotSize(slotSize),
         _slotsPerChunkCount(slotsPerChunkCount),
+        _chunkSize(slotSize * slotsPerChunkCount),
         _pageAllocator(pageAllocator),
+        _pageSize(pageAllocator.getPageSize()),
+        _pageCount(_chunkSize / _pageSize),
         _memoryBlockNodeAllocator(memoryBlockNodeAllocator)
         {
             assert::debug(slotSize > 0, "SlotSize must be greater than zero");
             assert::debug(slotSize >= sizeof(void*), fmt::format("SlotSize must be at least as big as size of a pointer. SlotSize: {}", slotSize).c_str());
             assert::debug(slotsPerChunkCount > 0, "SlotsPerChunkCount must be greater than zero");
-            const std::size_t slotsPerPageCount = _pageAllocator.getPageSize() / _slotSize;
-            assert::debug(slotsPerChunkCount % slotsPerPageCount == 0, "Slot per chunk must be a multiple of slots per page");
-            assert::debug(_pageAllocator.getPageSize() >= slotSize, "SlotSize must fit into a memory page");
+            std::size_t largeBlockSize = 0;
+            std::size_t smallBlockSize = 0;
+            if(_chunkSize > _pageSize)
+            {
+                largeBlockSize = _chunkSize;
+                smallBlockSize = _pageSize;
+            }
+            else
+            {
+                largeBlockSize = _pageSize;
+                smallBlockSize = _chunkSize;
+            }
+            assert::debug(largeBlockSize % smallBlockSize == 0, fmt::format("Chunk size must be a multiple of page size").c_str());
             const std::size_t mask = slotSize - 1;
             assert::debug((slotSize & mask) == 0, "SlotSize must be a power of 2");
 
@@ -160,8 +176,7 @@ namespace dory::memory
                     return;
                 }
 
-                const std::size_t slotsPerPageCount = _pageAllocator.getPageSize() / _slotSize;
-                const std::size_t pagesCount = _slotsPerChunkCount / slotsPerPageCount;
+                std::size_t pagesCount = _pageCount == 0 ? 1 : _pageSize;
 
                 const ErrorCode errorCode = _pageAllocator.allocate(pagesCount, newBlock->memoryBlock);
                 if(errorCode != ErrorCode::Success)

@@ -64,11 +64,12 @@ namespace dory::test_utilities
     {
     private:
         constexpr static std::size_t PAGE_SIZE = 4096;
+        constexpr static std::size_t MEMORY_CLASS_COUNT = 11;
 
         TAllocatorProfiler _profiler;
         memory::PageAllocator _blockAllocator { PAGE_SIZE };
         memory::SystemAllocator _systemAllocator;
-        std::array<memory::MemorySizeClass, 10> _sizeClasses = {
+        std::array<memory::MemorySizeClass, MEMORY_CLASS_COUNT> _sizeClasses = {
             memory::MemorySizeClass{ 8, 1024 },
             memory::MemorySizeClass{ 16, 1024 },
             memory::MemorySizeClass{ 32, 1024 },
@@ -78,11 +79,12 @@ namespace dory::test_utilities
             memory::MemorySizeClass{ 512, 1024 },
             memory::MemorySizeClass{ 1024, 1024 },
             memory::MemorySizeClass{ 2048, 1024 },
-            memory::MemorySizeClass{ 4096, 1024 }
+            memory::MemorySizeClass{ 4096, 1024 },
+            memory::MemorySizeClass{ 8192, 512 }
         };
 
     public:
-        using SegregationAllocatorType = memory::SegregationAllocator<10, memory::PageAllocator, memory::SystemAllocator, memory::SystemAllocator, TAllocatorProfiler>;
+        using SegregationAllocatorType = memory::SegregationAllocator<MEMORY_CLASS_COUNT, memory::PageAllocator, memory::SystemAllocator, memory::SystemAllocator, TAllocatorProfiler>;
 
         template<typename T>
         using StandardAllocatorType = memory::StandardAllocator<T, SegregationAllocatorType>;

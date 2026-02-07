@@ -194,9 +194,9 @@ TEST(FreeListArray, Stress_AddRetire_6Threads_Barrier)
     dory::test_utilities::AllocatorBuilder allocBuilder;
     const auto allocator = allocBuilder.build();
     using AllocatorType = typename decltype(allocator)::element_type;
-    using ListType = dory::data_structures::containers::lockfree::freelist::FreeListArray<Payload, AllocatorType, 1024, 1024>;
+    using ListType = dory::data_structures::containers::lockfree::freelist::FreeListArray<Payload, AllocatorType, 32, 1048576>;
 
-    auto list = ListType { *allocator };
+    auto list = std::make_shared<ListType>(*allocator);
 
     // ---- Per-thread logs (no contention) ----
     using Id = ListType::SlotIdentifier;
@@ -241,7 +241,7 @@ TEST(FreeListArray, Stress_AddRetire_6Threads_Barrier)
             {
                 Payload p{ static_cast<uint32_t>(t), i, make_cookie(static_cast<uint32_t>(t), i) };
 
-                Id id = list.add(p);
+                Id id = list->add(p);
                 log.live_ids.push_back(id);
                 log.live_payloads.push_back(p);
 
@@ -252,7 +252,7 @@ TEST(FreeListArray, Stress_AddRetire_6Threads_Barrier)
                     std::size_t k = pick(rng);
 
                     Id rid = log.live_ids[k];
-                    list.retire(rid);
+                    list->retire(rid);
                     log.retired_ids.push_back(rid);
 
                     // swap-remove from live lists
@@ -269,7 +269,7 @@ TEST(FreeListArray, Stress_AddRetire_6Threads_Barrier)
                 if (coin(rng) < kFinalRetireChancePct)
                 {
                     Id rid = log.live_ids[k];
-                    list.retire(rid);
+                    list->retire(rid);
                     log.retired_ids.push_back(rid);
 
                     log.live_ids[k] = log.live_ids.back();
@@ -291,7 +291,7 @@ TEST(FreeListArray, Stress_AddRetire_6Threads_Barrier)
     for (auto& th : threads) th.join();
 
     // Coalescing: reclaim only after workers finished
-    list.reclaim();
+    list->reclaim();
 
     // ---- Validate expected live items ----
     for (int t = 0; t < kThreads; ++t)
@@ -304,7 +304,7 @@ TEST(FreeListArray, Stress_AddRetire_6Threads_Barrier)
             const Id& id = log.live_ids[i];
             const Payload& expected = log.live_payloads[i];
 
-            Payload& got = list.get(id);
+            Payload& got = list->get(id);
 
             ASSERT_EQ(got.tid, expected.tid) << "tid mismatch; possible freelist corruption / slot reuse bug";
             ASSERT_EQ(got.seq, expected.seq) << "seq mismatch; possible stale-key retire / generation bug";
