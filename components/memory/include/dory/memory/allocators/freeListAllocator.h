@@ -2,6 +2,7 @@
 #include <atomic>
 #include <cstddef>
 #include "pageAllocator.h"
+#include <spdlog/fmt/fmt.h>
 
 namespace dory::memory
 {
@@ -33,7 +34,7 @@ namespace dory::memory
         _memoryBlockNodeAllocator(memoryBlockNodeAllocator)
         {
             assert::debug(slotSize > 0, "SlotSize must be greater than zero");
-            assert::debug(slotSize > sizeof(void*), "SlotSize must be at least as big as size of a pointer");
+            assert::debug(slotSize >= sizeof(void*), fmt::format("SlotSize must be at least as big as size of a pointer. SlotSize: {}", slotSize).c_str());
             assert::debug(slotsPerChunkCount > 0, "SlotsPerChunkCount must be greater than zero");
             const std::size_t slotsPerPageCount = _pageAllocator.getPageSize() / _slotSize;
             assert::debug(slotsPerChunkCount % slotsPerPageCount == 0, "Slot per chunk must be a multiple of slots per page");
