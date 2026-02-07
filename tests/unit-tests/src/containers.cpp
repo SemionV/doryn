@@ -2,6 +2,7 @@
 #include <gmock/gmock.h>
 #include <spdlog/fmt/fmt.h>
 #include <allocatorBuilder.h>
+#include <assertUtils.h>
 
 #include "dory/memory/allocators/segregationAllocator.h"
 #include <dory/data-structures/containers/string.h>
@@ -71,19 +72,6 @@ void printList(const TList& list)
     }
 }
 
-template<typename TList, typename T>
-void assertList(const TList& list, std::initializer_list<T> expected)
-{
-    EXPECT_EQ(list.size(), expected.size());
-
-    std::size_t i = 0;
-    for (const auto& val : expected)
-    {
-        EXPECT_EQ(list.at(i), val);
-        ++i;
-    }
-}
-
 TEST(BasicListTests, simpleTest)
 {
     dory::test_utilities::AllocatorBuilder allocBuilder;
@@ -101,7 +89,7 @@ TEST(BasicListTests, simpleTest)
     list.push_back(9);
     list.push_back(10);
 
-    assertList(list, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    dory::test_utilities::assertList(list, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
     printList(list);
 
     list.pop_back();
@@ -136,7 +124,7 @@ TEST(BasicDequeTests, simpleTest)
     int val = 11;
     list.push_back(val);
 
-    assertList(list, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11});
+    dory::test_utilities::assertList(list, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11});
     printList(list);
 
     EXPECT_EQ(list[1], 2);

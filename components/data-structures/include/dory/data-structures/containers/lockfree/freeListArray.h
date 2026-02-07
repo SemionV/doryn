@@ -119,10 +119,11 @@ namespace dory::data_structures::containers::lockfree::freelist
         using size_type = ParentType::size_type;
         using value_type = T;
 
+        static constexpr SlotIndexType UNDEFINED_HEAD_INDEX = std::numeric_limits<SlotIndexType>::max();
+
         //TODO: fix the assert, mul of two numbers cannot be larger than max int value in any case
         static_assert(SEGMENT_SIZE * MAX_SEGMENTS < std::numeric_limits<SlotIndexType>::max()); //Overflow
     private:
-        static constexpr SlotIndexType UNDEFINED_HEAD_INDEX = std::numeric_limits<SlotIndexType>::max();
         std::atomic<SlotIndexType> _size = 0;
         FreeListState<SlotIndexType, UNDEFINED_HEAD_INDEX> _freeListState;
         //std::atomic<SlotIndexType> _head = UNDEFINED_HEAD_INDEX;
@@ -187,7 +188,7 @@ namespace dory::data_structures::containers::lockfree::freelist
             std::shared_lock lock { _mutex };
 
             assert::inhouse(id.index < ParentType::size(), "Invalid identifier index");
-            _retiredSlots.append(id);
+            _retiredSlots.reserveSlot(id);
         }
 
         /*
@@ -300,12 +301,12 @@ namespace dory::data_structures::containers::lockfree::freelist
     private:
         void initialize()
         {
-            const SlotIndexType first = this->append();
+            const SlotIndexType first = this->reserveSlot();
             SlotIndexType prev = first;
 
             for (SlotIndexType n = 1; n < SEGMENT_SIZE; ++n)
             {
-                SlotIndexType idx = this->append();
+                SlotIndexType idx = this->reserveSlot();
                 SlotType* slot = this->getSlot(prev);
                 slot->nextSlot.store(idx, std::memory_order_relaxed);
                 std::byte* storage = slot->storage;
@@ -344,7 +345,7 @@ namespace dory::data_structures::containers::lockfree::freelist
 
             if(slot == nullptr)
             {
-                index = this->append();
+                index = this->reserveSlot();
                 slot = this->getSlot(index);
             }
 

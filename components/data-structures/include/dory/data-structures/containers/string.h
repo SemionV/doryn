@@ -545,8 +545,8 @@ namespace dory::data_structures::containers
     {
         BasicString result(lhs.getAllocator());
         result.reserve(lhs.size() + rhs.size() + 1);
-        result.append(lhs);
-        result.append(rhs);
+        result.reserveSlot(lhs);
+        result.reserveSlot(rhs);
         return result;
     }
 }

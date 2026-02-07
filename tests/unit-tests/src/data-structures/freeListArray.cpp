@@ -5,6 +5,8 @@
 
 #include <dory/data-structures/containers/lockfree/freeListArray.h>
 
+#include "assertUtils.h"
+
 //TODO: implement method clear
 //TODO: implement a method to sort free list according to slot indexes(increase CPU cache efficiency by reducing random jumping in memory)
 
@@ -65,4 +67,51 @@ TEST(FreeListTests, basic)
     list.sortFreeList();
     list.printFreeList();
     EXPECT_EQ(list.size(), 0);
+}
+
+TEST(FreeListTests, sorting)
+{
+    dory::test_utilities::AllocatorBuilder allocBuilder;
+    const auto allocator = allocBuilder.build();
+    using AllocatorType = typename decltype(allocator)::element_type;
+    using ListType = dory::data_structures::containers::lockfree::freelist::FreeListArray<int, AllocatorType, 16>;
+    using SlotType = ListType::SlotType;
+
+    auto list = ListType { *allocator };
+    auto freeListState = dory::data_structures::containers::lockfree::freelist::FreeListState<ListType::SlotIndexType, ListType::UNDEFINED_HEAD_INDEX> {};
+
+    for(std::size_t i = 0; i != 11; ++i)
+    {
+        list.reserveSlot();
+    }
+
+    freeListState.head.store(10);
+
+    SlotType* slot = list.getSlot(10);
+    slot->nextSlot.store(3);
+
+    slot = list.getSlot(3);
+    slot->nextSlot.store(8);
+
+    slot = list.getSlot(8);
+    slot->nextSlot.store(2);
+
+    slot = list.getSlot(2);
+    slot->nextSlot.store(7);
+
+    slot = list.getSlot(7);
+    slot->nextSlot.store(ListType::UNDEFINED_HEAD_INDEX);
+
+    dory::data_structures::containers::lockfree::freelist::sort(freeListState, list);
+
+    std::vector<ListType::SlotIndexType> freeListIndices;
+    ListType::SlotIndexType index = freeListState.head.load();
+    while(index != ListType::UNDEFINED_HEAD_INDEX)
+    {
+        freeListIndices.push_back(index);
+        slot = list.getSlot(index);
+        index = slot->nextSlot.load();
+    }
+
+    dory::test_utilities::assertList(freeListIndices, { 2, 3, 7, 8, 10 });
 }

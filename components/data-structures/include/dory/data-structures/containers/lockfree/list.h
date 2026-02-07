@@ -50,7 +50,7 @@ namespace dory::data_structures::containers::lockfree
          * Reserves a slot for an item and if needed allocates memory for the hosting segment
          * The consumer of this method supposed to initialize the slot properly(construct) after the append returns
          */
-        size_type append()
+        size_type reserveSlot()
         {
             // Reserve an index (ticket dispenser)
             const size_type index = _size.fetch_add(1, std::memory_order_relaxed);
@@ -66,7 +66,7 @@ namespace dory::data_structures::containers::lockfree
          * Reserves a slot for an item and if needed allocates memory for the hosting segment
          * Copies value into the allocated slot
          */
-        size_type append(const T& value)
+        size_type reserveSlot(const T& value)
         {
             // Reserve an index (ticket dispenser)
             const size_type index = _size.fetch_add(1, std::memory_order_relaxed);
