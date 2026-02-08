@@ -10,6 +10,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/allocators/bumpAllocator.cpp
         src/allocators/dynamicAllocator.cpp
         src/memoryBlockAllocator.cpp
-        src/stackAllocator.cpp)
+        src/stackAllocator.cpp
+        include/dory/memory/profilers/memClassAuditProfiler.h)
 target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(${DORY_MODULE_NAME} PUBLIC dory-macros dory-concurrency)

@@ -6,6 +6,8 @@
 #include "dory/memory/allocators/standardAllocator.h"
 #include "dory/memory/allocators/systemAllocator.h"
 
+#include <dory/memory/profilers/memClassAuditProfiler.h>
+
 namespace dory::test_utilities
 {
     template<typename TAllocator>
@@ -53,20 +55,20 @@ namespace dory::test_utilities
             std::cout << fmt::format("Large object allocated: size [{0}], ptr[{1}]", size, ptr) << std::endl;
         }
 
-        void traceLargeFree(void* ptr)
+        void traceLargeFree(void* ptr, std::size_t size)
         {
-            std::cout << fmt::format("Large object deallocated: ptr[{0}]", ptr) << std::endl;
+            std::cout << fmt::format("Large object deallocated: ptr[{0}], size[{1}]", ptr, size) << std::endl;
         }
     };
 
-    template<typename TAllocatorProfiler = AllocProfiler>
+    constexpr static std::size_t MEMORY_CLASS_COUNT = 11;
+
+    template<typename TAllocatorProfiler = memory::profilers::MemoryClassAuditProfiler<MEMORY_CLASS_COUNT>>
     class AllocatorBuilder
     {
     private:
         constexpr static std::size_t PAGE_SIZE = 4096;
-        constexpr static std::size_t MEMORY_CLASS_COUNT = 11;
 
-        TAllocatorProfiler _profiler;
         memory::PageAllocator _blockAllocator { PAGE_SIZE };
         memory::SystemAllocator _systemAllocator;
         std::array<memory::MemorySizeClass, MEMORY_CLASS_COUNT> _sizeClasses = {
@@ -82,6 +84,7 @@ namespace dory::test_utilities
             memory::MemorySizeClass{ 4096, 1024 },
             memory::MemorySizeClass{ 8192, 512 }
         };
+        TAllocatorProfiler _profiler {_sizeClasses};
 
     public:
         using SegregationAllocatorType = memory::SegregationAllocator<MEMORY_CLASS_COUNT, memory::PageAllocator, memory::SystemAllocator, memory::SystemAllocator, TAllocatorProfiler>;

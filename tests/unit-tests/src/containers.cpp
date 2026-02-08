@@ -100,7 +100,7 @@ TEST(BasicListTests, simpleTest)
 
     list.emplace(list.begin() + 2, 11);
 
-    assertList(list, {1, 2, 11, 3, 4, 5});
+    dory::test_utilities::assertList(list, {1, 2, 11, 3, 4, 5});
     printList(list);
 }
 
@@ -130,7 +130,7 @@ TEST(BasicDequeTests, simpleTest)
     EXPECT_EQ(list[1], 2);
 
     list.clear();
-    assertList<decltype(list), int>(list, {});
+    dory::test_utilities::assertList<decltype(list), int>(list, {});
 }
 
 TEST(BasicDequeTests, popTest)
@@ -154,9 +154,9 @@ TEST(BasicDequeTests, popTest)
     list.push_back(val);
 
     list.pop_back();
-    assertList(list, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    dory::test_utilities::assertList(list, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
     list.pop_front();
-    assertList(list, {2, 3, 4, 5, 6, 7, 8, 9, 10});
+    dory::test_utilities::assertList(list, {2, 3, 4, 5, 6, 7, 8, 9, 10});
 
     list.pop_front();
     list.pop_front();
@@ -167,7 +167,7 @@ TEST(BasicDequeTests, popTest)
     list.pop_front();
     list.pop_front();
     list.pop_front();
-    assertList<decltype(list), int>(list, {});
+    dory::test_utilities::assertList<decltype(list), int>(list, {});
 }
 
 TEST(BasicHashMapTests, simpleTest)

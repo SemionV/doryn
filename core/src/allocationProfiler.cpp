@@ -18,8 +18,8 @@ namespace dory::core
         print("Large object allocated: size [{0}], ptr[{1}]", size, ptr);
     }
 
-    void AllocProfiler::traceLargeFree(void* ptr)
+    void AllocProfiler::traceLargeFree(void* ptr, std::size_t size)
     {
-        print("Large object deallocated: ptr[{0}]", ptr);
+        print("Large object deallocated: ptr[{0}], size[{1}]", ptr, size);
     }
 }

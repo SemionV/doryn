@@ -127,9 +127,9 @@ public:
         std::cout << fmt::format("Large object allocated: size [{0}], ptr[{1}]", size, ptr) << std::endl;
     }
 
-    void traceLargeFree(void* ptr)
+    void traceLargeFree(void* ptr, std::size_t size)
     {
-        std::cout << fmt::format("Large object deallocated: ptr[{0}]", ptr) << std::endl;
+        std::cout << fmt::format("Large object deallocated: ptr[{0}], size[{1}]", ptr, size) << std::endl;
     }
 };
 
