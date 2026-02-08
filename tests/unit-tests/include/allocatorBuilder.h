@@ -7,6 +7,7 @@
 #include "dory/memory/allocators/systemAllocator.h"
 
 #include <dory/memory/profilers/memClassAuditProfiler.h>
+#include <dory/memory/profilers/blockAuditProfiler.h>
 
 namespace dory::test_utilities
 {
@@ -69,7 +70,8 @@ namespace dory::test_utilities
     private:
         constexpr static std::size_t PAGE_SIZE = 4096;
 
-        memory::PageAllocator _blockAllocator { PAGE_SIZE };
+        memory::profilers::BlockAuditProfiler _blockAllocProfiler;
+        memory::PageAllocator _blockAllocator { PAGE_SIZE, &_blockAllocProfiler };
         memory::SystemAllocator _systemAllocator;
         std::array<memory::MemorySizeClass, MEMORY_CLASS_COUNT> _sizeClasses = {
             memory::MemorySizeClass{ 8, 1024 },

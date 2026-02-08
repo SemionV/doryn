@@ -2,8 +2,9 @@
 
 namespace dory::memory
 {
-    PageAllocator::PageAllocator(std::size_t pageSize) noexcept:
-        _pageSize(pageSize)
+    PageAllocator::PageAllocator(std::size_t pageSize, profilers::IBlockAllocProfiler* profiler) noexcept:
+        _pageSize(pageSize),
+        _profiler(profiler)
     {
         assert::debug(pageSize, "Page size cannot be zero");
     }
@@ -15,7 +16,17 @@ namespace dory::memory
         void* pointer = reserveMemoryPages(_pageSize, pagesCount);
         if(!pointer)
         {
+            if(_profiler)
+            {
+                _profiler->traceBlocAllocFailure(_pageSize * pagesCount);
+            }
+
             return ErrorCode::OutOfMemory;
+        }
+
+        if(_profiler)
+        {
+            _profiler->traceBlockAlloc(pointer, _pageSize * pagesCount);
         }
 
         memoryBlock.ptr = pointer;
@@ -31,6 +42,11 @@ namespace dory::memory
         assert::debug(memoryBlock.ptr, "Trying to deallocate an invalid memory block");
 
         releaseMemoryPages(memoryBlock.ptr, _pageSize, memoryBlock.pagesCount);
+
+        if(_profiler)
+        {
+            _profiler->traceBlockFree(memoryBlock.ptr, memoryBlock.pagesCount * memoryBlock.pageSize);
+        }
     }
 
     std::size_t PageAllocator::getPageSize() const noexcept

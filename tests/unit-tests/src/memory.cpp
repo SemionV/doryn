@@ -97,7 +97,8 @@ TEST(FreeListAllocatorTests, simpleAllocation)
 {
     constexpr std::size_t PAGE_SIZE = 4096;
     constexpr std::size_t SLOT_SIZE = 8;
-    PageAllocator blockAllocator {PAGE_SIZE};
+
+    PageAllocator blockAllocator {PAGE_SIZE, nullptr};
     SystemAllocator systemAllocator;
     FreeListAllocator freeListAllocator { SLOT_SIZE, (PAGE_SIZE / SLOT_SIZE) * 2, blockAllocator, systemAllocator };
 
@@ -141,7 +142,7 @@ using StandardAllocatorType = StandardAllocator<T, SegregationAllocatorType>;
 TEST(SegregationAllocatorTests, simpleAllocation)
 {
     constexpr std::size_t PAGE_SIZE = 4096;
-    PageAllocator blockAllocator {PAGE_SIZE};
+    PageAllocator blockAllocator {PAGE_SIZE, nullptr};
     SystemAllocator systemAllocator;
 
     std::array sizeClasses {
