@@ -18,7 +18,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 #endif
 {
     constexpr std::size_t PAGE_SIZE = 4096;
-    dory::memory::PageAllocator blockAllocator {PAGE_SIZE};
+    dory::memory::PageAllocator blockAllocator {PAGE_SIZE, nullptr};
     dory::memory::SystemAllocator systemAllocator;
 
     std::array sizeClasses {
