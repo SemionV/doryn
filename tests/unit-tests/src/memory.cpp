@@ -42,7 +42,7 @@ TEST(BlockAllocatorTests, pageResidency)
     dory::profiling::MetricsReader::startMetricsRecording(processMetricsBefore);
     dory::profiling::MetricsReader::completeMetricsRecording(processMetricsBefore);
 
-    auto allocator = PageAllocator(PAGE_SIZE);
+    auto allocator = PageAllocator(PAGE_SIZE, nullptr);
 
     MemoryBlock block {};
     allocator.allocate(PAGE_COUNT, block);

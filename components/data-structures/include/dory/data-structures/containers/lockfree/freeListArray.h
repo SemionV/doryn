@@ -2,6 +2,8 @@
 
 #include <refl.hpp>
 #include <shared_mutex>
+#include <mutex>
+#include <iostream>
 
 #include "list.h"
 #include <dory/generic/concepts.h>

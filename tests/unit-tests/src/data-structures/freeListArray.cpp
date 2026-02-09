@@ -143,30 +143,7 @@ static inline uint64_t make_cookie(uint32_t tid, uint32_t seq) noexcept
     return x;
 }
 
-void printStack()
-{
-    namespace bw = backward;
-
-    bw::StackTrace st;
-    st.load_here(64);  // capture up to 64 frames
-
-    bw::TraceResolver resolver;
-    resolver.load_stacktrace(st);
-
-    for (int i = static_cast<int>(st.size()) - 1; i >= 0; --i)
-    {
-        const bw::ResolvedTrace trace = resolver.resolve(st[i]);
-        std::cout << "#" << i << " ";
-
-        if (!trace.source.filename.empty())
-        {
-            std::cout << trace.source.filename << ":"
-                      << trace.source.line << " - ";
-        }
-
-        std::cout << trace.object_function << std::endl;
-    }
-}
+void printStack();
 
 TEST(FreeListArray, Stress_AddRetire_6Threads_Barrier)
 {

@@ -17,7 +17,7 @@ namespace dory::core::event_system
     class Event
     {
     private:
-        using ListType = data_structures::containers::lockfree::freelist::FreeListArray<Payload, AllocatorType, 32, 1048576>;
+        //using ListType = data_structures::containers::lockfree::freelist::FreeListArray<Payload, AllocatorType, 32, 1048576>;
 
     public:
         using HandlerType = data_structures::function::Function<void(TParams...)>;

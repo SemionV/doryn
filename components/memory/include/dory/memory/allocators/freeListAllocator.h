@@ -177,6 +177,8 @@ namespace dory::memory
             if(pendingBlock == nullptr)
             {
                 auto newBlock = static_cast<MemoryBlockNode*>(_memoryBlockNodeAllocator.allocate(sizeof(MemoryBlockNode)));
+                assert::inhouse(newBlock, "Cannot allocate MemoryBlockNode");
+                std::construct_at(newBlock);
 
                 if(newBlock == nullptr)
                 {
