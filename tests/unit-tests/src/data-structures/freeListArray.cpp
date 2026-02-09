@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <allocatorBuilder.h>
-#include <backward.hpp>
 
 #include <dory/data-structures/containers/lockfree/freeListArray.h>
 
 #include "assertUtils.h"
+#include "outputUtils.h"
 
 TEST(FreeListTests, basic)
 {
@@ -143,8 +143,6 @@ static inline uint64_t make_cookie(uint32_t tid, uint32_t seq) noexcept
     return x;
 }
 
-void printStack();
-
 TEST(FreeListArray, Stress_AddRetire_6Threads_Barrier)
 {
     dory::assert::Assert::assertFailureHandler = [](const char * msg) {
@@ -158,7 +156,7 @@ TEST(FreeListArray, Stress_AddRetire_6Threads_Barrier)
 
     dory::assert::DebugAssert::assertFailureHandler = [](const char * msg) {
         std::cerr << msg << std::endl;
-        printStack();
+        dory::test_utilities::printStack();
         doryDebugBreak();
         std::exit(EXIT_FAILURE);
     };
