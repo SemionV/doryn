@@ -16,6 +16,6 @@ namespace dory::memory
     {
         MemoryBlock memoryBlock;
         MemoryBlockNode* previousNode = nullptr;
-        std::atomic<std::size_t> initializationIndex = 0;
+        std::atomic<std::size_t> index = 0;
     };
 }
