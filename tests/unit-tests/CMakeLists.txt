@@ -4,6 +4,8 @@ project(unit-tests)
 add_executable(${PROJECT_NAME}
         include/allocatorBuilder.h
         include/assertUtils.h
+        include/outputUtils.h
+        src/outputUtils.cpp
         enttSceneService.cpp
         pipelineRepository.cpp
         graphics/meshAssetBinderTests.cpp
