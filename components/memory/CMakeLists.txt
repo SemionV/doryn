@@ -14,6 +14,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         include/dory/memory/profilers/memClassAuditProfiler.h
         include/dory/memory/profilers/iBlockAllocProfiler.h
         include/dory/memory/profilers/blockAuditProfiler.h
-        src/profilers/blockAuditProfiler.cpp)
+        src/profilers/blockAuditProfiler.cpp
+        include/dory/memory/profilers/iFreeListAllocProfiler.h)
 target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(${DORY_MODULE_NAME} PUBLIC dory-macros dory-concurrency)
+target_link_libraries(${DORY_MODULE_NAME} PUBLIC ${PROJECT_NAME}-macros ${PROJECT_NAME}-concurrency ${PROJECT_NAME}-data-structures)

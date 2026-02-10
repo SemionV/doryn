@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 namespace dory::memory
 {
     struct MemoryBlock
@@ -14,5 +16,6 @@ namespace dory::memory
     {
         MemoryBlock memoryBlock;
         MemoryBlockNode* previousNode = nullptr;
+        std::atomic<std::size_t> initializationIndex = 0;
     };
 }

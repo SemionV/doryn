@@ -3,6 +3,8 @@
 #include <cstddef>
 #include "pageAllocator.h"
 #include <spdlog/fmt/fmt.h>
+#include <dory/data-structures/containers/lockfree/util.h>
+#include "../profilers/iFreeListAllocProfiler.h"
 
 namespace dory::memory
 {
@@ -22,10 +24,10 @@ namespace dory::memory
         const std::size_t _pageCount;
         TPageAllocator& _pageAllocator; //Allocator of memory chunks
         TMemoryBlockNodeAllocator& _memoryBlockNodeAllocator; //Allocator of MemoryBlock descriptors, wrapped in a Node structure, to make a linked list of all allocated chunks
+        profilers::IFreeListAllocProfiler* _profiler;
         alignas(64) std::atomic<void*> _freeListHead; //Pointer to the first node in the free list
         alignas(64) std::atomic<MemoryBlockNode*> _memoryBlockHead; //Pointer to the last node of allocated memory chunks
         alignas(64) std::atomic<MemoryBlockNode*> _pendingBlock; //A newly allocated memory chunk, which is in progress of initialization, each thread, which is seeing it can help to initialize it
-        alignas(64) std::atomic<std::size_t> _currentSlotInitialization; //Index of a slot in _pendingBlock, which currently on initialization, each thread can peek one
 
         struct MemOrder
         {
@@ -38,14 +40,16 @@ namespace dory::memory
     public:
         FreeListAllocator(const std::size_t slotSize, const std::size_t slotsPerChunkCount,
             TPageAllocator& pageAllocator,
-            TMemoryBlockNodeAllocator& memoryBlockNodeAllocator) noexcept:
+            TMemoryBlockNodeAllocator& memoryBlockNodeAllocator,
+            profilers::IFreeListAllocProfiler* profiler = nullptr) noexcept:
         _slotSize(slotSize),
         _slotsPerChunkCount(slotsPerChunkCount),
         _chunkSize(slotSize * slotsPerChunkCount),
         _pageAllocator(pageAllocator),
         _pageSize(pageAllocator.getPageSize()),
         _pageCount(_chunkSize / _pageSize),
-        _memoryBlockNodeAllocator(memoryBlockNodeAllocator)
+        _memoryBlockNodeAllocator(memoryBlockNodeAllocator),
+        _profiler(profiler)
         {
             assert::debug(slotSize > 0, "SlotSize must be greater than zero");
             assert::debug(slotSize >= sizeof(void*), fmt::format("SlotSize must be at least as big as size of a pointer. SlotSize: {}", slotSize).c_str());
@@ -123,6 +127,15 @@ namespace dory::memory
             return headPointer;
         }
 
+        void printMemoryBlocks()
+        {
+            MemoryBlockNode* node = _memoryBlockHead.load(MemOrder::relaxed);
+            while(node != nullptr)
+            {
+
+            }
+        }
+
         void deallocate(void* ptr) noexcept
         {
             assert::inhouse(isInRange(ptr), "Pointer does not belong to the managed memory of the allocator");
@@ -198,6 +211,8 @@ namespace dory::memory
                 if(_pendingBlock.compare_exchange_strong(pendingBlock, newBlock, MemOrder::release, MemOrder::acquire))
                 {
                     pendingBlock = newBlock;
+                    if(_profiler)
+                        _profiler->traceChunkAlloc(newBlock->memoryBlock);
                 }
                 else
                 {
@@ -208,11 +223,12 @@ namespace dory::memory
 
             //Initialize linked list in the memory block
             MemoryBlock& memoryBlock = pendingBlock->memoryBlock;
-            std::size_t currentSlot = _currentSlotInitialization.load(MemOrder::relaxed);
+            std::atomic<std::size_t>& initializationIndex = pendingBlock->initializationIndex;
+            std::size_t currentSlot = initializationIndex.load(MemOrder::relaxed);
             while(currentSlot < _slotsPerChunkCount)
             {
                 std::size_t nextSlot = currentSlot + 1;
-                if(!_currentSlotInitialization.compare_exchange_strong(currentSlot, nextSlot, MemOrder::relaxed, MemOrder::relaxed))
+                if(!initializationIndex.compare_exchange_strong(currentSlot, nextSlot, MemOrder::relaxed, MemOrder::relaxed))
                 {
                     continue;
                 }
@@ -229,11 +245,14 @@ namespace dory::memory
                     *reinterpret_cast<void**>(slotAddress) = nullptr;
                 }
 
-                currentSlot = _currentSlotInitialization.load(MemOrder::relaxed);
+                currentSlot = initializationIndex.load(MemOrder::relaxed);
             }
 
             //Update bookkeeping references
-            _currentSlotInitialization.compare_exchange_strong(currentSlot, 0, MemOrder::relaxed, MemOrder::relaxed);
+            initializationIndex.compare_exchange_strong(currentSlot, 0, MemOrder::relaxed, MemOrder::relaxed);
+
+            if(_profiler)
+                _profiler->traceChunkInitialized(memoryBlock);
 
             if(_pendingBlock.compare_exchange_strong(pendingBlock, nullptr, MemOrder::release, MemOrder::acquire))
             {
@@ -244,6 +263,10 @@ namespace dory::memory
                     pendingBlock->previousNode = headNode;
                 }
 
+                if(_profiler)
+                    _profiler->traceChunkChained(*pendingBlock);
+
+                //TODO: how is the current value of _freeListHead is not nullptr? Here is definitely something wrong
                 void* freeListHead = _freeListHead.load(MemOrder::relaxed);
                 const std::uintptr_t slotAddress = reinterpret_cast<std::uintptr_t>(memoryBlock.ptr) + _slotSize * (_slotsPerChunkCount - 1);
                 *reinterpret_cast<void**>(slotAddress) = freeListHead;
@@ -254,7 +277,10 @@ namespace dory::memory
             }
             else
             {
-                assert::debug(false, "Lost pending block\n");
+                while(_freeListHead.load(MemOrder::relaxed) == nullptr)
+                {
+                    data_structures::containers::lockfree::cpu_relax();
+                }
             }
         }
     };
