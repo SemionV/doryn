@@ -53,7 +53,10 @@ namespace dory::memory
         {
             assert::debug(slotSize > 0, "SlotSize must be greater than zero");
             assert::debug(slotSize >= sizeof(void*), fmt::format("SlotSize must be at least as big as size of a pointer. SlotSize: {}", slotSize).c_str());
+            const std::size_t mask = slotSize - 1;
+            assert::debug((slotSize & mask) == 0, "SlotSize must be a power of 2");
             assert::debug(slotsPerChunkCount > 0, "SlotsPerChunkCount must be greater than zero");
+
             std::size_t largeBlockSize = 0;
             std::size_t smallBlockSize = 0;
             if(_chunkSize > _pageSize)
@@ -67,8 +70,6 @@ namespace dory::memory
                 smallBlockSize = _chunkSize;
             }
             assert::debug(largeBlockSize % smallBlockSize == 0, fmt::format("Chunk size must be a multiple of page size").c_str());
-            const std::size_t mask = slotSize - 1;
-            assert::debug((slotSize & mask) == 0, "SlotSize must be a power of 2");
 
             allocateChunk(); //Allocate the initial memory chunk
         }
@@ -217,13 +218,14 @@ namespace dory::memory
                 else
                 {
                     _pageAllocator.deallocate(newBlock->memoryBlock);
+                    newBlock->~MemoryBlockNode();
                     _memoryBlockNodeAllocator.deallocate(newBlock);
                 }
             }
 
             //Initialize linked list in the memory block
             MemoryBlock& memoryBlock = pendingBlock->memoryBlock;
-            std::atomic<std::size_t>& initializationIndex = pendingBlock->initializationIndex;
+            std::atomic<std::size_t>& initializationIndex = pendingBlock->index;
             std::size_t currentSlot = initializationIndex.load(MemOrder::relaxed);
             while(currentSlot < _slotsPerChunkCount)
             {

@@ -4,7 +4,7 @@
 namespace dory::bitwise
 {
     template <typename T>
-    T nextPowerOfTwo(T x)
+    constexpr T nextPowerOfTwo(T x)
     {
         static_assert(std::is_unsigned_v<T>, "T must be unsigned");
         if (x == 0) return 1;
