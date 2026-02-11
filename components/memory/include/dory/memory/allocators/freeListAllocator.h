@@ -266,7 +266,7 @@ namespace dory::memory
                 if(_profiler)
                     _profiler->traceChunkChained(*pendingBlock);
 
-                //TODO: how is the current value of _freeListHead is not nullptr? Here is definitely something wrong
+                //Another thread can free some slots and put them on free list, this is why _freeListHead could be not nullptr, but some valid pointer to a slot
                 void* freeListHead = _freeListHead.load(MemOrder::relaxed);
                 const std::uintptr_t slotAddress = reinterpret_cast<std::uintptr_t>(memoryBlock.ptr) + _slotSize * (_slotsPerChunkCount - 1);
                 *reinterpret_cast<void**>(slotAddress) = freeListHead;
