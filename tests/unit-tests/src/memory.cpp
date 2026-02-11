@@ -197,3 +197,70 @@ TEST(ObjectPoolAllocatorTests, chunkAllocation)
 
     EXPECT_FALSE(objectPool.empty());
 }
+
+class ObjectPoolTracer: public profilers::IObjectPoolAllocatorProfiler
+{
+public:
+    struct ChunkAllocation
+    {
+        const MemoryBlock& memoryBlock;
+    };
+
+    std::vector<ChunkAllocation> allocatedChunks;
+
+    void traceChunkAllocation(const MemoryBlock& memoryBlock) final
+    {
+        allocatedChunks.push_back(ChunkAllocation{ memoryBlock });
+    }
+
+    void traceAllocation(void* ptr)
+    {
+    }
+
+    void traceChunkFree(const MemoryBlock&)
+    {
+    }
+};
+
+TEST(ObjectPoolAllocatorTests, allocate)
+{
+    constexpr std::size_t PAGE_SIZE = 4096;
+    PageAllocator blockAllocator {PAGE_SIZE, nullptr};
+    SystemAllocator systemAllocator;
+    ObjectPoolTracer profiler;
+
+    using PayloadType = std::byte[1024];
+
+    allocators::ObjectPoolAllocator<PayloadType, PageAllocator, SystemAllocator, 4> objectPool { blockAllocator, systemAllocator, &profiler };
+
+    //Fill first chunk
+    PayloadType* objects[4];
+    objects[0] = objectPool.allocate();
+    objects[1] = objectPool.allocate();
+    objects[2] = objectPool.allocate();
+    objects[3] = objectPool.allocate();
+
+    EXPECT_EQ(profiler.allocatedChunks.size(), 1);
+    const MemoryBlock& memoryBlock = profiler.allocatedChunks[0].memoryBlock;
+    const auto baseAddress = static_cast<PayloadType*>(memoryBlock.ptr);
+
+    EXPECT_EQ(objects[0], baseAddress);
+    EXPECT_EQ(objects[1], baseAddress + 1);
+    EXPECT_EQ(objects[2], baseAddress + 2);
+    EXPECT_EQ(objects[3], baseAddress + 3);
+
+    //Fill second chunk
+    objects[0] = objectPool.allocate();
+    objects[1] = objectPool.allocate();
+    objects[2] = objectPool.allocate();
+    objects[3] = objectPool.allocate();
+
+    EXPECT_EQ(profiler.allocatedChunks.size(), 2);
+    const MemoryBlock& memoryBlock2 = profiler.allocatedChunks[1].memoryBlock;
+    const auto baseAddress2 = static_cast<PayloadType*>(memoryBlock2.ptr);
+
+    EXPECT_EQ(objects[0], baseAddress2);
+    EXPECT_EQ(objects[1], baseAddress2 + 1);
+    EXPECT_EQ(objects[2], baseAddress2 + 2);
+    EXPECT_EQ(objects[3], baseAddress2 + 3);
+}

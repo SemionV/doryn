@@ -7,4 +7,12 @@ namespace dory::memory::profilers
         ++chunksAllocated;
         memoryAllocated +=  memoryBlock.pagesCount * memoryBlock.pageSize;
     }
+
+    void ObjectPoolAllocationProfiler::traceAllocation(void* ptr)
+    {
+    }
+
+    void ObjectPoolAllocationProfiler::traceChunkFree(const MemoryBlock&)
+    {
+    }
 }

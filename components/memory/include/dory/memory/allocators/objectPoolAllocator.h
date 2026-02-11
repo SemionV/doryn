@@ -63,6 +63,8 @@ namespace dory::memory::allocators
 
             while(node != nullptr)
             {
+                //TODO: trace deallocation
+
                 if(node->memoryBlock.ptr != nullptr)
                 {
                     _pageAllocator.deallocate(node->memoryBlock);
@@ -83,9 +85,35 @@ namespace dory::memory::allocators
             allocateChunk();
         }
 
-        T* allocate()
+        template<typename... TArgs>
+        T* allocate(TArgs... args)
         {
+            while(true)
+            {
+                if(empty())
+                {
+                    allocateChunk();
+                    continue;
+                }
 
+                MemoryBlockNode* currentHead = _chunkHead.load(MemOrder::relaxed);
+                std::size_t currentIndex = currentHead->index.load(MemOrder::relaxed);
+                if(currentIndex >= ObjectsPerChunkCount)
+                    continue;
+
+                std::size_t newIndex = currentIndex + 1;
+                if(!currentHead->index.compare_exchange_strong(currentIndex, newIndex, MemOrder::release, MemOrder::relaxed))
+                    continue;
+
+                //Now thread can use currentIndex slot in currentHead exclusively
+                const auto base = static_cast<std::byte*>(currentHead->memoryBlock.ptr);
+                void* ptr = base + slotSize * currentIndex;
+                ::new (ptr) T(std::forward<TArgs>(args)...);
+
+                //TODO: trace allocation
+
+                return static_cast<T*>(ptr);
+            }
         }
 
         /*
