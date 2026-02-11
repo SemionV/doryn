@@ -5,6 +5,8 @@
 #include <dory/memory/allocators/systemAllocator.h>
 #include <dory/memory/allocators/segregationAllocator.h>
 #include <dory/memory/allocators/standardAllocator.h>
+#include <dory/memory/allocators/objectPoolAllocator.h>
+#include <dory/memory/profilers/objectPoolAllocationProfiler.h>
 #include <spdlog/fmt/bundled/format.h>
 #include <array>
 
@@ -13,6 +15,7 @@ using namespace dory::memory;
 #if DORY_PLATFORM_LINUX
 #include <dory/profiling/metricsReader.h>
 
+#include <immintrin.h>
 #include <emmintrin.h> // For _mm_clflush
 #include <sys/resource.h>
 
@@ -55,6 +58,7 @@ TEST(BlockAllocatorTests, pageResidency)
 
     for(std::size_t i = 0; i < PAGE_COUNT; ++i)
     {
+
         //write to the beginning of each page
         *((int*)block.ptr + INTS_IN_PAGE_COUNT * i) = -1;
     }
@@ -173,4 +177,23 @@ TEST(SegregationAllocatorTests, simpleAllocation)
     auto sptr2 = std::allocate_shared<std::byte[8000]>(standardAllocator);
 
     *sptr1 = 10;
+}
+
+TEST(ObjectPoolAllocatorTests, chunkAllocation)
+{
+    constexpr std::size_t PAGE_SIZE = 4096;
+    PageAllocator blockAllocator {PAGE_SIZE, nullptr};
+    SystemAllocator systemAllocator;
+    profilers::ObjectPoolAllocationProfiler profiler;
+
+    allocators::ObjectPoolAllocator<int, PageAllocator, SystemAllocator, 1024> objectPool { blockAllocator, systemAllocator, &profiler };
+
+    EXPECT_TRUE(objectPool.empty());
+
+    objectPool.reserve();
+
+    EXPECT_EQ(profiler.chunksAllocated, 1);
+    EXPECT_EQ(profiler.memoryAllocated, PAGE_SIZE);
+
+    EXPECT_FALSE(objectPool.empty());
 }

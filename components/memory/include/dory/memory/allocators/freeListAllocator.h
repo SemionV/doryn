@@ -218,6 +218,7 @@ namespace dory::memory
                 else
                 {
                     _pageAllocator.deallocate(newBlock->memoryBlock);
+                    newBlock->~MemoryBlockNode();
                     _memoryBlockNodeAllocator.deallocate(newBlock);
                 }
             }

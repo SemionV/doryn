@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../resources/memoryBlock.h"
+
 namespace dory::memory::profilers
 {
     class IObjectPoolAllocatorProfiler
@@ -7,6 +9,6 @@ namespace dory::memory::profilers
     public:
         virtual ~IObjectPoolAllocatorProfiler() = default;
 
-        virtual void traceChunkAllocation(std::size_t chunkSize, std::size_t pageCount) = 0;
+        virtual void traceChunkAllocation(const MemoryBlock&) = 0;
     };
 }

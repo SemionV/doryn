@@ -17,7 +17,9 @@ add_library(${DORY_MODULE_NAME} STATIC
         include/dory/memory/profilers/blockAuditProfiler.h
         src/profilers/blockAuditProfiler.cpp
         include/dory/memory/profilers/iFreeListAllocProfiler.h
-        include/dory/memory/profilers/iObjectPoolAllocatorProfiler.h)
+        include/dory/memory/profilers/iObjectPoolAllocatorProfiler.h
+        include/dory/memory/profilers/objectPoolAllocationProfiler.h
+        src/profilers/objectPoolAllocationProfiler.cpp)
 target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(${DORY_MODULE_NAME} PUBLIC
         ${PROJECT_NAME}-macros
