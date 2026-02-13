@@ -10,7 +10,8 @@ namespace dory::memory::profilers
         virtual ~IObjectPoolAllocatorProfiler() = default;
 
         virtual void traceChunkAllocation(const MemoryBlock&) = 0;
-        virtual void traceAllocation(void* ptr) = 0;
         virtual void traceChunkFree(const MemoryBlock&) = 0;
+        virtual void traceAllocation(void* ptr, std::size_t size) = 0;
+        virtual void traceFree(void* ptr, std::size_t size) = 0;
     };
 }

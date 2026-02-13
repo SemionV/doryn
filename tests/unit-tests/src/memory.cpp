@@ -188,14 +188,14 @@ TEST(ObjectPoolAllocatorTests, chunkAllocation)
 
     allocators::ObjectPoolAllocator<int, PageAllocator, SystemAllocator, 1024> objectPool { blockAllocator, systemAllocator, &profiler };
 
-    EXPECT_TRUE(objectPool.empty());
+    EXPECT_TRUE(objectPool.isEmpty());
 
     objectPool.reserve();
 
     EXPECT_EQ(profiler.chunksAllocated, 1);
     EXPECT_EQ(profiler.memoryAllocated, PAGE_SIZE);
 
-    EXPECT_FALSE(objectPool.empty());
+    EXPECT_FALSE(objectPool.isEmpty());
 }
 
 class ObjectPoolTracer: public profilers::IObjectPoolAllocatorProfiler
@@ -206,19 +206,34 @@ public:
         const MemoryBlock& memoryBlock;
     };
 
+    struct ObjectAllocation
+    {
+        void* ptr;
+    };
+
     std::vector<ChunkAllocation> allocatedChunks;
+    std::vector<ChunkAllocation> freedChunks;
+    std::vector<ObjectAllocation> allocatedObjects;
+    std::vector<ObjectAllocation> freedObjects;
 
     void traceChunkAllocation(const MemoryBlock& memoryBlock) final
     {
         allocatedChunks.push_back(ChunkAllocation{ memoryBlock });
     }
 
-    void traceAllocation(void* ptr)
+    void traceChunkFree(const MemoryBlock& memoryBlock) final
     {
+        freedChunks.push_back(ChunkAllocation{ memoryBlock });
     }
 
-    void traceChunkFree(const MemoryBlock&)
+    void traceAllocation(void* ptr, const std::size_t size) final
     {
+        allocatedObjects.push_back(ObjectAllocation{ ptr });
+    }
+
+    void traceFree(void* ptr, const std::size_t size) final
+    {
+        freedObjects.push_back(ObjectAllocation{ ptr });
     }
 };
 
@@ -264,3 +279,5 @@ TEST(ObjectPoolAllocatorTests, allocate)
     EXPECT_EQ(objects[2], baseAddress2 + 2);
     EXPECT_EQ(objects[3], baseAddress2 + 3);
 }
+
+//TODO: build a load test for ObjectPoolAllocator

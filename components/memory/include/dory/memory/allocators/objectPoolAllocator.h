@@ -4,7 +4,6 @@
 #include <mutex>
 #include <dory/bitwise/numbers.h>
 #include <dory/data-structures/containers/lockfree/spinLock.h>
-#include <dory/data-structures/containers/lockfree/util.h>
 #include <dory/macros/assert.h>
 #include "../resources/memoryBlock.h"
 #include "../profilers/iObjectPoolAllocatorProfiler.h"
@@ -63,8 +62,6 @@ namespace dory::memory::allocators
 
             while(node != nullptr)
             {
-                //TODO: trace deallocation
-
                 if(node->memoryBlock.ptr != nullptr)
                 {
                     _pageAllocator.deallocate(node->memoryBlock);
@@ -74,6 +71,9 @@ namespace dory::memory::allocators
                 node->~MemoryBlockNode();
                 _memoryBlockNodeAllocator.deallocate(node);
                 node = prevNode;
+
+                if(_profiler)
+                    _profiler->traceChunkFree(node->memoryBlock);
             }
         }
 
@@ -90,7 +90,7 @@ namespace dory::memory::allocators
         {
             while(true)
             {
-                if(empty())
+                if(isEmpty())
                 {
                     allocateChunk();
                     continue;
@@ -110,7 +110,8 @@ namespace dory::memory::allocators
                 void* ptr = base + slotSize * currentIndex;
                 ::new (ptr) T(std::forward<TArgs>(args)...);
 
-                //TODO: trace allocation
+                if(_profiler)
+                    _profiler->traceAllocation(ptr, slotSize);
 
                 return static_cast<T*>(ptr);
             }
@@ -119,7 +120,7 @@ namespace dory::memory::allocators
         /*
          * Empty means that there are no free objects(slots) left in pool
          */
-        bool empty()
+        bool isEmpty()
         {
             const MemoryBlockNode* currentHead = _chunkHead.load(MemOrder::acquire);
             return currentHead == nullptr || currentHead->index.load(MemOrder::relaxed) >= ObjectsPerChunkCount;
