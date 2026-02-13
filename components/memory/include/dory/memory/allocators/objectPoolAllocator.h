@@ -62,18 +62,30 @@ namespace dory::memory::allocators
 
             while(node != nullptr)
             {
+                if(_profiler)
+                    _profiler->traceChunkFree(node->memoryBlock);
+
+                const auto base = static_cast<std::byte*>(node->memoryBlock.ptr);
+
+                for(std::size_t i = 0; i < ObjectsPerChunkCount; ++i)
+                {
+                    void* ptr = base + slotSize * i;
+                    if(_profiler)
+                        _profiler->traceFree(ptr, slotSize);
+                    
+                    static_cast<T*>(ptr)->~T();
+                }
+
                 if(node->memoryBlock.ptr != nullptr)
                 {
                     _pageAllocator.deallocate(node->memoryBlock);
                 }
 
                 MemoryBlockNode* prevNode = node->previousNode;
+                //TODO: change all allocators to construct/destruct objects automatically(in case of using system allocator destructor is called twice!)
                 node->~MemoryBlockNode();
                 _memoryBlockNodeAllocator.deallocate(node);
                 node = prevNode;
-
-                if(_profiler)
-                    _profiler->traceChunkFree(node->memoryBlock);
             }
         }
 
