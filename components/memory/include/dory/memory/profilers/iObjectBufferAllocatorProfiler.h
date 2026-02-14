@@ -4,10 +4,10 @@
 
 namespace dory::memory::profilers
 {
-    class IObjectPoolAllocatorProfiler
+    class IObjectBufferAllocatorProfiler
     {
     public:
-        virtual ~IObjectPoolAllocatorProfiler() = default;
+        virtual ~IObjectBufferAllocatorProfiler() = default;
 
         virtual void traceChunkAllocation(const MemoryBlock&) = 0;
         virtual void traceChunkFree(const MemoryBlock&) = 0;

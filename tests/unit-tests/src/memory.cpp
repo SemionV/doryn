@@ -5,8 +5,8 @@
 #include <dory/memory/allocators/systemAllocator.h>
 #include <dory/memory/allocators/segregationAllocator.h>
 #include <dory/memory/allocators/standardAllocator.h>
-#include <dory/memory/allocators/objectPoolAllocator.h>
-#include <dory/memory/profilers/objectPoolAllocationProfiler.h>
+#include <dory/memory/allocators/objectBufferAllocator.h>
+#include <dory/memory/profilers/objectBufferAllocationProfiler.h>
 #include <spdlog/fmt/bundled/format.h>
 #include <array>
 
@@ -184,9 +184,9 @@ TEST(ObjectPoolAllocatorTests, chunkAllocation)
     constexpr std::size_t PAGE_SIZE = 4096;
     PageAllocator blockAllocator {PAGE_SIZE, nullptr};
     SystemAllocator systemAllocator;
-    profilers::ObjectPoolAllocationProfiler profiler;
+    profilers::ObjectBufferAllocationProfiler profiler;
 
-    allocators::ObjectPoolAllocator<int, PageAllocator, SystemAllocator, 1024> objectPool { blockAllocator, systemAllocator, &profiler };
+    allocators::ObjectBufferAllocator<int, PageAllocator, SystemAllocator, 1024> objectPool { blockAllocator, systemAllocator, &profiler };
 
     EXPECT_TRUE(objectPool.isEmpty());
 
@@ -198,7 +198,7 @@ TEST(ObjectPoolAllocatorTests, chunkAllocation)
     EXPECT_FALSE(objectPool.isEmpty());
 }
 
-class ObjectPoolTracer: public profilers::IObjectPoolAllocatorProfiler
+class ObjectBufferTracer: public profilers::IObjectBufferAllocatorProfiler
 {
 public:
     struct ChunkAllocation
@@ -242,11 +242,11 @@ TEST(ObjectPoolAllocatorTests, allocate)
     constexpr std::size_t PAGE_SIZE = 4096;
     PageAllocator blockAllocator {PAGE_SIZE, nullptr};
     SystemAllocator systemAllocator;
-    ObjectPoolTracer profiler;
+    ObjectBufferTracer profiler;
 
     using PayloadType = std::byte[1024];
 
-    allocators::ObjectPoolAllocator<PayloadType, PageAllocator, SystemAllocator, 4> objectPool { blockAllocator, systemAllocator, &profiler };
+    allocators::ObjectBufferAllocator<PayloadType, PageAllocator, SystemAllocator, 4> objectPool { blockAllocator, systemAllocator, &profiler };
 
     //Fill first chunk
     PayloadType* objects[4];

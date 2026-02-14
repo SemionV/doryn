@@ -6,7 +6,7 @@
 #include <dory/data-structures/containers/lockfree/spinLock.h>
 #include <dory/macros/assert.h>
 #include "../resources/memoryBlock.h"
-#include "../profilers/iObjectPoolAllocatorProfiler.h"
+#include "../profilers/iObjectBufferAllocatorProfiler.h"
 #include "dory/memory/allocation.h"
 
 namespace dory::memory::allocators
@@ -21,7 +21,7 @@ namespace dory::memory::allocators
      * The allocator is concurrent
      */
     template<typename T, typename TPageAllocator, typename TMemoryBlockNodeAllocator, std::size_t ObjectsPerChunkCount>
-    class ObjectPoolAllocator
+    class ObjectBufferAllocator
     {
     public:
         static constexpr std::size_t slotSize = bitwise::nextPowerOfTwo(sizeof(T));
@@ -36,7 +36,7 @@ namespace dory::memory::allocators
             static constexpr auto seq_cst = std::memory_order::seq_cst;
         };
 
-        profilers::IObjectPoolAllocatorProfiler* _profiler;
+        profilers::IObjectBufferAllocatorProfiler* _profiler;
         TPageAllocator& _pageAllocator;
         std::size_t _pagesPerChunkCount {};
         TMemoryBlockNodeAllocator& _memoryBlockNodeAllocator;
@@ -45,9 +45,9 @@ namespace dory::memory::allocators
         std::atomic<MemoryBlockNode*> _chunkHead = nullptr;
 
     public:
-        ObjectPoolAllocator(TPageAllocator& pageAllocator,
+        ObjectBufferAllocator(TPageAllocator& pageAllocator,
             TMemoryBlockNodeAllocator& memoryBlockNodeAllocator,
-            profilers::IObjectPoolAllocatorProfiler* profiler = nullptr):
+            profilers::IObjectBufferAllocatorProfiler* profiler = nullptr):
             _profiler(profiler),
             _pageAllocator(pageAllocator),
             _memoryBlockNodeAllocator(memoryBlockNodeAllocator)
@@ -56,7 +56,7 @@ namespace dory::memory::allocators
             _pagesPerChunkCount = chunkToPageRatio > 0 ? chunkToPageRatio : 1;
         }
 
-        ~ObjectPoolAllocator()
+        ~ObjectBufferAllocator()
         {
             MemoryBlockNode* node = _chunkHead.load(MemOrder::relaxed);
 
@@ -65,15 +65,18 @@ namespace dory::memory::allocators
                 if(_profiler)
                     _profiler->traceChunkFree(node->memoryBlock);
 
-                const auto base = static_cast<std::byte*>(node->memoryBlock.ptr);
-
-                for(std::size_t i = 0; i < ObjectsPerChunkCount; ++i)
+                if constexpr (std::is_trivially_destructible_v<T>)
                 {
-                    void* ptr = base + slotSize * i;
-                    if(_profiler)
-                        _profiler->traceFree(ptr, slotSize);
-                    
-                    static_cast<T*>(ptr)->~T();
+                    const auto base = static_cast<std::byte*>(node->memoryBlock.ptr);
+
+                    for(std::size_t i = 0; i < ObjectsPerChunkCount; ++i)
+                    {
+                        void* ptr = base + slotSize * i;
+                        if(_profiler)
+                            _profiler->traceFree(ptr, slotSize);
+
+                        std::destroy_at(static_cast<T*>(ptr));
+                    }
                 }
 
                 if(node->memoryBlock.ptr != nullptr)

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "iObjectPoolAllocatorProfiler.h"
+#include "iObjectBufferAllocatorProfiler.h"
 
 namespace dory::memory::profilers
 {
-    class ObjectPoolAllocationProfiler: public IObjectPoolAllocatorProfiler
+    class ObjectBufferAllocationProfiler: public IObjectBufferAllocatorProfiler
     {
     public:
         std::size_t chunksAllocated {};
