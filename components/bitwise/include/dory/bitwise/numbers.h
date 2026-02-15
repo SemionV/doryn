@@ -30,4 +30,11 @@ namespace dory::bitwise
         // For x == 0 or 1, the result should be 0
         return w & (0 - (x > 1));                       // zero result if x <= 1
     }
+
+    template <typename T>
+    requires std::is_integral_v<T>
+    constexpr bool isPowerOfTwo(T x)
+    {
+        return (x & (x - 1)) == 0;
+    }
 }
