@@ -23,6 +23,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         src/profilers/objectBufferAllocationProfiler.cpp)
 target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(${DORY_MODULE_NAME} PUBLIC
+        ${PROJECT_NAME}-types
         ${PROJECT_NAME}-macros
         ${PROJECT_NAME}-concurrency
         ${PROJECT_NAME}-data-structures

@@ -1,3 +1,4 @@
+add_subdirectory(types)
 add_subdirectory(macros)
 add_subdirectory(bitwise)
 add_subdirectory(generic)

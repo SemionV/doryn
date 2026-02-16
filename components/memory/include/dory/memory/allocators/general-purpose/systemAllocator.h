@@ -7,16 +7,18 @@
 
 #include <dory/bitwise/numbers.h>
 #include <dory/macros/assert.h>
+#include <dory/types.h>
 
 namespace dory::memory::allocators::general_purpose
 {
     //TODO: use CRTP pattern to let children implement allocateBytes/deallocateBytes, but keep common implementation of the rest of the methods
+    //TODO: add profiling to the allocator
     class SystemAllocator
     {
     public:
         static constexpr std::size_t defaultAlignment = alignof(std::max_align_t);
 
-        [[nodiscard]] void* allocateBytes(std::size_t size, std::size_t alignment = defaultAlignment)
+        [[nodiscard]] void* allocateBytes(std::size_t size, std::size_t alignment = defaultAlignment, LabelType label = {})
         {
             assert::debug(bitwise::isPowerOfTwo(alignment), "Alignment must be power of two");
             assert::debug(alignment >= alignof(void*), "Alignment must be greater or equal to alignment of a pointer");
@@ -43,7 +45,7 @@ namespace dory::memory::allocators::general_purpose
 
         template<typename T, typename... TArgs>
         requires( !std::is_array_v<T> )
-        [[nodiscard]] T* allocateObject(TArgs&&... args)
+        [[nodiscard]] T* allocateObject(LabelType label, TArgs&&... args)
         {
             void* mem = allocateBytes(sizeof(T), alignof(T));
             try
@@ -57,6 +59,13 @@ namespace dory::memory::allocators::general_purpose
             }
         }
 
+        template<typename T, typename... TArgs>
+        requires( !std::is_array_v<T> )
+        [[nodiscard]] T* allocateObject(TArgs&&... args)
+        {
+            return allocateObject(LabelType {}, std::forward<TArgs>(args)...);
+        }
+
         template<typename T>
         void deallocateObject(T* ptr) noexcept
         {
@@ -68,7 +77,7 @@ namespace dory::memory::allocators::general_purpose
         }
 
         template<typename T>
-        [[nodiscard]] T* allocateArray(const std::size_t count)
+        [[nodiscard]] T* allocateArray(const std::size_t count, LabelType label = {})
         {
             void* mem = allocateBytes(sizeof(T) * count, alignof(T));
             T* ptr = static_cast<T*>(mem);
