@@ -42,9 +42,6 @@ namespace dory::game
         using AllocatorType = core::GlobalAllocatorType;
         AllocatorType& _globalAllocator;
 
-        template<typename T>
-        using StandardAllocatorType = memory::StandardAllocator<T, AllocatorType>;
-
         SegregationResource<AllocatorType> _globalResource{ _globalAllocator };
 
     private:

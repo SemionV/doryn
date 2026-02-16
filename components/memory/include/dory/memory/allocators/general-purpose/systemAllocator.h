@@ -10,6 +10,7 @@
 
 namespace dory::memory::allocators::general_purpose
 {
+    //TODO: use CRTP pattern to let children implement allocateBytes/deallocateBytes, but keep common implementation of the rest of the methods
     class SystemAllocator
     {
     public:
