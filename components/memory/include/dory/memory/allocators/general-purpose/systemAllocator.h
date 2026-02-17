@@ -16,7 +16,7 @@ namespace dory::memory::allocators::general_purpose
     public:
         static constexpr std::size_t defaultAlignment = alignof(std::max_align_t);
 
-        explicit SystemAllocator(profilers::IGeneralAllocatorProfiler* profiler)
+        explicit SystemAllocator(profilers::IAllocatorProfiler* profiler)
             : GeneralAllocator(profiler)
         {}
 

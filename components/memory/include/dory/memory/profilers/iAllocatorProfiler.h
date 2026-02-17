@@ -1,14 +1,13 @@
 #pragma once
 
 #include <dory/types.h>
+#include <dory/interface.h>
 
 namespace dory::memory::profilers
 {
-    class IGeneralAllocatorProfiler
+    class IAllocatorProfiler: public Interface
     {
     public:
-        virtual ~IGeneralAllocatorProfiler() = default;
-
         virtual void traceBytesAllocation(void* ptr, size_t size, size_t alignment, LabelType label) = 0;
         virtual void traceBytesFree(void* ptr, size_t size, size_t alignment) = 0;
 

@@ -2,7 +2,7 @@
 #include <memory>
 #include <type_traits>
 #include <dory/types.h>
-#include <dory/memory/profilers/iGeneralAllocatorProfiler.h>
+#include <dory/memory/profilers/iAllocatorProfiler.h>
 
 #include "dory/memory/allocation.h"
 
@@ -12,13 +12,13 @@ namespace dory::memory::allocators::general_purpose
     class GeneralAllocator
     {
     private:
-        profilers::IGeneralAllocatorProfiler* _profiler {};
+        profilers::IAllocatorProfiler* _profiler {};
 
     protected:
         static constexpr std::size_t defaultAlignment = alignof(std::max_align_t);
 
     public:
-        explicit GeneralAllocator(profilers::IGeneralAllocatorProfiler* profiler) noexcept:
+        explicit GeneralAllocator(profilers::IAllocatorProfiler* profiler) noexcept:
             _profiler(profiler)
         {}
 
@@ -118,6 +118,7 @@ namespace dory::memory::allocators::general_purpose
         }
 
     private:
+        //TODO: move this methods to a generic parent class for CRTP
         TImplementation& implementation() noexcept
         {
             return static_cast<TImplementation&>(*this);
