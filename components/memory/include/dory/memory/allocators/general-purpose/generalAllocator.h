@@ -4,6 +4,7 @@
 #include <dory/types.h>
 #include <dory/base.h>
 #include <dory/memory/profilers/iAllocatorProfiler.h>
+#include <dory/macros/assert.h>
 
 #include "dory/memory/allocation.h"
 
@@ -47,9 +48,10 @@ namespace dory::memory::allocators::general_purpose
         {
             void* ptr = allocateBytes(label, sizeof(T), alignof(T));
 
+            //TODO: throw only if compiled with exception support
             try
             {
-                T* obj = std::construct_at(static_cast<T*>(ptr), std::forward<TArgs>(args)...);
+                T* obj = constructAt(static_cast<T*>(ptr), std::forward<TArgs>(args)...);
 
                 if(_profiler)
                     _profiler->traceObjectAllocation(ptr, sizeof(T), alignof(T), label);
@@ -59,8 +61,6 @@ namespace dory::memory::allocators::general_purpose
             catch (...)
             {
                 deallocateBytes(ptr, sizeof(T), alignof(T));
-
-                //TODO: throw only if compiled with exception support
                 throw;
             }
         }
@@ -78,24 +78,30 @@ namespace dory::memory::allocators::general_purpose
                 _profiler->traceObjectFree(ptr, sizeof(T), alignof(T));
         }
 
-        template<typename T>
-        [[nodiscard]] T* allocateArray(const std::size_t count, const LabelType& label)
+        template<typename T, typename... TArgs>
+        [[nodiscard]] T* allocateArray(const LabelType& label, const std::size_t count, TArgs&& ...args)
         {
-            //TODO: assert size of array has no overflow
+            constexpr std::size_t maxCount = std::numeric_limits<std::size_t>::max() / sizeof(T);
+            assert::debug(count <= maxCount, "Array size overflow");
 
-            void* ptr = allocateBytes(label, sizeof(T) * count, alignof(T));
+            const std::size_t arraySize = sizeof(T) * count;
+
+            void* ptr = allocateBytes(label, arraySize, alignof(T));
+            if (!ptr)
+                return nullptr;
+
             T* obj = static_cast<T*>(ptr);
 
             std::size_t i = 0;
             try
             {
                 for (; i < count; ++i)
-                    std::destroy_n(obj, i);
+                    constructAt(obj + i, std::forward<TArgs>(args)...);
             }
             catch (...)
             {
-                std::destroy(obj, obj + i);
-                deallocateBytes(ptr, sizeof(T) * count, alignof(T));
+                std::destroy_n(obj, i);
+                deallocateBytes(ptr, arraySize, alignof(T));
                 throw;
             }
 
@@ -112,10 +118,30 @@ namespace dory::memory::allocators::general_purpose
                 return;
 
             std::destroy(ptr, ptr + count);
+
             deallocateBytes(ptr, sizeof(T) * count, alignof(T));
 
             if(_profiler)
                 _profiler->traceArrayFree(ptr, count, sizeof(T), alignof(T));
+        }
+
+    private:
+        template<typename T, typename... TArgs>
+        T* constructAt(T* ptr, TArgs&& ...args)
+            noexcept(
+                (sizeof...(TArgs) == 0 && std::is_nothrow_default_constructible_v<T>) ||
+                (sizeof...(TArgs) != 0 && std::is_nothrow_constructible_v<T, TArgs...>)
+            )
+        {
+            if constexpr (sizeof...(TArgs) > 0)
+            {
+                return std::construct_at(ptr, std::forward<TArgs>(args)...);
+            }
+            else
+            {
+                ::new(static_cast<void*>(ptr)) T{};
+                return ptr;
+            }
         }
     };
 }
