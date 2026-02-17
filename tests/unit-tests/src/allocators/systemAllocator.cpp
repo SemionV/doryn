@@ -3,8 +3,6 @@
 
 #include <dory/memory/allocators/general-purpose/systemAllocator.h>
 
-//TODO: check if destructor is called
-
 TEST(SystemAllocatorTests, allocateObject)
 {
     dory::memory::allocators::general_purpose::SystemAllocator allocator { nullptr };
@@ -17,9 +15,9 @@ TEST(SystemAllocatorTests, allocateObject)
 struct TestType
 {
     int mem1 = 0;
-    bool& destructed;
+    int& destructed;
 
-    TestType(bool& destructed):
+    TestType(int& destructed):
         destructed(destructed)
     {
         mem1 = 1;
@@ -27,7 +25,7 @@ struct TestType
 
     ~TestType()
     {
-        destructed = true;
+        ++destructed;
     }
 };
 
@@ -35,7 +33,7 @@ TEST(SystemAllocatorTests, allocateAndConstructObject)
 {
     dory::memory::allocators::general_purpose::SystemAllocator allocator { nullptr };
 
-    bool destructed = false;
+    int destructed = 0;
     {
         const auto obj = allocator.allocateObject<TestType>({}, destructed);
 
@@ -45,5 +43,30 @@ TEST(SystemAllocatorTests, allocateAndConstructObject)
         allocator.deallocateObject(obj);
     }
 
-    EXPECT_TRUE(destructed);
+    EXPECT_EQ(destructed, 1);
+}
+
+TEST(SystemAllocatorTests, allocateAndConstructArray)
+{
+    int constexpr arraySize = 8;
+
+    dory::memory::allocators::general_purpose::SystemAllocator allocator { nullptr };
+
+    int destructed = 0;
+    {
+        const auto obj = allocator.allocateArray<TestType>({}, arraySize, destructed);
+
+        EXPECT_TRUE(obj);
+
+        for(int i = 0; i < arraySize; ++i)
+        {
+            const TestType* entry = obj + 1;
+            EXPECT_EQ(entry->mem1, 1);
+
+        }
+
+        allocator.deallocateArray(obj, arraySize);
+    }
+
+    EXPECT_EQ(destructed, arraySize);
 }
