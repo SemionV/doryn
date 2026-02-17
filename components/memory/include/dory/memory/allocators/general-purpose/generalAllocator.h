@@ -48,21 +48,18 @@ namespace dory::memory::allocators::general_purpose
         {
             void* ptr = allocateBytes(label, sizeof(T), alignof(T));
 
-            //TODO: throw only if compiled with exception support
-            try
-            {
-                T* obj = constructAt(static_cast<T*>(ptr), std::forward<TArgs>(args)...);
+            T* obj = constructAt(static_cast<T*>(ptr), std::forward<TArgs>(args)...);
 
-                if(_profiler)
-                    _profiler->traceObjectAllocation(ptr, sizeof(T), alignof(T), label);
-
-                return obj;
-            }
-            catch (...)
+            if(!obj)
             {
                 deallocateBytes(ptr, sizeof(T), alignof(T));
-                throw;
+                return nullptr;
             }
+
+            if(_profiler)
+                _profiler->traceObjectAllocation(ptr, sizeof(T), alignof(T), label);
+
+            return obj;
         }
 
         template<typename T>
@@ -92,17 +89,16 @@ namespace dory::memory::allocators::general_purpose
 
             T* obj = static_cast<T*>(ptr);
 
-            std::size_t i = 0;
-            try
+            for (std::size_t i = 0; i < count; ++i)
             {
-                for (; i < count; ++i)
-                    constructAt(obj + i, std::forward<TArgs>(args)...);
-            }
-            catch (...)
-            {
-                std::destroy_n(obj, i);
-                deallocateBytes(ptr, arraySize, alignof(T));
-                throw;
+                T* location = constructAt(obj + i, std::forward<TArgs>(args)...);
+                if(!location)
+                {
+                    std::destroy_n(obj, i);
+                    deallocateBytes(ptr, arraySize, alignof(T));
+
+                    return nullptr;
+                }
             }
 
             if(_profiler)
