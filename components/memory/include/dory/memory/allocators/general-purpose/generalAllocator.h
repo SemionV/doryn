@@ -2,6 +2,7 @@
 #include <memory>
 #include <type_traits>
 #include <dory/types.h>
+#include <dory/base.h>
 #include <dory/memory/profilers/iAllocatorProfiler.h>
 
 #include "dory/memory/allocation.h"
@@ -9,7 +10,7 @@
 namespace dory::memory::allocators::general_purpose
 {
     template<typename TImplementation>
-    class GeneralAllocator
+    class GeneralAllocator: public Base<TImplementation>
     {
     private:
         profilers::IAllocatorProfiler* _profiler {};
@@ -24,7 +25,7 @@ namespace dory::memory::allocators::general_purpose
 
         [[nodiscard]] void* allocateBytes(const LabelType& label, std::size_t size, std::size_t alignment = defaultAlignment)
         {
-            void* ptr = implementation().allocateBytesImpl(label, size, alignment);
+            void* ptr = this->implRef().allocateBytesImpl(label, size, alignment);
 
             if(ptr && _profiler)
                 _profiler->traceBytesAllocation(ptr, size, alignment, label);
@@ -34,7 +35,7 @@ namespace dory::memory::allocators::general_purpose
 
         void deallocateBytes(void* ptr, std::size_t size, std::size_t alignment = defaultAlignment) noexcept
         {
-            implementation().deallocateBytesImpl(ptr, size, alignment);
+            this->implRef().deallocateBytesImpl(ptr, size, alignment);
 
             if(ptr && _profiler)
                 _profiler->traceBytesFree(ptr, size, alignment);
@@ -115,17 +116,6 @@ namespace dory::memory::allocators::general_purpose
 
             if(_profiler)
                 _profiler->traceArrayFree(ptr, count, sizeof(T), alignof(T));
-        }
-
-    private:
-        //TODO: move this methods to a generic parent class for CRTP
-        TImplementation& implementation() noexcept
-        {
-            return static_cast<TImplementation&>(*this);
-        }
-        const TImplementation& implementation() const noexcept
-        {
-            return static_cast<const TImplementation&>(*this);
         }
     };
 }
