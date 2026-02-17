@@ -2,14 +2,79 @@
 #include <gmock/gmock.h>
 
 #include <dory/memory/allocators/general-purpose/systemAllocator.h>
+#include <dory/memory/profilers/iAllocatorProfiler.h>
+
+class Profiler: public dory::memory::profilers::IAllocatorProfiler
+{
+public:
+    struct AllocationCounters
+    {
+        std::size_t sizeAllocated = 0;
+        std::size_t sizeFreed = 0;
+
+        std::size_t allocatedCount = 0;
+        std::size_t freedCount = 0;
+    };
+
+    AllocationCounters bytesCounters;
+    AllocationCounters objectCounters;
+    AllocationCounters arrayCounters;
+
+public:
+    void traceBytesAllocation(void* ptr, size_t size, size_t alignment, dory::LabelType label) final
+    {
+        bytesCounters.sizeAllocated += size;
+        ++bytesCounters.allocatedCount;
+    }
+
+    void traceBytesFree(void* ptr, size_t size, size_t alignment) final
+    {
+        bytesCounters.sizeFreed += size;
+        ++bytesCounters.freedCount;
+    }
+
+    void traceObjectAllocation(void* ptr, size_t size, size_t alignment, dory::LabelType label) final
+    {
+        objectCounters.sizeAllocated += size;
+        ++objectCounters.allocatedCount;
+    }
+
+    void traceObjectFree(void* ptr, size_t size, size_t alignment) final
+    {
+        objectCounters.sizeFreed += size;
+        ++objectCounters.freedCount;
+    }
+
+    void traceArrayAllocation(void* ptr, std::size_t count, size_t itemSize, size_t itemAlignment, dory::LabelType label) final
+    {
+        arrayCounters.sizeAllocated += count * itemSize;
+        ++arrayCounters.allocatedCount;
+    }
+
+    void traceArrayFree(void* ptr, std::size_t count, size_t itemSize, size_t itemAlignment) final
+    {
+        arrayCounters.sizeFreed += count * itemSize;
+        ++arrayCounters.freedCount;
+    }
+};
 
 TEST(SystemAllocatorTests, allocateObject)
 {
-    dory::memory::allocators::general_purpose::SystemAllocator allocator { nullptr };
+    Profiler profiler;
+    dory::memory::allocators::general_purpose::SystemAllocator allocator { &profiler };
 
-    int* obj = allocator.allocateObject<int>({});
+    {
+        int* obj = allocator.allocateObject<int>({});
 
-    EXPECT_TRUE(obj);
+        EXPECT_TRUE(obj);
+
+        allocator.deallocateObject(obj);
+    }
+
+    EXPECT_EQ(profiler.objectCounters.sizeAllocated, sizeof(int));
+    EXPECT_EQ(profiler.objectCounters.sizeFreed, sizeof(int));
+    EXPECT_EQ(profiler.objectCounters.allocatedCount, 1);
+    EXPECT_EQ(profiler.objectCounters.freedCount, 1);
 }
 
 struct TestType
@@ -31,7 +96,8 @@ struct TestType
 
 TEST(SystemAllocatorTests, allocateAndConstructObject)
 {
-    dory::memory::allocators::general_purpose::SystemAllocator allocator { nullptr };
+    Profiler profiler;
+    dory::memory::allocators::general_purpose::SystemAllocator allocator { &profiler };
 
     int destructed = 0;
     {
@@ -44,13 +110,19 @@ TEST(SystemAllocatorTests, allocateAndConstructObject)
     }
 
     EXPECT_EQ(destructed, 1);
+
+    EXPECT_EQ(profiler.objectCounters.sizeAllocated, sizeof(TestType));
+    EXPECT_EQ(profiler.objectCounters.sizeFreed, sizeof(TestType));
+    EXPECT_EQ(profiler.objectCounters.allocatedCount, 1);
+    EXPECT_EQ(profiler.objectCounters.freedCount, 1);
 }
 
 TEST(SystemAllocatorTests, allocateAndConstructArray)
 {
-    int constexpr arraySize = 8;
+    std::size_t constexpr arraySize = 8;
 
-    dory::memory::allocators::general_purpose::SystemAllocator allocator { nullptr };
+    Profiler profiler;
+    dory::memory::allocators::general_purpose::SystemAllocator allocator { &profiler };
 
     int destructed = 0;
     {
@@ -69,4 +141,27 @@ TEST(SystemAllocatorTests, allocateAndConstructArray)
     }
 
     EXPECT_EQ(destructed, arraySize);
+
+    EXPECT_EQ(profiler.arrayCounters.sizeAllocated, sizeof(TestType) * arraySize);
+    EXPECT_EQ(profiler.arrayCounters.sizeFreed, sizeof(TestType) * arraySize);
+    EXPECT_EQ(profiler.arrayCounters.allocatedCount, 1);
+    EXPECT_EQ(profiler.arrayCounters.freedCount, 1);
+}
+
+TEST(SystemAllocatorTests, allocateBytes)
+{
+    std::size_t constexpr blockSize = 4096;
+
+    Profiler profiler;
+    dory::memory::allocators::general_purpose::SystemAllocator allocator { &profiler };
+
+    void* ptr = allocator.allocateBytes({}, blockSize);
+    EXPECT_TRUE(ptr);
+
+    allocator.deallocateBytes(ptr, blockSize);
+
+    EXPECT_EQ(profiler.bytesCounters.sizeAllocated, blockSize);
+    EXPECT_EQ(profiler.bytesCounters.sizeFreed, blockSize);
+    EXPECT_EQ(profiler.bytesCounters.allocatedCount, 1);
+    EXPECT_EQ(profiler.bytesCounters.freedCount, 1);
 }
