@@ -3,13 +3,14 @@ set(DORY_MODULE_NAME ${PROJECT_NAME}-memory)
 add_library(${DORY_MODULE_NAME} STATIC
         src/allocation.cpp
         src/allocators/pageAllocator.cpp
-        include/dory/memory/allocators/general-purpose/generalAllocator.h
-        include/dory/memory/allocators/general-purpose/segregationAllocator.h
+        include/dory/memory/allocators/general/systemAllocator.h
+        include/dory/memory/allocators/general/generalAllocator.h
+        include/dory/memory/allocators/general/segregationAllocator.h
+        include/dory/memory/allocators/specific/objectPoolAllocator.h
         include/dory/memory/profilers/IAllocatorProfiler.h
         include/dory/memory/allocators/objectBufferAllocator.h
         include/dory/memory/allocators/freeListAllocator.h
         include/dory/memory/allocators/segregationAllocator.h
-        include/dory/memory/allocators/general-purpose/systemAllocator.h
         include/dory/memory/allocators/systemAllocator.h
         include/dory/memory/allocators/standardAllocator.h
         src/allocators/bumpAllocator.cpp

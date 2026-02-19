@@ -8,7 +8,7 @@
 
 #include "dory/memory/allocation.h"
 
-namespace dory::memory::allocators::general_purpose
+namespace dory::memory::allocators::general
 {
     template<typename TImplementation>
     class GeneralAllocator: public Base<TImplementation>

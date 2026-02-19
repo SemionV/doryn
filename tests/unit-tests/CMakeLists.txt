@@ -27,7 +27,8 @@ add_executable(${PROJECT_NAME}
         src/eventSystem.cpp
         src/data-structures/freeListArray.cpp
         src/allocators/systemAllocator.cpp
-        src/allocators/segregationAllocator.cpp)
+        src/allocators/segregationAllocator.cpp
+        src/allocators/objectPoolAllocator.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-core)

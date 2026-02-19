@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <dory/memory/allocators/general-purpose/systemAllocator.h>
+#include <dory/memory/allocators/general/systemAllocator.h>
 #include <allocatorProfiler.h>
 
 using namespace dory::test_utilities;
@@ -9,7 +9,7 @@ using namespace dory::test_utilities;
 TEST(SystemAllocatorTests, allocateObject)
 {
     Profiler profiler;
-    dory::memory::allocators::general_purpose::SystemAllocator allocator { &profiler };
+    dory::memory::allocators::general::SystemAllocator allocator { &profiler };
 
     {
         int* obj = allocator.allocateObject<int>({});
@@ -45,7 +45,7 @@ struct TestType
 TEST(SystemAllocatorTests, allocateAndConstructObject)
 {
     Profiler profiler;
-    dory::memory::allocators::general_purpose::SystemAllocator allocator { &profiler };
+    dory::memory::allocators::general::SystemAllocator allocator { &profiler };
 
     int destructed = 0;
     {
@@ -70,7 +70,7 @@ TEST(SystemAllocatorTests, allocateAndConstructArray)
     std::size_t constexpr arraySize = 8;
 
     Profiler profiler;
-    dory::memory::allocators::general_purpose::SystemAllocator allocator { &profiler };
+    dory::memory::allocators::general::SystemAllocator allocator { &profiler };
 
     int destructed = 0;
     {
@@ -101,7 +101,7 @@ TEST(SystemAllocatorTests, allocateBytes)
     std::size_t constexpr blockSize = 4096;
 
     Profiler profiler;
-    dory::memory::allocators::general_purpose::SystemAllocator allocator { &profiler };
+    dory::memory::allocators::general::SystemAllocator allocator { &profiler };
 
     void* ptr = allocator.allocateBytes({}, blockSize);
     EXPECT_TRUE(ptr);

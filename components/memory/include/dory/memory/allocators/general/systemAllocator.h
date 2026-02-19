@@ -7,7 +7,7 @@
 
 #include "generalAllocator.h"
 
-namespace dory::memory::allocators::general_purpose
+namespace dory::memory::allocators::general
 {
     class SystemAllocator: public GeneralAllocator<SystemAllocator>
     {
