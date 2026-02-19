@@ -1,12 +1,10 @@
 #pragma once
-#include <iostream>
 #include <spdlog/fmt/fmt.h>
 
-#include "dory/memory/allocators/segregationAllocator.h"
-#include "dory/memory/allocators/standardAllocator.h"
-#include "dory/memory/allocators/systemAllocator.h"
+#include "dory/memory/allocators/general/segregationAllocator.h"
+#include "dory/memory/allocators/general/systemAllocator.h"
+#include <dory/memory/allocators/pageAllocator.h>
 
-#include <dory/memory/profilers/memClassAuditProfiler.h>
 #include <dory/memory/profilers/blockAuditProfiler.h>
 
 namespace dory::test_utilities
@@ -38,68 +36,41 @@ namespace dory::test_utilities
         }
     };
 
-    class AllocProfiler
-    {
-    public:
-        void traceSlotAlloc(void* ptr, std::size_t size, std::size_t slotSize, std::size_t classIndex)
-        {
-            std::cout << fmt::format("Slot allocated: size [{0}], slot[{1}], class[{2}], ptr[{3}]", size, slotSize, classIndex, ptr) << std::endl;
-        }
-
-        void traceSlotFree(void* ptr, std::size_t slotSize, std::size_t classIndex)
-        {
-            std::cout << fmt::format("Slot deallocated: slot[{0}], class[{1}], ptr[{2}]", slotSize, classIndex, ptr) << std::endl;
-        }
-
-        void traceLargeAlloc(void* ptr, std::size_t size)
-        {
-            std::cout << fmt::format("Large object allocated: size [{0}], ptr[{1}]", size, ptr) << std::endl;
-        }
-
-        void traceLargeFree(void* ptr, std::size_t size)
-        {
-            std::cout << fmt::format("Large object deallocated: ptr[{0}], size[{1}]", ptr, size) << std::endl;
-        }
-    };
-
-    constexpr static std::size_t MEMORY_CLASS_COUNT = 11;
-
-    template<typename TAllocatorProfiler = memory::profilers::MemoryClassAuditProfiler<MEMORY_CLASS_COUNT>>
     class AllocatorBuilder
     {
+    public:
+        constexpr static std::size_t MEMORY_CLASS_COUNT = 11;
+
+        using SystemAllocatorType = memory::allocators::general::SystemAllocator;
+        using PageAllocatorType = memory::PageAllocator;
+        using SegregationAllocatorType = memory::allocators::general::SegregationAllocator<MEMORY_CLASS_COUNT, memory::PageAllocator, SystemAllocatorType, SystemAllocatorType>;
+
     private:
         constexpr static std::size_t PAGE_SIZE = 4096;
 
-        memory::profilers::BlockAuditProfiler _blockAllocProfiler;
-        memory::PageAllocator _blockAllocator { PAGE_SIZE, &_blockAllocProfiler };
-        memory::SystemAllocator _systemAllocator;
-        std::array<memory::MemorySizeClass, MEMORY_CLASS_COUNT> _sizeClasses = {
-            memory::MemorySizeClass{ 8, 1024 },
-            memory::MemorySizeClass{ 16, 1024 },
-            memory::MemorySizeClass{ 32, 1024 },
-            memory::MemorySizeClass{ 64, 1024 },
-            memory::MemorySizeClass{ 128, 1024 },
-            memory::MemorySizeClass{ 256, 1024 },
-            memory::MemorySizeClass{ 512, 1024 },
-            memory::MemorySizeClass{ 1024, 1024 },
-            memory::MemorySizeClass{ 2048, 1024 },
-            memory::MemorySizeClass{ 4096, 1024 },
-            memory::MemorySizeClass{ 8192, 512 }
+        memory::PageAllocator _blockAllocator;
+        memory::allocators::general::SystemAllocator _largeObjectAllocator;
+        memory::allocators::general::SystemAllocator _memoryBlockNodeAllocator;
+
+        std::array<memory::allocators::general::MemorySizeClass, MEMORY_CLASS_COUNT> _sizeClasses = {
+            memory::allocators::general::MemorySizeClass{ 8, 1024 },
+            memory::allocators::general::MemorySizeClass{ 16, 1024 },
+            memory::allocators::general::MemorySizeClass{ 32, 1024 },
+            memory::allocators::general::MemorySizeClass{ 64, 1024 },
+            memory::allocators::general::MemorySizeClass{ 128, 1024 },
+            memory::allocators::general::MemorySizeClass{ 256, 1024 },
+            memory::allocators::general::MemorySizeClass{ 512, 1024 },
+            memory::allocators::general::MemorySizeClass{ 1024, 1024 },
+            memory::allocators::general::MemorySizeClass{ 2048, 1024 },
+            memory::allocators::general::MemorySizeClass{ 4096, 1024 },
+            memory::allocators::general::MemorySizeClass{ 8192, 512 }
         };
-        TAllocatorProfiler _profiler {_sizeClasses};
 
     public:
-        using SegregationAllocatorType = memory::SegregationAllocator<MEMORY_CLASS_COUNT, memory::PageAllocator, memory::SystemAllocator, memory::SystemAllocator, TAllocatorProfiler>;
+        explicit AllocatorBuilder(memory::profilers::IBlockAllocProfiler* blockAllocProfiler = nullptr,
+            memory::profilers::IAllocatorProfiler* largeObjectAllocProfiler = nullptr,
+            memory::profilers::IAllocatorProfiler* memoryBlockNodeAllocProfiler = nullptr);
 
-        template<typename T>
-        using StandardAllocatorType = memory::StandardAllocator<T, SegregationAllocatorType>;
-
-        std::shared_ptr<SegregationAllocatorType> build(const char* name = _defaultName.data())
-        {
-            return std::make_shared<SegregationAllocatorType>(name, _blockAllocator, _systemAllocator, _systemAllocator, _profiler, _sizeClasses);
-        }
-
-    private:
-        static constexpr std::string_view _defaultName = "testSegAlloc";
+        std::shared_ptr<SegregationAllocatorType> build(memory::profilers::IAllocatorProfiler* profiler = nullptr);
     };
 }

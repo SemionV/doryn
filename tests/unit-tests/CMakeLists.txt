@@ -7,6 +7,7 @@ add_executable(${PROJECT_NAME}
         include/outputUtils.h
         src/impl/outputUtils.cpp
         src/impl/allocatorProfiler.cpp
+        src/impl/allocatorBuilder.cpp
         enttSceneService.cpp
         pipelineRepository.cpp
         graphics/meshAssetBinderTests.cpp

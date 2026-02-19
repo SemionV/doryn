@@ -1,8 +1,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <spdlog/fmt/fmt.h>
 #include <dory/data-structures/function.h>
-#include <dory/memory/allocators/segregationAllocator.h>
 #include <allocatorBuilder.h>
 
 void freeFunction(const int param)
