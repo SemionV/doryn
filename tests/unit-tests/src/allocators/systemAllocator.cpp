@@ -2,61 +2,9 @@
 #include <gmock/gmock.h>
 
 #include <dory/memory/allocators/general-purpose/systemAllocator.h>
-#include <dory/memory/profilers/iAllocatorProfiler.h>
+#include <allocatorProfiler.h>
 
-class Profiler: public dory::memory::profilers::IAllocatorProfiler
-{
-public:
-    struct AllocationCounters
-    {
-        std::size_t sizeAllocated = 0;
-        std::size_t sizeFreed = 0;
-
-        std::size_t allocatedCount = 0;
-        std::size_t freedCount = 0;
-    };
-
-    AllocationCounters bytesCounters;
-    AllocationCounters objectCounters;
-    AllocationCounters arrayCounters;
-
-public:
-    void traceBytesAllocation(void* ptr, size_t size, size_t alignment, dory::LabelType label) final
-    {
-        bytesCounters.sizeAllocated += size;
-        ++bytesCounters.allocatedCount;
-    }
-
-    void traceBytesFree(void* ptr, size_t size, size_t alignment) final
-    {
-        bytesCounters.sizeFreed += size;
-        ++bytesCounters.freedCount;
-    }
-
-    void traceObjectAllocation(void* ptr, size_t size, size_t alignment, dory::LabelType label) final
-    {
-        objectCounters.sizeAllocated += size;
-        ++objectCounters.allocatedCount;
-    }
-
-    void traceObjectFree(void* ptr, size_t size, size_t alignment) final
-    {
-        objectCounters.sizeFreed += size;
-        ++objectCounters.freedCount;
-    }
-
-    void traceArrayAllocation(void* ptr, std::size_t count, size_t itemSize, size_t itemAlignment, dory::LabelType label) final
-    {
-        arrayCounters.sizeAllocated += count * itemSize;
-        ++arrayCounters.allocatedCount;
-    }
-
-    void traceArrayFree(void* ptr, std::size_t count, size_t itemSize, size_t itemAlignment) final
-    {
-        arrayCounters.sizeFreed += count * itemSize;
-        ++arrayCounters.freedCount;
-    }
-};
+using namespace dory::test_utilities;
 
 TEST(SystemAllocatorTests, allocateObject)
 {

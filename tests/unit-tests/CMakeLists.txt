@@ -5,7 +5,8 @@ add_executable(${PROJECT_NAME}
         include/allocatorBuilder.h
         include/assertUtils.h
         include/outputUtils.h
-        src/outputUtils.cpp
+        src/impl/outputUtils.cpp
+        src/impl/allocatorProfiler.cpp
         enttSceneService.cpp
         pipelineRepository.cpp
         graphics/meshAssetBinderTests.cpp
@@ -25,7 +26,8 @@ add_executable(${PROJECT_NAME}
         src/function.cpp
         src/eventSystem.cpp
         src/data-structures/freeListArray.cpp
-        src/allocators/systemAllocator.cpp)
+        src/allocators/systemAllocator.cpp
+        src/allocators/segregationAllocator.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-core)

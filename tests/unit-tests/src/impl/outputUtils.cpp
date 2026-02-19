@@ -1,5 +1,3 @@
-#pragma once
-
 #include "outputUtils.h"
 
 namespace dory::test_utilities
