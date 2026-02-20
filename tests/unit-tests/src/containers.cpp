@@ -10,7 +10,7 @@
 #include <dory/data-structures/containers/deque.h>
 #include <dory/data-structures/containers/hashMap.h>
 
-using SegregationAllocatorType = dory::test_utilities::AllocatorBuilder<>::SegregationAllocatorType;
+using SegregationAllocatorType = dory::test_utilities::AllocatorBuilder::SegregationAllocatorType;
 
 using DoryString = dory::data_structures::containers::BasicString<char, std::char_traits<char>, SegregationAllocatorType>;
 

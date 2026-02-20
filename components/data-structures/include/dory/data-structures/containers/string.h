@@ -2,11 +2,12 @@
 
 #include <cstring>
 #include <dory/macros/assert.h>
+#include <dory/types.h>
 #include "../crc32.h"
 
 namespace dory::data_structures::containers
 {
-    template<typename TChar, typename TCharTraits, typename TAllocator>
+    template<typename TChar, typename TCharTraits, typename TAllocator, LabelType AllocLabel = {}>
     class BasicString
     {
     public:
@@ -124,7 +125,7 @@ namespace dory::data_structures::containers
                 setHeapMode();
 
                 _heapData.capacity = capacity;
-                _heapData.data = static_cast<TChar*>(_allocator.allocate(capacity * sizeof(TChar)));
+                _heapData.data = static_cast<TChar*>(_allocator.allocateBytes(AllocLabel, capacity * sizeof(TChar), alignof(TChar)));
                 TCharTraits::copy(_heapData.data, data, length);
                 _heapData.data[length] = TChar('\0');
             }
@@ -224,7 +225,7 @@ namespace dory::data_structures::containers
 
                 if (isHeapStorage() && _heapData.data)
                 {
-                    _allocator.deallocate(_heapData.data, _heapData.capacity * sizeof(TChar));
+                    _allocator.deallocateBytes(_heapData.data, _heapData.capacity * sizeof(TChar), alignof(TChar));
                     _heapData.data = nullptr;
                 }
 
@@ -238,7 +239,7 @@ namespace dory::data_structures::containers
         {
             if(isHeapStorage())
             {
-                _allocator.deallocate(_heapData.data, _heapData.capacity * sizeof(TChar));
+                _allocator.deallocateBytes(_heapData.data, _heapData.capacity * sizeof(TChar), alignof(TChar));
             }
         }
 
@@ -423,11 +424,11 @@ namespace dory::data_structures::containers
                 const size_type size = getHeapSize();
                 if(size + 1 < _heapData.capacity) // +1 for null terminator
                 {
-                    auto* newData = static_cast<TChar*>(_allocator.allocate((size + 1) * sizeof(TChar)));
+                    auto* newData = static_cast<TChar*>(_allocator.allocateBytes(AllocLabel, (size + 1) * sizeof(TChar), alignof(TChar)));
                     TCharTraits::copy(newData, _heapData.data, size);
                     newData[size] = TChar('\0');
 
-                    _allocator.deallocate(_heapData.data, _heapData.capacity * sizeof(TChar));
+                    _allocator.deallocateBytes(_heapData.data, _heapData.capacity * sizeof(TChar), alignof(TChar));
                     _heapData.data = newData;
                     _heapData.capacity = size + 1;
                 }
@@ -510,7 +511,7 @@ namespace dory::data_structures::containers
 
             if(newCap > SSO_THRESHOLD)
             {
-                auto* newData = static_cast<TChar*>(_allocator.allocate(newCap * sizeof(TChar)));
+                auto* newData = static_cast<TChar*>(_allocator.allocateBytes(AllocLabel, newCap * sizeof(TChar), alignof(TChar)));
 
                 size_type size = 0;
                 if (isHeapStorage())
@@ -519,7 +520,7 @@ namespace dory::data_structures::containers
                     if(_heapData.data)
                     {
                         TCharTraits::copy(newData, _heapData.data, size);
-                        _allocator.deallocate(_heapData.data, _heapData.capacity * sizeof(TChar));
+                        _allocator.deallocateBytes(_heapData.data, _heapData.capacity * sizeof(TChar), alignof(TChar));
                     }
                 }
                 else
