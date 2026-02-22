@@ -7,7 +7,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         include/dory/memory/allocators/general/generalAllocator.h
         include/dory/memory/allocators/general/segregationAllocator.h
         include/dory/memory/allocators/specific/objectPoolAllocator.h
-        include/dory/memory/profilers/IAllocatorProfiler.h
+        include/dory/memory/profilers/iAllocatorProfiler.h
         include/dory/memory/allocators/objectBufferAllocator.h
         include/dory/memory/allocators/freeListAllocator.h
         include/dory/memory/allocators/segregationAllocator.h
