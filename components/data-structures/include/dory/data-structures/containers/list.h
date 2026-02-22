@@ -7,7 +7,7 @@
 
 namespace dory::data_structures::containers
 {
-    template <typename T, typename TAllocator>
+    template <typename T, typename TAllocator, LabelType AllocLabel = {}>
     class BasicList
     {
     public:
@@ -38,7 +38,7 @@ namespace dory::data_structures::containers
         BasicList(const size_type count, const T& value, allocator_type& allocator):
             _allocator(allocator)
         {
-            _data = static_cast<T*>(_allocator.allocate(count * sizeof(T)));
+            _data = static_cast<T*>(_allocator.allocateBytes(AllocLabel, count * sizeof(T), alignof(T)));
             _size = count;
             _capacity = count;
 
@@ -51,7 +51,7 @@ namespace dory::data_structures::containers
         explicit BasicList(const size_type count, allocator_type& allocator):
             _allocator(allocator)
         {
-            _data = static_cast<T*>(_allocator.allocate(count * sizeof(T)));
+            _data = static_cast<T*>(_allocator.allocateBytes(AllocLabel, count * sizeof(T), alignof(T)));
             _size = count;
             _capacity = count;
         }
@@ -84,7 +84,7 @@ namespace dory::data_structures::containers
 
         ~BasicList()
         {
-            _allocator.deallocate(_data, _capacity * sizeof(T));
+            _allocator.deallocateBytes(_data, _capacity * sizeof(T), alignof(T));
         }
 
 
@@ -193,7 +193,7 @@ namespace dory::data_structures::containers
                 // free everything
                 if (_data)
                 {
-                    _allocator.deallocate(_data, _capacity * sizeof(T));
+                    _allocator.deallocateBytes(_data, _capacity * sizeof(T), alignof(T));
                 }
                 _data = nullptr;
                 _capacity = 0;
@@ -417,7 +417,7 @@ namespace dory::data_structures::containers
             assert::inhouse(newCap >= _size, "Existing data will not fit into the new buffer");
 
             // Allocate new block
-            T* newData = static_cast<T*>(_allocator.allocate(newCap * sizeof(T)));
+            T* newData = static_cast<T*>(_allocator.allocateBytes(AllocLabel, newCap * sizeof(T), alignof(T)));
 
             // Move or copy elements
             if constexpr (std::is_nothrow_move_constructible_v<T>)
@@ -445,7 +445,7 @@ namespace dory::data_structures::containers
 
             // Deallocate old memory
             if (_data)
-                _allocator.deallocate(_data, _capacity * sizeof(T));
+                _allocator.deallocateBytes(_data, _capacity * sizeof(T), alignof(T));
 
             // Install new block
             _data = newData;

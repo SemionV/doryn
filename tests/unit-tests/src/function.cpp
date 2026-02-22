@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <dory/data-structures/function.h>
+#include <dory/memory/genericMemoryResource.h>
 #include <allocatorBuilder.h>
 
 void freeFunction(const int param)
@@ -12,7 +13,7 @@ TEST(FunctionWrapperTests, wrapDelegate)
 {
     dory::test_utilities::AllocatorBuilder allocBuilder;
     const auto allocator = allocBuilder.build();
-    dory::test_utilities::SegregationResource globalResource{ *allocator };
+    dory::memory::GenericMemoryResource globalResource{ *allocator };
 
     int externalVariable = 1;
 
@@ -32,7 +33,7 @@ TEST(FunctionWrapperTests, wrapFreeFunction)
 {
     dory::test_utilities::AllocatorBuilder allocBuilder;
     const auto allocator = allocBuilder.build();
-    dory::test_utilities::SegregationResource globalResource{ *allocator };
+    dory::memory::GenericMemoryResource globalResource{ *allocator };
 
     auto function = dory::data_structures::function::Function<void(int)>{ &globalResource, &freeFunction };
     function(2);
@@ -44,7 +45,7 @@ TEST(FunctionWrapperTests, wrapClassMember)
 {
     dory::test_utilities::AllocatorBuilder allocBuilder;
     const auto allocator = allocBuilder.build();
-    dory::test_utilities::SegregationResource globalResource{ *allocator };
+    dory::memory::GenericMemoryResource globalResource{ *allocator };
 
     const class Handler
     {
@@ -69,7 +70,7 @@ TEST(FunctionWrapperTests, wrapLargeDelegate)
 {
     dory::test_utilities::AllocatorBuilder allocBuilder;
     const auto allocator = allocBuilder.build();
-    dory::test_utilities::SegregationResource globalResource{ *allocator };
+    dory::memory::GenericMemoryResource globalResource{ *allocator };
 
     std::array<std::byte, 256> big{};
 

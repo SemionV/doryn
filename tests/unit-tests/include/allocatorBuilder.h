@@ -4,38 +4,10 @@
 #include "dory/memory/allocators/general/segregationAllocator.h"
 #include "dory/memory/allocators/general/systemAllocator.h"
 #include <dory/memory/allocators/pageAllocator.h>
-
 #include <dory/memory/profilers/blockAuditProfiler.h>
 
 namespace dory::test_utilities
 {
-    template<typename TAllocator>
-    class SegregationResource final : public std::pmr::memory_resource
-    {
-    public:
-        explicit SegregationResource(TAllocator& allocator):
-            _allocator(&allocator)
-        {}
-
-    private:
-        TAllocator* _allocator;
-
-        void* do_allocate(const std::size_t bytes, std::size_t alignment) override
-        {
-            return _allocator->allocate(bytes);
-        }
-
-        void do_deallocate(void* p, std::size_t bytes, std::size_t alignment) override
-        {
-            _allocator->deallocate(p, bytes);
-        }
-
-        [[nodiscard]] bool do_is_equal(const memory_resource& other) const noexcept override
-        {
-            return this == &other;
-        }
-    };
-
     class AllocatorBuilder
     {
     public:

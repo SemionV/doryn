@@ -106,7 +106,8 @@ namespace dory::data_structures::containers::hashMap
         typename T,
         typename TAllocator,
         typename Hash = std::hash<Key>,
-        typename KeyEqual = std::equal_to<Key>
+        typename KeyEqual = std::equal_to<Key>,
+        LabelType AllocLabel = {}
     >
     class HashMap
     {
@@ -259,12 +260,12 @@ namespace dory::data_structures::containers::hashMap
                         Node* nextNode = node->nextNode;
 
                         node->value.~value_type();
-                        _allocator.deallocate(node, sizeof(Node));
+                        _allocator.deallocateBytes(node, sizeof(Node), alignof(Node));
                         node = nextNode;
                     }
                 }
 
-                _allocator.deallocate(_buckets, _bucketCount * sizeof(Node*));
+                _allocator.deallocateBytes(_buckets, _bucketCount * sizeof(Node*), alignof(Node*));
             }
         }
 
@@ -289,7 +290,7 @@ namespace dory::data_structures::containers::hashMap
             // Free current resources
             clear();
             if (_buckets)
-                _allocator.deallocate(_buckets, _bucketCount * sizeof(Node*));
+                _allocator.deallocateBytes(_buckets, _bucketCount * sizeof(Node*), alignof(Node*));
 
             // Steal other's internals
             _buckets        = other._buckets;
@@ -660,7 +661,7 @@ namespace dory::data_structures::containers::hashMap
 
         void rehash(const size_type bucketsCount)
         {
-            Node** newBuckets = static_cast<Node**>(_allocator.allocate(bucketsCount * sizeof(Node*)));
+            Node** newBuckets = static_cast<Node**>(_allocator.allocateBytes(AllocLabel, bucketsCount * sizeof(Node*), alignof(Node*)));
             assert::inhouse(newBuckets, "Cannot allocate memory for buckets list");
 
             std::memset(newBuckets, 0, bucketsCount * sizeof(Node*));
@@ -681,7 +682,7 @@ namespace dory::data_structures::containers::hashMap
                     }
                 }
 
-                _allocator.deallocate(_buckets, _bucketCount * sizeof(Node*));
+                _allocator.deallocateBytes(_buckets, _bucketCount * sizeof(Node*), alignof(Node*));
             }
 
             _buckets = newBuckets;
@@ -764,7 +765,7 @@ namespace dory::data_structures::containers::hashMap
 
             bucketId = getBucketId(h, _bucketCount);
 
-            Node* node = static_cast<Node*>(_allocator.allocate(sizeof(Node)));
+            Node* node = static_cast<Node*>(_allocator.allocateBytes(AllocLabel, sizeof(Node), alignof(Node)));
             assert::inhouse(node, "HashMap Node was not allocated");
 
 #ifndef __cpp_exceptions
@@ -823,7 +824,7 @@ namespace dory::data_structures::containers::hashMap
 
         Node* allocateNode(value_type&& v)
         {
-            Node* node = static_cast<Node*>(_allocator.allocate(sizeof(Node)));
+            Node* node = static_cast<Node*>(_allocator.allocateBytes(AllocLabel, sizeof(Node), alignof(Node)));
             assert::inhouse(node, "HashMap Node was not allocated");
 
             new (&node->value) value_type(std::move(v));      // placement-new
@@ -835,7 +836,7 @@ namespace dory::data_structures::containers::hashMap
 
         Node* allocateNode(const value_type& v)
         {
-            Node* node = static_cast<Node*>(_allocator.allocate(sizeof(Node)));
+            Node* node = static_cast<Node*>(_allocator.allocateBytes(AllocLabel, sizeof(Node), alignof(Node)));
             assert::inhouse(node, "HashMap Node was not allocated");
 
             new (&node->value) value_type(v);                 // copy construct
@@ -856,7 +857,7 @@ namespace dory::data_structures::containers::hashMap
             node->nextNode = nullptr;
 #endif
 
-            _allocator.deallocate(node, sizeof(Node));
+            _allocator.deallocateBytes(node, sizeof(Node), alignof(Node));
         }
 
         static size_type normalize_bucket_count(size_type n)
@@ -869,7 +870,7 @@ namespace dory::data_structures::containers::hashMap
         {
             _bucketCount = normalize_bucket_count(bucket_count);
 
-            _buckets = static_cast<Node**>(_allocator.allocate(_bucketCount * sizeof(Node*)));
+            _buckets = static_cast<Node**>(_allocator.allocateBytes(AllocLabel, _bucketCount * sizeof(Node*), alignof(Node*)));
             assert::inhouse(_buckets, "Cannot allocate buckets");
 
             // zero-init bucket heads

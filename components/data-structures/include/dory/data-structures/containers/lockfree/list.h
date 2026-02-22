@@ -3,6 +3,7 @@
 #include <atomic>
 #include <dory/macros/assert.h>
 #include <dory/generic/concepts.h>
+#include <dory/types.h>
 
 namespace dory::data_structures::containers::lockfree
 {
@@ -11,7 +12,7 @@ namespace dory::data_structures::containers::lockfree
      * It consists of memory blocks(segments) and can only grow(append method)
      * It is intended to be used as base for such data structures like a generic free-list
      */
-    template<typename T, typename TAllocator, std::size_t SEGMENT_SIZE = 64, std::size_t MAX_SEGMENTS = 256>
+    template<typename T, typename TAllocator, std::size_t SEGMENT_SIZE = 64, std::size_t MAX_SEGMENTS = 256, LabelType AllocType = {}>
     requires(generic::concepts::is_power_of_two<SEGMENT_SIZE> && generic::concepts::is_power_of_two<MAX_SEGMENTS>) // both must be power of two
     class SegmentedList
     {
@@ -148,7 +149,7 @@ namespace dory::data_structures::containers::lockfree
             if (segment != nullptr)
                 return segment;
 
-            segment = static_cast<T*>(_allocator.allocate(bytes));
+            segment = static_cast<T*>(_allocator.allocateBytes(AllocType, bytes, alignof(T)));
             assert::inhouse(segment, "Cannot allocate memory segment for list");
             if (!segment) return nullptr;
 
@@ -158,7 +159,7 @@ namespace dory::data_structures::containers::lockfree
                     std::memory_order_release,
                     std::memory_order_relaxed))
             {
-                _allocator.deallocate(segment, bytes);
+                _allocator.deallocateBytes(segment, bytes, alignof(T));
                 segment = expected;
             }
 

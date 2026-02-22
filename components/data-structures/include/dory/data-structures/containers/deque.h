@@ -206,7 +206,7 @@ namespace dory::data_structures::containers
         bool operator>=(const ConstDequeIterator& rhs) const noexcept { return !(*this < rhs); }
     };
 
-    template<typename T, typename TAllocator, std::size_t BlockSize = 64>
+    template<typename T, typename TAllocator, std::size_t BlockSize = 64, LabelType AllocLabel = {}>
     class BasicDeque
     {
     public:
@@ -238,7 +238,7 @@ namespace dory::data_structures::containers
             // Start with minimal map (3 blocks for safety)
             _mapCapacity = 8;
             _map = static_cast<pointer*>(
-                _allocator.allocate(_mapCapacity * sizeof(pointer))
+                _allocator.allocateBytes(AllocLabel, _mapCapacity * sizeof(pointer), alignof(T))
             );
 
             // All blocks initially null
@@ -270,7 +270,7 @@ namespace dory::data_structures::containers
             }
 
             // Deallocate map
-            _allocator.deallocate(_map, _mapCapacity * sizeof(pointer));
+            _allocator.deallocateBytes(_map, _mapCapacity * sizeof(pointer), alignof(T));
         }
 
         // === Element Access ===
@@ -434,13 +434,13 @@ namespace dory::data_structures::containers
         pointer allocate_block()
         {
             return static_cast<pointer>(
-                _allocator.allocate(BlockSize * sizeof(T))
+                _allocator.allocateBytes(AllocLabel, BlockSize * sizeof(T), alignof(T))
             );
         }
 
         void deallocate_block(pointer block)
         {
-            _allocator.deallocate(block, BlockSize * sizeof(T));
+            _allocator.deallocateBytes(block, BlockSize * sizeof(T), alignof(T));
         }
 
         void reserve_map()
@@ -448,7 +448,7 @@ namespace dory::data_structures::containers
             // Need to reallocate map
             const size_type newCap = _mapCapacity << 1;
             auto* newMap = static_cast<pointer*>(
-                _allocator.allocate(newCap * sizeof(pointer))
+                _allocator.allocateBytes(AllocLabel, newCap * sizeof(pointer), alignof(T))
             );
 
             // Center existing blocks in new map
@@ -460,7 +460,7 @@ namespace dory::data_structures::containers
             for (size_type i = 0; i < _mapCapacity; ++i)
                 newMap[i + offset] = _map[i];
 
-            _allocator.deallocate(_map, _mapCapacity * sizeof(pointer));
+            _allocator.deallocateBytes(_map, _mapCapacity * sizeof(pointer), alignof(T));
 
             _map = newMap;
             _mapStart += offset;
