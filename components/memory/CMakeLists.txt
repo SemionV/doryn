@@ -11,17 +11,7 @@ add_library(${DORY_MODULE_NAME} STATIC
         include/dory/memory/profilers/iAllocatorProfiler.h
         include/dory/memory/profilers/iBlockAllocationProfiler.h
         include/dory/memory/allocators/objectBufferAllocator.h
-        include/dory/memory/allocators/standardAllocator.h
         src/allocators/specific/pageBlockAllocator.cpp
-        src/allocators/bumpAllocator.cpp
-        src/allocators/dynamicAllocator.cpp
-        src/memoryBlockAllocator.cpp
-        src/stackAllocator.cpp
-        include/dory/memory/profilers/memClassAuditProfiler.h
-        include/dory/memory/profilers/iBlockAllocProfiler.h
-        include/dory/memory/profilers/blockAuditProfiler.h
-        src/profilers/blockAuditProfiler.cpp
-        include/dory/memory/profilers/iFreeListAllocProfiler.h
         include/dory/memory/profilers/iObjectBufferAllocatorProfiler.h
         include/dory/memory/profilers/objectBufferAllocationProfiler.h
         src/profilers/objectBufferAllocationProfiler.cpp)

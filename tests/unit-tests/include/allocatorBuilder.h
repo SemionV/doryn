@@ -4,7 +4,6 @@
 #include "dory/memory/allocators/general/segregationAllocator.h"
 #include "dory/memory/allocators/general/systemAllocator.h"
 #include <dory/memory/allocators/specific/pageBlockAllocator.h>
-#include <dory/memory/profilers/blockAuditProfiler.h>
 
 namespace dory::test_utilities
 {

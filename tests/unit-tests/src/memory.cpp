@@ -5,7 +5,6 @@
 #include <dory/memory/allocators/general/systemAllocator.h>
 #include <dory/memory/allocators/general/segregationAllocator.h>
 #include <dory/memory/genericMemoryResource.h>
-#include <dory/memory/allocators/standardAllocator.h>
 #include <dory/memory/allocators/objectBufferAllocator.h>
 #include <dory/memory/profilers/objectBufferAllocationProfiler.h>
 #include <spdlog/fmt/bundled/format.h>
@@ -114,9 +113,6 @@ TEST(FreeListAllocatorTests, simpleAllocation)
 }
 
 using SegregationAllocatorType = allocators::general::SegregationAllocator<10, allocators::specific::PageBlockAllocator, allocators::general::SystemAllocator, allocators::general::SystemAllocator>;
-
-template<typename T>
-using StandardAllocatorType = StandardAllocator<T, SegregationAllocatorType>;
 
 TEST(SegregationAllocatorTests, simpleAllocation)
 {

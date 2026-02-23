@@ -20,7 +20,6 @@ add_executable(${PROJECT_NAME}
         layoutSetupTests.cpp
         coroutinesPlayground.cpp
         logicalGates.cpp
-        memoriaTests.cpp
         src/concurrency.cpp
         src/memory.cpp
         src/containers.cpp
