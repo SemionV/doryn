@@ -5,44 +5,18 @@
 #include "dory/core/repository.h"
 #include "dory/core/events.h"
 #include "dory/core/services/objectFactory.h"
+#include <dory/memory/genericMemoryResource.h>
 #include <dory/core/allocators.h>
 
 namespace dory::game
 {
-    template<typename TAllocator>
-    class SegregationResource final : public std::pmr::memory_resource
-    {
-    public:
-        explicit SegregationResource(TAllocator& allocator):
-            _allocator(&allocator)
-        {}
-
-    private:
-        TAllocator* _allocator;
-
-        void* do_allocate(const std::size_t bytes, std::size_t alignment) override
-        {
-            return _allocator->allocate(bytes);
-        }
-
-        void do_deallocate(void* p, std::size_t bytes, std::size_t alignment) override
-        {
-            _allocator->deallocate(p, bytes);
-        }
-
-        [[nodiscard]] bool do_is_equal(const std::pmr::memory_resource& other) const noexcept override
-        {
-            return this == &other;
-        }
-    };
-
     class DORY_DLL_API Setup: public core::ISetup
     {
     private:
         using AllocatorType = core::GlobalAllocatorType;
         AllocatorType& _globalAllocator;
 
-        SegregationResource<AllocatorType> _globalResource{ _globalAllocator };
+        memory::GenericMemoryResource<AllocatorType> _globalResource{ _globalAllocator };
 
     private:
         template<typename TEventBundle>

@@ -6,6 +6,8 @@
 
 #include <iostream>
 #include <dory/profiling/profiler.h>
+#include <dory/memory/allocators/general/systemAllocator.h>
+#include <dory/memory/allocators/specific/pageBlockAllocator.h>
 
 #ifdef DORY_MAIN_FUNCTION_UNIX
 int main()
@@ -16,24 +18,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR szArgs, int nCmdShow)
 #endif
 {
     constexpr std::size_t PAGE_SIZE = 4096;
-    dory::memory::PageAllocator blockAllocator {PAGE_SIZE, nullptr};
-    dory::memory::SystemAllocator systemAllocator;
+    dory::memory::allocators::specific::PageBlockAllocator blockAllocator {PAGE_SIZE, nullptr};
+    dory::memory::allocators::general::SystemAllocator systemAllocator {nullptr };
 
     std::array sizeClasses {
-        dory::memory::MemorySizeClass{ 8, 1024 },
-        dory::memory::MemorySizeClass{ 16, 1024 },
-        dory::memory::MemorySizeClass{ 32, 1024 },
-        dory::memory::MemorySizeClass{ 64, 1024 },
-        dory::memory::MemorySizeClass{ 128, 1024 },
-        dory::memory::MemorySizeClass{ 256, 1024 },
-        dory::memory::MemorySizeClass{ 512, 1024 },
-        dory::memory::MemorySizeClass{ 1024, 1024 },
-        dory::memory::MemorySizeClass{ 2048, 1024 },
-        dory::memory::MemorySizeClass{ 4096, 1024 }
+        dory::memory::allocators::general::MemorySizeClass{ 8, 1024 },
+        dory::memory::allocators::general::MemorySizeClass{ 16, 1024 },
+        dory::memory::allocators::general::MemorySizeClass{ 32, 1024 },
+        dory::memory::allocators::general::MemorySizeClass{ 64, 1024 },
+        dory::memory::allocators::general::MemorySizeClass{ 128, 1024 },
+        dory::memory::allocators::general::MemorySizeClass{ 256, 1024 },
+        dory::memory::allocators::general::MemorySizeClass{ 512, 1024 },
+        dory::memory::allocators::general::MemorySizeClass{ 1024, 1024 },
+        dory::memory::allocators::general::MemorySizeClass{ 2048, 1024 },
+        dory::memory::allocators::general::MemorySizeClass{ 4096, 1024 }
     };
 
-    dory::core::AllocProfiler profiler;
-    dory::core::GlobalAllocatorType segregationAllocator { "testSegAlloc", blockAllocator, systemAllocator, systemAllocator, profiler, sizeClasses };
+    dory::core::GlobalAllocatorType segregationAllocator { blockAllocator, systemAllocator, systemAllocator, nullptr, sizeClasses };
 
     std::cout << "Begin Start Profiler" << std::endl;
     DORY_TRACE_START();

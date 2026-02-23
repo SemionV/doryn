@@ -8,6 +8,7 @@
 #include "../resources/memoryBlock.h"
 #include "../profilers/iObjectBufferAllocatorProfiler.h"
 #include "dory/memory/allocation.h"
+#include <dory/types.h>
 
 namespace dory::memory::allocators
 {
@@ -20,7 +21,7 @@ namespace dory::memory::allocators
      *
      * The allocator is concurrent
      */
-    template<typename T, typename TPageAllocator, typename TMemoryBlockNodeAllocator, std::size_t ObjectsPerChunkCount>
+    template<typename T, typename TPageAllocator, typename TMemoryBlockNodeAllocator, std::size_t ObjectsPerChunkCount, LabelType PageAllocLabel = {}, LabelType MemoryBlockNodeAllocLabel = {}>
     class ObjectBufferAllocator
     {
     public:
@@ -52,7 +53,7 @@ namespace dory::memory::allocators
             _pageAllocator(pageAllocator),
             _memoryBlockNodeAllocator(memoryBlockNodeAllocator)
         {
-            auto chunkToPageRatio = chunkSize / _pageAllocator.getPageSize();
+            auto chunkToPageRatio = chunkSize / _pageAllocator.getBlockSize();
             _pagesPerChunkCount = chunkToPageRatio > 0 ? chunkToPageRatio : 1;
         }
 
@@ -81,13 +82,13 @@ namespace dory::memory::allocators
 
                 if(node->memoryBlock.ptr != nullptr)
                 {
-                    _pageAllocator.deallocate(node->memoryBlock);
+                    _pageAllocator.deallocateBlock(node->memoryBlock.ptr, _pagesPerChunkCount);
                 }
 
                 MemoryBlockNode* prevNode = node->previousNode;
                 //TODO: change all allocators to construct/destruct objects automatically(in case of using system allocator destructor is called twice!)
                 node->~MemoryBlockNode();
-                _memoryBlockNodeAllocator.deallocate(node);
+                _memoryBlockNodeAllocator.deallocateObject(node);
                 node = prevNode;
             }
         }
@@ -153,14 +154,16 @@ namespace dory::memory::allocators
                 return;
 
             //Allocate node object(bookkeeping) for chunk of memory
-            const auto newHead = static_cast<MemoryBlockNode*>(_memoryBlockNodeAllocator.allocate(sizeof(MemoryBlockNode)));
+            const auto newHead = static_cast<MemoryBlockNode*>(_memoryBlockNodeAllocator.template allocateObject<MemoryBlockNode>(MemoryBlockNodeAllocLabel));
             assert::inhouse(newHead, "Cannot allocate MemoryBlockNode");
             std::construct_at(newHead);
 
             //Allocate chunk of memory
             auto& memoryBlock = newHead->memoryBlock;
-            const ErrorCode errorCode = _pageAllocator.allocate(_pagesPerChunkCount, memoryBlock);
-            if(errorCode != ErrorCode::Success)
+            memoryBlock.ptr = _pageAllocator.allocateBlock(PageAllocLabel, _pagesPerChunkCount);
+            memoryBlock.pageSize = _pageAllocator.getBlockSize();
+            memoryBlock.pagesCount = _pagesPerChunkCount;
+            if(memoryBlock.ptr == nullptr)
             {
                 assert::inhouse(false, "Cannot allocate memory block");
                 return;
@@ -175,9 +178,9 @@ namespace dory::memory::allocators
             {
                 //Some thread has allocated a new chunk(should not happen because of the lock, but just in case)
                 //Deallocate chunk and node
-                _pageAllocator.deallocate(memoryBlock);
+                _pageAllocator.deallocateBlock(memoryBlock.ptr, _pagesPerChunkCount);
                 newHead->~MemoryBlockNode();
-                _memoryBlockNodeAllocator.deallocate(newHead);
+                _memoryBlockNodeAllocator.deallocateObject(newHead);
             }
             else if(_profiler)
             {

@@ -1,7 +1,10 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <dory/memory/allocators/specific/pageBlockAllocator.h>
-#include <dory/memory/allocators/systemAllocator.h>
+#include <dory/memory/allocators/specific/objectPoolAllocator.h>
+#include <dory/memory/allocators/general/systemAllocator.h>
+#include <dory/memory/allocators/general/segregationAllocator.h>
+#include <dory/memory/genericMemoryResource.h>
 #include <dory/memory/allocators/standardAllocator.h>
 #include <dory/memory/allocators/objectBufferAllocator.h>
 #include <dory/memory/profilers/objectBufferAllocationProfiler.h>
@@ -99,8 +102,8 @@ TEST(FreeListAllocatorTests, simpleAllocation)
     constexpr std::size_t SLOT_SIZE = 8;
 
     allocators::specific::PageBlockAllocator blockAllocator {PAGE_SIZE, nullptr};
-    SystemAllocator systemAllocator;
-    FreeListAllocator freeListAllocator { SLOT_SIZE, (PAGE_SIZE / SLOT_SIZE) * 2, blockAllocator, systemAllocator };
+    allocators::general::SystemAllocator systemAllocator { nullptr };
+    allocators::specific::ObjectPoolAllocator freeListAllocator { SLOT_SIZE, (PAGE_SIZE / SLOT_SIZE) * 2, blockAllocator, systemAllocator };
 
     void* ptr = freeListAllocator.allocate();
     void* ptr2 = freeListAllocator.allocate();
@@ -110,31 +113,7 @@ TEST(FreeListAllocatorTests, simpleAllocation)
     void* ptr3 = freeListAllocator.allocate();
 }
 
-class AllocProfiler
-{
-public:
-    void traceSlotAlloc(void* ptr, std::size_t size, std::size_t slotSize, std::size_t classIndex)
-    {
-       std::cout << fmt::format("Slot allocated: size [{0}], slot[{1}], class[{2}], ptr[{3}]", size, slotSize, classIndex, ptr) << std::endl;
-    }
-
-    void traceSlotFree(void* ptr, std::size_t slotSize, std::size_t classIndex)
-    {
-        std::cout << fmt::format("Slot deallocated: slot[{0}], class[{1}], ptr[{2}]", slotSize, classIndex, ptr) << std::endl;
-    }
-
-    void traceLargeAlloc(void* ptr, std::size_t size)
-    {
-        std::cout << fmt::format("Large object allocated: size [{0}], ptr[{1}]", size, ptr) << std::endl;
-    }
-
-    void traceLargeFree(void* ptr, std::size_t size)
-    {
-        std::cout << fmt::format("Large object deallocated: ptr[{0}], size[{1}]", ptr, size) << std::endl;
-    }
-};
-
-using SegregationAllocatorType = SegregationAllocator<10, allocators::specific::PageBlockAllocator, SystemAllocator, SystemAllocator, AllocProfiler>;
+using SegregationAllocatorType = allocators::general::SegregationAllocator<10, allocators::specific::PageBlockAllocator, allocators::general::SystemAllocator, allocators::general::SystemAllocator>;
 
 template<typename T>
 using StandardAllocatorType = StandardAllocator<T, SegregationAllocatorType>;
@@ -143,31 +122,31 @@ TEST(SegregationAllocatorTests, simpleAllocation)
 {
     constexpr std::size_t PAGE_SIZE = 4096;
     allocators::specific::PageBlockAllocator blockAllocator {PAGE_SIZE, nullptr};
-    SystemAllocator systemAllocator;
+    allocators::general::SystemAllocator systemAllocator { nullptr };
 
     std::array sizeClasses {
-        MemorySizeClass{ 8, 1024 },
-        MemorySizeClass{ 16, 1024 },
-        MemorySizeClass{ 32, 1024 },
-        MemorySizeClass{ 64, 1024 },
-        MemorySizeClass{ 128, 1024 },
-        MemorySizeClass{ 256, 1024 },
-        MemorySizeClass{ 512, 1024 },
-        MemorySizeClass{ 1024, 1024 },
-        MemorySizeClass{ 2048, 1024 },
-        MemorySizeClass{ 4096, 1024 }
+        allocators::general::MemorySizeClass{ 8, 1024 },
+        allocators::general::MemorySizeClass{ 16, 1024 },
+        allocators::general::MemorySizeClass{ 32, 1024 },
+        allocators::general::MemorySizeClass{ 64, 1024 },
+        allocators::general::MemorySizeClass{ 128, 1024 },
+        allocators::general::MemorySizeClass{ 256, 1024 },
+        allocators::general::MemorySizeClass{ 512, 1024 },
+        allocators::general::MemorySizeClass{ 1024, 1024 },
+        allocators::general::MemorySizeClass{ 2048, 1024 },
+        allocators::general::MemorySizeClass{ 4096, 1024 }
     };
 
-    AllocProfiler profiler;
-    SegregationAllocatorType segregationAllocator { "testSegAlloc", blockAllocator, systemAllocator, systemAllocator, profiler, sizeClasses };
+    SegregationAllocatorType segregationAllocator { blockAllocator, systemAllocator, systemAllocator, nullptr, sizeClasses };
 
-    void* ptr1 = segregationAllocator.allocate(8);
-    void* ptr2 = segregationAllocator.allocate(200);
+    void* ptr1 = segregationAllocator.allocateBytes({}, 8);
+    void* ptr2 = segregationAllocator.allocateBytes({}, 200);
 
-    segregationAllocator.deallocate(ptr1);
-    segregationAllocator.deallocate(ptr2);
+    segregationAllocator.deallocateBytes(ptr1, 8);
+    segregationAllocator.deallocateBytes(ptr2, 200);
 
-    StandardAllocatorType<int> standardAllocator { segregationAllocator };
+    GenericMemoryResource<SegregationAllocatorType> memResource { segregationAllocator };
+    const std::pmr::polymorphic_allocator<int> standardAllocator { &memResource };
 
     auto sptr1 = std::allocate_shared<int>(standardAllocator);
     auto sptr2 = std::allocate_shared<std::byte[8000]>(standardAllocator);
@@ -179,10 +158,10 @@ TEST(ObjectPoolAllocatorTests, chunkAllocation)
 {
     constexpr std::size_t PAGE_SIZE = 4096;
     allocators::specific::PageBlockAllocator blockAllocator {PAGE_SIZE, nullptr};
-    SystemAllocator systemAllocator;
+    allocators::general::SystemAllocator systemAllocator { nullptr };
     profilers::ObjectBufferAllocationProfiler profiler;
 
-    allocators::ObjectBufferAllocator<int, allocators::specific::PageBlockAllocator, SystemAllocator, 1024> objectPool { blockAllocator, systemAllocator, &profiler };
+    allocators::ObjectBufferAllocator<int, allocators::specific::PageBlockAllocator, allocators::general::SystemAllocator, 1024> objectPool { blockAllocator, systemAllocator, &profiler };
 
     EXPECT_TRUE(objectPool.isEmpty());
 
@@ -237,12 +216,12 @@ TEST(ObjectPoolAllocatorTests, allocate)
 {
     constexpr std::size_t PAGE_SIZE = 4096;
     allocators::specific::PageBlockAllocator blockAllocator {PAGE_SIZE, nullptr};
-    SystemAllocator systemAllocator;
+    allocators::general::SystemAllocator systemAllocator { nullptr };
     ObjectBufferTracer profiler;
 
     using PayloadType = std::byte[1024];
 
-    allocators::ObjectBufferAllocator<PayloadType, allocators::specific::PageBlockAllocator, SystemAllocator, 4> objectPool { blockAllocator, systemAllocator, &profiler };
+    allocators::ObjectBufferAllocator<PayloadType, allocators::specific::PageBlockAllocator, allocators::general::SystemAllocator, 4> objectPool { blockAllocator, systemAllocator, &profiler };
 
     //Fill first chunk
     PayloadType* objects[4];

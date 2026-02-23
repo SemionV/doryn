@@ -1,8 +1,10 @@
 #pragma once
 
+#include <dory/types.h>
+
 namespace dory::generic::memory
 {
-    template<typename TResource, typename TAllocator>
+    template<typename TResource, typename TAllocator, LabelType AllocLabel = {}>
     class AllocationResource
     {
     private:
@@ -14,7 +16,7 @@ namespace dory::generic::memory
         explicit AllocationResource(TAllocator& allocator, TArgs&&... args):
             _allocator(&allocator)
         {
-            _resourcePtr = _allocator->template allocate<TResource>(std::forward<TArgs>(args)...);
+            _resourcePtr = _allocator->template allocateObject<TResource>(AllocLabel, std::forward<TArgs>(args)...);
         }
 
         ~AllocationResource()
@@ -69,7 +71,7 @@ namespace dory::generic::memory
         {
             if (_resourcePtr)
             {
-                _allocator->template deallocateType<TResource>(_resourcePtr);
+                _allocator->template deallocateObject<TResource>(_resourcePtr);
             }
             _resourcePtr = newPtr;
         }

@@ -10,7 +10,6 @@ endif()
 
 add_library(${DORY_MODULE_NAME} STATIC
         include/dory/core/allocators.h
-        src/allocationProfiler.cpp
         src/extension/dynamicLibrary.cpp
         src/resources/imageStreamQueue.cpp
         src/devices/terminalDevice.cpp
