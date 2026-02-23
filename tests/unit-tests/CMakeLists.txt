@@ -8,6 +8,7 @@ add_executable(${PROJECT_NAME}
         src/impl/outputUtils.cpp
         src/impl/allocatorProfiler.cpp
         src/impl/allocatorBuilder.cpp
+        src/impl/blockAllocationProfiler.cpp
         enttSceneService.cpp
         pipelineRepository.cpp
         graphics/meshAssetBinderTests.cpp
@@ -29,7 +30,8 @@ add_executable(${PROJECT_NAME}
         src/data-structures/freeListArray.cpp
         src/allocators/systemAllocator.cpp
         src/allocators/segregationAllocator.cpp
-        src/allocators/objectPoolAllocator.cpp)
+        src/allocators/objectPoolAllocator.cpp
+        src/allocators/blockAllocator.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-core)

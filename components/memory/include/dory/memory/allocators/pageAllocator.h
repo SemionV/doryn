@@ -7,6 +7,7 @@
 
 namespace dory::memory
 {
+    //TODO: deprecated
     class PageAllocator
     {
     private:

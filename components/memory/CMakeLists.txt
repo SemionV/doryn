@@ -8,12 +8,15 @@ add_library(${DORY_MODULE_NAME} STATIC
         include/dory/memory/allocators/general/generalAllocator.h
         include/dory/memory/allocators/general/segregationAllocator.h
         include/dory/memory/allocators/specific/objectPoolAllocator.h
+        include/dory/memory/allocators/specific/blockAllocator.h
         include/dory/memory/profilers/iAllocatorProfiler.h
+        include/dory/memory/profilers/iBlockAllocationProfiler.h
         include/dory/memory/allocators/objectBufferAllocator.h
         include/dory/memory/allocators/freeListAllocator.h
         include/dory/memory/allocators/segregationAllocator.h
         include/dory/memory/allocators/systemAllocator.h
         include/dory/memory/allocators/standardAllocator.h
+        src/allocators/specific/pageBlockAllocator.cpp
         src/allocators/bumpAllocator.cpp
         src/allocators/dynamicAllocator.cpp
         src/memoryBlockAllocator.cpp

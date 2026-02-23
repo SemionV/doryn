@@ -2,6 +2,7 @@
 
 namespace dory::memory::profilers
 {
+    //TODO: deprecated
     class IBlockAllocProfiler
     {
     public:
