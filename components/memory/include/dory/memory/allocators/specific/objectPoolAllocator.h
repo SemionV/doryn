@@ -7,6 +7,7 @@
 #include <dory//memory/allocation.h>
 #include <dory/data-structures/containers/lockfree/util.h>
 #include <dory/memory/profilers/iFreeListAllocProfiler.h>
+#include <dory/types.h>
 
 namespace dory::memory::allocators::specific
 {
@@ -15,7 +16,7 @@ namespace dory::memory::allocators::specific
      * It allocates a contiguous chunk of memory, divides it into slots and makes a linked list of the free slots.
      * If all slots in a chunk are used, it allocates next chunk and links the chunk descriptors in a chain(do deallocate them properly on destruction).
      */
-    template<typename TPageAllocator, typename TMemoryBlockNodeAllocator>
+    template<typename TPageAllocator, typename TMemoryBlockNodeAllocator, LabelType PageAllocLabel = {}>
     class ObjectPoolAllocator
     {
     private:
@@ -23,7 +24,7 @@ namespace dory::memory::allocators::specific
         const std::size_t _slotsPerChunkCount;
         const std::size_t _chunkSize;
         const std::size_t _pageSize;
-        const std::size_t _pageCount;
+        std::size_t _pageCount;
         TPageAllocator& _pageAllocator; //Allocator of memory chunks
         TMemoryBlockNodeAllocator& _memoryBlockNodeAllocator; //Allocator of MemoryBlock descriptors, wrapped in a Node structure, to make a linked list of all allocated chunks
         profilers::IFreeListAllocProfiler* _profiler;
@@ -48,8 +49,7 @@ namespace dory::memory::allocators::specific
         _slotsPerChunkCount(slotsPerChunkCount),
         _chunkSize(slotSize * slotsPerChunkCount),
         _pageAllocator(pageAllocator),
-        _pageSize(pageAllocator.getPageSize()),
-        _pageCount(_chunkSize / _pageSize),
+        _pageSize(pageAllocator.getBlockSize()),
         _memoryBlockNodeAllocator(memoryBlockNodeAllocator),
         _profiler(profiler)
         {
@@ -58,6 +58,9 @@ namespace dory::memory::allocators::specific
             const std::size_t mask = slotSize - 1;
             assert::debug((slotSize & mask) == 0, "SlotSize must be a power of 2");
             assert::debug(slotsPerChunkCount > 0, "SlotsPerChunkCount must be greater than zero");
+
+            _pageCount = _chunkSize / _pageSize;
+            _pageCount = _pageCount == 0 ? 1 : _pageCount;
 
             std::size_t largeBlockSize = 0;
             std::size_t smallBlockSize = 0;
@@ -84,7 +87,7 @@ namespace dory::memory::allocators::specific
             {
                 if(node->memoryBlock.ptr != nullptr)
                 {
-                    _pageAllocator.deallocate(node->memoryBlock);
+                    _pageAllocator.deallocateBlock(node->memoryBlock.ptr, _pageCount);
                 }
 
                 MemoryBlockNode* prevNode = node->previousNode;
@@ -202,10 +205,10 @@ namespace dory::memory::allocators::specific
                     return;
                 }
 
-                std::size_t pagesCount = _pageCount == 0 ? 1 : _pageSize;
-
-                const ErrorCode errorCode = _pageAllocator.allocate(pagesCount, newBlock->memoryBlock);
-                if(errorCode != ErrorCode::Success)
+                newBlock->memoryBlock.ptr = _pageAllocator.allocateBlock(PageAllocLabel, _pageCount);
+                newBlock->memoryBlock.pagesCount = _pageCount;
+                newBlock->memoryBlock.pageSize = _pageAllocator.getBlockSize();
+                if(newBlock->memoryBlock.ptr == nullptr)
                 {
                     assert::release(false, "Cannot allocate memory block");
                     return;
@@ -219,7 +222,7 @@ namespace dory::memory::allocators::specific
                 }
                 else
                 {
-                    _pageAllocator.deallocate(newBlock->memoryBlock);
+                    _pageAllocator.deallocateBlock(newBlock->memoryBlock.ptr, _pageCount);
                     newBlock->~MemoryBlockNode();
                     _memoryBlockNodeAllocator.template deallocateObject<MemoryBlockNode>(newBlock);
                 }

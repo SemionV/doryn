@@ -2,7 +2,7 @@
 
 namespace dory::test_utilities
 {
-    AllocatorBuilder::AllocatorBuilder(memory::profilers::IBlockAllocProfiler* blockAllocProfiler,
+    AllocatorBuilder::AllocatorBuilder(memory::profilers::IBlockAllocationProfiler* blockAllocProfiler,
         memory::profilers::IAllocatorProfiler* largeObjectAllocProfiler,
         memory::profilers::IAllocatorProfiler* memoryBlockNodeAllocProfiler):
         _blockAllocator(PAGE_SIZE, blockAllocProfiler),

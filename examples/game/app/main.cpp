@@ -6,8 +6,6 @@
 
 #include <iostream>
 #include <dory/profiling/profiler.h>
-#include <dory/memory/allocators/segregationAllocator.h>
-#include "dory/memory/allocators/systemAllocator.h"
 
 #ifdef DORY_MAIN_FUNCTION_UNIX
 int main()

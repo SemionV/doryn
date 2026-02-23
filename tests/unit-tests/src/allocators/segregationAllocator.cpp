@@ -6,7 +6,8 @@
 
 #include "dory/memory/allocators/general/systemAllocator.h"
 #include "dory/memory/profilers/blockAuditProfiler.h"
-#include <dory/memory/allocators/pageAllocator.h>
+#include <dory/memory/allocators/specific/pageBlockAllocator.h>
+#include <blockAllocationProfiler.h>
 
 using namespace dory::test_utilities;
 
@@ -18,8 +19,8 @@ TEST(SegregationAllocatorTests, allocateObject)
     constexpr static std::size_t PAGE_SIZE = 4096;
     constexpr static std::size_t MEMORY_CLASS_COUNT = 11;
 
-    dory::memory::profilers::BlockAuditProfiler _blockAllocProfiler;
-    dory::memory::PageAllocator _blockAllocator { PAGE_SIZE, &_blockAllocProfiler };
+    dory::test_utilities::BlockAllocationProfiler _blockAllocProfiler;
+    dory::memory::allocators::specific::PageBlockAllocator _blockAllocator { PAGE_SIZE, &_blockAllocProfiler };
     dory::memory::allocators::general::SystemAllocator _systemAllocator { &systemAllocProfiler };
     std::array _sizeClasses = {
         dory::memory::allocators::general::MemorySizeClass{ 8, 1024 },
@@ -36,7 +37,7 @@ TEST(SegregationAllocatorTests, allocateObject)
     };
 
     using SegregationAllocatorType = dory::memory::allocators::general::SegregationAllocator<MEMORY_CLASS_COUNT,
-        dory::memory::PageAllocator,
+        dory::memory::allocators::specific::PageBlockAllocator,
         dory::memory::allocators::general::SystemAllocator,
         dory::memory::allocators::general::SystemAllocator>;
 

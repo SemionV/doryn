@@ -3,7 +3,7 @@
 
 #include "dory/memory/allocators/general/segregationAllocator.h"
 #include "dory/memory/allocators/general/systemAllocator.h"
-#include <dory/memory/allocators/pageAllocator.h>
+#include <dory/memory/allocators/specific/pageBlockAllocator.h>
 #include <dory/memory/profilers/blockAuditProfiler.h>
 
 namespace dory::test_utilities
@@ -14,15 +14,17 @@ namespace dory::test_utilities
         constexpr static std::size_t MEMORY_CLASS_COUNT = 11;
 
         using SystemAllocatorType = memory::allocators::general::SystemAllocator;
-        using PageAllocatorType = memory::PageAllocator;
-        using SegregationAllocatorType = memory::allocators::general::SegregationAllocator<MEMORY_CLASS_COUNT, memory::PageAllocator, SystemAllocatorType, SystemAllocatorType>;
+        using LargeObjectAllocator = SystemAllocatorType;
+        using MemoryBlockNodeAllocatorType = SystemAllocatorType;
+        using PageAllocatorType = memory::allocators::specific::PageBlockAllocator;
+        using SegregationAllocatorType = memory::allocators::general::SegregationAllocator<MEMORY_CLASS_COUNT, PageAllocatorType, SystemAllocatorType, SystemAllocatorType>;
 
     private:
         constexpr static std::size_t PAGE_SIZE = 4096;
 
-        memory::PageAllocator _blockAllocator;
-        memory::allocators::general::SystemAllocator _largeObjectAllocator;
-        memory::allocators::general::SystemAllocator _memoryBlockNodeAllocator;
+        PageAllocatorType _blockAllocator;
+        LargeObjectAllocator _largeObjectAllocator;
+        MemoryBlockNodeAllocatorType _memoryBlockNodeAllocator;
 
         std::array<memory::allocators::general::MemorySizeClass, MEMORY_CLASS_COUNT> _sizeClasses = {
             memory::allocators::general::MemorySizeClass{ 8, 1024 },
@@ -39,7 +41,7 @@ namespace dory::test_utilities
         };
 
     public:
-        explicit AllocatorBuilder(memory::profilers::IBlockAllocProfiler* blockAllocProfiler = nullptr,
+        explicit AllocatorBuilder(memory::profilers::IBlockAllocationProfiler* blockAllocProfiler = nullptr,
             memory::profilers::IAllocatorProfiler* largeObjectAllocProfiler = nullptr,
             memory::profilers::IAllocatorProfiler* memoryBlockNodeAllocProfiler = nullptr);
 

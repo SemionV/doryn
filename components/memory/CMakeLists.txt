@@ -2,7 +2,6 @@ set(DORY_MODULE_NAME ${PROJECT_NAME}-memory)
 
 add_library(${DORY_MODULE_NAME} STATIC
         src/allocation.cpp
-        src/allocators/pageAllocator.cpp
         include/dory/memory/genericMemoryResource.h
         include/dory/memory/allocators/general/systemAllocator.h
         include/dory/memory/allocators/general/generalAllocator.h

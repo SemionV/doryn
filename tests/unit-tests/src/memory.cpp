@@ -1,9 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <dory/memory/allocators/pageAllocator.h>
-#include <dory/memory/allocators/freeListAllocator.h>
+#include <dory/memory/allocators/specific/pageBlockAllocator.h>
 #include <dory/memory/allocators/systemAllocator.h>
-#include <dory/memory/allocators/segregationAllocator.h>
 #include <dory/memory/allocators/standardAllocator.h>
 #include <dory/memory/allocators/objectBufferAllocator.h>
 #include <dory/memory/profilers/objectBufferAllocationProfiler.h>
@@ -45,12 +43,11 @@ TEST(BlockAllocatorTests, pageResidency)
     dory::profiling::MetricsReader::startMetricsRecording(processMetricsBefore);
     dory::profiling::MetricsReader::completeMetricsRecording(processMetricsBefore);
 
-    auto allocator = PageAllocator(PAGE_SIZE, nullptr);
+    auto allocator = allocators::specific::PageBlockAllocator(PAGE_SIZE, nullptr);
 
-    MemoryBlock block {};
-    allocator.allocate(PAGE_COUNT, block);
+    void* ptr = allocator.allocateBlock({}, PAGE_COUNT);
 
-    EXPECT_FALSE(block.ptr == nullptr);
+    EXPECT_FALSE(ptr == nullptr);
 
     auto start = high_resolution_clock::now();
 
@@ -60,7 +57,7 @@ TEST(BlockAllocatorTests, pageResidency)
     {
 
         //write to the beginning of each page
-        *((int*)block.ptr + INTS_IN_PAGE_COUNT * i) = -1;
+        *((int*)ptr + INTS_IN_PAGE_COUNT * i) = -1;
     }
 
     dory::profiling::MetricsReader::completeMetricsRecording(processMetricsAfter);
@@ -69,14 +66,13 @@ TEST(BlockAllocatorTests, pageResidency)
     auto duration = duration_cast<milliseconds>(end - start);
     std::cout << "Time taken: " << duration.count() << " ms" << std::endl;
 
-    allocator.deallocate(block);
-    allocator.allocate(PAGE_COUNT, block);
-    PageAllocator::commitPages(block, PAGE_COUNT);
+    allocator.deallocateBlock(ptr, PAGE_COUNT);
+    ptr = allocator.allocateBlock({}, PAGE_COUNT);
 
     //flush CPU caches
     for (size_t i = 0; i < PAGE_COUNT; ++i)
     {
-        _mm_clflush((int*)block.ptr + INTS_IN_PAGE_COUNT * i);
+        _mm_clflush((int*)ptr + INTS_IN_PAGE_COUNT * i);
     }
 
     start = high_resolution_clock::now();
@@ -84,7 +80,7 @@ TEST(BlockAllocatorTests, pageResidency)
     for(std::size_t i = 0; i < PAGE_COUNT; ++i)
     {
         //write to the beginning of each page
-        *((int*)block.ptr + INTS_IN_PAGE_COUNT * i) = -1;
+        *((int*)ptr + INTS_IN_PAGE_COUNT * i) = -1;
     }
 
     end = high_resolution_clock::now();
@@ -102,7 +98,7 @@ TEST(FreeListAllocatorTests, simpleAllocation)
     constexpr std::size_t PAGE_SIZE = 4096;
     constexpr std::size_t SLOT_SIZE = 8;
 
-    PageAllocator blockAllocator {PAGE_SIZE, nullptr};
+    allocators::specific::PageBlockAllocator blockAllocator {PAGE_SIZE, nullptr};
     SystemAllocator systemAllocator;
     FreeListAllocator freeListAllocator { SLOT_SIZE, (PAGE_SIZE / SLOT_SIZE) * 2, blockAllocator, systemAllocator };
 
@@ -138,7 +134,7 @@ public:
     }
 };
 
-using SegregationAllocatorType = SegregationAllocator<10, PageAllocator, SystemAllocator, SystemAllocator, AllocProfiler>;
+using SegregationAllocatorType = SegregationAllocator<10, allocators::specific::PageBlockAllocator, SystemAllocator, SystemAllocator, AllocProfiler>;
 
 template<typename T>
 using StandardAllocatorType = StandardAllocator<T, SegregationAllocatorType>;
@@ -146,7 +142,7 @@ using StandardAllocatorType = StandardAllocator<T, SegregationAllocatorType>;
 TEST(SegregationAllocatorTests, simpleAllocation)
 {
     constexpr std::size_t PAGE_SIZE = 4096;
-    PageAllocator blockAllocator {PAGE_SIZE, nullptr};
+    allocators::specific::PageBlockAllocator blockAllocator {PAGE_SIZE, nullptr};
     SystemAllocator systemAllocator;
 
     std::array sizeClasses {
@@ -182,11 +178,11 @@ TEST(SegregationAllocatorTests, simpleAllocation)
 TEST(ObjectPoolAllocatorTests, chunkAllocation)
 {
     constexpr std::size_t PAGE_SIZE = 4096;
-    PageAllocator blockAllocator {PAGE_SIZE, nullptr};
+    allocators::specific::PageBlockAllocator blockAllocator {PAGE_SIZE, nullptr};
     SystemAllocator systemAllocator;
     profilers::ObjectBufferAllocationProfiler profiler;
 
-    allocators::ObjectBufferAllocator<int, PageAllocator, SystemAllocator, 1024> objectPool { blockAllocator, systemAllocator, &profiler };
+    allocators::ObjectBufferAllocator<int, allocators::specific::PageBlockAllocator, SystemAllocator, 1024> objectPool { blockAllocator, systemAllocator, &profiler };
 
     EXPECT_TRUE(objectPool.isEmpty());
 
@@ -240,13 +236,13 @@ public:
 TEST(ObjectPoolAllocatorTests, allocate)
 {
     constexpr std::size_t PAGE_SIZE = 4096;
-    PageAllocator blockAllocator {PAGE_SIZE, nullptr};
+    allocators::specific::PageBlockAllocator blockAllocator {PAGE_SIZE, nullptr};
     SystemAllocator systemAllocator;
     ObjectBufferTracer profiler;
 
     using PayloadType = std::byte[1024];
 
-    allocators::ObjectBufferAllocator<PayloadType, PageAllocator, SystemAllocator, 4> objectPool { blockAllocator, systemAllocator, &profiler };
+    allocators::ObjectBufferAllocator<PayloadType, allocators::specific::PageBlockAllocator, SystemAllocator, 4> objectPool { blockAllocator, systemAllocator, &profiler };
 
     //Fill first chunk
     PayloadType* objects[4];

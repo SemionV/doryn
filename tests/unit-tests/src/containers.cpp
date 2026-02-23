@@ -4,7 +4,6 @@
 #include <allocatorBuilder.h>
 #include <assertUtils.h>
 
-#include "dory/memory/allocators/segregationAllocator.h"
 #include <dory/data-structures/containers/string.h>
 #include <dory/data-structures/containers/list.h>
 #include <dory/data-structures/containers/deque.h>
