@@ -1,7 +1,6 @@
 set(DORY_MODULE_NAME ${PROJECT_NAME}-memory)
 
 add_library(${DORY_MODULE_NAME} STATIC
-        src/allocation.cpp
         include/dory/memory/genericMemoryResource.h
         include/dory/memory/allocators/general/systemAllocator.h
         include/dory/memory/allocators/general/generalAllocator.h
@@ -10,11 +9,8 @@ add_library(${DORY_MODULE_NAME} STATIC
         include/dory/memory/allocators/specific/blockAllocator.h
         include/dory/memory/profilers/iAllocatorProfiler.h
         include/dory/memory/profilers/iBlockAllocationProfiler.h
-        include/dory/memory/allocators/objectBufferAllocator.h
         src/allocators/specific/pageBlockAllocator.cpp
-        include/dory/memory/profilers/iObjectBufferAllocatorProfiler.h
-        include/dory/memory/profilers/objectBufferAllocationProfiler.h
-        src/profilers/objectBufferAllocationProfiler.cpp)
+        src/allocation.cpp)
 target_include_directories(${DORY_MODULE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(${DORY_MODULE_NAME} PUBLIC
         ${PROJECT_NAME}-types
