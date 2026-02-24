@@ -8,6 +8,7 @@ add_library(${DORY_MODULE_NAME} INTERFACE
         include/dory/data-structures/crc32.h
         include/dory/data-structures/hashId.h
         include/dory/data-structures/function.h
+        include/dory/data-structures/containers/bitArray.h
         include/dory/data-structures/containers/lockfree/freeListArray.h
         include/dory/data-structures/containers/lockfree/list.h
         include/dory/data-structures/containers/lockfree/util.h
