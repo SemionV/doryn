@@ -4,10 +4,12 @@
 #include <cstddef>
 #include <spdlog/fmt/fmt.h>
 #include <dory/macros/assert.h>
-#include <dory//memory/allocation.h>
 #include <dory/data-structures/containers/lockfree/util.h>
 #include <dory/memory/profilers/iFreeListAllocProfiler.h>
 #include <dory/types.h>
+#include <dory/data-structures/containers/lockfree/spinLock.h>
+
+#include <mutex>
 
 namespace dory::memory::allocators::specific
 {
@@ -31,6 +33,8 @@ namespace dory::memory::allocators::specific
         alignas(64) std::atomic<void*> _freeListHead; //Pointer to the first node in the free list
         alignas(64) std::atomic<MemoryBlockNode*> _memoryBlockHead; //Pointer to the last node of allocated memory chunks
         alignas(64) std::atomic<MemoryBlockNode*> _pendingBlock; //A newly allocated memory chunk, which is in progress of initialization, each thread, which is seeing it can help to initialize it
+
+        data_structures::containers::lockfree::SpinLockMutex _mutex;
 
         struct MemOrder
         {
@@ -98,48 +102,31 @@ namespace dory::memory::allocators::specific
 
         void* allocate() noexcept
         {
-            void* headPointer = _freeListHead.load(MemOrder::relaxed);
-            if(headPointer == nullptr)
+            void* slotPointer = nullptr;
+            void* currentHeadPointer = _freeListHead.load(MemOrder::relaxed);
+
+            while(slotPointer == nullptr)
             {
-                allocateChunk(); //Allocate an extra chunk of memory
-
-                headPointer = _freeListHead.load(MemOrder::relaxed);
-                if(headPointer == nullptr)
+                if(currentHeadPointer == nullptr)
                 {
-                    assert::release(false, "Out of memory");
-                    return nullptr;
-                }
-            }
-
-            //Read pointer to the next free slot, replace head pointer with the next slot pointer and return the current head pointer to the consumer
-            void* nextSlotPointer = *static_cast<void* const*>(headPointer);
-            while(!_freeListHead.compare_exchange_weak(headPointer, nextSlotPointer, MemOrder::acquire, MemOrder::relaxed))
-            {
-                if(headPointer == nullptr)
-                {
-                    allocateChunk();
-
-                    headPointer = _freeListHead.load(MemOrder::relaxed);
-                    if(headPointer == nullptr)
+                    if(!allocateChunk())
                     {
-                        assert::release(false, "Out of memory");
+                        //failed to allocate memory block with slots, allocation is not possible
                         return nullptr;
                     }
+
+                    currentHeadPointer = _freeListHead.load(MemOrder::relaxed);
+                    continue;
                 }
 
-                nextSlotPointer = *static_cast<void* const*>(headPointer);
+                void* nextHeadPointer = *static_cast<void* const*>(currentHeadPointer);
+                if(_freeListHead.compare_exchange_weak(currentHeadPointer, nextHeadPointer, MemOrder::acquire, MemOrder::relaxed))
+                {
+                    slotPointer = currentHeadPointer;
+                }
             }
 
-            return headPointer;
-        }
-
-        void printMemoryBlocks()
-        {
-            MemoryBlockNode* node = _memoryBlockHead.load(MemOrder::relaxed);
-            while(node != nullptr)
-            {
-
-            }
+            return slotPointer;
         }
 
         void deallocate(void* ptr) noexcept
@@ -189,8 +176,10 @@ namespace dory::memory::allocators::specific
         }
 
     private:
-        void allocateChunk()
+        bool allocateChunk()
         {
+            std::lock_guard lock { _mutex };
+
             //Allocate a new MemoryBlockNode as well as a MemoryBlock
             MemoryBlockNode* pendingBlock = _pendingBlock.load(MemOrder::acquire);
             if(pendingBlock == nullptr)
@@ -202,7 +191,7 @@ namespace dory::memory::allocators::specific
                 if(newBlock == nullptr)
                 {
                     assert::release(false, "Cannot allocate memory block node");
-                    return;
+                    return false;
                 }
 
                 newBlock->memoryBlock.ptr = _pageAllocator.allocateBlock(PageAllocLabel, _pageCount);
@@ -211,7 +200,7 @@ namespace dory::memory::allocators::specific
                 if(newBlock->memoryBlock.ptr == nullptr)
                 {
                     assert::release(false, "Cannot allocate memory block");
-                    return;
+                    return false;
                 }
 
                 if(_pendingBlock.compare_exchange_strong(pendingBlock, newBlock, MemOrder::release, MemOrder::acquire))
@@ -284,11 +273,14 @@ namespace dory::memory::allocators::specific
             }
             else
             {
+                //TODO: possible starvation
                 while(_freeListHead.load(MemOrder::relaxed) == nullptr)
                 {
                     data_structures::containers::lockfree::cpu_relax();
                 }
             }
+
+            return true;
         }
     };
 }
