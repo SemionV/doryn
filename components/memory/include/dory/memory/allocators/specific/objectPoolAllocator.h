@@ -7,9 +7,6 @@
 #include <dory/data-structures/containers/lockfree/util.h>
 #include <dory/memory/profilers/iFreeListAllocProfiler.h>
 #include <dory/types.h>
-#include <dory/data-structures/containers/lockfree/spinLock.h>
-
-#include <mutex>
 
 namespace dory::memory::allocators::specific
 {
@@ -33,8 +30,6 @@ namespace dory::memory::allocators::specific
         alignas(64) std::atomic<void*> _freeListHead; //Pointer to the first node in the free list
         alignas(64) std::atomic<MemoryBlockNode*> _memoryBlockHead; //Pointer to the last node of allocated memory chunks
         alignas(64) std::atomic<MemoryBlockNode*> _pendingBlock; //A newly allocated memory chunk, which is in progress of initialization, each thread, which is seeing it can help to initialize it
-
-        data_structures::containers::lockfree::SpinLockMutex _mutex;
 
         struct MemOrder
         {
@@ -95,7 +90,7 @@ namespace dory::memory::allocators::specific
                 }
 
                 MemoryBlockNode* prevNode = node->previousNode;
-                _memoryBlockNodeAllocator.template deallocateObject<MemoryBlockNode>(node);
+                _memoryBlockNodeAllocator.deallocateObject(node);
                 node = prevNode;
             }
         }
@@ -176,50 +171,52 @@ namespace dory::memory::allocators::specific
         }
 
     private:
-        bool allocateChunk()
+        MemoryBlockNode* getNewMemoryBlock()
         {
-            std::lock_guard lock { _mutex };
-
             //Allocate a new MemoryBlockNode as well as a MemoryBlock
-            MemoryBlockNode* pendingBlock = _pendingBlock.load(MemOrder::acquire);
-            if(pendingBlock == nullptr)
+            MemoryBlockNode* currentPendingBlock = _pendingBlock.load(MemOrder::acquire);
+            if(currentPendingBlock == nullptr)
             {
-                auto newBlock = static_cast<MemoryBlockNode*>(_memoryBlockNodeAllocator.template allocateObject<MemoryBlockNode>({}));
-                assert::inhouse(newBlock, "Cannot allocate MemoryBlockNode");
-                std::construct_at(newBlock);
+                auto newPendingBlock = static_cast<MemoryBlockNode*>(_memoryBlockNodeAllocator.template allocateObject<MemoryBlockNode>({}));
+                assert::release(newPendingBlock, "Cannot allocate memory block node");
 
-                if(newBlock == nullptr)
+                if(newPendingBlock != nullptr)
                 {
-                    assert::release(false, "Cannot allocate memory block node");
-                    return false;
-                }
+                    void* blockMemoryPtr = _pageAllocator.allocateBlock(PageAllocLabel, _pageCount);
+                    assert::release(blockMemoryPtr, "Cannot allocate memory block");
 
-                newBlock->memoryBlock.ptr = _pageAllocator.allocateBlock(PageAllocLabel, _pageCount);
-                newBlock->memoryBlock.pagesCount = _pageCount;
-                newBlock->memoryBlock.pageSize = _pageAllocator.getBlockSize();
-                if(newBlock->memoryBlock.ptr == nullptr)
-                {
-                    assert::release(false, "Cannot allocate memory block");
-                    return false;
-                }
+                    if(blockMemoryPtr != nullptr)
+                    {
+                        newPendingBlock->memoryBlock.ptr = blockMemoryPtr;
+                        newPendingBlock->memoryBlock.pagesCount = _pageCount;
+                        newPendingBlock->memoryBlock.pageSize = _pageAllocator.getBlockSize();
 
-                if(_pendingBlock.compare_exchange_strong(pendingBlock, newBlock, MemOrder::release, MemOrder::acquire))
-                {
-                    pendingBlock = newBlock;
-                    if(_profiler)
-                        _profiler->traceChunkAlloc(newBlock->memoryBlock);
-                }
-                else
-                {
-                    _pageAllocator.deallocateBlock(newBlock->memoryBlock.ptr, _pageCount);
-                    newBlock->~MemoryBlockNode();
-                    _memoryBlockNodeAllocator.template deallocateObject<MemoryBlockNode>(newBlock);
+                        if(_pendingBlock.compare_exchange_strong(currentPendingBlock, newPendingBlock, MemOrder::release, MemOrder::acquire))
+                        {
+                            currentPendingBlock = newPendingBlock;
+                            if(_profiler)
+                                _profiler->traceChunkAlloc(newPendingBlock->memoryBlock);
+                        }
+                        else
+                        {
+                            _pageAllocator.deallocateBlock(blockMemoryPtr, _pageCount);
+                            _memoryBlockNodeAllocator.deallocateObject(newPendingBlock);
+                        }
+                    }
+                    else
+                    {
+                        _memoryBlockNodeAllocator.deallocateObject(newPendingBlock);
+                    }
                 }
             }
 
-            //Initialize linked list in the memory block
-            MemoryBlock& memoryBlock = pendingBlock->memoryBlock;
-            std::atomic<std::size_t>& initializationIndex = pendingBlock->index;
+            return currentPendingBlock;
+        }
+
+        //Initialize linked list in the memory block
+        void initializeMemoryBlock(MemoryBlock& memoryBlock)
+        {
+            std::atomic<std::size_t>& initializationIndex = memoryBlock.index;
             std::size_t currentSlot = initializationIndex.load(MemOrder::relaxed);
             while(currentSlot < _slotsPerChunkCount)
             {
@@ -244,23 +241,32 @@ namespace dory::memory::allocators::specific
                 currentSlot = initializationIndex.load(MemOrder::relaxed);
             }
 
-            //Update bookkeeping references
-            initializationIndex.compare_exchange_strong(currentSlot, 0, MemOrder::relaxed, MemOrder::relaxed);
-
             if(_profiler)
                 _profiler->traceChunkInitialized(memoryBlock);
+        }
 
-            if(_pendingBlock.compare_exchange_strong(pendingBlock, nullptr, MemOrder::release, MemOrder::acquire))
+        bool allocateChunk()
+        {
+            MemoryBlockNode* newMemoryBlock = getNewMemoryBlock();
+            assert::release(newMemoryBlock, "Cannot get new memory block");
+            if(!newMemoryBlock)
+                return false;
+
+            initializeMemoryBlock(newMemoryBlock->memoryBlock);
+
+            if(_pendingBlock.compare_exchange_strong(newMemoryBlock, nullptr, MemOrder::release, MemOrder::acquire))
             {
                 MemoryBlockNode* headNode = _memoryBlockHead.load(MemOrder::relaxed);
-                pendingBlock->previousNode = headNode;
-                while(!_memoryBlockHead.compare_exchange_weak(headNode, pendingBlock, MemOrder::release, MemOrder::relaxed))
+                newMemoryBlock->previousNode = headNode;
+                while(!_memoryBlockHead.compare_exchange_weak(headNode, newMemoryBlock, MemOrder::release, MemOrder::relaxed))
                 {
-                    pendingBlock->previousNode = headNode;
+                    newMemoryBlock->previousNode = headNode;
                 }
 
                 if(_profiler)
-                    _profiler->traceChunkChained(*pendingBlock);
+                    _profiler->traceChunkChained(*newMemoryBlock);
+
+                MemoryBlock& memoryBlock = newMemoryBlock->memoryBlock;
 
                 //Another thread can free some slots and put them on free list, this is why _freeListHead could be not nullptr, but some valid pointer to a slot
                 void* freeListHead = _freeListHead.load(MemOrder::relaxed);
@@ -268,7 +274,7 @@ namespace dory::memory::allocators::specific
                 *reinterpret_cast<void**>(slotAddress) = freeListHead;
                 while(!_freeListHead.compare_exchange_weak(freeListHead, memoryBlock.ptr, MemOrder::release, MemOrder::relaxed))
                 {
-                    *reinterpret_cast<void**>(slotAddress) = freeListHead;
+                    *reinterpret_cast<void**>(slotAddress) = freeListHead;//Initialize linked list in the memory block
                 }
             }
             else

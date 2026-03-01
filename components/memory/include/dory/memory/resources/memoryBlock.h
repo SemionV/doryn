@@ -10,12 +10,12 @@ namespace dory::memory
         std::size_t pagesCount {};
         std::size_t pageSize {};
         std::size_t commitedPagesCount {};
+        std::atomic<std::size_t> index = 0;
     };
 
     struct MemoryBlockNode
     {
         MemoryBlock memoryBlock;
         MemoryBlockNode* previousNode = nullptr;
-        std::atomic<std::size_t> index = 0;
     };
 }
