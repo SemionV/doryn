@@ -7,6 +7,9 @@
 #include <dory/data-structures/containers/lockfree/util.h>
 #include <dory/memory/profilers/iFreeListAllocProfiler.h>
 #include <dory/types.h>
+#include <dory/data-structures/containers/lockfree/spinLock.h>
+
+#include <mutex>
 
 namespace dory::memory::allocators::specific
 {
@@ -30,6 +33,8 @@ namespace dory::memory::allocators::specific
         alignas(64) std::atomic<void*> _freeListHead; //Pointer to the first node in the free list
         alignas(64) std::atomic<MemoryBlockNode*> _memoryBlockHead; //Pointer to the last node of allocated memory chunks
         alignas(64) std::atomic<MemoryBlockNode*> _pendingBlock; //A newly allocated memory chunk, which is in progress of initialization, each thread, which is seeing it can help to initialize it
+
+        data_structures::containers::lockfree::SpinLockMutex _mutex;
 
         struct MemOrder
         {
@@ -173,6 +178,9 @@ namespace dory::memory::allocators::specific
     private:
         MemoryBlockNode* getNewMemoryBlock()
         {
+            //Using lock to prevent multiple threads from allocating blocks simultaneously
+            std::lock_guard lock { _mutex };
+
             //Allocate a new MemoryBlockNode as well as a MemoryBlock
             MemoryBlockNode* currentPendingBlock = _pendingBlock.load(MemOrder::acquire);
             if(currentPendingBlock == nullptr)
