@@ -9,8 +9,7 @@ namespace dory::memory::profilers
     public:
         virtual ~IFreeListAllocProfiler() = default;
 
-        virtual void traceChunkAlloc(const MemoryBlock& memoryBlock) = 0;
-        virtual void traceChunkInitialized(const MemoryBlock& memoryBlock) = 0;
-        virtual void traceChunkChained(const MemoryBlockNode& memoryBlockNode) = 0;
+        virtual void traceChunkAlloc(void* ptr, std::size_t size) = 0;
+        virtual void traceChunkChained(void* ptr) = 0;
     };
 }

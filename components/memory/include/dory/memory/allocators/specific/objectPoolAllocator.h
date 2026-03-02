@@ -38,9 +38,9 @@ namespace dory::memory::allocators::specific
 
         struct MemOrder
         {
-            static constexpr auto relaxed = std::memory_order::seq_cst;
-            static constexpr auto acquire = std::memory_order::seq_cst;
-            static constexpr auto release = std::memory_order::seq_cst;
+            static constexpr auto relaxed = std::memory_order::relaxed;
+            static constexpr auto acquire = std::memory_order::acquire;
+            static constexpr auto release = std::memory_order::release;
             static constexpr auto seq_cst = std::memory_order::seq_cst;
         };
 
@@ -89,9 +89,9 @@ namespace dory::memory::allocators::specific
 
             while(node != nullptr)
             {
-                if(node->memoryBlock.ptr != nullptr)
+                if(node->data != nullptr)
                 {
-                    _pageAllocator.deallocateBlock(node->memoryBlock.ptr, _pageCount);
+                    _pageAllocator.deallocateBlock(node->data, _pageCount);
                 }
 
                 MemoryBlockNode* prevNode = node->previousNode;
@@ -150,12 +150,10 @@ namespace dory::memory::allocators::specific
             //Check that pointer is within one of the allocated memory chunks
             while(node != nullptr)
             {
-                MemoryBlock& memoryBlock = node->memoryBlock;
-
-                if(node->memoryBlock.ptr != nullptr)
+                if(node->data != nullptr)
                 {
-                    const auto chunkStartAddress = reinterpret_cast<uintptr_t>(memoryBlock.ptr);
-                    const std::uintptr_t chunkEndAddress = chunkStartAddress + memoryBlock.pageSize * memoryBlock.pagesCount;
+                    const auto chunkStartAddress = reinterpret_cast<uintptr_t>(node->data);
+                    const std::uintptr_t chunkEndAddress = chunkStartAddress + _pageAllocator.getBlockSize() * _pageCount;
                     const auto address = reinterpret_cast<uintptr_t>(ptr);
                     if(address >= chunkStartAddress && address <= chunkEndAddress - sizeof(void*))
                     {
@@ -195,15 +193,13 @@ namespace dory::memory::allocators::specific
 
                     if(blockMemoryPtr != nullptr)
                     {
-                        newPendingBlock->memoryBlock.ptr = blockMemoryPtr;
-                        newPendingBlock->memoryBlock.pagesCount = _pageCount;
-                        newPendingBlock->memoryBlock.pageSize = _pageAllocator.getBlockSize();
+                        newPendingBlock->data = blockMemoryPtr;
 
                         if(_pendingBlock.compare_exchange_strong(currentPendingBlock, newPendingBlock, MemOrder::release, MemOrder::acquire))
                         {
                             currentPendingBlock = newPendingBlock;
                             if(_profiler)
-                                _profiler->traceChunkAlloc(newPendingBlock->memoryBlock);
+                                _profiler->traceChunkAlloc(newPendingBlock->data, _pageAllocator.getBlockSize() * _pageCount);
                         }
                         else
                         {
@@ -222,7 +218,7 @@ namespace dory::memory::allocators::specific
         }
 
         //Initialize linked list in the memory block
-        void initializeMemoryBlock(MemoryBlock& memoryBlock)
+        void initializeMemoryBlock(MemoryBlockNode& memoryBlock)
         {
             std::atomic<std::size_t>& initializationIndex = memoryBlock.index;
             std::size_t currentSlot = initializationIndex.load(MemOrder::relaxed);
@@ -234,11 +230,11 @@ namespace dory::memory::allocators::specific
                     continue;
                 }
 
-                const std::uintptr_t slotAddress = reinterpret_cast<std::uintptr_t>(memoryBlock.ptr) + _slotSize * currentSlot;
+                const std::uintptr_t slotAddress = reinterpret_cast<std::uintptr_t>(memoryBlock.data) + _slotSize * currentSlot;
 
                 if(currentSlot != _slotsPerChunkCount - 1)
                 {
-                    const std::uintptr_t nextSlotAddress = reinterpret_cast<std::uintptr_t>(memoryBlock.ptr) + _slotSize * (currentSlot + 1);
+                    const std::uintptr_t nextSlotAddress = reinterpret_cast<std::uintptr_t>(memoryBlock.data) + _slotSize * (currentSlot + 1);
                     *reinterpret_cast<std::uintptr_t*>(slotAddress) = nextSlotAddress;
                 }
                 else
@@ -248,9 +244,6 @@ namespace dory::memory::allocators::specific
 
                 currentSlot = initializationIndex.load(MemOrder::relaxed);
             }
-
-            if(_profiler)
-                _profiler->traceChunkInitialized(memoryBlock);
         }
 
         bool allocateChunk()
@@ -260,7 +253,7 @@ namespace dory::memory::allocators::specific
             if(!newMemoryBlock)
                 return false;
 
-            initializeMemoryBlock(newMemoryBlock->memoryBlock);
+            initializeMemoryBlock(*newMemoryBlock);
 
             if(_pendingBlock.compare_exchange_strong(newMemoryBlock, nullptr, MemOrder::release, MemOrder::acquire))
             {
@@ -272,15 +265,13 @@ namespace dory::memory::allocators::specific
                 }
 
                 if(_profiler)
-                    _profiler->traceChunkChained(*newMemoryBlock);
-
-                MemoryBlock& memoryBlock = newMemoryBlock->memoryBlock;
+                    _profiler->traceChunkChained(newMemoryBlock->data);
 
                 //Another thread can free some slots and put them on free list, this is why _freeListHead could be not nullptr, but some valid pointer to a slot
                 void* freeListHead = _freeListHead.load(MemOrder::relaxed);
-                const std::uintptr_t slotAddress = reinterpret_cast<std::uintptr_t>(memoryBlock.ptr) + _slotSize * (_slotsPerChunkCount - 1);
+                const std::uintptr_t slotAddress = reinterpret_cast<std::uintptr_t>(newMemoryBlock->data) + _slotSize * (_slotsPerChunkCount - 1);
                 *reinterpret_cast<void**>(slotAddress) = freeListHead;
-                while(!_freeListHead.compare_exchange_weak(freeListHead, memoryBlock.ptr, MemOrder::release, MemOrder::relaxed))
+                while(!_freeListHead.compare_exchange_weak(freeListHead, newMemoryBlock->data, MemOrder::release, MemOrder::relaxed))
                 {
                     *reinterpret_cast<void**>(slotAddress) = freeListHead;//Initialize linked list in the memory block
                 }

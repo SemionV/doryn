@@ -15,7 +15,8 @@ namespace dory::memory
 
     struct MemoryBlockNode
     {
-        MemoryBlock memoryBlock;
+        void* data {};
+        std::atomic<std::size_t> index = 0;
         MemoryBlockNode* previousNode = nullptr;
     };
 }
