@@ -198,6 +198,15 @@ namespace dory::memory::allocators::specific
                         if(_pendingBlock.compare_exchange_strong(currentPendingBlock, newPendingBlock, MemOrder::release, MemOrder::acquire))
                         {
                             currentPendingBlock = newPendingBlock;
+
+                            //Attach new block to the chain
+                            MemoryBlockNode* headNode = _memoryBlockHead.load(MemOrder::relaxed);
+                            newPendingBlock->previousNode = headNode;
+                            while(!_memoryBlockHead.compare_exchange_weak(headNode, newPendingBlock, MemOrder::release, MemOrder::relaxed))
+                            {
+                                newPendingBlock->previousNode = headNode;
+                            }
+
                             if(_profiler)
                                 _profiler->traceChunkAlloc(newPendingBlock->data, _pageAllocator.getBlockSize() * _pageCount);
                         }
@@ -257,17 +266,7 @@ namespace dory::memory::allocators::specific
 
             if(_pendingBlock.compare_exchange_strong(newMemoryBlock, nullptr, MemOrder::release, MemOrder::acquire))
             {
-                MemoryBlockNode* headNode = _memoryBlockHead.load(MemOrder::relaxed);
-                newMemoryBlock->previousNode = headNode;
-                while(!_memoryBlockHead.compare_exchange_weak(headNode, newMemoryBlock, MemOrder::release, MemOrder::relaxed))
-                {
-                    newMemoryBlock->previousNode = headNode;
-                }
-
-                if(_profiler)
-                    _profiler->traceChunkChained(newMemoryBlock->data);
-
-                //Another thread can free some slots and put them on free list, this is why _freeListHead could be not nullptr, but some valid pointer to a slot
+                //Another thread can free some slots and put them on free list, this is why _freeListHead could not be nullptr, but some valid pointer to a slot
                 void* freeListHead = _freeListHead.load(MemOrder::relaxed);
                 const std::uintptr_t slotAddress = reinterpret_cast<std::uintptr_t>(newMemoryBlock->data) + _slotSize * (_slotsPerChunkCount - 1);
                 *reinterpret_cast<void**>(slotAddress) = freeListHead;
