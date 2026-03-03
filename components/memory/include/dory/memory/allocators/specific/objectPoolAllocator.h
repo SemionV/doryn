@@ -116,6 +116,9 @@ namespace dory::memory::allocators::specific
                     }
 
                     currentHeadPointer = _freeListHead.load(MemOrder::relaxed);
+
+                    //Some threads might be looping while waiting for new slots available, yield is needed to prevent them overheating CPU
+                    data_structures::containers::lockfree::cpu_relax();
                     continue;
                 }
 
@@ -255,6 +258,11 @@ namespace dory::memory::allocators::specific
             }
         }
 
+        void feedNewMemoryBlockToFreeList(MemoryBlockNode& memoryBlock)
+        {
+
+        }
+
         bool allocateChunk()
         {
             MemoryBlockNode* newMemoryBlock = getNewMemoryBlock();
@@ -273,14 +281,6 @@ namespace dory::memory::allocators::specific
                 while(!_freeListHead.compare_exchange_weak(freeListHead, newMemoryBlock->data, MemOrder::release, MemOrder::relaxed))
                 {
                     *reinterpret_cast<void**>(slotAddress) = freeListHead;//Initialize linked list in the memory block
-                }
-            }
-            else
-            {
-                //TODO: possible starvation
-                while(_freeListHead.load(MemOrder::relaxed) == nullptr)
-                {
-                    data_structures::containers::lockfree::cpu_relax();
                 }
             }
 
