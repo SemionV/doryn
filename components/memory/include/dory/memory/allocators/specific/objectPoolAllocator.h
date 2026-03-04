@@ -7,6 +7,7 @@
 #include <dory/data-structures/containers/lockfree/util.h>
 #include <dory/memory/profilers/iFreeListAllocProfiler.h>
 #include <dory/types.h>
+#include <dory/bitwise/numbers.h>
 #include <dory/data-structures/containers/lockfree/spinLock.h>
 
 #include <mutex>
@@ -22,11 +23,13 @@ namespace dory::memory::allocators::specific
     class ObjectPoolAllocator
     {
     private:
-        const std::size_t _slotSize;
-        const std::size_t _slotsPerChunkCount;
-        const std::size_t _chunkSize;
-        const std::size_t _pageSize;
-        std::size_t _pageCount;
+        const std::size_t _slotSize {};
+        const std::size_t _slotsPerChunkCount {};
+        const std::size_t _chunkSize {};
+        const std::size_t _pageSize {};
+        std::size_t _pageCount {};
+        std::size_t _threadsCount {};
+        std::size_t _batchSize {};
         TPageAllocator& _pageAllocator; //Allocator of memory chunks
         TMemoryBlockNodeAllocator& _memoryBlockNodeAllocator; //Allocator of MemoryBlock descriptors, wrapped in a Node structure, to make a linked list of all allocated chunks
         profilers::IFreeListAllocProfiler* _profiler;
@@ -48,12 +51,14 @@ namespace dory::memory::allocators::specific
         ObjectPoolAllocator(const std::size_t slotSize, const std::size_t slotsPerChunkCount,
             TPageAllocator& pageAllocator,
             TMemoryBlockNodeAllocator& memoryBlockNodeAllocator,
-            profilers::IFreeListAllocProfiler* profiler = nullptr) noexcept:
+            profilers::IFreeListAllocProfiler* profiler = nullptr,
+            const std::size_t threadsCount = 8) noexcept:
         _slotSize(slotSize),
         _slotsPerChunkCount(slotsPerChunkCount),
         _chunkSize(slotSize * slotsPerChunkCount),
         _pageAllocator(pageAllocator),
         _pageSize(pageAllocator.getBlockSize()),
+        _threadsCount(threadsCount),
         _memoryBlockNodeAllocator(memoryBlockNodeAllocator),
         _profiler(profiler)
         {
@@ -79,6 +84,16 @@ namespace dory::memory::allocators::specific
                 smallBlockSize = _chunkSize;
             }
             assert::debug(largeBlockSize % smallBlockSize == 0, fmt::format("Chunk size must be a multiple of page size").c_str());
+
+            assert::debug(_threadsCount > 0, "Threads count must be greater than zero");
+            assert::debug(bitwise::isPowerOfTwo(_threadsCount), "Threads count must be a power of 2");
+
+            std::size_t currentThreadsCountLog = bitwise::log2Ceil(_threadsCount);
+            while(_batchSize == 0)
+            {
+                _batchSize = _slotsPerChunkCount >> currentThreadsCountLog;
+                --currentThreadsCountLog;
+            }
 
             allocateChunk(); //Allocate the initial memory chunk
         }
@@ -134,8 +149,6 @@ namespace dory::memory::allocators::specific
 
         void deallocate(void* ptr) noexcept
         {
-            assert::inhouse(isInRange(ptr), "Pointer does not belong to the managed memory of the allocator");
-
             //Write current head pointer value to the deallocated slot and write address of the deallocated slot to the head pointer
             void* headPointer = _freeListHead.load(MemOrder::relaxed);
             *static_cast<void**>(ptr) = headPointer;
@@ -143,32 +156,6 @@ namespace dory::memory::allocators::specific
             {
                 *static_cast<void**>(ptr) = headPointer;
             }
-        }
-
-        bool isInRange(void* ptr) const
-        {
-            MemoryBlockNode* node = _memoryBlockHead;
-            bool isInRange = false;
-
-            //Check that pointer is within one of the allocated memory chunks
-            while(node != nullptr)
-            {
-                if(node->data != nullptr)
-                {
-                    const auto chunkStartAddress = reinterpret_cast<uintptr_t>(node->data);
-                    const std::uintptr_t chunkEndAddress = chunkStartAddress + _pageAllocator.getBlockSize() * _pageCount;
-                    const auto address = reinterpret_cast<uintptr_t>(ptr);
-                    if(address >= chunkStartAddress && address <= chunkEndAddress - sizeof(void*))
-                    {
-                        isInRange = true;
-                        break;
-                    }
-                }
-
-                node = node->previousNode;
-            }
-
-            return isInRange;
         }
 
         [[nodiscard]] std::size_t getSlotSize() const noexcept
@@ -197,6 +184,7 @@ namespace dory::memory::allocators::specific
                     if(blockMemoryPtr != nullptr)
                     {
                         newPendingBlock->data = blockMemoryPtr;
+                        newPendingBlock->index = 0;
 
                         if(_pendingBlock.compare_exchange_strong(currentPendingBlock, newPendingBlock, MemOrder::release, MemOrder::acquire))
                         {
@@ -229,38 +217,52 @@ namespace dory::memory::allocators::specific
             return currentPendingBlock;
         }
 
-        //Initialize linked list in the memory block
-        void initializeMemoryBlock(MemoryBlockNode& memoryBlock)
+        //Initialize block of slots to free-list(uses batches of slots, number of batches is apprx. equal to number of working threads)
+        void feedNewMemoryBlockToFreeList(MemoryBlockNode& memoryBlock)
         {
-            std::atomic<std::size_t>& initializationIndex = memoryBlock.index;
-            std::size_t currentSlot = initializationIndex.load(MemOrder::relaxed);
+            std::size_t currentSlot = memoryBlock.index.load(MemOrder::relaxed);
             while(currentSlot < _slotsPerChunkCount)
             {
-                std::size_t nextSlot = currentSlot + 1;
-                if(!initializationIndex.compare_exchange_strong(currentSlot, nextSlot, MemOrder::relaxed, MemOrder::relaxed))
+                std::size_t nextSlot = currentSlot + _batchSize;
+                if(!memoryBlock.index.compare_exchange_weak(currentSlot, nextSlot, MemOrder::acquire, MemOrder::relaxed))
                 {
+                    //try again
                     continue;
                 }
 
-                const std::uintptr_t slotAddress = reinterpret_cast<std::uintptr_t>(memoryBlock.data) + _slotSize * currentSlot;
+                //block of slots is reserved
+                const std::size_t endIndex = _slotsPerChunkCount - currentSlot;
+                const std::size_t startIndex = _slotsPerChunkCount - currentSlot - _batchSize;
 
-                if(currentSlot != _slotsPerChunkCount - 1)
+
+                //Link block of slots together
+                for(std::size_t i = startIndex; i < endIndex; ++i)
                 {
-                    const std::uintptr_t nextSlotAddress = reinterpret_cast<std::uintptr_t>(memoryBlock.data) + _slotSize * (currentSlot + 1);
-                    *reinterpret_cast<std::uintptr_t*>(slotAddress) = nextSlotAddress;
-                }
-                else
-                {
-                    *reinterpret_cast<void**>(slotAddress) = nullptr;
+                    const std::uintptr_t slotAddress = reinterpret_cast<std::uintptr_t>(memoryBlock.data) + _slotSize * i;
+
+                    if(i != endIndex - 1)
+                    {
+                        const std::uintptr_t nextSlotAddress = reinterpret_cast<std::uintptr_t>(memoryBlock.data) + _slotSize * (i + 1);
+                        *reinterpret_cast<std::uintptr_t*>(slotAddress) = nextSlotAddress;
+                    }
+                    else
+                    {
+                        *reinterpret_cast<void**>(slotAddress) = nullptr;
+                    }
                 }
 
-                currentSlot = initializationIndex.load(MemOrder::relaxed);
+                //Feed block of slots into free-list
+                const std::uintptr_t firstSlotAddress = reinterpret_cast<std::uintptr_t>(memoryBlock.data) + _slotSize * startIndex;
+                const std::uintptr_t lastSlotAddress = reinterpret_cast<std::uintptr_t>(memoryBlock.data) + _slotSize * (endIndex - 1);
+                void* freeListHead = _freeListHead.load(MemOrder::relaxed);
+                *reinterpret_cast<void**>(lastSlotAddress) = freeListHead;
+                while(!_freeListHead.compare_exchange_weak(freeListHead, reinterpret_cast<void*>(firstSlotAddress), MemOrder::release, MemOrder::relaxed))
+                {
+                    *reinterpret_cast<void**>(lastSlotAddress) = freeListHead;
+                }
+
+                currentSlot = memoryBlock.index.load(MemOrder::relaxed);
             }
-        }
-
-        void feedNewMemoryBlockToFreeList(MemoryBlockNode& memoryBlock)
-        {
-
         }
 
         bool allocateChunk()
@@ -270,19 +272,10 @@ namespace dory::memory::allocators::specific
             if(!newMemoryBlock)
                 return false;
 
-            initializeMemoryBlock(*newMemoryBlock);
+            feedNewMemoryBlockToFreeList(*newMemoryBlock);
 
-            if(_pendingBlock.compare_exchange_strong(newMemoryBlock, nullptr, MemOrder::release, MemOrder::acquire))
-            {
-                //Another thread can free some slots and put them on free list, this is why _freeListHead could not be nullptr, but some valid pointer to a slot
-                void* freeListHead = _freeListHead.load(MemOrder::relaxed);
-                const std::uintptr_t slotAddress = reinterpret_cast<std::uintptr_t>(newMemoryBlock->data) + _slotSize * (_slotsPerChunkCount - 1);
-                *reinterpret_cast<void**>(slotAddress) = freeListHead;
-                while(!_freeListHead.compare_exchange_weak(freeListHead, newMemoryBlock->data, MemOrder::release, MemOrder::relaxed))
-                {
-                    *reinterpret_cast<void**>(slotAddress) = freeListHead;//Initialize linked list in the memory block
-                }
-            }
+            //One of the threads will succeed
+            _pendingBlock.compare_exchange_strong(newMemoryBlock, nullptr, MemOrder::release, MemOrder::acquire);
 
             return true;
         }

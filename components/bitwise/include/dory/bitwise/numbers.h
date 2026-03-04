@@ -17,6 +17,7 @@ namespace dory::bitwise
         return x + 1;
     }
 
+    ///Count trailing 0 to the right of 1(log2)
     template<typename T>
     requires std::is_integral_v<T>
     constexpr T log2Ceil(T x) noexcept
