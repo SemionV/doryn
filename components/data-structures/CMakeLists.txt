@@ -11,6 +11,7 @@ add_library(${DORY_MODULE_NAME} INTERFACE
         include/dory/data-structures/containers/bitArray.h
         include/dory/data-structures/containers/lockfree/freeListArray.h
         include/dory/data-structures/containers/lockfree/list.h
+        include/dory/data-structures/containers/lockfree/stack.h
         include/dory/data-structures/containers/lockfree/util.h
         include/dory/data-structures/containers/lockfree/spinLock.h
         include/dory/data-structures/containers/lockfree/sharedLock.h)
