@@ -8,7 +8,7 @@
 namespace dory::data_structures::containers::lockfree
 {
     template<typename T, typename TAllocator, LabelType AllocLabel>
-    class Stack
+    class TrackingList
     {
     private:
         using NodeType = resources::Node<T>;
@@ -17,15 +17,25 @@ namespace dory::data_structures::containers::lockfree
         TAllocator& _allocator;
 
     public:
-        explicit Stack(TAllocator& allocator):
+        explicit TrackingList(TAllocator& allocator):
             _allocator(allocator)
         {}
+
+        ~TrackingList()
+        {
+            clear([](T&) {});
+        }
+
+        TrackingList(const TrackingList&) = delete;
+        TrackingList& operator=(const TrackingList&) = delete;
+        TrackingList(TrackingList&&) = delete;
+        TrackingList& operator=(TrackingList&&) = delete;
 
         template<typename... TArgs>
         void push(TArgs&&... args)
         {
             NodeType* newNode = _allocator.template allocateObject<NodeType>(AllocLabel, std::forward<TArgs>(args)...);
-            assert::release(newNode != nullptr, "Stack: cannot allocate new node");
+            assert::release(newNode != nullptr, "TrackingList: cannot allocate new node");
 
             NodeType* currentHead = _head.load(std::memory_order_relaxed);
             newNode->next = currentHead;
@@ -35,23 +45,16 @@ namespace dory::data_structures::containers::lockfree
             }
         }
 
-        //TODO: for a simple TrackingList pop is not needed at all and the class can be reduced just to a push method
-        bool tryPop(T& destination)
+        template<typename F>
+        void clear(F&& fn)
         {
-            while(true)
+            NodeType* node = _head.exchange(nullptr, std::memory_order_acquire);
+            while (node != nullptr)
             {
-                NodeType* currentHead = _head.load(std::memory_order_acquire);
-                if(currentHead == nullptr)
-                    return false;
-
-                if(_head.compare_exchange_weak(currentHead, currentHead->next, std::memory_order_relaxed, std::memory_order_relaxed))
-                {
-                    destination = std::move(currentHead->data);
-                    //TODO: implement proper reclamation strategy
-                    //_allocator.template deallocateObject<Node>(currentHead);
-
-                    return true;
-                }
+                NodeType* next = node->next;
+                fn(node->data);
+                _allocator.template deallocateObject<NodeType>(node);
+                node = next;
             }
         }
     };

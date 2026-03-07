@@ -27,6 +27,7 @@ add_executable(${PROJECT_NAME}
         src/function.cpp
         src/eventSystem.cpp
         src/data-structures/freeListArray.cpp
+        src/data-structures/trackingList.cpp
         src/allocators/systemAllocator.cpp
         src/allocators/segregationAllocator.cpp
         src/allocators/objectPoolAllocator.cpp

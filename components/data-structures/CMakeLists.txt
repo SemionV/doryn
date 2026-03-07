@@ -1,6 +1,7 @@
 set(DORY_MODULE_NAME ${PROJECT_NAME}-data-structures)
 
 add_library(${DORY_MODULE_NAME} INTERFACE
+        include/dory/data-structures/containers/lockfree/resources/node.h
         include/dory/data-structures/containers/string.h
         include/dory/data-structures/containers/list.h
         include/dory/data-structures/containers/deque.h
@@ -11,6 +12,7 @@ add_library(${DORY_MODULE_NAME} INTERFACE
         include/dory/data-structures/containers/bitArray.h
         include/dory/data-structures/containers/lockfree/freeListArray.h
         include/dory/data-structures/containers/lockfree/list.h
+        include/dory/data-structures/containers/lockfree/trackingList.h
         include/dory/data-structures/containers/lockfree/stack.h
         include/dory/data-structures/containers/lockfree/util.h
         include/dory/data-structures/containers/lockfree/spinLock.h
