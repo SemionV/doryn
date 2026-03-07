@@ -51,3 +51,5 @@ To setup project localy:
 * IN_HOUSE_ASSERT_ENABLED : on/off the asserts for debug builds
 * DORY_PROFILING : use embedded profiler client
 * DORY_GPU_PROFILING : use embedded profiler client with GPU tracing
+
+[Documentation](docs/documentation.md)
