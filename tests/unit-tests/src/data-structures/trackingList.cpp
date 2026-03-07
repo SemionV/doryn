@@ -49,10 +49,10 @@ namespace dory::data_structures::containers::lockfree::tests
     // Helpers
     //--------------------------------------------------------------------------
 
-    constexpr LabelType kTestLabel = static_cast<LabelType>(0);
+    constexpr LabelType kTestLabel = 0;
 
     template<typename T>
-    using TrackingListType = dory::data_structures::containers::lockfree::TrackingList<T, TestAllocator, kTestLabel>;
+    using TrackingListType = TrackingList<T, TestAllocator, kTestLabel>;
 
     //--------------------------------------------------------------------------
     // Tests

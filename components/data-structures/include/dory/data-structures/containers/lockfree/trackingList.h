@@ -7,6 +7,7 @@
 
 namespace dory::data_structures::containers::lockfree
 {
+    ///This class has its own documentation page at docs/components/data-structures/containers/lockfree/trackingList.md
     template<typename T, typename TAllocator, LabelType AllocLabel>
     class TrackingList
     {
