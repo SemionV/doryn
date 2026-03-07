@@ -16,6 +16,7 @@ add_library(${DORY_MODULE_NAME} INTERFACE
         include/dory/data-structures/containers/lockfree/stack.h
         include/dory/data-structures/containers/lockfree/util.h
         include/dory/data-structures/containers/lockfree/spinLock.h
-        include/dory/data-structures/containers/lockfree/sharedLock.h)
+        include/dory/data-structures/containers/lockfree/sharedLock.h
+        include/dory/data-structures/memory-reclamation/hazardPointers.h)
 target_include_directories(${DORY_MODULE_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(${DORY_MODULE_NAME} INTERFACE ${PROJECT_NAME}-macros ${PROJECT_NAME}-bitwise)

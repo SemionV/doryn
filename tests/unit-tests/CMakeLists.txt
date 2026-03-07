@@ -31,7 +31,8 @@ add_executable(${PROJECT_NAME}
         src/allocators/systemAllocator.cpp
         src/allocators/segregationAllocator.cpp
         src/allocators/objectPoolAllocator.cpp
-        src/allocators/pageBlockAllocator.cpp)
+        src/allocators/pageBlockAllocator.cpp
+        src/data-structures/hazardPointers.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         dory-core)
