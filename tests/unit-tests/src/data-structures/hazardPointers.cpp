@@ -1,9 +1,10 @@
-#include <dory/data-structures/memory-reclamation/hazardPointers.h>
-
 #include <gtest/gtest.h>
 #include <thread>
 #include <vector>
 #include <iostream>
+
+#include <dory/data-structures/memory-reclamation/hazardPointers.h>
+#include <allocatorBuilder.h>
 
 namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 {
@@ -91,8 +92,11 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 
     void test()
     {
-        using Domain = Domain<8, 2, 128>;
-        Domain domain;
+        test_utilities::AllocatorBuilder allocBuilder {};
+        const auto allocator = allocBuilder.build(nullptr);
+
+        using Domain = Domain<8, 2, 128, test_utilities::AllocatorBuilder::SegregationAllocatorType>;
+        Domain domain { *allocator };
 
         HazardTreiberStack<int, Domain> stack(domain);
 
