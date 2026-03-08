@@ -13,6 +13,7 @@ using namespace dory::memory;
 #if DORY_PLATFORM_LINUX
 #include <dory/profiling/metricsReader.h>
 
+#include <sys/mman.h>
 #include <immintrin.h>
 #include <emmintrin.h> // For _mm_clflush
 #include <sys/resource.h>
@@ -72,7 +73,7 @@ TEST(BlockAllocatorTests, pageResidency)
     //flush CPU caches
     for (size_t i = 0; i < PAGE_COUNT; ++i)
     {
-        _mm_clflush((int*)ptr + INTS_IN_PAGE_COUNT * i);
+        dory::data_structures::containers::lockfree::_mm_clflush((int*)ptr + INTS_IN_PAGE_COUNT * i);
     }
 
     start = high_resolution_clock::now();
