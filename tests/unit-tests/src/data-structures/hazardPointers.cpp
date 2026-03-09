@@ -59,11 +59,11 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 
         std::optional<T> pop(u32 thread_index)
         {
-            auto guard = _domain.make_guard(thread_index, 0);
+            auto guard = _domain.makeGuard(thread_index, 0);
 
             for (;;)
             {
-                Node* head = guard.get_protected(_head);
+                Node* head = guard.getProtected(_head);
                 if (!head)
                     return std::nullopt;
 
@@ -75,7 +75,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
                         std::memory_order_acq_rel,
                         std::memory_order_acquire))
                 {
-                    std::optional<T> result{std::move(head->value)};
+                    std::optional<T> result { std::move(head->value) };
 
                     // Clear hazard before retirement scan opportunities elsewhere.
                     guard.reset();
@@ -131,7 +131,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
         for (auto& t : workers)
             t.join();
 
-        domain.scan_all();
+        domain.scanAll();
 
         std::cout << "done\n";
     }

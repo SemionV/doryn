@@ -2,55 +2,29 @@
 
 #include <atomic>
 #include <array>
-#include <cstdint>
-#include <cassert>
-#include <optional>
-#include <utility>
 #include <algorithm>
 
 #include <dory/types.h>
-#include <dory/interface.h>
-#include <dory/data-structures/function.h>
+#include <dory/constants.h>
+#include <dory/macros/assert.h>
+
+#include "janitor.h"
 
 namespace dory::data_structures::memory_reclamation::hazard_pointers
 {
-    //TODO: move to global constants
-    constexpr u32 CacheLineSize = 64;
-
-    class Janitor: Interface
-    {
-    public:
-        virtual void cleanup(void* ptr) = 0;
-    };
-
-    template<typename T, typename TAllocator>
-    class ObjectJanitor: public Janitor
-    {
-    private:
-        TAllocator& _allocator;
-
-    public:
-        explicit ObjectJanitor(TAllocator& allocator):
-            _allocator(allocator)
-        {}
-
-        void cleanup(void* ptr) override
-        {
-            _allocator.deallocateObject(static_cast<T*>(ptr));
-        }
-    };
-
+    using SizeType = u32;
+    
     struct RetiredNode
     {
         void* ptr = nullptr;
         Janitor* janitor = nullptr;
     };
 
-    template <u32 Capacity>
+    template <SizeType Capacity>
     struct RetireList
     {
-        std::array<RetiredNode, Capacity> nodes{};
-        u32 count = 0;
+        std::array<RetiredNode, Capacity> nodes {};
+        SizeType count = 0;
 
         bool full() const noexcept
         {
@@ -59,21 +33,21 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
 
         void push(void* ptr, Janitor* janitor) noexcept
         {
-            assert(count < Capacity);
-            nodes[count++] = RetiredNode{ ptr, janitor };
+            assert::debug(count < Capacity, "HazardPointers::RetireList::push(): Count is too large");
+            nodes[count++] = RetiredNode { ptr, janitor };
         }
     };
 
-    struct alignas(CacheLineSize) HazardSlot
+    struct alignas(constants::CacheLineSize) HazardSlot
     {
-        std::atomic<void*> ptr{nullptr};
+        std::atomic<void*> ptr { nullptr };
     };
 
-    template <u32 MaxThreads, u32 SlotsPerThread, u32 RetireCapacity>
+    template <SizeType MaxThreads, SizeType SlotsPerThread, SizeType RetireCapacity>
     class Domain
     {
     public:
-        static constexpr u32 MaxHazards = MaxThreads * SlotsPerThread;
+        static constexpr SizeType MaxHazards = MaxThreads * SlotsPerThread;
 
     private:
         std::array<HazardSlot, MaxHazards> _hazards {};
@@ -82,22 +56,26 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
     public:
         class Guard
         {
+        private:
+            Domain* _domain = nullptr;
+            SizeType _slotIndex = 0;
+
         public:
             Guard() noexcept = default;
 
-            Guard(Domain& domain, u32 slot_index) noexcept
-                : m_domain(&domain), m_slot_index(slot_index)
-            {
-            }
+            Guard(Domain& domain, const SizeType slot_index) noexcept:
+                _domain(&domain),
+                _slotIndex(slot_index)
+            {}
 
             Guard(const Guard&) = delete;
             Guard& operator=(const Guard&) = delete;
 
-            Guard(Guard&& other) noexcept
-                : m_domain(other.m_domain)
-                , m_slot_index(other.m_slot_index)
+            Guard(Guard&& other) noexcept:
+                _domain(other._domain),
+                _slotIndex(other._slotIndex)
             {
-                other.m_domain = nullptr;
+                other._domain = nullptr;
             }
 
             Guard& operator=(Guard&&) = delete;
@@ -109,74 +87,63 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
 
             void reset() noexcept
             {
-                if (m_domain)
+                if (_domain)
                 {
-                    m_domain->_hazards[m_slot_index].ptr.store(nullptr, std::memory_order_release);
-                    m_domain = nullptr;
+                    _domain->_hazards[_slotIndex].ptr.store(nullptr, std::memory_order_release);
+                    _domain = nullptr;
                 }
             }
 
-            void protect_raw(void* p) noexcept
+            void protectRaw(void* p) noexcept
             {
-                assert(m_domain);
-                m_domain->_hazards[m_slot_index].ptr.store(p, std::memory_order_release);
+                assert::debug(_domain, "HazardPointers::Domain::Guard: Domain pointer is nullptr");
+                _domain->_hazards[_slotIndex].ptr.store(p, std::memory_order_release);
             }
 
             template <typename T>
-            T* get_protected(std::atomic<T*>& src) noexcept
+            T* getProtected(std::atomic<T*>& src) noexcept
             {
-                assert(m_domain);
+                assert::debug(_domain, "HazardPointers::Domain::Guard: Domain pointer is nullptr");
 
-                T* p = nullptr;
+                T* ptr = nullptr;
                 do
                 {
-                    p = src.load(std::memory_order_acquire);
-                    m_domain->_hazards[m_slot_index].ptr.store(p, std::memory_order_release);
+                    ptr = src.load(std::memory_order_acquire);
+                    _domain->_hazards[_slotIndex].ptr.store(ptr, std::memory_order_release);
                 }
-                while (p != src.load(std::memory_order_acquire));
+                while (ptr != src.load(std::memory_order_acquire));
 
-                return p;
+                return ptr;
             }
-
-        private:
-            Domain* m_domain = nullptr;
-            u32 m_slot_index = 0;
         };
 
     public:
         Domain() = default;
 
-        static constexpr u32 max_threads() noexcept { return MaxThreads; }
-        static constexpr u32 slots_per_thread() noexcept { return SlotsPerThread; }
+        static constexpr SizeType getMaxThreads() noexcept { return MaxThreads; }
+        static constexpr SizeType getSlotsPerThread() noexcept { return SlotsPerThread; }
 
-        Guard make_guard(u32 thread_index, u32 slot_in_thread = 0) noexcept
+        Guard makeGuard(const ThreadId threadIndex, const SizeType slotInThread = 0) noexcept
         {
-            assert(thread_index < MaxThreads);
-            assert(slot_in_thread < SlotsPerThread);
-            return Guard(*this, hazard_index(thread_index, slot_in_thread));
+            assert::debug(threadIndex < MaxThreads, "HazardPointers::Domain::makeGuard: Thread index is out of range");
+            assert::debug(slotInThread < SlotsPerThread, "HazardPointers::Domain::makeGuard: Thread slot index is out of range");
+
+            return Guard(*this, getHazardIndex(threadIndex, slotInThread));
         }
 
-        /*template <typename T, typename TAllocator>
-        void retire(u32 thread_index, T* ptr, TAllocator& allocator) noexcept
+        void retire(ThreadId threadIndex, void* ptr, Janitor* janitor) noexcept
         {
-            static ObjectJanitor<T, TAllocator> janitor { allocator };
+            assert::debug(threadIndex < MaxThreads, "HazardPointers::Domain::retire: Thread index is out of range");
 
-            retire(thread_index, ptr, janitor);
-        }*/
-
-        void retire(u32 thread_index, void* ptr, Janitor* janitor) noexcept
-        {
-            assert(thread_index < MaxThreads);
-
-            auto& retired = _retired[thread_index];
+            auto& retired = _retired[threadIndex];
 
             if (retired.full())
             {
-                scan(thread_index);
+                scan(threadIndex);
 
                 if (retired.full())
                 {
-                    assert(false && "Hazard pointer retire list full");
+                    assert::debug(false, "HazardPointers::Domain::retire: Hazard pointer retire list full");
                     return;
                 }
             }
@@ -184,65 +151,65 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
             retired.push(ptr, janitor);
 
             // Opportunistic batch scan.
+            //TODO: declare constants for batch scan(15u)
             if ((retired.count & 15u) == 0u)
             {
-                scan(thread_index);
+                scan(threadIndex);
             }
         }
 
-        void scan(u32 thread_index) noexcept
+        void scan(ThreadId threadIndex) noexcept
         {
-            assert(thread_index < MaxThreads);
+            assert::debug(threadIndex < MaxThreads, "HazardPointers::Domain::scan: Thread index is out of range");
 
-            // Snapshot all hazard pointers into a local fixed array.
-            std::array<void*, MaxHazards> snapshot{};
-            u32 hazard_count = 0;
+            // Snapshot all hazard pointers into a local fixed array
+            std::array<void*, MaxHazards> snapshot {};
+            SizeType hazardCount = 0;
 
-            for (u32 i = 0; i < MaxHazards; ++i)
+            for (SizeType i = 0; i < MaxHazards; ++i)
             {
                 void* p = _hazards[i].ptr.load(std::memory_order_acquire);
                 if (p != nullptr)
                 {
-                    snapshot[hazard_count++] = p;
+                    snapshot[hazardCount++] = p;
                 }
             }
 
-            std::sort(snapshot.begin(), snapshot.begin() + hazard_count);
+            std::sort(snapshot.begin(), snapshot.begin() + hazardCount);
 
-            auto& retired = _retired[thread_index];
+            auto& retired = _retired[threadIndex];
 
-            u32 write = 0;
-            for (u32 read = 0; read < retired.count; ++read)
+            SizeType write = 0;
+            for (SizeType read = 0; read < retired.count; ++read)
             {
-                RetiredNode& n = retired.nodes[read];
+                RetiredNode& retiredNode = retired.nodes[read];
 
-                const bool protected_now =
-                    std::binary_search(snapshot.begin(), snapshot.begin() + hazard_count, n.ptr);
+                const bool protectedNow = std::binary_search(snapshot.begin(), snapshot.begin() + hazardCount, retiredNode.ptr);
 
-                if (protected_now)
+                if (protectedNow)
                 {
                     if (write != read)
-                        retired.nodes[write] = n;
+                        retired.nodes[write] = retiredNode;
                     ++write;
                 }
-                else if(n.janitor != nullptr)
+                else if(retiredNode.janitor != nullptr)
                 {
-                    n.janitor->cleanup(n.ptr);
+                    retiredNode.janitor->cleanup(retiredNode.ptr);
                 }
             }
 
             retired.count = write;
         }
 
-        void scan_all() noexcept
+        void scanAll() noexcept
         {
-            for (u32 i = 0; i < MaxThreads; ++i)
+            for (SizeType i = 0; i < MaxThreads; ++i)
                 scan(i);
         }
 
-        bool is_hazard(void* p) const noexcept
+        bool isHazard(void* p) const noexcept
         {
-            for (u32 i = 0; i < MaxHazards; ++i)
+            for (SizeType i = 0; i < MaxHazards; ++i)
             {
                 if (_hazards[i].ptr.load(std::memory_order_acquire) == p)
                     return true;
@@ -251,9 +218,9 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
         }
 
     private:
-        static constexpr u32 hazard_index(u32 thread_index, u32 slot_in_thread) noexcept
+        static constexpr SizeType getHazardIndex(const ThreadId threadIndex, const SizeType slotInThread) noexcept
         {
-            return thread_index * SlotsPerThread + slot_in_thread;
+            return static_cast<SizeType>(threadIndex) * SlotsPerThread + slotInThread;
         }
     };
 }

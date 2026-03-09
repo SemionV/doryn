@@ -1,11 +1,11 @@
 #pragma once
 #include <cstddef>
 #include <optional>
-#include <dory/macros/constants.h>
+#include <dory/constants.h>
 
 namespace dory::containers::lockfree
 {
-    template <typename T, std::size_t ALIGN = constants::CACHELINE_SIZE>
+    template <typename T, std::size_t ALIGN = constants::CacheLineSize>
     struct alignas(ALIGN) Slot
     {
         T value;
