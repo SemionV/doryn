@@ -9,21 +9,41 @@
 #include <algorithm>
 
 #include <dory/types.h>
+#include <dory/interface.h>
 #include <dory/data-structures/function.h>
 
 namespace dory::data_structures::memory_reclamation::hazard_pointers
 {
     //TODO: move to global constants
-    constexpr u32 kCacheLineSize = 64;
+    constexpr u32 CacheLineSize = 64;
+
+    class Janitor: Interface
+    {
+    public:
+        virtual void cleanup(void* ptr) = 0;
+    };
+
+    template<typename T, typename TAllocator>
+    class ObjectJanitor: public Janitor
+    {
+    private:
+        TAllocator& _allocator;
+
+    public:
+        explicit ObjectJanitor(TAllocator& allocator):
+            _allocator(allocator)
+        {}
+
+        void cleanup(void* ptr) override
+        {
+            _allocator.deallocateObject(static_cast<T*>(ptr));
+        }
+    };
 
     struct RetiredNode
     {
-        using DeleterType = function::FunctionRef<void(void*)>;
-
-        //TODO: Use full information about allocation(ptr, size, alignment)
         void* ptr = nullptr;
-        //TODO: Use std::pmr::memory_resource AND a destructor function pointer
-        DeleterType deleter;
+        Janitor* janitor = nullptr;
     };
 
     template <u32 Capacity>
@@ -37,19 +57,19 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
             return count == Capacity;
         }
 
-        void push(void* ptr, const RetiredNode::DeleterType& deleter) noexcept
+        void push(void* ptr, Janitor* janitor) noexcept
         {
             assert(count < Capacity);
-            nodes[count++] = RetiredNode{ ptr, deleter };
+            nodes[count++] = RetiredNode{ ptr, janitor };
         }
     };
 
-    struct alignas(kCacheLineSize) HazardSlot
+    struct alignas(CacheLineSize) HazardSlot
     {
         std::atomic<void*> ptr{nullptr};
     };
 
-    template <u32 MaxThreads, u32 SlotsPerThread, u32 RetireCapacity, typename TAllocator>
+    template <u32 MaxThreads, u32 SlotsPerThread, u32 RetireCapacity>
     class Domain
     {
     public:
@@ -58,7 +78,6 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
     private:
         std::array<HazardSlot, MaxHazards> _hazards {};
         std::array<RetireList<RetireCapacity>, MaxThreads> _retired {};
-        TAllocator& _allocator;
 
     public:
         class Guard
@@ -125,9 +144,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
         };
 
     public:
-        explicit Domain(TAllocator& allocator):
-            _allocator(allocator)
-        {}
+        Domain() = default;
 
         static constexpr u32 max_threads() noexcept { return MaxThreads; }
         static constexpr u32 slots_per_thread() noexcept { return SlotsPerThread; }
@@ -139,19 +156,15 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
             return Guard(*this, hazard_index(thread_index, slot_in_thread));
         }
 
-        template<typename T>
-        void defaultDeleter(T* ptr)
+        /*template <typename T, typename TAllocator>
+        void retire(u32 thread_index, T* ptr, TAllocator& allocator) noexcept
         {
-            _allocator.deallocateObject(ptr);
-        }
+            static ObjectJanitor<T, TAllocator> janitor { allocator };
 
-        template <typename T>
-        void retire(u32 thread_index, T* ptr) noexcept
-        {
-            retire(thread_index, ptr, RetiredNode::DeleterType { function::bindMember(this, &Domain::defaultDeleter<T>) });
-        }
+            retire(thread_index, ptr, janitor);
+        }*/
 
-        void retire(u32 thread_index, void* ptr, void (*deleter)(void*)) noexcept
+        void retire(u32 thread_index, void* ptr, Janitor* janitor) noexcept
         {
             assert(thread_index < MaxThreads);
 
@@ -168,7 +181,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
                 }
             }
 
-            retired.push(ptr, deleter);
+            retired.push(ptr, janitor);
 
             // Opportunistic batch scan.
             if ((retired.count & 15u) == 0u)
@@ -212,9 +225,9 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
                         retired.nodes[write] = n;
                     ++write;
                 }
-                else
+                else if(n.janitor != nullptr)
                 {
-                    n.deleter(n.ptr);
+                    n.janitor->cleanup(n.ptr);
                 }
             }
 

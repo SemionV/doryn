@@ -5,12 +5,14 @@
 
 #include <dory/data-structures/memory-reclamation/hazardPointers.h>
 #include <allocatorBuilder.h>
+#include <dory/types.h>
 
 namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 {
-    template <typename T, typename DomainT>
+    template <typename T, typename DomainT, typename TAllocator, LabelType AllocLabel = {}>
     class HazardTreiberStack
     {
+    private:
         struct Node
         {
             T value;
@@ -23,11 +25,17 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
             }
         };
 
+        DomainT& _domain;
+        std::atomic<Node*> _head { nullptr };
+        TAllocator& _allocator;
+        ObjectJanitor<Node, TAllocator> _janitor;
+
     public:
-        explicit HazardTreiberStack(DomainT& domain) noexcept
-            : m_domain(domain)
-        {
-        }
+        explicit HazardTreiberStack(DomainT& domain, TAllocator& allocator) noexcept :
+            _domain(domain),
+            _allocator(allocator),
+            _janitor(allocator)
+        {}
 
         HazardTreiberStack(const HazardTreiberStack&) = delete;
         HazardTreiberStack& operator=(const HazardTreiberStack&) = delete;
@@ -35,14 +43,14 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
         template <typename U>
         void push(U&& value)
         {
-            Node* node = new Node(std::forward<U>(value));
+            Node* node = _allocator.template allocateObject<Node>(AllocLabel, std::forward<U>(value));
 
-            Node* old_head = m_head.load(std::memory_order_relaxed);
+            Node* old_head = _head.load(std::memory_order_relaxed);
             do
             {
                 node->next = old_head;
             }
-            while (!m_head.compare_exchange_weak(
+            while (!_head.compare_exchange_weak(
                 old_head,
                 node,
                 std::memory_order_release,
@@ -51,17 +59,17 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 
         std::optional<T> pop(u32 thread_index)
         {
-            auto guard = m_domain.make_guard(thread_index, 0);
+            auto guard = _domain.make_guard(thread_index, 0);
 
             for (;;)
             {
-                Node* head = guard.get_protected(m_head);
+                Node* head = guard.get_protected(_head);
                 if (!head)
                     return std::nullopt;
 
                 Node* next = head->next;
 
-                if (m_head.compare_exchange_weak(
+                if (_head.compare_exchange_weak(
                         head,
                         next,
                         std::memory_order_acq_rel,
@@ -72,7 +80,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
                     // Clear hazard before retirement scan opportunities elsewhere.
                     guard.reset();
 
-                    m_domain.retire(thread_index, head);
+                    _domain.retire(thread_index, head, &_janitor);
                     return result;
                 }
 
@@ -82,12 +90,8 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 
         bool empty() const noexcept
         {
-            return m_head.load(std::memory_order_acquire) == nullptr;
+            return _head.load(std::memory_order_acquire) == nullptr;
         }
-
-    private:
-        DomainT& m_domain;
-        std::atomic<Node*> m_head{nullptr};
     };
 
     void test()
@@ -95,10 +99,10 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
         test_utilities::AllocatorBuilder allocBuilder {};
         const auto allocator = allocBuilder.build(nullptr);
 
-        using Domain = Domain<8, 2, 128, test_utilities::AllocatorBuilder::SegregationAllocatorType>;
-        Domain domain { *allocator };
+        using Domain = Domain<8, 2, 128>;
+        Domain domain;
 
-        HazardTreiberStack<int, Domain> stack(domain);
+        HazardTreiberStack<int, Domain, test_utilities::AllocatorBuilder::SegregationAllocatorType> stack(domain, *allocator);
 
         for (int i = 0; i < 1000; ++i)
             stack.push(i);
