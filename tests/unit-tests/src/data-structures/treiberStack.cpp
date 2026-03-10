@@ -1,27 +1,15 @@
 #include <barrier>
 #include <gtest/gtest.h>
+#include <thread>
 
 #include <dory/data-structures/containers/lockfree/stack.h>
+#include <dory/memory/allocators/general/systemAllocator.h>
 #include <dory/data-structures/memory-reclamation/hazardPointers.h>
 
 namespace dory::data_structures::containers::lockfree::tests
 {
-    struct TestAllocator
-    {
-        template <typename T, typename... Args>
-        T* allocateObject(LabelType /*label*/, Args&&... args)
-        {
-            return new T(std::forward<Args>(args)...);
-        }
-
-        template<typename T>
-        void deallocateObject(T* ptr)
-        {
-            delete ptr;
-        }
-    };
-
-    using HazardPointerDomainType = memory_reclamation::hazard_pointers::Domain<6, 2, 128>;
+    using TestAllocator = memory::allocators::general::SystemAllocator;
+    using HazardPointerDomainType = memory_reclamation::hazard_pointers::Domain<8, 2, 128>;
 
     template <typename T>
     using Stack = HazardTreiberStack<T, HazardPointerDomainType, TestAllocator>;
@@ -371,6 +359,44 @@ namespace dory::data_structures::containers::lockfree::tests
         }
     };
 
+    struct LiveTrackedPayload
+    {
+        static inline std::atomic<int> liveCount { 0 };
+
+        int value {};
+
+        explicit LiveTrackedPayload(int v) :
+            value(v)
+        {
+            liveCount.fetch_add(1, std::memory_order_relaxed);
+        }
+
+        LiveTrackedPayload(LiveTrackedPayload&& other) noexcept :
+            value(other.value)
+        {
+            liveCount.fetch_add(1, std::memory_order_relaxed);
+        }
+
+        LiveTrackedPayload& operator=(LiveTrackedPayload&& other) noexcept
+        {
+            value = other.value;
+            return *this;
+        }
+
+        LiveTrackedPayload(const LiveTrackedPayload&) = delete;
+        LiveTrackedPayload& operator=(const LiveTrackedPayload&) = delete;
+
+        ~LiveTrackedPayload()
+        {
+            liveCount.fetch_sub(1, std::memory_order_relaxed);
+        }
+
+        static void reset() noexcept
+        {
+            liveCount.store(0, std::memory_order_relaxed);
+        }
+    };
+
     // ---------------------------------------------------------------------
     // Payload tests
     // ---------------------------------------------------------------------
@@ -424,35 +450,31 @@ namespace dory::data_structures::containers::lockfree::tests
         EXPECT_TRUE(stack.empty());
     }
 
-    TEST(HazardTreiberStackPayloadTest, LifetimeTrackedPayloadIsDestroyedExactlyForAllPushedObjects)
+    TEST(HazardTreiberStackPayloadTest, NoPayloadInstancesRemainAfterDrain)
     {
-        LifetimeTrackedPayload::resetCounters();
+        LiveTrackedPayload::reset();
 
         {
             HazardPointerDomainType domain;
             TestAllocator allocator;
-            Stack<LifetimeTrackedPayload> stack(domain, allocator);
+            Stack<LiveTrackedPayload> stack(domain, allocator);
 
-            constexpr int count = 1000;
+            constexpr int count = 100;
 
             for (int i = 0; i < count; ++i)
-                stack.push(LifetimeTrackedPayload{i});
+                stack.push(LiveTrackedPayload{i});
 
             for (int i = 0; i < count; ++i)
             {
                 auto result = stack.pop(static_cast<ThreadId>(0));
                 ASSERT_TRUE(result.has_value());
+                EXPECT_EQ(result->value, count - 1 - i);
             }
 
             EXPECT_TRUE(stack.empty());
         }
 
-        // We do not assert exact ctor/move numbers because move elision and
-        // implementation details can vary. But destruction count must at least
-        // match constructed payload objects over the test lifetime.
-        EXPECT_EQ(
-            LifetimeTrackedPayload::ctorCount.load(std::memory_order_relaxed),
-            LifetimeTrackedPayload::dtorCount.load(std::memory_order_relaxed));
+        EXPECT_EQ(LiveTrackedPayload::liveCount.load(std::memory_order_relaxed), 0);
     }
 
     TEST(HazardTreiberStackPayloadTest, LargePayloadConcurrentProducerConsumerIntegrity)

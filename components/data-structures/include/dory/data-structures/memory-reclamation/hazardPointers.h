@@ -120,6 +120,11 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
     public:
         Domain() = default;
 
+        ~Domain()
+        {
+            drain();
+        }
+
         static constexpr SizeType getMaxThreads() noexcept { return MaxThreads; }
         static constexpr SizeType getSlotsPerThread() noexcept { return SlotsPerThread; }
 
@@ -214,6 +219,11 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
                     return true;
             }
             return false;
+        }
+
+        void drain()
+        {
+            scanAll();
         }
 
     private:
