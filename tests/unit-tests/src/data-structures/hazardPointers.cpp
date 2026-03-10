@@ -9,139 +9,288 @@
 
 namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 {
-    template <typename T, typename DomainT, typename TAllocator, LabelType AllocLabel = {}>
-    class HazardTreiberStack
+    struct TestNode
     {
-    private:
-        struct Node
-        {
-            T value;
-            Node* next = nullptr;
+        int value = 0;
+    };
 
-            template <typename U>
-            explicit Node(U&& v)
-                : value(std::forward<U>(v))
-            {
-            }
-        };
-
-        DomainT& _domain;
-        std::atomic<Node*> _head { nullptr };
-        TAllocator& _allocator;
-        ObjectJanitor<Node, TAllocator> _janitor;
-
+    class RecordingJanitor final : public Janitor
+    {
     public:
-        explicit HazardTreiberStack(DomainT& domain, TAllocator& allocator) noexcept :
-            _domain(domain),
-            _allocator(allocator),
-            _janitor(allocator)
-        {}
+        std::vector<void*> cleaned;
 
-        HazardTreiberStack(const HazardTreiberStack&) = delete;
-        HazardTreiberStack& operator=(const HazardTreiberStack&) = delete;
-
-        template <typename U>
-        void push(U&& value)
+        void cleanup(void* ptr) noexcept override
         {
-            Node* node = _allocator.template allocateObject<Node>(AllocLabel, std::forward<U>(value));
-
-            Node* old_head = _head.load(std::memory_order_relaxed);
-            do
-            {
-                node->next = old_head;
-            }
-            while (!_head.compare_exchange_weak(
-                old_head,
-                node,
-                std::memory_order_release,
-                std::memory_order_relaxed));
-        }
-
-        std::optional<T> pop(u32 thread_index)
-        {
-            auto guard = _domain.makeGuard(thread_index, 0);
-
-            for (;;)
-            {
-                Node* head = guard.getProtected(_head);
-                if (!head)
-                    return std::nullopt;
-
-                Node* next = head->next;
-
-                if (_head.compare_exchange_weak(
-                        head,
-                        next,
-                        std::memory_order_acq_rel,
-                        std::memory_order_acquire))
-                {
-                    std::optional<T> result { std::move(head->value) };
-
-                    // Clear hazard before retirement scan opportunities elsewhere.
-                    guard.reset();
-
-                    _domain.retire(thread_index, head, &_janitor);
-                    return result;
-                }
-
-                // CAS failed; loop and re-protect the new head.
-            }
-        }
-
-        [[nodiscard]] bool empty() const noexcept
-        {
-            return _head.load(std::memory_order_acquire) == nullptr;
+            cleaned.push_back(ptr);
         }
     };
 
-    void test()
+    template <typename T>
+    static bool containsPtr(const std::vector<void*>& cleaned, T* ptr)
     {
-        test_utilities::AllocatorBuilder allocBuilder {};
-        const auto allocator = allocBuilder.build(nullptr);
-
-        using Domain = Domain<8, 2, 128>;
-        Domain domain;
-
-        HazardTreiberStack<int, Domain, test_utilities::AllocatorBuilder::SegregationAllocatorType> stack(domain, *allocator);
-
-        for (int i = 0; i < 1000; ++i)
-            stack.push(i);
-
-        std::vector<std::thread> workers;
-        for (std::uint32_t tid = 0; tid < 4; ++tid)
+        for (void* p : cleaned)
         {
-            workers.emplace_back([tid, &stack, &domain]()
-            {
-                for (;;)
-                {
-                    auto value = stack.pop(tid);
-                    if (!value.has_value())
-                        break;
+            if (p == static_cast<void*>(ptr))
+                return true;
+        }
+        return false;
+    }
 
-                    // Simulated work...
+    // ------------------------------------------------------------
+    // Guard behavior
+    // ------------------------------------------------------------
 
-                    if (((*value) & 31) == 0)
-                        domain.scan(tid);
-                }
+    TEST(HazardPointersTest, GuardProtectRawMarksHazardAndResetClearsIt)
+    {
+        Domain<2, 2, 8> domain;
 
-                domain.scan(tid);
-            });
+        TestNode node { 42 };
+
+        {
+            auto guard = domain.makeGuard(0, 0);
+            guard.protectRaw(&node);
+
+            EXPECT_TRUE(domain.isHazard(&node));
         }
 
-        for (auto& t : workers)
-            t.join();
+        EXPECT_FALSE(domain.isHazard(&node));
+    }
+
+    TEST(HazardPointersTest, GuardMoveTransfersOwnershipOfHazardSlot)
+    {
+        Domain<2, 2, 8> domain;
+        TestNode node { 7 };
+
+        {
+            auto guard1 = domain.makeGuard(0, 0);
+            guard1.protectRaw(&node);
+
+            EXPECT_TRUE(domain.isHazard(&node));
+
+            auto guard2 = std::move(guard1);
+
+            // Still protected because guard2 owns the slot now.
+            EXPECT_TRUE(domain.isHazard(&node));
+
+            guard2.reset();
+            EXPECT_FALSE(domain.isHazard(&node));
+        }
+
+        EXPECT_FALSE(domain.isHazard(&node));
+    }
+
+    TEST(HazardPointersTest, GetProtectedReturnsStablePointerAndPublishesHazard)
+    {
+        Domain<2, 2, 8> domain;
+
+        TestNode node { 123 };
+        std::atomic<TestNode*> src { &node };
+
+        auto guard = domain.makeGuard(0, 1);
+        TestNode* protectedPtr = guard.getProtected(src);
+
+        EXPECT_EQ(protectedPtr, &node);
+        EXPECT_TRUE(domain.isHazard(&node));
+
+        guard.reset();
+        EXPECT_FALSE(domain.isHazard(&node));
+    }
+
+    // ------------------------------------------------------------
+    // Retire / scan behavior
+    // ------------------------------------------------------------
+
+    TEST(HazardPointersTest, RetireThenScanReclaimsUnprotectedNode)
+    {
+        Domain<2, 2, 8> domain;
+        RecordingJanitor janitor;
+        TestNode node { 1 };
+
+        domain.retire(0, &node, &janitor);
+
+        EXPECT_TRUE(janitor.cleaned.empty());
+
+        domain.scan(0);
+
+        ASSERT_EQ(janitor.cleaned.size(), 1u);
+        EXPECT_EQ(janitor.cleaned[0], &node);
+    }
+
+    TEST(HazardPointersTest, ScanDoesNotReclaimProtectedNodeUntilHazardIsCleared)
+    {
+        Domain<2, 2, 8> domain;
+        RecordingJanitor janitor;
+        TestNode node { 5 };
+
+        {
+            auto guard = domain.makeGuard(0, 0);
+            guard.protectRaw(&node);
+
+            domain.retire(0, &node, &janitor);
+            domain.scan(0);
+
+            EXPECT_TRUE(janitor.cleaned.empty());
+            EXPECT_TRUE(domain.isHazard(&node));
+        }
+
+        EXPECT_FALSE(domain.isHazard(&node));
+
+        domain.scan(0);
+
+        ASSERT_EQ(janitor.cleaned.size(), 1u);
+        EXPECT_EQ(janitor.cleaned[0], &node);
+    }
+
+    TEST(HazardPointersTest, ScanRemovesRetiredNodeWithNullJanitorWithoutCrashing)
+    {
+        Domain<2, 2, 8> domain;
+        TestNode node { 9 };
+
+        domain.retire(0, &node, nullptr);
+
+        EXPECT_NO_THROW(domain.scan(0));
+
+        // Re-scanning should remain harmless and should not resurrect anything.
+        EXPECT_NO_THROW(domain.scan(0));
+    }
+
+    TEST(HazardPointersTest, ScanAllReclaimsAcrossAllRetireLists)
+    {
+        Domain<3, 2, 8> domain;
+        RecordingJanitor janitorA;
+        RecordingJanitor janitorB;
+
+        TestNode a { 11 };
+        TestNode b { 22 };
+
+        domain.retire(0, &a, &janitorA);
+        domain.retire(2, &b, &janitorB);
 
         domain.scanAll();
 
-        std::cout << "done\n";
+        ASSERT_EQ(janitorA.cleaned.size(), 1u);
+        ASSERT_EQ(janitorB.cleaned.size(), 1u);
+        EXPECT_EQ(janitorA.cleaned[0], &a);
+        EXPECT_EQ(janitorB.cleaned[0], &b);
     }
 
-    //--------------------------------------------------------------------------
-    // Tests
-    //--------------------------------------------------------------------------
-
-    TEST(HazardPointersTests, TestUseCase)
+    TEST(HazardPointersTest, HazardInAnotherThreadStillPreventsReclamation)
     {
-        test();
+        Domain<2, 2, 8> domain;
+        RecordingJanitor janitor;
+        TestNode node { 88 };
+
+        auto otherThreadGuard = domain.makeGuard(1, 1);
+        otherThreadGuard.protectRaw(&node);
+
+        domain.retire(0, &node, &janitor);
+        domain.scan(0);
+
+        EXPECT_TRUE(janitor.cleaned.empty());
+
+        otherThreadGuard.reset();
+        domain.scan(0);
+
+        ASSERT_EQ(janitor.cleaned.size(), 1u);
+        EXPECT_EQ(janitor.cleaned[0], &node);
+    }
+
+    // ------------------------------------------------------------
+    // Batch / repeated retirement behavior
+    // ------------------------------------------------------------
+
+    TEST(HazardPointersTest, ScanReclaimsOnlyUnprotectedSubset)
+    {
+        Domain<2, 2, 16> domain;
+        RecordingJanitor janitor;
+
+        TestNode n1 { 1 };
+        TestNode n2 { 2 };
+        TestNode n3 { 3 };
+
+        auto guard = domain.makeGuard(0, 0);
+        guard.protectRaw(&n2);
+
+        domain.retire(0, &n1, &janitor);
+        domain.retire(0, &n2, &janitor);
+        domain.retire(0, &n3, &janitor);
+
+        domain.scan(0);
+
+        EXPECT_EQ(janitor.cleaned.size(), 2u);
+        EXPECT_TRUE(containsPtr(janitor.cleaned, &n1));
+        EXPECT_TRUE(containsPtr(janitor.cleaned, &n3));
+        EXPECT_FALSE(containsPtr(janitor.cleaned, &n2));
+
+        guard.reset();
+        domain.scan(0);
+
+        EXPECT_EQ(janitor.cleaned.size(), 3u);
+        EXPECT_TRUE(containsPtr(janitor.cleaned, &n2));
+    }
+
+    TEST(HazardPointersTest, OpportunisticScanOn16thRetireCanReclaimOlderEntries)
+    {
+        Domain<1, 2, 32> domain;
+        RecordingJanitor janitor;
+
+        TestNode nodes[16];
+
+        for (int i = 0; i < 16; ++i)
+        {
+            nodes[i].value = i;
+            domain.retire(0, &nodes[i], &janitor);
+        }
+
+        // On the 16th insert, retire() triggers a scan because (count & 15) == 0.
+        EXPECT_EQ(janitor.cleaned.size(), 16u);
+
+        for (int i = 0; i < 16; ++i)
+        {
+            EXPECT_TRUE(containsPtr(janitor.cleaned, &nodes[i]));
+        }
+    }
+
+    // ------------------------------------------------------------
+    // Destructor / drain behavior
+    // ------------------------------------------------------------
+
+    TEST(HazardPointersTest, DomainDestructorDrainsAndReclaimsUnprotectedNodes)
+    {
+        RecordingJanitor janitor;
+        TestNode node { 77 };
+
+        {
+            Domain<2, 2, 8> domain;
+            domain.retire(0, &node, &janitor);
+
+            EXPECT_TRUE(janitor.cleaned.empty());
+        }
+
+        ASSERT_EQ(janitor.cleaned.size(), 1u);
+        EXPECT_EQ(janitor.cleaned[0], &node);
+    }
+
+    TEST(HazardPointersTest, DrainDoesNotReclaimStillProtectedNodes)
+    {
+        RecordingJanitor janitor;
+        TestNode node { 101 };
+
+        {
+            Domain<2, 2, 8> domain;
+            auto guard = domain.makeGuard(0, 0);
+            guard.protectRaw(&node);
+
+            domain.retire(1, &node, &janitor);
+            domain.drain();
+
+            EXPECT_TRUE(janitor.cleaned.empty());
+
+            guard.reset();
+            domain.drain();
+        }
+
+        ASSERT_EQ(janitor.cleaned.size(), 1u);
+        EXPECT_EQ(janitor.cleaned[0], &node);
     }
 }
