@@ -2,57 +2,84 @@
 
 #include <atomic>
 #include <dory/types.h>
-#include <dory/macros/assert.h>
-#include "resources/node.h"
+#include <dory/data-structures/memory-reclamation/janitor.h>
+#include <dory/data-structures/memory-reclamation/hazardPointers.h>
+#include <dory/data-structures/containers/lockfree/resources/node.h>
 
 namespace dory::data_structures::containers::lockfree
 {
-    template<typename T, typename TAllocator, LabelType AllocLabel>
-    class Stack
+    template <typename T, typename TDomain, typename TAllocator, LabelType AllocLabel = {}>
+    class HazardTreiberStack
     {
     private:
         using NodeType = resources::Node<T>;
 
-        std::atomic<NodeType*> _head = nullptr;
+        TDomain& _domain;
+        std::atomic<NodeType*> _head { nullptr };
         TAllocator& _allocator;
+        memory_reclamation::ObjectJanitor<NodeType, TAllocator> _janitor;
 
     public:
-        explicit Stack(TAllocator& allocator):
-            _allocator(allocator)
+        explicit HazardTreiberStack(TDomain& domain, TAllocator& allocator) noexcept :
+            _domain(domain),
+            _allocator(allocator),
+            _janitor(allocator)
         {}
 
-        template<typename... TArgs>
-        void push(TArgs&&... args)
-        {
-            NodeType* newNode = _allocator.template allocateObject<NodeType>(AllocLabel, std::forward<TArgs>(args)...);
-            assert::release(newNode != nullptr, "Stack: cannot allocate new node");
+        HazardTreiberStack(const HazardTreiberStack&) = delete;
+        HazardTreiberStack& operator=(const HazardTreiberStack&) = delete;
 
-            NodeType* currentHead = _head.load(std::memory_order_relaxed);
-            newNode->next = currentHead;
-            while(!_head.compare_exchange_weak(currentHead, newNode, std::memory_order_release, std::memory_order_relaxed))
+        template <typename U>
+        void push(U&& value)
+        {
+            NodeType* node = _allocator.template allocateObject<NodeType>(AllocLabel, std::forward<U>(value));
+
+            NodeType* oldHead = _head.load(std::memory_order_relaxed);
+            do
             {
-                newNode->next = currentHead;
+                node->next = oldHead;
+            }
+            while (!_head.compare_exchange_weak(
+                oldHead,
+                node,
+                std::memory_order_release,
+                std::memory_order_relaxed));
+        }
+
+        std::optional<T> pop(ThreadId threadIndex)
+        {
+            auto guard = _domain.makeGuard(threadIndex, 0);
+
+            for (;;)
+            {
+                NodeType* head = guard.getProtected(_head);
+                if (!head)
+                    return std::nullopt;
+
+                NodeType* next = head->next;
+
+                if (_head.compare_exchange_weak(
+                        head,
+                        next,
+                        std::memory_order_acq_rel,
+                        std::memory_order_acquire))
+                {
+                    std::optional<T> result { std::move(head->value) };
+
+                    // Clear hazard before retirement scan opportunities elsewhere.
+                    guard.reset();
+
+                    _domain.retire(threadIndex, head, &_janitor);
+                    return result;
+                }
+
+                // CAS failed; loop and re-protect the new head.
             }
         }
 
-        //TODO: for a simple TrackingList pop is not needed at all and the class can be reduced just to a push method
-        bool tryPop(T& destination)
+        [[nodiscard]] bool empty() const noexcept
         {
-            while(true)
-            {
-                NodeType* currentHead = _head.load(std::memory_order_acquire);
-                if(currentHead == nullptr)
-                    return false;
-
-                if(_head.compare_exchange_weak(currentHead, currentHead->next, std::memory_order_relaxed, std::memory_order_relaxed))
-                {
-                    destination = std::move(currentHead->data);
-                    //TODO: implement proper reclamation strategy
-                    //_allocator.template deallocateObject<Node>(currentHead);
-
-                    return true;
-                }
-            }
+            return _head.load(std::memory_order_acquire) == nullptr;
         }
     };
 }

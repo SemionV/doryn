@@ -88,7 +88,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
             }
         }
 
-        bool empty() const noexcept
+        [[nodiscard]] bool empty() const noexcept
         {
             return _head.load(std::memory_order_acquire) == nullptr;
         }

@@ -53,7 +53,7 @@ namespace dory::data_structures::containers::lockfree
             while (node != nullptr)
             {
                 NodeType* next = node->next;
-                fn(node->data);
+                fn(node->value);
                 _allocator.template deallocateObject<NodeType>(node);
                 node = next;
             }

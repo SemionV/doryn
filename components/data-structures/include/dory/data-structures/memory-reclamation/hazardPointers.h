@@ -26,7 +26,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
         std::array<RetiredNode, Capacity> nodes {};
         SizeType count = 0;
 
-        bool full() const noexcept
+        [[nodiscard]] bool full() const noexcept
         {
             return count == Capacity;
         }
@@ -63,9 +63,9 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
         public:
             Guard() noexcept = default;
 
-            Guard(Domain& domain, const SizeType slot_index) noexcept:
+            Guard(Domain& domain, const SizeType slotIndex) noexcept:
                 _domain(&domain),
-                _slotIndex(slot_index)
+                _slotIndex(slotIndex)
             {}
 
             Guard(const Guard&) = delete;
@@ -151,7 +151,6 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
             retired.push(ptr, janitor);
 
             // Opportunistic batch scan.
-            //TODO: declare constants for batch scan(15u)
             if ((retired.count & 15u) == 0u)
             {
                 scan(threadIndex);

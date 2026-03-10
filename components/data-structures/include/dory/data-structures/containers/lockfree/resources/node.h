@@ -7,12 +7,13 @@ namespace dory::data_structures::containers::lockfree::resources
     template<typename T>
     struct Node
     {
-        T data;
+        T value;
         Node* next = nullptr;
 
-        template<typename... TArgs>
-        explicit Node(TArgs&&... args):
-            data(std::forward<TArgs>(args)...)
-        {}
+        template <typename U>
+        explicit Node(U&& v):
+            value(std::forward<U>(v))
+        {
+        }
     };
 }
