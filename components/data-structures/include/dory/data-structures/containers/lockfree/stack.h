@@ -8,6 +8,7 @@
 
 namespace dory::data_structures::containers::lockfree
 {
+    /// Documentation is available here: docs/components/data-structures/hazardTreiberStack.md
     template <typename T, typename TDomain, typename TAllocator, LabelType AllocLabel = {}>
     class HazardTreiberStack
     {
