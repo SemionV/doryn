@@ -19,6 +19,8 @@ add_library(${DORY_MODULE_NAME} INTERFACE
         include/dory/data-structures/containers/lockfree/sharedLock.h
         include/dory/data-structures/memory-reclamation/hazardPointers.h
         include/dory/data-structures/memory-reclamation/epochBasedReclamation.h
+        include/dory/data-structures/memory-reclamation/types.h
+        include/dory/data-structures/memory-reclamation/domain.h
         include/dory/data-structures/memory-reclamation/guard.h
         include/dory/data-structures/memory-reclamation/janitor.h
         include/dory/data-structures/memory-reclamation/retireList.h)

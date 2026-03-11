@@ -10,6 +10,7 @@
 #include "janitor.h"
 #include "retireList.h"
 #include "guard.h"
+#include "domain.h"
 
 namespace dory::data_structures::memory_reclamation::ebr
 {

@@ -10,7 +10,7 @@
 namespace dory::data_structures::containers::lockfree::tests
 {
     using TestAllocator = memory::allocators::general::SystemAllocator;
-    using HazardPointerDomainType = memory_reclamation::hazard_pointers::Domain<8, 2, 128>;
+    using HazardPointerDomainType = memory_reclamation::hazard_pointers::HazardPointersDomain<memory_reclamation::hazard_pointers::HazardPointersDomainTraits<8, 2, 128>>;
 
     template <typename T>
     using Stack = HazardTreiberStack<T, HazardPointerDomainType, TestAllocator>;

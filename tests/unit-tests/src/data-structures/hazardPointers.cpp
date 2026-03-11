@@ -36,13 +36,16 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
         return false;
     }
 
+    template<SizeType MaxThreads, SizeType PointerSlotsPerThread, SizeType MaxRetiredPerThread>
+    using DomainType = HazardPointersDomain<HazardPointersDomainTraits<MaxThreads, PointerSlotsPerThread, MaxRetiredPerThread>>;
+
     // ------------------------------------------------------------
     // Guard behavior
     // ------------------------------------------------------------
 
     TEST(HazardPointersTest, GuardProtectRawMarksHazardAndResetClearsIt)
     {
-        Domain<2, 2, 8> domain;
+        DomainType<2, 2, 8> domain;
 
         TestNode node { 42 };
 
@@ -58,7 +61,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 
     TEST(HazardPointersTest, GuardMoveTransfersOwnershipOfHazardSlot)
     {
-        Domain<2, 2, 8> domain;
+        DomainType<2, 2, 8> domain;
         TestNode node { 7 };
 
         {
@@ -81,7 +84,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 
     TEST(HazardPointersTest, GetProtectedReturnsStablePointerAndPublishesHazard)
     {
-        Domain<2, 2, 8> domain;
+        DomainType<2, 2, 8> domain;
 
         TestNode node { 123 };
         std::atomic<TestNode*> src { &node };
@@ -102,7 +105,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 
     TEST(HazardPointersTest, RetireThenScanReclaimsUnprotectedNode)
     {
-        Domain<2, 2, 8> domain;
+        DomainType<2, 2, 8> domain;
         RecordingJanitor janitor;
         TestNode node { 1 };
 
@@ -118,7 +121,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 
     TEST(HazardPointersTest, ScanDoesNotReclaimProtectedNodeUntilHazardIsCleared)
     {
-        Domain<2, 2, 8> domain;
+        DomainType<2, 2, 8> domain;
         RecordingJanitor janitor;
         TestNode node { 5 };
 
@@ -143,7 +146,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 
     TEST(HazardPointersTest, ScanRemovesRetiredNodeWithNullJanitorWithoutCrashing)
     {
-        Domain<2, 2, 8> domain;
+        DomainType<2, 2, 8> domain;
         TestNode node { 9 };
 
         domain.retire(0, &node, nullptr);
@@ -156,7 +159,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 
     TEST(HazardPointersTest, ScanAllReclaimsAcrossAllRetireLists)
     {
-        Domain<3, 2, 8> domain;
+        DomainType<3, 2, 8> domain;
         RecordingJanitor janitorA;
         RecordingJanitor janitorB;
 
@@ -176,7 +179,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 
     TEST(HazardPointersTest, HazardInAnotherThreadStillPreventsReclamation)
     {
-        Domain<2, 2, 8> domain;
+        DomainType<2, 2, 8> domain;
         RecordingJanitor janitor;
         TestNode node { 88 };
 
@@ -201,7 +204,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 
     TEST(HazardPointersTest, ScanReclaimsOnlyUnprotectedSubset)
     {
-        Domain<2, 2, 16> domain;
+        DomainType<2, 2, 16> domain;
         RecordingJanitor janitor;
 
         TestNode n1 { 1 };
@@ -231,7 +234,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 
     TEST(HazardPointersTest, OpportunisticScanOn16thRetireCanReclaimOlderEntries)
     {
-        Domain<1, 2, 32> domain;
+        DomainType<1, 2, 32> domain;
         RecordingJanitor janitor;
 
         TestNode nodes[16];
@@ -261,7 +264,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
         TestNode node { 77 };
 
         {
-            Domain<2, 2, 8> domain;
+            DomainType<2, 2, 8> domain;
             domain.retire(0, &node, &janitor);
 
             EXPECT_TRUE(janitor.cleaned.empty());
@@ -277,7 +280,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
         TestNode node { 101 };
 
         {
-            Domain<2, 2, 8> domain;
+            DomainType<2, 2, 8> domain;
             auto guard = domain.makeGuard(0, 0);
             guard.protectPointer(&node);
 

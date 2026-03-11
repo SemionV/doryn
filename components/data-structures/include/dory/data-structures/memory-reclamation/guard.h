@@ -2,26 +2,26 @@
 
 #include <dory/types.h>
 
+#include "types.h"
+
 namespace dory::data_structures::memory_reclamation
 {
-    using PointerToken = u32;
-
     template<typename TDomain>
     class Guard
     {
     private:
         TDomain* _domain = nullptr;
         const ThreadId _threadIndex = {};
-        const PointerToken _pointerToken = {};
+        const SizeType _pointerSlot = {};
         bool _enteredCriticalSection = false;
 
     public:
         Guard() noexcept = default;
 
-        Guard(TDomain& domain, const ThreadId threadIndex, const PointerToken pointerToken):
+        Guard(TDomain& domain, const ThreadId threadIndex, const SizeType pointerSlot):
             _domain(&domain),
             _threadIndex(threadIndex),
-            _pointerToken(pointerToken)
+            _pointerSlot(pointerSlot)
         {
             _domain->enter(_threadIndex);
         }
@@ -32,7 +32,7 @@ namespace dory::data_structures::memory_reclamation
         Guard(Guard&& other):
             _domain(other._domain),
             _threadIndex(other._threadIndex),
-            _pointerToken(other._pointerToken),
+            _pointerSlot(other._pointerSlot),
             _enteredCriticalSection(other._enteredCriticalSection)
         {
             other._domain = nullptr;
@@ -53,7 +53,7 @@ namespace dory::data_structures::memory_reclamation
         {
             if (_domain)
             {
-                _domain->clearPointerSlot(_pointerToken);
+                _domain->clearPointerSlot(_pointerSlot);
                 _domain = nullptr;
             }
         }
@@ -61,13 +61,13 @@ namespace dory::data_structures::memory_reclamation
         void protectPointer(void* ptr) noexcept
         {
             assert::debug(_domain, "MemoryReclamation::Guard: Domain pointer is nullptr");
-            _domain->occupyPointerSlot(ptr, _pointerToken);
+            _domain->occupyPointerSlot(ptr, _pointerSlot);
         }
 
         template <typename T>
         T* protectAtomicPointer(std::atomic<T*>& src) noexcept
         {
-            return _domain->occupyAtomicPointerSlot(src, _pointerToken);
+            return _domain->occupyAtomicPointerSlot(src, _pointerSlot);
         }
     };
 }
