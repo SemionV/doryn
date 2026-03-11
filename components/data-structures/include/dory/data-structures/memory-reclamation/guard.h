@@ -44,19 +44,16 @@ namespace dory::data_structures::memory_reclamation
 
         ~Guard()
         {
-            reset();
-
             if (_enteredCriticalSection && _domain)
                 _domain->leave(_threadIndex);
+
+            reset();
         }
 
         void reset() noexcept
         {
             if (_domain)
-            {
                 _domain->clearPointerSlot(_pointerSlot);
-                _domain = nullptr;
-            }
         }
 
         void protectPointer(void* ptr) noexcept
