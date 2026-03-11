@@ -24,6 +24,7 @@ namespace dory::data_structures::memory_reclamation
             _pointerSlot(pointerSlot)
         {
             _domain->enter(_threadIndex);
+            _enteredCriticalSection = true;
         }
 
         Guard(const Guard&) = delete;
