@@ -33,6 +33,7 @@ add_executable(${PROJECT_NAME}
         src/allocators/objectPoolAllocator.cpp
         src/allocators/pageBlockAllocator.cpp
         src/data-structures/hazardPointers.cpp
+        src/data-structures/epochBasedReclamation.cpp
         src/data-structures/treiberStack.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
