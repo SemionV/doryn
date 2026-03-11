@@ -7,7 +7,9 @@
 #include <dory/constants.h>
 #include <dory/macros/assert.h>
 
+#include "janitor.h"
 #include "retireList.h"
+#include "guard.h"
 
 namespace dory::data_structures::memory_reclamation::ebr
 {
@@ -28,52 +30,13 @@ namespace dory::data_structures::memory_reclamation::ebr
     public:
         using RetiredNodeType = EpochRetiredNode;
         using RetireListType = RetireList<RetiredNodeType, MaxRetiredPerThread>;
+        using GuardType = Guard<Domain>;
 
     private:
         alignas(constants::CacheLineSize) std::atomic<u64> _globalEpoch {1};
         std::array<ThreadEpochState, MaxThreads> _threads {};
         std::array<RetireListType, MaxThreads> _retired {};
         std::atomic_flag _collecting = ATOMIC_FLAG_INIT;
-
-    public:
-        class Guard
-        {
-        private:
-            Domain* _domain = nullptr;
-            ThreadId _threadIndex = 0;
-            bool _entered = false;
-
-        public:
-            Guard() noexcept = default;
-
-            Guard(Domain& domain, const ThreadId threadIndex):
-                _domain(&domain),
-                _threadIndex(threadIndex),
-                _entered(true)
-            {
-                _domain->enter(_threadIndex);
-            }
-
-            Guard(const Guard&) = delete;
-            Guard& operator=(const Guard&) = delete;
-
-            Guard(Guard&& other):
-                _domain(other._domain),
-                _threadIndex(other._threadIndex),
-                _entered(other._entered)
-            {
-                other._domain = nullptr;
-                other._entered = false;
-            }
-
-            Guard& operator=(Guard&& other) = delete;
-
-            ~Guard()
-            {
-                if (_entered)
-                    _domain->leave(_threadIndex);
-            }
-        };
 
     public:
         Domain() = default;
@@ -83,16 +46,16 @@ namespace dory::data_structures::memory_reclamation::ebr
             drain();
         }
 
-        static constexpr u32 max_threads() noexcept { return MaxThreads; }
+        static constexpr u32 max_threads() { return MaxThreads; }
 
-        Guard pin(u32 thread_index) noexcept
+        GuardType makeGuard(const ThreadId threadIndex, const PointerToken pointerToken = 0)
         {
-            return Guard(*this, thread_index);
+            return GuardType(*this, threadIndex, pointerToken);
         }
 
-        void enter(u32 thread_index) noexcept
+        void enter(ThreadId threadIndex)
         {
-            ThreadEpochState& ts = _threads[thread_index];
+            ThreadEpochState& ts = _threads[threadIndex];
 
             // Publish the current epoch first, then mark active.
             const u64 epoch = _globalEpoch.load(std::memory_order_acquire);
@@ -107,20 +70,9 @@ namespace dory::data_structures::memory_reclamation::ebr
             }
         }
 
-        void leave(u32 thread_index) noexcept
+        void leave(ThreadId threadIndex)
         {
-            _threads[thread_index].active.store(false, std::memory_order_release);
-        }
-
-        template <typename T>
-        void retire(u32 thread_index, T* ptr) noexcept
-        {
-            auto deleter = [](void* p) noexcept
-            {
-                delete static_cast<T*>(p);
-            };
-
-            retire(thread_index, ptr, deleter);
+            _threads[threadIndex].active.store(false, std::memory_order_release);
         }
 
         void retire(u32 thread_index, void* ptr, Janitor* janitor) noexcept
@@ -149,6 +101,18 @@ namespace dory::data_structures::memory_reclamation::ebr
                 tryAdvanceEpoch();
                 collect(thread_index);
             }
+        }
+
+        static void clearPointerSlot(const PointerToken pointerToken)
+        {}
+
+        static void occupyPointerSlot(void* ptr, const PointerToken pointerToken)
+        {}
+
+        template <typename T>
+        static T* occupyAtomicPointerSlot(std::atomic<T*>& src, const PointerToken pointerToken)
+        {
+            return src.load(std::memory_order_acquire);
         }
 
         void tryAdvanceEpoch() noexcept

@@ -27,7 +27,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
     public:
         using RetiredNodeType = RetiredNode;
         using RetireListType = RetireList<RetiredNodeType, MaxRetiredPerThread>;
-        using Guard = Guard<Domain>;
+        using GuardType = Guard<Domain>;
 
         static constexpr SizeType MaxHazards = MaxThreads * PointerTokensPerThread;
 
@@ -110,12 +110,12 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
         static constexpr SizeType getMaxThreads() noexcept { return MaxThreads; }
         static constexpr SizeType getSlotsPerThread() noexcept { return PointerTokensPerThread; }
 
-        Guard makeGuard(const ThreadId threadIndex, const PointerToken pointerToken = 0) noexcept
+        GuardType makeGuard(const ThreadId threadIndex, const PointerToken pointerToken = 0)
         {
             assert::debug(threadIndex < MaxThreads, "HazardPointers::Domain::makeGuard: Thread index is out of range");
             assert::debug(pointerToken < PointerTokensPerThread, "HazardPointers::Domain::makeGuard: Thread slot index is out of range");
 
-            return Guard(*this, threadIndex, getHazardIndex(threadIndex, pointerToken));
+            return GuardType(*this, threadIndex, getHazardIndex(threadIndex, pointerToken));
         }
 
         static void enter(ThreadId threadId) noexcept

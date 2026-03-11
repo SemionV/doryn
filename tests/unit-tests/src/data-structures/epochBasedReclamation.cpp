@@ -55,11 +55,12 @@ namespace dory::data_structures::memory_reclamation::ebr::tests
                 std::memory_order_relaxed));
         }
 
-        std::optional<T> pop(u32 thread_index)
+        std::optional<T> pop(ThreadId threadIndex)
         {
-            auto guard = _domain.pin(thread_index);
+            auto guard = _domain.makeGuard(threadIndex, 0);
 
-            Node* old_head = _head.load(std::memory_order_acquire);
+            //Node* old_head = _head.load(std::memory_order_acquire);
+            Node* old_head = guard.protectAtomicPointer(_head);
 
             while (old_head)
             {
@@ -72,9 +73,12 @@ namespace dory::data_structures::memory_reclamation::ebr::tests
                 {
                     std::optional<T> result{std::move(old_head->value)};
 
+                    // Clear hazard before retirement scan opportunities elsewhere.
+                    guard.reset();
+
                     // Guard still active here, which is fine.
                     // Retirement does not free immediately.
-                    _domain.retire(thread_index, old_head, &_janitor);
+                    _domain.retire(threadIndex, old_head, &_janitor);
 
                     return result;
                 }
