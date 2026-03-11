@@ -7,63 +7,34 @@
 #include <dory/constants.h>
 #include <dory/macros/assert.h>
 
+#include "retireList.h"
+
 namespace dory::data_structures::memory_reclamation::ebr
 {
-    struct RetiredNode
+    struct EpochRetiredNode: public RetiredNode
     {
-        void* ptr = nullptr;
-        void (*deleter)(void*) = nullptr;
-        u64 retire_epoch = 0;
-    };
-
-    template <u32 MaxRetired>
-    struct RetireList
-    {
-        std::array<RetiredNode, MaxRetired> nodes{};
-        u32 count = 0;
-
-        [[nodiscard]] bool full() const noexcept
-        {
-            return count == MaxRetired;
-        }
-
-        void push(void* ptr, void (*deleter)(void*), u64 epoch) noexcept
-        {
-            assert::debug(count < MaxRetired, "ebr::RetireList::push: retire list is full");
-            nodes[count++] = RetiredNode{ptr, deleter, epoch};
-        }
-
-        template <typename Fn>
-        void reclaim_if(Fn&& can_reclaim) noexcept
-        {
-            u32 write = 0;
-            for (u32 read = 0; read < count; ++read)
-            {
-                RetiredNode& n = nodes[read];
-                if (can_reclaim(n))
-                {
-                    n.deleter(n.ptr);
-                }
-                else
-                {
-                    if (write != read)
-                        nodes[write] = n;
-                    ++write;
-                }
-            }
-            count = write;
-        }
+        u64 retireEpoch = 0;
     };
 
     struct alignas(constants::CacheLineSize) ThreadEpochState
     {
-        std::atomic<u64> local_epoch{0};
+        std::atomic<u64> localEpoch{0};
         std::atomic<bool> active{false};
     };
 
     template <u32 MaxThreads, u32 MaxRetiredPerThread>
     class Domain
     {
+    public:
+        using RetiredNodeType = EpochRetiredNode;
+        using RetireListType = RetireList<RetiredNodeType, MaxRetiredPerThread>;
+
+    private:
+        alignas(constants::CacheLineSize) std::atomic<u64> _globalEpoch {1};
+        std::array<ThreadEpochState, MaxThreads> _threads {};
+        std::array<RetireListType, MaxThreads> _retired {};
+        std::atomic_flag _collecting = ATOMIC_FLAG_INIT;
+
     public:
         class Guard
         {
@@ -114,24 +85,24 @@ namespace dory::data_structures::memory_reclamation::ebr
 
         void enter(u32 thread_index) noexcept
         {
-            ThreadEpochState& ts = m_threads[thread_index];
+            ThreadEpochState& ts = _threads[thread_index];
 
             // Publish the current epoch first, then mark active.
-            const u64 epoch = m_global_epoch.load(std::memory_order_acquire);
-            ts.local_epoch.store(epoch, std::memory_order_relaxed);
+            const u64 epoch = _globalEpoch.load(std::memory_order_acquire);
+            ts.localEpoch.store(epoch, std::memory_order_relaxed);
             ts.active.store(true, std::memory_order_release);
 
             // Re-read global epoch in case it advanced concurrently.
-            const u64 verify = m_global_epoch.load(std::memory_order_acquire);
+            const u64 verify = _globalEpoch.load(std::memory_order_acquire);
             if (verify != epoch)
             {
-                ts.local_epoch.store(verify, std::memory_order_relaxed);
+                ts.localEpoch.store(verify, std::memory_order_relaxed);
             }
         }
 
         void leave(u32 thread_index) noexcept
         {
-            m_threads[thread_index].active.store(false, std::memory_order_release);
+            _threads[thread_index].active.store(false, std::memory_order_release);
         }
 
         template <typename T>
@@ -145,15 +116,15 @@ namespace dory::data_structures::memory_reclamation::ebr
             retire(thread_index, ptr, deleter);
         }
 
-        void retire(u32 thread_index, void* ptr, void (*deleter)(void*)) noexcept
+        void retire(u32 thread_index, void* ptr, Janitor* janitor) noexcept
         {
-            const u64 epoch = m_global_epoch.load(std::memory_order_acquire);
-            RetireList<MaxRetiredPerThread>& list = m_retired[thread_index];
+            const u64 epoch = _globalEpoch.load(std::memory_order_acquire);
+            RetireListType& retireList = _retired[thread_index];
 
-            if (list.full())
+            if (retireList.full())
             {
                 collect(thread_index);
-                if (list.full())
+                if (retireList.full())
                 {
                     // At this point reclamation is blocked by lagging threads.
                     // In an engine you might flush later, grow capacity,
@@ -163,34 +134,34 @@ namespace dory::data_structures::memory_reclamation::ebr
                 }
             }
 
-            list.push(ptr, deleter, epoch);
+            retireList.push(RetiredNodeType { ptr, janitor, epoch });
 
             // Opportunistic maintenance.
-            if ((list.count & 7u) == 0u)
+            if ((retireList.count & 7u) == 0u)
             {
-                try_advance_epoch();
+                tryAdvanceEpoch();
                 collect(thread_index);
             }
         }
 
-        void try_advance_epoch() noexcept
+        void tryAdvanceEpoch() noexcept
         {
-            const u64 current = m_global_epoch.load(std::memory_order_acquire);
+            const u64 current = _globalEpoch.load(std::memory_order_acquire);
 
             for (u32 i = 0; i < MaxThreads; ++i)
             {
-                const bool active = m_threads[i].active.load(std::memory_order_acquire);
+                const bool active = _threads[i].active.load(std::memory_order_acquire);
                 if (!active)
                     continue;
 
-                const u64 local = m_threads[i].local_epoch.load(std::memory_order_acquire);
+                const u64 local = _threads[i].localEpoch.load(std::memory_order_acquire);
 
                 // Active thread still in current or older epoch: cannot advance.
                 if (local <= current)
                     return;
             }
 
-            m_global_epoch.compare_exchange_strong(
+            _globalEpoch.compare_exchange_strong(
                 const_cast<u64&>(current),
                 current + 1,
                 std::memory_order_acq_rel,
@@ -199,31 +170,32 @@ namespace dory::data_structures::memory_reclamation::ebr
 
         void collect(u32 thread_index) noexcept
         {
-            const u64 global = m_global_epoch.load(std::memory_order_acquire);
+            const u64 global = _globalEpoch.load(std::memory_order_acquire);
             const u64 safe_epoch = (global >= 2) ? (global - 2) : 0;
 
-            m_retired[thread_index].reclaim_if(
-                [safe_epoch](const RetiredNode& n) noexcept
+            _retired[thread_index].reclaimIf(
+                [safe_epoch](const RetiredNodeType& n) noexcept
                 {
-                    return n.retire_epoch <= safe_epoch;
+                    return n.retireEpoch <= safe_epoch;
                 });
         }
 
-        void collect_all() noexcept
+        void collectAll() noexcept
         {
-            try_advance_epoch();
+            //Check if some thread is doing collection currently
+            if(_collecting.test_and_set(std::memory_order_acquire))
+                return;
+
+            tryAdvanceEpoch();
             for (u32 i = 0; i < MaxThreads; ++i)
                 collect(i);
+
+            _collecting.clear(std::memory_order_release);
         }
 
-        [[nodiscard]] u64 current_epoch() const noexcept
+        [[nodiscard]] u64 getCurrentEpoch() const noexcept
         {
-            return m_global_epoch.load(std::memory_order_acquire);
+            return _globalEpoch.load(std::memory_order_acquire);
         }
-
-    private:
-        alignas(constants::CacheLineSize) std::atomic<u64> m_global_epoch{1};
-        std::array<ThreadEpochState, MaxThreads> m_threads{};
-        std::array<RetireList<MaxRetiredPerThread>, MaxThreads> m_retired{};
     };
 }

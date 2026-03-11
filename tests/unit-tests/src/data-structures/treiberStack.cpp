@@ -4,6 +4,7 @@
 
 #include <dory/data-structures/containers/lockfree/stack.h>
 #include <dory/memory/allocators/general/systemAllocator.h>
+#include <dory/data-structures/memory-reclamation/retireList.h>
 #include <dory/data-structures/memory-reclamation/hazardPointers.h>
 
 namespace dory::data_structures::containers::lockfree::tests

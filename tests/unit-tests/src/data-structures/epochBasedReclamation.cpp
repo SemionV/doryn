@@ -3,11 +3,14 @@
 #include <optional>
 #include <utility>
 
+#include <dory/types.h>
 #include <dory/data-structures/memory-reclamation/epochBasedReclamation.h>
+#include <dory/data-structures/memory-reclamation/retireList.h>
+#include <dory/memory/allocators/general/systemAllocator.h>
 
 namespace dory::data_structures::memory_reclamation::ebr::tests
 {
-    template <typename T, typename TDomain>
+    template <typename T, typename TDomain, typename TAllocator, LabelType AllocLabel = {}>
     class TreiberStack
     {
         struct Node
@@ -20,14 +23,17 @@ namespace dory::data_structures::memory_reclamation::ebr::tests
         };
 
     private:
-        TDomain& m_domain;
-        std::atomic<Node*> m_head{nullptr};
+        TDomain& _domain;
+        std::atomic<Node*> _head{nullptr};
+        TAllocator& _allocator;
+        memory_reclamation::ObjectJanitor<typename TDomain::RetiredNodeType, TAllocator> _janitor;
 
     public:
-        explicit TreiberStack(TDomain& domain) noexcept
-            : m_domain(domain)
-        {
-        }
+        explicit TreiberStack(TDomain& domain, TAllocator& allocator):
+            _domain(domain),
+            _allocator(allocator),
+            _janitor(allocator)
+        {}
 
         TreiberStack(const TreiberStack&) = delete;
         TreiberStack& operator=(const TreiberStack&) = delete;
@@ -35,14 +41,14 @@ namespace dory::data_structures::memory_reclamation::ebr::tests
         template <typename U>
         void push(U&& value)
         {
-            Node* node = new Node(std::forward<U>(value));
+            Node* node = _allocator.template allocateObject<Node>(AllocLabel, std::forward<U>(value));
 
-            Node* old_head = m_head.load(std::memory_order_relaxed);
+            Node* old_head = _head.load(std::memory_order_relaxed);
             do
             {
                 node->next = old_head;
             }
-            while (!m_head.compare_exchange_weak(
+            while (!_head.compare_exchange_weak(
                 old_head,
                 node,
                 std::memory_order_release,
@@ -51,14 +57,14 @@ namespace dory::data_structures::memory_reclamation::ebr::tests
 
         std::optional<T> pop(u32 thread_index)
         {
-            auto guard = m_domain.pin(thread_index);
+            auto guard = _domain.pin(thread_index);
 
-            Node* old_head = m_head.load(std::memory_order_acquire);
+            Node* old_head = _head.load(std::memory_order_acquire);
 
             while (old_head)
             {
                 Node* next = old_head->next;
-                if (m_head.compare_exchange_weak(
+                if (_head.compare_exchange_weak(
                         old_head,
                         next,
                         std::memory_order_acq_rel,
@@ -68,7 +74,7 @@ namespace dory::data_structures::memory_reclamation::ebr::tests
 
                     // Guard still active here, which is fine.
                     // Retirement does not free immediately.
-                    m_domain.retire(thread_index, old_head);
+                    _domain.retire(thread_index, old_head, &_janitor);
 
                     return result;
                 }
@@ -79,7 +85,7 @@ namespace dory::data_structures::memory_reclamation::ebr::tests
 
         bool empty() const noexcept
         {
-            return m_head.load(std::memory_order_acquire) == nullptr;
+            return _head.load(std::memory_order_acquire) == nullptr;
         }
     };
 
@@ -88,7 +94,10 @@ namespace dory::data_structures::memory_reclamation::ebr::tests
         using Domain = Domain<8, 128>;
         Domain domain;
 
-        TreiberStack<int, Domain> stack(domain);
+        using AllocatorType = memory::allocators::general::SystemAllocator;
+
+        AllocatorType allocator;
+        TreiberStack<int, Domain, AllocatorType> stack(domain, allocator);
 
         for (int i = 0; i < 1000; ++i)
             stack.push(i);
@@ -108,7 +117,7 @@ namespace dory::data_structures::memory_reclamation::ebr::tests
 
                     // Periodic maintenance.
                     if (((*v) & 31) == 0)
-                        domain.collect_all();
+                        domain.collectAll();
                 }
             });
         }
@@ -116,9 +125,9 @@ namespace dory::data_structures::memory_reclamation::ebr::tests
         for (auto& t : workers)
             t.join();
 
-        domain.collect_all();
-        domain.collect_all();
-        domain.collect_all();
+        domain.collectAll();
+        domain.collectAll();
+        domain.collectAll();
 
         std::cout << "Done\n";
     }

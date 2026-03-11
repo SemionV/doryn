@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
-#include <thread>
 #include <vector>
-#include <iostream>
 
 #include <dory/data-structures/memory-reclamation/hazardPointers.h>
 #include <allocatorBuilder.h>
 #include <dory/types.h>
+
+#include <dory/data-structures/memory-reclamation/retireList.h>
 
 namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 {
@@ -110,7 +110,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 
         EXPECT_TRUE(janitor.cleaned.empty());
 
-        domain.scan(0);
+        domain.collect(0);
 
         ASSERT_EQ(janitor.cleaned.size(), 1u);
         EXPECT_EQ(janitor.cleaned[0], &node);
@@ -127,7 +127,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
             guard.protectRaw(&node);
 
             domain.retire(0, &node, &janitor);
-            domain.scan(0);
+            domain.collect(0);
 
             EXPECT_TRUE(janitor.cleaned.empty());
             EXPECT_TRUE(domain.isHazard(&node));
@@ -135,7 +135,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 
         EXPECT_FALSE(domain.isHazard(&node));
 
-        domain.scan(0);
+        domain.collect(0);
 
         ASSERT_EQ(janitor.cleaned.size(), 1u);
         EXPECT_EQ(janitor.cleaned[0], &node);
@@ -148,10 +148,10 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 
         domain.retire(0, &node, nullptr);
 
-        EXPECT_NO_THROW(domain.scan(0));
+        EXPECT_NO_THROW(domain.collect(0));
 
         // Re-scanning should remain harmless and should not resurrect anything.
-        EXPECT_NO_THROW(domain.scan(0));
+        EXPECT_NO_THROW(domain.collect(0));
     }
 
     TEST(HazardPointersTest, ScanAllReclaimsAcrossAllRetireLists)
@@ -166,7 +166,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
         domain.retire(0, &a, &janitorA);
         domain.retire(2, &b, &janitorB);
 
-        domain.scanAll();
+        domain.collectAll();
 
         ASSERT_EQ(janitorA.cleaned.size(), 1u);
         ASSERT_EQ(janitorB.cleaned.size(), 1u);
@@ -184,12 +184,12 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
         otherThreadGuard.protectRaw(&node);
 
         domain.retire(0, &node, &janitor);
-        domain.scan(0);
+        domain.collect(0);
 
         EXPECT_TRUE(janitor.cleaned.empty());
 
         otherThreadGuard.reset();
-        domain.scan(0);
+        domain.collect(0);
 
         ASSERT_EQ(janitor.cleaned.size(), 1u);
         EXPECT_EQ(janitor.cleaned[0], &node);
@@ -215,7 +215,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
         domain.retire(0, &n2, &janitor);
         domain.retire(0, &n3, &janitor);
 
-        domain.scan(0);
+        domain.collect(0);
 
         EXPECT_EQ(janitor.cleaned.size(), 2u);
         EXPECT_TRUE(containsPtr(janitor.cleaned, &n1));
@@ -223,7 +223,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
         EXPECT_FALSE(containsPtr(janitor.cleaned, &n2));
 
         guard.reset();
-        domain.scan(0);
+        domain.collect(0);
 
         EXPECT_EQ(janitor.cleaned.size(), 3u);
         EXPECT_TRUE(containsPtr(janitor.cleaned, &n2));

@@ -9,49 +9,29 @@
 #include <dory/macros/assert.h>
 
 #include "janitor.h"
+#include "retireList.h"
 
 namespace dory::data_structures::memory_reclamation::hazard_pointers
 {
     using SizeType = u32;
-    
-    struct RetiredNode
-    {
-        void* ptr = nullptr;
-        Janitor* janitor = nullptr;
-    };
-
-    template <SizeType Capacity>
-    struct RetireList
-    {
-        std::array<RetiredNode, Capacity> nodes {};
-        SizeType count = 0;
-
-        [[nodiscard]] bool full() const noexcept
-        {
-            return count == Capacity;
-        }
-
-        void push(void* ptr, Janitor* janitor) noexcept
-        {
-            assert::debug(count < Capacity, "HazardPointers::RetireList::push(): Count is too large");
-            nodes[count++] = RetiredNode { ptr, janitor };
-        }
-    };
 
     struct alignas(constants::CacheLineSize) HazardSlot
     {
         std::atomic<void*> ptr { nullptr };
     };
 
-    template <SizeType MaxThreads, SizeType SlotsPerThread, SizeType RetireCapacity>
+    template <SizeType MaxThreads, SizeType SlotsPerThread, SizeType MaxRetiredPerThread>
     class Domain
     {
     public:
+        using RetiredNodeType = RetiredNode;
+        using RetireListType = RetireList<RetiredNodeType, MaxRetiredPerThread>;
+
         static constexpr SizeType MaxHazards = MaxThreads * SlotsPerThread;
 
     private:
         std::array<HazardSlot, MaxHazards> _hazards {};
-        std::array<RetireList<RetireCapacity>, MaxThreads> _retired {};
+        std::array<RetireListType, MaxThreads> _retired {};
 
     public:
         class Guard
@@ -144,7 +124,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
 
             if (retired.full())
             {
-                scan(threadIndex);
+                collect(threadIndex);
 
                 if (retired.full())
                 {
@@ -153,16 +133,16 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
                 }
             }
 
-            retired.push(ptr, janitor);
+            retired.push(RetiredNodeType { ptr, janitor });
 
             // Opportunistic batch scan.
             if ((retired.count & 15u) == 0u)
             {
-                scan(threadIndex);
+                collect(threadIndex);
             }
         }
 
-        void scan(ThreadId threadIndex) noexcept
+        void collect(ThreadId threadIndex) noexcept
         {
             assert::debug(threadIndex < MaxThreads, "HazardPointers::Domain::scan: Thread index is out of range");
 
@@ -181,34 +161,18 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
 
             std::sort(snapshot.begin(), snapshot.begin() + hazardCount);
 
-            auto& retired = _retired[threadIndex];
+            auto& retiredList = _retired[threadIndex];
 
-            SizeType write = 0;
-            for (SizeType read = 0; read < retired.count; ++read)
+            retiredList.reclaimIf([&snapshot, hazardCount](const RetiredNodeType& node)
             {
-                RetiredNode& retiredNode = retired.nodes[read];
-
-                const bool protectedNow = std::binary_search(snapshot.begin(), snapshot.begin() + hazardCount, retiredNode.ptr);
-
-                if (protectedNow)
-                {
-                    if (write != read)
-                        retired.nodes[write] = retiredNode;
-                    ++write;
-                }
-                else if(retiredNode.janitor != nullptr)
-                {
-                    retiredNode.janitor->cleanup(retiredNode.ptr);
-                }
-            }
-
-            retired.count = write;
+                return !std::binary_search(snapshot.begin(), snapshot.begin() + hazardCount, node.ptr);
+            });
         }
 
-        void scanAll() noexcept
+        void collectAll() noexcept
         {
             for (SizeType i = 0; i < MaxThreads; ++i)
-                scan(i);
+                collect(i);
         }
 
         bool isHazard(void* p) const noexcept
@@ -223,7 +187,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
 
         void drain()
         {
-            scanAll();
+            collectAll();
         }
 
     private:
