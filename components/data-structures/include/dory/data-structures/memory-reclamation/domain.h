@@ -65,14 +65,6 @@ namespace dory::data_structures::memory_reclamation
             this->implRef().tryAdvanceEpochImpl();
         }
 
-        TDomainTraits::GuardType makeGuard(const ThreadId threadIndex, const PointerToken pointerToken = 0)
-        {
-            assert::debug(threadIndex < TDomainTraits::maxThreads, "MemoryReclamation::Domain::makeGuard: Thread index is out of range");
-            assert::debug(pointerToken < TDomainTraits::pointerSlotsPerThread, "MemoryReclamation::Domain::makeGuard: Thread slot index is out of range");
-
-            return typename TDomainTraits::GuardType(this->implRef(), threadIndex, getPointerSlot(threadIndex, pointerToken));
-        }
-
         //TODO: generalize retire implementation
         void retire(ThreadId threadId, void* ptr, Janitor* janitor) noexcept
         {
@@ -83,6 +75,14 @@ namespace dory::data_structures::memory_reclamation
         void collect(ThreadId threadId) noexcept
         {
             this->implRef().collectImpl(threadId);
+        }
+
+        TDomainTraits::GuardType makeGuard(const ThreadId threadIndex, const PointerToken pointerToken = 0)
+        {
+            assert::debug(threadIndex < TDomainTraits::maxThreads, "MemoryReclamation::Domain::makeGuard: Thread index is out of range");
+            assert::debug(pointerToken < TDomainTraits::pointerSlotsPerThread, "MemoryReclamation::Domain::makeGuard: Thread slot index is out of range");
+
+            return typename TDomainTraits::GuardType(this->implRef(), threadIndex, getPointerSlot(threadIndex, pointerToken));
         }
 
         static constexpr SizeType getMaxThreads()

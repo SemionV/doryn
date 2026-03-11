@@ -2,6 +2,7 @@
 #include <atomic>
 #include <optional>
 #include <utility>
+#include <thread>
 
 #include <dory/types.h>
 #include <dory/data-structures/memory-reclamation/epochBasedReclamation.h>
@@ -26,7 +27,7 @@ namespace dory::data_structures::memory_reclamation::ebr::tests
         TDomain& _domain;
         std::atomic<Node*> _head{nullptr};
         TAllocator& _allocator;
-        memory_reclamation::ObjectJanitor<typename TDomain::RetiredNodeType, TAllocator> _janitor;
+        memory_reclamation::ObjectJanitor<Node, TAllocator> _janitor;
 
     public:
         explicit TreiberStack(TDomain& domain, TAllocator& allocator):
@@ -95,7 +96,7 @@ namespace dory::data_structures::memory_reclamation::ebr::tests
 
     void test()
     {
-        using Domain = Domain<8, 128>;
+        using Domain = EpochBasedDomain<EpochBasedDomainTraits<8, 128>>;
         Domain domain;
 
         using AllocatorType = memory::allocators::general::SystemAllocator;
