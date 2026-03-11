@@ -48,7 +48,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 
         {
             auto guard = domain.makeGuard(0, 0);
-            guard.protectRaw(&node);
+            guard.protectPointer(&node);
 
             EXPECT_TRUE(domain.isHazard(&node));
         }
@@ -63,7 +63,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 
         {
             auto guard1 = domain.makeGuard(0, 0);
-            guard1.protectRaw(&node);
+            guard1.protectPointer(&node);
 
             EXPECT_TRUE(domain.isHazard(&node));
 
@@ -87,7 +87,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
         std::atomic<TestNode*> src { &node };
 
         auto guard = domain.makeGuard(0, 1);
-        TestNode* protectedPtr = guard.getProtected(src);
+        TestNode* protectedPtr = guard.protectAtomicPointer(src);
 
         EXPECT_EQ(protectedPtr, &node);
         EXPECT_TRUE(domain.isHazard(&node));
@@ -124,7 +124,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
 
         {
             auto guard = domain.makeGuard(0, 0);
-            guard.protectRaw(&node);
+            guard.protectPointer(&node);
 
             domain.retire(0, &node, &janitor);
             domain.collect(0);
@@ -181,7 +181,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
         TestNode node { 88 };
 
         auto otherThreadGuard = domain.makeGuard(1, 1);
-        otherThreadGuard.protectRaw(&node);
+        otherThreadGuard.protectPointer(&node);
 
         domain.retire(0, &node, &janitor);
         domain.collect(0);
@@ -209,7 +209,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
         TestNode n3 { 3 };
 
         auto guard = domain.makeGuard(0, 0);
-        guard.protectRaw(&n2);
+        guard.protectPointer(&n2);
 
         domain.retire(0, &n1, &janitor);
         domain.retire(0, &n2, &janitor);
@@ -279,7 +279,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers::tests
         {
             Domain<2, 2, 8> domain;
             auto guard = domain.makeGuard(0, 0);
-            guard.protectRaw(&node);
+            guard.protectPointer(&node);
 
             domain.retire(1, &node, &janitor);
             domain.drain();

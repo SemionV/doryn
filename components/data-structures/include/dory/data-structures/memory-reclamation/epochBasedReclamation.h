@@ -38,43 +38,50 @@ namespace dory::data_structures::memory_reclamation::ebr
     public:
         class Guard
         {
+        private:
+            Domain* _domain = nullptr;
+            ThreadId _threadIndex = 0;
+            bool _entered = false;
+
         public:
             Guard() noexcept = default;
 
-            Guard(Domain& domain, u32 thread_index) noexcept
-                : m_domain(&domain), m_thread_index(thread_index), m_entered(true)
+            Guard(Domain& domain, const ThreadId threadIndex):
+                _domain(&domain),
+                _threadIndex(threadIndex),
+                _entered(true)
             {
-                m_domain->enter(m_thread_index);
+                _domain->enter(_threadIndex);
             }
 
             Guard(const Guard&) = delete;
             Guard& operator=(const Guard&) = delete;
 
-            Guard(Guard&& other) noexcept
-                : m_domain(other.m_domain)
-                , m_thread_index(other.m_thread_index)
-                , m_entered(other.m_entered)
+            Guard(Guard&& other):
+                _domain(other._domain),
+                _threadIndex(other._threadIndex),
+                _entered(other._entered)
             {
-                other.m_domain = nullptr;
-                other.m_entered = false;
+                other._domain = nullptr;
+                other._entered = false;
             }
 
             Guard& operator=(Guard&& other) = delete;
 
             ~Guard()
             {
-                if (m_entered)
-                    m_domain->leave(m_thread_index);
+                if (_entered)
+                    _domain->leave(_threadIndex);
             }
-
-        private:
-            Domain* m_domain = nullptr;
-            u32 m_thread_index = 0;
-            bool m_entered = false;
         };
 
     public:
         Domain() = default;
+
+        ~Domain()
+        {
+            drain();
+        }
 
         static constexpr u32 max_threads() noexcept { return MaxThreads; }
 
@@ -196,6 +203,11 @@ namespace dory::data_structures::memory_reclamation::ebr
         [[nodiscard]] u64 getCurrentEpoch() const noexcept
         {
             return _globalEpoch.load(std::memory_order_acquire);
+        }
+
+        void drain()
+        {
+            collectAll();
         }
     };
 }

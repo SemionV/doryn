@@ -19,6 +19,7 @@ add_library(${DORY_MODULE_NAME} INTERFACE
         include/dory/data-structures/containers/lockfree/sharedLock.h
         include/dory/data-structures/memory-reclamation/hazardPointers.h
         include/dory/data-structures/memory-reclamation/epochBasedReclamation.h
+        include/dory/data-structures/memory-reclamation/guard.h
         include/dory/data-structures/memory-reclamation/janitor.h
         include/dory/data-structures/memory-reclamation/retireList.h)
 target_include_directories(${DORY_MODULE_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)

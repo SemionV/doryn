@@ -10,6 +10,7 @@
 
 #include "janitor.h"
 #include "retireList.h"
+#include "guard.h"
 
 namespace dory::data_structures::memory_reclamation::hazard_pointers
 {
@@ -20,21 +21,22 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
         std::atomic<void*> ptr { nullptr };
     };
 
-    template <SizeType MaxThreads, SizeType SlotsPerThread, SizeType MaxRetiredPerThread>
+    template <SizeType MaxThreads, SizeType PointerTokensPerThread, SizeType MaxRetiredPerThread>
     class Domain
     {
     public:
         using RetiredNodeType = RetiredNode;
         using RetireListType = RetireList<RetiredNodeType, MaxRetiredPerThread>;
+        using Guard = Guard<Domain>;
 
-        static constexpr SizeType MaxHazards = MaxThreads * SlotsPerThread;
+        static constexpr SizeType MaxHazards = MaxThreads * PointerTokensPerThread;
 
     private:
         std::array<HazardSlot, MaxHazards> _hazards {};
         std::array<RetireListType, MaxThreads> _retired {};
 
     public:
-        class Guard
+        /*class Guard
         {
         private:
             Domain* _domain = nullptr;
@@ -95,7 +97,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
 
                 return ptr;
             }
-        };
+        };*/
 
     public:
         Domain() = default;
@@ -106,14 +108,44 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
         }
 
         static constexpr SizeType getMaxThreads() noexcept { return MaxThreads; }
-        static constexpr SizeType getSlotsPerThread() noexcept { return SlotsPerThread; }
+        static constexpr SizeType getSlotsPerThread() noexcept { return PointerTokensPerThread; }
 
-        Guard makeGuard(const ThreadId threadIndex, const SizeType slotInThread = 0) noexcept
+        Guard makeGuard(const ThreadId threadIndex, const PointerToken pointerToken = 0) noexcept
         {
             assert::debug(threadIndex < MaxThreads, "HazardPointers::Domain::makeGuard: Thread index is out of range");
-            assert::debug(slotInThread < SlotsPerThread, "HazardPointers::Domain::makeGuard: Thread slot index is out of range");
+            assert::debug(pointerToken < PointerTokensPerThread, "HazardPointers::Domain::makeGuard: Thread slot index is out of range");
 
-            return Guard(*this, getHazardIndex(threadIndex, slotInThread));
+            return Guard(*this, threadIndex, getHazardIndex(threadIndex, pointerToken));
+        }
+
+        static void enter(ThreadId threadId) noexcept
+        {}
+
+        static void leave(ThreadId threadId) noexcept
+        {}
+
+        void clearPointerSlot(const PointerToken pointerToken)
+        {
+            _hazards[pointerToken].ptr.store(nullptr, std::memory_order_release);
+        }
+
+        void occupyPointerSlot(void* ptr, const PointerToken pointerToken)
+        {
+            _hazards[pointerToken].ptr.store(ptr, std::memory_order_release);
+        }
+
+        template <typename T>
+        T* occupyAtomicPointerSlot(std::atomic<T*>& src, const PointerToken pointerToken)
+        {
+            T* ptr = nullptr;
+            do
+            {
+                ptr = src.load(std::memory_order_acquire);
+                _hazards[pointerToken].ptr.store(ptr, std::memory_order_release);
+            }
+            while (ptr != src.load(std::memory_order_acquire));
+
+            return ptr;
         }
 
         void retire(ThreadId threadIndex, void* ptr, Janitor* janitor) noexcept
@@ -193,7 +225,7 @@ namespace dory::data_structures::memory_reclamation::hazard_pointers
     private:
         static constexpr SizeType getHazardIndex(const ThreadId threadIndex, const SizeType slotInThread) noexcept
         {
-            return static_cast<SizeType>(threadIndex) * SlotsPerThread + slotInThread;
+            return static_cast<SizeType>(threadIndex) * PointerTokensPerThread + slotInThread;
         }
     };
 }

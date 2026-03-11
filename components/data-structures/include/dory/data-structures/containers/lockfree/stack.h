@@ -53,7 +53,7 @@ namespace dory::data_structures::containers::lockfree
 
             for (;;)
             {
-                NodeType* head = guard.getProtected(_head);
+                NodeType* head = guard.protectAtomicPointer(_head);
                 if (!head)
                     return std::nullopt;
 
