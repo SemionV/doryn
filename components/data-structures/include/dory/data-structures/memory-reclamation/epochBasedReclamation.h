@@ -144,12 +144,13 @@ namespace dory::data_structures::memory_reclamation::ebr
         void collectImpl(ThreadId threadId) noexcept
         {
             const u64 global = _globalEpoch.load(std::memory_order_acquire);
-            const u64 safe_epoch = (global >= 2) ? (global - 2) : 0;
 
             this->_retired[threadId].reclaimIf(
-                [safe_epoch](const typename TDomainTraits::RetiredNodeType& n) noexcept
+                [global](const typename TDomainTraits::RetiredNodeType& n) noexcept
                 {
-                    return n.retireEpoch <= safe_epoch;
+                    //Use module uint substruction to be safe in case of wrap-around(when globalEpoch reaches the max value possible)
+                    const u64 age = global - n.retireEpoch;
+                    return age >= 2;
                 });
         }
 
