@@ -6,3 +6,4 @@ include(Memcheck)
 
 add_subdirectory(unit-tests)
 add_subdirectory(benchmarks)
+add_subdirectory(time-machine)
