@@ -47,7 +47,6 @@ namespace dory::data_structures::memory_reclamation::ebr
     private:
         alignas(constants::CacheLineSize) std::atomic<u64> _globalEpoch {1};
         std::array<ThreadEpochState, TDomainTraits::maxThreads> _threads {};
-        std::atomic_flag _collecting = ATOMIC_FLAG_INIT;
 
     public:
         static SizeType getPointerSlotImpl(ThreadId threadId, PointerToken pointerToken)

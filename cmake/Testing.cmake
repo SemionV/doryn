@@ -19,13 +19,7 @@ FetchContent_Declare(google-benchmark
 set(BENCHMARK_ENABLE_INSTALL OFF)
 FetchContent_MakeAvailable(google-benchmark)
 
-FetchContent_Declare(catch2
-        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG v3.6.0)
-FetchContent_MakeAvailable(catch2)
-
 include(GoogleTest)
-include(Catch)
 
 macro(AddGoogleTests target)
     target_link_libraries(${target} PRIVATE gtest_main gmock)
